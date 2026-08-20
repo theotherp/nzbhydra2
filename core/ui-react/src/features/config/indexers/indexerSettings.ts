@@ -1,4 +1,7 @@
-import type {IndexerValues} from "../../../api/config/indexers";
+import type {
+    IndexerCapsCheckResult,
+    IndexerValues,
+} from "../../../api/config/indexers";
 import type {
     ConfigFieldPath,
     SettingOption,
@@ -253,6 +256,49 @@ export function applyCapsCheckResult(
         }
     }
     return next;
+}
+
+/** What a bulk recheck changed; `matched` is 0 when nothing was merged. */
+export type CapsCheckMerge = {
+    entries: IndexerValues[];
+    matched: number;
+};
+
+/**
+ * `recheckAllCaps` (`formly-config.js:627-645`): a bulk capability check's
+ * results folded back into the list *entry by entry, keyed by name*.
+ *
+ * This is the destructive-looking operation that must not be destructive. The
+ * server answers with complete `IndexerConfig`s, but replacing an entry with
+ * one of them would silently revert every unsaved edit the admin has made to
+ * that indexer — and would pull the credentials the server resolved from the
+ * `***UNCHANGED***` markers into the form. So each matching entry keeps its own
+ * object and only `applyCapsCheckResult`'s nine capability fields are written
+ * over it; an entry no result names is returned untouched, by identity.
+ *
+ * Matching needs a real name on both sides: an entry that has none cannot be
+ * addressed by a result and must never soak up the first nameless one.
+ */
+export function mergeCapsCheckResults(
+    entries: readonly IndexerValues[],
+    results: readonly IndexerCapsCheckResult[],
+): CapsCheckMerge {
+    let matched = 0;
+    const merged = entries.map((entry) => {
+        const name = indexerText(entry.name);
+        if (name === "") {
+            return entry;
+        }
+        const result = results.find(
+            (candidate) => indexerText(candidate.indexerConfig.name) === name,
+        );
+        if (result === undefined) {
+            return entry;
+        }
+        matched += 1;
+        return applyCapsCheckResult(entry, result.indexerConfig);
+    });
+    return {entries: merged, matched};
 }
 
 /**

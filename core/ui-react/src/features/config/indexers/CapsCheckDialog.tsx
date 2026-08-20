@@ -31,10 +31,14 @@ export const CAPS_CHECK_TITLE = "Checking caps... Please wait";
 export const CAPS_CHECK_FOOTER =
     "This window will close automatically when the caps check is finished";
 
-/** The request one open dialog runs; held in the parent's state, never rebuilt. */
+/**
+ * The request one open dialog runs; held in the parent's state, never rebuilt.
+ * `indexerConfig` is `null` for a bulk (`ALL`/`INCOMPLETE`) recheck, which
+ * checks the saved indexers instead of one unsaved entry.
+ */
 export type CapsCheckRequest = {
     checkType: CapsCheckType;
-    indexerConfig: IndexerValues;
+    indexerConfig: IndexerValues | null;
 };
 
 /**

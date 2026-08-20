@@ -1,9 +1,9 @@
 # Migration Status
 
-Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-066, FM-022, and FM-023 are done;
+Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-067, FM-022, and FM-023 are done;
 their packets were removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion
-(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066, FM-022, FM-023) (see
-`DECISIONS.md` ADR-0014/0015 and git history).
+(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066, FM-067, FM-022,
+FM-023) (see `DECISIONS.md` ADR-0014/0015 and git history).
 
 FM-060 (Config Auth Tab) added a `RepeatSection` primitive to `C-CONFIG-FIELDS` for list-of-records editing (available to
 FM-066). It also escalated, without fixing (outside its Java write scope), two pre-existing backend defects proposed as one
@@ -71,8 +71,20 @@ corrected (optional): the list no longer tints a row by the indexer's configured
 itself was recorded as a gap, not the tint), the special presets' harmless `categories: []` key, a dropped "Supports
 &lt;ids&gt;" line/tooltip on the manual capability-check button, untested backdrop-dismissal, an unjustified inline style
 in the edit dialog, ambiguous accessible names on the two add-preset buttons, and a preset-seeding unit test that asserts
-with `toMatchObject` rather than pinning `state` directly. Bulk caps recheck and the Jackett/Prowlarr imports remain
+with `toMatchObject` rather than pinning `state` directly. Bulk caps recheck and the Jackett/Prowlarr imports were
 FM-067's. Candidates for a future quickfix.
+
+FM-067 (Config Indexers bulk caps recheck and Jackett/Prowlarr import) added the two whole-list capabilities atop
+FM-066's dialog and merge: bulk recheck reuses FM-066's progress dialog with `indexerConfig: null` for `INCOMPLETE`/`ALL`,
+merging results back by indexer name through the same nine-field `updateIndexerModel` contract so unsaved edits on
+unrelated fields survive; the two imports replace the whole list with the response's `newIndexersConfig` and report its
+added/updated/removed counts, warning before the replacement runs. Passed with minor findings, not corrected (optional):
+a handoff prose miscount (seven, not eight, `deliberate -` gap lines — the registry itself is correct), an untested third
+error-fallback branch (`UNKNOWN_IMPORT_ERROR` for a non-`ApiError` failure; correct by inspection), and a cosmetic
+ordering of the new selector comment block ahead of the pre-existing preamble comment in `FEATURES.yaml`. Candidates for
+a future quickfix. It also reconfirmed two backend follow-up candidates, not yet packaged: `ApiTransport` discarding the
+response's `statusText`, and `IndexerWeb.readJackettConfig`'s unstructured 500 where `readProwlarrConfig` beside it
+already answers `400 {errorMessage}`.
 
 ## Active
 
@@ -88,7 +100,6 @@ None.
 
 ## Upcoming
 
-- FM-067 (bulk caps recheck and Jackett/Prowlarr import) — depends only on FM-066, now done, so it is ready to promote.
 - FM-068 (Config secret round trip) — backend-only, no dependencies, ready to promote whenever a Java slot is free. It packages
   the two `@HiddenInUI` marker defects FM-060 escalated: `ConfigWeb.setConfig()`'s unmasked save response (re-confirmed for
   downloader credentials by FM-064) and `SensitiveDataConfigValidator.findCorrespondingOldItem`'s positional credential swap on

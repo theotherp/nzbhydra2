@@ -389,3 +389,213 @@ test.describe("Config indexers visual evidence", () => {
         });
     }
 });
+
+test.describe("Config indexers bulk caps recheck", () => {
+    // A bulk check runs the same eight throttled requests per indexer as a
+    // single one, so it is minutes-scale against the real backend.
+    test.setTimeout(180_000);
+
+    test("should recheck the incomplete indexers and merge the results without losing an unsaved edit", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [
+                // Only this one is `INCOMPLETE`-eligible: enabled, newznab,
+                // configComplete, and not yet fully caps-checked
+                // (`IndexerChecker.checkCaps(CheckType)`).
+                mockIndexer({
+                    name: "Needs caps",
+                    allCapsChecked: false,
+                    supportedSearchIds: [],
+                    supportedSearchTypes: [],
+                }),
+                mockIndexer({name: "Complete", apiKey: "2", score: 5}),
+            ]),
+        );
+
+        // Every control binds to the entry's *configuration* index, and the
+        // backend does not guarantee it keeps the order it was handed, so the
+        // indices are read back rather than assumed.
+        const stored = indexersOf((await hydra.getConfig()) as Json);
+        const incomplete = stored.findIndex((x) => x.name === "Needs caps");
+        const complete = stored.findIndex((x) => x.name === "Complete");
+        expect(incomplete).toBeGreaterThanOrEqual(0);
+        expect(complete).toBeGreaterThanOrEqual(0);
+
+        await openIndexersConfig(page);
+        await expect(
+            page.getByTestId(`config-indexer-caps-incomplete-${incomplete}`),
+        ).toBeVisible();
+
+        // An unsaved edit to a field the capability check does not own. If the
+        // merge replaced the whole entry this would silently revert.
+        await page
+            .getByTestId(`config-input-indexers-${incomplete}-score`)
+            .fill("7");
+
+        const capsCheck = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/indexer/checkCaps",
+            {timeout: 150_000},
+        );
+        await page.getByTestId("config-indexers-recheck-incomplete").click();
+
+        const capsDialog = page.getByTestId("config-indexer-caps-dialog");
+        await expect(capsDialog).toBeVisible();
+        // A non-SINGLE check prefixes every polled line with the indexer name.
+        await expect(
+            page.getByTestId("config-indexer-caps-messages"),
+        ).toContainText("Needs caps:", {timeout: 60_000});
+        expect((await capsCheck).status()).toBe(200);
+        await expect(capsDialog).toBeHidden({timeout: 60_000});
+
+        // The checked entry now knows its capabilities and still carries the
+        // edit; the entry no result named is untouched.
+        await expect(
+            page.getByTestId(`config-indexer-caps-incomplete-${incomplete}`),
+        ).toBeHidden();
+        await expect(
+            page.getByTestId(`config-input-indexers-${incomplete}-score`),
+        ).toHaveValue("7");
+        await expect(
+            page.getByTestId(`config-input-indexers-${complete}-score`),
+        ).toHaveValue("5");
+
+        // Nothing was persisted by the check itself.
+        let persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted[incomplete]).toMatchObject({
+            allCapsChecked: false,
+            score: 0,
+        });
+
+        await save(page);
+
+        persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted).toHaveLength(2);
+        const checked = persisted.find((x) => x.name === "Needs caps") ?? {};
+        expect(checked).toMatchObject({
+            allCapsChecked: true,
+            configComplete: true,
+            score: 7,
+        });
+        expect((checked.supportedSearchIds as string[]).length).toBeGreaterThan(
+            0,
+        );
+        expect(persisted.find((x) => x.name === "Complete")).toMatchObject({
+            score: 5,
+        });
+
+        // Everything is complete now, so the same action checks nothing.
+        await page.getByTestId("config-indexers-recheck-incomplete").click();
+        await expect(page.getByText("No indexers were checked")).toBeVisible({
+            timeout: 60_000,
+        });
+    });
+});
+
+test.describe("Config indexers bulk and import visual evidence", () => {
+    test.setTimeout(180_000);
+
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the recheck and import states at ${viewport}`, async ({
+            page,
+            hydra,
+        }) => {
+            const before = (await hydra.getConfig()) as Json;
+            await hydra.saveConfig(
+                withIndexers(before, [
+                    mockIndexer({
+                        name: "Needs caps",
+                        allCapsChecked: false,
+                        supportedSearchIds: [],
+                        supportedSearchTypes: [],
+                    }),
+                    mockIndexer({name: "Complete", apiKey: "2", score: 5}),
+                ]),
+            );
+
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openIndexersConfig(page);
+                await expect(
+                    page.getByTestId("config-indexers-recheck-all"),
+                ).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-recheck-actions-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            // The shared progress dialog, mid-check, showing the per-indexer
+            // message prefix a bulk check adds.
+            await page
+                .getByTestId("config-indexers-recheck-incomplete")
+                .click();
+            await expect(
+                page.getByTestId("config-indexer-caps-dialog"),
+            ).toBeVisible();
+            await expect(
+                page.getByTestId("config-indexer-caps-messages"),
+            ).toContainText("Needs caps:", {timeout: 60_000});
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-bulk-caps-progress-${viewport}`,
+                ),
+            });
+
+            // Abandon the running check; the server finishes it on its own and
+            // nothing was committed.
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.reload();
+                await dismissWelcomeDialog(page);
+                await expect(page.getByTestId("config-indexers")).toBeVisible();
+            });
+
+            // The add surface, now carrying the two importers alongside the
+            // preset groups.
+            await page.getByTestId("config-indexer-add").click();
+            await expect(
+                page.getByTestId("config-indexer-add-dialog"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-add-with-imports-${viewport}`,
+                ),
+            });
+
+            await page.getByTestId("config-indexer-import-prowlarr").click();
+            await expect(
+                page.getByTestId("config-indexer-import-dialog"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-import-dialog-${viewport}`,
+                ),
+            });
+
+            // Nothing is listening on Prowlarr's default port here, so the
+            // real backend answers with the failure the dialog has to survive.
+            await page
+                .getByTestId("config-indexer-import-dialog-submit")
+                .click();
+            await expect(
+                page.getByTestId("config-indexer-import-error"),
+            ).toBeVisible({timeout: 60_000});
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-import-failed-${viewport}`,
+                ),
+            });
+        });
+    }
+});

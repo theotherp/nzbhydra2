@@ -579,6 +579,13 @@ features:
       - core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx
       - core/ui-react/src/features/config/indexers/indexerSettings.test.ts
     selectors:
+      # FM-067 additions: the two bulk-recheck actions and their failure
+      # acknowledgement, the two import entry points on the add surface
+      # (`config-indexer-import-<jackett|prowlarr>`), the import dialog and its
+      # own controls, and the dialog reporting what an import did. The import
+      # dialog's two fields bind to the draft path `indexerImport`, so they
+      # read `config-input-indexerImport-<host|apiKey>` and never collide with
+      # the edit dialog's `indexerDraft` controls.
       # Legacy config markup carries no stable selectors, so these are new
       # (FM-066). A list row's own controls use the `C-CONFIG-FIELDS` path
       # convention against the entry's *configuration* index, not its display
@@ -617,10 +624,28 @@ features:
       - config-indexer-caps-messages
       - config-indexer-caps-incomplete
       - config-indexer-caps-failed
+      - config-indexers-recheck-incomplete
+      - config-indexers-recheck-all
+      - config-indexers-recheck-failed
+      - config-indexer-import-jackett
+      - config-indexer-import-prowlarr
+      - config-indexer-import-dialog
+      - config-indexer-import-dialog-cancel
+      - config-indexer-import-dialog-submit
+      - config-indexer-import-warning
+      - config-indexer-import-error
+      - config-indexer-import-running
+      - config-indexer-import-result
     parity: partial
     gaps:
-      - FM-067 - bulk capability recheck (recheckAllCaps) and the Jackett/Prowlarr config imports, including the IMPORT_CONFIG marker field set
       - unmigrated - the colour picker and clear button beside the indexer colour field (color-control.html); the text field holding the rgb(...) value is carried forward, the picker is not
+      - deliberate - the two bulk-recheck actions are two buttons side by side; legacy hides "for all indexers" inside a split button's dropdown (recheck-all-caps.html)
+      - deliberate - a bulk recheck merges only updateIndexerModel's nine fields into each matching entry and requires a non-empty name on both sides, so a nameless entry can never absorb a result
+      - deliberate - a failed bulk recheck shows an acknowledgement; legacy has no rejection handler there and fell through to RequestsErrorHandler's generic error modal
+      - deliberate - the import dialog asks only for host and API key; legacy's IMPORT_CONFIG box also rendered username, schedule, preselect, colour, groups, VIP expiry, and categories, none of which the importers read
+      - deliberate - an import's counts and a bulk check's outcome are reported in one acknowledgement dialog rather than as consecutive growls, because C-TOAST-SERVICE shows one toast at a time and the later lines would replace the earlier ones
+      - deliberate - the import dialog states before it runs that the response replaces the whole list; legacy said nothing and the admin discovered it afterwards
+      - deliberate - a failed import falls back to the transport's status-derived message where legacy used the response's statusText, which ApiTransport does not carry; a request with no HTTP response still reaches legacy's "Unknown error occurred"
       - deliberate - "Add it, but disabled" on a failed connection check sets state DISABLED_USER; legacy sets model.enabled = false, a field IndexerConfig does not have, so the button did nothing there
       - deliberate - an empty "Hit reset time" is valid; legacy's timeOfDay validator rejects the empty value its own help text recommends for a rolling counter
       - deliberate - a successful capability check writes back only updateIndexerModel's nine fields, not the server's whole IndexerConfig, because the response carries credentials resolved from the ***UNCHANGED*** markers

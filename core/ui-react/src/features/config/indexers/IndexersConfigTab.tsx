@@ -3,14 +3,27 @@ import {Box, Button, Divider, Stack, Typography} from "@mui/material";
 import {useRef, useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
-import type {IndexerValues} from "../../../api/config/indexers";
+import type {
+    IndexerCapsCheckResult,
+    IndexerImportResult,
+    IndexerImportSource,
+    IndexerValues,
+} from "../../../api/config/indexers";
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
+import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {ConfigFieldset} from "../components";
 import {AddIndexerDialog} from "./AddIndexerDialog";
+import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
 import {IndexerDialog} from "./IndexerDialog";
+import {IndexerImportDialog} from "./IndexerImportDialog";
 import {IndexerRow} from "./IndexerRow";
+import {
+    importResultLines,
+    importResultSummary,
+    importResultTitle,
+} from "./indexerImport";
 import {
     ALREADY_CONFIGURED_MESSAGE,
     isAddingAllowed,
@@ -22,8 +35,23 @@ import {
     indexerCategoryOptions,
     indexersOf,
     INDEXERS_PATH,
+    mergeCapsCheckResults,
     orderedIndexers,
 } from "./indexerSettings";
+
+/** `CheckCapsModalInstanceCtrl`'s growl for an empty result list. */
+const NO_INDEXERS_CHECKED = "No indexers were checked";
+
+/**
+ * Legacy's bulk recheck has no rejection handler of its own, so a failed check
+ * fell through to `RequestsErrorHandler`'s generic error modal
+ * (`generic-error-handler.js:43`). That modal is reproduced here as a plain
+ * acknowledgement, because silence after a check the admin started reads as a
+ * check that found nothing.
+ */
+const RECHECK_FAILED_TITLE = "Error checking capabilities";
+const RECHECK_FAILED_MESSAGE =
+    "An error occurred while checking the capabilities of the indexers. Nothing was changed.";
 
 type Editing = {
     /** The picked preset's prose, shown while composing a new entry. */
@@ -54,6 +82,7 @@ type Editing = {
  */
 export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
     const {getValues, setValue} = useFormContext<ConfigValues>();
+    const dialogs = useDialogs();
     const toasts = useToasts();
     const entries = indexersOf(useWatch<ConfigValues>({name: INDEXERS_PATH}));
     const categoryOptions = indexerCategoryOptions(
@@ -61,6 +90,11 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
     );
     const [editing, setEditing] = useState<Editing | null>(null);
     const [adding, setAdding] = useState(false);
+    /** The bulk recheck in flight, or `null`; drives the shared progress dialog. */
+    const [recheck, setRecheck] = useState<CapsCheckRequest | null>(null);
+    const [importing, setImporting] = useState<IndexerImportSource | null>(
+        null,
+    );
     /**
      * The identity of the transaction that is currently allowed to commit.
      * Every open and every close bumps it, so a check that only resolves after
@@ -149,6 +183,82 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         openTransaction(null, newIndexerDraft(preset), preset.info);
     };
 
+    // ---- the bulk capability recheck ---------------------------------------
+
+    /**
+     * `recheckAllCaps` (`formly-config.js:627-645`). The request carries no
+     * entry at all: the backend checks the indexers it has *stored*, which is
+     * why an unsaved edit cannot be part of what is checked — only of what the
+     * results are merged into.
+     */
+    const startRecheck = (checkType: "ALL" | "INCOMPLETE") => {
+        setRecheck({checkType, indexerConfig: null});
+    };
+
+    /**
+     * The merge legacy performs entry by entry, keyed by name. Read from the
+     * form at this moment rather than from a captured render: the check runs
+     * for tens of seconds and the admin can keep editing other tabs meanwhile.
+     */
+    const finishRecheck = (results: IndexerCapsCheckResult[]) => {
+        setRecheck(null);
+        if (results.length === 0) {
+            toasts.showToast({
+                message: NO_INDEXERS_CHECKED,
+                severity: "info",
+            });
+            return;
+        }
+        const merged = mergeCapsCheckResults(currentEntries(), results);
+        if (merged.matched > 0) {
+            // Legacy marks the form dirty inside the match loop, so a result
+            // list naming no configured indexer changes nothing at all.
+            write(merged.entries);
+        }
+    };
+
+    const failRecheck = () => {
+        setRecheck(null);
+        void dialogs.confirm({
+            title: RECHECK_FAILED_TITLE,
+            message: RECHECK_FAILED_MESSAGE,
+            confirmLabel: "OK",
+            variant: "acknowledge",
+            testId: "config-indexers-recheck-failed",
+        });
+    };
+
+    // ---- the Jackett/Prowlarr imports --------------------------------------
+
+    const startImport = (source: IndexerImportSource) => {
+        setAdding(false);
+        setImporting(source);
+    };
+
+    /**
+     * `readJackettConfig`/`readProwlarrConfig`'s success callback
+     * (`formly-indexers.js:754-800`): the returned list replaces the whole
+     * array — the response already contains the existing entries the request
+     * carried — and the counts are reported afterwards. It is a form edit like
+     * any other, so the shell's unsaved-changes guard still applies and nothing
+     * is persisted until the configuration is saved.
+     */
+    const finishImport = (
+        source: IndexerImportSource,
+        result: IndexerImportResult,
+    ) => {
+        setImporting(null);
+        write(result.indexers);
+        void dialogs.confirm({
+            title: importResultTitle(source),
+            message: importResultSummary(source),
+            details: importResultLines(source, result),
+            confirmLabel: "OK",
+            variant: "acknowledge",
+            testId: "config-indexer-import-result",
+        });
+    };
+
     const ordered = orderedIndexers(entries);
 
     return (
@@ -185,13 +295,61 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                         ))}
                     </Stack>
                 )}
+                {/*
+                 * `recheck-all-caps.html`: legacy's split button, whose
+                 * primary action is the incomplete check and whose dropdown
+                 * holds the "all" one. Two plain buttons say the same thing
+                 * without hiding half of it behind a caret.
+                 */}
+                <Stack
+                    direction={{xs: "column", sm: "row"}}
+                    spacing={1}
+                    sx={{mt: 3}}
+                >
+                    <Button
+                        data-testid="config-indexers-recheck-incomplete"
+                        disabled={recheck !== null}
+                        onClick={() => startRecheck("INCOMPLETE")}
+                        type="button"
+                        variant="contained"
+                    >
+                        Recheck caps for incomplete indexers
+                    </Button>
+                    <Button
+                        data-testid="config-indexers-recheck-all"
+                        disabled={recheck !== null}
+                        onClick={() => startRecheck("ALL")}
+                        type="button"
+                        variant="outlined"
+                    >
+                        Recheck caps for all indexers
+                    </Button>
+                </Stack>
             </ConfigFieldset>
             {adding ? (
                 <AddIndexerDialog
                     onCancel={() => setAdding(false)}
+                    onImport={startImport}
                     onSelect={selectPreset}
                 />
             ) : null}
+            {importing === null ? null : (
+                <IndexerImportDialog
+                    existingIndexers={currentEntries}
+                    onCancel={() => setImporting(null)}
+                    onImported={(result) => finishImport(importing, result)}
+                    source={importing}
+                    transport={transport}
+                />
+            )}
+            {recheck === null ? null : (
+                <CapsCheckDialog
+                    onFailed={failRecheck}
+                    onResolved={finishRecheck}
+                    request={recheck}
+                    transport={transport}
+                />
+            )}
             {editing === null ? null : (
                 <IndexerDialog
                     categoryOptions={categoryOptions}

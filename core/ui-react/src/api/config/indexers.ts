@@ -1,10 +1,12 @@
 import {z} from "zod";
 
-import {ApiTransport} from "../transport";
+import {ApiError, ApiTransport} from "../transport";
 
 const CHECK_CONNECTION_PATH = "internalapi/indexer/checkConnection";
 const CHECK_CAPS_PATH = "internalapi/indexer/checkCaps";
 const CHECK_CAPS_MESSAGES_PATH = "internalapi/indexer/checkCapsMessages";
+const READ_JACKETT_CONFIG_PATH = "internalapi/indexer/readJackettConfig";
+const READ_PROWLARR_CONFIG_PATH = "internalapi/indexer/readProwlarrConfig";
 
 /**
  * An indexer entry as it travels between the config form, the edit dialog, and
@@ -76,7 +78,11 @@ export async function checkIndexerConnection(
     return {kind: "failed", message: parsed.data.message ?? ""};
 }
 
-/** `CapsCheckRequest.CheckType`. FM-066 only ever sends `SINGLE`. */
+/**
+ * `CapsCheckRequest.CheckType`. `SINGLE` checks the one unsaved entry carried in
+ * the request; `INCOMPLETE` and `ALL` check the *saved* indexers and carry no
+ * entry at all (FM-067's bulk recheck).
+ */
 export type CapsCheckType = "ALL" | "INCOMPLETE" | "SINGLE";
 
 /** `CheckCapsResponse` (`shared/mapping/.../CheckCapsResponse.java`). */
@@ -104,10 +110,15 @@ export class CapsCheckFailedError extends Error {}
  * A rejected promise is legacy's `$dismiss("Unknown error")` branch: the entry
  * keeps unknown capabilities and the admin is told the indexer is unusable
  * until the check succeeds.
+ *
+ * `indexerConfig` is `null` for an `ALL`/`INCOMPLETE` bulk recheck, which is
+ * exactly what `CapsCheckRequestFactory.build(undefined, checkType)` sends: the
+ * backend then checks the indexers it has stored and answers one result per
+ * checked indexer.
  */
 export async function checkIndexerCaps(
     transport: ApiTransport,
-    indexerConfig: IndexerValues,
+    indexerConfig: IndexerValues | null,
     checkType: CapsCheckType = "SINGLE",
 ): Promise<IndexerCapsCheckResult[]> {
     let response: unknown;
@@ -169,4 +180,164 @@ export function capsCheckMessageLines(
         }
     }
     return lines;
+}
+
+/** Which of the two importers a request goes to. */
+export type IndexerImportSource = "jackett" | "prowlarr";
+
+/**
+ * What an importer answers: the *complete* replacement list plus how the server
+ * arrived at it. `removed` is `null` for Jackett, whose response type has no
+ * removal count at all (`IndexerWeb.JacketConfigReadResponse`) — Jackett's
+ * importer only ever adds to and updates the list it was given.
+ */
+export type IndexerImportResult = {
+    added: number;
+    indexers: IndexerValues[];
+    removed: number | null;
+    updated: number;
+};
+
+/** Legacy's last fallback when a failed import says nothing at all. */
+export const UNKNOWN_IMPORT_ERROR = "Unknown error occurred";
+
+/**
+ * A refused import. Its `message` is what the dialog shows, resolved in
+ * legacy's order (`formly-indexers.js:1180-1199`): the server's `errorMessage`,
+ * then the response's status text, then an unknown-error fallback.
+ */
+export class IndexerImportFailedError extends Error {}
+
+const importCountSchema = z.number().nullish();
+
+const jackettImportResponseSchema = z.looseObject({
+    addedTrackers: importCountSchema,
+    newIndexersConfig: z.array(z.looseObject({})).nullish(),
+    updatedTrackers: importCountSchema,
+});
+
+const prowlarrImportResponseSchema = z.looseObject({
+    addedIndexers: importCountSchema,
+    newIndexersConfig: z.array(z.looseObject({})).nullish(),
+    removedIndexers: importCountSchema,
+    updatedIndexers: importCountSchema,
+});
+
+/** The `errorMessage` `ProwlarrConfigReadResponse` carries on a 400. */
+const importErrorSchema = z.looseObject({errorMessage: z.string().nullish()});
+
+function importFailure(error: unknown): IndexerImportFailedError {
+    if (!(error instanceof ApiError)) {
+        // No HTTP response at all — legacy's `status: -1` with an empty
+        // `statusText`, which falls straight through to the last fallback.
+        return new IndexerImportFailedError(UNKNOWN_IMPORT_ERROR);
+    }
+    const parsed = importErrorSchema.safeParse(error.data);
+    const reported = parsed.success ? (parsed.data.errorMessage ?? "") : "";
+    // `ApiTransport` does not carry the response's `statusText`, so its own
+    // status-derived message stands in for legacy's second fallback.
+    return new IndexerImportFailedError(
+        reported === "" ? error.message : reported,
+    );
+}
+
+async function requestImport(
+    transport: ApiTransport,
+    path: string,
+    body: unknown,
+): Promise<unknown> {
+    try {
+        return await transport.request<unknown>(path, {
+            json: body,
+            method: "POST",
+        });
+    } catch (error) {
+        throw importFailure(error);
+    }
+}
+
+function importedCount(value: number | null | undefined): number {
+    return typeof value === "number" ? value : 0;
+}
+
+function importedIndexers(
+    value: readonly Record<string, unknown>[] | null | undefined,
+): IndexerValues[] {
+    return (value ?? []) as IndexerValues[];
+}
+
+/**
+ * `API-CONFIG-INDEXER-JACKETT`: asks the backend to read the trackers a Jackett
+ * instance has configured and to fold them into the indexer list it is given.
+ *
+ * `existingIndexers` is the *unsaved* list as the config form holds it, and
+ * `jackettConfig` is legacy's `IMPORT_CONFIG` marker entry — a complete
+ * `IndexerConfig` whose `host` and `apiKey` address Jackett. The marker type
+ * matters on the wire: `JacketConfigRetriever` uses the posted entry as the
+ * template every imported tracker is cloned from.
+ */
+export async function importJackettIndexers(
+    transport: ApiTransport,
+    existingIndexers: readonly IndexerValues[],
+    jackettConfig: IndexerValues,
+): Promise<IndexerImportResult> {
+    const response = await requestImport(transport, READ_JACKETT_CONFIG_PATH, {
+        existingIndexers,
+        jackettConfig,
+    });
+    const parsed = jackettImportResponseSchema.safeParse(response);
+    if (!parsed.success) {
+        throw new IndexerImportFailedError(
+            "The Jackett import response has an invalid format",
+        );
+    }
+    return {
+        added: importedCount(parsed.data.addedTrackers),
+        indexers: importedIndexers(parsed.data.newIndexersConfig),
+        removed: null,
+        updated: importedCount(parsed.data.updatedTrackers),
+    };
+}
+
+/**
+ * `API-CONFIG-INDEXER-PROWLARR`: the same for a Prowlarr instance, which also
+ * *removes* the entries it manages that it no longer knows about — the only
+ * reason this response carries a removal count.
+ *
+ * A failure here is an HTTP 400 whose body is a `ProwlarrConfigReadResponse`
+ * carrying only `errorMessage`, which is what `IndexerImportFailedError` shows.
+ */
+export async function importProwlarrIndexers(
+    transport: ApiTransport,
+    existingIndexers: readonly IndexerValues[],
+    prowlarrConfig: IndexerValues,
+): Promise<IndexerImportResult> {
+    const response = await requestImport(transport, READ_PROWLARR_CONFIG_PATH, {
+        existingIndexers,
+        prowlarrConfig,
+    });
+    const parsed = prowlarrImportResponseSchema.safeParse(response);
+    if (!parsed.success) {
+        throw new IndexerImportFailedError(
+            "The Prowlarr import response has an invalid format",
+        );
+    }
+    return {
+        added: importedCount(parsed.data.addedIndexers),
+        indexers: importedIndexers(parsed.data.newIndexersConfig),
+        removed: importedCount(parsed.data.removedIndexers),
+        updated: importedCount(parsed.data.updatedIndexers),
+    };
+}
+
+/** Dispatches to the importer the admin picked. */
+export function importIndexers(
+    transport: ApiTransport,
+    source: IndexerImportSource,
+    existingIndexers: readonly IndexerValues[],
+    importConfig: IndexerValues,
+): Promise<IndexerImportResult> {
+    return source === "jackett"
+        ? importJackettIndexers(transport, existingIndexers, importConfig)
+        : importProwlarrIndexers(transport, existingIndexers, importConfig);
 }

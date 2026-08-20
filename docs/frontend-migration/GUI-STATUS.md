@@ -29,8 +29,10 @@ Currently available in React:
   Lidarr, and Readarr entries, each added from a preset or custom and edited in a modal transaction that tests the
   connection before writing NZBHydra's settings into the tool, plus a sync-all action. The Indexers tab is fully
   editable — the ordered indexer list with per-entry state, priority, and incomplete-config/incomplete-caps markers;
-  adding a newznab, torznab, or special indexer from a preset or as a custom entry; and a modal transaction that
+  adding a newznab, torznab, or special indexer from a preset or as a custom entry; a modal transaction that
   connection-checks and completes an entry's capabilities before it is accepted, with credentials that are never
-  round-tripped in clear text. All eight canonical config tabs are now fully editable.
+  round-tripped in clear text; bulk capability rechecking for incomplete or all indexers with per-indexer progress; and
+  importing a whole Jackett or Prowlarr indexer set, replacing the list and reporting added/updated/removed counts.
+  All eight canonical config tabs are now fully editable.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

@@ -80,23 +80,31 @@ type Backend = {
     caps: unknown[];
     connection: unknown[];
     fetchMock: ReturnType<typeof vi.fn>;
+    /** Bodies posted to either import endpoint, in order (FM-067). */
+    imports: unknown[];
 };
 
 /**
- * The two real endpoints the close sequence uses, plus the message poll. Each
- * handler receives the posted body so a test can assert what was sent.
+ * The two real endpoints the close sequence uses, plus the message poll and
+ * (FM-067) the two config importers. Each handler receives the posted body so a
+ * test can assert what was sent.
  */
 function backend({
     caps = () => jsonResponse([capsResult()]),
     connection = () => jsonResponse({message: null, successful: true}),
+    jackett = () => jsonResponse(jackettImport()),
+    prowlarr = () => jsonResponse(prowlarrImport()),
 }: {
     caps?: (body: unknown) => Response;
     connection?: (body: unknown) => Response;
+    jackett?: (body: unknown) => Response;
+    prowlarr?: (body: unknown) => Response;
 } = {}): Backend {
     const state: Backend = {
         caps: [],
         connection: [],
         fetchMock: vi.fn(),
+        imports: [],
     };
     state.fetchMock = vi.fn<typeof fetch>((input, init) => {
         const url = String(input);
@@ -115,9 +123,38 @@ function backend({
             state.connection.push(body);
             return Promise.resolve(connection(body));
         }
+        if (url.includes("readJackettConfig")) {
+            state.imports.push(body);
+            return Promise.resolve(jackett(body));
+        }
+        if (url.includes("readProwlarrConfig")) {
+            state.imports.push(body);
+            return Promise.resolve(prowlarr(body));
+        }
         throw new Error(`unexpected request to ${url}`);
     }) as unknown as ReturnType<typeof vi.fn>;
     return state;
+}
+
+/** `IndexerWeb.JacketConfigReadResponse`. */
+function jackettImport(overrides: Record<string, unknown> = {}) {
+    return {
+        addedTrackers: 2,
+        newIndexersConfig: [newznab({name: "Imported tracker"})],
+        updatedTrackers: 1,
+        ...overrides,
+    };
+}
+
+/** `IndexerWeb.ProwlarrConfigReadResponse`. */
+function prowlarrImport(overrides: Record<string, unknown> = {}) {
+    return {
+        addedIndexers: 2,
+        newIndexersConfig: [newznab({name: "Imported indexer"})],
+        removedIndexers: 0,
+        updatedIndexers: 1,
+        ...overrides,
+    };
 }
 
 function capsResult({
@@ -854,5 +891,367 @@ describe("The manual capability check", () => {
                 "config-setting-indexerDraft-supportedSearchIds",
             ),
         ).toBeNull();
+    });
+});
+
+describe("The bulk capability recheck", () => {
+    async function recheck(testId: string): Promise<void> {
+        fireEvent.click(screen.getByTestId(testId));
+        await screen.findByTestId("config-indexer-caps-dialog");
+    }
+
+    it("sends legacy's two check types and carries no entry", async () => {
+        const api = backend({caps: () => jsonResponse([])});
+        renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        await recheck("config-indexers-recheck-incomplete");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+        await recheck("config-indexers-recheck-all");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+
+        expect(api.caps).toEqual([
+            {checkType: "INCOMPLETE", indexerConfig: null},
+            {checkType: "ALL", indexerConfig: null},
+        ]);
+    });
+
+    it("merges by name, keeping unrelated fields and unsaved edits", async () => {
+        const api = backend({
+            caps: () =>
+                jsonResponse([
+                    capsResult({
+                        indexerConfig: {
+                            // The server answers with a complete IndexerConfig
+                            // whose credential it resolved from the marker and
+                            // whose priority is the *saved* one.
+                            apiKey: "resolved-secret",
+                            host: "http://somewhere-else",
+                            name: "Mock1",
+                            score: 0,
+                        },
+                    }),
+                ]),
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({
+                    name: "Mock1",
+                    allCapsChecked: false,
+                    configComplete: false,
+                }),
+                newznab({name: "Mock2", allCapsChecked: false}),
+            ]),
+        });
+
+        // An unsaved edit to a field the check does not own, made before the
+        // recheck runs. Reverting it is the failure this test exists for.
+        fireEvent.change(screen.getByTestId("config-input-indexers-0-score"), {
+            target: {value: "42"},
+        });
+        await waitFor(() => expect(indexersOf(harness)[0].score).toBe(42));
+
+        await recheck("config-indexers-recheck-incomplete");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+
+        const [checked, untouched] = indexersOf(harness);
+        expect(checked).toMatchObject({
+            allCapsChecked: true,
+            backend: "NZEDB",
+            configComplete: true,
+            downloadLimit: 5,
+            hitLimit: 100,
+            supportedSearchIds: ["IMDB", "TVDB"],
+            supportedSearchTypes: ["MOVIE", "SEARCH"],
+        });
+        // Everything else is the entry's own, including the unsaved edit and
+        // the masked credential.
+        expect(checked.score).toBe(42);
+        expect(checked.name).toBe("Mock1");
+        expect(checked.host).toBe("http://mock");
+        expect(checked.apiKey).toBe(UNCHANGED_SECRET_MARKER);
+        // No result named Mock2, so nothing about it changed.
+        expect(untouched.allCapsChecked).toBe(false);
+    });
+
+    it("marks the form dirty when something was merged, and not otherwise", async () => {
+        const api = backend({
+            caps: () =>
+                jsonResponse([
+                    capsResult({indexerConfig: {name: "Somebody else"}}),
+                ]),
+        });
+        renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-all");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+
+        cleanup();
+        const second = backend({
+            caps: () =>
+                jsonResponse([capsResult({indexerConfig: {name: "Mock1"}})]),
+        });
+        renderIndexers({
+            fetchMock: second.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-all");
+        await waitFor(() =>
+            expect(screen.getByTestId("form-dirty")).toHaveTextContent("true"),
+        );
+    });
+
+    it("reports an empty result list the way legacy does", async () => {
+        const api = backend({caps: () => jsonResponse([])});
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        await recheck("config-indexers-recheck-incomplete");
+
+        expect(
+            await screen.findByText("No indexers were checked"),
+        ).toBeVisible();
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+        expect(indexersOf(harness)).toHaveLength(1);
+    });
+
+    it("reports a failed check and changes nothing", async () => {
+        const api = backend({caps: () => jsonResponse({error: "boom"}, 500)});
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-all");
+        await clickIn("config-indexers-recheck-failed", "OK");
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+        expect(indexersOf(harness)[0].allCapsChecked).toBe(false);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+    });
+});
+
+describe("The Jackett and Prowlarr imports", () => {
+    async function openImport(source: string): Promise<void> {
+        fireEvent.click(screen.getByTestId("config-indexer-add"));
+        await screen.findByTestId("config-indexer-add-dialog");
+        fireEvent.click(screen.getByTestId(`config-indexer-import-${source}`));
+        await screen.findByTestId("config-indexer-import-dialog");
+    }
+
+    function importField(field: string): HTMLElement {
+        return screen.getByTestId(`config-input-indexerImport-${field}`);
+    }
+
+    function submitImport(): void {
+        fireEvent.click(
+            screen.getByTestId("config-indexer-import-dialog-submit"),
+        );
+    }
+
+    it("seeds legacy's defaults and says what a replacement costs", async () => {
+        renderIndexers({fetchMock: backend().fetchMock});
+
+        await openImport("jackett");
+        expect(importField("host")).toHaveValue("http://127.0.0.1:9117");
+        expect(
+            screen.getByTestId("config-indexer-import-warning"),
+        ).toHaveTextContent(
+            "Any indexer Jackett does not return is removed from the list",
+        );
+        // Only host and API key are asked for.
+        expect(
+            screen.queryByTestId("config-setting-indexerImport-name"),
+        ).toBeNull();
+        expect(
+            screen.queryByTestId("config-setting-indexerImport-score"),
+        ).toBeNull();
+
+        fireEvent.click(
+            screen.getByTestId("config-indexer-import-dialog-cancel"),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-import-dialog"),
+            ).toBeNull(),
+        );
+
+        await openImport("prowlarr");
+        expect(importField("host")).toHaveValue("http://127.0.0.1:9696");
+    });
+
+    it("replaces the whole list with what Jackett returned and reports its counts", async () => {
+        const api = backend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        // An unsaved edit that must travel to the server as part of
+        // `existingIndexers`, because that is the list the import folds into.
+        fireEvent.change(screen.getByTestId("config-input-indexers-0-score"), {
+            target: {value: "42"},
+        });
+        await waitFor(() => expect(indexersOf(harness)[0].score).toBe(42));
+
+        await openImport("jackett");
+        fireEvent.change(importField("host"), {
+            target: {value: "http://jackett:9117"},
+        });
+        fireEvent.change(importField("apiKey"), {target: {value: "jkt"}});
+        submitImport();
+
+        const reported = await screen.findByTestId(
+            "config-indexer-import-result",
+        );
+        expect(reported).toHaveTextContent("Added 2 new trackers from Jackett");
+        expect(reported).toHaveTextContent("Updated 1 trackers from Jackett");
+        fireEvent.click(within(reported).getByRole("button", {name: "OK"}));
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-import-dialog"),
+            ).toBeNull(),
+        );
+        expect(indexersOf(harness).map((entry) => entry.name)).toEqual([
+            "Imported tracker",
+        ]);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("true");
+
+        expect(api.imports).toEqual([
+            {
+                existingIndexers: [
+                    expect.objectContaining({name: "Mock1", score: 42}),
+                ],
+                jackettConfig: expect.objectContaining({
+                    apiKey: "jkt",
+                    host: "http://jackett:9117",
+                    name: "Jackett config",
+                    // The marker type is what makes the request deserialize
+                    // and what the imported entries are cloned from.
+                    searchModuleType: "IMPORT_CONFIG",
+                }),
+            },
+        ]);
+    });
+
+    it("reports Prowlarr's removals only when there were any", async () => {
+        const api = backend({
+            prowlarr: () => jsonResponse(prowlarrImport({removedIndexers: 3})),
+        });
+        renderIndexers({fetchMock: api.fetchMock});
+
+        await openImport("prowlarr");
+        submitImport();
+
+        let reported = await screen.findByTestId(
+            "config-indexer-import-result",
+        );
+        expect(reported).toHaveTextContent("Added 2 indexers from Prowlarr");
+        expect(reported).toHaveTextContent("Updated 1 indexers from Prowlarr");
+        expect(reported).toHaveTextContent(
+            "Removed 3 indexers no longer in Prowlarr",
+        );
+        fireEvent.click(within(reported).getByRole("button", {name: "OK"}));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-import-result"),
+            ).toBeNull(),
+        );
+
+        cleanup();
+        renderIndexers({fetchMock: backend().fetchMock});
+        await openImport("prowlarr");
+        submitImport();
+
+        reported = await screen.findByTestId("config-indexer-import-result");
+        expect(reported).toHaveTextContent("Added 2 indexers from Prowlarr");
+        expect(reported).not.toHaveTextContent("no longer in Prowlarr");
+    });
+
+    it("stays open on a failure, shows the server's reason, and keeps the list", async () => {
+        const api = backend({
+            prowlarr: () =>
+                jsonResponse(
+                    {errorMessage: "Error accessing Prowlarr: refused"},
+                    400,
+                ),
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        await openImport("prowlarr");
+        fireEvent.change(importField("apiKey"), {target: {value: "wrong"}});
+        submitImport();
+
+        expect(
+            await screen.findByTestId("config-indexer-import-error"),
+        ).toHaveTextContent("Error accessing Prowlarr: refused");
+        expect(
+            screen.getByTestId("config-indexer-import-dialog"),
+        ).toBeVisible();
+        // Everything typed is still there, so the admin can correct it.
+        expect(importField("host")).toHaveValue("http://127.0.0.1:9696");
+        // The configured indexer is exactly as it was.
+        expect(indexersOf(harness).map((entry) => entry.name)).toEqual([
+            "Mock1",
+        ]);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+    });
+
+    it("falls back to the status when the server names no reason", async () => {
+        const api = backend({
+            jackett: () => jsonResponse({status: 500}, 500),
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        await openImport("jackett");
+        submitImport();
+
+        expect(
+            await screen.findByTestId("config-indexer-import-error"),
+        ).toHaveTextContent("Request failed with status 500");
+        expect(indexersOf(harness)).toHaveLength(1);
     });
 });

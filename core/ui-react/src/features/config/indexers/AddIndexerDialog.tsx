@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import {useState} from "react";
 
+import type {IndexerImportSource} from "../../../api/config/indexers";
+import {INDEXER_IMPORT_ORDER, INDEXER_IMPORT_SOURCES} from "./indexerImport";
 import {
     CUSTOM_NEWZNAB_PRESET,
     CUSTOM_TORZNAB_PRESET,
@@ -26,19 +28,24 @@ export const ADD_INDEXER_DIALOG_TEST_ID = "config-indexer-add-dialog";
  * `indexer-config-selection.html` / `IndexerConfigSelectionBoxInstanceController`:
  * the "Add indexer" chooser, with legacy's three groups.
  *
- * Picking anything here only *seeds* a new entry — the entry itself is composed
+ * Picking a preset here only *seeds* a new entry — the entry itself is composed
  * in `IndexerDialog` and does not exist until that dialog is submitted
  * (`addEntry` pushes into the model from the box's success callback, never
  * before).
  *
- * Legacy's two "Read from Jackett/Prowlarr config" menu entries are deliberately
- * absent: those are configuration *imports*, not presets, and they are FM-067's.
+ * The two importers are the exception, and legacy files them here for the same
+ * reason (`indexer-config-selection.html`'s "Read from ..." menu entries): they
+ * are reached from the same add surface but they replace the whole list rather
+ * than seeding one entry, which is why they are visibly separated from the
+ * presets and open their own dialog.
  */
 export function AddIndexerDialog({
     onCancel,
+    onImport,
     onSelect,
 }: {
     onCancel: () => void;
+    onImport: (source: IndexerImportSource) => void;
     onSelect: (preset: IndexerPreset) => void;
 }) {
     const [newznabAnchor, setNewznabAnchor] = useState<HTMLElement | null>(
@@ -140,6 +147,27 @@ export function AddIndexerDialog({
                                     variant="outlined"
                                 >
                                     {preset.label}
+                                </Button>
+                            ))}
+                        </Stack>
+                    </Stack>
+                    <Stack spacing={1}>
+                        <Typography component="h3" variant="subtitle1">
+                            Import
+                        </Typography>
+                        <Stack
+                            direction={{xs: "column", sm: "row"}}
+                            spacing={1}
+                        >
+                            {INDEXER_IMPORT_ORDER.map((source) => (
+                                <Button
+                                    data-testid={`config-indexer-import-${source}`}
+                                    key={source}
+                                    onClick={() => onImport(source)}
+                                    type="button"
+                                    variant="outlined"
+                                >
+                                    {INDEXER_IMPORT_SOURCES[source].openLabel}
                                 </Button>
                             ))}
                         </Stack>

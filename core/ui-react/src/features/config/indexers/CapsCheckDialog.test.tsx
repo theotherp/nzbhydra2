@@ -8,6 +8,7 @@ import {createHydraTheme} from "../../../app/theme";
 import {
     CAPS_MESSAGE_POLL_INTERVAL_MS,
     CapsCheckDialog,
+    type CapsCheckRequest,
 } from "./CapsCheckDialog";
 
 type Deferred = {
@@ -39,7 +40,12 @@ const CAPS_RESULT = {
     indexerConfig: {name: "Mock", supportedSearchIds: ["IMDB"]},
 };
 
-function setup(messages: string[][]) {
+const SINGLE_CHECK: CapsCheckRequest = {
+    checkType: "SINGLE",
+    indexerConfig: {name: "Mock"},
+};
+
+function setup(messages: string[][], request: CapsCheckRequest = SINGLE_CHECK) {
     const check = deferred();
     let polls = 0;
     const fetchMock = vi.fn<typeof fetch>((input) => {
@@ -61,10 +67,7 @@ function setup(messages: string[][]) {
             <CapsCheckDialog
                 onFailed={onFailed}
                 onResolved={onResolved}
-                request={{
-                    checkType: "SINGLE",
-                    indexerConfig: {name: "Mock"},
-                }}
+                request={request}
                 transport={
                     new ApiTransport("/", fetchMock as unknown as typeof fetch)
                 }
@@ -131,6 +134,28 @@ describe("CapsCheckDialog", () => {
                     !String(input).includes("checkCapsMessages"),
             ),
         ).toHaveLength(1);
+    });
+
+    it("prefixes each message with the indexer's name for a bulk check", async () => {
+        const {fetchMock} = setup([["Checking caps of Mock"]], {
+            checkType: "INCOMPLETE",
+            indexerConfig: null,
+        });
+
+        await tick();
+        expect(screen.getByText("Mock: Checking caps of Mock")).toBeVisible();
+
+        // A bulk check carries no entry at all: the backend checks what it has
+        // stored (`CapsCheckRequestFactory.build(undefined, checkType)`).
+        const posted = fetchMock.mock.calls.find(
+            ([input]) =>
+                String(input).includes("checkCaps") &&
+                !String(input).includes("checkCapsMessages"),
+        );
+        expect(JSON.parse(String(posted?.[1]?.body))).toEqual({
+            checkType: "INCOMPLETE",
+            indexerConfig: null,
+        });
     });
 
     it("stops polling once the check resolves", async () => {

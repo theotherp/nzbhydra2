@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {UNCHANGED_SECRET_MARKER} from "../components";
+import {importConfigDraft, importResultLines} from "./indexerImport";
 import {
     ALREADY_CONFIGURED_MESSAGE,
     CUSTOM_NEWZNAB_PRESET,
@@ -22,6 +23,7 @@ import {
     indexerCategoryOptions,
     indexerStateHelp,
     indexerStateLabel,
+    mergeCapsCheckResults,
     needsCapsCheck,
     noCommaValidator,
     orderedIndexers,
@@ -281,6 +283,165 @@ describe("applyCapsCheckResult", () => {
 
         expect(needsCapsCheck(cleared)).toBe(true);
         expect(cleared.name).toBe("Mock");
+    });
+});
+
+describe("mergeCapsCheckResults", () => {
+    function result(indexerConfig: Record<string, unknown>) {
+        return {
+            allCapsChecked: true,
+            configComplete: true,
+            indexerConfig: {
+                allCapsChecked: true,
+                categoryMapping: {categories: []},
+                configComplete: true,
+                downloadLimit: 10,
+                hitLimit: 100,
+                state: "ENABLED",
+                supportedSearchIds: ["IMDB"],
+                supportedSearchTypes: ["MOVIE"],
+                ...indexerConfig,
+            },
+        };
+    }
+
+    it("keeps every field the check does not own, including an unsaved edit", () => {
+        // The admin renamed nothing but changed the priority and typed a new
+        // key while the bulk check was running; a checked entry must come back
+        // with those edits intact.
+        const entries = [
+            {
+                allCapsChecked: false,
+                apiKey: "typed-while-checking",
+                configComplete: false,
+                host: "http://mock",
+                name: "Mock1",
+                score: 42,
+                supportedSearchIds: [],
+            },
+        ];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({
+                apiKey: "the-real-key",
+                host: "http://somewhere-else",
+                name: "Mock1",
+                score: 0,
+            }),
+        ]);
+
+        expect(merged.matched).toBe(1);
+        expect(merged.entries[0]).toEqual({
+            allCapsChecked: true,
+            apiKey: "typed-while-checking",
+            categoryMapping: {categories: []},
+            configComplete: true,
+            downloadLimit: 10,
+            hitLimit: 100,
+            host: "http://mock",
+            name: "Mock1",
+            score: 42,
+            state: "ENABLED",
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE"],
+        });
+    });
+
+    it("matches by name and leaves unchecked entries identical", () => {
+        const untouched = {name: "Mock2", configComplete: false, score: 3};
+        const entries = [{name: "Mock1", configComplete: false}, untouched];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({name: "Mock1"}),
+        ]);
+
+        expect(merged.matched).toBe(1);
+        expect(merged.entries[0].configComplete).toBe(true);
+        // Identity, not just equality: nothing was rebuilt.
+        expect(merged.entries[1]).toBe(untouched);
+    });
+
+    it("changes nothing when no configured indexer is named", () => {
+        const entries = [{name: "Mock1", configComplete: false}];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({name: "Somebody else"}),
+        ]);
+
+        expect(merged.matched).toBe(0);
+        expect(merged.entries[0]).toBe(entries[0]);
+    });
+
+    it("never merges into a nameless entry", () => {
+        const entries = [{name: null, configComplete: false}];
+
+        const merged = mergeCapsCheckResults(entries, [result({name: null})]);
+
+        expect(merged.matched).toBe(0);
+        expect(merged.entries[0].configComplete).toBe(false);
+    });
+});
+
+describe("the indexer config imports", () => {
+    it("seeds legacy's defaults and the IMPORT_CONFIG marker type", () => {
+        expect(importConfigDraft("jackett")).toMatchObject({
+            host: "http://127.0.0.1:9117",
+            name: "Jackett config",
+            searchModuleType: "IMPORT_CONFIG",
+        });
+        expect(importConfigDraft("prowlarr")).toMatchObject({
+            host: "http://127.0.0.1:9696",
+            name: "Prowlarr config",
+            searchModuleType: "IMPORT_CONFIG",
+        });
+        // The posted entry is the template every imported indexer is cloned
+        // from, so the base's own defaults have to travel with it.
+        expect(importConfigDraft("jackett")).toMatchObject({
+            enabledForSearchSource: "BOTH",
+            preselect: true,
+            score: 0,
+            state: "ENABLED",
+        });
+    });
+
+    it("reports Jackett's two counts and Prowlarr's three", () => {
+        expect(
+            importResultLines("jackett", {
+                added: 2,
+                indexers: [],
+                removed: null,
+                updated: 1,
+            }),
+        ).toEqual([
+            "Added 2 new trackers from Jackett",
+            "Updated 1 trackers from Jackett",
+        ]);
+        expect(
+            importResultLines("prowlarr", {
+                added: 2,
+                indexers: [],
+                removed: 3,
+                updated: 1,
+            }),
+        ).toEqual([
+            "Added 2 indexers from Prowlarr",
+            "Updated 1 indexers from Prowlarr",
+            "Removed 3 indexers no longer in Prowlarr",
+        ]);
+    });
+
+    it("suppresses the removal line when nothing was removed", () => {
+        expect(
+            importResultLines("prowlarr", {
+                added: 0,
+                indexers: [],
+                removed: 0,
+                updated: 0,
+            }),
+        ).toEqual([
+            "Added 0 indexers from Prowlarr",
+            "Updated 0 indexers from Prowlarr",
+        ]);
     });
 });
 
