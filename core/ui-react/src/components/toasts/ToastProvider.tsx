@@ -11,7 +11,7 @@ export function ToastProvider({children}: {children: React.ReactNode}) {
         <ToastContext.Provider value={{showToast: setToast}}>
             {children}
             <Snackbar
-                anchorOrigin={{horizontal: "right", vertical: "bottom"}}
+                anchorOrigin={{horizontal: "center", vertical: "top"}}
                 autoHideDuration={TOAST_LIFETIME_MS}
                 onClose={(_, reason) => {
                     if (reason !== "clickaway") {

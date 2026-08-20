@@ -513,15 +513,51 @@ features:
       - core/ui-src/js/config/formly-external-tools.js
       - core/ui-src/js/external-tool-request-service.js
       - core/ui-src/html/config/external-tool-config.html
+      - core/ui-src/html/config/external-tool-config-box.html
     target: core/ui-react/src/features/config/external-tools
     tests:
       - tests/system/tests/external-tools.spec.ts
-    selectors: []
-    parity: partial
+      - core/ui-react/src/features/config/external-tools/ExternalToolsConfigTab.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, and the ones the
+      # system test used to rely on (`.nav-tabs a`, `.dropdown-menu li`,
+      # `.has-error`, `.btn-danger .glyphicon-remove`, `.growl-message`) were
+      # Bootstrap classes, not contracts; FM-065 replaces them. The sync switch
+      # uses the `C-CONFIG-FIELDS` path convention
+      # (`config-setting-externalTools-syncOnConfigChange`,
+      # `config-input-externalTools-syncOnConfigChange`). The tool list reuses
+      # the repeat-section stems with `externalTools-externalTools` as the path
+      # and adds an edit action of its own, because entries are edited through
+      # a modal transaction rather than in place: `config-repeat-add-*`,
+      # `config-repeat-add-option-<path>-<SONARR|RADARR|LIDARR|READARR|CUSTOM>`,
+      # `config-repeat-entry-<path>-<index>`, `config-repeat-edit-<path>-<index>`,
+      # `config-repeat-remove-<path>-<index>`, and
+      # `config-external-tool-value-<index>-<type|host>` for a row's summary
+      # values. The index in all of these is the entry's index in the
+      # configuration array, not its position in the name-ordered display. The
+      # dialog's own controls bind to the draft path
+      # `externalTools.externalToolDraft`, so they read
+      # `config-input-externalTools-externalToolDraft-<field>` and never collide
+      # with the list row behind them.
+      - config-external-tools
+      - config-external-tools-empty
+      - config-external-tools-sync-all
+      - config-fieldset-external tool sync settings
+      - config-fieldset-external tools
+      - config-repeat-externalTools-externalTools
+      - config-external-tool-dialog
+      - config-external-tool-dialog-busy
+      - config-external-tool-dialog-cancel
+      - config-external-tool-dialog-delete
+      - config-external-tool-dialog-reset
+      - config-external-tool-dialog-submit
+      - config-external-tool-dialog-test
+    parity: done
     gaps:
-      - stable data-testid selectors
-      - failure and partial-failure feedback
-      - full preset coverage
+      - not migrated - the "Configure NZBHydra in ..." wizard (config-service.js:100-233, configure-in-modal.html) and with it API-CONFIG-EXTERNAL-DIALOG and API-CONFIG-EXTERNAL-MESSAGES; the wizard has no trigger anywhere in the legacy UI, so there is no reachable behavior to reproduce
+      - deliberate - the per-type and torrent-only fields appear as soon as the type or the torrent switch changes, where legacy computed the box's field set once on open and only showed them after reopening
+      - deliberate - the API key is a C-SECRET-INPUT rather than legacy's plain text input; the backend does not mask this value, so the control just round-trips it opaquely
+      - deliberate - "Test connection" is always rendered and disabled until the entry has a host and an API key, where legacy removed the button entirely
   - id: F-CONFIG-INDEXERS
     name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
     routes:

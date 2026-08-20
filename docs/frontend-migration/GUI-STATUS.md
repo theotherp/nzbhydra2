@@ -25,6 +25,9 @@ Currently available in React:
   example input before it is kept. The Downloading tab is fully editable — the general download settings and black-hole
   folders, and a downloader list where each entry is added from a preset (NZBGet, SABnzbd, Torbox) and edited in a modal
   transaction that verifies its connection before the entry is accepted, with credentials that are never round-tripped in
-  clear text. The remaining two tab bodies are placeholders until later tasks add field content.
+  clear text. The External Tools tab is fully editable — the sync-on-config-change switch and a list of Sonarr, Radarr,
+  Lidarr, and Readarr entries, each added from a preset or custom and edited in a modal transaction that tests the
+  connection before writing NZBHydra's settings into the tool, plus a sync-all action. The remaining tab body is a
+  placeholder until a later task adds field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

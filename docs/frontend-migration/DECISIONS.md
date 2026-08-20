@@ -164,3 +164,28 @@ from the app's own stated intent. The owner decided to restore parity: `WebConfi
 across every HTTP endpoint the web mapper serves (internal and the public newznab/torznab surface): an omitted primitive
 now silently defaults instead of erroring. Binding for the packet designed to implement it and any future class hitting
 the same trap.
+
+## ADR-0019 — Bound `WebAccessException`'s user-facing message (accepted 2026-08-20)
+
+FM-065's review found `WebAccessException.getMessage()` joins the response message, the **entire** response body, and
+`"Code: N"` with no bound, reaching user-facing surfaces: the External Tools connection-test toast/sync notification, the
+Prowlarr-import UI, indexer connection/caps checks, and the persisted `IndexerApiAccessEntity.error` column.
+
+Decided: split the API rather than bound `getMessage()` globally or fix only External Tools. `getMessage()` keeps its
+current diagnostic form (message + full body + code) for logs; a new short-form accessor (message + code, no body) is
+added and used at every user-facing boundary — `ExternalToolsWeb.testSimpleConnection`,
+`ProwlarrConfigRetriever`/`IndexerWeb.readProwlarrConfig`, and `IndexerWebAccess`'s connection/caps-check paths.
+`getBody()` stays available where a caller wants the raw body. This bounds every UI surface without degrading log
+detail, and lets FM-066/FM-067 inherit the bounded message from their first implementation.
+
+Binding for the packet implementing it; its `Files Allowed To Modify` may reach `externaltools/`, `webaccess/`, and
+`indexers/` without a further decision — the boundary list above is exhaustive of what this ADR covers; a body-leak found
+through some other path later needs its own escalation.
+
+**Addendum (2026-08-20):** the owner extended the boundary list, in conversation, to also cover
+`ExternalTools.handleXdarrError`'s fallback branch (`messages.add(e.getMessage())`) and `ExternalToolsSyncService`'s
+per-tool sync-failure message — both leak the same unbounded body into `POST .../syncAll`'s JSON `messages` list (the
+persisted sync notification's own body stays the generic count text and is unaffected). Both switch to
+`getShortMessage()` under FM-071, which now also touches `handleXdarrError`'s one `else` branch inside `ExternalTools.java`
+— a narrow, disclosed exception to FM-070's otherwise-exclusive ownership of that file, since the two tasks change
+disjoint lines for disjoint reasons.

@@ -12,6 +12,7 @@ import {
     type ConfigTab,
 } from "./configTabs";
 import {DownloadingConfigTab} from "./downloading/DownloadingConfigTab";
+import {ExternalToolsConfigTab} from "./external-tools/ExternalToolsConfigTab";
 import {MainConfigTab} from "./main/MainConfigTab";
 import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
 import {SearchingConfigTab} from "./searching/SearchingConfigTab";
@@ -30,9 +31,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
      * (`F-CONFIG-AUTH`), `searching` (`F-CONFIG-SEARCHING`), `categories`
      * (`F-CONFIG-CATEGORIES`), `notifications` (`F-CONFIG-NOTIFICATIONS`), and
-     * `downloading` (`F-CONFIG-DOWNLOADING`) are migrated; the remaining two
-     * still show the placeholder and are replaced tab by tab by FM-065
-     * onwards.
+     * `downloading` (`F-CONFIG-DOWNLOADING`), and `externalTools`
+     * (`F-CONFIG-EXTERNAL-TOOLS`) are migrated; only `indexers` still shows
+     * the placeholder, and FM-066/FM-067 replace it.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -52,6 +53,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "downloading") {
             return <DownloadingConfigTab transport={transport} />;
+        }
+        if (tab.path === "externalTools") {
+            return <ExternalToolsConfigTab transport={transport} />;
         }
         return <ConfigTabPlaceholder tab={tab} />;
     },

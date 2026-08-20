@@ -454,6 +454,30 @@ Format, one entry per fix:
   visible in that screenshot but out of scope for the Downloading tab packet to fix directly since `DialogProvider.tsx`
   belongs to `C-DIALOG-SERVICE`, a shared component consumed by every config tab.
 
+### 2026-08-20 — Reposition toasts so they no longer overlap dialog action buttons
+
+- **Why not a packet:** styling-only defect confined to one prop in `ToastProvider.tsx`, no behavior/contract/`data-testid`
+  change: MUI's `Snackbar` z-index (1400) sits above `Dialog`'s (1300), so the default bottom-right anchor placed the toast
+  visually on top of any open dialog's bottom-right action row — every `C-CONFIG-FIELDS` modal transaction — leaving
+  Cancel/Reset/Test connection/Submit unclickable for the ~5s autohide duration, and the toast's own close button
+  unreachable via keyboard (MUI's `Dialog` focus trap and `aria-hidden` sibling-hiding target it too, being a sibling
+  portal under `document.body`).
+- **Paths:** `core/ui-react/src/components/toasts/ToastProvider.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (60 files, 584/584, unchanged), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Root `git diff --check` clean. `tests/system` gates not run: nothing there changed.
+- **Screenshot strip:** real backend on :5076 (mockserver + core jar built by FM-065) reached via the Vite dev proxy,
+  driven with a throwaway Playwright script (not committed), captured at 1280x800 and 390x844 reproducing FM-065's
+  connection-failure scenario (host pointed at a dead local port, no live *arr instance needed) — reviewed inline in the
+  session; both viewports now show Cancel/Reset/Test connection/Submit fully clickable and the toast's close button
+  reachable. Before state already documented in
+  `tests/system/visual-evidence/F-CONFIG-EXTERNAL-TOOLS/external-tools-connection-failed-{desktop,mobile}.png`.
+- **Commit:** `a80a2870e`
+- **Note:** origin is FM-065's review (`docs/frontend-migration/STATUS.md`'s FM-065 entry), which found the same
+  `C-TOAST-SERVICE` overlap FM-064's re-review found for `DialogProvider.tsx`'s failure-reason clipping — both trace to
+  the same shared component being outside either config-tab packet's file scope. Repositioning fixes every dialog that
+  can trigger a toast, not just External Tools'.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
