@@ -51,7 +51,10 @@ export function DialogProvider({children}: {children: React.ReactNode}) {
                     {pending?.title}
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="hydra-confirmation-description">
+                    <DialogContentText
+                        id="hydra-confirmation-description"
+                        sx={{overflowWrap: "break-word"}}
+                    >
                         {pending?.message}
                     </DialogContentText>
                     {pending?.details && pending.details.length > 0 ? (
@@ -60,6 +63,7 @@ export function DialogProvider({children}: {children: React.ReactNode}) {
                                 <DialogContentText
                                     component="li"
                                     key={detail}
+                                    sx={{overflowWrap: "break-word"}}
                                     variant="body2"
                                 >
                                     {detail}

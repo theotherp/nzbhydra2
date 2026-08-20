@@ -152,3 +152,15 @@ config save. Consumers keep reading the same context; none may cache the value o
 no `window.location.reload()` — the form resets from the PUT response's `newConfig`, and bootstrap-derived UI (nav gating,
 stats tabs, history metadata) refreshes through the query. Restart-needed flows remain the province of
 `C-RESTART-COORDINATOR` and do reload after the server restarts.
+
+## ADR-0018 — Web API primitive-null leniency (accepted 2026-08-20)
+
+FM-064 found that `internalapi` requests omitting a primitive field (e.g. `DownloaderConfig.enabled`/`addPaused`) are
+rejected with HTTP 400, because `WebConfiguration`'s web `JsonMapper` does not disable
+`DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES` the way every other mapper in `Jackson.java` does — an apparent drift
+from the app's own stated intent. The owner decided to restore parity: `WebConfiguration`'s web mapper gets the same
+`.disable(FAIL_ON_NULL_FOR_PRIMITIVES)` call as `Jackson.JSON_MAPPER`, rather than a narrow per-class fix on
+`DownloaderConfig` alone or preserving strict rejection with a better error. This is a deserialization-contract change
+across every HTTP endpoint the web mapper serves (internal and the public newznab/torznab surface): an omitted primitive
+now silently defaults instead of erroring. Binding for the packet designed to implement it and any future class hitting
+the same trap.

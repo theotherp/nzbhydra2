@@ -22,6 +22,9 @@ Currently available in React:
   body templates, message type, per-event template help, and a test-send action. The Searching tab is fully editable —
   indexer access, category handling, query generation/processing, result filtering, processing, display, quick filters,
   and duplicate detection, plus custom title mappings edited through a help-and-test dialog that proves a mapping against
-  example input before it is kept. The remaining three tab bodies are placeholders until later tasks add field content.
+  example input before it is kept. The Downloading tab is fully editable — the general download settings and black-hole
+  folders, and a downloader list where each entry is added from a preset (NZBGet, SABnzbd, Torbox) and edited in a modal
+  transaction that verifies its connection before the entry is accepted, with credentials that are never round-tripped in
+  clear text. The remaining two tab bodies are placeholders until later tasks add field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

@@ -11,6 +11,7 @@ import {
     DEFAULT_CONFIG_TAB,
     type ConfigTab,
 } from "./configTabs";
+import {DownloadingConfigTab} from "./downloading/DownloadingConfigTab";
 import {MainConfigTab} from "./main/MainConfigTab";
 import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
 import {SearchingConfigTab} from "./searching/SearchingConfigTab";
@@ -28,9 +29,10 @@ export function createConfigRoute<TParent extends AnyRoute>(
     /**
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
      * (`F-CONFIG-AUTH`), `searching` (`F-CONFIG-SEARCHING`), `categories`
-     * (`F-CONFIG-CATEGORIES`), and `notifications`
-     * (`F-CONFIG-NOTIFICATIONS`) are migrated; the remaining three still show
-     * the placeholder and are replaced tab by tab by FM-064 onwards.
+     * (`F-CONFIG-CATEGORIES`), `notifications` (`F-CONFIG-NOTIFICATIONS`), and
+     * `downloading` (`F-CONFIG-DOWNLOADING`) are migrated; the remaining two
+     * still show the placeholder and are replaced tab by tab by FM-065
+     * onwards.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -47,6 +49,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "notifications") {
             return <NotificationsConfigTab transport={transport} />;
+        }
+        if (tab.path === "downloading") {
+            return <DownloadingConfigTab transport={transport} />;
         }
         return <ConfigTabPlaceholder tab={tab} />;
     },

@@ -469,13 +469,42 @@ features:
       - core/ui-src/js/config/config-fields-service.js
       - core/ui-src/js/config/formly-downloaders.js
       - core/ui-src/html/config/downloader-config.html
+      - core/ui-src/html/config/downloader-config-box.html
     target: core/ui-react/src/features/config/downloading
     tests:
+      - tests/system/tests/config-downloading.spec.ts
       - tests/system/tests/downloads.spec.ts
-    selectors: []
-    parity: partial
+      - core/ui-react/src/features/config/downloading/DownloadingConfigTab.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, so these are new. The
+      # general settings use the `C-CONFIG-FIELDS` path convention
+      # (`config-setting-downloading-nzbAccessType`,
+      # `config-input-downloading-externalUrl`, ...). The downloader list reuses
+      # the repeat-section stems with `downloading-downloaders` as the path, and
+      # adds an edit action of its own because entries are edited through a
+      # modal transaction rather than in place: `config-repeat-add-*`,
+      # `config-repeat-add-option-<path>-<NZBGET|SABNZBD|TORBOX>`,
+      # `config-repeat-entry-<path>-<index>`, `config-repeat-edit-<path>-<index>`,
+      # and `config-downloader-value-<index>-<field>` for a row's summary values.
+      # The dialog's own controls bind to the draft path
+      # `downloading.downloaderDraft`, so they read
+      # `config-input-downloading-downloaderDraft-<field>` and never collide
+      # with the list row behind them.
+      - config-downloading
+      - config-fieldset-general
+      - config-fieldset-downloaders
+      - config-repeat-downloading-downloaders
+      - config-downloader-dialog
+      - config-downloader-dialog-cancel
+      - config-downloader-dialog-checking
+      - config-downloader-dialog-delete
+      - config-downloader-dialog-reset
+      - config-downloader-dialog-submit
+      - config-downloader-connection-failed
+    parity: done
     gaps:
-      - configuration UI; current tests configure through API fixtures
+      - deliberate - the tab does not write downloaders[0].name into primaryDownloader on view (legacy's optionsFunctionAfter mutates the model behind the admin's back, which would break FM-058's load-and-save-unedited invariant)
+      - deliberate - the downloader list is shown in configured order, not legacy's orderBy ['name'] (the sort breaks on duplicate names and decouples display order from the array indices being edited)
   - id: F-CONFIG-EXTERNAL-TOOLS
     name: External-tool CRUD, validation, connection tests, sync options, and manual sync
     routes:

@@ -271,7 +271,8 @@ components:
     state: partial
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
-      field; it is never synthesized on the client
+      field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach
+      `C-CONFIG-FORM` until the dialog is submitted
     legacy:
       - core/ui-src/js/config/formly-config.js
     target: core/ui-react/src/features/config/components/SecretInput.tsx
@@ -311,7 +312,8 @@ components:
       `config-repeat-add-option-<path>-<choice>` for a menu choice), so a consuming tab predicts its selectors without a lookup table; `F-CONFIG-MAIN`'s `selectors` in `FEATURES.yaml` names the seven scalar-control prefixes in full,
       `F-CONFIG-AUTH`'s names the repeat-section ones, `F-CONFIG-CATEGORIES`'s names the help-block one, and `F-CONFIG-NOTIFICATIONS`'s names the add-choice one. The number control also carries legacy's `max` and a decimal `step`
       (`formly-config.js` `percentInput`), each with a message legacy never declared -- added by FM-063 for `loadLimitInternal` and `duplicateSizeThresholdInPercent`. The repeat/list section stays the in-place editor, so a list whose entries
-      are edited through a modal transaction is not this component (see `F-CONFIG-SEARCHING`'s custom mappings, which owns its own section)
+      are edited through a modal transaction is not this component (see `F-CONFIG-SEARCHING`'s custom mappings and `F-CONFIG-DOWNLOADING`'s downloader list, each of which owns its own section). The control kinds themselves are reusable
+      inside such a transaction -- they bind through whichever React Hook Form is nearest in context, so FM-064's edit dialog renders them over its own throwaway draft form without any of them reaching `C-CONFIG-FORM`
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

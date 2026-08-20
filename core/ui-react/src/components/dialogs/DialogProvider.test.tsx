@@ -99,6 +99,33 @@ describe("DialogProvider", () => {
             expect(onResult).toHaveBeenCalledWith("confirmed"),
         );
     });
+
+    it("should wrap a long unbroken message and detail instead of clipping", async () => {
+        const onResult = vi.fn();
+        const longToken = `http://example.com/${"a".repeat(200)}`;
+        render(
+            <DialogProvider>
+                <Trigger
+                    confirmation={{
+                        title: "Connection check failed",
+                        message: longToken,
+                        details: [longToken],
+                        confirmLabel: "OK",
+                        variant: "acknowledge",
+                    }}
+                    onResult={onResult}
+                />
+            </DialogProvider>,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Open"}));
+
+        const matches = screen.getAllByText(longToken);
+        expect(matches).toHaveLength(2);
+        for (const element of matches) {
+            expect(getComputedStyle(element).overflowWrap).toBe("break-word");
+        }
+    });
 });
 
 function Trigger({
