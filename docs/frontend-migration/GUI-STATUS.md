@@ -13,7 +13,9 @@ Currently available in React:
 - The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
   fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
-  API-key generation, and server-side file/folder browsing. The remaining seven tab bodies are placeholders until FM-060
-  onward add field content.
+  API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
+  field groups, OpenID Connect provider settings, area restrictions, and inline add/edit/remove of the user list, with
+  passwords that are never round-tripped in clear text. The remaining six tab bodies are placeholders until FM-061 onward
+  add field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

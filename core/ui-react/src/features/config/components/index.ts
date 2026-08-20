@@ -11,6 +11,7 @@ export {ConfigFieldset} from "./ConfigFieldset";
 export {FileBrowserSetting} from "./FileBrowserSetting";
 export {MultiSelectSetting} from "./MultiSelectSetting";
 export {NumberSetting} from "./NumberSetting";
+export {RepeatSection} from "./RepeatSection";
 export {SecretInput, UNCHANGED_SECRET_MARKER} from "./SecretInput";
 export {SelectSetting, type SettingOption} from "./SelectSetting";
 export {SettingRow} from "./SettingRow";

@@ -379,9 +379,25 @@ features:
       - core/ui-src/js/config/config-fields-service.js
       - core/ui-src/js/config/formly-config.js
     target: core/ui-react/src/features/config/auth
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - tests/system/tests/config-auth.spec.ts
+      - core/ui-react/src/features/config/auth/AuthConfigTab.test.tsx
+      - core/ui-react/src/features/config/components/RepeatSection.test.tsx
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-auth-authType`, `config-input-auth-oidcClientSecret`,
+      # etc). The Users repeat section additionally uses:
+      # `config-repeat-auth-users` (the list), `config-repeat-entry-auth-users-<index>`
+      # (one user's fieldset), `config-repeat-add-auth-users`, and
+      # `config-repeat-remove-auth-users-<index>`. The fixed selectors are
+      # listed below.
+      - config-auth
+      - config-fieldset-main
+      - config-fieldset-openid connect
+      - config-fieldset-restrictions
+      - config-fieldset-users
+    parity: done
+    gaps: []
   - id: F-CONFIG-SEARCHING
     name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
     routes:
