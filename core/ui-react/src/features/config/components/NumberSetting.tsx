@@ -4,6 +4,7 @@ import {useController} from "react-hook-form";
 import type {ConfigValues} from "../../../api/config/schema";
 import {SettingRow} from "./SettingRow";
 import {
+    maximumValidator,
     minimumValidator,
     settingDescribedBy,
     settingInputTestId,
@@ -24,16 +25,26 @@ export function NumberSetting({
     advanced,
     help,
     label,
+    maximum,
     minimum,
     name,
     placeholder,
     required,
+    step,
     tooltip,
     unit,
     validate,
 }: SettingProps & {
+    /** Legacy's `max` template option. */
+    maximum?: number;
     minimum?: number;
     placeholder?: string;
+    /**
+     * The input's `step`, for a setting legacy declares as a decimal
+     * (`formly-config.js` `percentInput`: `step="0.01"`). Left unset the
+     * control keeps the HTML default of whole numbers.
+     */
+    step?: number;
     /** The unit shown after the input (legacy's `addonRight.text`). */
     unit?: string;
 }) {
@@ -41,7 +52,7 @@ export function NumberSetting({
         name,
         rules: settingRules({
             required,
-            validate: combine(validate, minimum),
+            validate: combine(validate, minimum, maximum),
         }),
     });
     return (
@@ -68,7 +79,9 @@ export function NumberSetting({
                 slotProps={{
                     htmlInput: {
                         "data-testid": settingInputTestId(name),
+                        ...(maximum === undefined ? {} : {max: maximum}),
                         ...(minimum === undefined ? {} : {min: minimum}),
+                        ...(step === undefined ? {} : {step}),
                     },
                     input: {
                         "aria-describedby": settingDescribedBy(name, {
@@ -104,16 +117,25 @@ function numberValue(raw: string): number | null {
 function combine(
     validate: SettingValidator | undefined,
     minimum: number | undefined,
+    maximum: number | undefined,
 ): SettingValidator | undefined {
-    if (minimum === undefined) {
-        return validate;
-    }
-    const atLeast = minimumValidator(minimum);
-    if (validate === undefined) {
-        return atLeast;
+    const validators = [
+        minimum === undefined ? undefined : minimumValidator(minimum),
+        maximum === undefined ? undefined : maximumValidator(maximum),
+        validate,
+    ].filter(
+        (candidate): candidate is SettingValidator => candidate !== undefined,
+    );
+    if (validators.length === 0) {
+        return undefined;
     }
     return (value) => {
-        const first = atLeast(value);
-        return first === true ? validate(value) : first;
+        for (const candidate of validators) {
+            const result = candidate(value);
+            if (result !== true) {
+                return result;
+            }
+        }
+        return true;
     };
 }

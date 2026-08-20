@@ -410,10 +410,30 @@ features:
     tests:
       - tests/system/tests/search.spec.ts
       - tests/system/tests/results.spec.ts
-    selectors: []
-    parity: partial
-    gaps:
-      - configuration UI; current tests cover runtime effects only
+      - tests/system/tests/config-searching.spec.ts
+      - core/ui-react/src/features/config/searching/SearchingConfigTab.test.tsx
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-searching-timeout`,
+      # `config-input-searching-loadLimitInternal`, etc), and the nine
+      # fieldsets follow `config-fieldset-<lowercased label>`.
+      # The custom-mapping list is the one section edited through a modal
+      # transaction, so it is not `RepeatSection`; it reuses that component's
+      # naming with an `edit` verb added -- new in FM-063:
+      # `config-repeat-searching-customMappings` (the list),
+      # `config-repeat-tooltip-searching-customMappings` (its headline
+      # tooltip), `config-repeat-entry-searching-customMappings-<index>` (one
+      # mapping's summary), `config-repeat-add-searching-customMappings`,
+      # `config-repeat-edit-searching-customMappings-<index>`,
+      # `config-repeat-remove-searching-customMappings-<index>`, and
+      # `config-custom-mapping-value-<index>-<field>` for one summarized value
+      # (`affectedValue`, `searchType`, `matchAll`, `from`, `to`).
+      # The dialog's own controls are `config-custom-mapping-dialog`,
+      # `-help`, `-affectedValue`, `-searchType`, `-matchAll`, `-from`, `-to`,
+      # `-exampleInput`, `-test`, `-result`, `-cancel`, and `-submit`.
+      - config-searching
+    parity: done
+    gaps: []
   - id: F-CONFIG-CATEGORIES
     name: Category CRUD, mappings, presets, restrictions, and size limits
     routes:

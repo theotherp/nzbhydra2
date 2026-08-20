@@ -20,6 +20,7 @@ export {SwitchSetting} from "./SwitchSetting";
 export {TextAreaSetting} from "./TextAreaSetting";
 export {TextSetting} from "./TextSetting";
 export {
+    maximumValidator,
     minimumValidator,
     patternValidator,
     settingInputTestId,

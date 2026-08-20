@@ -13,6 +13,7 @@ import {
 } from "./configTabs";
 import {MainConfigTab} from "./main/MainConfigTab";
 import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
+import {SearchingConfigTab} from "./searching/SearchingConfigTab";
 
 /**
  * The configuration area's route subtree. The eight tabs are *children* of one
@@ -26,10 +27,10 @@ export function createConfigRoute<TParent extends AnyRoute>(
     transport: ApiTransport,
     /**
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
-     * (`F-CONFIG-AUTH`), `categories` (`F-CONFIG-CATEGORIES`), and
-     * `notifications` (`F-CONFIG-NOTIFICATIONS`) are migrated; the remaining
-     * four still show the placeholder and are replaced tab by tab by FM-063
-     * onwards.
+     * (`F-CONFIG-AUTH`), `searching` (`F-CONFIG-SEARCHING`), `categories`
+     * (`F-CONFIG-CATEGORIES`), and `notifications`
+     * (`F-CONFIG-NOTIFICATIONS`) are migrated; the remaining three still show
+     * the placeholder and are replaced tab by tab by FM-064 onwards.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -37,6 +38,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "auth") {
             return <AuthConfigTab />;
+        }
+        if (tab.path === "searching") {
+            return <SearchingConfigTab transport={transport} />;
         }
         if (tab.path === "categories") {
             return <CategoriesConfigTab />;
