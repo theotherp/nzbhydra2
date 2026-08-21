@@ -31,6 +31,52 @@ async function blockSystemControlEndpoints(page: Page): Promise<string[]> {
     return attempted;
 }
 
+/**
+ * The same hard stop for the update install: it would replace the shared
+ * instance's binaries and restart it.
+ */
+async function blockUpdateInstall(page: Page): Promise<string[]> {
+    const attempted: string[] = [];
+    await page.route(
+        "**/internalapi/updates/installUpdate/**",
+        async (route) => {
+            attempted.push(new URL(route.request().url()).pathname);
+            await route.abort();
+        },
+    );
+    return attempted;
+}
+
+/**
+ * The offer states a healthy instance never reports: `API-UPDATES-INFOS` is
+ * answered from a fixture so the install/beta/force branches and the two
+ * warnings can be seen at all. Everything else on the page stays real.
+ */
+const offeredUpdateInfos = {
+    betaUpdateAvailable: true,
+    betaVersion: "9.2.0-beta",
+    currentVersion: "9.0.0",
+    latestVersion: "9.1.0",
+    updateAvailable: true,
+    updatedExternally: false,
+    wrapperOutdated: true,
+};
+
+const offeredChanges = [
+    {
+        changes: [
+            {text: "Added a thing", type: "feature"},
+            {
+                text: 'Fixed a thing. See <a href="https://github.com/theotherp/nzbhydra2/issues/1066">#1066</a>',
+                type: "fix",
+            },
+        ],
+        date: "2026-07-09",
+        final: true,
+        version: "9.1.0",
+    },
+];
+
 async function openSystem(page: Page, path = "control"): Promise<void> {
     await page.goto(`ui/react?redirect=/system/${path}`);
     await dismissWelcomeDialog(page);
@@ -88,9 +134,12 @@ test.describe("System shell", () => {
         ).toBeVisible();
         await expect(page.getByTestId("system-shell")).toBeVisible();
 
-        // A deep link to a tab lands on that tab, not on Control.
+        // A deep link to a tab lands on that tab, not on Control. `about` was
+        // the unmigrated tab used here until FM-073 migrated it.
         await page.goto("system/about");
         await expect(page.getByTestId("system-shell")).toBeVisible();
+        await expect(page.getByTestId("system-about")).toBeVisible();
+        await page.goto("system/log");
         await expect(
             page.getByText("React migration placeholder"),
         ).toBeVisible();
@@ -162,6 +211,108 @@ test.describe("System shell", () => {
         }
 
         expect(attemptedControlCalls).toEqual([]);
+    });
+
+    test("should show real update information and version history without installing anything", async ({
+        page,
+    }) => {
+        const attemptedInstalls = await blockUpdateInstall(page);
+
+        await openSystem(page, "updates");
+        await expect(page.getByTestId("system-updates")).toBeVisible();
+        await expect(
+            page.getByText(/Current version: \d+\.\d+\.\d+/),
+        ).toBeVisible();
+        const history = page.getByTestId("system-version-history");
+        await expect(history).toBeVisible();
+        // The changelog the running instance ships, rendered through
+        // `C-SAFE-RICH-CONTENT` rather than injected as raw HTML.
+        await expect(
+            history.getByRole("heading", {name: /^v?\d+\.\d+\.\d+/}).first(),
+        ).toBeVisible();
+
+        expect(
+            attemptedInstalls,
+            "a system test must never install an update on the shared instance",
+        ).toEqual([]);
+    });
+
+    test("should show the about tab's real program info", async ({page}) => {
+        await openSystem(page, "about");
+
+        const about = page.getByTestId("system-about");
+        await expect(about).toBeVisible();
+        await expect(about).toContainText(/Version:\s*\d+\.\d+\.\d+/);
+        await expect(
+            about.getByRole("link", {name: "join the Discord channel"}),
+        ).toBeVisible();
+        await expect(
+            about.getByRole("img", {name: "Newsgroup Ninja"}),
+        ).toBeVisible();
+    });
+
+    test("should render the update offers, the changelog, and About for the visual gate", async ({
+        page,
+    }) => {
+        const attemptedInstalls = await blockUpdateInstall(page);
+        await page.route("**/internalapi/updates/infos", async (route) => {
+            await route.fulfill({
+                body: JSON.stringify(offeredUpdateInfos),
+                contentType: "application/json",
+            });
+        });
+        await page.route(
+            "**/internalapi/updates/changesSince/**",
+            async (route) => {
+                await route.fulfill({
+                    body: JSON.stringify(offeredChanges),
+                    contentType: "application/json",
+                });
+            },
+        );
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openSystem(page, "updates");
+                await expect(
+                    page.getByTestId("system-updates-install"),
+                ).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-UPDATES",
+                    `updates-offers-${viewport}`,
+                ),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                `the updates tab must not overflow at ${visualViewports[viewport].width}px`,
+            ).toBe(true);
+
+            await page.getByTestId("system-updates-changelog").click();
+            await expect(
+                page.getByTestId("system-updates-changelog-dialog"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-UPDATES",
+                    `changelog-${viewport}`,
+                ),
+            });
+            await page.getByRole("button", {name: "Great!"}).click();
+
+            await page.getByTestId("system-tab-about").click();
+            await expect(page.getByTestId("system-about")).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath("F-SYSTEM-ABOUT", `about-${viewport}`),
+            });
+        }
+
+        expect(attemptedInstalls).toEqual([]);
     });
 
     test("should render the shell, an unmigrated tab, and News for the visual gate", async ({

@@ -12,6 +12,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../api/transport";
 import {createHydraTheme} from "../../app/theme";
+import type {BootstrapData} from "../../bootstrap";
 import {DialogProvider} from "../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {createSystemRoute} from "./routes";
@@ -25,6 +26,24 @@ const newsPayload = [
     },
 ];
 
+const bootstrap: BootstrapData = {
+    adminRestricted: false,
+    authConfigured: false,
+    authType: null,
+    baseUrl: "/hydra/",
+    maySeeAdmin: true,
+    maySeeDetailsDl: true,
+    maySeeSearch: true,
+    maySeeStats: true,
+    safeConfig: {},
+    searchRestricted: false,
+    serverTimeZone: null,
+    showIndexerSelection: false,
+    showLogout: false,
+    statsRestricted: false,
+    username: null,
+};
+
 function jsonResponse(body: unknown): Response {
     return new Response(JSON.stringify(body), {
         headers: {"Content-Type": "application/json"},
@@ -36,6 +55,15 @@ function renderSystemArea(initialPath = "/hydra/system/control") {
         const url = String(input);
         if (url.endsWith("/internalapi/news")) {
             return jsonResponse(newsPayload);
+        }
+        if (url.endsWith("/internalapi/updates/simpleInfos")) {
+            return jsonResponse({currentVersion: "9.9.9"});
+        }
+        if (url.endsWith("/internalapi/updates/infos")) {
+            return jsonResponse({currentVersion: "9.9.9"});
+        }
+        if (url.endsWith("/internalapi/updates/versionHistory")) {
+            return jsonResponse([]);
         }
         throw new Error(`Unexpected request: ${url}`);
     });
@@ -49,7 +77,7 @@ function renderSystemArea(initialPath = "/hydra/system/control") {
         basepath: "/hydra",
         history: createMemoryHistory({initialEntries: [initialPath]}),
         routeTree: rootRoute.addChildren([
-            createSystemRoute(rootRoute, transport, () => (
+            createSystemRoute(rootRoute, transport, bootstrap, () => (
                 <p>React migration placeholder</p>
             )),
         ]),
@@ -116,6 +144,24 @@ describe("SystemShell", () => {
         ).toBeVisible();
         expect(screen.getByTestId("system-shell")).toBeVisible();
         expect(screen.queryByTestId("system-control")).toBeNull();
+    });
+
+    it("should render the updates tab inside the shell", async () => {
+        renderSystemArea("/hydra/system/updates");
+        await screen.findByTestId("system-shell");
+
+        expect(await screen.findByTestId("system-updates")).toBeVisible();
+        expect(screen.getByTestId("system-version-history")).toBeVisible();
+    });
+
+    it("should render the about tab inside the shell", async () => {
+        renderSystemArea("/hydra/system/about");
+        await screen.findByTestId("system-shell");
+
+        expect(await screen.findByTestId("system-about")).toBeVisible();
+        expect(
+            screen.getByRole("heading", {name: "Program info"}),
+        ).toBeVisible();
     });
 
     it("should render the news page inside the shell", async () => {

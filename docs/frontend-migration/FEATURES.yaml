@@ -984,9 +984,35 @@ features:
       - core/ui-src/js/update-service.js
       - core/ui-src/js/directives/hydra-updates.js
     target: core/ui-react/src/features/system/updates
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/updates/SystemUpdatesTab.test.tsx
+      - core/ui-react/src/services/updates/updateOffers.test.ts
+      - core/ui-react/src/services/updates/updateInstall.test.ts
+      - core/ui-react/src/api/system/updates.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-073; legacy's updates.html carries no stable selector. The
+      # beta block's changelog button needs its own value because the release
+      # block already owns `system-updates-changelog`.
+      - system-updates
+      - system-updates-install
+      - system-updates-install-beta
+      - system-updates-force
+      - system-updates-changelog
+      - system-updates-changelog-beta
+      - system-updates-changelog-dialog
+      - system-updates-external-warning
+      - system-updates-wrapper-warning
+      - system-update-progress-dialog
+      - system-version-history
+    parity: partial
+    gaps:
+      - not migrated - ignoring a version (API-UPDATES-IGNORE); legacy offers no control for it on this page either (only hydra-checks-footer.js does), so only the "The latest version was ignored by you." text is reproduced here
+      - not migrated - the automatic-update changelog notice (API-UPDATES-AUTOMATIC-HISTORY, API-UPDATES-ACK-HISTORY, showChangesFromAutomaticUpdate); it is a footer flow and stays with F-PLATFORM-LIVE-STATUS
+      - deliberate - a failed install is an error toast, where legacy used growl.info for a failure it plainly meant as an error
+      - deliberate - the version history and the changelog dialog report their own load failure in place; legacy's version-history request had no failure handling at all and left the list silently empty
+      - deliberate - a second install click is ignored while one is running; legacy left both install buttons live behind its blocking modal
   - id: F-SYSTEM-LOG
     name: Raw and structured log viewing, filtering, tailing, and downloads
     routes:
@@ -1056,9 +1082,17 @@ features:
       - core/ui-src/js/nzbhydra.js
       - core/ui-src/html/about.html
     target: core/ui-react/src/features/system/about
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/about/SystemAboutTab.test.tsx
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-073; legacy's about.html carries no stable selector.
+      - system-about
+    parity: done
+    gaps:
+      - deliberate - the sponsor link (https://www.newsgroup.ninja/) is routed through C-EXTERNAL-LINKS' dereferer like every other external target on the page; legacy left that one link un-dereferered while dereferering the four others
+      - deliberate - a failed API-UPDATES-SIMPLE-INFOS request reports itself in place of the version block; legacy resolved the value in the route and rendered an empty version silently
   - id: F-PLATFORM-LIVE-STATUS
     name: Cross-route downloader status, notifications, welcome, warnings, and startup checks
     routes:

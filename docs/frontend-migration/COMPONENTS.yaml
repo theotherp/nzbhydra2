@@ -194,7 +194,8 @@ components:
       - F-SYSTEM-UPDATES
       - F-SYSTEM-ABOUT
     classification: shared_hydra
-    state: planned
+    state: partial
+    note: FM-073 implemented the page portion (update offers, changelog, the install flow with its message poll, and the restart handoff). The footer portion -- the global update banner, ignoring a version, and the automatic-update changelog notice -- stays with F-PLATFORM-LIVE-STATUS.
   - id: C-SAFE-RICH-CONTENT
     responsibility: Boundary-specific sanitization and rendering of trusted server-authored news HTML without an unrestricted HTML-trust helper
     legacy:
@@ -206,6 +207,7 @@ components:
     target: core/ui-react/src/components/content
     consumers:
       - F-SYSTEM-NEWS
+      - F-SYSTEM-UPDATES
     classification: shared_hydra
     state: partial
   - id: C-EXTERNAL-LINKS

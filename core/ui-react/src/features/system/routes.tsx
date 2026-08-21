@@ -1,9 +1,12 @@
 import {createRoute, redirect, type AnyRoute} from "@tanstack/react-router";
 
 import {ApiTransport} from "../../api/transport";
+import type {BootstrapData} from "../../bootstrap";
+import {SystemAboutTab} from "./about/SystemAboutTab";
 import {SystemControlTab} from "./control/SystemControlTab";
 import {NewsPage} from "./news/NewsPage";
 import {SystemShell} from "./SystemShell";
+import {SystemUpdatesTab} from "./updates/SystemUpdatesTab";
 import {
     DEFAULT_SYSTEM_TAB,
     SYSTEM_TABS,
@@ -17,12 +20,13 @@ import {
  * legacy re-rendered `system.html` for every `root.system.*` state.
  *
  * `placeholder` is the migration placeholder for a tab that has no React body
- * yet (FM-073..FM-076); it is passed in rather than imported so this module
+ * yet (FM-074..FM-076); it is passed in rather than imported so this module
  * does not depend on `router.tsx`, which depends on it.
  */
 export function createSystemRoute<TParent extends AnyRoute>(
     parentRoute: TParent,
     transport: ApiTransport,
+    bootstrap: BootstrapData,
     placeholder: () => React.ReactNode,
 ) {
     const systemRoute = createRoute({
@@ -41,8 +45,16 @@ export function createSystemRoute<TParent extends AnyRoute>(
         if (tab.path === "control") {
             return <SystemControlTab transport={transport} />;
         }
+        if (tab.path === "updates") {
+            return <SystemUpdatesTab transport={transport} />;
+        }
         if (tab.path === "news") {
             return <NewsPage transport={transport} />;
+        }
+        if (tab.path === "about") {
+            return (
+                <SystemAboutTab bootstrap={bootstrap} transport={transport} />
+            );
         }
         return placeholder();
     };

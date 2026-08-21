@@ -139,7 +139,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const adminRoutes = maySeeAdminArea(bootstrap)
         ? [
               createConfigRoute(rootRoute, transport),
-              createSystemRoute(rootRoute, transport, () => (
+              createSystemRoute(rootRoute, transport, bootstrap, () => (
                   <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
               )),
           ]

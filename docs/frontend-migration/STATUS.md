@@ -173,6 +173,21 @@ which FM-024 turned into a real route — stale, needs repointing at a still-unm
 rejects. Candidates for a future quickfix. Also noted, not required: Restart/Shutdown have no confirmation dialog, exact
 legacy parity — a proposed packet if the owner wants one.
 
+FM-073 (System Updates And About Tabs) added the Updates and About tabs inside FM-072's shell. Updates renders
+current/latest/beta versions, the `updatedExternally` warning (which withdraws only the release offer, not the beta one,
+unless `showUpdateBannerOnUpdatedExternally` — matching legacy's asymmetric clear of `updateAvailable`), release/beta
+offer blocks, "You're up to date!"/ignored-version text, Force update, the `wrapperOutdated` warning, and the full version
+history; changelog/version-history `change.text` renders through a new narrow `C-SAFE-RICH-CONTENT` boundary (8 tags vs.
+News's 20), never `dangerouslySetInnerHTML`. Install polls `API-UPDATES-MESSAGES` during `API-UPDATES-INSTALL`, waits
+legacy's ~2s grace, then hands off to `C-RESTART-COORDINATOR`'s countdown without itself sending a restart command
+(matching legacy's `RestartService.startCountdown("")`, since the update process restarts the server itself). About
+reproduces legacy's program/contact/license/sponsor content, every external link (including the sponsor link, previously
+raw in legacy) through `C-EXTERNAL-LINKS`'s dereferer. Passed with minor findings, not corrected (optional): no unmount
+cleanup for the install poll if the tab unmounts mid-install; `API-UPDATES-INSTALL`'s registry `test` field omits
+`updates.test.ts`'s coverage; the visual strip doesn't capture the `updatedExternally` or up-to-date/Force states; the
+new `data-testid="safe-rich-content"` is no longer unique when multiple changelog entries render. Candidates for a
+future quickfix.
+
 ## Active
 
 None.
@@ -187,8 +202,10 @@ None.
 
 ## Upcoming
 
-FM-073..FM-076 (Updates+About, Log, Backup, Bugreport/Debug) are now unblocked by FM-072; F-SYSTEM-TASKS deliberately
-stays unpackaged for a later small batch.
+FM-074..FM-076 (Log, Backup, Bugreport/Debug) are unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
+later small batch.
+
+FM-073's minor findings (see above) are candidates for a future quickfix.
 
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).
