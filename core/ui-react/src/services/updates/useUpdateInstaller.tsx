@@ -1,4 +1,4 @@
-import {useCallback, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 import {getUpdateMessages, installUpdate} from "../../api/system/updates";
 import {ApiTransport} from "../../api/transport";
@@ -41,6 +41,16 @@ export function useUpdateInstaller(transport: ApiTransport): UpdateInstaller {
     const [restartMessage, setRestartMessage] = useState<string | null>(null);
     const toasts = useToasts();
     const running = useRef(false);
+    // Lets an unmount stop an in-flight poll: `runUpdateInstall` only calls
+    // its own returned stop function on the flow's own exit paths, none of
+    // which fire if the tab unmounts mid-install.
+    const stopPollingRef = useRef<(() => void) | null>(null);
+
+    useEffect(() => {
+        return () => {
+            stopPollingRef.current?.();
+        };
+    }, []);
 
     const install = useCallback(
         async (version: string) => {
@@ -61,7 +71,12 @@ export function useUpdateInstaller(transport: ApiTransport): UpdateInstaller {
                                 () => {},
                             );
                         }, UPDATE_MESSAGE_POLL_INTERVAL_MS);
-                        return () => window.clearInterval(id);
+                        const stop = () => window.clearInterval(id);
+                        stopPollingRef.current = stop;
+                        return () => {
+                            stop();
+                            stopPollingRef.current = null;
+                        };
                     },
                     setMessages,
                     showFailure: () =>

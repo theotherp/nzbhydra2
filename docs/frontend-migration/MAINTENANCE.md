@@ -527,6 +527,142 @@ Format, one entry per fix:
   individual calls on it. Flagged as a minor finding by FM-024's review (`docs/frontend-migration/STATUS.md`); four
   of the task's other minor findings remain there as future quickfix candidates.
 
+### 2026-08-21 — Repoint `shell-selector.spec.ts` at an unmigrated route
+
+- **Why not a packet:** a locator/URL repair confined to one spec file; no product code, contract, or selector touched.
+- **Paths:** `tests/system/tests/shell-selector.spec.ts`.
+- **Gates:** `tests/system` `npx tsc --noEmit` clean; real-backend run via
+  `misc/run_gui_systemtest.py --runtime local -- tests/shell-selector.spec.ts` passed (1/1); root `git diff --check`
+  clean.
+- **Commit:** `b38399dd9`
+- **Note:** the spec deep-linked to `/stats/stats?period=day` and asserted the migration placeholder there; FM-024
+  turned that route into the real stats dashboard, making the assertion stale. Flagged by FM-072's review and carried
+  forward as a minor finding through FM-073..FM-076 (`docs/frontend-migration/STATUS.md`). Repointed at
+  `/system/tasks`, the one remaining unmigrated system tab after FM-072..FM-076.
+
+### 2026-08-21 — Catch a rejecting action in `SystemControlTab`'s `run()`
+
+- **Why not a packet:** single-function bugfix confined to `SystemControlTab.tsx`, shipped with a regression test that
+  fails against the prior implementation (unhandled rejection, no toast, test timeout) and passes against the fix; no
+  contract or selector change.
+- **Paths:** `core/ui-react/src/features/system/control/SystemControlTab.tsx`,
+  `core/ui-react/src/features/system/control/SystemControlTab.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (854/854, up from 853/853), `build`, `check:api`, `validate:migration` all pass; root
+  `git diff --check` clean.
+- **Commit:** `ea0236dde`
+- **Note:** `run()` awaited `action(transport)` with no `catch`, relying entirely on `requestControlAction` never
+  rejecting — true today, but unenforced at `run()`'s own boundary. Flagged as a minor finding by FM-072's review
+  (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Stop the update message poll on unmount
+
+- **Why not a packet:** single-hook bugfix confined to `useUpdateInstaller.tsx`, shipped with a regression test that
+  fails against the prior implementation (poll keeps firing after unmount) and passes against the fix; no contract or
+  selector change.
+- **Paths:** `core/ui-react/src/services/updates/useUpdateInstaller.tsx`,
+  `core/ui-react/src/services/updates/useUpdateInstaller.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (855/855, up from 854/854), `build`, `check:api`, `validate:migration` all pass; root
+  `git diff --check` clean.
+- **Commit:** `6936bc184`
+- **Note:** the poll interval only stopped on `runUpdateInstall`'s own exit paths (success, failure, a rejecting grace
+  period), none of which fire on an unmount mid-install. Flagged as a minor finding by FM-073's review
+  (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Fix invalid ARIA table structure in the log formatted view
+
+- **Why not a packet:** styling/markup polish with no behavior, contract, or `data-testid` change; regression-tested
+  and no rendering/visual change (an ARIA attribute removal, not a layout change), so no screenshot strip is needed.
+- **Paths:** `core/ui-react/src/features/system/logs/FormattedLogView.tsx`,
+  `core/ui-react/src/features/system/logs/SystemLogTab.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (856/856, up from 855/855), `build`, `check:api`, `validate:migration` all pass; root
+  `git diff --check` clean.
+- **Commit:** `2bfd32ada`
+- **Note:** `LogRow`'s `<tr>` carried `role="button"`, which removes it from the table's row/cell ARIA structure.
+  Removed the override; the row keeps `tabIndex` and its Enter/Space keydown handler for keyboard operability.
+  Flagged as a minor finding by FM-074's review (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Make the raw log panel keyboard-scrollable
+
+- **Why not a packet:** styling/markup polish with no behavior, contract, or `data-testid` change; regression-tested
+  and no visual rendering change (a `tabIndex` addition), so no screenshot strip is needed.
+- **Paths:** `core/ui-react/src/features/system/logs/RawLogView.tsx`,
+  `core/ui-react/src/features/system/logs/SystemLogTab.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (857/857, up from 856/856), `build`, `check:api`, `validate:migration` all pass; root
+  `git diff --check` clean.
+- **Commit:** `52fdb301f`
+- **Note:** the scrollable `<pre>` panel had no `tabIndex`, so it could not be reached or scrolled by keyboard alone
+  (WCAG 2.1.1). Legacy had the same defect, so this closes a pre-existing gap rather than a regression. Flagged as a
+  minor finding by FM-074's review (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Fix mobile log table's Message column overflow
+
+- **Why not a packet:** styling/markup polish inside an existing feature with no behavior, contract, or `data-testid`
+  change. Rendering change — verified via the Visual Gate.
+- **Paths:** `core/ui-react/src/features/system/logs/FormattedLogView.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (857/857, unchanged — pure CSS fix), `build`, `check:api`, `validate:migration` all pass. Real
+  backend: `python3 misc/run_gui_systemtest.py --runtime local -- tests/system.spec.ts`, 12/12 passed. Root
+  `git diff --check` clean.
+- **Commit:** `6756781a1`
+- **Note:** at a narrow viewport the Message column lost the column-width contest to its non-wrapping neighbors
+  under `table-layout: auto`, squeezed to ~89px so every character wrapped onto its own line and inflated each row
+  to ~350px tall. Added a `minWidth` floor on the `Table` (500px) and the Message column (200px) so the
+  `TableContainer` scrolls horizontally instead. Verified directly against a real backend instance at 390px width
+  before and after the fix (row height ~350px → normal), then confirmed via the regenerated
+  `tests/system/visual-evidence/F-SYSTEM-LOG/log-formatted-{desktop,mobile}.png`. Flagged as a minor finding by
+  FM-074's review (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Stop the bugreport visual-gate upload guard being shadowed
+
+- **Why not a packet:** a mechanical repair confined to one spec file's route wiring; no product code or contract
+  touched.
+- **Paths:** `tests/system/tests/system.spec.ts`.
+- **Gates:** `tests/system` `npx tsc --noEmit` clean; real-backend run via
+  `misc/run_gui_systemtest.py --runtime local -- tests/system.spec.ts`, 12/12 passed; root `git diff --check` clean.
+- **Commit:** `7493f12fb`
+- **Note:** the visual-gate bugreport test registered `blockDebugInfosUpload` (aborts and records) and then a second
+  route for the same pattern that fulfilled with a fixture; Playwright dispatches the most recent handler first, so
+  the fulfilling route always won and the abort handler never ran, making `expect(attemptedUploads).toEqual([])`
+  vacuously true. Consolidated into one `stubDebugInfosUpload` helper that records and fulfills together, and the
+  assertion now expects one recorded, locally-answered attempt per viewport instead of a shadowed empty list.
+  Protection was still real in practice throughout (the fulfilling route never reached the file share). Flagged as
+  a minor finding by FM-076's review (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Stop the CPU chart showing two explanations for one empty panel
+
+- **Why not a packet:** single-component UX bugfix confined to `CpuUsageCard.tsx`, shipped with a regression test
+  that fails against the prior rendering (both messages present) and passes against the fix; no contract or
+  selector change.
+- **Paths:** `core/ui-react/src/features/system/bugreport/CpuUsageCard.tsx`,
+  `core/ui-react/src/features/system/bugreport/SystemBugreportTab.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (858/858, up from 857/857), `build`, `check:api`, `validate:migration` all pass; root
+  `git diff --check` clean.
+- **Commit:** `1668bbcd9`
+- **Note:** when the very first CPU-usage poll failed, the panel showed both the "chart stopped updating" alert and
+  the "Enable the logging marker 'Performance'" hint at once, offering two different explanations for the same
+  empty panel. The marker hint now only shows when the panel is empty and the poll hasn't stopped. Flagged as a
+  minor finding by FM-076's review (`docs/frontend-migration/STATUS.md`).
+
+### 2026-08-21 — Restore the CPU chart's dropped x-axis label
+
+- **Why not a packet:** styling addition inside an existing feature with no behavior, contract, or `data-testid`
+  change. Rendering change — verified via the Visual Gate.
+- **Paths:** `core/ui-react/src/features/system/bugreport/CpuUsageCard.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (858/858, unchanged — pure prop addition), `build`, `check:api`, `validate:migration` all pass.
+  Real backend: `python3 misc/run_gui_systemtest.py --runtime local -- tests/system.spec.ts`, 12/12 passed. Root
+  `git diff --check` clean.
+- **Commit:** `441f8444b`
+- **Note:** legacy's nvd3 x-axis label "Time" was dropped when the chart was rebuilt on `@mui/x-charts` for
+  FM-076; the y-axis label "CPU %" was kept. Confirmed via the regenerated
+  `tests/system/visual-evidence/F-SYSTEM-BUGREPORT/bugreport-desktop.png`. Flagged as a minor finding by FM-076's
+  review (`docs/frontend-migration/STATUS.md`).
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`

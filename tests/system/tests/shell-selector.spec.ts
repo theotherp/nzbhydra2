@@ -16,14 +16,12 @@ test("should select the React shell for a canonical deep link and switch back to
                 "/static/react/assets/index.js",
             ) && response.status() === 200,
     );
-    await page.goto(
-        applicationUrl("ui/react?redirect=/stats/stats?period=day"),
-    );
-    await expect(page).toHaveURL(/\/stats\/stats\?period=day$/);
+    await page.goto(applicationUrl("ui/react?redirect=/system/tasks"));
+    await expect(page).toHaveURL(/\/system\/tasks$/);
     await expect(page.getByText("React migration placeholder")).toBeVisible();
     await reactAsset;
 
     await page.getByRole("link", {name: "Switch to legacy UI"}).click();
-    await expect(page).toHaveURL(/\/stats\/stats\?period=day$/);
+    await expect(page).toHaveURL(/\/system\/tasks$/);
     await expect(page.locator("#wrap")).toBeVisible();
 });

@@ -98,13 +98,29 @@ export function FormattedLogView({
             )}
             {entries.length > 0 && (
                 <TableContainer>
-                    <Table data-testid="system-log-table" size="small">
+                    {/* Without a floor, `table-layout: auto` shrinks the
+                        Message column to fit a narrow viewport instead of
+                        letting this TableContainer scroll horizontally,
+                        wrapping every character onto its own line and
+                        inflating the row height. */}
+                    <Table
+                        data-testid="system-log-table"
+                        size="small"
+                        sx={{minWidth: 500}}
+                    >
                         <TableHead>
                             <TableRow>
                                 <TableCell>Time (newest first)</TableCell>
                                 <TableCell>Level</TableCell>
                                 <TableCell>Logger</TableCell>
-                                <TableCell>Message</TableCell>
+                                {/* A wrappable column otherwise loses the
+                                    column-width contest to its non-wrapping
+                                    neighbors under `table-layout: auto` — it
+                                    gets squeezed to a sliver and every
+                                    character wraps onto its own line. */}
+                                <TableCell sx={{minWidth: 200}}>
+                                    Message
+                                </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -140,8 +156,11 @@ function LogRow({
     return (
         // Legacy opens the entry dialog from a click anywhere on the row
         // (`log.html:32`). Keeping that target means the row itself is the
-        // control, so it carries the button role and the keyboard activation a
-        // real button would have brought with it.
+        // control: focusable and Enter/Space-activated by hand, but without a
+        // `role="button"` override — a `<tr>` announcing as a button removes
+        // it from the table's row/cell structure, which assistive tech reads
+        // as an invalid table (its `<td>` children are no longer "cell"s of
+        // anything).
         <TableRow
             data-testid="system-log-row"
             hover
@@ -152,7 +171,6 @@ function LogRow({
                     onOpen();
                 }
             }}
-            role="button"
             sx={{cursor: "pointer"}}
             tabIndex={0}
         >

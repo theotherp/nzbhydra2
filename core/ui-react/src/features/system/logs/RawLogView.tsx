@@ -155,6 +155,9 @@ export function RawLogView({transport}: {transport: ApiTransport}) {
                 <Typography
                     component="pre"
                     ref={logPanel}
+                    // Scrollable content needs to be in the tab order to be
+                    // scrollable by keyboard alone (WCAG 2.1.1).
+                    tabIndex={0}
                     sx={{
                         fontFamily: monoFontFamily,
                         maxHeight: "65vh",

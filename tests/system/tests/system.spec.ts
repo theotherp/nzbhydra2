@@ -87,6 +87,27 @@ async function blockDebugInfosUpload(page: Page): Promise<string[]> {
 }
 
 /**
+ * Records every upload attempt and answers each one from a fixture, in one
+ * handler — Playwright dispatches the most recently registered route first,
+ * so a separate `blockDebugInfosUpload` plus a later fulfilling route would
+ * shadow the block entirely and make its assertion vacuous.
+ */
+async function stubDebugInfosUpload(
+    page: Page,
+    body: string,
+): Promise<string[]> {
+    const attempted: string[] = [];
+    await page.route(
+        "**/internalapi/debuginfos/createAndUploadDebugInfos",
+        async (route) => {
+            attempted.push(new URL(route.request().url()).pathname);
+            await route.fulfill({body, contentType: "text/plain"});
+        },
+    );
+    return attempted;
+}
+
+/**
  * Every SQL statement this file sends, so the assertions can prove that
  * nothing modifying ever reached the shared instance's database.
  */
@@ -643,18 +664,12 @@ test.describe("System shell", () => {
     test("should render the bugreport tab, its upload result, and the CPU panel for the visual gate", async ({
         page,
     }) => {
-        const attemptedUploads = await blockDebugInfosUpload(page);
         // The upload result without ever reaching the file share: the address
         // is answered from a fixture, which is also what proves the value is
         // rendered as an anchor's text rather than injected as markup.
-        await page.route(
-            "**/internalapi/debuginfos/createAndUploadDebugInfos",
-            async (route) => {
-                await route.fulfill({
-                    body: 'https://file.io/visual-gate"><img src=x>',
-                    contentType: "text/plain",
-                });
-            },
+        const attemptedUploads = await stubDebugInfosUpload(
+            page,
+            'https://file.io/visual-gate"><img src=x>',
         );
         // A recorded CPU sample set, which a healthy instance without the
         // `Performance` logging marker never produces.
@@ -735,8 +750,12 @@ test.describe("System shell", () => {
             });
         }
 
-        // The fixture answered every attempt: nothing left for the file share.
-        expect(attemptedUploads).toEqual([]);
+        // One upload click per viewport, every one of them answered locally
+        // by the fixture — nothing ever left for the real file share.
+        expect(attemptedUploads).toEqual([
+            "/internalapi/debuginfos/createAndUploadDebugInfos",
+            "/internalapi/debuginfos/createAndUploadDebugInfos",
+        ]);
     });
 
     test("should show the about tab's real program info", async ({page}) => {

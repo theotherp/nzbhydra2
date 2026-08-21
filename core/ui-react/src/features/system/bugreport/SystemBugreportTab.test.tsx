@@ -510,6 +510,23 @@ describe("SystemBugreportTab", () => {
         ).toBeInTheDocument();
     });
 
+    it("should show only the stopped-poll alert, not also the marker hint, when the very first poll fails", async () => {
+        const backend = createBackend((path) =>
+            path.endsWith("/threadCpuUsage")
+                ? jsonResponse({}, 500)
+                : undefined,
+        );
+        renderTab(backend);
+        await settle();
+
+        expect(
+            screen.getByText(
+                "Unable to read the CPU usage; the chart stopped updating.",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(CPU_CHART_HELP)).toBeNull();
+    });
+
     it("should clear the poll interval on unmount", async () => {
         const backend = createBackend();
         vi.useFakeTimers();

@@ -87,7 +87,13 @@ export function CpuUsageCard({
                     </Alert>
                 )}
                 {empty ? (
-                    <Typography sx={{mt: 1.5}}>{CPU_CHART_HELP}</Typography>
+                    // A stopped poll that never produced a sample already has
+                    // its explanation in the alert above; showing the marker
+                    // hint too would offer two different reasons for the same
+                    // empty panel.
+                    !stopped && (
+                        <Typography sx={{mt: 1.5}}>{CPU_CHART_HELP}</Typography>
+                    )
                 ) : (
                     <Stack sx={{mt: 1.5}}>
                         {showTable ? (
@@ -138,6 +144,7 @@ export function CpuUsageCard({
                                 xAxis={[
                                     {
                                         data: data.times,
+                                        label: "Time",
                                         scaleType: "point",
                                         valueFormatter: (time: number) =>
                                             formatChartTime(

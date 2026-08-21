@@ -218,6 +218,23 @@ describe("SystemLogTab formatted view", () => {
         );
     });
 
+    it("should keep the table's row/cell structure valid while staying keyboard-operable", async () => {
+        // `role="button"` on a `<tr>` removes it from the table's row/cell
+        // ARIA structure; the row must stay a plain (implicit) table row and
+        // still open the dialog on Enter.
+        const backend = createBackend();
+        renderLogTab(backend);
+
+        const rows = await screen.findAllByTestId("system-log-row");
+        expect(rows[0]).not.toHaveAttribute("role", "button");
+        expect(rows[0].tagName).toBe("TR");
+
+        fireEvent.keyDown(rows[0], {key: "Enter"});
+        expect(
+            await screen.findByTestId("system-log-entry-dialog"),
+        ).toBeVisible();
+    });
+
     it("should page back and forward in 500-entry steps within the server's bounds", async () => {
         const backend = createBackend();
         renderLogTab(backend);
@@ -283,6 +300,19 @@ describe("SystemLogTab raw view", () => {
         expect(
             (window as unknown as Record<string, unknown>).hydraLogInjection,
         ).toBeUndefined();
+    });
+
+    it("should let the scrollable log panel be reached and scrolled by keyboard alone", async () => {
+        const backend = createBackend("some log content");
+        renderLogTab(backend);
+        selectView("Raw");
+
+        const view = await screen.findByTestId("system-log-view-raw");
+        await waitFor(() =>
+            expect(view.textContent).toContain("some log content"),
+        );
+        const panel = view.querySelector("pre");
+        expect(panel).toHaveAttribute("tabIndex", "0");
     });
 
     it("should refresh every five seconds only while the raw view is shown, and stop on unmount", async () => {

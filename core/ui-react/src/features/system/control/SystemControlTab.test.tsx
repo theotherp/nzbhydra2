@@ -3,9 +3,16 @@ import {act, cleanup, fireEvent, render, screen} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
+import {shutdownInstance} from "../../../api/system/control";
 import {createHydraTheme} from "../../../app/theme";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {SystemControlTab} from "./SystemControlTab";
+
+vi.mock("../../../api/system/control", async (importOriginal) => {
+    const actual =
+        await importOriginal<typeof import("../../../api/system/control")>();
+    return {...actual, shutdownInstance: vi.fn(actual.shutdownInstance)};
+});
 
 type Backend = {
     fetch: ReturnType<typeof vi.fn<typeof fetch>>;
@@ -106,6 +113,24 @@ describe("SystemControlTab", () => {
         fireEvent.click(screen.getByTestId("system-reload-config"));
 
         expect(await screen.findByText("nzbhydra.yml is broken")).toBeVisible();
+    });
+
+    it("should recover when the action itself rejects, not just when the transport fails", async () => {
+        // `requestControlAction` never rejects itself (it swallows every
+        // transport failure), so this proves `run()`'s own boundary rather
+        // than control.ts's guard.
+        vi.mocked(shutdownInstance).mockRejectedValueOnce(
+            new Error("unexpected"),
+        );
+        const backend = createBackend();
+        renderControlTab(backend);
+
+        fireEvent.click(screen.getByTestId("system-shutdown"));
+
+        expect(
+            await screen.findByText("Unable to send shutdown command."),
+        ).toBeVisible();
+        expect(screen.getByTestId("system-shutdown")).not.toBeDisabled();
     });
 
     it("should run the restart coordinator and block the screen while it waits", async () => {

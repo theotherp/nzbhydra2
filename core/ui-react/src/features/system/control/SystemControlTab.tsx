@@ -40,6 +40,12 @@ export function SystemControlTab({transport}: {transport: ApiTransport}) {
         let result: SystemControlResult;
         try {
             result = await action(transport);
+        } catch {
+            // `requestControlAction` never rejects itself, but nothing at
+            // this boundary enforces that invariant; without this, a
+            // rejecting action would surface as an unhandled rejection with
+            // no toast at all.
+            result = {kind: "failed", message: null};
         } finally {
             setRunning(false);
         }
