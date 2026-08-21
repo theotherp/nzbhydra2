@@ -139,7 +139,8 @@ test.describe("System shell", () => {
         await page.goto("system/about");
         await expect(page.getByTestId("system-shell")).toBeVisible();
         await expect(page.getByTestId("system-about")).toBeVisible();
-        await page.goto("system/log");
+        // `log` was the unmigrated tab used here until FM-074 migrated it.
+        await page.goto("system/tasks");
         await expect(
             page.getByText("React migration placeholder"),
         ).toBeVisible();
@@ -235,6 +236,116 @@ test.describe("System shell", () => {
             attemptedInstalls,
             "a system test must never install an update on the shared instance",
         ).toEqual([]);
+    });
+
+    test("should show the log's three real views, an entry's details, and the log files", async ({
+        page,
+    }) => {
+        await openSystem(page, "log");
+        await expect(page.getByTestId("system-log")).toBeVisible();
+
+        // Formatted: the running instance's own structured log.
+        await expect(page.getByTestId("system-log-table")).toBeVisible();
+        const rows = page.getByTestId("system-log-row");
+        await expect(rows.first()).toBeVisible();
+        // The newest page: nothing newer to page to.
+        await expect(page.getByTestId("system-log-newer")).toBeDisabled();
+
+        await rows.first().click();
+        const entryDialog = page.getByTestId("system-log-entry-dialog");
+        await expect(entryDialog).toBeVisible();
+        await expect(entryDialog).toContainText("Message");
+        await expect(entryDialog).toContainText("Full entry");
+        await page.getByRole("button", {name: "Close"}).click();
+        await expect(entryDialog).toBeHidden();
+
+        // Raw: the real `API-SYSTEM-LOG-CURRENT` response, as text.
+        const rawLogResponse = page.waitForResponse((response) =>
+            response.url().includes("/debuginfos/currentlogfile"),
+        );
+        await page.getByRole("tab", {name: "Raw"}).click();
+        expect((await rawLogResponse).ok()).toBe(true);
+        const rawView = page.getByTestId("system-log-view-raw");
+        await expect(rawView).toBeVisible();
+        await expect(rawView.locator("pre")).toContainText("NZBHydra", {
+            timeout: 30_000,
+        });
+        // A log line's markup-like text stays text: the panel holds no
+        // elements a log message could have introduced.
+        expect(await rawView.locator("pre script, pre img").count()).toBe(0);
+        // Both toggles start off, and tailing switches refreshing on with it.
+        const refreshToggle = page.getByTestId("system-log-refresh-toggle");
+        const tailToggle = page.getByTestId("system-log-tail-toggle");
+        await expect(refreshToggle).not.toBeChecked();
+        await tailToggle.check();
+        await expect(refreshToggle).toBeChecked();
+        await refreshToggle.uncheck();
+        await expect(tailToggle).not.toBeChecked();
+
+        // Files: every rotated log file, each a real download link.
+        await page.getByRole("tab", {name: "Files"}).click();
+        const firstFile = page.getByTestId("system-log-file-0");
+        await expect(firstFile).toBeVisible();
+        const downloadHref = await firstFile.getAttribute("href");
+        expect(downloadHref).toContain(
+            "internalapi/debuginfos/downloadlog?logfilename=",
+        );
+        const download = await page.request.get(downloadHref as string);
+        expect(download.ok()).toBe(true);
+    });
+
+    test("should render the log's three views for the visual gate", async ({
+        page,
+    }) => {
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openSystem(page, "log");
+                await expect(page.getByTestId("system-log-table")).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-LOG",
+                    `log-formatted-${viewport}`,
+                ),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                `the log tab must not overflow at ${visualViewports[viewport].width}px`,
+            ).toBe(true);
+
+            await page.getByTestId("system-log-row").first().click();
+            await expect(
+                page.getByTestId("system-log-entry-dialog"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-LOG",
+                    `log-entry-dialog-${viewport}`,
+                ),
+            });
+            await page.getByRole("button", {name: "Close"}).click();
+
+            await page.getByRole("tab", {name: "Raw"}).click();
+            await expect(
+                page.getByTestId("system-log-view-raw").locator("pre"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath("F-SYSTEM-LOG", `log-raw-${viewport}`),
+            });
+
+            await page.getByRole("tab", {name: "Files"}).click();
+            await expect(page.getByTestId("system-log-file-0")).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-LOG",
+                    `log-files-${viewport}`,
+                ),
+            });
+        }
     });
 
     test("should show the about tab's real program info", async ({page}) => {

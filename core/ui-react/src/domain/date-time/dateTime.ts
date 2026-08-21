@@ -25,7 +25,58 @@ export function formatServerDateTime(
     value: DateTimeInput,
     serverTimeZone: string | null,
 ): string {
-    const parsed = parseServerDateTime(value, serverTimeZone);
+    return formatParsed(
+        parseServerDateTime(value, serverTimeZone),
+        serverTimeZone,
+    );
+}
+
+/**
+ * Legacy's `formatTimestamp` filter (`hydra-log.js:155-183`) applies a
+ * different rule to numeric values than the rest of the application: a number
+ * (or an all-digit string) below `EPOCH_SECONDS_LIMIT` is epoch *seconds*,
+ * anything above it is epoch *millis*. The limit is legacy's own literal —
+ * it separates a plausible near-future second count from a millis value, which
+ * for any date after 1970-01-24 is far larger. Everything else (a zoned string
+ * keeps its offset, a bare local timestamp is read in the server's zone) is
+ * identical to `parseServerDateTime`.
+ */
+export function parseLogTimestamp(
+    value: DateTimeInput,
+    serverTimeZone: string | null,
+): Date | undefined {
+    if (value === null || value === undefined || value === "") return undefined;
+    if (typeof value === "number") {
+        return epochDate(value);
+    }
+    if (numericTimestamp(value)) {
+        return epochDate(Number(value));
+    }
+    return parseServerDateTime(value, serverTimeZone);
+}
+
+export function formatLogTimestamp(
+    value: DateTimeInput,
+    serverTimeZone: string | null,
+): string {
+    return formatParsed(
+        parseLogTimestamp(value, serverTimeZone),
+        serverTimeZone,
+    );
+}
+
+/** See `parseLogTimestamp`: legacy's epoch-seconds-vs-millis threshold. */
+const EPOCH_SECONDS_LIMIT = 1979374757;
+
+function epochDate(value: number): Date | undefined {
+    if (!Number.isFinite(value)) return undefined;
+    return new Date(value < EPOCH_SECONDS_LIMIT ? value * 1000 : value);
+}
+
+function formatParsed(
+    parsed: Date | undefined,
+    serverTimeZone: string | null,
+): string {
     if (!parsed) return "";
     try {
         return new Intl.DateTimeFormat(undefined, {

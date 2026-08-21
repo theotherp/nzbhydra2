@@ -16,7 +16,9 @@ Currently available in React:
   admin-gated. The Control tab is fully working — restart, shutdown, and reloading the config from file. The News tab is
   fully working. The Updates tab is fully working — current/latest/beta version status, release and beta update offers,
   changelog and full version history, and installing an update with progress feedback and an automatic restart handoff.
-  The About tab is fully working — program, contact, license, and sponsor information. The other tabs are not yet migrated.
+  The About tab is fully working — program, contact, license, and sponsor information. The Log tab is fully working —
+  a formatted (JSON) log with paging and an entry-detail dialog, the raw current log file with auto-refresh and tail
+  follow, and a downloadable log-file list. The other tabs are not yet migrated.
 - The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
   fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,

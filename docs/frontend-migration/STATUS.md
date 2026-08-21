@@ -188,6 +188,20 @@ cleanup for the install poll if the tab unmounts mid-install; `API-UPDATES-INSTA
 new `data-testid="safe-rich-content"` is no longer unique when multiple changelog entries render. Candidates for a
 future quickfix.
 
+FM-074 (System Log Viewer Tab) added the Log tab inside FM-072's shell, reproducing legacy's three views: a formatted
+page of 500 records from `API-SYSTEM-LOG-JSON` with offset paging (Older gated on `hasMore`, Newer clamped at 0) and an
+entry-detail dialog; the raw current log file (`API-SYSTEM-LOG-CURRENT`, fetched via blob since the endpoint is
+`text/plain`) rendered as text with 5s auto-refresh and tail-follow toggles (tail implies refresh, disabling refresh
+clears tail) persisted in guarded localStorage; and a downloadable log-file list (`API-SYSTEM-LOG-FILES`/
+`API-SYSTEM-LOG-DOWNLOAD`) via base-URL-aware links. A new `C-DATE-TIME` helper reproduces legacy's epoch-seconds-vs-millis
+timestamp heuristic (boundary `1979374757`), proven at the boundary value itself. Hostile log content (`<script>`,
+`<img onerror>`) is proven inert as text in the table, dialog, and raw panel — no `dangerouslySetInnerHTML`. Passed with
+minor findings, not corrected (optional): the mobile formatted view's Message column breaks out of the table's scroll
+area; the table row's `role="button"` produces an invalid ARIA table structure; a bare offset-less timestamp is read in
+the server zone rather than legacy's UTC-then-convert, undocumented as a gap; `C-DIALOG-SERVICE` non-use is justified only
+in a code comment, not the registry; the raw-log `<pre>` isn't keyboard-scrollable (pre-existing in legacy too).
+Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -202,10 +216,10 @@ None.
 
 ## Upcoming
 
-FM-074..FM-076 (Log, Backup, Bugreport/Debug) are unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
+FM-075..FM-076 (Backup, Bugreport/Debug) are unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
 later small batch.
 
-FM-073's minor findings (see above) are candidates for a future quickfix.
+FM-073's and FM-074's minor findings (see above) are candidates for a future quickfix.
 
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).

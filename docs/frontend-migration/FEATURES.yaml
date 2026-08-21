@@ -1021,9 +1021,37 @@ features:
       - core/ui-src/js/directives/hydra-log.js
       - core/ui-src/html/directives/log.html
     target: core/ui-react/src/features/system/logs
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/logs/SystemLogTab.test.tsx
+      - core/ui-react/src/api/system/logs.test.ts
+      - core/ui-react/src/domain/date-time/dateTime.test.ts
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-074; legacy's log.html carries no stable selector. The three
+      # view IDs address the view bodies -- the view tabs themselves are
+      # addressed by their role and label, like legacy's uib-tabset headings.
+      # `system-log-file-<index>` is per position in the server's file list.
+      - system-log
+      - system-log-view-formatted
+      - system-log-view-raw
+      - system-log-view-files
+      - system-log-table
+      - system-log-row
+      - system-log-entry-dialog
+      - system-log-older
+      - system-log-newer
+      - system-log-refresh-toggle
+      - system-log-tail-toggle
+      - system-log-file-<index>
+    parity: partial
+    gaps:
+      - not migrated - filtering log entries; legacy's hydra-log.js offers none either, and the record's name predates the inventory of the directive
+      - deliberate - the paging buttons are rendered once, above the table; legacy repeats the same pair below it, which would make each selector address two elements
+      - deliberate - the older/newer offset moves before the page is loaded, so a failed page reports its failure in place and stays reachable through the paging buttons; legacy committed currentJsonIndex only in getOlderFormatted's success callback (and unconditionally in getNewerFormatted)
+      - deliberate - turning tailing on turns the five-second refresh on with it; legacy let tailing be switched on alone, where it silently did nothing until the refresh was enabled too
+      - deliberate - a refresh only scrolls to the end while tailing is on; legacy scrolled to the end on every raw-view load and refresh, which made its tail toggle almost inconsequential
+      - deliberate - the entry dialog also shows the whole log record as text, in addition to legacy's message, accessing IP address, accessing username, and stacktrace sections
+      - deliberate - the level is a labelled chip; legacy showed an unlabelled icon for INFO, WARN, and ERROR only, and nothing at all for any other level
   - id: F-SYSTEM-TASKS
     name: Scheduled task list and manual execution
     routes:
