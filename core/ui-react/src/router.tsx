@@ -18,7 +18,7 @@ import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
 import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
 import {StatsDashboardPage} from "./features/stats/dashboard/StatsDashboardPage";
 import {StatsShell} from "./features/stats/StatsShell";
-import {NewsPage} from "./features/system/news/NewsPage";
+import {createSystemRoute} from "./features/system/routes";
 
 export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
@@ -33,11 +33,6 @@ export function createAppRouter(bootstrap: BootstrapData) {
         notFoundComponent: () => (
             <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
         ),
-    });
-    const newsRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "system/news",
-        component: () => <NewsPage transport={transport} />,
     });
     const searchRoute = createRoute({
         getParentRoute: () => rootRoute,
@@ -135,12 +130,22 @@ export function createAppRouter(bootstrap: BootstrapData) {
     // A session that may not see the admin area never gets a config route to
     // reach: without it `/config/...` falls through to the migration
     // placeholder, exactly like any unmigrated route.
-    const configRoutes = maySeeAdminArea(bootstrap)
-        ? [createConfigRoute(rootRoute, transport)]
+    //
+    // The same rule covers the whole `/system` area, News included: every
+    // legacy `root.system.*` state resolves `loginRequired(..., "admin")`
+    // (`nzbhydra.js:396-600`), so `/system/news` is admin-gated here even
+    // though it used to be the one React route outside the gate. The
+    // `API-NEWS-LIST` endpoint's own `ROLE_USER` protection is unchanged.
+    const adminRoutes = maySeeAdminArea(bootstrap)
+        ? [
+              createConfigRoute(rootRoute, transport),
+              createSystemRoute(rootRoute, transport, () => (
+                  <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
+              )),
+          ]
         : [];
     const routeTree = rootRoute.addChildren([
         searchRoute,
-        newsRoute,
         statsRoute,
         indexerStatusesRoute,
         statsDashboardRoute,
@@ -149,7 +154,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         downloadHistoryRoute,
         notificationHistoryRoute,
         statsFallbackRoute,
-        ...configRoutes,
+        ...adminRoutes,
     ]);
 
     return createRouter({

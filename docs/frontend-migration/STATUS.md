@@ -161,6 +161,18 @@ Playwright cases route-mocking the endpoint rather than hitting a real backend, 
 non-focusable chart-card help tooltip, a non-`ListSubheader` family-menu group header, an inconsistent try/catch in
 `persistence.ts`, and the added dependency's un-lazy-loaded bundle-size cost. Candidates for a future quickfix.
 
+FM-072 (System Shell And Control Tab) mounted `SystemShell` at `/system` with legacy's eight tabs (Control, Updates, Log,
+Tasks, Backup, Bugreport/Debug, News, About), gated by `maySeeAdminArea` in the same route-construction branch as the
+config routes — News moved inside the gate, closing its prior ungated reachability, per legacy's `root.system.news`
+`loginRequired(..., "admin")` resolve. Control is fully working: Restart reuses the existing `C-RESTART-COORDINATOR` flow,
+Shutdown calls `API-SYSTEM-SHUTDOWN`, and "Reload config from file" calls `API-CONFIG-RELOAD`, both with legacy's toast
+wording. Unmigrated tabs show the migration placeholder inside the shell until FM-073..FM-076. Passed with minor findings,
+not corrected (optional): `tests/system/tests/shell-selector.spec.ts` asserts the placeholder at `/stats/stats?period=day`,
+which FM-024 turned into a real route — stale, needs repointing at a still-unmigrated route before the next full sweep;
+`SystemControlTab`'s `run()` has no `catch`, safe today only because the control API client always resolves rather than
+rejects. Candidates for a future quickfix. Also noted, not required: Restart/Shutdown have no confirmation dialog, exact
+legacy parity — a proposed packet if the owner wants one.
+
 ## Active
 
 None.
@@ -174,6 +186,9 @@ None.
 None.
 
 ## Upcoming
+
+FM-073..FM-076 (Updates+About, Log, Backup, Bugreport/Debug) are now unblocked by FM-072; F-SYSTEM-TASKS deliberately
+stays unpackaged for a later small batch.
 
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).

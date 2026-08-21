@@ -46,6 +46,14 @@ test("should render deterministic news in legacy and React shells without overfl
 
     await page.goto(applicationUrl("ui/react?redirect=/system/news"));
     await expect(page).toHaveURL(/\/system\/news$/);
+    // FM-072: the React news page keeps its URL but now renders as the News
+    // tab of the admin-gated system shell, matching legacy's
+    // `root.system.news` state.
+    await expect(page.getByTestId("system-shell")).toBeVisible();
+    await expect(page.getByTestId("system-tab-news")).toHaveAttribute(
+        "aria-selected",
+        "true",
+    );
     await expect(
         page.getByRole("heading", {name: /2\.0\.0.*This version/}),
     ).toBeVisible();

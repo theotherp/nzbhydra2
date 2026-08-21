@@ -105,6 +105,7 @@ components:
       - F-CONFIG-NOTIFICATIONS
       - F-CONFIG-EXTERNAL-TOOLS
       - F-SYSTEM-SHELL
+      - F-SYSTEM-CONTROL
     classification: shared_hydra
     state: partial
   - id: C-DATE-TIME

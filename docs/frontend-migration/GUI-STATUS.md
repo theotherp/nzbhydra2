@@ -12,7 +12,9 @@ Currently available in React:
 - Indexer status, and search-history paging, filtering, details, and repeat.
 - Download-history paging, filtering, status/link display, and NZB/torrent repeat actions.
 - Notification-history paging, filtering, and safe title/body/link display.
-- The System news page.
+- The System area's shell: all eight canonical tabs (Control, Updates, Log, Tasks, Backup, Bugreport/Debug, News, About),
+  admin-gated. The Control tab is fully working — restart, shutdown, and reloading the config from file. The News tab is
+  fully working. The other tabs are not yet migrated.
 - The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
   fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,

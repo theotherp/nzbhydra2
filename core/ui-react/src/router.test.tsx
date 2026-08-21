@@ -199,6 +199,64 @@ describe("createAppRouter", () => {
         expect(router.state.matches.at(-1)?.routeId).toBe("/config/main");
     });
 
+    it("should match every system tab route for an admin", async () => {
+        window.history.replaceState({}, "", "/hydra/system/control");
+        const router = createAppRouter(adminBootstrap());
+
+        for (const segment of [
+            "control",
+            "updates",
+            "log",
+            "tasks",
+            "backup",
+            "bugreport",
+            "news",
+            "about",
+        ]) {
+            await router.navigate({to: `/system/${segment}`});
+            expect(router.state.matches.at(-1)?.routeId).toBe(
+                `/system/${segment}`,
+            );
+        }
+    });
+
+    it("should land bare /system on the control tab", async () => {
+        window.history.replaceState({}, "", "/hydra/system");
+        const router = createAppRouter(adminBootstrap());
+
+        await router.navigate({to: "/system"});
+        expect(router.state.location.pathname).toBe("/system/control");
+        expect(router.state.matches.at(-1)?.routeId).toBe("/system/control");
+    });
+
+    it("should keep a session that may not see the admin area off every system route, news included", async () => {
+        // Legacy gates every `root.system.*` state, News among them, on
+        // `loginRequired(..., "admin")` (`nzbhydra.js:396-600`).
+        window.history.replaceState({}, "", "/hydra/system/control");
+        const router = createAppRouter({
+            ...adminBootstrap(),
+            username: "user",
+            maySeeAdmin: false,
+            adminRestricted: true,
+        });
+
+        for (const segment of [
+            "control",
+            "updates",
+            "log",
+            "tasks",
+            "backup",
+            "bugreport",
+            "news",
+            "about",
+        ]) {
+            await router.navigate({to: `/system/${segment}`});
+            expect(router.state.matches.at(-1)?.routeId).not.toContain(
+                "system",
+            );
+        }
+    });
+
     it("should keep a session that may not see the admin area off the config routes", async () => {
         window.history.replaceState({}, "", "/hydra/config/main");
         const router = createAppRouter({

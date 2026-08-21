@@ -931,9 +931,22 @@ features:
       - core/ui-src/js/system-controller.js
       - core/ui-src/html/states/system.html
     target: core/ui-react/src/features/system
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-072; legacy's tab strip (`system.html:1-5`) carries no stable
+      # selector at all. `<tab>` is the URL segment, so the eight are
+      # `system-tab-control`, `system-tab-updates`, `system-tab-log`,
+      # `system-tab-tasks`, `system-tab-backup`, `system-tab-bugreport`,
+      # `system-tab-news`, and `system-tab-about`.
+      - system-shell
+      - system-tab-<tab>
+    parity: done
+    gaps:
+      - deliberate - bare /system redirects to /system/control, where legacy's root.system state was abstract and had no URL of its own; the target is legacy's own default tab (activeTab 0)
+      - deliberate - the shell is a route subtree that stays mounted across tab changes, where legacy re-rendered system.html and re-ran SystemController for every root.system.* state
   - id: F-SYSTEM-CONTROL
     name: Restart, shutdown, configuration reload, and legacy migration
     routes:
@@ -944,11 +957,25 @@ features:
       - core/ui-src/js/restart-service.js
       - core/ui-src/js/migration-service.js
     target: core/ui-react/src/features/system/control
-    tests: []
-    selectors: []
-    parity: unverified_legacy_api
+    tests:
+      - core/ui-react/src/features/system/control/SystemControlTab.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-072; legacy's four buttons (`system.html:10-22`) carry no
+      # stable selector. The system test asserts the three actions are present
+      # and enabled but never clicks Restart or Shutdown -- it runs against a
+      # shared instance.
+      - system-control
+      - system-restart
+      - system-shutdown
+      - system-reload-config
+    parity: done
     gaps:
-      - migration API has no verified backend mapping
+      - not migrated - the "Migrate from NZBHydra 1" button (system.html:19-22, migration-service.js); all three /internalapi/migration/* endpoints are recorded in APIS.yaml unverified_legacy_calls with no backend mapping, so the legacy button cannot succeed and there is no reachable behavior to reproduce
+      - deliberate - a failed shutdown and a failed config reload are error toasts, where legacy used growl.info for both failures and its severity for a failure was plainly unintended
+      - deliberate - a config reload answering HTTP 200 with successful=false is reported as a failure carrying the server's message; legacy's promise resolves on any HTTP 200 and claimed success for a reload the server had refused
+      - deliberate - a failed reload with no server message falls back to "Unable to reload the config."; legacy passed the whole response object's `message` to growl.error, which is undefined for a transport-level failure
+      - deliberate - Shutdown and "Reload config from file" are disabled while their own request is in flight; legacy left both live, so a second command could be sent before the first was answered
   - id: F-SYSTEM-UPDATES
     name: Update status, history, ignore, install, and restart handoff
     routes:
@@ -1014,9 +1041,13 @@ features:
     target: core/ui-react/src/features/system/news
     tests:
       - core/ui-react/src/features/system/news/NewsPage.test.tsx
+      - core/ui-react/src/features/system/SystemShell.test.tsx
       - tests/system/tests/news.spec.ts
+      - tests/system/tests/system.spec.ts
     selectors: []
     parity: partial
+    gaps:
+      - deliberate - FM-072 moved the page inside F-SYSTEM-SHELL and behind the admin gate, matching legacy's root.system.news loginRequired(..., "admin") resolve (nzbhydra.js:557-582); the URL and the API-NEWS-LIST endpoint's own ROLE_USER protection are unchanged
   - id: F-SYSTEM-ABOUT
     name: Version, update, and runtime information
     routes:
