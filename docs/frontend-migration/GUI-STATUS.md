@@ -6,7 +6,10 @@ Currently available in React:
 
 - Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping, paging, rejection-reason breakdowns, supported download actions, display preferences, and saving executed searches.
 - Saved-search listing, reopen, and deletion.
-- The statistics shell, indexer status, and search-history paging, filtering, details, and repeat.
+- The statistics dashboard — date-range and disabled-indexer selection, per-family statistics selection with persisted
+  choices, overview KPI tiles, a sortable consolidated indexer table, grouped activity charts, config-gated source-share
+  charts, and a download-age histogram, each with full underlying data reachable in an accessible table.
+- Indexer status, and search-history paging, filtering, details, and repeat.
 - Download-history paging, filtering, status/link display, and NZB/torrent repeat actions.
 - Notification-history paging, filtering, and safe title/body/link display.
 - The System news page.

@@ -23,7 +23,10 @@ const bootstrap = {
 
 describe("App", () => {
     it("should render the migration scaffold", async () => {
-        window.history.pushState({}, "", "/hydra/stats/stats?period=day");
+        // FM-024 migrates `/stats/stats` (the aggregate dashboard); any other
+        // `/stats/<tab>` still falls through the stats shell's own fallback
+        // route to this placeholder, which is what this test exercises.
+        window.history.pushState({}, "", "/hydra/stats/other?period=day");
         render(<App bootstrap={bootstrap} />);
 
         expect(
@@ -35,7 +38,7 @@ describe("App", () => {
             screen.getByRole("link", {name: "Switch to legacy UI"}),
         ).toHaveAttribute(
             "href",
-            "http://localhost:3000/hydra/ui/legacy?redirect=%2Fstats%2Fstats%3Fperiod%3Dday",
+            "http://localhost:3000/hydra/ui/legacy?redirect=%2Fstats%2Fother%3Fperiod%3Dday",
         );
     });
 

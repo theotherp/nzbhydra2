@@ -715,16 +715,57 @@ features:
       - core/ui-src/js/stats-service.js
       - core/ui-src/js/stats-request-service.js
       - core/ui-src/html/states/main-stats.html
-    target: core/ui-react/src/features/stats
+    target: core/ui-react/src/features/stats/dashboard
     tests:
       - tests/system/tests/stats.spec.ts
-    selectors: []
-    parity: partial
+      - core/ui-react/src/api/stats/mainStats.test.ts
+      - core/ui-react/src/features/stats/dashboard/derivations.test.ts
+      - core/ui-react/src/features/stats/dashboard/dateRange.test.ts
+      - core/ui-react/src/features/stats/dashboard/persistence.test.ts
+      - core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx
+      - core/ui-react/src/router.test.tsx
+    selectors:
+      # Controls header: stats-dashboard, stats-controls-header,
+      # stats-date-preset-<last7|last30|last90|lastYear|allTime|custom>,
+      # stats-custom-after, stats-custom-before, stats-include-disabled-toggle,
+      # stats-family-menu-button, stats-refresh-button, stats-disclaimer-button.
+      # One checkbox per family, keyed by its request boolean:
+      # stats-family-<indexerApiAccessStats|avgIndexerUniquenessScore|
+      # avgResponseTimes|indexerDownloadShares|downloadsPerDayOfWeek|
+      # downloadsPerHourOfDay|searchesPerDayOfWeek|searchesPerHourOfDay|
+      # downloadsPerAgeStats|successfulDownloadsPerIndexer|
+      # downloadSharesPerUser|downloadSharesPerIp|searchSharesPerUser|
+      # searchSharesPerIp|userAgentSearchShares|userAgentDownloadShares>.
+      - stats-overview-tiles
+      - stats-tile-total-searches
+      - stats-tile-total-downloads
+      - stats-tile-download-success-rate
+      - stats-tile-avg-response-time
+      - stats-section-indexers
+      - stats-indexers-details-toggle
+      - stats-indexers-table
+      - stats-indexer-row
+      # One card per source-share family, keyed the same way:
+      # stats-chart-<search-user|download-user|search-ip|download-ip|
+      # search-agent|download-agent>.
+      - stats-chart-indexer-download-shares
+      - stats-chart-response-times
+      - stats-section-activity
+      - stats-chart-activity-day-of-week
+      - stats-chart-activity-hour-of-day
+      - stats-section-sources
+      - stats-section-download-age
+      - stats-age-average
+      - stats-age-older-1000
+      - stats-age-older-2000
+      - stats-age-older-3000
+      - stats-chart-downloads-per-age
+    parity: done
     gaps:
-      - rendered statistics
-      - charts
-      - date ranges
-      - include-disabled behavior
+      - deliberate - the presentation is redesigned per ADR-0021 (overview tiles, one consolidated indexer table, grouped activity bar charts, sorted horizontal-bar share lists, no pie/donut charts, legacy's inline switches replaced by a grouped "Statistics" selection menu); only the `POST /internalapi/stats` data/request contract is pinned to legacy
+      - deliberate - the four user/host share families' default selection is gated on `historyUserInfoType` consistently for both search and download dimensions (username-or-both for the two user families, IP-or-both for the two host families), rather than reproducing legacy's `statsSwichState` default, which gated `searchSharesPerUser` on the IP flag instead of the user flag
+      - deliberate - deselecting a family immediately clears its already-rendered cards/columns rather than leaving the last-fetched values on screen (matching the family's calculation being skipped from that point on)
+      - deliberate - the date range is chosen from fixed presets (Last 7/30/90 days, Last year, All time) plus a validated Custom After/Before pair, replacing legacy's two free-standing date pickers with no preset shortcuts
   - id: F-STATS-INDEXERS
     name: Indexer status, errors, counters, and VIP expiry
     routes:

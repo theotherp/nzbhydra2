@@ -53,10 +53,24 @@ declare module "@mui/material/styles" {
 
     interface Palette {
         surfaces: SurfaceTokens;
+        charts: ChartTokens;
     }
 
     interface PaletteOptions {
         surfaces?: SurfaceTokens;
+        charts?: ChartTokens;
+    }
+
+    // FM-024 (ADR-0021: no mock exists for stats): the dashboard's chart
+    // series colors, kept here so `features/stats/dashboard` never states a
+    // color literal (ADR-0014). A perceptually distinct categorical sequence
+    // in the same oklch lightness/chroma family as `mockPalette` above --
+    // this repository's one interactive-chart consumer, so the sequence is
+    // authored fresh rather than reusing role colors (`primary`/`warning`/…)
+    // whose semantic meaning elsewhere (brand accent, caution) does not apply
+    // to "which series is this" in a chart legend.
+    interface ChartTokens {
+        categorical: string[];
     }
 }
 
@@ -202,6 +216,21 @@ const mockSurfaces = {
     mutedText: "#6b7472",
 } as const;
 
+// FM-024's chart categorical sequence (see the `ChartTokens` doc comment
+// above): six oklch hues at the mock's own lightness/chroma band (L 0.72-0.82,
+// C 0.09-0.12), spaced around the hue circle so adjacent series stay
+// distinguishable for the deuteranopia/protanopia range the
+// `dark-dyschromatopsia` preference exists for -- teal (reuses the brand
+// primary), amber, violet, rose, blue, and green.
+const chartCategoricalColors = [
+    "oklch(0.75 0.1 190)",
+    "oklch(0.78 0.12 80)",
+    "oklch(0.76 0.11 300)",
+    "oklch(0.74 0.12 20)",
+    "oklch(0.75 0.1 250)",
+    "oklch(0.78 0.11 140)",
+] as const;
+
 // MUI's default contrast text for a light-enough surface. Used verbatim for the
 // roles MUI would otherwise compute it for, because `oklch()` is outside the
 // sRGB formats `@mui/system`'s `getContrastRatio` can decompose.
@@ -324,6 +353,7 @@ export function createHydraTheme(
                 secondary: mockPalette.textSecondary,
             },
             surfaces: mockSurfaces,
+            charts: {categorical: [...chartCategoricalColors]},
             // Every role spells out its own `contrastText`: under `colorSpace`
             // MUI would otherwise derive it as `oklch(from <main> var(--__l) 0
             // h / var(--__a))`, whose custom properties only exist in the CSS

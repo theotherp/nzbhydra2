@@ -1,9 +1,9 @@
 # Migration Status
 
-Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-070, FM-022, and FM-023 are done;
-their packets were removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion
-(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066, FM-067, FM-068,
-FM-069, FM-070, FM-022, FM-023) (see `DECISIONS.md` ADR-0014/0015 and git history).
+Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-070, FM-022, FM-023, and FM-024
+are done; their packets were removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on
+completion (FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066, FM-067,
+FM-068, FM-069, FM-070, FM-022, FM-023, FM-024) (see `DECISIONS.md` ADR-0014/0015 and git history).
 
 FM-060 (Config Auth Tab) added a `RepeatSection` primitive to `C-CONFIG-FIELDS` for list-of-records editing (available to
 FM-066). It also escalated, without fixing (outside its Java write scope), two pre-existing backend defects proposed as one
@@ -150,6 +150,17 @@ correct and the residual leak is pinned by a dedicated test rather than fixed or
 Proposed follow-up packet, not yet decided: extend ADR-0019 to `ExternalTools.java:137-138`'s blanket catch and its live
 route through `ExternalToolsSyncService`'s `else` branch, which still leak the response body to `syncAll`/`messages`.
 
+FM-024 (Statistics Dashboard) implemented per its ADR-0021 revision. `F-STATS-MAIN` now targets
+`core/ui-react/src/features/stats/dashboard` at canonical `/stats/stats`, sending the same sixteen-family
+`POST /internalapi/stats` request/response contract as legacy behind a redesigned dashboard (controls header with
+date presets/custom range/include-disabled/grouped statistics menu, overview tiles, a sortable consolidated indexer
+table, grouped activity charts, sorted-bar source shares gated on `historyUserInfoType`, and a download-age histogram
+with summary stats) using `@mui/x-charts` for its themed bar charts. Passed with minor findings, not corrected
+(optional): the page-level (not per-section) loading/error/empty states, an unreachable empty-data alert, the new
+Playwright cases route-mocking the endpoint rather than hitting a real backend, a dead `isAbortError` branch, a
+non-focusable chart-card help tooltip, a non-`ListSubheader` family-menu group header, an inconsistent try/catch in
+`persistence.ts`, and the added dependency's un-lazy-loaded bundle-size cost. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -167,7 +178,7 @@ None.
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).
 
-Planned but not next: FM-024 (Statistics Dashboard).
+FM-024's minor findings (see above) are candidates for a future quickfix.
 
 FM-033 (Durable Visual Evidence Output) was retired unrun on 2026-08-19: its evidence-relocation outcome had already shipped
 ad-hoc in `5c36a7a14`, ADR-0014 removed the `FEATURES.yaml` visual machinery it was anchored to, and its one undelivered

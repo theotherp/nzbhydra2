@@ -478,6 +478,55 @@ Format, one entry per fix:
   the same shared component being outside either config-tab packet's file scope. Repositioning fixes every dialog that
   can trigger a toast, not just External Tools'.
 
+### 2026-08-21 — Fix the stats dashboard's unreachable empty-data state
+
+- **Why not a packet:** single-module bugfix confined to `isEmpty()` in `StatsDashboardPage.tsx`, shipped with a
+  regression test that fails against the prior implementation and passes against the fix; no contract, selector, or
+  persisted-data change.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`,
+  `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (718/718, up from 717/717), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Root `git diff --check` clean. `tests/system` gates not run: nothing there changed.
+- **Commit:** `f491b1c16`
+- **Note:** `isEmpty()` tested `Object.keys(stats).length === 0`, but a real `POST /internalapi/stats` response always
+  carries `after`/`before`, so the "No statistics are available for the selected range." branch could never render.
+  Now checks each currently selected family's own field for absence or an empty array instead. Flagged as a minor
+  finding by FM-024's review (`docs/frontend-migration/STATUS.md`); the task's six other minor findings remain there,
+  unfixed, as future quickfix candidates.
+
+### 2026-08-21 — Remove the stats dashboard's unreachable isAbortError guard
+
+- **Why not a packet:** mechanical dead-code removal, no behavioral surface — confirmed by the full
+  `StatsDashboardPage.test.tsx` suite (including its two overlapping/aborted-request tests) passing unchanged before
+  and after the removal.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`,
+  `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx` (stale comment reference only).
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (718/718, unchanged), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Root `git diff --check` clean. `tests/system` gates not run: nothing there changed.
+- **Commit:** `51ba76a0c`
+- **Note:** `abortRef.current?.abort()` fires only at the top of `fetchFamilies`' own next invocation, immediately
+  followed by `++requestIdRef.current`, so any superseded request's rejection is already caught by the preceding
+  `requestIdRef.current !== requestId` staleness check — `isAbortError` could never be reached. Flagged as a minor
+  finding by FM-024's review (`docs/frontend-migration/STATUS.md`); five of the task's other minor findings remain
+  there as future quickfix candidates.
+
+### 2026-08-21 — Guard `loadIncludeDisabled` against a throwing `getItem`
+
+- **Why not a packet:** single-function bugfix confined to `persistence.ts`, shipped with a regression test that fails
+  against the prior implementation and passes against the fix; no contract, selector, or persisted-data-shape change.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/persistence.ts`,
+  `core/ui-react/src/features/stats/dashboard/persistence.test.ts`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, same 12 pre-existing warnings), `format:check`,
+  `test -- --run` (719/719, up from 718/718), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Root `git diff --check` clean. `tests/system` gates not run: nothing there changed.
+- **Commit:** `267d7850a`
+- **Note:** `loadIncludeDisabled` called `getItem` with no `try`/`catch`, unlike its sibling `loadFamilySelection`,
+  which already wraps the identical call; `getStorage()` only guards *constructing* `window.localStorage`, not
+  individual calls on it. Flagged as a minor finding by FM-024's review (`docs/frontend-migration/STATUS.md`); four
+  of the task's other minor findings remain there as future quickfix candidates.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`

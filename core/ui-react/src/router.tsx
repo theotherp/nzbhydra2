@@ -16,6 +16,7 @@ import {NotificationHistoryPage} from "./features/stats/history/NotificationHist
 import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
 import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
 import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
+import {StatsDashboardPage} from "./features/stats/dashboard/StatsDashboardPage";
 import {StatsShell} from "./features/stats/StatsShell";
 import {NewsPage} from "./features/system/news/NewsPage";
 
@@ -107,6 +108,21 @@ export function createAppRouter(bootstrap: BootstrapData) {
             <StatsPage bootstrap={bootstrap} transport={transport} />
         ),
     });
+    // F-STATS-MAIN's canonical route (ADR-0021): the redesigned aggregate
+    // dashboard, distinct from the bare `/stats` alias above (which still
+    // resolves to indexer statuses, matching `StatsShell`'s own default tab).
+    const statsDashboardRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/stats",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <StatsDashboardPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            </StatsShell>
+        ),
+    });
     const statsFallbackRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/$tab",
@@ -127,6 +143,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         newsRoute,
         statsRoute,
         indexerStatusesRoute,
+        statsDashboardRoute,
         savedSearchesRoute,
         searchHistoryRoute,
         downloadHistoryRoute,

@@ -146,6 +146,29 @@ describe("createAppRouter", () => {
         await router.navigate({to: "/stats/indexers"});
         expect(router.state.matches.at(-1)?.routeId).toContain("indexers");
     });
+    it("should match the stats-protected aggregate dashboard route", async () => {
+        window.history.replaceState({}, "", "/hydra/stats/stats");
+        const router = createAppRouter({
+            baseUrl: "/hydra/",
+            username: "stats",
+            authType: null,
+            showLogout: true,
+            maySeeSearch: true,
+            adminRestricted: false,
+            statsRestricted: true,
+            maySeeStats: true,
+            searchRestricted: false,
+            maySeeDetailsDl: false,
+            maySeeAdmin: false,
+            authConfigured: true,
+            showIndexerSelection: false,
+            safeConfig: {keepHistory: true},
+            serverTimeZone: "UTC",
+        });
+        await router.navigate({to: "/stats/stats"});
+        expect(router.state.matches.at(-1)?.routeId).toBe("/stats/stats");
+    });
+
     it("should match every canonical config tab route for an admin", async () => {
         window.history.replaceState({}, "", "/hydra/config/main");
         const router = createAppRouter(adminBootstrap());

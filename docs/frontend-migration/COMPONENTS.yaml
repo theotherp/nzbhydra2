@@ -115,6 +115,7 @@ components:
     target: core/ui-react/src/domain/date-time
     consumers:
       - F-STATS-INDEXERS
+      - F-STATS-MAIN
       - F-HISTORY-SEARCHES
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-NOTIFICATIONS
