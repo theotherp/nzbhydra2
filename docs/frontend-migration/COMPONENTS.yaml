@@ -30,6 +30,7 @@ components:
       - F-STATS-SHELL
       - F-SYSTEM-SHELL
       - F-SYSTEM-BACKUP
+      - F-SYSTEM-BUGREPORT
     classification: shared_hydra
     state: partial
   - id: C-LIVE-TRANSPORT
@@ -109,6 +110,7 @@ components:
       - F-SYSTEM-SHELL
       - F-SYSTEM-CONTROL
       - F-SYSTEM-BACKUP
+      - F-SYSTEM-BUGREPORT
     classification: shared_hydra
     state: partial
   - id: C-DATE-TIME
@@ -126,6 +128,7 @@ components:
       - F-SYSTEM-LOG
       - F-SYSTEM-TASKS
       - F-SYSTEM-BACKUP
+      - F-SYSTEM-BUGREPORT
     classification: shared_hydra
     state: partial
   - id: C-SERVER-PREFERENCES

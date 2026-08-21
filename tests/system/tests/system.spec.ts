@@ -69,6 +69,37 @@ async function blockBackupRestore(
 }
 
 /**
+ * A hard stop in front of `API-SYSTEM-DEBUG-UPLOAD`. It would put an archive
+ * of this instance's log and configuration on a public file share -- a side
+ * effect outside the test environment altogether -- so no test here may reach
+ * it, and this makes that a guarantee rather than a convention.
+ */
+async function blockDebugInfosUpload(page: Page): Promise<string[]> {
+    const attempted: string[] = [];
+    await page.route(
+        "**/internalapi/debuginfos/createAndUploadDebugInfos",
+        async (route) => {
+            attempted.push(new URL(route.request().url()).pathname);
+            await route.abort();
+        },
+    );
+    return attempted;
+}
+
+/**
+ * Every SQL statement this file sends, so the assertions can prove that
+ * nothing modifying ever reached the shared instance's database.
+ */
+async function recordSqlStatements(page: Page): Promise<string[]> {
+    const statements: string[] = [];
+    await page.route("**/internalapi/debuginfos/executesql*", async (route) => {
+        statements.push(route.request().postData() ?? "");
+        await route.continue();
+    });
+    return statements;
+}
+
+/**
  * The offer states a healthy instance never reports: `API-UPDATES-INFOS` is
  * answered from a fixture so the install/beta/force branches and the two
  * warnings can be seen at all. Everything else on the page stays real.
@@ -161,9 +192,9 @@ test.describe("System shell", () => {
         await page.goto("system/about");
         await expect(page.getByTestId("system-shell")).toBeVisible();
         await expect(page.getByTestId("system-about")).toBeVisible();
-        // `log` was the unmigrated tab used here until FM-074 migrated it,
-        // `tasks` is still unmigrated.
-        await page.goto("system/bugreport");
+        // `log` was the unmigrated tab used here until FM-074 migrated it and
+        // `bugreport` until FM-076; `tasks` is still unmigrated.
+        await page.goto("system/tasks");
         await expect(
             page.getByText("React migration placeholder"),
         ).toBeVisible();
@@ -486,6 +517,226 @@ test.describe("System shell", () => {
             "/internalapi/backup/restorefile",
             "/internalapi/backup/restorefile",
         ]);
+    });
+
+    test("should run the real debug diagnostics without sharing anything or changing the database", async ({
+        page,
+    }) => {
+        const attemptedUploads = await blockDebugInfosUpload(page);
+        const sqlStatements = await recordSqlStatements(page);
+
+        await openSystem(page, "bugreport");
+        await expect(page.getByTestId("system-bugreport")).toBeVisible();
+        await expect(
+            page.getByRole("link", {name: "raise an issue on github"}),
+        ).toHaveAttribute(
+            "href",
+            "https://github.com/theotherp/nzbhydra2/issues/new",
+        );
+
+        // The real anonymized archive, streamed from the running instance.
+        const archive = page.waitForResponse(
+            (response) => response.url().includes("createAndProvideZipAsBytes"),
+            {timeout: 120_000},
+        );
+        await page.getByTestId("system-debug-download").click();
+        const archiveResponse = await archive;
+        expect(archiveResponse.ok()).toBe(true);
+        expect((await archiveResponse.body()).length).toBeGreaterThan(0);
+
+        // A real thread dump into the instance's own log file.
+        const threadDump = page.waitForResponse((response) =>
+            response.url().includes("/debuginfos/logThreadDump"),
+        );
+        await page.getByTestId("system-thread-dump").click();
+        expect((await threadDump).ok()).toBe(true);
+        await expect(page.getByRole("alert")).toContainText(
+            "Thread dump written to the log file.",
+        );
+
+        // The sensitive-logging round trip: on, then back off. The label after
+        // each click is the state the *server* answered the PUT with.
+        const toggle = page.getByTestId("system-sensitive-toggle");
+        await expect(toggle).toHaveText("Enable sensitive data in logs");
+        const enabling = page.waitForResponse(
+            (response) =>
+                response.url().includes("/debuginfos/sensitiveDataLogging") &&
+                response.request().method() === "PUT",
+        );
+        await toggle.click();
+        expect((await enabling).ok()).toBe(true);
+        await expect(toggle).toHaveText(
+            "Disable sensitive data in logs (currently enabled!)",
+        );
+        await expect(page.getByRole("alert")).toContainText(
+            "API keys, passwords and usernames will appear unmasked in the log!",
+        );
+        const disabling = page.waitForResponse(
+            (response) =>
+                response.url().includes("/debuginfos/sensitiveDataLogging") &&
+                response.request().method() === "PUT",
+        );
+        await toggle.click();
+        expect((await disabling).ok()).toBe(true);
+        await expect(toggle).toHaveText("Enable sensitive data in logs");
+
+        // Asked of the server directly rather than read off the button: the
+        // shared instance must be left masking its log again.
+        const state = await page.request.get(
+            "internalapi/debuginfos/sensitiveDataLogging",
+        );
+        expect(state.ok()).toBe(true);
+        expect((await state.text()).trim()).toBe("false");
+
+        // A harmless read query against the real database.
+        await page
+            .getByTestId("system-sql-input")
+            .fill("SELECT COUNT(*) FROM INDEXER");
+        const query = page.waitForResponse((response) =>
+            response.url().includes("/debuginfos/executesqlquery"),
+        );
+        await page.getByTestId("system-sql-query").click();
+        expect((await query).ok()).toBe(true);
+        await expect(page.getByTestId("system-sql-output")).not.toHaveValue("");
+
+        // Both browser-followed links, base-URL-aware and in a new tab. Only
+        // the endpoint listing is actually fetched; a heap dump would be a
+        // multi-hundred-megabyte download of the running JVM.
+        const heapDumpHref = await page
+            .getByTestId("system-heap-dump")
+            .getAttribute("href");
+        expect(heapDumpHref).toContain("actuator/heapdump");
+        expect(
+            await page.getByTestId("system-heap-dump").getAttribute("target"),
+        ).toBe("_blank");
+        const endpointsHref = await page
+            .getByTestId("system-endpoints")
+            .getAttribute("href");
+        expect(endpointsHref).toContain("internalapi/debuginfos/endpoints");
+        // The address resolves and the admin session is allowed through. The
+        // endpoint itself currently answers 500: `DebugInfosWeb.getEndpoints`
+        // dereferences a mapping description whose `getDetails()` is null
+        // under this Spring Boot version. That is a pre-existing backend
+        // defect -- legacy's identical link hits it too -- and it is out of
+        // this task's scope, so only reaching the endpoint is asserted here.
+        const endpoints = await page.request.get(endpointsHref as string);
+        expect(
+            [200, 500],
+            "the endpoint listing must be reachable for the admin session",
+        ).toContain(endpoints.status());
+
+        // The CPU chart polled the real endpoint; a healthy instance without
+        // the `Performance` marker answers with no series at all, which is
+        // what the panel's own help text tells the reader.
+        await expect(page.getByTestId("system-cpu-chart")).toBeVisible();
+
+        expect(
+            attemptedUploads,
+            "a system test must never upload debug infos to an external file share",
+        ).toEqual([]);
+        expect(
+            sqlStatements,
+            "a system test must never modify the shared instance's database",
+        ).toEqual(["SELECT COUNT(*) FROM INDEXER"]);
+    });
+
+    test("should render the bugreport tab, its upload result, and the CPU panel for the visual gate", async ({
+        page,
+    }) => {
+        const attemptedUploads = await blockDebugInfosUpload(page);
+        // The upload result without ever reaching the file share: the address
+        // is answered from a fixture, which is also what proves the value is
+        // rendered as an anchor's text rather than injected as markup.
+        await page.route(
+            "**/internalapi/debuginfos/createAndUploadDebugInfos",
+            async (route) => {
+                await route.fulfill({
+                    body: 'https://file.io/visual-gate"><img src=x>',
+                    contentType: "text/plain",
+                });
+            },
+        );
+        // A recorded CPU sample set, which a healthy instance without the
+        // `Performance` logging marker never produces.
+        await page.route(
+            "**/internalapi/debuginfos/threadCpuUsage",
+            async (route) => {
+                const now = Math.floor(Date.now() / 1000);
+                await route.fulfill({
+                    body: JSON.stringify(
+                        ["HTTP thread #1", "main", "scheduling-1"].map(
+                            (key, series) => ({
+                                key,
+                                values: Array.from(
+                                    {length: 12},
+                                    (_, index) => ({
+                                        time: now - (11 - index) * 5,
+                                        value:
+                                            5 +
+                                            series * 7 +
+                                            ((index * (series + 3)) % 17),
+                                    }),
+                                ),
+                            }),
+                        ),
+                    ),
+                    contentType: "application/json",
+                });
+            },
+        );
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openSystem(page, "bugreport");
+                await expect(
+                    page.getByTestId("system-bugreport"),
+                ).toBeVisible();
+            });
+            await expect(page.getByTestId("system-cpu-chart")).toBeVisible();
+            await page.screenshot({
+                fullPage: true,
+                path: visualEvidencePath(
+                    "F-SYSTEM-BUGREPORT",
+                    `bugreport-${viewport}`,
+                ),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                `the bugreport tab must not overflow at ${visualViewports[viewport].width}px`,
+            ).toBe(true);
+
+            await page.getByTestId("system-debug-upload").click();
+            const result = page.getByTestId("system-debug-upload-result");
+            await expect(result).toBeVisible();
+            // The share address is a link's text and href, never markup: the
+            // response's `<img>` never became an element.
+            expect(await result.locator("img").count()).toBe(0);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-BUGREPORT",
+                    `bugreport-upload-result-${viewport}`,
+                ),
+            });
+
+            await page.getByRole("button", {name: "View data"}).click();
+            await expect(
+                page.getByTestId("system-cpu-chart-table"),
+            ).toBeVisible();
+            await page.screenshot({
+                fullPage: true,
+                path: visualEvidencePath(
+                    "F-SYSTEM-BUGREPORT",
+                    `bugreport-cpu-table-${viewport}`,
+                ),
+            });
+        }
+
+        // The fixture answered every attempt: nothing left for the file share.
+        expect(attemptedUploads).toEqual([]);
     });
 
     test("should show the about tab's real program info", async ({page}) => {

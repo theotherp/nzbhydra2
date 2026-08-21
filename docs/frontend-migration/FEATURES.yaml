@@ -1105,10 +1105,35 @@ features:
     legacy_sources:
       - core/ui-src/js/system-controller.js
       - core/ui-src/html/bugreport.html
-    target: core/ui-react/src/features/system/diagnostics
-    tests: []
-    selectors: []
-    parity: inventoried
+    target: core/ui-react/src/features/system/bugreport
+    tests:
+      - core/ui-react/src/features/system/bugreport/SystemBugreportTab.test.tsx
+      - core/ui-react/src/api/system/debug.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-076; legacy's bugreport.html carries no stable selector.
+      - system-bugreport
+      - system-debug-download
+      - system-debug-upload
+      - system-debug-upload-result
+      - system-thread-dump
+      - system-sensitive-toggle
+      - system-heap-dump
+      - system-endpoints
+      - system-sql-input
+      - system-sql-query
+      - system-sql-execute
+      - system-sql-output
+      - system-cpu-chart
+      - system-cpu-chart-table
+    parity: partial
+    gaps:
+      - deliberate - the upload action is a plain button beside the download instead of legacy's split-button dropdown (bugreport.html:38-48), which hid its single item
+      - deliberate - the returned share URL is rendered as a React anchor's href and text; legacy assembled the anchor as an HTML string for ng-bind-html (system-controller.js:118), an injection-shaped hazard not reproduced
+      - deliberate - the thread dump reports its outcome; legacy reported nothing (system-controller.js:126-131)
+      - deliberate - the CPU chart is @mui/x-charts rather than nvd3 (ADR-0021), with the latest sample per thread reachable as an accessible table
   - id: F-SYSTEM-NEWS
     name: Read-only news list
     routes:

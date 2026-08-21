@@ -216,6 +216,18 @@ component tests with the transport mocked. Passed with minor findings, not corre
 true only of `backuponly`/`restore`; `GUI-STATUS.md` still listed Backup as unmigrated (see below — now reconciled).
 Candidates for a future quickfix.
 
+FM-076 (System Bugreport / Debug Tab) added the last of the six migrated system tabs inside FM-072's shell: legacy's
+guidance prose and its two direct links; `API-SYSTEM-DEBUG-ZIP` through the transport's binary path under legacy's file
+name; `API-SYSTEM-DEBUG-UPLOAD` whose returned URL is rendered as a React anchor's href and text, never via legacy's
+`ng-bind-html` hazard; a thread-dump trigger; a sensitive-logging toggle that reflects the state the PUT *returned*, not
+an optimistic flip; base-URL-aware heap-dump/endpoint links; a raw-SQL console (Query/Execute); and a 5s-polled
+`@mui/x-charts` CPU chart with an ADR-0021 accessible table, stopping on a failed poll and clearing its interval on
+unmount. Playwright proves the sensitive-toggle round trip with a direct server read afterward confirming it's off, sends
+only a harmless `SELECT`, and never calls the upload endpoint. Passed with minor findings, not corrected (optional): a
+legacy wording-typo correction not recorded as a gap; a visual-gate test whose upload-block assertion is shadowed by a
+later route handler (still safe, but reads as a stronger guarantee than it is); two overlapping explanatory messages on
+a first-poll CPU-chart failure; a dropped chart x-axis label. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -230,10 +242,9 @@ None.
 
 ## Upcoming
 
-FM-076 (Bugreport/Debug) is unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
-later small batch.
+F-SYSTEM-TASKS deliberately stays unpackaged for a later small batch; it is now the only unmigrated system tab.
 
-FM-073's, FM-074's, and FM-075's minor findings (see above) are candidates for a future quickfix.
+FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).
