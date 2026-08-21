@@ -1,7 +1,7 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../api/transport";
-import {loginWithForm, logout} from "./session";
+import {askForPassword, loginWithForm, logout} from "./session";
 
 const bootstrap = {
     adminRestricted: true,
@@ -69,6 +69,37 @@ describe("auth session", () => {
         );
         expect(fetchImplementation.mock.calls[1][0]).toBe(
             "http://localhost:3000/hydra/internalapi/userinfos",
+        );
+    });
+
+    it("should accept the askpassword challenge response the backend really sends", async () => {
+        // `AuthWeb.askForPassword` returns `UserInfosProvider.getUserInfos`,
+        // which sets neither `baseUrl` nor `safeConfig`; parsing it as
+        // `BootstrapData` would reject every real successful challenge.
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(
+                jsonResponse({...bootstrap, baseUrl: null, safeConfig: null}),
+            );
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(
+            askForPassword(transport, "hydra"),
+        ).resolves.toBeUndefined();
+        expect(fetchImplementation.mock.calls[0][0]).toBe(
+            "http://localhost:3000/hydra/internalapi/askpassword?old_username=hydra",
+        );
+    });
+
+    it("should reject a challenge the server refuses", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 401}));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(askForPassword(transport)).rejects.toThrow();
+        expect(fetchImplementation.mock.calls[0][0]).toBe(
+            "http://localhost:3000/hydra/internalapi/askpassword",
         );
     });
 });

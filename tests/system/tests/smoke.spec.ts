@@ -56,6 +56,13 @@ test.describe("Branded app shell visual evidence", () => {
                 `app-bar-${viewport}`,
             );
 
+            // FM-078: with no authentication configured legacy's header never
+            // offered a login/logout affordance, and neither does this shell.
+            // This instance is shared, so no system test switches
+            // authentication on; the configured branches of the truth table
+            // are proven by component tests instead.
+            await expect(appBar.getByTestId("shell-loginout")).toHaveCount(0);
+
             const logo = page.getByTestId("app-shell-logo");
             await expect(logo).toBeVisible();
             await expect(logo).toHaveAccessibleName("NZBHydra2");

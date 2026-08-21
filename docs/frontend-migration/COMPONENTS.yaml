@@ -13,6 +13,7 @@ components:
       - F-STATS-SHELL
     classification: shared_hydra
     state: partial
+    note: FM-078 added the header's login/logout affordance (`shell-loginout`, rendered by `C-AUTH-SESSION`'s `LoginOutButton`), completing legacy's `header-controller.js` visibility rules. The footer (`directives/footer.js`) and the live status line remain.
   - id: C-API-TRANSPORT
     responsibility: Base-URL-aware HTTP, binary, and progress-reporting upload transport with credentials, CSRF, session headers, and common errors. FM-075 added the upload method ADR-0003 reserved -- XHR-based, because fetch cannot
       observe request-body progress -- keeping the same base URL, `credentials`/`withCredentials`, and CSRF-header contract as `request`
@@ -77,6 +78,12 @@ components:
       - F-SYSTEM-SHELL
     classification: shared_hydra
     state: partial
+    note: 'FM-078 built the component -- form login, logout, the BASIC password challenge, the area permission rules (`permissions.ts`, legacy''s `loginRequired`), and the FORM login redirect used as a route guard in `router.tsx`. A session transition is
+      committed by a full document navigation (`navigation.ts`), so no consumer observes session state changing in place. Verified live against a running instance: FORM login and FORM logout both transition and re-enter correctly, and the BASIC
+      challenge logs the user in (`GET /internalapi/askpassword` answers 401 + `WWW-Authenticate` while anonymous and 200 once credentials are accepted; its 200 body is `UserInfosProvider.getUserInfos`, without `baseUrl`/`safeConfig`, so it must not be
+      parsed as bootstrap data). Remaining gap, and why this is not `done`: logging out of a BASIC session does not end it -- the browser replays the cached `Authorization` header on the full navigation that follows, so the server renders an
+      authenticated bootstrap again and the header still reads `Logout {username}`. Legacy hid the affordance in place instead (`header-controller.js` `event !== "loggedOut"`), so its logout at least looked like one. Ending a BASIC session needs a
+      decision (the unused `POST /loggedout` endpoint invalidates the session and re-challenges) that FM-078 did not own.'
   - id: C-DIALOG-SERVICE
     responsibility: Accessible alerts, confirmations, and application dialogs with feature-owned bodies
     legacy:

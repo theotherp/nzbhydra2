@@ -269,7 +269,102 @@ describe("createAppRouter", () => {
         await router.navigate({to: "/config/main"});
         expect(router.state.matches.at(-1)?.routeId).not.toContain("config");
     });
+
+    it("should expose the login route to every session", async () => {
+        for (const bootstrap of [
+            adminBootstrap(),
+            {...formBootstrap(), searchRestricted: false},
+        ]) {
+            window.history.replaceState({}, "", "/hydra/login");
+            const router = createAppRouter(bootstrap);
+
+            await router.navigate({to: "/login"});
+            expect(router.state.matches.at(-1)?.routeId).toBe("/login");
+        }
+    });
+
+    it("should send an anonymous FORM session to the login page for a restricted search area", async () => {
+        window.history.replaceState({}, "", "/hydra/");
+        const router = createAppRouter(formBootstrap());
+
+        await router.navigate({to: "/"});
+        expect(router.state.location.pathname).toBe("/login");
+        expect(router.state.matches.at(-1)?.routeId).toBe("/login");
+    });
+
+    it("should send an anonymous FORM session to the login page for restricted stats and admin areas", async () => {
+        for (const target of [
+            "/stats/indexers",
+            "/stats/searches",
+            "/config/main",
+            "/system/control",
+        ]) {
+            window.history.replaceState({}, "", "/hydra/");
+            const router = createAppRouter({
+                ...formBootstrap(),
+                adminRestricted: true,
+                statsRestricted: true,
+            });
+
+            await router.navigate({to: target});
+            expect(
+                router.state.location.pathname,
+                `${target} must resolve to the login page`,
+            ).toBe("/login");
+        }
+    });
+
+    it("should let an anonymous FORM session reach an area it may see", async () => {
+        window.history.replaceState({}, "", "/hydra/");
+        const router = createAppRouter({
+            ...formBootstrap(),
+            maySeeSearch: true,
+        });
+
+        await router.navigate({to: "/"});
+        expect(router.state.matches.at(-1)?.routeId).toBe("/");
+    });
+
+    it("should keep the migration placeholder for a restricted area under non-FORM authentication", async () => {
+        // Legacy's `loginRequired` resolves the state whenever
+        // `authType !== "FORM"`, leaving the backend's own challenge in
+        // charge (`nzbhydra.js:692-715`).
+        for (const authType of [null, "BASIC"]) {
+            window.history.replaceState({}, "", "/hydra/");
+            const router = createAppRouter({
+                ...formBootstrap(),
+                adminRestricted: true,
+                authType,
+            });
+
+            await router.navigate({to: "/config/main"});
+            expect(router.state.location.pathname).toBe("/config/main");
+            expect(router.state.matches.at(-1)?.routeId).not.toContain(
+                "config",
+            );
+
+            await router.navigate({to: "/"});
+            expect(router.state.matches.at(-1)?.routeId).toBe("/");
+        }
+    });
 });
+
+/** An anonymous FORM session that may not see the restricted search area. */
+function formBootstrap() {
+    return {
+        ...adminBootstrap(),
+        username: null,
+        authType: "FORM",
+        showLogout: false,
+        maySeeSearch: false,
+        searchRestricted: true,
+        adminRestricted: false,
+        statsRestricted: false,
+        maySeeStats: false,
+        maySeeAdmin: false,
+        maySeeDetailsDl: false,
+    };
+}
 
 function adminBootstrap() {
     return {

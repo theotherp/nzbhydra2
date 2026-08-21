@@ -228,6 +228,21 @@ legacy wording-typo correction not recorded as a gap; a visual-gate test whose u
 later route handler (still safe, but reads as a stronger guarantee than it is); two overlapping explanatory messages on
 a first-poll CPU-chart failure; a dropped chart x-axis label. Candidates for a future quickfix.
 
+FM-078 (Form Login, Logout, And Session-Aware Header) added a `/login` page, the header login/logout affordance with
+legacy's exact visibility truth table (`header-controller.js`'s `update()`), and the FORM redirect guard so a
+FORM-restricted anonymous session lands on `/login` instead of the migration placeholder. Every session transition
+(login, logout, the BASIC credential challenge) commits through a full document navigation, since the route tree and
+bootstrap are built once and are not made reactive. Fix cycle 1 corrected a required finding: the BASIC challenge had
+parsed `/internalapi/askpassword`'s response as bootstrap data, but that endpoint never returns `baseUrl`, so every
+real challenge threw — now it only awaits the HTTP outcome, re-verified live against running FORM- and BASIC-configured
+instances. `C-AUTH-SESSION` stays `partial`: ending a BASIC session has no effect, since the browser replays its
+cached credentials across the full navigation (legacy could not end one either, but hid the affordance in place — a
+recorded gap). Passed with minor findings, not corrected (optional): a stale-header risk when a logout's `userinfos`
+confirmation fails after a successful `POST /logout`; the BASIC `old_username` hint is captured only after `logout()`
+resolves, unlike legacy; two new ESLint warning instances reported as "pre-existing" when they were not; `STATUS.md`'s
+prior Upcoming entry described the whole FM-077..FM-081 batch rather than FM-078 alone. Candidates for a future
+quickfix; ending a BASIC session (adopting `POST /loggedout`) is proposed as its own packet.
+
 ## Active
 
 None.
@@ -242,7 +257,10 @@ None.
 
 ## Upcoming
 
-F-SYSTEM-TASKS deliberately stays unpackaged for a later small batch; it is now the only unmigrated system tab.
+- FM-077: System Tasks tab — the last unmigrated system tab (list + run-now). Part of the 2026-08-21
+  platform-completion batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer +
+  notifications), which packages the remaining shell surface; FM-079..FM-081 are planned packets in `tasks/`.
+  FM-078 (login/session) is done.
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

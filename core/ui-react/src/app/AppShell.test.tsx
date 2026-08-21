@@ -2,10 +2,13 @@ import {ThemeProvider} from "@mui/material";
 import {cleanup, render, screen, within} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
+import {ApiTransport} from "../api/transport";
+import {ToastProvider} from "../components/toasts/ToastProvider";
 import {AppShell} from "./AppShell";
 import {createHydraTheme} from "./theme";
 
 let mockPathname = "/hydra/";
+const mockRouterNavigate = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
     Link: ({
@@ -26,12 +29,26 @@ vi.mock("@tanstack/react-router", () => ({
     }: {
         select: (location: {pathname: string}) => string;
     }) => select({pathname: mockPathname}),
+    useNavigate: () => mockRouterNavigate,
 }));
 
 afterEach(cleanup);
 beforeEach(() => {
     mockPathname = "/hydra/";
+    mockRouterNavigate.mockReset();
+    fetchImplementation.mockReset();
 });
+
+const fetchImplementation = vi.fn();
+const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+/**
+ * The shell renders the login/logout affordance, which reports failures
+ * through `C-TOAST-SERVICE`; every shell render therefore needs the provider.
+ */
+function renderShell(ui: React.ReactElement) {
+    return render(<ToastProvider>{ui}</ToastProvider>);
+}
 
 const bootstrap = {
     username: null,
@@ -53,8 +70,8 @@ const bootstrap = {
 
 describe("AppShell", () => {
     it("should render only routes permitted to an anonymous user", () => {
-        render(
-            <AppShell bootstrap={bootstrap}>
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
                 <p>Page content</p>
             </AppShell>,
         );
@@ -73,8 +90,11 @@ describe("AppShell", () => {
     });
 
     it("should render the desktop navigation items in a horizontal row", () => {
-        render(
-            <AppShell bootstrap={{...bootstrap, adminRestricted: false}}>
+        renderShell(
+            <AppShell
+                bootstrap={{...bootstrap, adminRestricted: false}}
+                transport={transport}
+            >
                 <p>Page content</p>
             </AppShell>,
         );
@@ -94,8 +114,8 @@ describe("AppShell", () => {
     });
 
     it("should render the NZBHydra logo with a non-empty accessible name", () => {
-        render(
-            <AppShell bootstrap={bootstrap}>
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
                 <p>Page content</p>
             </AppShell>,
         );
@@ -107,7 +127,7 @@ describe("AppShell", () => {
 
     it("should mark the current route's nav item with the branded primary active indicator", () => {
         mockPathname = "/hydra/stats/indexers";
-        render(
+        renderShell(
             <ThemeProvider theme={createHydraTheme("dark", false)}>
                 <AppShell
                     bootstrap={{
@@ -115,6 +135,7 @@ describe("AppShell", () => {
                         adminRestricted: false,
                         statsRestricted: false,
                     }}
+                    transport={transport}
                 >
                     <p>Page content</p>
                 </AppShell>
@@ -141,13 +162,14 @@ describe("AppShell", () => {
 
     it("should reserve identical border and label geometry for a nav item whether it is active or inactive", () => {
         mockPathname = "/hydra/stats/indexers";
-        render(
+        renderShell(
             <AppShell
                 bootstrap={{
                     ...bootstrap,
                     adminRestricted: false,
                     statsRestricted: false,
                 }}
+                transport={transport}
             >
                 <p>Page content</p>
             </AppShell>,
@@ -196,5 +218,55 @@ describe("AppShell", () => {
             ).toBe("700");
             expect(link).toHaveAccessibleName(name);
         }
+    });
+
+    it("should render the login affordance in the header bar for a restricted anonymous session", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        const banner = screen.getByRole("banner");
+        expect(
+            within(banner).getByRole("button", {name: "Login"}),
+        ).toHaveAttribute("data-testid", "shell-loginout");
+    });
+
+    it("should render the logout affordance for a logged-in session that may log out", () => {
+        renderShell(
+            <AppShell
+                bootstrap={{
+                    ...bootstrap,
+                    showLogout: true,
+                    username: "hydra",
+                }}
+                transport={transport}
+            >
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(
+            screen.getByRole("button", {name: "Logout hydra"}),
+        ).toBeInTheDocument();
+    });
+
+    it("should render no login affordance when authentication is not configured", () => {
+        renderShell(
+            <AppShell
+                bootstrap={{
+                    ...bootstrap,
+                    adminRestricted: false,
+                    authConfigured: false,
+                    statsRestricted: false,
+                }}
+                transport={transport}
+            >
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(screen.queryByTestId("shell-loginout")).not.toBeInTheDocument();
     });
 });

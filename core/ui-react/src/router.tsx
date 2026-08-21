@@ -4,11 +4,19 @@ import {
     createRoute,
     createRouter,
     Outlet,
+    redirect,
+    type AnyRoute,
 } from "@tanstack/react-router";
 import {ApiTransport} from "./api/transport";
 
 import {AppShell} from "./app/AppShell";
 import {maySeeAdminArea, type BootstrapData} from "./bootstrap";
+import {LoginPage} from "./features/auth/LoginPage";
+import {
+    LOGIN_ROUTE,
+    redirectsToLogin,
+    type ProtectedArea,
+} from "./features/auth/permissions";
 import {createConfigRoute} from "./features/config/routes";
 import {SearchPage} from "./features/search/SearchPage";
 import {DownloadHistoryPage} from "./features/stats/history/DownloadHistoryPage";
@@ -24,7 +32,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
     const rootRoute = createRootRoute({
         component: () => (
-            <AppShell bootstrap={bootstrap}>
+            <AppShell bootstrap={bootstrap} transport={transport}>
                 <Container maxWidth={false} sx={{maxWidth: 1700}}>
                     <Outlet />
                 </Container>
@@ -34,9 +42,20 @@ export function createAppRouter(bootstrap: BootstrapData) {
             <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
         ),
     });
+    // The login form is reachable in every session's route tree: an anonymous
+    // FORM session is sent here by the guards below, and a logged-in one can
+    // still open it directly, exactly like legacy's unguarded `root.login`.
+    const loginRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "login",
+        component: () => (
+            <LoginPage bootstrap={bootstrap} transport={transport} />
+        ),
+    });
     const searchRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "/",
+        beforeLoad: loginGuard(bootstrap, "search"),
         component: () => (
             <SearchPage bootstrap={bootstrap} transport={transport} />
         ),
@@ -44,6 +63,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const savedSearchesRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/saved-searches",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <SavedSearchesPage
@@ -56,6 +76,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const searchHistoryRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/searches",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <SearchHistoryPage
@@ -68,6 +89,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const downloadHistoryRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/downloads",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <DownloadHistoryPage
@@ -80,6 +102,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const notificationHistoryRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/notifications",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <NotificationHistoryPage
@@ -92,6 +115,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const statsRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsPage bootstrap={bootstrap} transport={transport} />
         ),
@@ -99,6 +123,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const indexerStatusesRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/indexers",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsPage bootstrap={bootstrap} transport={transport} />
         ),
@@ -109,6 +134,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const statsDashboardRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/stats",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <StatsDashboardPage
@@ -121,6 +147,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
     const statsFallbackRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats/$tab",
+        beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
                 <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
@@ -136,6 +163,12 @@ export function createAppRouter(bootstrap: BootstrapData) {
     // (`nzbhydra.js:396-600`), so `/system/news` is admin-gated here even
     // though it used to be the one React route outside the gate. The
     // `API-NEWS-LIST` endpoint's own `ROLE_USER` protection is unchanged.
+    //
+    // FM-078 adds legacy's one exception to that fall-through: under FORM
+    // authentication `loginRequired` sent a session that may not see the area
+    // to the login form instead of leaving it on a dead route, so those two
+    // path prefixes are then claimed by redirect-only routes. With any other
+    // authentication type the fall-through above is unchanged.
     const adminRoutes = maySeeAdminArea(bootstrap)
         ? [
               createConfigRoute(rootRoute, transport),
@@ -143,8 +176,16 @@ export function createAppRouter(bootstrap: BootstrapData) {
                   <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
               )),
           ]
-        : [];
+        : bootstrap.authType === "FORM"
+          ? createLoginRedirectRoutes(rootRoute, [
+                "config",
+                "config/$",
+                "system",
+                "system/$",
+            ])
+          : [];
     const routeTree = rootRoute.addChildren([
+        loginRoute,
         searchRoute,
         statsRoute,
         indexerStatusesRoute,
@@ -161,6 +202,37 @@ export function createAppRouter(bootstrap: BootstrapData) {
         basepath: routerBasePath(bootstrap.baseUrl),
         routeTree,
     });
+}
+
+/**
+ * Legacy's `loginRequired` resolver as a route guard (`nzbhydra.js:692-715`).
+ * The decision is a pure function of the session's bootstrap object, which is
+ * fixed for the lifetime of this route tree — a session change re-enters the
+ * application through a full document navigation (see
+ * `features/auth/navigation.ts`), so there is nothing reactive here.
+ */
+function loginGuard(bootstrap: BootstrapData, area: ProtectedArea) {
+    return () => {
+        if (redirectsToLogin(bootstrap, area)) {
+            throw redirect({to: LOGIN_ROUTE});
+        }
+    };
+}
+
+/** Redirect-only routes claiming the path prefixes of a blocked area. */
+function createLoginRedirectRoutes<TParent extends AnyRoute>(
+    parentRoute: TParent,
+    paths: string[],
+) {
+    return paths.map((path) =>
+        createRoute({
+            getParentRoute: () => parentRoute,
+            path,
+            beforeLoad: () => {
+                throw redirect({to: LOGIN_ROUTE});
+            },
+        }),
+    );
 }
 
 function StatsPage({

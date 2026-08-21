@@ -11,13 +11,16 @@ features:
       - core/ui-src/js/directives/footer.js
     target: core/ui-react/src/app
     tests:
+      - core/ui-react/src/app/AppShell.test.tsx
       - tests/system/tests/smoke.spec.ts
-    selectors: []
+    selectors:
+      - app-shell-logo
+      - app-shell-nav
+      - shell-loginout
     parity: partial
     gaps:
       - navigation
       - footer
-      - permission-aware links
       - live status
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -28,9 +31,28 @@ features:
       - core/ui-src/js/hydra-auth-service.js
       - core/ui-src/html/states/login.html
     target: core/ui-react/src/features/auth
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/auth/LoginPage.test.tsx
+      - core/ui-react/src/features/auth/LoginOutButton.test.tsx
+      - core/ui-react/src/features/auth/session.test.ts
+      - core/ui-react/src/router.test.tsx
+      - core/ui-react/src/app/AppShell.test.tsx
+      - tests/system/tests/smoke.spec.ts
+    selectors:
+      - login-username
+      - login-password
+      - login-submit
+      - shell-loginout
+    parity: partial
+    gaps:
+      - OpenID Connect sign-in (server-side redirects; no SPA surface)
+      - deliberate - every session transition re-enters the application through a full document navigation, because the route tree, the navigation, and the affordance itself are built once from the server-rendered bootstrap (ADR-0017 keeps only the safe config reactive); legacy changed state in place
+      - deliberate - legacy's post-logout toasts ("Logged out", "Logged out. Close your browser to make sure session is closed.") and its post-BASIC-challenge "Login successful!" are not shown, because the full navigation that follows discards them
+      - deliberate - the anonymous affordance is not suppressed for the rest of the page's life after a logout (legacy's `event !== "loggedOut"` branch); the next page's bootstrap decides instead
+      - deliberate - the user name for a BASIC challenge's `old_username` is carried across the full navigation in session storage; legacy kept it in the header controller's scope, which a navigation would have discarded
+      - deliberate - a failed logout or BASIC challenge is reported as a "Logout failed!"/"Login failed!" toast; legacy left both to the global HTTP error growl the React app has no equivalent of
+      - deliberate - the login form's two placeholder-only inputs carry visible MUI labels (ADR-0014)
+      - logging out of a BASIC session does not end it (verified live): the browser replays the cached `Authorization` header on the full navigation that follows the logout, so the server renders an authenticated bootstrap again and the header still reads `Logout {username}`. Legacy could not end the session either, but hid the affordance in place and so at least looked logged out. Ending a BASIC session needs a decision about the unused `POST /loggedout` endpoint (session invalidation plus a fresh challenge), which FM-078 did not own.
   - id: F-SEARCH-FORM
     name: Search workspace, URL criteria, categories, limits, and submission
     routes:

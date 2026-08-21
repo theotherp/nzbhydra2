@@ -11,12 +11,14 @@ import {
 import {Link, useLocation} from "@tanstack/react-router";
 import {useState} from "react";
 
+import {ApiTransport} from "../api/transport";
 import {
     maySeeAdminArea,
     useSafeConfig,
     type BootstrapData,
     type SafeConfig,
 } from "../bootstrap";
+import {LoginOutButton} from "../features/auth/LoginOutButton";
 
 // Vite's `new URL(..., import.meta.url)` asset reference (see Vite's "Public Base
 // Path" docs): it lets the bundler emit a base-URL-aware, hashed asset path without
@@ -27,6 +29,7 @@ const logoUrl = new URL("../assets/logo.png", import.meta.url).href;
 type AppShellProps = {
     bootstrap: BootstrapData;
     children: React.ReactNode;
+    transport: ApiTransport;
 };
 
 type NavigationItem = {
@@ -35,7 +38,7 @@ type NavigationItem = {
     visible: boolean;
 };
 
-export function AppShell({bootstrap, children}: AppShellProps) {
+export function AppShell({bootstrap, children, transport}: AppShellProps) {
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const navigation = navigationItems(bootstrap, useSafeConfig(bootstrap));
     const pathname = useLocation({
@@ -114,6 +117,12 @@ export function AppShell({bootstrap, children}: AppShellProps) {
                     >
                         {links(undefined, true)}
                     </Box>
+                    {/* Legacy's `navbar-right` login/logout affordance. */}
+                    <Box sx={{flexGrow: 1}} />
+                    <LoginOutButton
+                        bootstrap={bootstrap}
+                        transport={transport}
+                    />
                 </Toolbar>
             </AppBar>
             <Drawer
