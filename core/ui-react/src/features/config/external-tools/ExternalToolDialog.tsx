@@ -28,6 +28,7 @@ import {
     TextSetting,
 } from "../components";
 import {
+    categoriesValidator,
     connectionSettingsChanged,
     DEFAULT_CATEGORIES,
     draftFieldPath,
@@ -36,6 +37,7 @@ import {
     externalToolEntry,
     externalToolText,
     externalToolTypeLabel,
+    minimumSeedersValidator,
     SYNC_TYPE_OPTIONS,
     visibleExternalToolFields,
     type ExternalToolField,
@@ -395,6 +397,7 @@ export function ExternalToolDialog({
                             help="Comma-separated newznab category IDs"
                             label="Categories"
                             name={draftFieldPath("categories")}
+                            validate={categoriesValidator}
                         />
                     ) : null}
                     {shows("animeCategories") ? (
@@ -434,6 +437,7 @@ export function ExternalToolDialog({
                             help="Minimum number of seeders"
                             label="Minimum seeders"
                             name={draftFieldPath("minimumSeeders")}
+                            validate={minimumSeedersValidator}
                         />
                     ) : null}
                     {shows("seedRatio") ? (

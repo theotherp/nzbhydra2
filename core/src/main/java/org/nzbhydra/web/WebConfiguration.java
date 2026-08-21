@@ -36,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
@@ -157,6 +158,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         JsonMapper mapper = JsonMapper.builder()
             .addModule(simpleModule)
             .enable(SerializationFeature.INDENT_OUTPUT)
+            //Same leniency as Jackson.JSON_MAPPER: a missing or null primitive takes its Java default instead of being rejected
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();
         builder.registerDefaults()
             .withJsonConverter(new JacksonJsonHttpMessageConverter(mapper))

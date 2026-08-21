@@ -11,7 +11,12 @@ import org.springframework.stereotype.Component;
 public class UserAuthConfigValidator implements ConfigValidator<UserAuthConfig> {
 
     private static final String BCRYPT_PREFIX = "{bcrypt}";
-    private static final String UNCHANGED_PASSWORD_MARKER = "***UNCHANGED***";
+    /**
+     * The same marker the generic pass uses. {@link org.nzbhydra.config.auth.UserAuthConfig#password} is masked here
+     * rather than by that pass ({@code @HiddenInUI}), and {@link BaseConfigValidator#prepareForSaving} runs this
+     * validator first so a user is identified by its username before anything falls back to a positional guess.
+     */
+    private static final String UNCHANGED_PASSWORD_MARKER = SensitiveDataConfigValidator.UNCHANGED_MARKER;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override

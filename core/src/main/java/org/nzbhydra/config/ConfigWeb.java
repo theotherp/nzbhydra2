@@ -93,7 +93,10 @@ public class ConfigWeb {
 
             baseConfigHandler.replace(newConfig);
             baseConfigHandler.save(true);
-            result.setNewConfig(configProvider.getBaseConfig());
+            // The response must mask exactly what getConfig() masks, and updateAfterLoading() writes the placeholders
+            // into the object it is handed - so it gets a copy. Handing it the live instance would strip the running
+            // configuration of its real credentials.
+            result.setNewConfig(baseConfigValidator.updateAfterLoading(configReaderWriter.getCopy(configProvider.getBaseConfig())));
 
             // Sync to external tools if enabled and indexers changed
             if (configProvider.getBaseConfig().getExternalTools().isSyncOnConfigChange() && !changedIndexers.isEmpty()) {

@@ -19,6 +19,7 @@ import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.WebAccess;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,7 +115,11 @@ public class IndexerWebAccess {
                 throw new IndexerAccessException("Unable to parse indexer output: " + e.getCause().getMessage(), e.getCause());
             }
             logger.debug("Indexer communication error", e.getCause());
-            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getCause().getMessage(), e.getCause());
+            //ADR-0019: this message reaches the connection-check dialog, the search-result error and the stored
+            //IndexerConfig.lastError, so it must not carry the indexer's response body. The cause is passed on
+            //unchanged so IndexerChecker can still read the body off it.
+            final String serverMessage = e.getCause() instanceof WebAccessException webAccessException ? webAccessException.getShortMessage() : e.getCause().getMessage();
+            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + serverMessage, e.getCause());
         } catch (TimeoutException e) {
             throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {

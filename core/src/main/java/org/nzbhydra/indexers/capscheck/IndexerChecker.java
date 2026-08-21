@@ -479,7 +479,10 @@ public class IndexerChecker {
                     notSupported = true;
                 }
             } else if (e.getCause() instanceof final WebAccessException webAccessException) {
-                notSupported = webAccessException.getBody() != null && webAccessException.getBody().toLowerCase().contains("function not available");
+                //ADR-0019 removed the response body from the exception message, so both markers must be read off the
+                //body here; the message check below only still covers the parse-failure path.
+                final String body = webAccessException.getBody() == null ? null : webAccessException.getBody().toLowerCase();
+                notSupported = body != null && (body.contains("function not available") || body.contains("incorrect parameter"));
             }
             if (e.getMessage() != null && e.getMessage().contains("Incorrect parameter")) {
                 notSupported = true;

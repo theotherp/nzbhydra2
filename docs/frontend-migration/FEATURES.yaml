@@ -558,6 +558,7 @@ features:
       - deliberate - the per-type and torrent-only fields appear as soon as the type or the torrent switch changes, where legacy computed the box's field set once on open and only showed them after reopening
       - deliberate - the API key is a C-SECRET-INPUT rather than legacy's plain text input; the backend does not mask this value, so the control just round-trips it opaquely
       - deliberate - "Test connection" is always rendered and disabled until the entry has a host and an API key, where legacy removed the button entirely
+      - deliberate - the dialog rejects a non-numeric "Minimum seeders" or "Categories" before submitting, where legacy sent any text and let the backend fail
   - id: F-CONFIG-INDEXERS
     name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
     routes:

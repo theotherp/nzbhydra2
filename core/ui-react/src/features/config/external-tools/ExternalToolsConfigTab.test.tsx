@@ -697,6 +697,87 @@ describe("External tools tab submit sequence", () => {
     });
 });
 
+/**
+ * FM-070: the two fields NZBHydra parses as numbers before writing them into
+ * the *arr instance. "Minimum seeders" only exists on an entry that configures
+ * torrents, which is the only branch `ExternalTools` reads it in.
+ */
+describe("External tools tab numeric field guards", () => {
+    const TORRENT_RADARR: ExternalToolValues = {
+        ...RADARR,
+        configureForTorrents: true,
+    };
+    const SEEDERS_ERROR =
+        "config-error-externalTools-externalToolDraft-minimumSeeders";
+    const CATEGORIES_ERROR =
+        "config-error-externalTools-externalToolDraft-categories";
+
+    it("sends nothing and names the field when Minimum seeders is not a number", async () => {
+        const fetchMock = acceptEverything();
+        const harness = renderTab({
+            fetchMock,
+            values: configWith([TORRENT_RADARR]),
+        });
+
+        await openEntry(0);
+        type("minimumSeeders", "abc");
+        submitDialog();
+
+        expect(await screen.findByTestId(SEEDERS_ERROR)).toHaveTextContent(
+            "abc is not a whole number",
+        );
+        expect(
+            screen.getByText("Config invalid. Please check your settings."),
+        ).toBeVisible();
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(screen.getByTestId(DIALOG)).toBeVisible();
+        // The entry the tab holds is untouched, so the bad value was never
+        // committed either.
+        expect(toolsOf(harness)[0].minimumSeeders).toBe("1");
+    });
+
+    it("submits a cleared Minimum seeders, which the backend defaults to 1", async () => {
+        const fetchMock = acceptEverything();
+        const harness = renderTab({
+            fetchMock,
+            values: configWith([TORRENT_RADARR]),
+        });
+
+        await openEntry(0);
+        type("minimumSeeders", "");
+        submitDialog();
+
+        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        expect(calledPaths(fetchMock)).toEqual(["configure"]);
+        expect(requestBody(fetchMock, 0).minimumSeeders).toBe("");
+        await waitFor(() =>
+            expect(toolsOf(harness)[0].minimumSeeders).toBe(""),
+        );
+        expect(screen.queryByTestId(SEEDERS_ERROR)).toBeNull();
+    });
+
+    it("rejects a non-numeric category but tolerates the spacing", async () => {
+        const fetchMock = acceptEverything();
+        renderTab({fetchMock, values: configWith([TORRENT_RADARR])});
+
+        await openEntry(0);
+        type("categories", "5030,abc");
+        submitDialog();
+
+        expect(await screen.findByTestId(CATEGORIES_ERROR)).toHaveTextContent(
+            "5030,abc is not a comma-separated list of category IDs",
+        );
+        expect(fetchMock).not.toHaveBeenCalled();
+
+        type("categories", "5030, 5040");
+        submitDialog();
+
+        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        expect(calledPaths(fetchMock)).toEqual(["configure"]);
+        expect(requestBody(fetchMock, 0).categories).toBe("5030, 5040");
+    });
+});
+
 describe("External tools tab standalone connection test", () => {
     it("reports success without touching the configuration", async () => {
         const fetchMock = acceptEverything();

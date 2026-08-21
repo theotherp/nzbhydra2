@@ -343,4 +343,54 @@ test.describe("Config auth tab visual evidence", () => {
             });
         });
     }
+
+    // FM-068's visual gate. Desktop only: the save changes what the password
+    // control holds, not how the tab is laid out.
+    test("should capture the Auth tab immediately after a successful save at desktop", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        const seeded = structuredClone(before);
+        authSection(seeded).authType = "BASIC";
+        authSection(seeded).restrictSearch = true;
+        authSection(seeded).users = [
+            {
+                maySeeAdmin: true,
+                maySeeDetailsDl: true,
+                maySeeStats: true,
+                password: "{noop}saved-password",
+                showIndexerSelection: true,
+                username: "saved-user",
+            },
+        ];
+        await hydra.saveConfig(seeded);
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await openAuthConfigAsAdmin(page);
+        });
+        await page
+            .getByTestId("config-input-auth-users-0-username")
+            .fill("saved-user-renamed");
+        await saveAndExpectSuccess(page);
+
+        // Immediately after the save and before any reload: the password the
+        // response reset the form with is the marker again, so the field is
+        // back to its placeholder and the reveal button has nothing to
+        // disclose.
+        await expect(
+            page.getByTestId("config-input-auth-users-0-password"),
+        ).toHaveValue("");
+        await expect(
+            page.getByTestId("config-input-auth-users-0-password"),
+        ).toHaveAttribute("placeholder", "Value unchanged");
+        expect(usersOf((await hydra.getConfig()) as Json)[0]).toMatchObject({
+            password: UNCHANGED_MARKER,
+            username: "saved-user-renamed",
+        });
+        await page.screenshot({
+            path: visualEvidencePath("F-CONFIG-AUTH", "auth-after-save-desktop"),
+            fullPage: true,
+        });
+    });
 });

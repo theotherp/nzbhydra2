@@ -44,8 +44,10 @@ public class ProwlarrConfigRetriever {
             prowlarrIndexers = webAccess.callUrl(uri.toString(), new TypeReference<>() {
             });
         } catch (WebAccessException e) {
-            String message = "Error accessing Prowlarr: " + e.getMessage();
-            logger.error(message);
+            //ADR-0019: this message is shown in the Prowlarr import UI, so it must not carry the response body
+            String message = "Error accessing Prowlarr: " + e.getShortMessage();
+            //The log keeps the full diagnostic form including the body
+            logger.error("Error accessing Prowlarr: {}", e.getMessage());
             throw new IndexerAccessException(message, e);
         }
 

@@ -10,6 +10,7 @@ import org.nzbhydra.notifications.ExternalToolConfigResultEvent;
 import org.nzbhydra.notifications.NotificationHandler;
 import org.nzbhydra.notifications.NotificationRepository;
 import org.nzbhydra.web.UrlCalculator;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,9 @@ public class ExternalToolsSyncService {
             } catch (Exception e) {
                 failureCount++;
                 logger.error("Failed to sync to {}: {}", tool.getName(), e.getMessage(), e);
-                messages.add("Failed to sync to " + tool.getName() + ": " + e.getMessage());
+                //ADR-0019: the log above keeps the full diagnostic message, the user-facing entry does not carry the body
+                final String message = e instanceof WebAccessException webAccessException ? webAccessException.getShortMessage() : e.getMessage();
+                messages.add("Failed to sync to " + tool.getName() + ": " + message);
             }
         }
 

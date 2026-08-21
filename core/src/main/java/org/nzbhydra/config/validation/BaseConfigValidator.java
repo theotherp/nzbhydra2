@@ -66,6 +66,7 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
             configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || result.isRestartNeeded());
         }
         validateIndexers(newConfig, configValidationResult);
+        validateNoUnresolvedSensitiveDataMarkers(newBaseConfig, configValidationResult);
 
 
         if (!configValidationResult.getErrorMessages().isEmpty()) {
@@ -82,6 +83,18 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
 
         return configValidationResult;
+    }
+
+    /**
+     * A submitted secret that still reads {@value SensitiveDataConfigValidator#UNCHANGED_MARKER} after
+     * {@link #prepareForSaving(BaseConfig, BaseConfig)} could not be matched to a stored value - typically because the
+     * record it belongs to does not exist in the saved config, so there is nothing to keep. Writing the marker itself
+     * would silently replace the credential with an unusable literal, so the save is refused instead.
+     */
+    private void validateNoUnresolvedSensitiveDataMarkers(BaseConfig newBaseConfig, ConfigValidationResult configValidationResult) {
+        for (String settingPath : sensitiveDataConfigValidator.findUnresolvedMarkers(newBaseConfig)) {
+            configValidationResult.getErrorMessages().add("The setting " + settingPath + " was submitted as \"" + SensitiveDataConfigValidator.UNCHANGED_MARKER + "\" but no stored value could be found to keep. Please enter the value again.");
+        }
     }
 
     private void validateIndexers(BaseConfig newConfig, ConfigValidationResult configValidationResult) {
@@ -135,14 +148,19 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
 
     @Override
     public BaseConfig prepareForSaving(BaseConfig oldBaseConfig, BaseConfig newConfig) {
-        // First handle sensitive data unchanged markers
+        // Validators that know how to identify their own records resolve their unchanged markers first. A user is
+        // matched by its username, which the generic pass below cannot do, and letting that pass go first would
+        // overwrite the password with the entry that happens to sit at the same index.
+        authConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getAuth());
+
+        // Then the generic pass for every unchanged marker still standing, matching each record by its identity and
+        // falling back to its index only while its list has not changed length
         sensitiveDataConfigValidator.prepareForSaving(oldBaseConfig, newConfig);
 
         categoriesConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getCategoriesConfig());
         downloadingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getDownloading());
         searchingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getSearching());
         mainConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getMain());
-        authConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getAuth());
         newConfig.getIndexers().removeIf(Objects::isNull);
         newConfig.getIndexers().forEach(x -> indexerConfigValidator.prepareForSaving(oldBaseConfig, x));
         return newConfig;

@@ -239,7 +239,7 @@ public class ExternalTools {
         xdarrAddRequest.setSupportsSearch(true);
 
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiKey", configProvider.getBaseConfig().getMain().getApiKey()));
-        xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories(), addRequest)));
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories())));
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
         if (externalTool == AddRequest.ExternalTool.Sonarr) {
@@ -263,7 +263,7 @@ public class ExternalTools {
             }
 
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost() + "/torznab"));
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? Integer.parseInt(addRequest.getMinimumSeeders()) : 1));
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", parseMinimumSeeders(addRequest.getMinimumSeeders())));
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
         }
@@ -324,12 +324,59 @@ public class ExternalTools {
         }
     }
 
-    private Object mapCategories(String categoriesString, AddRequest addRequest) {
+    /**
+     * The external tools expect a list of numeric category IDs. The value is entered as free text, so it is read
+     * leniently about shape and strictly about content: tokens are trimmed and empty ones are dropped (so
+     * "5030, 5040" and a trailing separator are accepted), while a token that is not a number is refused by name
+     * instead of letting {@link Integer#parseInt(String)} throw a "For input string" the blanket catch in
+     * {@link #addNzbhydraAsIndexer(AddRequest)} would turn into an unattributed "Unexpected error". Null and empty
+     * mean "no categories", which is what {@code ExternalToolConfig} defaults to.
+     */
+    private Object mapCategories(String categoriesString) throws IOException {
         if (Strings.isNullOrEmpty(categoriesString)) {
             return Collections.emptyList();
-        } else {
-            return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
         }
+        final List<Integer> categories = new ArrayList<>();
+        for (String token : categoriesString.split(",")) {
+            final String category = token.trim();
+            if (category.isEmpty()) {
+                continue;
+            }
+            try {
+                categories.add(Integer.parseInt(category));
+            } catch (NumberFormatException e) {
+                throw failWithMessage("Categories must be comma-separated whole numbers but \"" + categoriesString + "\" contains \"" + category + "\"");
+            }
+        }
+        return categories;
+    }
+
+    /**
+     * An empty or blank value means "use the default", exactly as an absent one does: {@code ExternalToolConfig}
+     * ships {@code minimumSeeders = "1"}. Over HTTP an empty string is already turned into null by the web mapper
+     * ({@code WebConfiguration}'s {@code EmptyStringToNullDeserializer}), but the automatic sync builds its request
+     * from the stored configuration in Java and reaches this method with whatever was saved. Anything that is
+     * neither blank nor a number is refused by name; see {@link #mapCategories(String)}.
+     */
+    private int parseMinimumSeeders(String minimumSeeders) throws IOException {
+        if (minimumSeeders == null || minimumSeeders.isBlank()) {
+            return 1;
+        }
+        try {
+            return Integer.parseInt(minimumSeeders.trim());
+        } catch (NumberFormatException e) {
+            throw failWithMessage("Minimum seeders must be a whole number but was \"" + minimumSeeders + "\"");
+        }
+    }
+
+    /**
+     * The module's convention for a rejected request (see {@link #failOnUnknownVersion(AddRequest)}): record the
+     * reason for the UI, then abort so nothing is written into the external tool.
+     */
+    private IOException failWithMessage(String message) {
+        messages.add("Error: " + message);
+        logger.error(message);
+        return new IOException(message);
     }
 
     private List<XdarrIndexer> getConfiguredNzbhydraIndexers(AddRequest addRequest) throws IOException {
@@ -365,7 +412,8 @@ public class ExternalTools {
             messages.add("Error: " + errorMessage);
             throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);
         } else {
-            messages.add(e.getMessage());
+            //ADR-0019: this entry is returned to the user in the messages list, so it carries no response body
+            messages.add(e.getShortMessage());
             throw e;
         }
     }

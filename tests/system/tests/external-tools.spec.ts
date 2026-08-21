@@ -251,6 +251,143 @@ test.describe("External Tools Configuration", () => {
         ).toEqual([]);
     });
 
+    /**
+     * FM-070: a cleared "Minimum seeders" configures the tool with the
+     * documented default of 1. Only the torznab branch reads the value, and
+     * add type `Single` is the only way to reach it here - every mock indexer
+     * the fixture configures is newznab, so a per-indexer torrent sync would
+     * have no indexer to write at all.
+     *
+     * This case passes against the pre-fix jar too, and deliberately so: it
+     * pins the *result*, which two independent layers now guarantee. Over HTTP
+     * the empty string never even reaches `ExternalTools:266`, because
+     * `WebConfiguration`'s mapper deserializes "" to null
+     * (`EmptyStringToNullDeserializer`); `parseMinimumSeeders` is what keeps
+     * the answer 1 when the same value arrives from the stored configuration
+     * instead, which the automatic sync does in Java. The case below is the
+     * one that reproduced the defect through the browser.
+     */
+    test("should configure a torrent entry whose minimum seeders is cleared", async ({
+        page,
+    }) => {
+        const name = "UI System Test Radarr Torrent";
+        await openPreset(page, "RADARR");
+        await draftField(page, "name").fill(name);
+        await draftField(page, "nzbhydraName").fill(name);
+        await draftField(page, "host").fill(testEnvironment.radarrInternalUrl);
+        await draftField(page, "apiKey").fill(testEnvironment.radarrApiKey);
+        await draftField(page, "nzbhydraHost").fill(
+            testEnvironment.hydraExternalUrl,
+        );
+        await chooseDraftOption(
+            page,
+            "Sync Type",
+            "Single entry for all indexers",
+        );
+        await draftSwitch(page, "Configure for Usenet").setChecked(false);
+        await draftSwitch(page, "Configure for Torrents").setChecked(true);
+        const minimumSeeders = draftField(page, "minimumSeeders");
+        await minimumSeeders.fill("2");
+        await minimumSeeders.fill("");
+        await expect(minimumSeeders).toHaveValue("");
+
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        const configureResponse = waitForExternalResponse(page, "configure");
+        await page.getByTestId(`${DIALOG}-submit`).click();
+        await expectConnectionSuccess(await connectionResponse);
+        const configure = await configureResponse;
+
+        // The cleared field really does leave the browser as an empty string,
+        // and it is the torznab branch that received it.
+        expect(addRequestOf(configure).minimumSeeders).toBe("");
+        expect(addRequestOf(configure).addType).toBe("SINGLE");
+        expect(addRequestOf(configure).configureForTorrents).toBe(true);
+        expect(addRequestOf(configure).configureForUsenet).toBe(false);
+        expect(
+            await configure.json(),
+            `External-tool configuration failed: ${await externalToolsMessages(page)}`,
+        ).toBe(true);
+        await expect(
+            page.getByTestId(DIALOG),
+            await externalToolsMessages(page),
+        ).toBeHidden();
+        expect(await externalToolsMessages(page)).not.toContain(
+            "For input string",
+        );
+
+        // What Radarr actually holds now: a torznab entry whose blank
+        // "Minimum seeders" became the documented default of 1.
+        const created = await getArrIndexerByName(
+            page.request,
+            testEnvironment.radarrExternalUrl,
+            name,
+        );
+        expect(created.configContract).toBe("TorznabSettings");
+        expect(created.protocol).toBe("torrent");
+        expect(arrIndexerField(created, "minimumSeeders")).toBe(1);
+    });
+
+    /**
+     * FM-070, and the case that actually reproduced the defect against the
+     * pre-fix jar: `mapCategories` split on "," and parsed each token raw, so
+     * the space in "2000, 5000" - the way a list is written by hand, and the
+     * shape legacy accepted without comment - threw inside `Integer.parseInt`
+     * and made `configure` answer `false` with `Unexpected error: For input
+     * string: " 5000"`. A *cleared* "Minimum seeders" cannot reproduce it over
+     * HTTP: `WebConfiguration`'s mapper deserializes "" to null
+     * (`EmptyStringToNullDeserializer`), so the empty string never reaches
+     * `ExternalTools:266`. Only a value that survives deserialization does -
+     * this one, a blank one, or a non-numeric one, all of which the JVM tests
+     * drive through the sync service's shape.
+     */
+    test("should configure an entry whose categories carry spacing", async ({
+        page,
+    }) => {
+        const name = "UI System Test Radarr Categories";
+        await openPreset(page, "RADARR");
+        await draftField(page, "name").fill(name);
+        await draftField(page, "nzbhydraName").fill(name);
+        await draftField(page, "host").fill(testEnvironment.radarrInternalUrl);
+        await draftField(page, "apiKey").fill(testEnvironment.radarrApiKey);
+        await draftField(page, "nzbhydraHost").fill(
+            testEnvironment.hydraExternalUrl,
+        );
+        await chooseDraftOption(
+            page,
+            "Sync Type",
+            "Single entry for all indexers",
+        );
+        await draftField(page, "categories").fill("2000, 5000");
+
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        const configureResponse = waitForExternalResponse(page, "configure");
+        await page.getByTestId(`${DIALOG}-submit`).click();
+        await expectConnectionSuccess(await connectionResponse);
+        const configure = await configureResponse;
+
+        expect(addRequestOf(configure).categories).toBe("2000, 5000");
+        expect(
+            await configure.json(),
+            `External-tool configuration failed: ${await externalToolsMessages(page)}`,
+        ).toBe(true);
+        expect(await externalToolsMessages(page)).not.toContain(
+            "For input string",
+        );
+
+        const created = await getArrIndexerByName(
+            page.request,
+            testEnvironment.radarrExternalUrl,
+            name,
+        );
+        expect(arrIndexerField(created, "categories")).toEqual([2000, 5000]);
+    });
+
     test("should trigger manual sync all", async ({hydra, page}) => {
         await syncOnConfigChange(page).setChecked(true);
         await expect(syncOnConfigChange(page)).toBeChecked();
@@ -448,6 +585,24 @@ test.describe("External tools visual evidence", () => {
                     `external-tools-connection-failed-${viewport}`,
                 ),
             });
+
+            // FM-070: the rejected "Minimum seeders". Nothing is sent, so this
+            // state needs no reachable tool - the dialog's own validation stops
+            // the submit and names the field.
+            await draftSwitch(page, "Configure for Torrents").setChecked(true);
+            await draftField(page, "minimumSeeders").fill("abc");
+            await page.getByTestId(`${DIALOG}-submit`).click();
+            const seedersError = page.getByTestId(
+                "config-error-externalTools-externalToolDraft-minimumSeeders",
+            );
+            await expect(seedersError).toHaveText("abc is not a whole number");
+            await seedersError.scrollIntoViewIfNeeded();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-invalid-seeders-${viewport}`,
+                ),
+            });
         });
     }
 });
@@ -521,6 +676,16 @@ function draftField(page: Page, field: string): Locator {
 
 function draftSwitch(page: Page, label: string): Locator {
     return page.getByRole("dialog").getByRole("switch", {name: label});
+}
+
+/** Picks an option in one of the dialog's MUI selects. */
+async function chooseDraftOption(
+    page: Page,
+    label: string,
+    option: string,
+): Promise<void> {
+    await page.getByRole("dialog").getByRole("combobox", {name: label}).click();
+    await page.getByRole("option", {name: option}).click();
 }
 
 async function openPreset(page: Page, preset: string): Promise<void> {
@@ -665,6 +830,41 @@ async function externalToolsMessages(page: Page): Promise<string> {
 }
 
 type ArrIndexer = {id: number; name: string};
+
+/** The same entries, read with the parts `expectTestOwnedIndexer` ignores. */
+type ArrIndexerDetail = {
+    configContract?: string;
+    fields?: {name?: string; value?: unknown}[];
+    name: string;
+    protocol?: string;
+};
+
+async function getArrIndexerByName(
+    request: APIRequestContext,
+    url: string,
+    name: string,
+): Promise<ArrIndexerDetail> {
+    const response = await request.get(`${url}/api/v3/indexer`, {
+        headers: {"X-Api-Key": testEnvironment.radarrApiKey},
+    });
+    expect(
+        response.status(),
+        `Unable to query external-tool indexers: ${await response.text()}`,
+    ).toBe(200);
+    const indexers = (await response.json()) as ArrIndexerDetail[];
+    const match = indexers.find((indexer) => indexer.name === name);
+    expect(
+        match,
+        `No external-tool indexer named "${name}"; found: ${indexers
+            .map((indexer) => indexer.name)
+            .join(", ")}`,
+    ).toBeTruthy();
+    return match as ArrIndexerDetail;
+}
+
+function arrIndexerField(indexer: ArrIndexerDetail, field: string): unknown {
+    return indexer.fields?.find((candidate) => candidate.name === field)?.value;
+}
 
 async function getTestOwnedIndexers(
     request: APIRequestContext,

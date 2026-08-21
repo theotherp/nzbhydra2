@@ -1,4 +1,5 @@
 import type {ExternalToolSyncResult} from "../../../api/config/externalTools";
+import {patternValidator} from "../components";
 import type {ConfigFieldPath, SettingOption} from "../components";
 
 /**
@@ -66,6 +67,27 @@ export const DEFAULT_CATEGORIES: Readonly<Record<string, string>> = {
     READARR: "7020,8010",
     SONARR: "5030,5040",
 };
+
+/**
+ * The two entry fields NZBHydra itself parses as numbers before it writes them
+ * into the *arr instance: `ExternalTools:266` reads `minimumSeeders` with
+ * `Integer.parseInt` and `ExternalTools.mapCategories` reads every
+ * comma-separated `categories` token the same way. Legacy declared no pattern
+ * for either, so any text was sent and the failure came back as an
+ * unattributed refusal. Neither is `required` — an empty value is the
+ * documented default on both sides (`ExternalToolConfig.minimumSeeders = "1"`,
+ * and `prepareForSaving` refills empty categories), and `patternValidator`
+ * always accepts one.
+ */
+export const minimumSeedersValidator = patternValidator(
+    /^\d+$/,
+    (value) => `${value} is not a whole number`,
+);
+
+export const categoriesValidator = patternValidator(
+    /^\d+(,\s*\d+)*$/,
+    (value) => `${value} is not a comma-separated list of category IDs`,
+);
 
 /**
  * Legacy's four presets plus its "Custom" entry

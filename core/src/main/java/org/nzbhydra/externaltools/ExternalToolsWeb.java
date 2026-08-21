@@ -7,6 +7,7 @@ import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.WebAccess;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,9 @@ public class ExternalToolsWeb {
 
         } catch (Exception e) {
             logger.debug("Connection test failed", e);
-            return new ConnectionTestResult(false, "Connection failed: " + e.getMessage());
+            //ADR-0019: the user sees the response message and code, never the tool's response body
+            final String message = e instanceof WebAccessException webAccessException ? webAccessException.getShortMessage() : e.getMessage();
+            return new ConnectionTestResult(false, "Connection failed: " + message);
         }
     }
 

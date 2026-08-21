@@ -22,6 +22,7 @@ import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.indexers.BinsearchTest;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
@@ -30,6 +31,7 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.web.JaxbConfiguration;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
 
@@ -261,6 +263,44 @@ public class NewznabCheckerTest {
         CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
         assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchIds()).hasSize(6);
         assertThat(checkCapsRespone.isAllCapsChecked()).isFalse();
+        verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
+    }
+
+    /**
+     * ADR-0019 removed the response body from the message {@code IndexerWebAccess} builds, so the "Incorrect parameter"
+     * marker an indexer returns for an unsupported ID is only found in {@code WebAccessException.getBody()} now.
+     * The exception thrown here is exactly what {@code IndexerWebAccess} produces after the change: a bounded message
+     * that does not mention the marker, with the original {@code WebAccessException} as cause. Without the body check
+     * in {@code singleCheckCaps} the failure propagates and {@code allCapsChecked} turns false.
+     */
+    @Test
+    void shouldTreatIncorrectParameterInResponseBodyAsUnsupportedId() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&imdbid=0944947"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=24428"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
+
+        WebAccessException webAccessException = new WebAccessException("Bad Request", "<error code=\"200\" description=\"Incorrect parameter\"/>", 400);
+        IndexerUnreachableException indexerException = new IndexerUnreachableException(
+                "Error while communicating with indexer testindexer. Server returned: Bad Request. Code: 400", webAccessException);
+        assertThat(indexerException.getMessage()).doesNotContain("Incorrect parameter");
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
+                .thenThrow(indexerException);
+
+        CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
+
+        assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchIds()).hasSize(6);
+        assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchIds()).doesNotContain(IMDB);
+        assertThat(checkCapsRespone.isAllCapsChecked()).isTrue();
         verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
     }
 

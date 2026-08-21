@@ -189,3 +189,20 @@ persisted sync notification's own body stays the generic count text and is unaff
 `getShortMessage()` under FM-071, which now also touches `handleXdarrError`'s one `else` branch inside `ExternalTools.java`
 — a narrow, disclosed exception to FM-070's otherwise-exclusive ownership of that file, since the two tasks change
 disjoint lines for disjoint reasons.
+
+## ADR-0020 — Reject unresolvable save markers; fix the fixture, not the contract (accepted 2026-08-20)
+
+FM-068's implementer found that rejecting a `***UNCHANGED***` marker whose record cannot be identified in the saved
+config (the packet's acceptance criterion 4) breaks `tests/system/tests/fixtures.ts`'s shared `hydra` fixture: its
+teardown restores a masked `GET`-time snapshot via `PUT`, and when a test changed a list's identity in between (e.g.
+`configureMockIndexers` replacing the indexer list), that restore now asks the server to keep a secret for a record it
+no longer holds — cascading failures in `search.spec.ts` and `config-indexers.spec.ts`.
+
+Decided: keep the server rejection exactly as the packet specifies; the fixture is wrong, not the contract — it was
+restoring a credential it was never actually given, previously masked only by the old positional fallback's accidental
+correctness. `tests/system/tests/fixtures.ts`'s teardown is fixed (e.g. restore the runner's known baseline explicitly,
+or drop/skip unresolvable markers on restore with a logged warning) instead of softening or splitting the rejection
+rule.
+
+Binding for FM-068: extends its `Files Allowed To Modify` to include `tests/system/tests/fixtures.ts` for this narrow
+teardown-restore purpose only — no other change to that file's scope.

@@ -5,7 +5,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
 import org.springframework.context.support.StaticApplicationContext;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.mock.http.MockHttpInputMessage;
+import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -16,8 +24,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
 import org.springframework.web.util.ServletRequestPathUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,6 +96,83 @@ class WebConfigurationTest {
         ((HttpRequestHandler) handler.getHandler()).handleRequest(request, response);
 
         assertThat(response.getContentAsString()).isEqualTo("external React asset");
+    }
+
+    @Test
+    void shouldAcceptDownloaderConfigBodyWithoutPrimitiveFields() throws Exception {
+        JacksonJsonHttpMessageConverter converter = installedJsonConverter();
+
+        Object read = converter.read(DownloaderConfig.class,
+            jsonBody("{\"name\":\"d1\",\"downloaderType\":\"SABNZBD\",\"url\":\"http://localhost:8080\"}"));
+
+        assertThat(read).isInstanceOf(DownloaderConfig.class);
+        DownloaderConfig downloaderConfig = (DownloaderConfig) read;
+        assertThat(downloaderConfig.isEnabled()).isFalse();
+        assertThat(downloaderConfig.isAddPaused()).isFalse();
+        assertThat(downloaderConfig.getName()).isEqualTo("d1");
+        assertThat(downloaderConfig.getUrl()).isEqualTo("http://localhost:8080");
+    }
+
+    @Test
+    void shouldAcceptDownloaderConfigBodyWithExplicitlyNulledPrimitiveFields() throws Exception {
+        JacksonJsonHttpMessageConverter converter = installedJsonConverter();
+
+        Object read = converter.read(DownloaderConfig.class,
+            jsonBody("{\"name\":\"d1\",\"downloaderType\":\"SABNZBD\",\"url\":\"http://localhost:8080\",\"enabled\":null,\"addPaused\":null}"));
+
+        assertThat(read).isInstanceOf(DownloaderConfig.class);
+        DownloaderConfig downloaderConfig = (DownloaderConfig) read;
+        assertThat(downloaderConfig.isEnabled()).isFalse();
+        assertThat(downloaderConfig.isAddPaused()).isFalse();
+        assertThat(downloaderConfig.getName()).isEqualTo("d1");
+    }
+
+    @Test
+    void shouldAcceptSearchRequestParametersBodyWithoutPrimitiveFields() throws Exception {
+        JacksonJsonHttpMessageConverter converter = installedJsonConverter();
+
+        Object read = converter.read(SearchRequestParameters.class,
+            jsonBody("{\"query\":\"some query\",\"mode\":\"search\",\"category\":\"All\"}"));
+
+        assertThat(read).isInstanceOf(SearchRequestParameters.class);
+        SearchRequestParameters parameters = (SearchRequestParameters) read;
+        assertThat(parameters.isLoadAll()).isFalse();
+        assertThat(parameters.getSearchRequestId()).isZero();
+        assertThat(parameters.getQuery()).isEqualTo("some query");
+    }
+
+    @Test
+    void shouldStillWriteIndentedJson() throws Exception {
+        JacksonJsonHttpMessageConverter converter = installedJsonConverter();
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setName("d1");
+
+        MockHttpOutputMessage outputMessage = new MockHttpOutputMessage();
+        converter.write(downloaderConfig, MediaType.APPLICATION_JSON, outputMessage);
+
+        assertThat(outputMessage.getBodyAsString(StandardCharsets.UTF_8)).containsPattern("\\n\\s+\"name\"\\s*:\\s*\"d1\"");
+    }
+
+    /**
+     * Reads through the converter Spring actually installs, never through a mapper built by the test itself.
+     */
+    private JacksonJsonHttpMessageConverter installedJsonConverter() {
+        HttpMessageConverters.ServerBuilder builder = HttpMessageConverters.forServer();
+        new WebConfiguration().configureMessageConverters(builder);
+        List<JacksonJsonHttpMessageConverter> jsonConverters = new ArrayList<>();
+        for (HttpMessageConverter<?> converter : builder.build()) {
+            if (converter instanceof JacksonJsonHttpMessageConverter jsonConverter) {
+                jsonConverters.add(jsonConverter);
+            }
+        }
+        assertThat(jsonConverters).hasSize(1);
+        return jsonConverters.get(0);
+    }
+
+    private static MockHttpInputMessage jsonBody(String body) {
+        MockHttpInputMessage inputMessage = new MockHttpInputMessage(body.getBytes(StandardCharsets.UTF_8));
+        inputMessage.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        return inputMessage;
     }
 
     private static class TestResourceHandlerRegistry extends ResourceHandlerRegistry {

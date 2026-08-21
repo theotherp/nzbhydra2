@@ -41,5 +41,18 @@ public class WebAccessException extends IOException {
                 .collect(Collectors.joining(". "));
     }
 
+    /**
+     * The same information as {@link #getMessage()} minus the response body, for messages a user reads.
+     * A remote server's response body is unbounded (a whole HTML error page, a stack trace, a JSON blob) and has no
+     * place in a toast, a connection-test result or a stored indexer error; {@link #getMessage()} keeps it for logs
+     * and {@link #getBody()} stays available to callers that need to inspect it (see ADR-0019).
+     */
+    public String getShortMessage() {
+        return Stream.of(Strings.isNotEmpty(message) ? message : "",
+                        "Code: " + code)
+                .filter(Strings::isNotEmpty)
+                .collect(Collectors.joining(". "));
+    }
+
 
 }

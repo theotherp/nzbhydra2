@@ -227,4 +227,76 @@ test.describe("Config main tab visual evidence", () => {
             });
         });
     }
+
+    // FM-068's visual gate. Desktop only: the save changes what the secret
+    // controls hold, not how the tab is laid out.
+    test("should capture the Main tab immediately after a successful save at desktop", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        const seeded = structuredClone(before);
+        mainSection(seeded).proxyType = "SOCKS";
+        mainSection(seeded).proxyHost = "127.0.0.1";
+        mainSection(seeded).proxyPort = 1080;
+        mainSection(seeded).proxyUsername = "proxy-user";
+        mainSection(seeded).proxyPassword = "proxy-password";
+        await hydra.saveConfig(seeded);
+        const proxyImagesBefore = mainSection(before).proxyImages === true;
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await openMainConfig(page);
+            await setAdvanced(page, true);
+        });
+        await expect(
+            page.getByTestId("config-input-main-proxyUsername"),
+        ).toHaveAttribute("placeholder", "Value unchanged");
+        await page
+            .getByTestId("config-setting-main-proxyImages")
+            .getByRole("switch")
+            .setChecked(!proxyImagesBefore);
+
+        const saved = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname === "/internalapi/config",
+        );
+        await page.getByTestId("config-save").click();
+        const result = (await (await saved).json()) as {
+            errorMessages?: string[];
+            newConfig?: Json;
+            ok?: boolean;
+        };
+        expect(result.errorMessages ?? []).toEqual([]);
+        expect(result.ok).toBe(true);
+        // The save response is masked exactly like a load, so the form the
+        // response resets holds the marker and not the stored credential.
+        expect(mainSection(result.newConfig as Json).proxyUsername).toBe(
+            UNCHANGED_MARKER,
+        );
+        expect(mainSection(result.newConfig as Json).proxyPassword).toBe(
+            UNCHANGED_MARKER,
+        );
+        await expect(page.getByText("Configuration saved.")).toBeVisible();
+
+        // Immediately after the save and before any reload: the proxy
+        // credentials are back to their "Value unchanged" placeholder, so the
+        // reveal button has nothing to disclose.
+        await expect(
+            page.getByTestId("config-input-main-proxyUsername"),
+        ).toHaveValue("");
+        await expect(
+            page.getByTestId("config-input-main-proxyUsername"),
+        ).toHaveAttribute("placeholder", "Value unchanged");
+        await expect(
+            page.getByTestId("config-input-main-proxyPassword"),
+        ).toHaveValue("");
+        await page
+            .getByTestId("config-setting-main-proxyUsername")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath("F-CONFIG-MAIN", "main-after-save-desktop"),
+            fullPage: true,
+        });
+    });
 });
