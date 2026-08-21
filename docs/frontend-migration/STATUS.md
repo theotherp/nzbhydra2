@@ -202,6 +202,20 @@ the server zone rather than legacy's UTC-then-convert, undocumented as a gap; `C
 in a code comment, not the registry; the raw-log `<pre>` isn't keyboard-scrollable (pre-existing in legacy too).
 Candidates for a future quickfix.
 
+FM-075 (System Backup Tab) added the Backup tab inside FM-072's shell: a list (filename + server-timezone date via
+`C-DATE-TIME`) with a base-URL-aware download link and Restore per row; "Create and download" streams
+`API-SYSTEM-BACKUP-CREATE-DOWNLOAD` through the transport's binary path, "Just create" calls `API-SYSTEM-BACKUP-CREATE`
+with `dontdownload=true`, both refresh the list; Restore confirms through `C-DIALOG-SERVICE` (a deliberate addition over
+legacy's unguarded click) then starts the restart countdown with legacy's exact message; upload-and-restore posts through
+a new XHR-based `C-API-TRANSPORT` upload method (ADR-0003's reserved progress path, since fetch cannot observe upload
+progress) with a real loaded/total progress bar, treating an HTTP-200 `successful=false` body as refusal rather than
+success. Playwright never triggers a real restore or upload against the shared instance; those flows are proven by
+component tests with the transport mocked. Passed with minor findings, not corrected (optional): the
+`createAndDownloadBackup` gap-line wording overstates itself — a refused creation there still saves an error body as a
+`.zip` file with no toast, matching legacy but not matching the gap line's "reported as an error toast" claim, which is
+true only of `backuponly`/`restore`; `GUI-STATUS.md` still listed Backup as unmigrated (see below — now reconciled).
+Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -216,10 +230,10 @@ None.
 
 ## Upcoming
 
-FM-075..FM-076 (Backup, Bugreport/Debug) are unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
+FM-076 (Bugreport/Debug) is unblocked by FM-072; F-SYSTEM-TASKS deliberately stays unpackaged for a
 later small batch.
 
-FM-073's and FM-074's minor findings (see above) are candidates for a future quickfix.
+FM-073's, FM-074's, and FM-075's minor findings (see above) are candidates for a future quickfix.
 
 Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
 feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).

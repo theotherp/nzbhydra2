@@ -1071,9 +1071,33 @@ features:
       - core/ui-src/js/directives/backup.js
       - core/ui-src/html/directives/backup.html
     target: core/ui-react/src/features/system/backups
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/backups/SystemBackupTab.test.tsx
+      - core/ui-react/src/api/system/backup.test.ts
+      - core/ui-react/src/api/transport.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-075; legacy's backup.html carries no stable selector. The
+      # per-row IDs are by position in the server's newest-first list.
+      - system-backup
+      - system-backup-create-download
+      - system-backup-create-only
+      - system-backup-upload
+      - system-backup-upload-progress
+      - system-backup-table
+      - system-backup-row
+      - system-backup-download-<index>
+      - system-backup-restore-<index>
+      - system-backup-restore-confirm
+    parity: partial
+    gaps:
+      - deliberate - restoring from a listed backup asks for confirmation first, naming the file and the restart; legacy restored from an unlabelled glyphicon click with no confirmation at all (backup.html:40-41)
+      - deliberate - the two creating actions are side-by-side buttons; legacy hid "Just create backup" in a uib-dropdown split button (backup.html:3-13), the same replacement FM-066/067 made
+      - deliberate - a creation or restore the server refuses inside an HTTP 200 GenericResponse is reported as an error toast; legacy ignored the body of both calls entirely and only growled on an HTTP error
+      - deliberate - the upload progress bar shows loaded kB, the total, and a percentage, and is indeterminate until the browser can compute the total; legacy always rendered a determinate bar whose max was undefined until the first
+        progress event (backup.html:20-23)
+      - deliberate - the file chooser accepts .zip/application/zip; legacy's ngf-select accepted any file and let the server reject it. A file chosen anyway is still answered by the server, which is what the refusal path renders
   - id: F-SYSTEM-BUGREPORT
     name: Debug archive, upload, sensitive logging, thread diagnostics, heap dump, and SQL tools
     routes:

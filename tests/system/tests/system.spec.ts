@@ -48,6 +48,27 @@ async function blockUpdateInstall(page: Page): Promise<string[]> {
 }
 
 /**
+ * The same hard stop for both restoring actions: each one replaces the shared
+ * instance's configuration and database and restarts it. The upload route is
+ * deliberately left pending rather than aborted -- the request never reaches
+ * the server either way, and holding it is what keeps the progress bar on
+ * screen for the visual gate without anything being restored.
+ */
+async function blockBackupRestore(
+    page: Page,
+): Promise<{restores: string[]; uploads: string[]}> {
+    const attempted = {restores: [] as string[], uploads: [] as string[]};
+    await page.route("**/internalapi/backup/restore?**", async (route) => {
+        attempted.restores.push(new URL(route.request().url()).pathname);
+        await route.abort();
+    });
+    await page.route("**/internalapi/backup/restorefile", (route) => {
+        attempted.uploads.push(new URL(route.request().url()).pathname);
+    });
+    return attempted;
+}
+
+/**
  * The offer states a healthy instance never reports: `API-UPDATES-INFOS` is
  * answered from a fixture so the install/beta/force branches and the two
  * warnings can be seen at all. Everything else on the page stays real.
@@ -119,8 +140,9 @@ test.describe("System shell", () => {
         }
 
         // An unmigrated tab: the placeholder, but still inside the shell.
-        await page.getByTestId("system-tab-backup").click();
-        await expect(page).toHaveURL(/\/system\/backup$/);
+        // `backup` was the tab used here until FM-075 migrated it.
+        await page.getByTestId("system-tab-tasks").click();
+        await expect(page).toHaveURL(/\/system\/tasks$/);
         await expect(
             page.getByText("React migration placeholder"),
         ).toBeVisible();
@@ -139,8 +161,9 @@ test.describe("System shell", () => {
         await page.goto("system/about");
         await expect(page.getByTestId("system-shell")).toBeVisible();
         await expect(page.getByTestId("system-about")).toBeVisible();
-        // `log` was the unmigrated tab used here until FM-074 migrated it.
-        await page.goto("system/tasks");
+        // `log` was the unmigrated tab used here until FM-074 migrated it,
+        // `tasks` is still unmigrated.
+        await page.goto("system/bugreport");
         await expect(
             page.getByText("React migration placeholder"),
         ).toBeVisible();
@@ -348,6 +371,123 @@ test.describe("System shell", () => {
         }
     });
 
+    test("should create a real backup, list it, and download it without ever restoring", async ({
+        page,
+    }) => {
+        const attemptedRestores = await blockBackupRestore(page);
+
+        await openSystem(page, "backup");
+        await expect(page.getByTestId("system-backup")).toBeVisible();
+
+        // A real backup of the running instance, created without downloading.
+        const created = page.waitForResponse((response) =>
+            response.url().includes("/backup/backuponly"),
+        );
+        await page.getByTestId("system-backup-create-only").click();
+        expect((await created).ok()).toBe(true);
+
+        // The list shows it, with a creation date and a real download link.
+        await expect(page.getByTestId("system-backup-table")).toBeVisible();
+        const firstRow = page.getByTestId("system-backup-row").first();
+        await expect(firstRow).toBeVisible();
+        await expect(firstRow).toContainText(".zip");
+        const downloadHref = await page
+            .getByTestId("system-backup-download-0")
+            .getAttribute("href");
+        expect(downloadHref).toContain(
+            "internalapi/backup/download?filename=",
+        );
+        const download = await page.request.get(downloadHref as string);
+        expect(download.ok()).toBe(true);
+        expect((await download.body()).length).toBeGreaterThan(0);
+
+        // The confirmation is a hard stop in front of the restart: opening it
+        // sends nothing, and this test dismisses it instead of confirming.
+        await page.getByTestId("system-backup-restore-0").click();
+        await expect(
+            page.getByTestId("system-backup-restore-confirm"),
+        ).toBeVisible();
+        await page.getByRole("button", {name: "Cancel"}).click();
+        await expect(
+            page.getByTestId("system-backup-restore-confirm"),
+        ).toBeHidden();
+
+        expect(
+            attemptedRestores.restores,
+            "a system test must never restore a backup on the shared instance",
+        ).toEqual([]);
+        expect(attemptedRestores.uploads).toEqual([]);
+    });
+
+    test("should render the backup list, the restore confirmation, and an upload in progress for the visual gate", async ({
+        page,
+    }) => {
+        const attemptedRestores = await blockBackupRestore(page);
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openSystem(page, "backup");
+                await expect(
+                    page.getByTestId("system-backup-table"),
+                ).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-BACKUP",
+                    `backup-list-${viewport}`,
+                ),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                `the backup tab must not overflow at ${visualViewports[viewport].width}px`,
+            ).toBe(true);
+
+            await page.getByTestId("system-backup-restore-0").click();
+            await expect(
+                page.getByTestId("system-backup-restore-confirm"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-BACKUP",
+                    `backup-restore-confirm-${viewport}`,
+                ),
+            });
+            await page.getByRole("button", {name: "Cancel"}).click();
+
+            // The upload never leaves the browser: the request is held by the
+            // route above, which is what keeps the progress bar on screen and
+            // keeps the shared instance from being restored into.
+            await page
+                .getByTestId("system-backup-upload")
+                .setInputFiles({
+                    buffer: Buffer.alloc(256 * 1024, 1),
+                    mimeType: "application/zip",
+                    name: "nzbhydra-backup-visual-gate.zip",
+                });
+            await expect(
+                page.getByTestId("system-backup-upload-progress"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SYSTEM-BACKUP",
+                    `backup-upload-progress-${viewport}`,
+                ),
+            });
+        }
+
+        // The upload was attempted, and held at the browser: it never reached
+        // the shared instance.
+        expect(attemptedRestores.restores).toEqual([]);
+        expect(attemptedRestores.uploads).toEqual([
+            "/internalapi/backup/restorefile",
+            "/internalapi/backup/restorefile",
+        ]);
+    });
+
     test("should show the about tab's real program info", async ({page}) => {
         await openSystem(page, "about");
 
@@ -457,7 +597,7 @@ test.describe("System shell", () => {
                 `the shell must not overflow at ${visualViewports[viewport].width}px`,
             ).toBe(true);
 
-            await page.getByTestId("system-tab-backup").click();
+            await page.getByTestId("system-tab-tasks").click();
             await expect(
                 page.getByText("React migration placeholder"),
             ).toBeVisible();

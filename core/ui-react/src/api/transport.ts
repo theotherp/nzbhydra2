@@ -14,6 +14,20 @@ export type TransportRequest = Omit<
     method?: HttpMethod;
 };
 
+/** How much of an upload's body has reached the server so far. */
+export type UploadProgress = {
+    loaded: number;
+    /** `null` while the browser cannot compute the request's length. */
+    total: number | null;
+};
+
+export type UploadOptions = {
+    method?: HttpMethod;
+    onProgress?: (progress: UploadProgress) => void;
+    /** Test seam; the browser's own `XMLHttpRequest` by default. */
+    xhrImplementation?: () => XMLHttpRequest;
+};
+
 export class ApiError extends Error {
     constructor(
         message: string,
@@ -112,6 +126,73 @@ export class ApiTransport {
         return response.blob();
     }
 
+    /**
+     * ADR-0003's explicitly reserved upload path: `fetch` cannot observe the
+     * *request* body's progress, so a file upload that has to show how far it
+     * has come is sent through `XMLHttpRequest` instead. Everything else about
+     * the contract is the same as `request`: the application-base-relative
+     * URL, `credentials: "same-origin"` (`withCredentials` is the XHR spelling
+     * for a same-origin request that carries the session cookie), and the CSRF
+     * header for the unsafe method.
+     *
+     * The response is parsed like any other, so an endpoint that reports a
+     * refusal inside an HTTP 200 body reaches the caller as a resolved value —
+     * only a transport failure or a non-2xx status rejects.
+     */
+    async upload<T>(
+        path: string,
+        body: FormData,
+        options: UploadOptions = {},
+    ): Promise<T> {
+        const {
+            method = "POST",
+            onProgress,
+            xhrImplementation = () => new XMLHttpRequest(),
+        } = options;
+        const url = this.url(path);
+        const csrfToken = unsafeMethod(method)
+            ? cookieValue(CSRF_COOKIE_NAME)
+            : undefined;
+        return new Promise<T>((resolve, reject) => {
+            const xhr = xhrImplementation();
+            xhr.open(method, url);
+            xhr.withCredentials = true;
+            xhr.setRequestHeader("Accept", "application/json");
+            if (csrfToken !== undefined) {
+                xhr.setRequestHeader(CSRF_HEADER_NAME, csrfToken);
+            }
+            // The browser sets `Content-Type` (including the multipart
+            // boundary) from the `FormData` body; setting it here would break
+            // the boundary the server parses the parts with.
+            if (onProgress) {
+                xhr.upload.addEventListener("progress", (event) => {
+                    onProgress({
+                        loaded: event.loaded,
+                        // `lengthComputable` is false while the total is
+                        // unknown; a caller then has a loaded count and no
+                        // total, which is exactly what it should render.
+                        total: event.lengthComputable ? event.total : null,
+                    });
+                });
+            }
+            xhr.addEventListener("error", () =>
+                reject(new Error(`Upload to ${path} failed`)),
+            );
+            xhr.addEventListener("abort", () =>
+                reject(new Error(`Upload to ${path} was aborted`)),
+            );
+            xhr.addEventListener("load", () => {
+                const data = xhrResponseData(xhr);
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    reject(responseError(xhr.status, data));
+                    return;
+                }
+                resolve(data as T);
+            });
+            xhr.send(body);
+        });
+    }
+
     browserTransferUrl(path: string): string {
         return this.url(path);
     }
@@ -168,6 +249,22 @@ async function responseData(response: Response): Promise<unknown> {
     return response.headers.get("Content-Type")?.includes("json")
         ? JSON.parse(text)
         : text;
+}
+
+/** `responseData`'s rule (JSON by content type, otherwise text) for an XHR. */
+function xhrResponseData(xhr: XMLHttpRequest): unknown {
+    const text = xhr.responseText;
+    if (!text) {
+        return undefined;
+    }
+    if (!xhr.getResponseHeader("Content-Type")?.includes("json")) {
+        return text;
+    }
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
 }
 
 function responseError(status: number, data: unknown): ApiError {

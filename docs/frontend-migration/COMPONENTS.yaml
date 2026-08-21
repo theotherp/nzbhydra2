@@ -14,7 +14,8 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-API-TRANSPORT
-    responsibility: Base-URL-aware HTTP and binary transport with credentials, CSRF, session headers, and common errors
+    responsibility: Base-URL-aware HTTP, binary, and progress-reporting upload transport with credentials, CSRF, session headers, and common errors. FM-075 added the upload method ADR-0003 reserved -- XHR-based, because fetch cannot
+      observe request-body progress -- keeping the same base URL, `credentials`/`withCredentials`, and CSRF-header contract as `request`
     legacy:
       - core/ui-src/js/generic-error-handler.js
       - core/ui-src/js/file-download-service.js
@@ -28,6 +29,7 @@ components:
       - F-CONFIG-SHELL
       - F-STATS-SHELL
       - F-SYSTEM-SHELL
+      - F-SYSTEM-BACKUP
     classification: shared_hydra
     state: partial
   - id: C-LIVE-TRANSPORT
@@ -106,6 +108,7 @@ components:
       - F-CONFIG-EXTERNAL-TOOLS
       - F-SYSTEM-SHELL
       - F-SYSTEM-CONTROL
+      - F-SYSTEM-BACKUP
     classification: shared_hydra
     state: partial
   - id: C-DATE-TIME

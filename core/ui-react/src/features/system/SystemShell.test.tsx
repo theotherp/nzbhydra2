@@ -65,6 +65,14 @@ function renderSystemArea(initialPath = "/hydra/system/control") {
         if (url.endsWith("/internalapi/updates/versionHistory")) {
             return jsonResponse([]);
         }
+        if (url.endsWith("/internalapi/backup/list")) {
+            return jsonResponse([
+                {
+                    creationDate: "2026-08-20T08:30:00Z",
+                    filename: "nzbhydra-backup.zip",
+                },
+            ]);
+        }
         throw new Error(`Unexpected request: ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -137,7 +145,8 @@ describe("SystemShell", () => {
         renderSystemArea();
         await screen.findByTestId("system-shell");
 
-        fireEvent.click(screen.getByTestId("system-tab-backup"));
+        // `backup` was the unmigrated tab used here until FM-075 migrated it.
+        fireEvent.click(screen.getByTestId("system-tab-tasks"));
 
         expect(
             await screen.findByText("React migration placeholder"),
@@ -162,6 +171,14 @@ describe("SystemShell", () => {
         expect(
             screen.getByRole("heading", {name: "Program info"}),
         ).toBeVisible();
+    });
+
+    it("should render the backup tab inside the shell", async () => {
+        renderSystemArea("/hydra/system/backup");
+        await screen.findByTestId("system-shell");
+
+        expect(await screen.findByTestId("system-backup")).toBeVisible();
+        expect(await screen.findByTestId("system-backup-table")).toBeVisible();
     });
 
     it("should render the news page inside the shell", async () => {

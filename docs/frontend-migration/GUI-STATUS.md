@@ -18,7 +18,9 @@ Currently available in React:
   changelog and full version history, and installing an update with progress feedback and an automatic restart handoff.
   The About tab is fully working — program, contact, license, and sponsor information. The Log tab is fully working —
   a formatted (JSON) log with paging and an entry-detail dialog, the raw current log file with auto-refresh and tail
-  follow, and a downloadable log-file list. The other tabs are not yet migrated.
+  follow, and a downloadable log-file list. The Backup tab is fully working — creating a backup (with or without
+  downloading), listing and downloading existing backups, restoring from an existing backup, and uploading a backup
+  file to restore with progress feedback. The other tabs are not yet migrated.
 - The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
   fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
