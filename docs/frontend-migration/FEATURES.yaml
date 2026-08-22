@@ -1209,6 +1209,12 @@ features:
       - core/ui-react/src/api/preferences.test.ts
       - core/ui-react/src/app/status/UpdateFooterBanners.test.tsx
       - core/ui-react/src/api/system/updates.test.ts
+      - core/ui-react/src/app/status/DownloaderStatusFooter.test.tsx
+      - core/ui-react/src/app/status/downloaderFooter.test.ts
+      - core/ui-react/src/app/status/NotificationToasts.test.tsx
+      - core/ui-react/src/api/live/downloaderStatus.test.ts
+      - core/ui-react/src/api/live/notifications.test.ts
+      - core/ui-react/src/api/live/transport.test.ts
       - core/ui-react/src/app/AppShell.test.tsx
       - tests/system/tests/smoke.spec.ts
     selectors:
@@ -1226,9 +1232,16 @@ features:
       - update-footer-ignore
       - update-footer-changelog
       - automatic-update-footer
+      # New in FM-081; legacy's downloader-status-footer.html carries only the
+      # container id `downloader-status-footer`, which is kept as the footer's
+      # own selector. The state indicator and the queue count are new.
+      - downloader-status-footer
+      - downloader-status-state
+      - downloader-status-queue
+      - notification-toasts
+      - notification-toast
     parity: partial
     gaps:
-      - not migrated - the downloader status footer (downloaderStatusFooter.js) and the live notification channel, both websocket surfaces (FM-081)
       - not migrated - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; no feature record inventories that wizard
       - deliberate - the announcements are shown one at a time in a fixed order and the sequence waits for each one to be closed; legacy opened its modals from independent, concurrent callbacks, so several could stack on top of
         each other in an order decided by response timing
@@ -1244,3 +1257,15 @@ features:
       - deliberate - FM-080's footer banners compensate the main content area's bottom padding by measuring their own rendered height (a `ResizeObserver`, with an initial synchronous measurement), rather than reproducing legacy's
         `footer.js` pixel bookkeeping (`updateFooterBottom`/`updatePaddingBottom`), per ADR-0014
       - deliberate - FM-080's "Ignore this update" only hides the banner for the current app load (no refetch); the ignored version is still recorded server-side through API-UPDATES-IGNORE, matching legacy's own scope
+      - "deliberate - FM-081's notification toasts are a feature-owned MUI Snackbar/Alert stack in app/status rather than C-TOAST-SERVICE confirmations: the shared provider's Toast.message is a plain string shown one at a time,
+        and these need a real router link in the pile-up notice, newline line breaks in every body, and legacy growl's stacking. Folding them back once C-TOAST-SERVICE accepts rich content is recorded as follow-up work"
+      - deliberate - FM-081 turns every newline in a notification body into a line break and renders it as text; legacy's body.replace("\n", "<br>") replaced only the first newline and injected the result as growl HTML
+      - deliberate - FM-081's rate graph really stops self-advancing once the window holds nothing but the last known rate; legacy's _.every compared its {x, y} point objects to a number, so that stop condition could never fire
+        and the interval ran until new data arrived
+      - deliberate - FM-081's rate graph is a themed @mui/x-charts sparkline hidden from assistive technology (ADR-0021), without legacy's nvd3 hover tooltip; the rate, remaining time, and queue text beside it are the accessible
+        surface
+      - deliberate - FM-081's downloader footer and FM-080's update banners stack by measuring their own rendered heights; legacy's footer.js moved the update footer with hardcoded 20/38 pixel offsets and padded the page with
+        fixed padding-bottom-N classes
+      - deliberate - FM-081's state indicator is a MUI icon carrying the state as its accessible name as well as its tooltip; legacy rendered a bare glyphicon whose state was reachable only by hovering
+      - deliberate - FM-081 keeps legacy's one connection per subscription (C-LIVE-TRANSPORT opens a STOMP client per subscribe, as the two legacy directives each opened their own SockJS); the shell shares one transport instance
+        across both live subscribers

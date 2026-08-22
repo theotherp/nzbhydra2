@@ -52,13 +52,40 @@ vi.mock("./status/StartupChecks", () => ({
 let mockFooterBannerHeight = 0;
 vi.mock("./status/UpdateFooterBanners", () => ({
     UpdateFooterBanners: ({
+        bottomOffset,
+        onHeightChange,
+    }: {
+        bottomOffset?: number;
+        onHeightChange: (height: number) => void;
+    }) => {
+        onHeightChange(mockFooterBannerHeight);
+        mockUpdateBannerBottomOffset = bottomOffset;
+        return <div data-testid="update-footer-banners" />;
+    },
+}));
+
+/**
+ * FM-081's two permanent live subscribers open a SockJS/STOMP connection on
+ * mount, which jsdom cannot serve; their own subscription lifecycle, gating,
+ * and rendering are covered by `DownloaderStatusFooter.test.tsx` and
+ * `NotificationToasts.test.tsx`. The downloader footer's mock reports
+ * `mockDownloaderFooterHeight` through the real `onHeightChange` wiring so the
+ * shell's own stacking contract can still be asserted here.
+ */
+let mockDownloaderFooterHeight = 0;
+let mockUpdateBannerBottomOffset: number | undefined;
+vi.mock("./status/DownloaderStatusFooter", () => ({
+    DownloaderStatusFooter: ({
         onHeightChange,
     }: {
         onHeightChange: (height: number) => void;
     }) => {
-        onHeightChange(mockFooterBannerHeight);
-        return <div data-testid="update-footer-banners" />;
+        onHeightChange(mockDownloaderFooterHeight);
+        return <div data-testid="downloader-status-footer" />;
     },
+}));
+vi.mock("./status/NotificationToasts", () => ({
+    NotificationToasts: () => <div data-testid="notification-toasts" />,
 }));
 
 afterEach(cleanup);
@@ -67,6 +94,8 @@ beforeEach(() => {
     mockRouterNavigate.mockReset();
     fetchImplementation.mockReset();
     mockFooterBannerHeight = 0;
+    mockDownloaderFooterHeight = 0;
+    mockUpdateBannerBottomOffset = undefined;
 });
 
 const fetchImplementation = vi.fn();
@@ -162,6 +191,34 @@ describe("AppShell", () => {
         expect(
             window.getComputedStyle(screen.getByRole("main")).paddingBottom,
         ).toBe("88px");
+    });
+
+    it("should mount both permanent live-status subscribers", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(
+            screen.getByTestId("downloader-status-footer"),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId("notification-toasts")).toBeInTheDocument();
+    });
+
+    it("should stack the update banners above the downloader footer and pad the main area by both", () => {
+        mockFooterBannerHeight = 40;
+        mockDownloaderFooterHeight = 30;
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(
+            window.getComputedStyle(screen.getByRole("main")).paddingBottom,
+        ).toBe("70px");
+        expect(mockUpdateBannerBottomOffset).toBe(30);
     });
 
     it("should render the desktop navigation items in a horizontal row", () => {

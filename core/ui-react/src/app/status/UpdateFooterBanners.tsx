@@ -30,10 +30,18 @@ import {UpdateBanner} from "./UpdateBanner";
  */
 export function UpdateFooterBanners({
     bootstrap,
+    bottomOffset = 0,
     onHeightChange,
     transport,
 }: {
     bootstrap: BootstrapData;
+    /**
+     * FM-081: the downloader-status footer occupies the very bottom of the
+     * viewport when it is showing, so these banners sit on top of it —
+     * legacy's own stacking (`footer.js`'s `updateFooterBottom`), measured
+     * rather than hardcoded.
+     */
+    bottomOffset?: number;
     onHeightChange: (height: number) => void;
     transport: ApiTransport;
 }) {
@@ -97,7 +105,7 @@ export function UpdateFooterBanners({
             <Box
                 ref={containerRef}
                 sx={{
-                    bottom: 0,
+                    bottom: `${bottomOffset}px`,
                     left: 0,
                     position: "fixed",
                     right: 0,

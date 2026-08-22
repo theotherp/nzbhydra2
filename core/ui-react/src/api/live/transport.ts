@@ -3,13 +3,31 @@ import SockJS from "sockjs-client";
 
 export type LiveSubscription = {close(): void};
 
+/**
+ * Publishes a STOMP frame on the same connection that carries the
+ * subscription. Handed to `onReady` rather than exposed on
+ * `LiveSubscription` so a caller can only send while the connection is
+ * actually up, and so message modules that never send (search progress) keep
+ * their existing shape.
+ */
+export type LiveSend = (destination: string, body?: string) => void;
+
+export type LiveSubscribeOptions<T> = {
+    destination: string;
+    parse(body: string): T;
+    onMessage(message: T): void;
+    onUnavailable(error: Error): void;
+    /**
+     * Invoked after the destination is subscribed, on the first connect and
+     * again after every reconnect — an initial-state request (legacy's
+     * `/app/connectDownloaderStatus`) has to be re-sent once the topic
+     * subscription that carries its reply is back in place.
+     */
+    onReady?(send: LiveSend): void;
+};
+
 export type LiveTransport = {
-    subscribe<T>(options: {
-        destination: string;
-        parse(body: string): T;
-        onMessage(message: T): void;
-        onUnavailable(error: Error): void;
-    }): Promise<LiveSubscription>;
+    subscribe<T>(options: LiveSubscribeOptions<T>): Promise<LiveSubscription>;
 };
 
 export class SockJsStompLiveTransport implements LiveTransport {
@@ -23,12 +41,8 @@ export class SockJsStompLiveTransport implements LiveTransport {
         parse: parseMessage,
         onMessage,
         onUnavailable,
-    }: {
-        destination: string;
-        parse(body: string): T;
-        onMessage(message: T): void;
-        onUnavailable(error: Error): void;
-    }): Promise<LiveSubscription> {
+        onReady,
+    }: LiveSubscribeOptions<T>): Promise<LiveSubscription> {
         return new Promise((resolve, reject) => {
             let settled = false;
             let closed = false;
@@ -75,6 +89,14 @@ export class SockJsStompLiveTransport implements LiveTransport {
                     window.clearTimeout(timeout);
                     resolve({close});
                 }
+                // A real STOMP frame: a destination and a body. Legacy's
+                // downloader footer passed a callback where the headers
+                // argument belongs, which stomp.js serialized as the frame's
+                // headers instead of registering a receipt handler.
+                onReady?.((sendDestination, body = "") => {
+                    if (closed || !client.connected) return;
+                    client.publish({destination: sendDestination, body});
+                });
             };
             client.onStompError = () =>
                 fail(new Error("Live progress connection failed"));

@@ -13,6 +13,9 @@ Currently available in React:
 - Admin sessions see cross-route update banners pinned at the viewport bottom: an update-available banner (with an
   externally-updated variant) offering its changelog, an ignore action, and installing the update; and an
   automatic-update notice with its own changelog and dismissal.
+- A live downloader-status footer, cross-route, shown when a downloader is enabled and status display is on: state,
+  queue count, current download title/progress, and a rate sparkline, fed by a live connection. Live in-app notification
+  toasts for admin sessions when enabled in settings.
 - Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping, paging, rejection-reason breakdowns, supported download actions, display preferences, and saving executed searches.
 - Saved-search listing, reopen, and deletion.
 - The statistics dashboard — date-range and disabled-indexer selection, per-family statistics selection with persisted

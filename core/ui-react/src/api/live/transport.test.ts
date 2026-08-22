@@ -13,6 +13,8 @@ type MockClient = {
     activate: ReturnType<typeof vi.fn>;
     deactivate: ReturnType<typeof vi.fn>;
     subscribe: ReturnType<typeof vi.fn>;
+    publish: ReturnType<typeof vi.fn>;
+    connected: boolean;
     onConnect?: () => void;
     onStompError?: () => void;
     onWebSocketError?: () => void;
@@ -23,6 +25,8 @@ vi.mock("@stomp/stompjs", () => ({
         this.activate = vi.fn();
         this.deactivate = vi.fn();
         this.subscribe = vi.fn();
+        this.publish = vi.fn();
+        this.connected = true;
         stomp.client = this;
         stomp.config = config;
     }),
@@ -126,5 +130,45 @@ describe("SockJsStompLiveTransport", () => {
         liveSubscription.close();
         expect(replacementUnsubscribe).toHaveBeenCalledOnce();
         expect(stomp.client?.deactivate).toHaveBeenCalledOnce();
+    });
+
+    it("should hand a sender to onReady only after subscribing, and refuse to send once closed", async () => {
+        const order: string[] = [];
+        let send: ((destination: string, body?: string) => void) | undefined;
+        const subscription = new SockJsStompLiveTransport("/hydra/").subscribe({
+            destination: "/topic/downloaderStatus",
+            parse: JSON.parse,
+            onMessage: vi.fn(),
+            onReady: (ready) => {
+                order.push("ready");
+                send = ready;
+            },
+            onUnavailable: vi.fn(),
+        });
+        stomp.client?.subscribe.mockImplementation(() => {
+            order.push("subscribe");
+            return {unsubscribe: vi.fn()};
+        });
+        stomp.client?.onConnect?.();
+        const liveSubscription = await subscription;
+
+        expect(order).toEqual(["subscribe", "ready"]);
+        send?.("/app/connectDownloaderStatus");
+        // A real STOMP frame: a destination and a body, not a callback in the
+        // headers argument the way legacy's downloader footer sent it.
+        expect(stomp.client?.publish).toHaveBeenCalledWith({
+            body: "",
+            destination: "/app/connectDownloaderStatus",
+        });
+
+        send?.("/app/markNotificationRead", "7");
+        expect(stomp.client?.publish).toHaveBeenLastCalledWith({
+            body: "7",
+            destination: "/app/markNotificationRead",
+        });
+
+        liveSubscription.close();
+        send?.("/app/markNotificationRead", "8");
+        expect(stomp.client?.publish).toHaveBeenCalledTimes(2);
     });
 });

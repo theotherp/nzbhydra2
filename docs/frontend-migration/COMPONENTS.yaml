@@ -35,7 +35,7 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-LIVE-TRANSPORT
-    responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, subscription cleanup, and typed message delivery
+    responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, outgoing frames, subscription cleanup, and typed message delivery
     legacy:
       - core/ui-src/js/search-controller.js
       - core/ui-src/js/directives/downloaderStatusFooter.js
@@ -45,7 +45,7 @@ components:
       - F-SEARCH-PROGRESS
       - F-PLATFORM-LIVE-STATUS
     classification: shared_hydra
-    state: partial
+    state: done
   - id: C-BOOTSTRAP-CONTEXT
     responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context. Per ADR-0017 the safe configuration is reactive server state -- a TanStack Query over `API-CONFIG-SAFE` seeded with the
       bootstrap value as `initialData` and invalidated after every successful config save; consumers read it through this context and never cache it outside the query
@@ -198,7 +198,7 @@ components:
     consumers:
       - F-PLATFORM-LIVE-STATUS
     classification: shared_hydra
-    state: planned
+    state: done
   - id: C-UPDATE-COORDINATOR
     responsibility: Update metadata, install and ignore actions, changelog, global warnings, and restart handoff
     legacy:

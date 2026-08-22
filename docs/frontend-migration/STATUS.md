@@ -268,6 +268,22 @@ Non-blocking observations noted, not corrected (optional): `C-SAFE-RICH-CONTENT`
 gap lines (ignoring a version, the automatic-update notice) are now stale since both are implemented here, but that
 record was outside this task's `Files Allowed To Modify`. Candidates for a future quickfix.
 
+FM-081 (Live Downloader Footer And In-App Notifications) added `C-DOWNLOADER-STATUS`' cross-route footer (state, queue,
+title, themed sparkline over a 200-point rolling window with legacy's `lastUpdateForNow` self-advance) and the
+`/topic/notifications` toast surface, both permanent shell subscribers of `C-LIVE-TRANSPORT`, which gains outgoing
+STOMP frames for `API-LIVE-DOWNLOADER-CONNECT` and `API-LIVE-NOTIFICATION-READ` — replacing legacy's callback-where-
+headers-belong trap with a real `client.publish`. Closes `F-PLATFORM-LIVE-STATUS`' last unmigrated websocket capability
+(FM-062's noted follow-up) and fixes two legacy bugs along the way: the self-advance stop condition that never fired
+(`_.every` compared point objects to a number) and notification bodies that injected HTML instead of escaping newlines.
+Passed with minor findings, not corrected (optional): the new `downloader-status-rates` selector isn't recorded
+alongside its five siblings; `NotificationToasts` deliberately bypasses `C-TOAST-SERVICE` (documented as a gap, but the
+component itself doesn't say why) — widening that shared service to accept rich content and queue rather than replace
+concurrent toasts, then folding this and FM-079's VIP-expiry toasts onto it, is proposed as its own packet; `C-LIVE-
+TRANSPORT` moved to `done` while still opening one STOMP client per subscription rather than one shared socket
+(defensible as legacy parity, proposed as its own consolidation packet); `UpdateFooterBanners`' new `bottomOffset` prop
+isn't directly asserted by its own test (only indirectly via `AppShell.test.tsx`), though the default preserves FM-080's
+behavior. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -284,13 +300,14 @@ None.
 
 - FM-077: System Tasks tab — the last unmigrated system tab (list + run-now). Part of the 2026-08-21
   platform-completion batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer +
-  notifications), which packages the remaining shell surface; the live-footer packet is planned in `tasks/`. FM-078
-  (login/session), FM-079 (startup checks/announcements), and FM-080 (update banners) are done.
+  notifications), which packages the remaining shell surface. All of FM-078 (login/session), FM-079 (startup
+  checks/announcements), FM-080 (update banners), and FM-081 (live downloader footer + notifications) are done.
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 
-Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a
-feature record for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).
+Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`
+(surfaced by FM-062; see above). The live in-app notification channel it also flagged is migrated by FM-081 under
+`F-PLATFORM-LIVE-STATUS`.
 
 FM-024's minor findings (see above) are candidates for a future quickfix.
 

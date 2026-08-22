@@ -11,6 +11,9 @@ import {
 import {Link, useLocation} from "@tanstack/react-router";
 import {useCallback, useState} from "react";
 
+import {createDownloaderStatusLiveTransport} from "../api/live/downloaderStatus";
+import {createNotificationsLiveTransport} from "../api/live/notifications";
+import {SockJsStompLiveTransport} from "../api/live/transport";
 import {ApiTransport} from "../api/transport";
 import {
     maySeeAdminArea,
@@ -19,6 +22,8 @@ import {
     type SafeConfig,
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
+import {DownloaderStatusFooter} from "./status/DownloaderStatusFooter";
+import {NotificationToasts} from "./status/NotificationToasts";
 import {StartupChecks} from "./status/StartupChecks";
 import {UpdateFooterBanners} from "./status/UpdateFooterBanners";
 
@@ -55,6 +60,24 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
         (height: number) => setFooterBannerHeight(height),
         [],
     );
+    // FM-081: the downloader-status footer is pinned below the update
+    // banners, and both have to be kept clear of the scroll area — legacy's
+    // `footer.js` did the same bookkeeping with hardcoded pixel values.
+    const [downloaderFooterHeight, setDownloaderFooterHeight] = useState(0);
+    const handleDownloaderFooterHeightChange = useCallback(
+        (height: number) => setDownloaderFooterHeight(height),
+        [],
+    );
+    // `C-LIVE-TRANSPORT`, created once per shell mount and shared by the two
+    // permanent live subscribers below, so navigating never reconnects them.
+    const [liveTransports] = useState(() => {
+        const transport = new SockJsStompLiveTransport(bootstrap.baseUrl);
+        return {
+            downloaderStatus: createDownloaderStatusLiveTransport(transport),
+            notifications: createNotificationsLiveTransport(transport),
+        };
+    });
+    const bottomInset = footerBannerHeight + downloaderFooterHeight;
 
     const links = (onNavigate?: () => void, horizontal = false) => (
         <List
@@ -150,9 +173,7 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                 sx={{
                     flexGrow: 1,
                     paddingBottom:
-                        footerBannerHeight > 0
-                            ? `${footerBannerHeight}px`
-                            : undefined,
+                        bottomInset > 0 ? `${bottomInset}px` : undefined,
                 }}
             >
                 {children}
@@ -171,8 +192,24 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
              */}
             <UpdateFooterBanners
                 bootstrap={bootstrap}
+                bottomOffset={downloaderFooterHeight}
                 onHeightChange={handleFooterBannerHeightChange}
                 transport={transport}
+            />
+            {/*
+             * FM-081: legacy's two cross-route live surfaces
+             * (`downloaderStatusFooter.js` and `hydra-checks-footer.js`'s
+             * notification channel), mounted here because the shell is the
+             * one place that stays mounted across navigation.
+             */}
+            <DownloaderStatusFooter
+                bootstrap={bootstrap}
+                liveTransport={liveTransports.downloaderStatus}
+                onHeightChange={handleDownloaderFooterHeightChange}
+            />
+            <NotificationToasts
+                bootstrap={bootstrap}
+                liveTransport={liveTransports.notifications}
             />
             <Box component="footer" sx={{p: 2, textAlign: "center"}}>
                 <Typography color="text.secondary" variant="body2">

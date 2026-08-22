@@ -57,6 +57,14 @@ test("should open with no startup dialog once the welcome was shown", async ({
     // withdrawal rule, ignore, and dismiss-ack with the transport mocked.
     await expect(page.getByTestId("update-footer")).toHaveCount(0);
     await expect(page.getByTestId("automatic-update-footer")).toHaveCount(0);
+
+    // FM-081: this shared instance has no downloader configured, so legacy's
+    // own footer gate (the setting plus at least one enabled downloader) is
+    // not satisfied and the React footer must not render either. Enabling a
+    // downloader here would reconfigure the instance for every other spec, so
+    // the showing states are covered by component tests
+    // (`DownloaderStatusFooter.test.tsx`) with the STOMP layer mocked.
+    await expect(page.getByTestId("downloader-status-footer")).toHaveCount(0);
 });
 
 test.describe("Branded app shell visual evidence", () => {
