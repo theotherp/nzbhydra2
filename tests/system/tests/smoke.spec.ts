@@ -50,6 +50,13 @@ test("should open with no startup dialog once the welcome was shown", async ({
 
     await expect(page.getByTestId("app-shell-nav")).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // FM-080: this shared instance is current, so neither the update banner
+    // nor the automatic-update notice has anything to offer -- component
+    // tests (`UpdateFooterBanners.test.tsx`) cover both variants, the
+    // withdrawal rule, ignore, and dismiss-ack with the transport mocked.
+    await expect(page.getByTestId("update-footer")).toHaveCount(0);
+    await expect(page.getByTestId("automatic-update-footer")).toHaveCount(0);
 });
 
 test.describe("Branded app shell visual evidence", () => {

@@ -13,7 +13,7 @@ components:
       - F-STATS-SHELL
     classification: shared_hydra
     state: partial
-    note: FM-078 added the header's login/logout affordance (`shell-loginout`, rendered by `C-AUTH-SESSION`'s `LoginOutButton`), completing legacy's `header-controller.js` visibility rules. The footer (`directives/footer.js`) and the live status line remain.
+    note: FM-078 added the header's login/logout affordance (`shell-loginout`, rendered by `C-AUTH-SESSION`'s `LoginOutButton`), completing legacy's `header-controller.js` visibility rules. FM-080 added the shell's own half of `directives/footer.js`'s content-padding compensation -- measuring `C-UPDATE-COORDINATOR`'s footer banners' real rendered height rather than reproducing legacy's pixel bookkeeping -- and mounts those banners alongside the startup checks. The downloader-status footer (FM-081) remains.
   - id: C-API-TRANSPORT
     responsibility: Base-URL-aware HTTP, binary, and progress-reporting upload transport with credentials, CSRF, session headers, and common errors. FM-075 added the upload method ADR-0003 reserved -- XHR-based, because fetch cannot
       observe request-body progress -- keeping the same base URL, `credentials`/`withCredentials`, and CSRF-header contract as `request`
@@ -210,8 +210,8 @@ components:
       - F-SYSTEM-UPDATES
       - F-SYSTEM-ABOUT
     classification: shared_hydra
-    state: partial
-    note: FM-073 implemented the page portion (update offers, changelog, the install flow with its message poll, and the restart handoff). The footer portion -- the global update banner, ignoring a version, and the automatic-update changelog notice -- stays with F-PLATFORM-LIVE-STATUS.
+    state: done
+    note: FM-073 implemented the page portion (update offers, changelog, the install flow with its message poll, and the restart handoff). FM-080 completed the footer portion for F-PLATFORM-LIVE-STATUS -- the cross-route update banner (both variants, sharing `updateOffers`' withdrawal rule and `useUpdateInstaller`'s install flow), ignoring a version, and the automatic-update notice with its own changelog dialog and acknowledgement.
   - id: C-SAFE-RICH-CONTENT
     responsibility: Boundary-specific sanitization and rendering of trusted server-authored news HTML without an unrestricted HTML-trust helper
     legacy:

@@ -20,8 +20,9 @@ features:
     parity: partial
     gaps:
       - navigation
-      - footer
+      - not migrated - the downloader-status footer (downloaderStatusFooter.js), a websocket surface (FM-081)
       - live status
+      - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
     routes:
@@ -1206,6 +1207,8 @@ features:
       - core/ui-react/src/app/status/vipExpiry.test.ts
       - core/ui-react/src/services/preferences/serverPreferences.test.ts
       - core/ui-react/src/api/preferences.test.ts
+      - core/ui-react/src/app/status/UpdateFooterBanners.test.tsx
+      - core/ui-react/src/api/system/updates.test.ts
       - core/ui-react/src/app/AppShell.test.tsx
       - tests/system/tests/smoke.spec.ts
     selectors:
@@ -1216,10 +1219,16 @@ features:
       - news-dialog
       - user-news-dialog
       - startup-check-dialog
+      # New in FM-080; legacy's checks-footer.html carries no stable selector
+      # for the update banner or the automatic-update notice either.
+      - update-footer
+      - update-footer-install
+      - update-footer-ignore
+      - update-footer-changelog
+      - automatic-update-footer
     parity: partial
     gaps:
       - not migrated - the downloader status footer (downloaderStatusFooter.js) and the live notification channel, both websocket surfaces (FM-081)
-      - not migrated - the update and automatic-update footer banners (FM-080)
       - not migrated - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; no feature record inventories that wizard
       - deliberate - the announcements are shown one at a time in a fixed order and the sequence waits for each one to be closed; legacy opened its modals from independent, concurrent callbacks, so several could stack on top of
         each other in an order decided by response timing
@@ -1232,3 +1241,6 @@ features:
       - "deliberate - the dialogs are feature-owned bodies rendered as MUI dialogs rather than C-DIALOG-SERVICE confirmations, because each one carries structure C-DIALOG-SERVICE's plain-text message cannot hold: real anchors
         for the links legacy injected as HTML, sanitized server-authored news, and the wrapper warning's file lists"
       - deliberate - a VIP expiry warning is a C-TOAST-SERVICE toast per indexer, and the provider shows one toast at a time, so several expiring indexers replace each other; legacy's growl stacked them
+      - deliberate - FM-080's footer banners compensate the main content area's bottom padding by measuring their own rendered height (a `ResizeObserver`, with an initial synchronous measurement), rather than reproducing legacy's
+        `footer.js` pixel bookkeeping (`updateFooterBottom`/`updatePaddingBottom`), per ADR-0014
+      - deliberate - FM-080's "Ignore this update" only hides the banner for the current app load (no refetch); the ignored version is still recorded server-side through API-UPDATES-IGNORE, matching legacy's own scope

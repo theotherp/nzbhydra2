@@ -41,11 +41,32 @@ vi.mock("./status/StartupChecks", () => ({
     StartupChecks: () => <div data-testid="startup-checks" />,
 }));
 
+/**
+ * The shell mounts `UpdateFooterBanners`, which talks to the backend (a
+ * TanStack Query) on mount and needs a `QueryClientProvider` this test file
+ * does not otherwise set up; its own banner content, withdrawal rule, and
+ * actions are covered by `UpdateFooterBanners.test.tsx`. The mock reports
+ * `mockFooterBannerHeight` through the real `onHeightChange` wiring so the
+ * shell's own padding-compensation contract can still be asserted here.
+ */
+let mockFooterBannerHeight = 0;
+vi.mock("./status/UpdateFooterBanners", () => ({
+    UpdateFooterBanners: ({
+        onHeightChange,
+    }: {
+        onHeightChange: (height: number) => void;
+    }) => {
+        onHeightChange(mockFooterBannerHeight);
+        return <div data-testid="update-footer-banners" />;
+    },
+}));
+
 afterEach(cleanup);
 beforeEach(() => {
     mockPathname = "/hydra/";
     mockRouterNavigate.mockReset();
     fetchImplementation.mockReset();
+    mockFooterBannerHeight = 0;
 });
 
 const fetchImplementation = vi.fn();
@@ -106,6 +127,41 @@ describe("AppShell", () => {
         );
 
         expect(screen.getByTestId("startup-checks")).toBeInTheDocument();
+    });
+
+    it("should mount the update footer banners", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(screen.getByTestId("update-footer-banners")).toBeInTheDocument();
+    });
+
+    it("should leave the main content area's bottom padding unset with no footer banner showing", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(
+            window.getComputedStyle(screen.getByRole("main")).paddingBottom,
+        ).toBe("");
+    });
+
+    it("should pad the main content area by the footer banners' own reported height", () => {
+        mockFooterBannerHeight = 88;
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(
+            window.getComputedStyle(screen.getByRole("main")).paddingBottom,
+        ).toBe("88px");
     });
 
     it("should render the desktop navigation items in a horizontal row", () => {

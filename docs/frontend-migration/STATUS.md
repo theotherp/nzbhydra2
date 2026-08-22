@@ -256,6 +256,18 @@ checks are; `SafeRichContent` anchors render in browser-default blue on the dark
 checks still run, they just have nothing to show, matching legacy); and `C-TOAST-SERVICE` still replaces rather than
 queues concurrent VIP-expiry toasts (compounds an FM-065 observation). Candidates for a future quickfix.
 
+FM-080 (Global Update Footer Banners) added `C-UPDATE-COORDINATOR`'s footer portion for `F-PLATFORM-LIVE-STATUS`: a
+cross-route update banner (both the normal and externally-updated variants, sharing FM-073's `updateOffers`
+withdrawal rule, `useUpdateInstaller`'s install flow, and `ChangelogDialog`) and an automatic-update notice (its own
+changelog dialog fed by the new `API-UPDATES-AUTOMATIC-HISTORY`, dismissed through `API-UPDATES-ACK-HISTORY`). Both
+banners share one `API-UPDATES-INFOS` fetch, mounted once by the shell; the shell's main content area pads its own
+bottom by the banners' measured rendered height so a scrolled route's content never renders underneath them,
+reproducing `footer.js`'s compensation intent without its pixel bookkeeping (ADR-0014). Passed clean on first review.
+Non-blocking observations noted, not corrected (optional): `C-SAFE-RICH-CONTENT`'s `consumers` list doesn't yet name
+`F-PLATFORM-LIVE-STATUS`, though the new changelog dialogs render through it; `F-SYSTEM-UPDATES`'s two "not migrated"
+gap lines (ignoring a version, the automatic-update notice) are now stale since both are implemented here, but that
+record was outside this task's `Files Allowed To Modify`. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -272,8 +284,8 @@ None.
 
 - FM-077: System Tasks tab — the last unmigrated system tab (list + run-now). Part of the 2026-08-21
   platform-completion batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer +
-  notifications), which packages the remaining shell surface; the update-banner and live-footer packets are planned in
-  `tasks/`. FM-078 (login/session) and FM-079 (startup checks/announcements) are done.
+  notifications), which packages the remaining shell surface; the live-footer packet is planned in `tasks/`. FM-078
+  (login/session), FM-079 (startup checks/announcements), and FM-080 (update banners) are done.
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

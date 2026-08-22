@@ -10,6 +10,9 @@ Currently available in React:
 - Startup checks and announcements: the first-start welcome dialog, sequential user news, the admin news dialog, VIP
   indexer-expiry warnings, and the admin-only show-once warnings (out-of-memory, outdated update wrapper, open-to-internet
   without auth, Java below 17, failed backup) all run once per app load.
+- Admin sessions see cross-route update banners pinned at the viewport bottom: an update-available banner (with an
+  externally-updated variant) offering its changelog, an ignore action, and installing the update; and an
+  automatic-update notice with its own changelog and dismissal.
 - Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping, paging, rejection-reason breakdowns, supported download actions, display preferences, and saving executed searches.
 - Saved-search listing, reopen, and deletion.
 - The statistics dashboard — date-range and disabled-indexer selection, per-family statistics selection with persisted

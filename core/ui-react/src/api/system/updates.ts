@@ -11,6 +11,11 @@ const MESSAGES_PATH = "internalapi/updates/messages";
 const WRAPPER_STATUS_PATH = "internalapi/updates/isDisplayWrapperOutdated";
 const ACK_WRAPPER_PATH =
     "internalapi/updates/setOutdatedWrapperDetectedWarningShown";
+const IGNORE_PATH = "internalapi/updates/ignore";
+const AUTOMATIC_HISTORY_PATH =
+    "internalapi/updates/automaticUpdateVersionHistory";
+const ACK_AUTOMATIC_HISTORY_PATH =
+    "internalapi/updates/ackAutomaticUpdateVersionHistory";
 
 /**
  * `PackageInfo` (`core/src/.../update/PackageInfo.java`): only present when the
@@ -30,6 +35,7 @@ const packageInfoSchema = z.looseObject({
  * booleans the page branches on.
  */
 const versionsInfoSchema = z.looseObject({
+    automaticUpdateToNotice: z.string().nullish(),
     betaUpdateAvailable: z.boolean().nullish(),
     betaVersion: z.string().nullish(),
     betaVersionsEnabled: z.boolean().nullish(),
@@ -39,6 +45,7 @@ const versionsInfoSchema = z.looseObject({
     latestVersionIsBeta: z.boolean().nullish(),
     packageInfo: packageInfoSchema.nullish(),
     showUpdateBannerOnUpdatedExternally: z.boolean().nullish(),
+    showWhatsNewBanner: z.boolean().nullish(),
     updateAvailable: z.boolean().nullish(),
     updatedExternally: z.boolean().nullish(),
     wrapperOutdated: z.boolean().nullish(),
@@ -69,6 +76,14 @@ export type PackageInfo = {
 };
 
 export type UpdateInfos = {
+    /**
+     * The version whose "installed automatically" notice has not been
+     * acknowledged yet (`API-UPDATES-ACK-HISTORY`), or `null` when there is
+     * none. Legacy's own `automaticUpdateToNotice` is a version string, not a
+     * boolean -- the footer notice's condition is this being non-null *and*
+     * `showWhatsNewBanner` (`hydra-checks-footer.js:171`).
+     */
+    automaticUpdateToNotice: string | null;
     betaUpdateAvailable: boolean;
     betaVersion: string | null;
     betaVersionsEnabled: boolean;
@@ -78,6 +93,8 @@ export type UpdateInfos = {
     latestVersionIsBeta: boolean;
     packageInfo: PackageInfo | null;
     showUpdateBannerOnUpdatedExternally: boolean;
+    /** Gates the automatic-update notice; distinct from `updatedExternally`'s banner flag. */
+    showWhatsNewBanner: boolean;
     updateAvailable: boolean;
     updatedExternally: boolean;
     wrapperOutdated: boolean;
@@ -187,6 +204,7 @@ export function parseUpdateInfos(response: unknown): UpdateInfos {
     }
     const data = parsed.data;
     return {
+        automaticUpdateToNotice: data.automaticUpdateToNotice ?? null,
         betaUpdateAvailable: data.betaUpdateAvailable === true,
         betaVersion: data.betaVersion ?? null,
         betaVersionsEnabled: data.betaVersionsEnabled === true,
@@ -197,6 +215,7 @@ export function parseUpdateInfos(response: unknown): UpdateInfos {
         packageInfo: parsePackageInfo(data.packageInfo),
         showUpdateBannerOnUpdatedExternally:
             data.showUpdateBannerOnUpdatedExternally === true,
+        showWhatsNewBanner: data.showWhatsNewBanner === true,
         updateAvailable: data.updateAvailable === true,
         updatedExternally: data.updatedExternally === true,
         wrapperOutdated: data.wrapperOutdated === true,
@@ -222,6 +241,46 @@ export async function acknowledgeWrapperOutdated(
     transport: ApiTransport,
 ): Promise<void> {
     await transport.request<unknown>(ACK_WRAPPER_PATH, {method: "PUT"});
+}
+
+/**
+ * `API-UPDATES-IGNORE`: never offer `version` again (`updates/ignore/{version}`,
+ * `hydra-checks-footer.js:158-161`'s footer ignore action and the Updates
+ * tab's own, unmigrated one). The response has no body worth reading.
+ */
+export async function ignoreUpdate(
+    transport: ApiTransport,
+    version: string,
+): Promise<void> {
+    await transport.request<unknown>(
+        `${IGNORE_PATH}/${encodeURIComponent(version)}`,
+        {method: "PUT"},
+    );
+}
+
+/**
+ * `API-UPDATES-AUTOMATIC-HISTORY`: the changes an automatic update installed,
+ * for the footer notice's own "See what's new" dialog
+ * (`hydra-checks-footer.js:163-167`).
+ */
+export async function getAutomaticUpdateHistory(
+    transport: ApiTransport,
+): Promise<ChangelogEntry[]> {
+    return parseChangelog(
+        await transport.request<unknown>(AUTOMATIC_HISTORY_PATH),
+    );
+}
+
+/**
+ * `API-UPDATES-ACK-HISTORY`: clears the stored "installed automatically"
+ * version so the notice does not return on the next load
+ * (`hydra-checks-footer.js:168-174`). A `GET`, matching the server operation
+ * -- there is no response body worth reading.
+ */
+export async function acknowledgeAutomaticUpdateHistory(
+    transport: ApiTransport,
+): Promise<void> {
+    await transport.request<unknown>(ACK_AUTOMATIC_HISTORY_PATH);
 }
 
 export function parseChangelog(response: unknown): ChangelogEntry[] {

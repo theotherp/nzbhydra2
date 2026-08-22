@@ -5,6 +5,7 @@ import {updateOffers} from "./updateOffers";
 
 function infos(overrides: Partial<UpdateInfos> = {}): UpdateInfos {
     return {
+        automaticUpdateToNotice: null,
         betaUpdateAvailable: false,
         betaVersion: "9.1.0",
         betaVersionsEnabled: false,
@@ -14,6 +15,7 @@ function infos(overrides: Partial<UpdateInfos> = {}): UpdateInfos {
         latestVersionIsBeta: false,
         packageInfo: null,
         showUpdateBannerOnUpdatedExternally: false,
+        showWhatsNewBanner: false,
         updateAvailable: false,
         updatedExternally: false,
         wrapperOutdated: false,

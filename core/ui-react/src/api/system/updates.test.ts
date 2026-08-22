@@ -1,8 +1,11 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {
+    acknowledgeAutomaticUpdateHistory,
     acknowledgeWrapperOutdated,
+    getAutomaticUpdateHistory,
     getUpdateMessages,
+    ignoreUpdate,
     installUpdate,
     isWrapperOutdated,
     MalformedUpdateResponseError,
@@ -20,6 +23,7 @@ function jsonResponse(body: unknown): Response {
 describe("updates API", () => {
     it("should normalize the bare VersionsInfo the disabled update check answers", () => {
         expect(parseUpdateInfos({})).toEqual({
+            automaticUpdateToNotice: null,
             betaUpdateAvailable: false,
             betaVersion: null,
             betaVersionsEnabled: false,
@@ -29,6 +33,7 @@ describe("updates API", () => {
             latestVersionIsBeta: false,
             packageInfo: null,
             showUpdateBannerOnUpdatedExternally: false,
+            showWhatsNewBanner: false,
             updateAvailable: false,
             updatedExternally: false,
             wrapperOutdated: false,
@@ -145,6 +150,63 @@ describe("wrapper warning", () => {
         expect(fetchImplementation).toHaveBeenCalledWith(
             "http://localhost:3000/hydra/internalapi/updates/setOutdatedWrapperDetectedWarningShown",
             expect.objectContaining({method: "PUT"}),
+        );
+    });
+});
+
+describe("footer update actions", () => {
+    it("should PUT the encoded version to the ignore endpoint", async () => {
+        const fetchImplementation = vi
+            .fn<typeof fetch>()
+            .mockResolvedValue(jsonResponse(null));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await ignoreUpdate(transport, "9.1.0-beta 1");
+
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/updates/ignore/9.1.0-beta%201",
+            expect.objectContaining({method: "PUT"}),
+        );
+    });
+
+    it("should fetch and validate the automatic update's changelog", async () => {
+        const fetchImplementation = vi.fn<typeof fetch>().mockResolvedValue(
+            jsonResponse([
+                {
+                    changes: [{text: "Fixed it", type: "fix"}],
+                    date: "2026-07-09",
+                    final: true,
+                    version: "9.1.0",
+                },
+            ]),
+        );
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(getAutomaticUpdateHistory(transport)).resolves.toEqual([
+            {
+                changes: [{text: "Fixed it", type: "fix"}],
+                date: "2026-07-09",
+                final: true,
+                version: "9.1.0",
+            },
+        ]);
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/updates/automaticUpdateVersionHistory",
+            expect.objectContaining({method: "GET"}),
+        );
+    });
+
+    it("should GET the acknowledge-history endpoint", async () => {
+        const fetchImplementation = vi
+            .fn<typeof fetch>()
+            .mockResolvedValue(jsonResponse(null));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await acknowledgeAutomaticUpdateHistory(transport);
+
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/updates/ackAutomaticUpdateVersionHistory",
+            expect.objectContaining({method: "GET"}),
         );
     });
 });

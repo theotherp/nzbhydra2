@@ -9,7 +9,7 @@ import {
     Typography,
 } from "@mui/material";
 import {Link, useLocation} from "@tanstack/react-router";
-import {useState} from "react";
+import {useCallback, useState} from "react";
 
 import {ApiTransport} from "../api/transport";
 import {
@@ -20,6 +20,7 @@ import {
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
 import {StartupChecks} from "./status/StartupChecks";
+import {UpdateFooterBanners} from "./status/UpdateFooterBanners";
 
 // Vite's `new URL(..., import.meta.url)` asset reference (see Vite's "Public Base
 // Path" docs): it lets the bundler emit a base-URL-aware, hashed asset path without
@@ -45,6 +46,15 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
     const pathname = useLocation({
         select: (location) => location.pathname,
     });
+    // FM-080: the update footer banners are pinned to the bottom of the
+    // viewport, so the main content area's own bottom padding is grown by
+    // exactly their rendered height -- otherwise a scrolled route's last
+    // content would render underneath them.
+    const [footerBannerHeight, setFooterBannerHeight] = useState(0);
+    const handleFooterBannerHeightChange = useCallback(
+        (height: number) => setFooterBannerHeight(height),
+        [],
+    );
 
     const links = (onNavigate?: () => void, horizontal = false) => (
         <List
@@ -135,7 +145,16 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                     {links(() => setMobileNavigationOpen(false))}
                 </Box>
             </Drawer>
-            <Box component="main" sx={{flexGrow: 1}}>
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    paddingBottom:
+                        footerBannerHeight > 0
+                            ? `${footerBannerHeight}px`
+                            : undefined,
+                }}
+            >
                 {children}
             </Box>
             {/*
@@ -144,6 +163,17 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
              * mounted for the whole application load.
              */}
             <StartupChecks bootstrap={bootstrap} transport={transport} />
+            {/*
+             * FM-080: legacy's cross-route update banner and automatic-update
+             * notice (`hydra-checks-footer.js`, `checks-footer.html`) -- the
+             * footer portion of `C-UPDATE-COORDINATOR` that FM-073
+             * deliberately left with `F-PLATFORM-LIVE-STATUS`.
+             */}
+            <UpdateFooterBanners
+                bootstrap={bootstrap}
+                onHeightChange={handleFooterBannerHeightChange}
+                transport={transport}
+            />
             <Box component="footer" sx={{p: 2, textAlign: "center"}}>
                 <Typography color="text.secondary" variant="body2">
                     NZBHydra2
