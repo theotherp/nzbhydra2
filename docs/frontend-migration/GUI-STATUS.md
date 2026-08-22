@@ -7,6 +7,9 @@ Currently available in React:
 - Form-auth login and logout: a `/login` page, a header login/logout affordance with legacy's visibility rules, and a
   redirect to `/login` for a FORM-restricted anonymous session. BASIC-auth login (the browser credential challenge) also
   works; ending a BASIC session does not yet take effect (the browser replays its cached credentials).
+- Startup checks and announcements: the first-start welcome dialog, sequential user news, the admin news dialog, VIP
+  indexer-expiry warnings, and the admin-only show-once warnings (out-of-memory, outdated update wrapper, open-to-internet
+  without auth, Java below 17, failed backup) all run once per app load.
 - Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping, paging, rejection-reason breakdowns, supported download actions, display preferences, and saving executed searches.
 - Saved-search listing, reopen, and deletion.
 - The statistics dashboard — date-range and disabled-indexer selection, per-family statistics selection with persisted

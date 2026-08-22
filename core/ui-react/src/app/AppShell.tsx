@@ -19,6 +19,7 @@ import {
     type SafeConfig,
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
+import {StartupChecks} from "./status/StartupChecks";
 
 // Vite's `new URL(..., import.meta.url)` asset reference (see Vite's "Public Base
 // Path" docs): it lets the bundler emit a base-URL-aware, hashed asset path without
@@ -137,6 +138,12 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
             <Box component="main" sx={{flexGrow: 1}}>
                 {children}
             </Box>
+            {/*
+             * Legacy's checks footer: it rendered nothing here until a check
+             * had something to say, and the shell is the one place that stays
+             * mounted for the whole application load.
+             */}
+            <StartupChecks bootstrap={bootstrap} transport={transport} />
             <Box component="footer" sx={{p: 2, textAlign: "center"}}>
                 <Typography color="text.secondary" variant="body2">
                     NZBHydra2

@@ -8,6 +8,9 @@ const VERSION_HISTORY_PATH = "internalapi/updates/versionHistory";
 const CHANGES_SINCE_PATH = "internalapi/updates/changesSince";
 const INSTALL_PATH = "internalapi/updates/installUpdate";
 const MESSAGES_PATH = "internalapi/updates/messages";
+const WRAPPER_STATUS_PATH = "internalapi/updates/isDisplayWrapperOutdated";
+const ACK_WRAPPER_PATH =
+    "internalapi/updates/setOutdatedWrapperDetectedWarningShown";
 
 /**
  * `PackageInfo` (`core/src/.../update/PackageInfo.java`): only present when the
@@ -198,6 +201,27 @@ export function parseUpdateInfos(response: unknown): UpdateInfos {
         updatedExternally: data.updatedExternally === true,
         wrapperOutdated: data.wrapperOutdated === true,
     };
+}
+
+/**
+ * `API-UPDATES-WRAPPER-STATUS`: whether the wrapper scripts around this
+ * instance are outdated *and* the warning has not been acknowledged yet. Only
+ * a literal `true` (as a JSON boolean or its text form, since the operation
+ * is declared without a JSON content type) counts; anything else leaves the
+ * warning unshown.
+ */
+export async function isWrapperOutdated(
+    transport: ApiTransport,
+): Promise<boolean> {
+    const response = await transport.request<unknown>(WRAPPER_STATUS_PATH);
+    return response === true || response === "true";
+}
+
+/** `API-UPDATES-ACK-WRAPPER`: never warn about this wrapper version again. */
+export async function acknowledgeWrapperOutdated(
+    transport: ApiTransport,
+): Promise<void> {
+    await transport.request<unknown>(ACK_WRAPPER_PATH, {method: "PUT"});
 }
 
 export function parseChangelog(response: unknown): ChangelogEntry[] {

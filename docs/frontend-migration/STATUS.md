@@ -243,6 +243,19 @@ resolves, unlike legacy; two new ESLint warning instances reported as "pre-exist
 prior Upcoming entry described the whole FM-077..FM-081 batch rather than FM-078 alone. Candidates for a future
 quickfix; ending a BASIC session (adopting `POST /loggedout`) is proposed as its own packet.
 
+FM-079 (Startup Checks, Welcome, And Announcement Dialogs) ported `hydra-checks-footer.js`'s non-websocket half into
+`src/app/status`: one sequence per app load, mounted by the shell, showing one announcement at a time — welcome (or,
+once it was shown, sequential user news, admin news, VIP expiry toasts) followed by the admin-only warnings. Built
+`C-SERVER-PREFERENCES` for the show-once flags (the only path the checks use to read/clear them), which also fixes
+legacy's cleared-flag-reads-truthy bug (`response.data !== "" && response.data` accepted the string `"false"` its own
+clear wrote), and implemented `FAILED_BACKUP`'s evident intent (legacy's condition `response.data && !response.data` is
+unsatisfiable dead code) — every one-shot ack/clear fires only after its dialog closed, unlike legacy. Passed with minor
+findings, not corrected (optional): the wrapper-warning ack isn't pinned as absent-before-close the way the sibling
+checks are; `SafeRichContent` anchors render in browser-default blue on the dark news dialog (pre-existing, also affects
+`/system/news`); a handoff-prose overstatement that nothing else runs on a first-start load (admin stored-flag/wrapper
+checks still run, they just have nothing to show, matching legacy); and `C-TOAST-SERVICE` still replaces rather than
+queues concurrent VIP-expiry toasts (compounds an FM-065 observation). Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -259,8 +272,8 @@ None.
 
 - FM-077: System Tasks tab — the last unmigrated system tab (list + run-now). Part of the 2026-08-21
   platform-completion batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer +
-  notifications), which packages the remaining shell surface; FM-079..FM-081 are planned packets in `tasks/`.
-  FM-078 (login/session) is done.
+  notifications), which packages the remaining shell surface; the update-banner and live-footer packets are planned in
+  `tasks/`. FM-078 (login/session) and FM-079 (startup checks/announcements) are done.
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

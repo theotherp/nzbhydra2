@@ -1200,6 +1200,35 @@ features:
       - core/ui-src/js/directives/downloaderStatusFooter.js
       - core/ui-src/js/directives/hydra-checks-footer.js
     target: core/ui-react/src/app/status
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/app/status/StartupChecks.test.tsx
+      - core/ui-react/src/app/status/startupChecks.test.ts
+      - core/ui-react/src/app/status/vipExpiry.test.ts
+      - core/ui-react/src/services/preferences/serverPreferences.test.ts
+      - core/ui-react/src/api/preferences.test.ts
+      - core/ui-react/src/app/AppShell.test.tsx
+      - tests/system/tests/smoke.spec.ts
+    selectors:
+      # New in FM-079; legacy's welcome, news, user-news, and warning modals
+      # carry no stable selector. `startup-check-dialog` addresses all five
+      # admin warnings, which differ only in title and body.
+      - welcome-dialog
+      - news-dialog
+      - user-news-dialog
+      - startup-check-dialog
+    parity: partial
+    gaps:
+      - not migrated - the downloader status footer (downloaderStatusFooter.js) and the live notification channel, both websocket surfaces (FM-081)
+      - not migrated - the update and automatic-update footer banners (FM-080)
+      - not migrated - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; no feature record inventories that wizard
+      - deliberate - the announcements are shown one at a time in a fixed order and the sequence waits for each one to be closed; legacy opened its modals from independent, concurrent callbacks, so several could stack on top of
+        each other in an order decided by response timing
+      - deliberate - a one-shot acknowledgement (API-NEWS-SAVE-SHOWN, API-UPDATES-ACK-WRAPPER, and every stored flag cleared through C-SERVER-PREFERENCES) is sent only after its dialog was closed; legacy sent the news
+        acknowledgement while opening the dialog and cleared each stored flag without waiting for the warning to be seen
+      - deliberate - closing a user news notice dismisses it (API-USER-NEWS-DISMISS) however it was closed; legacy dismissed only on its OK button, so an escape- or backdrop-closed notice came back on the next load
+      - deliberate - a stored flag counts as raised only for a value that means true; legacy's `response.data !== "" && response.data` also accepted the string "false" that its own clearing write left behind, which made every
+        cleared warning reappear on every load
+      - deliberate - FAILED_BACKUP shows the stored record's message and time and then clears it; legacy's display condition (`response.data && !response.data`) is unsatisfiable dead code, so the warning could never appear
+      - "deliberate - the dialogs are feature-owned bodies rendered as MUI dialogs rather than C-DIALOG-SERVICE confirmations, because each one carries structure C-DIALOG-SERVICE's plain-text message cannot hold: real anchors
+        for the links legacy injected as HTML, sanitized server-authored news, and the wrapper warning's file lists"
+      - deliberate - a VIP expiry warning is a C-TOAST-SERVICE toast per indexer, and the provider shows one toast at a time, so several expiring indexers replace each other; legacy's growl stacked them

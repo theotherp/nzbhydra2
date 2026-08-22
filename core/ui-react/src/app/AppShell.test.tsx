@@ -32,6 +32,15 @@ vi.mock("@tanstack/react-router", () => ({
     useNavigate: () => mockRouterNavigate,
 }));
 
+/**
+ * The shell mounts `F-PLATFORM-LIVE-STATUS`' startup sequence, which talks to
+ * the backend on mount; it is covered by its own tests, so the shell's own
+ * cases stand in for it with a marker.
+ */
+vi.mock("./status/StartupChecks", () => ({
+    StartupChecks: () => <div data-testid="startup-checks" />,
+}));
+
 afterEach(cleanup);
 beforeEach(() => {
     mockPathname = "/hydra/";
@@ -87,6 +96,16 @@ describe("AppShell", () => {
             screen.queryByRole("link", {name: "Config"}),
         ).not.toBeInTheDocument();
         expect(screen.getByText("Page content")).toBeInTheDocument();
+    });
+
+    it("should mount the startup checks, which run once per application load", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(screen.getByTestId("startup-checks")).toBeInTheDocument();
     });
 
     it("should render the desktop navigation items in a horizontal row", () => {

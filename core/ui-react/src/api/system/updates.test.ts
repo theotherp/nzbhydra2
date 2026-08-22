@@ -1,8 +1,10 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {
+    acknowledgeWrapperOutdated,
     getUpdateMessages,
     installUpdate,
+    isWrapperOutdated,
     MalformedUpdateResponseError,
     parseChangelog,
     parseUpdateInfos,
@@ -107,6 +109,41 @@ describe("updates API", () => {
 
         expect(fetchImplementation).toHaveBeenCalledWith(
             "http://localhost:3000/hydra/internalapi/updates/installUpdate/9.1.0-beta%201",
+            expect.objectContaining({method: "PUT"}),
+        );
+    });
+});
+
+describe("wrapper warning", () => {
+    it("should read the wrapper status as a boolean or its text form", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValueOnce(jsonResponse(true))
+            .mockResolvedValueOnce(new Response("true"))
+            .mockResolvedValueOnce(jsonResponse(false))
+            .mockResolvedValueOnce(jsonResponse(null));
+        const transport = new ApiTransport("/hydra", fetchImplementation);
+
+        await expect(isWrapperOutdated(transport)).resolves.toBe(true);
+        await expect(isWrapperOutdated(transport)).resolves.toBe(true);
+        await expect(isWrapperOutdated(transport)).resolves.toBe(false);
+        await expect(isWrapperOutdated(transport)).resolves.toBe(false);
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/updates/isDisplayWrapperOutdated",
+            expect.objectContaining({method: "GET"}),
+        );
+    });
+
+    it("should acknowledge the outdated wrapper warning", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 200}));
+        const transport = new ApiTransport("/hydra", fetchImplementation);
+
+        await acknowledgeWrapperOutdated(transport);
+
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/updates/setOutdatedWrapperDetectedWarningShown",
             expect.objectContaining({method: "PUT"}),
         );
     });

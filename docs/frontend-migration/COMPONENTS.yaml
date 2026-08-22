@@ -142,12 +142,15 @@ components:
     responsibility: Server-backed per-user and global acknowledgements and UI preferences
     legacy:
       - core/ui-src/js/generic-storage-service.js
-    target: core/ui-react/src/services/preferences
+    target: core/ui-react/src/services/preferences; core/ui-react/src/api/preferences.ts
     consumers:
       - F-PLATFORM-LIVE-STATUS
       - F-SEARCH-RESULTS
     classification: shared_hydra
-    state: planned
+    state: partial
+    note: "FM-079 built it for the startup checks' show-once flags: read, write, clear (legacy's `false`), and a per-user variant, all carrying `forUser` on every call as legacy did. It is also where the storage endpoint's one
+      asymmetry is interpreted -- `GenericStorageWeb.put` stores the request body as a `String`, so the `false` a client writes to clear a flag reads back as the *string* `\"false\"`, which legacy's truthiness test accepted as a
+      raised flag and which `isRaisedFlag` does not. F-SEARCH-RESULTS has not adopted it yet."
   - id: C-RESTART-COORDINATOR
     responsibility: Restart command, progress dialog, readiness polling, and safe reload
     legacy:

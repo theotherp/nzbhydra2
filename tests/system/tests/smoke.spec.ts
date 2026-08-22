@@ -17,6 +17,41 @@ test("should load the application shell", async ({page, hydra}) => {
         .toBeTruthy();
 });
 
+// FM-079: the startup sequence's announcements are all one-shot server state
+// on this shared instance — showing the welcome dialog records it as shown,
+// showing news acknowledges it, and every admin warning clears its stored flag.
+// So the only thing asserted live is the quiet case: a session that has
+// already seen the welcome opens the application without any dialog in the
+// way. The sequence itself is proven by component tests with the transport
+// mocked.
+test("should open with no startup dialog once the welcome was shown", async ({
+    page,
+}) => {
+    const welcomeShown = await page.request.get("internalapi/welcomeshown");
+    expect(welcomeShown.ok()).toBe(true);
+    test.skip(
+        (await welcomeShown.text()).trim() !== "true",
+        "This instance has not shown the welcome yet; loading the page would consume that one-shot state.",
+    );
+
+    // `FAILED_BACKUP` is the sequence's last check, so its response is the
+    // point at which "no dialog" is a statement about the finished sequence
+    // rather than about a race with it.
+    const lastCheck = page.waitForResponse((response) =>
+        new URL(response.url()).pathname.endsWith(
+            "/internalapi/genericstorage/FAILED_BACKUP",
+        ),
+    );
+    // `/` still serves the legacy UI, which runs its own checks footer; the
+    // React shell is the one this asserts about.
+    await page.goto("ui/react?redirect=/");
+    await expect(page).toHaveURL(/\/$/);
+    await lastCheck;
+
+    await expect(page.getByTestId("app-shell-nav")).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
 test.describe("Branded app shell visual evidence", () => {
     for (const viewport of Object.keys(visualViewports) as Array<
         keyof typeof visualViewports

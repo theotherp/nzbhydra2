@@ -1,7 +1,7 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "./transport";
-import {getWelcomeShown} from "./welcome";
+import {getWelcomeShown, setWelcomeShown} from "./welcome";
 
 describe("getWelcomeShown", () => {
     it("should request the typed welcome status through the shared transport", async () => {
@@ -19,6 +19,25 @@ describe("getWelcomeShown", () => {
             expect.objectContaining({
                 credentials: "same-origin",
                 method: "GET",
+            }),
+        );
+    });
+});
+
+describe("setWelcomeShown", () => {
+    it("should record the welcome as shown", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 200}));
+        const transport = new ApiTransport("/hydra", fetchImplementation);
+
+        await setWelcomeShown(transport);
+
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/welcomeshown",
+            expect.objectContaining({
+                credentials: "same-origin",
+                method: "PUT",
             }),
         );
     });
