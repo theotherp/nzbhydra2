@@ -1081,10 +1081,25 @@ features:
       - /system/tasks
     legacy_sources:
       - core/ui-src/js/directives/tasks.js
+      - core/ui-src/html/directives/tasks.html
     target: core/ui-react/src/features/system/tasks
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/features/system/tasks/SystemTasksTab.test.tsx
+      - core/ui-react/src/features/system/tasks/relativeTime.test.ts
+      - core/ui-react/src/api/system/tasks.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-077; legacy's tasks.html carries no stable selector.
+      # `system-task-run` is shared across every row's run button, the same
+      # per-row (not per-index) style as `system-backup-row`.
+      - system-tasks
+      - system-tasks-table
+      - system-task-run
+    parity: partial
+    gaps:
+      - deliberate - the run action's accessible/visible name is the task name itself (legacy's play-icon link read the same way); no separate "Run" label is added
+      - deliberate - a relative-time formatter (Intl.RelativeTimeFormat) was added local to this feature rather than to the shared C-DATE-TIME module, since no earlier C-DATE-TIME consumer needed the relative half of legacy's humanizeDate/reformatDateSeconds pairing -- only the absolute half
   - id: F-SYSTEM-BACKUP
     name: Backup listing, creation, download, upload, and restore
     routes:

@@ -157,7 +157,7 @@ async function openSystem(page: Page, path = "control"): Promise<void> {
 }
 
 test.describe("System shell", () => {
-    test("should reach every tab, keep News inside the shell, and show the placeholder for unmigrated tabs", async ({
+    test("should reach every tab and keep News inside the shell", async ({
         page,
     }) => {
         const attemptedControlCalls = await blockSystemControlEndpoints(page);
@@ -191,13 +191,11 @@ test.describe("System shell", () => {
             await expect(page.getByTestId(testId)).toBeEnabled();
         }
 
-        // An unmigrated tab: the placeholder, but still inside the shell.
-        // `backup` was the tab used here until FM-075 migrated it.
+        // `tasks` was the last unmigrated tab, shown as the placeholder here
+        // until FM-077 migrated it; every tab now renders its real body.
         await page.getByTestId("system-tab-tasks").click();
         await expect(page).toHaveURL(/\/system\/tasks$/);
-        await expect(
-            page.getByText("React migration placeholder"),
-        ).toBeVisible();
+        await expect(page.getByTestId("system-tasks-table")).toBeVisible();
         await expect(page.getByTestId("system-shell")).toBeVisible();
 
         // News keeps its URL and is now a tab of the shell.
@@ -213,12 +211,10 @@ test.describe("System shell", () => {
         await page.goto("system/about");
         await expect(page.getByTestId("system-shell")).toBeVisible();
         await expect(page.getByTestId("system-about")).toBeVisible();
-        // `log` was the unmigrated tab used here until FM-074 migrated it and
-        // `bugreport` until FM-076; `tasks` is still unmigrated.
+        // `log` was the unmigrated tab used here until FM-074 migrated it,
+        // `bugreport` until FM-076, and `tasks` until FM-077.
         await page.goto("system/tasks");
-        await expect(
-            page.getByText("React migration placeholder"),
-        ).toBeVisible();
+        await expect(page.getByTestId("system-tasks-table")).toBeVisible();
 
         expect(
             attemptedControlCalls,
@@ -420,6 +416,58 @@ test.describe("System shell", () => {
                     `log-files-${viewport}`,
                 ),
             });
+        }
+    });
+
+    test("should list the real scheduled tasks without running any of them", async ({
+        page,
+    }) => {
+        const attemptedRuns: string[] = [];
+        await page.route("**/internalapi/tasks/**", async (route) => {
+            attemptedRuns.push(new URL(route.request().url()).pathname);
+            await route.abort();
+        });
+
+        await openSystem(page, "tasks");
+        await expect(page.getByTestId("system-tasks-table")).toBeVisible();
+        // `Backup` (BackupTask, interval HOUR) is one of the real,
+        // always-registered scheduled tasks on the running instance.
+        await expect(
+            page.getByRole("button", {name: /Backup/}),
+        ).toBeVisible();
+        await expect(page.getByTestId("system-task-run").first()).toBeVisible();
+
+        expect(
+            attemptedRuns,
+            "a system test must never run a scheduled task on the shared instance",
+        ).toEqual([]);
+    });
+
+    test("should render the populated tasks list for the visual gate", async ({
+        page,
+    }) => {
+        await page.route("**/internalapi/tasks/**", async (route) => {
+            await route.abort();
+        });
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openSystem(page, "tasks");
+                await expect(
+                    page.getByTestId("system-tasks-table"),
+                ).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath("F-SYSTEM-TASKS", `tasks-${viewport}`),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                `the tasks tab must not overflow at ${visualViewports[viewport].width}px`,
+            ).toBe(true);
         }
     });
 
@@ -836,7 +884,7 @@ test.describe("System shell", () => {
         expect(attemptedInstalls).toEqual([]);
     });
 
-    test("should render the shell, an unmigrated tab, and News for the visual gate", async ({
+    test("should render the shell and News for the visual gate", async ({
         page,
     }) => {
         const attemptedControlCalls = await blockSystemControlEndpoints(page);
@@ -866,17 +914,6 @@ test.describe("System shell", () => {
                     ),
                 `the shell must not overflow at ${visualViewports[viewport].width}px`,
             ).toBe(true);
-
-            await page.getByTestId("system-tab-tasks").click();
-            await expect(
-                page.getByText("React migration placeholder"),
-            ).toBeVisible();
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-SYSTEM-SHELL",
-                    `placeholder-tab-${viewport}`,
-                ),
-            });
 
             await page.getByTestId("system-tab-news").click();
             await expect(

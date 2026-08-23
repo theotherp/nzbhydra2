@@ -73,6 +73,15 @@ function renderSystemArea(initialPath = "/hydra/system/control") {
                 },
             ]);
         }
+        if (url.endsWith("/internalapi/tasks")) {
+            return jsonResponse([
+                {
+                    lastExecutionTime: "2026-08-21T10:00:00Z",
+                    name: "Backup",
+                    nextExecutionTime: "2026-08-22T10:00:00Z",
+                },
+            ]);
+        }
         throw new Error(`Unexpected request: ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -141,16 +150,15 @@ describe("SystemShell", () => {
         expect(router.state.location.pathname).toBe("/system/control");
     });
 
-    it("should render an unmigrated tab inside the shell", async () => {
+    it("should switch tabs inside the shell without leaving it", async () => {
         renderSystemArea();
         await screen.findByTestId("system-shell");
 
-        // `backup` was the unmigrated tab used here until FM-075 migrated it.
+        // `tasks` was the last unmigrated tab, used here for this assertion
+        // until FM-077 migrated it; every tab now has a React body.
         fireEvent.click(screen.getByTestId("system-tab-tasks"));
 
-        expect(
-            await screen.findByText("React migration placeholder"),
-        ).toBeVisible();
+        expect(await screen.findByTestId("system-tasks")).toBeVisible();
         expect(screen.getByTestId("system-shell")).toBeVisible();
         expect(screen.queryByTestId("system-control")).toBeNull();
     });
@@ -179,6 +187,15 @@ describe("SystemShell", () => {
 
         expect(await screen.findByTestId("system-backup")).toBeVisible();
         expect(await screen.findByTestId("system-backup-table")).toBeVisible();
+    });
+
+    it("should render the tasks tab inside the shell", async () => {
+        renderSystemArea("/hydra/system/tasks");
+        await screen.findByTestId("system-shell");
+
+        expect(await screen.findByTestId("system-tasks")).toBeVisible();
+        expect(await screen.findByTestId("system-tasks-table")).toBeVisible();
+        expect(screen.getByRole("button", {name: /Backup/})).toBeVisible();
     });
 
     it("should render the news page inside the shell", async () => {

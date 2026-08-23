@@ -34,8 +34,9 @@ Currently available in React:
   downloading), listing and downloading existing backups, restoring from an existing backup, and uploading a backup
   file to restore with progress feedback. The Bugreport/Debug tab is fully working — bug-reporting guidance, a debug-info
   archive (download or upload to a file share), a thread-dump trigger, a sensitive-data-logging toggle, heap-dump and
-  HTTP-endpoint links, a SQL debug console, and a live CPU-usage chart with an accessible data table. Only the Tasks tab
-  is not yet migrated.
+  HTTP-endpoint links, a SQL debug console, and a live CPU-usage chart with an accessible data table. The Tasks tab is
+  fully working — the scheduled-task list with last/next execution times and a per-task run-now action. All eight
+  canonical system tabs are now fully working.
 - The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
   fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,

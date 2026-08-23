@@ -228,6 +228,23 @@ legacy wording-typo correction not recorded as a gap; a visual-gate test whose u
 later route handler (still safe, but reads as a stronger guarantee than it is); two overlapping explanatory messages on
 a first-poll CPU-chart failure; a dropped chart x-axis label. Candidates for a future quickfix.
 
+FM-077 (System Tasks Tab) added the last of the eight system tabs inside FM-072's shell: legacy's `hydraTasks`
+directive as a table (Name, Last execution, Next execution) listing `API-SYSTEM-TASKS`; each row's run action PUTs
+`API-SYSTEM-TASK-RUN` for that task's name and replaces the whole list with the response, matching legacy's `runTask`
+assigning straight over `$scope.tasks` rather than re-GETting. `C-DATE-TIME`'s `formatServerDateTime`/
+`parseServerDateTime` are reused unchanged for the absolute server-timezone tooltip; the relative "x minutes ago" /
+"in x minutes" text (legacy's `humanizeDate`, `moment().to()`) is a new local `Intl.RelativeTimeFormat` helper in the
+feature, since no earlier `C-DATE-TIME` consumer needed that half of legacy's pairing and this task's Files Allowed
+To Modify does not include the shared module. A `null` `lastExecutionTime` (before a task has ever run) renders as a
+genuinely empty cell -- no relative text and no tooltip-wrapping element at all, proven by a component test that also
+proves the populated Next-execution cell in the same row does carry one. Playwright lists the real scheduled tasks
+(asserting the always-registered `Backup` task by name) and blocks every `/internalapi/tasks/{taskName}` PUT so a
+system-test run can never run a task against the shared instance. A first review found the only test proving the
+relative-text/absolute-tooltip pairing exercised the pure formatter in isolation rather than the rendered `Tooltip`,
+so a regression swapping `formatServerDateTime`'s arguments would have gone uncaught; a one-file fix cycle added a
+fake-timer test that mouse-overs the real cell and asserts both values for the same independently-supplied instant.
+Re-review passed clean.
+
 FM-078 (Form Login, Logout, And Session-Aware Header) added a `/login` page, the header login/logout affordance with
 legacy's exact visibility truth table (`header-controller.js`'s `update()`), and the FORM redirect guard so a
 FORM-restricted anonymous session lands on `/login` instead of the migration placeholder. Every session transition
@@ -298,10 +315,8 @@ None.
 
 ## Upcoming
 
-- FM-077: System Tasks tab — the last unmigrated system tab (list + run-now). Part of the 2026-08-21
-  platform-completion batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer +
-  notifications), which packages the remaining shell surface. All of FM-078 (login/session), FM-079 (startup
-  checks/announcements), FM-080 (update banners), and FM-081 (live downloader footer + notifications) are done.
+None. FM-077 (System Tasks tab, the last unmigrated system tab) is done, completing the 2026-08-21 platform-completion
+batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer + notifications).
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

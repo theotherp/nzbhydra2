@@ -138,6 +138,7 @@ components:
       - F-SYSTEM-BUGREPORT
     classification: shared_hydra
     state: partial
+    note: "FM-077 is the first consumer to need the relative-time half of legacy's humanizeDate/reformatDateSeconds pairing (every earlier consumer only needed formatServerDateTime's absolute half). It implements that half as a local Intl.RelativeTimeFormat helper in core/ui-react/src/features/system/tasks/relativeTime.ts rather than adding it here, since this task's Files Allowed To Modify does not include this module; formatServerDateTime/parseServerDateTime are reused unchanged for the tooltip and the parse."
   - id: C-SERVER-PREFERENCES
     responsibility: Server-backed per-user and global acknowledgements and UI preferences
     legacy:

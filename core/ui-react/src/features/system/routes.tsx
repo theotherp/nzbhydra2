@@ -9,6 +9,7 @@ import {SystemControlTab} from "./control/SystemControlTab";
 import {SystemLogTab} from "./logs/SystemLogTab";
 import {NewsPage} from "./news/NewsPage";
 import {SystemShell} from "./SystemShell";
+import {SystemTasksTab} from "./tasks/SystemTasksTab";
 import {SystemUpdatesTab} from "./updates/SystemUpdatesTab";
 import {
     DEFAULT_SYSTEM_TAB,
@@ -22,9 +23,11 @@ import {
  * `/system` route so the tab strip stays mounted across tab changes, the way
  * legacy re-rendered `system.html` for every `root.system.*` state.
  *
- * `placeholder` is the migration placeholder for a tab that has no React body
- * yet (Tasks); it is passed in rather than imported so this module
- * does not depend on `router.tsx`, which depends on it.
+ * `placeholder` was the migration placeholder for a tab that had no React
+ * body yet; every tab now has one (FM-077 migrated the last, Tasks), so
+ * nothing reaches it any more. The parameter is kept -- removing it would
+ * only be pure tidying with no behavior change, and this module still does
+ * not depend on `router.tsx`, which depends on it.
  */
 export function createSystemRoute<TParent extends AnyRoute>(
     parentRoute: TParent,
@@ -73,6 +76,11 @@ export function createSystemRoute<TParent extends AnyRoute>(
         if (tab.path === "about") {
             return (
                 <SystemAboutTab bootstrap={bootstrap} transport={transport} />
+            );
+        }
+        if (tab.path === "tasks") {
+            return (
+                <SystemTasksTab bootstrap={bootstrap} transport={transport} />
             );
         }
         return placeholder();

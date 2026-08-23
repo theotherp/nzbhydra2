@@ -18,7 +18,10 @@ test("should select the React shell for a canonical deep link and switch back to
     );
     await page.goto(applicationUrl("ui/react?redirect=/system/tasks"));
     await expect(page).toHaveURL(/\/system\/tasks$/);
-    await expect(page.getByText("React migration placeholder")).toBeVisible();
+    // `tasks` was the last unmigrated tab, used here for the placeholder
+    // assertion until FM-077 migrated it; the deep link now lands on its
+    // real body.
+    await expect(page.getByTestId("system-tasks-table")).toBeVisible();
     await reactAsset;
 
     await page.getByRole("link", {name: "Switch to legacy UI"}).click();
