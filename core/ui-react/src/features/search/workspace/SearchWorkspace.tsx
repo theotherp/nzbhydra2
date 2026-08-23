@@ -4,6 +4,7 @@ import {
     Button,
     ButtonGroup,
     Checkbox,
+    CircularProgress,
     Chip,
     Collapse,
     Divider,
@@ -274,8 +275,13 @@ export function SearchWorkspace({
     const title = watch("title");
     const values = watch();
     const [suggestions, setSuggestions] = useState<MediaSuggestion[]>([]);
+    // "Nothing found" is deliberately not a state: mid-typing, an absent
+    // dropdown already says it, and a status Alert flashing into the form on
+    // every debounced miss was distracting (owner feedback, 2026-08-23).
+    // Loading renders as a spinner inside the field for the same reason;
+    // only the rare failure states surface as Alerts.
     const [autocompleteState, setAutocompleteState] = useState<
-        "idle" | "loading" | "empty" | "error" | "malformed"
+        "idle" | "loading" | "error" | "malformed"
     >("idle");
     const [activeOption, setActiveOption] = useState(-1);
     const [advancedOpen, setAdvancedOpen] = useState(readAdvancedOpen);
@@ -345,7 +351,7 @@ export function SearchWorkspace({
                     }
                     setSuggestions(next);
                     setActiveOption(-1);
-                    setAutocompleteState(next.length === 0 ? "empty" : "idle");
+                    setAutocompleteState("idle");
                 },
                 (error: unknown) => {
                     if (request.current !== current) {
@@ -508,7 +514,18 @@ export function SearchWorkspace({
             placeholder="Search…"
             type="search"
             slotProps={{
-                input: {startAdornment: searchAdornment},
+                input: {
+                    startAdornment: searchAdornment,
+                    endAdornment:
+                        autocompleteState === "loading" ? (
+                            <InputAdornment position="end">
+                                <CircularProgress
+                                    aria-label="Loading title suggestions"
+                                    size={16}
+                                />
+                            </InputAdornment>
+                        ) : undefined,
+                },
                 htmlInput: {
                     "aria-activedescendant":
                         activeOption >= 0
@@ -644,27 +661,39 @@ export function SearchWorkspace({
             data-testid="search-workspace"
             elevation={1}
             onSubmit={handleSubmit(onSubmit)}
-            sx={{mt: 3}}
+            // One surface for the whole card (the mock's bar tone), zoned
+            // only by the horizontal hairlines below -- the previous
+            // bar-on-paper two-tone split read as two unrelated panels.
+            // `backgroundImage: "none"` drops MUI's dark-mode elevation
+            // tint so the color is exactly the token. The Paper stays
+            // unclipped (no `overflow: hidden`) so the absolutely-positioned
+            // autocomplete dropdown can overlap the form's lower zone.
+            sx={{
+                backgroundColor: "surfaces.bar",
+                backgroundImage: "none",
+                // The form reads better as a focused command surface than a
+                // full-bleed band (owner decision 2026-08-23): centered, and
+                // capped between the mock page's 880px column and the
+                // shell's 1700px content width. Results below stay wide --
+                // the two widths are deliberately different.
+                maxWidth: 1100,
+                // Centered via `alignSelf`, not `mx: "auto"`: the page
+                // renders this form as a child of a spacing `Stack`, whose
+                // own `& > :not(style):not(style) {margin: 0}` child reset
+                // outweighs the sx class and zeroes auto margins (measured
+                // live at 1920px -- x stayed 150 with `mx`, 410 with
+                // `alignSelf`). `align-self` is not a margin, so the reset
+                // cannot touch it.
+                alignSelf: "center",
+                mt: 3,
+                width: "100%",
+            }}
         >
             <Box
                 data-testid="workspace-primary"
                 sx={{
-                    backgroundColor: "surfaces.bar",
                     borderBottom: "1px solid",
                     borderColor: "surfaces.hairlineFaint",
-                    // Stands in for the Paper's own `overflow: hidden` this
-                    // bar used to rely on to keep its square corners from
-                    // poking past the form's rounded ones (`MuiPaper`'s
-                    // `theme.ts` override, 12px for a raised, non-square
-                    // Paper). That clip also cut off the autocomplete
-                    // dropdown below at the form's bottom edge -- an
-                    // absolutely-positioned descendant is clipped by any
-                    // `overflow: hidden` ancestor, not just its immediate
-                    // parent -- so the Paper is unclipped and only this bar,
-                    // the one child that actually needs it, carries its own
-                    // matching top corners instead.
-                    borderTopLeftRadius: 12,
-                    borderTopRightRadius: 12,
                     px: 2,
                     py: 1.75,
                 }}
@@ -919,6 +948,18 @@ export function SearchWorkspace({
                                         },
                                     }}
                                     inputRef={setAdditionalQueryInputRef}
+                                    // Matches the Age & Size section's own
+                                    // `rowGap: 1.5` (its own comment: "wider
+                                    // so the size row's notched labels clear
+                                    // the age fields above"): the TV
+                                    // Season/Episode row above this field has
+                                    // the identical clearance need, but
+                                    // `advancedSectionSx`'s `gap: 0.75` is
+                                    // shared with the heading-to-first-row
+                                    // gap, so the extra 0.75 is added here
+                                    // rather than raised for the whole
+                                    // section.
+                                    sx={{mt: mediaType === "TV" ? 0.75 : 0}}
                                     {...additionalQueryRegistration}
                                 />
                             </Box>
@@ -937,7 +978,12 @@ export function SearchWorkspace({
                                 sx={{
                                     display: "flex",
                                     flexWrap: "wrap",
-                                    gap: 0.75,
+                                    // The 6px column gutter is load-bearing
+                                    // (`rangeSectionWidth` sums it); the row
+                                    // gap is wider so the size row's notched
+                                    // labels clear the age fields above.
+                                    columnGap: 0.75,
+                                    rowGap: 1.5,
                                     maxWidth: rangeSectionWidth,
                                 }}
                             >
@@ -1102,16 +1148,6 @@ export function SearchWorkspace({
                         {eligibleIndexers.length === 0
                             ? "No indexers are configured or enabled. Configure an indexer before searching."
                             : "You didn't select any indexers."}
-                    </Alert>
-                )}
-                {autocompleteState === "loading" && (
-                    <Alert role="status" severity="info">
-                        Loading title suggestions…
-                    </Alert>
-                )}
-                {autocompleteState === "empty" && (
-                    <Alert role="status" severity="info">
-                        No title suggestions found.
                     </Alert>
                 )}
                 {autocompleteState === "malformed" && (

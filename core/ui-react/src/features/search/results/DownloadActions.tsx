@@ -291,6 +291,46 @@ export function DownloadActions({
             gap={1}
         >
             {leading}
+            {downloaders.length > 1 && (
+                <Select
+                    aria-label="Downloader"
+                    size="small"
+                    sx={{fontSize: "13px"}}
+                    value={downloader?.name ?? ""}
+                    onChange={(event) =>
+                        setDownloader(
+                            downloaders.find(
+                                (value) => value.name === event.target.value,
+                            ),
+                        )
+                    }
+                >
+                    {downloaders.map((value) => (
+                        <MenuItem key={value.name} value={value.name}>
+                            {value.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            )}
+            {downloaders.length > 0 && (
+                <Select
+                    aria-label="Downloader category"
+                    displayEmpty
+                    size="small"
+                    sx={{fontSize: "13px"}}
+                    value={category ?? ""}
+                    onChange={(event) =>
+                        setCategory(event.target.value || null)
+                    }
+                >
+                    <MenuItem value="">Use downloader default</MenuItem>
+                    {downloaderCategories.map((value) => (
+                        <MenuItem key={value} value={value}>
+                            {value}
+                        </MenuItem>
+                    ))}
+                </Select>
+            )}
             {downloaders.length > 0 && (
                 <Button
                     data-testid="send-to-downloader"
@@ -304,46 +344,6 @@ export function DownloadActions({
                 >
                     Send selected to downloader
                 </Button>
-            )}
-            {downloaders.length > 0 && (
-                <>
-                    <Select
-                        aria-label="Downloader"
-                        size="small"
-                        sx={{fontSize: "13px"}}
-                        value={downloader?.name ?? ""}
-                        onChange={(event) =>
-                            setDownloader(
-                                downloaders.find(
-                                    (value) =>
-                                        value.name === event.target.value,
-                                ),
-                            )
-                        }
-                    >
-                        {downloaders.map((value) => (
-                            <MenuItem key={value.name} value={value.name}>
-                                {value.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                    <Select
-                        aria-label="Downloader category"
-                        size="small"
-                        sx={{fontSize: "13px"}}
-                        value={category ?? ""}
-                        onChange={(event) =>
-                            setCategory(event.target.value || null)
-                        }
-                    >
-                        <MenuItem value="">Use downloader default</MenuItem>
-                        {downloaderCategories.map((value) => (
-                            <MenuItem key={value} value={value}>
-                                {value}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </>
             )}
             {downloaders.length === 0 && (
                 <Alert severity="info">

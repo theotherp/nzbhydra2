@@ -31,7 +31,13 @@ import {UpdateFooterBanners} from "./status/UpdateFooterBanners";
 // Path" docs): it lets the bundler emit a base-URL-aware, hashed asset path without
 // hardcoding a root-relative URL and without a static `import` requiring an ambient
 // `*.png` module declaration.
-const logoUrl = new URL("../assets/logo.png", import.meta.url).href;
+//
+// `banner.png` is legacy's own `static/img/banner-grey-dark.png` (the variant
+// legacy's `dark.css`/`grey.css` themes both use for the full-width `#banner`
+// masthead): white/green wordmark on a transparent background, which is why
+// it's the one variant that reads correctly against this app bar's dark
+// `surfaces.bar` -- the app has no light theme to need a second variant for.
+const bannerUrl = new URL("../assets/banner.png", import.meta.url).href;
 
 type AppShellProps = {
     bootstrap: BootstrapData;
@@ -134,16 +140,9 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                         component="img"
                         alt="NZBHydra2"
                         data-testid="app-shell-logo"
-                        src={logoUrl}
-                        sx={{height: 32, mr: 1, width: "auto"}}
+                        src={bannerUrl}
+                        sx={{height: 32, mr: 3, width: "auto"}}
                     />
-                    <Typography
-                        component="span"
-                        sx={{fontWeight: 700, mr: 3}}
-                        variant="h6"
-                    >
-                        NZBHydra2
-                    </Typography>
                     <Box
                         component="nav"
                         data-testid="app-shell-nav"
@@ -211,11 +210,6 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                 bootstrap={bootstrap}
                 liveTransport={liveTransports.notifications}
             />
-            <Box component="footer" sx={{p: 2, textAlign: "center"}}>
-                <Typography color="text.secondary" variant="body2">
-                    NZBHydra2
-                </Typography>
-            </Box>
         </Box>
     );
 }

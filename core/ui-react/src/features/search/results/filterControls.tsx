@@ -142,6 +142,7 @@ const numericFieldSx = {
     minWidth: 0,
     "& input": {
         fontFamily: monoFontFamily,
+        fontSize: "13px",
         MozAppearance: "textfield",
     },
     "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button": {
@@ -215,6 +216,7 @@ export function NumericFilter({
                 </Button>
                 <Button
                     data-testid={`number-filter-clear-${testIdPrefix}`}
+                    disabled={range.min === "" && range.max === ""}
                     onClick={() => onClear(name)}
                     size="small"
                     sx={{fontSize: "12px", minWidth: 0, px: "9px"}}

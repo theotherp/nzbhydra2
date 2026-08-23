@@ -271,8 +271,12 @@ test.describe("Search", () => {
                 locator: primary,
                 minimumWidth,
             });
+            // The bar tone is painted once by the workspace card itself (the
+            // whole form is one `surfaces.bar` surface, zoned by hairlines),
+            // so the distinct-from-page-ground probe measures the card, not
+            // the now-transparent primary row inside it.
             const [rowBackground, pageBackground] = await Promise.all([
-                primary.evaluate(
+                workspace.evaluate(
                     (element) => getComputedStyle(element).backgroundColor,
                 ),
                 page

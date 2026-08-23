@@ -189,7 +189,13 @@ describe("createHydraTheme typography and density", () => {
                 borderColor: "rgba(255, 255, 255, 0.1)",
             },
         });
-        expect(theme.components?.MuiInputBase).toBeUndefined();
+        // `MuiInputBase` carries exactly one declaration -- the mock's 14px
+        // input text size -- and in particular no focus styling: ADR-0015's
+        // guard is that the input family's indicator stays MUI's own focused
+        // notchedOutline, never a reintroduced InputBase ring.
+        expect(theme.components?.MuiInputBase).toEqual({
+            styleOverrides: {root: {fontSize: "14px"}},
+        });
         expect(theme.components?.MuiTextField?.defaultProps).toEqual({
             size: "small",
         });

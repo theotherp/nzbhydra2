@@ -451,14 +451,23 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeDisabled();
         fireEvent.change(screen.getByTestId("number-filter-min-refine-size"), {
             target: {value: "4"},
         });
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Zulu WEB",
         );
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeEnabled();
         fireEvent.click(screen.getByTestId("number-filter-clear-refine-size"));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeDisabled();
 
         fireEvent.click(refineOption("refine-indexer-option", "One"));
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
@@ -886,6 +895,62 @@ describe("SearchResults", () => {
         expect(send).toBeEnabled();
         expect(zip).toBeEnabled();
         expect(summary).toHaveTextContent("· 1 selected");
+    });
+
+    it("should hide the downloader select when only one downloader is configured, and order the downloader/category selects before the send button", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {downloaders: [{name: "SAB", enabled: true}]},
+            },
+        };
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const bar = screen.getByTestId("results-bulk-actions");
+        expect(bar.querySelector('[aria-label="Downloader"]')).toBeNull();
+        const category = bar.querySelector(
+            '[aria-label="Downloader category"]',
+        );
+        expect(category).not.toBeNull();
+        // Empty selection ("use downloader default") still shows its label
+        // rather than a blank box (MUI's `Select` needs `displayEmpty` for
+        // that when the selected value is "").
+        expect(category).toHaveTextContent("Use downloader default");
+        const send = within(bar).getByTestId("send-to-downloader");
+        expect(
+            category!.compareDocumentPosition(send) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+    });
+
+    it("should show the downloader select, ordered before the category select and the send button, when multiple downloaders are configured", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {name: "SAB", enabled: true},
+                        {name: "NZBGet", enabled: true},
+                    ],
+                },
+            },
+        };
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const bar = screen.getByTestId("results-bulk-actions");
+        const downloaderSelect = bar.querySelector('[aria-label="Downloader"]');
+        const categorySelect = bar.querySelector(
+            '[aria-label="Downloader category"]',
+        );
+        const send = within(bar).getByTestId("send-to-downloader");
+        expect(downloaderSelect).not.toBeNull();
+        expect(categorySelect).not.toBeNull();
+        expect(
+            downloaderSelect!.compareDocumentPosition(categorySelect!) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            categorySelect!.compareDocumentPosition(send) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
     });
 
     // FM-055: the packet's exact phrase, including the `>` prefix the
@@ -2053,6 +2118,7 @@ describe("SearchResults", () => {
             />,
         );
         fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
 
         fireEvent.click(screen.getByTestId("sort-title"));
         // "Group TV episodes" defaults checked (useState(true)); flip it off
@@ -2078,7 +2144,9 @@ describe("SearchResults", () => {
             "Alpha BluRay",
         );
 
+        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
         fireEvent.click(screen.getByTestId("refine-clear-all"));
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
 
         expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
         expect(refineOption("refine-indexer-option", "One")).toHaveAttribute(

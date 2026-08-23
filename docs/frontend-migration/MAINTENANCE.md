@@ -663,11 +663,140 @@ Format, one entry per fix:
   `tests/system/visual-evidence/F-SYSTEM-BUGREPORT/bugreport-desktop.png`. Flagged as a minor finding by FM-076's
   review (`docs/frontend-migration/STATUS.md`).
 
+### 2026-08-23 — Align form controls and the search card with the mock's visual language
+
+- **Why not a packet:** styling polish inside existing features with no behavior, contract, or `data-testid` change;
+  the theme entries are stock MUI defaults and mock-token sizes per ADR-0014. Rendering change — verified via the
+  Visual Gate (regenerated `tests/system/visual-evidence/F-SEARCH-FORM/*` strip, owner-reported "cheap copy" gap
+  after FM-087). Note the reach: the always-shrunk labels and 14px/13px control sizes are theme-wide (all forms,
+  including config), owner-blessed ("feel free to change the overall theme").
+- **Paths:** `core/ui-react/src/app/theme.ts`, `core/ui-react/src/app/theme.test.ts`,
+  `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `tests/system/tests/search.spec.ts`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, pre-existing warnings only), `format:check`,
+  `test -- --run` (1094/1094), `build`, `check:api`, `validate:migration` all pass. `tests/system` `npx tsc --noEmit`
+  pass. Real backend: `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts
+  tests/focus-indication.spec.ts` — `search.spec.ts` fully green; `focus-indication.spec.ts` 1 error on the
+  anchor-family test from a **pre-existing** FM-079 interaction (see the Open candidate below), mechanism-independent
+  of this diff (a theme-only change cannot mount the startup dialog that duplicates the anchor). Root
+  `git diff --check` clean.
+- **Commit:** `554145c33`
+- **Note:** four MUI defaults FM-087 never overrode caused the gap: inputs/selects at `body1` 16px (mock 14px, same
+  400 weight but visibly heavier), checkbox rows and menu items at 16px (mock 13px/14px), labels floating inside the
+  input at rest behind the value with placeholders suppressed (mock: permanently in the border notch), and the
+  workspace card split bar-on-paper (mock: one `surfaces.bar` surface zoned by hairlines). `theme.test.ts`'s
+  ADR-0015 guard was sharpened, not weakened: from "no `MuiInputBase` entry" to "exactly the 14px size token and no
+  focus styling".
+
+### 2026-08-23 — Range-row breathing room and quiet autocomplete feedback
+
+- **Why not a packet:** owner-requested UX polish inside an existing feature; no contract, selector, or `data-testid`
+  change (the removed status Alerts were asserted by no test and recorded in no registry). Rendering change —
+  verified via the Visual Gate (regenerated `tests/system/visual-evidence/F-SEARCH-FORM/*`).
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, pre-existing warnings only), `format:check`,
+  `test -- --run` (1094/1094), `build`, `check:api`, `validate:migration` all pass. Real backend:
+  `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts` 18/18 passed. Root
+  `git diff --check` clean.
+- **Commit:** `dd0702d03`
+- **Note:** the Age & Size rows' gap went 6px → 12px (row gap only — the 6px column gutter is summed by
+  `rangeSectionWidth` and stays). The "No title suggestions found." / "Loading title suggestions…" Alerts flashed
+  into the form on every debounced miss while typing; the empty state was removed entirely (an absent dropdown
+  already says it) and loading became a 16px `CircularProgress` inside the query field, legacy's own pattern. The
+  error/malformed warning Alerts remain.
+
+### 2026-08-23 — Center the search form at a 1100px cap
+
+- **Why not a packet:** owner-decided layout polish; no behavior, contract, or `data-testid` change. Rendering change —
+  verified by live measurement and the regenerated `F-SEARCH-FORM` strip.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`.
+- **Gates:** full `core/ui-react` gate set green (1094/1094); `tests/search.spec.ts` 18/18 against a rebuilt real
+  backend; live 1920px measurement (form x=410, width=1100 — exact center).
+- **Commit:** `04d2ec308`
+- **Note:** first attempt used `mx: "auto"`, which silently did nothing: the page's spacing `Stack` resets child
+  margins with `& > :not(style):not(style) {margin: 0}` at (0,3,0) specificity, beating any sx class. Centered via
+  `alignSelf: "center"` instead, which no margin reset can touch. Worth remembering for any future Stack child that
+  wants auto margins — the same reset also makes the form's own `mt: 3` dead CSS (predates this change, gap comes
+  from Stack spacing; left as is).
+
+### 2026-08-23 — Polish the results refine-bar filter controls
+
+- **Why not a packet:** styling (input font size) plus two contained disabled-state bugfixes inside one existing
+  component pair; no `data-testid`, contract, or persisted-data change. Each behavioral change has a regression
+  test.
+- **Paths:** `core/ui-react/src/features/search/results/{filterControls,RefineSidebar}.tsx` and their test files.
+- **Gates:** full `core/ui-react` gate set green: typecheck, lint, format:check, `test -- --run` (1094/1094),
+  build, check:api, validate:migration. `git diff --check` clean.
+- **Commit:** `88da46f72`
+- **Note:** part of a larger owner-requested batch of minor search-results/search-form UI fixes. The other two
+  items originally grouped with these (removing the size/age filter's dead-code "Apply" button, and persisting
+  the category/indexer accordion expand state) were pulled out during qualification: the Apply button carries a
+  `data-testid` a system test clicks (`tests/system/tests/results.spec.ts`), and accordion persistence is a new
+  user-observable capability — both routed to `/fm-orchestrate` instead. See *Open candidates* below.
+
+### 2026-08-23 — Reorder the downloader send-action row and fix its selects
+
+- **Why not a packet:** markup reorder plus two contained bugfixes (hide-when-single-downloader,
+  `displayEmpty` on the category select) inside one existing component; no `data-testid` or contract change.
+  Both bugfixes have regression tests.
+- **Paths:** `core/ui-react/src/features/search/results/DownloadActions.tsx` and `SearchResults.test.tsx`.
+- **Gates:** full `core/ui-react` gate set green: typecheck, lint, format:check, `test -- --run` (1096/1096),
+  build, check:api, validate:migration. `git diff --check` clean.
+- **Commit:** `bdae1e73a`
+
+### 2026-08-23 — Give the TV search form's Additional filter terms row breathing room
+
+- **Why not a packet:** styling-only (a single `mt` on one field), no `data-testid` or contract change. Rendering
+  change — verified live and via the regenerated `F-SEARCH-FORM` strip.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`.
+- **Gates:** full `core/ui-react` gate set green (1096/1096); `tests/search.spec.ts` "bar-and-chips visual
+  evidence" 1/1 against a rebuilt real backend; live measurement (Additional filter terms' `fieldset` top now
+  265.625px, exactly matching Min size's).
+- **Commit:** `aa65fb79f`
+
+### 2026-08-23 — Show the NZBHydra banner in the app bar, drop the plain-text footer
+
+- **Why not a packet:** markup/asset swap and dead-markup removal, no `data-testid` removed (`app-shell-logo` and
+  its `alt="NZBHydra2"` kept, matching what `smoke.spec.ts` and `AppShell.test.tsx` already assert) and no other
+  contract change. Rendering change — verified via the regenerated `F-PLATFORM-SHELL` strip.
+- **Paths:** `core/ui-react/src/app/AppShell.tsx`; new `src/assets/banner.png`; removed `src/assets/logo.png`
+  (left unused by the swap).
+- **Gates:** full `core/ui-react` gate set green (1096/1096); `tests/smoke.spec.ts` "Branded app shell visual
+  evidence" 3/3 (desktop, desktop-wide, mobile) against a rebuilt real backend.
+- **Commit:** `35be348ce`
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
+- **The results size/age `NumericFilter`'s "Apply" button is dead code that should be removed** (`filterControls.tsx`,
+  `data-testid="number-filter-apply-{prefix}"`): the min/max fields already commit on every keystroke
+  (`SearchResults.tsx`'s `updateRange`), so the button has no `onClick` and does nothing. Not a bare quickfix because
+  removing it removes a `data-testid` that `tests/system/tests/results.spec.ts:77` clicks directly as part of its
+  flow, so the fix spans a source component and a system-test spec. Bundle with the "move the range filter's Clear
+  button to the right of the fields as an icon-only control" request (same control cluster, same task) via
+  `/fm-orchestrate`. Surfaced 2026-08-23 while triaging an owner batch of minor UI requests.
+- **The refine sidebar's Category/Indexer expand/collapse state (`categoryOpen`/`indexerOpen` in `RefineSidebar.tsx`)
+  is plain `useState` and always resets to expanded on reload.** The owner asked for this to persist. Not a quickfix:
+  persisted UI state is a new user-observable capability per this ledger's own gate, and there is no existing cookie
+  utility in `core/ui-react` (`localStorage` is the established persistence pattern here — see `sidebarCollapsed` in
+  `SearchResults.tsx` and `features/stats/dashboard/persistence.ts`). Route to `/fm-orchestrate`; the packet should
+  decide the storage key/shape (likely folding into `SearchResults.tsx`'s existing `hydra.search-results.table`
+  blob) rather than inventing a second mechanism. Surfaced 2026-08-23.
+- **A long `TextField` floating label (e.g. "Additional filter terms" in `SearchWorkspace.tsx`'s Media section) can
+  render with the outlined border's top line crossing through the back half of the label text**, instead of the
+  notch clearing the whole label. Root cause found while triaging the owner's UI-polish batch, 2026-08-23:
+  `getBoundingClientRect()` on the live dev server showed the notch `legend` measured 112.67px while the label
+  itself rendered at 117.34px in the loaded custom font (IBM Plex Sans) -- MUI's `NotchedOutline` measures the
+  label's width once (on mount / label-content change) via a ref, with no listener for a subsequent web-font swap,
+  so a label measured against the fallback font before IBM Plex Sans finishes loading stays stale (narrower) after
+  the swap. `tests/system/tests/visualEvidence.ts`'s `prepareVisualEvidence` awaits `document.fonts.ready` before
+  every capture, which is exactly why this doesn't show up in any existing screenshot strip -- it's a real cold-load
+  race for actual users, invisible to the harness that waits it out. Not a quickfix: the fix belongs either in
+  shared app bootstrap (force a remeasure on `document.fonts.ready`, e.g. dispatching a `resize` event once fonts
+  settle) or a font-loading strategy change (preload/`font-display` tuning) -- both cross-cutting, not confined to
+  one component. Route to `/fm-orchestrate`; worth checking whether other long labels across the app (config forms,
+  etc.) show the same tell before committing to one fix shape.
 - **`ConfigFieldset.tsx`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
   space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
   `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
@@ -684,9 +813,16 @@ instead of leaving it to rot.
   arguably a selector-contract change even though the id string itself is unchanged, which the quickfix gate excludes;
   worth an explicit `/fm-orchestrate` call on whether to move it or declare the root-element placement the intended
   convention.
-- **Persist whether the search workspace's "Advanced" panel is collapsed or expanded** (`core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `advancedOpen` state). Requested alongside the 2026-08-19 UX polish above but
+- ~~**Persist whether the search workspace's "Advanced" panel is collapsed or expanded** (`core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `advancedOpen` state). Requested alongside the 2026-08-19 UX polish above but
   refused at the qualification gate: this ledger's own header excludes persisted-data changes, and remembering the panel's state across page loads is a new user-observable capability, not styling or a contained bugfix. Needs a task
-  packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.
+  packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.~~
+  Discharged 2026-08-23 by the FM-087 packet, which shipped exactly this (`nzbhydra.search.advancedOpen` in `localStorage`, guarded reads).
+- **`focus-indication.spec.ts`'s anchor-family test fails on a fresh datafolder because FM-079's startup `NewsDialog`
+  duplicates the mocked news anchor** (`tests/system/tests/focus-indication.spec.ts:1047`, `core/ui-react/src/app/status/NewsDialog.tsx`). The test mocks `/internalapi/news**` with a `forCurrentVersion: true` entry and locates
+  `a[href='https://example.invalid/fm053']` strictly; on a datafolder where that news is unseen, the startup dialog (a portal outside `system-shell`, added by FM-079 after the test was written for FM-053) renders the same
+  server-authored HTML as the news page, so the locator resolves to two elements. Deterministic on `--runtime local` runs (fresh datafolder), invisible against long-lived IntelliJ services (news already marked shown). Surfaced
+  2026-08-23 while gating the visual-language quickfix above, which could not have caused it (theme-only diff). Fix belongs in the test — dismiss or await the dialog before probing, or scope the locator — contained enough for a
+  quickfix.
 - ~~**The refine sidebar's `downloadTypes` selection has the same cross-search staleness as `indexers`/`categories` did.**~~
   Discharged the same day by the 2026-08-19 download-type entry above (`27efd28f5`).
 - **Download-history and notification-history tables squeeze columns instead of scrolling at 390x844**, wrapping cell text

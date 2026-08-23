@@ -314,6 +314,13 @@ describe("RefineSidebar", () => {
                 onToggleCollapsed={onToggleCollapsed}
             />,
         );
+        // No filter differs from `defaultFilters` yet, so the button starts
+        // disabled and only becomes clickable once a filter is actually set.
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
         fireEvent.click(screen.getByTestId("refine-clear-all"));
         expect(onClearAll).toHaveBeenCalledTimes(1);
         fireEvent.click(

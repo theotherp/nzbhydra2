@@ -618,6 +618,31 @@ export function createHydraTheme(
             MuiTextField: {
                 defaultProps: {size: "small"},
             },
+            // The mock's input text size (`font-size:14px` on every text
+            // input and select). MUI's `InputBase` root spreads
+            // `typography.body1` (1rem = 16px), which is what made every
+            // form control render two pixels larger -- and visually heavier,
+            // at the same 400 weight -- than the mock.
+            MuiInputBase: {
+                styleOverrides: {
+                    root: {fontSize: "14px"},
+                },
+            },
+            // The mock's field labels sit permanently in the border notch
+            // (its floated 11px caption on every field), never down inside
+            // the input where they would sit behind the value. Always-shrunk
+            // labels also let MUI show placeholders at rest instead of
+            // hiding them behind an unshrunk label.
+            MuiInputLabel: {
+                defaultProps: {shrink: true},
+            },
+            // The mock's checkbox rows (the indexer grid) label at 13px;
+            // MUI's `FormControlLabel` otherwise spreads `body1` (16px).
+            MuiFormControlLabel: {
+                styleOverrides: {
+                    label: {fontSize: "13px"},
+                },
+            },
             // ADR-0013 family F. Drawn *inset*, for a measured reason: both
             // render inside a `Paper` whose computed overflow is not
             // `visible`, and an outset ring at a 3px offset was measured
@@ -637,6 +662,9 @@ export function createHydraTheme(
             MuiMenuItem: {
                 styleOverrides: {
                     root: ({theme}) => ({
+                        // The mock's menu rows are 14px like its inputs;
+                        // MUI's default is `body1` (16px).
+                        fontSize: "14px",
                         "&.Mui-focusVisible": focusRing(
                             theme,
                             focusRingInsetOffset,
@@ -681,6 +709,13 @@ export function createHydraTheme(
                 },
             },
             MuiOutlinedInput: {
+                // Keep the border notch open to match the permanently shrunk
+                // labels above: `TextField` only forwards `notched` from an
+                // explicit `InputLabelProps.shrink`, not from the theme
+                // default, so without this the label would float over an
+                // unbroken border. Label-less inputs render an empty legend,
+                // which draws no gap.
+                defaultProps: {notched: true},
                 styleOverrides: {
                     // The mock's text inputs: 8px radius (pinned explicitly so
                     // the input radius stays the mock's even if the shared

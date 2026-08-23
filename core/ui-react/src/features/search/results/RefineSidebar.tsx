@@ -17,7 +17,21 @@ import {monoFontFamily, pillRadius} from "../../../app/theme";
 import type {SearchResult} from "../../../api/search";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
-import {quickFilterKey} from "./resultTable";
+import {defaultFilters, quickFilterKey} from "./resultTable";
+
+// Order-independent for the array-valued fields (`categories`/`indexers`/
+// `downloadTypes`), which the UI never reorders but whose default value
+// (`defaultFilters`, `resultTable.ts`) is derived by scanning `results` and
+// so is not guaranteed to land in the same order the user's own toggling
+// produced.
+function canonicalFilters(value: ResultFilters): string {
+    return JSON.stringify({
+        ...value,
+        categories: [...value.categories].sort(),
+        downloadTypes: [...value.downloadTypes].sort(),
+        indexers: [...value.indexers].sort(),
+    });
+}
 
 // FM-054 (ADR-0014): the mock's `<aside style="flex:0 0 248px;...;
 // padding:18px 16px 40px;">` panel padding and its `rowStyle(active)` /
@@ -161,6 +175,12 @@ export function RefineSidebar({
             ].sort((first, second) => first.localeCompare(second)),
         [results],
     );
+    const hasActiveFilters = useMemo(
+        () =>
+            canonicalFilters(filters) !==
+            canonicalFilters(defaultFilters(results, quickFilters)),
+        [filters, results, quickFilters],
+    );
     const toggleDownloadType = (type: string) => {
         setFilters((current) => ({
             ...current,
@@ -215,6 +235,7 @@ export function RefineSidebar({
                             "data-testid": "refine-filter-title",
                         },
                     }}
+                    sx={{"& input": {fontSize: "13px"}}}
                     value={filters.title}
                 />
             </RefineSection>
@@ -304,6 +325,7 @@ export function RefineSidebar({
     const clearAll = (
         <Button
             data-testid="refine-clear-all"
+            disabled={!hasActiveFilters}
             onClick={onClearAll}
             size="small"
             sx={{
