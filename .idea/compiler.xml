@@ -88,10 +88,12 @@
     </option>
   </component>
   <component name="TypeScriptCompiler">
-    <option name="nodeInterpreterTextField" value="wsl://Ubuntu@/usr/bin/node" />
+    <option name="memoryAutoIncrease" value="true" />
+    <option name="nodeInterpreterTextField" value="$USER_HOME$/.nvm/versions/node/v26.7.0/bin/node" />
     <option name="recompileOnChanges" value="true" />
     <option name="scopeName" value="All Places" />
-    <option name="typeScriptServiceDirectory" value="$PROJECT_DIR$/core/ui-react/node_modules/typescript" />
+    <option name="typeScriptServiceDirectory" value="$PROJECT_DIR$/core/ui-react/node_modules/typescript/lib" />
+    <option name="useServicePoweredTypesEnabledManually" value="true" />
     <option name="versionType" value="SERVICE_DIRECTORY" />
   </component>
 </project>
