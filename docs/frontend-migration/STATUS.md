@@ -314,6 +314,14 @@ element crop with no row/card layout context; a stale STATUS.md batch-completion
 implementer's mechanical `validate:migration` edit (restored above). Candidates for a future quickfix. First of the
 2026-08-23 batch FM-082..FM-086; later members stay planned packets in `tasks/` until dependency-ordered.
 
+FM-083 (Search Cancellation) added `F-SEARCH-PROGRESS`'s one recorded gap: a Cancel button in the
+`search-status-modal`, reusing `SearchPage.tsx`'s existing `activeSubmission`/`releaseSubmission` abandon-tracking
+rather than a new mechanism — every post-await write site is gated behind the same identity check, so an abandoned
+search's late resolve/reject or a cancel-then-new-search race both leave the screen untouched, proven by dedicated
+tests including one that resolves the abandoned promise after the new one. No server-side cancellation request is
+sent (client-only abandon, legacy parity) and the two-button layout (vs. legacy's single morphing button) are both
+recorded as deliberate `F-SEARCH-PROGRESS` gap lines. Passed clean on first review.
+
 ## Active
 
 None.

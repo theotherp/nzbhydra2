@@ -1728,6 +1728,269 @@ describe("SearchPage", () => {
         await waitFor(() => expect(firstClose).toHaveBeenCalledOnce());
         expect(secondClose).not.toHaveBeenCalled();
     });
+
+    // FM-083: Cancel closes the dialog, releases the active submission (and
+    // thus its live subscription), and leaves the page in its pre-search
+    // state -- no loading indicator, no results, no error.
+    it("should cancel the search, close the dialog, and return to the pre-search state", async () => {
+        const close = vi.fn();
+        const liveTransport: SearchLiveTransport = {
+            subscribeSearchState: vi.fn(async () => ({close})),
+        };
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementation(() => new Promise<Response>(() => undefined));
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={liveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            }),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("search-status-modal"),
+            ).not.toBeInTheDocument(),
+        );
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("search-result-row"),
+        ).not.toBeInTheDocument();
+        await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    });
+
+    it("should not be dismissible by backdrop click or Escape, only by Cancel", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementation(() => new Promise<Response>(() => undefined));
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        const modal = await screen.findByTestId("search-status-modal");
+        fireEvent.keyDown(modal, {key: "Escape"});
+        expect(screen.getByTestId("search-status-modal")).toBeVisible();
+
+        // The MUI backdrop is a sibling rendered in the same portal as the
+        // dialog paper; simulate the click MUI itself dispatches on it.
+        const backdrop = document.querySelector(".MuiBackdrop-root");
+        if (backdrop) {
+            fireEvent.click(backdrop);
+        }
+        expect(screen.getByTestId("search-status-modal")).toBeVisible();
+    });
+
+    // Reused across the two "abandoned response" tests below: an
+    // `executeSearch` that only settles once the test calls `settle`.
+    function deferredSearchFetch(): {
+        fetchImplementation: typeof fetch;
+        settle: (value: Response | Error) => void;
+    } {
+        let settle: (value: Response | Error) => void = () => undefined;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (!String(url).includes("internalapi/search")) {
+                return new Promise<Response>(() => undefined);
+            }
+            return new Promise<Response>((resolve, reject) => {
+                settle = (value) =>
+                    value instanceof Error ? reject(value) : resolve(value);
+            });
+        }) as unknown as typeof fetch;
+        return {fetchImplementation, settle};
+    }
+
+    it("should ignore an abandoned search response that resolves after cancel", async () => {
+        const {fetchImplementation, settle} = deferredSearchFetch();
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("search-status-modal"),
+            ).not.toBeInTheDocument(),
+        );
+
+        await act(async () => {
+            settle(
+                new Response(
+                    JSON.stringify({
+                        ...responseEnvelope,
+                        searchResults: [
+                            {
+                                searchResultId: "abandoned",
+                                title: "Abandoned result",
+                                indexer: "Mock",
+                                category: "All",
+                            },
+                        ],
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(screen.queryByText("Abandoned result")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("search-status-modal"),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("should ignore an abandoned search error that rejects after cancel", async () => {
+        const {fetchImplementation, settle} = deferredSearchFetch();
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("search-status-modal"),
+            ).not.toBeInTheDocument(),
+        );
+
+        await act(async () => {
+            settle(new Error("abandoned search failed"));
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("search-status-modal"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should render the new search's results and discard the cancelled one, even if it resolves last", async () => {
+        let resolveFirst: (value: Response) => void = () => undefined;
+        let resolveSecond: (value: Response) => void = () => undefined;
+        let searchCalls = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (!String(url).includes("internalapi/search")) {
+                return new Promise<Response>(() => undefined);
+            }
+            searchCalls += 1;
+            const isFirst = searchCalls === 1;
+            return new Promise<Response>((resolve) => {
+                if (isFirst) {
+                    resolveFirst = resolve;
+                } else {
+                    resolveSecond = resolve;
+                }
+            });
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("search-status-modal"),
+            ).not.toBeInTheDocument(),
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        await waitFor(() => expect(searchCalls).toBe(2));
+
+        // Resolve the new (second) submission first, then the abandoned
+        // (first) one last -- proving discard doesn't depend on resolution
+        // order, only on submission identity.
+        resolveSecond(
+            new Response(
+                JSON.stringify({
+                    ...responseEnvelope,
+                    searchResults: [
+                        {
+                            searchResultId: "new",
+                            title: "New search result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }),
+                {headers: {"Content-Type": "application/json"}},
+            ),
+        );
+        expect(await screen.findByText("New search result")).toBeVisible();
+
+        await act(async () => {
+            resolveFirst(
+                new Response(
+                    JSON.stringify({
+                        ...responseEnvelope,
+                        searchResults: [
+                            {
+                                searchResultId: "old",
+                                title: "Old abandoned result",
+                                indexer: "Mock",
+                                category: "All",
+                            },
+                        ],
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(
+            screen.queryByText("Old abandoned result"),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText("New search result")).toBeVisible();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+    });
 });
 
 function searchRequestCalls(mock: ReturnType<typeof vi.fn>) {

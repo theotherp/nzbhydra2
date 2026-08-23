@@ -8,6 +8,7 @@ import {
     DialogTitle,
     LinearProgress,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
@@ -277,6 +278,19 @@ export function SearchPage({
             setLiveUnavailable("Unable to show early results.");
         }
     };
+    // No server-side cancellation request is sent (legacy parity: the
+    // backend keeps searching; only the client abandons it, recorded as a
+    // deliberate `F-SEARCH-PROGRESS` gap). `releaseSubmission` already marks
+    // the submission cancelled and closes its live subscription, which
+    // starves every post-await check in `submit` (`activeSubmission.current
+    // === submission`) guarding the abandoned `executeSearch`/subscribe
+    // continuations, so their eventual resolution can no longer write state.
+    const cancelSearch = () => {
+        releaseSubmission();
+        setState({loading: false});
+        setProgress(undefined);
+        setLiveUnavailable(undefined);
+    };
     const loadMore = async (loadAll: boolean) => {
         if (!state.data || !state.request) {
             throw new Error("Search continuation is unavailable.");
@@ -493,6 +507,9 @@ export function SearchPage({
                     </Stack>
                 </DialogContent>
                 <DialogActions>
+                    <Tooltip title="Cancel search and return to search mask">
+                        <Button onClick={cancelSearch}>Cancel</Button>
+                    </Tooltip>
                     <Button
                         disabled={!progress?.hasResults}
                         onClick={() => void showEarlyResults()}

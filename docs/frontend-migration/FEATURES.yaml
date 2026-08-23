@@ -147,7 +147,12 @@ features:
       - search-status-modal
     parity: partial
     gaps:
-      - cancellation
+      - Cancel does not send a server-side cancellation request; the backend
+        keeps searching after the client abandons the submission (legacy
+        parity — only the client stops waiting).
+      - Two-button layout (separate Cancel and "Show early results" buttons)
+        instead of legacy's single button that morphs from Cancel to "Show
+        results" once indexers finish.
   - id: F-SEARCH-RESULTS
     name: Result processing, display, indexer outcomes, and malformed-result resilience
     routes:

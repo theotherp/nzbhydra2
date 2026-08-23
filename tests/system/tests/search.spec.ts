@@ -560,8 +560,10 @@ test.describe("Search", () => {
     test("should render deterministic STOMP progress in the React search modal", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
-        await expect(page).toHaveURL(/\/$/);
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await expect(page).toHaveURL(/\/$/);
+        });
         const enableDemo = await page.request.put("/internalapi/demomode");
         expect(enableDemo.status()).toBe(200);
         try {
@@ -573,12 +575,76 @@ test.describe("Search", () => {
             await expect(modal).toBeVisible();
             await expect(modal).toContainText("DemoIndexer1 returned results");
             await expect(modal).toContainText("Indexers finished: 1 / 3");
+
+            // FM-083: the Cancel button sits alongside "Show early results"
+            // -- the two-button layout the Visual Gate screenshot strip
+            // below captures. Demo mode's "returned results" message doesn't
+            // match the positive-count marker `hasResults` looks for
+            // (`searchState.ts`), so "Show early results" stays disabled
+            // here; that gate is exercised with real result counts in
+            // "should show scoped progress, offer early results..." (unit
+            // test) and doesn't need duplicating against the real backend.
+            const cancelButton = page.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            });
+            const earlyResultsButton = page.getByRole("button", {
+                name: "Show early results",
+            });
+            await expect(cancelButton).toBeEnabled();
+            await expect(earlyResultsButton).toBeVisible();
+            await captureVisualRegion(
+                modal,
+                "F-SEARCH-PROGRESS",
+                "search-progress-modal-both-buttons-desktop",
+            );
         } finally {
             const disableDemo = await page.request.delete(
                 "/internalapi/demomode",
             );
             expect(disableDemo.status()).toBe(200);
         }
+    });
+
+    test("should cancel a real search while the progress dialog is open and return to the empty search form (FM-083)", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+
+        // Route-delay the real search request so the progress dialog stays
+        // open long enough to click Cancel before the mock indexers'
+        // response ever arrives -- no server-side cancellation is sent
+        // (legacy parity, F-SEARCH-PROGRESS gap); the client simply abandons
+        // the still-in-flight request.
+        await page.route("**/internalapi/search", async (route) => {
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            await route.continue();
+        });
+
+        const query = "fm083 cancel while searching";
+        await page.getByTestId("search-query").fill(query);
+        await page.getByTestId("search-submit").click();
+
+        const modal = page.getByTestId("search-status-modal");
+        await expect(modal).toBeVisible();
+        await page
+            .getByRole("button", {
+                name: "Cancel search and return to search mask",
+            })
+            .click();
+
+        await expect(modal).toBeHidden();
+        await expect(page.getByTestId("search-query")).toHaveValue(query);
+        await expect(page.getByTestId("search-results")).toHaveCount(0);
+        await expect(page.getByRole("alert")).toHaveCount(0);
+
+        // The abandoned request eventually completes server-side (the
+        // backend keeps searching); prove its late arrival changes nothing
+        // on screen.
+        await page.waitForTimeout(3500);
+        await expect(modal).toBeHidden();
+        await expect(page.getByTestId("search-results")).toHaveCount(0);
+        await expect(page.getByRole("alert")).toHaveCount(0);
     });
 
     test("should submit the explicit React indexer selection in both presentations", async ({
