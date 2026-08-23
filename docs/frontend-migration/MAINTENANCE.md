@@ -791,11 +791,35 @@ Format, one entry per fix:
   `validate-focus-affordances.mjs`'s ADR-0015 guard was failing **before this change** (it rejected a `MuiInputBase` entry of any kind, a proxy that stopped being true when `554145c33` added the mock's 14px input size). Confirmed pre-existing by re-running it with this diff stashed. Sharpened here to what ADR-0015 actually forbids — focus styling on the input root, never the entry itself — since this change adds a second legitimate non-focus declaration to that family. The gate is green again.
   Screenshot strip (1600x1000 unless noted): search form, results toolbar + bulk row, refine sidebar, display popover, 390x844 mobile (no horizontal overflow: `scrollWidth` 390 = `clientWidth` 390), and post-change sweeps of stats, search history, downloading config, and the bug-report tab confirming multiline textareas still grow (117px / 217px) while every single-line control is 32px.
 
+### 2026-08-23 — Repair the outlined input's inner-element overflow, and the geometry assertion that caught it
+
+- **Why not a packet:** a single-module styling repair plus the stale test assertion that exposed it; no behavior, capability, API/URL/selector, `data-testid`, or persisted-data change.
+- **Paths:** `core/ui-react/src/app/theme.ts`, `theme.test.ts`; `tests/system/tests/search.spec.ts`.
+- **Gates:** `typecheck`, `lint` (0 errors, 17 pre-existing warnings), `format:check`, `test` (1102), `build`, `check:api`, `validate:migration`, `validate:focus-affordances`, `validate:production-assets` all pass; `tests/system` `tsc` clean. `search.spec.ts` + `results.spec.ts` run in full against a freshly built real backend (`misc/run_gui_systemtest.py --runtime local`): **48 passed**.
+- **Commit:** `4aa740701`
+- **Note:** `search.spec.ts`'s `expect(submitBox.height).toBeGreaterThanOrEqual(36)` went red against `c3bb56318`'s shared `controlHeight = 32`, and was reported as a stale assertion. It was stale — the `36` silently encoded MUI's *default* button height — but rewriting it to assert what the row actually needs (the submit button agrees with the query field beside it) left it red by 17px, which was a real defect `c3bb56318` had shipped and its own verification had missed.
+  `c3bb56318` authored the inner-control sizing on `MuiInputBase.styleOverrides.input`. `OutlinedInput` ships its *own* `input` slot carrying `padding: 8.5px 14px` at `size="small"`, and a component slot outranks the base's, so that rule never applied: `height: 100%` resolved to a 32px **content** box under `content-box` sizing and MUI's 17px of vertical padding was added on top. Measured live: input root 32px, inner `<input>` **49px** — every text field's focusable element overflowed its visible border by 17px. It painted nothing, which is why a screenshot review passed it; the original verification measured `.MuiInputBase-root` (correctly 32px) and never the inner element.
+  Fixed by authoring the rule on `MuiOutlinedInput.styleOverrides.input` with `boxSizing: "border-box"`. Re-measured live: inner input 32, root 32, submit 32. `theme.test.ts` now asserts that slot explicitly with the precedence reason, so the same silent loss cannot recur.
+  The assertion is now equality with the neighbouring field rather than a pixel floor, so it tracks the shared control height instead of going stale against it again. Two process notes worth keeping: a geometry floor that encodes a framework default is a latent trap, and "verified live" is only as good as the element measured — a container can be right while its child is wrong.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
+- **`shell-selector.spec.ts` has been failing since FM-077 and can no longer be repaired by repointing it.** Its one test deep-links
+  to `/system/tasks`, asserts `system-tasks-table` is visible (the *real* Tasks body), and then clicks
+  `getByRole("link", {name: "Switch to legacy UI"})` — but that link is rendered only by `MigrationPlaceholder`
+  (`core/ui-react/src/router.tsx:252-269`), so the two halves contradict each other and the click times out after 30s. `e28d70345`
+  (FM-077: System tasks tab) updated the assertion when it migrated the tab and left the click behind. Verified failing
+  2026-08-23 against a freshly built real backend (`misc/run_gui_systemtest.py --runtime local`, 1 failed / 7 passed in that
+  batch); unrelated to that session's own diff, which does not touch this file. Note this is the *second* time this spec went
+  stale the same way — the 2026-08-21 entry above repointed it from `/stats/stats?period=day` to `/system/tasks` after FM-024
+  migrated the former. It cannot be repointed a third time at a real route: every canonical route is now migrated, and the
+  placeholder survives only on `notFoundComponent`, an unknown `stats/$tab`, and the admin-area fall-through. Fixing it means
+  choosing between deep-linking at a deliberately unknown route, splitting the selector assertion from the placeholder
+  assertion, or deleting the spec with the UI selector itself — which is why it is left here rather than quickfixed: the
+  legacy-removal packet (FM-094+) owns `shell-selector.spec.ts` and should decide it as part of that work.
 - ~~**The results size/age `NumericFilter`'s "Apply" button is dead code that should be removed**~~ Discharged
   2026-08-23 by the FM-088 packet, which removed the button and moved "Clear" beside the min/max fields as an
   icon-only control (task packet deleted on completion per convention; see git history and `STATUS.md`).
@@ -803,20 +827,11 @@ instead of leaving it to rot.
   on reload.**~~ Discharged 2026-08-23 by the FM-089 packet, which persisted both via two new optional keys folded
   into `SearchResults.tsx`'s existing `hydra.search-results.table` payload (task packet deleted on completion per
   convention; see git history and `STATUS.md`).
-- **A long `TextField` floating label (e.g. "Additional filter terms" in `SearchWorkspace.tsx`'s Media section) can
-  render with the outlined border's top line crossing through the back half of the label text**, instead of the
-  notch clearing the whole label. Root cause found while triaging the owner's UI-polish batch, 2026-08-23:
-  `getBoundingClientRect()` on the live dev server showed the notch `legend` measured 112.67px while the label
-  itself rendered at 117.34px in the loaded custom font (IBM Plex Sans) -- MUI's `NotchedOutline` measures the
-  label's width once (on mount / label-content change) via a ref, with no listener for a subsequent web-font swap,
-  so a label measured against the fallback font before IBM Plex Sans finishes loading stays stale (narrower) after
-  the swap. `tests/system/tests/visualEvidence.ts`'s `prepareVisualEvidence` awaits `document.fonts.ready` before
-  every capture, which is exactly why this doesn't show up in any existing screenshot strip -- it's a real cold-load
-  race for actual users, invisible to the harness that waits it out. Not a quickfix: the fix belongs either in
-  shared app bootstrap (force a remeasure on `document.fonts.ready`, e.g. dispatching a `resize` event once fonts
-  settle) or a font-loading strategy change (preload/`font-display` tuning) -- both cross-cutting, not confined to
-  one component. Route to `/fm-orchestrate`; worth checking whether other long labels across the app (config forms,
-  etc.) show the same tell before committing to one fix shape.
+- ~~**A long `TextField` floating label can render with the outlined border's top line crossing through the back
+  half of the label text.**~~ Discharged 2026-08-23 by the FM-090 packet, which found the original diagnosis here
+  (a font-load ref-staleness race) was wrong: it's a permanent size mismatch between the notch legend and the
+  visible label, present even with the web font fully loaded, fixed app-wide in `theme.ts` (task packet deleted on
+  completion per convention; see git history and `STATUS.md`).
 - **`ConfigFieldset.tsx`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
   space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
   `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
@@ -866,3 +881,23 @@ instead of leaving it to rot.
   FM-088; the fix is either pointing the locator at `.last()` (the category select, and renaming accordingly) or
   switching the fixture to configure two downloaders so the downloader select is actually present again. Surfaced
   2026-08-23 while investigating the `results.spec.ts` regression above.
+- ~~**`tests/system/tests/search.spec.ts:411` asserts the search submit button's height is `>= 36px`**, which is now
+  false: `c3bb56318` (2026-08-23, an independent concurrent session's visual-language unification) set every
+  `MuiButton` to the app's new `controlHeight = 32`. Confirmed pre-existing and unrelated to FM-090 (reproduces
+  identically with FM-090's `theme.ts` change reverted). Left alone because it's outside every packet's file
+  allowlist that has touched this area so far; the fix is a one-line assertion update (`>= 32` or an exact `32`),
+  contained to that one file. Surfaced 2026-08-23 by FM-090's implementer while running the full system-test
+  verification set.~~
+  Discharged 2026-08-23 by the ledger entry above ("Repair the outlined input's inner-element overflow, and the
+  geometry assertion that caught it"). The suggested one-line update turned out to be insufficient, and usefully so:
+  rewriting the assertion to say what the row actually needs — that the submit button agrees with the query field
+  beside it — left it red by 17px, exposing a real defect `c3bb56318` had shipped (its inner-input sizing was
+  authored on `MuiInputBase`, which `OutlinedInput`'s own `input` slot outranks, so every text field's focusable
+  element overflowed its visible border). Both the defect and the assertion are fixed; `search.spec.ts` and
+  `results.spec.ts` pass in full (48/48) against a freshly built real backend.
+- **The FM-090 notch/label-overlap fix closes the gap by shrinking every input label app-wide** (effective 12px ->
+  10.5px) rather than by widening the notch legend instead. Mechanically correct and owner-approved via a
+  before/after screenshot strip, but the alternative shape (sizing the legend up in `MuiOutlinedInput` rather than
+  the label down in `MuiInputLabel`) was never attempted or compared. Not a defect -- nothing to discharge -- just a
+  design-space note in case the label-size reduction turns out to read too small in practice once seen across more
+  of the app than the two fields FM-090 measured. Surfaced 2026-08-23 by FM-090's reviewer.

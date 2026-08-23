@@ -243,20 +243,59 @@ describe("createHydraTheme typography and density", () => {
                     fontSize: "14px",
                     "&:not(.MuiInputBase-multiline)": {height: controlHeight},
                 },
-                input: {
-                    height: "100%",
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                    "&.MuiSelect-select": {
-                        alignItems: "center",
-                        display: "flex",
-                    },
-                },
+            },
+        });
+        // The inner control is sized on `MuiOutlinedInput`, not here, and the
+        // distinction is load-bearing rather than stylistic: `OutlinedInput`
+        // ships its own `input` slot with `padding: 8.5px 14px`, a component
+        // slot outranks `MuiInputBase`'s, and the same rule authored on the
+        // base lost silently -- leaving the focusable `<input>` 17px taller
+        // than the 32px border it sits in (measured live: root 32, inner 49).
+        // Asserted here so that regression cannot come back unnoticed.
+        const outlinedInput = theme.components?.MuiOutlinedInput?.styleOverrides
+            ?.input as Record<string, unknown>;
+
+        expect(outlinedInput).toEqual({
+            boxSizing: "border-box",
+            height: "100%",
+            paddingTop: 0,
+            paddingBottom: 0,
+            "&.MuiSelect-select": {
+                alignItems: "center",
+                display: "flex",
             },
         });
         expect(theme.components?.MuiTextField?.defaultProps).toEqual({
             size: "small",
         });
+        // FM-090's notch invariant, pinned as a pair: an outlined field's
+        // label is rendered twice at two independently declared sizes -- the
+        // visible `InputLabel` (this entry) and the hidden `legend` MUI cuts
+        // the notch from at `0.75em` of the `InputBase` root (asserted
+        // above). When those two sizes disagree the notch is cut for text of
+        // a different width than the text painted over it, and the deficit
+        // grows with the label until the border crosses it. Asserting the
+        // *same* value in both places is what makes a future retune of one
+        // of them fail here rather than in a screenshot nobody takes during
+        // the font swap. The always-shrunk default is asserted with it: the
+        // label only sits in the notch at all because of it.
+        expect(theme.components?.MuiInputLabel).toEqual({
+            defaultProps: {shrink: true},
+            styleOverrides: {root: {fontSize: "14px"}},
+        });
+        expect(
+            (
+                theme.components?.MuiInputLabel?.styleOverrides?.root as {
+                    fontSize: string;
+                }
+            ).fontSize,
+        ).toBe(
+            (
+                theme.components?.MuiInputBase?.styleOverrides?.root as {
+                    fontSize: string;
+                }
+            ).fontSize,
+        );
         // `MuiChip`'s root override became a theme-reading function for the
         // same reason `MuiButton`'s did: `Chip` is one of ADR-0013's authored
         // control families, so its `&.Mui-focusVisible` rule reads the shared

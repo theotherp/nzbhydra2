@@ -408,7 +408,20 @@ test.describe("Search", () => {
                     "Workspace controls require deterministic geometry",
                 );
             }
-            expect(submitBox.height).toBeGreaterThanOrEqual(36);
+            // The submit button and the query field beside it are one shared
+            // control height (`controlHeight` in `core/ui-react/src/app/
+            // theme.ts`, 32px). Asserted as agreement with that field rather
+            // than as a bare pixel floor: the floor here was `>= 36`, which
+            // silently encoded MUI's *default* button height and went stale
+            // the moment the application adopted a single stated control
+            // height (`c3bb56318`, which took every button, dropdown trigger,
+            // select and input to 32px). Equality with the neighbouring field
+            // is what this row actually needs to look right, and it cannot go
+            // stale the same way.
+            expect(submitBox.height).toBeGreaterThanOrEqual(32);
+            expect(
+                Math.abs(submitBox.height - queryBox.height),
+            ).toBeLessThanOrEqual(1);
             // The mock joins the query field and its Search button into one
             // control: the button sits at the field's trailing edge, on the
             // same baseline, rather than in a separate actions row.

@@ -192,6 +192,37 @@ export const pillRadius = "999px";
 export const controlHeight = 32;
 
 /**
+ * The mock's input text size (`font-size:14px` on every text input and
+ * select), and -- load-bearing -- the single size the outlined-input family's
+ * *two* independently rendered copies of a field label must both derive from.
+ *
+ * FM-090 measured why that matters. MUI's `NotchedOutline` sizes the notch
+ * from a hidden `legend` that duplicates the label text at `fontSize:
+ * '0.75em'` of the `InputBase` root, while the visible `InputLabel` is a
+ * sibling of that root: it takes `typography.body1` (16px) and is shrunk by a
+ * `scale(0.75)` transform. Stock MUI keeps the two in step only because both
+ * ems are the same 16px. Setting the input size to 14px here without saying
+ * anything about the label broke that: the notch was cut for 10.5px text
+ * while the label painted at an effective 12px, a ~14% deficit that the
+ * legend's 10px of span padding hides on short labels and cannot hide on long
+ * ones. Measured on the running application at 1280x800, the search form's
+ * "Additional filter terms" rendered a 118.50px label into a 118.00px notch,
+ * and the Searching tab's "Timeout when accessing indexers" a 183.00px label
+ * into a 177.00px notch -- the outline's top border crossing the back of the
+ * label. In the fallback font, before the web font swaps in, the same two
+ * fields were 5.39px and 13.70px over their notches.
+ *
+ * So `MuiInputLabel` below states this same size, restoring stock MUI's
+ * invariant: both copies now derive from 14px (the label as 14px x 0.75, the
+ * legend as 0.75em of 14px), and the legend's 10px padding plus small text's
+ * slightly wider per-em advance leave the notch reliably wider than the label
+ * at any length. Keep the two entries reading this constant rather than
+ * restating the number, so retuning the control size cannot silently reopen
+ * the gap.
+ */
+const controlFontSize = "14px";
+
+/**
  * The mock's `toggleAll` select-all square's own corner radius
  * (`border-radius:5px`), copied from the mock's select-all control. FM-054:
  * `SearchResults.tsx` renders this one control's 17x17 square through two
@@ -755,7 +786,7 @@ export function createHydraTheme(
             MuiInputBase: {
                 styleOverrides: {
                     root: {
-                        fontSize: "14px",
+                        fontSize: controlFontSize,
                         // The shared control height, so a select or text
                         // field sitting in a row of buttons (the search bar,
                         // the results action row) is the same box as they
@@ -763,22 +794,6 @@ export function createHydraTheme(
                         // to grow with its content.
                         "&:not(.MuiInputBase-multiline)": {
                             height: controlHeight,
-                        },
-                    },
-                    // With the root's height stated, MUI's own vertical
-                    // padding on the inner control (`8.5px`/`16.5px`
-                    // depending on size) would push the text off-centre
-                    // inside that box, so the inner element fills the height
-                    // and centres its own line instead. `input` covers text
-                    // fields; `.MuiSelect-select` is the `div` a select
-                    // renders in place of one.
-                    input: {
-                        height: "100%",
-                        paddingTop: 0,
-                        paddingBottom: 0,
-                        "&.MuiSelect-select": {
-                            alignItems: "center",
-                            display: "flex",
                         },
                     },
                 },
@@ -790,6 +805,17 @@ export function createHydraTheme(
             // hiding them behind an unshrunk label.
             MuiInputLabel: {
                 defaultProps: {shrink: true},
+                styleOverrides: {
+                    // The other half of the notch invariant documented at
+                    // `controlFontSize`: the visible label is not inside the
+                    // `InputBase` root, so it does not inherit the input's
+                    // size and would otherwise stay at `body1`'s 16px while
+                    // the notch legend is cut at `0.75em` of 14px. Stating
+                    // the control size here makes both copies of the label
+                    // derive from the same number again, which is the whole
+                    // reason a long label now fits its own notch.
+                    root: {fontSize: controlFontSize},
+                },
             },
             // The mock's checkbox rows (the indexer grid) label at 13px;
             // MUI's `FormControlLabel` otherwise spreads `body1` (16px).
@@ -887,6 +913,36 @@ export function createHydraTheme(
                             borderColor: theme.palette.surfaces.hairline,
                         },
                     }),
+                    // The inner control, sized to the root's stated
+                    // `controlHeight`. This has to be authored on
+                    // `MuiOutlinedInput` rather than on `MuiInputBase`:
+                    // `OutlinedInput` ships its own `input` slot carrying
+                    // `padding: 8.5px 14px` at `size="small"`, and a
+                    // component slot outranks the base's, so the same rule on
+                    // `MuiInputBase.input` lost silently. Measured live
+                    // before this entry existed: root 32px, inner `<input>`
+                    // 49px -- `height: 100%` resolved to a 32px *content* box
+                    // under `content-box` sizing and MUI's 17px of vertical
+                    // padding was then added on top, so the focusable element
+                    // overflowed its own visible border by 17px.
+                    //
+                    // Vertical padding goes to zero and the element fills the
+                    // height instead, which is what centres the 14px value in
+                    // a 32px box. Horizontal padding is left to MUI.
+                    input: {
+                        boxSizing: "border-box",
+                        height: "100%",
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                        // A select renders a `div` in this slot rather than
+                        // an `<input>`; it needs the line centred explicitly
+                        // because a block box does not centre its own text
+                        // the way an input's inner editor does.
+                        "&.MuiSelect-select": {
+                            alignItems: "center",
+                            display: "flex",
+                        },
+                    },
                 },
             },
             // Menus and select popovers render on the mock's raised control

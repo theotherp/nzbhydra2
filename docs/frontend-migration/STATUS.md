@@ -396,6 +396,20 @@ entry was written as prose instead of the `- FM-089: ...` bullet the registry va
 `validate:migration` failed despite every other check passing; a one-file fix cycle reformatted it and re-review
 passed clean. Second of the 2026-08-23 owner-triage batch.
 
+FM-090 (Floating-Label Notch Font-Load Fix) found the packet's own title and the ledger's diagnosis were wrong: the
+notch overlap is not a font-load race but a permanent size mismatch between an outlined field's two rendered label
+copies (visible `InputLabel` at `body1` 16px x `scale(0.75)`, notch `legend` at `0.75em` of the themed 14px input),
+present with the web font fully loaded and merely worsened by the fallback font, growing with label length. Fixed
+app-wide in `theme.ts` by stating one control font size for both label copies (effective 12px -> 10.5px, closer to the
+mock's ~11px caption intent); pinned by `tests/system/tests/notched-label-geometry.spec.ts`, which holds and releases
+`**/*.woff2` and measures both states -- proven red-first (reproduces the ledger's own 112.67px/117.34px pair exactly)
+and green post-fix on two fields across two routes. The app-wide label-size reduction was reviewed against a
+before/after screenshot strip and approved by the owner. One pre-existing, unrelated `search.spec.ts` failure (a stale
+`>= 36px` button height against `c3bb56318`'s 32px controls) reproduced with FM-090 reverted, confirmed unrelated, and
+correctly left alone (outside this packet's files); logged as a single-session fix candidate, along with the
+unexplored alternative of widening the notch instead of shrinking the label. Third and last of the 2026-08-23
+owner-triage batch (FM-088..FM-090).
+
 ## Active
 
 None.
@@ -409,8 +423,6 @@ None.
 None.
 
 ## Upcoming
-
-FM-090 (the last of the 2026-08-23 owner-triage batch) remains a planned packet in `tasks/`.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
