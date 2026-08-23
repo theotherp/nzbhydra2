@@ -222,7 +222,10 @@ features:
       - freetext-filter-{{column}}
       - number-filter-min-{{column}}
       - number-filter-max-{{column}}
-      - number-filter-apply-{{column}}
+      # number-filter-apply-{{column}} removed by FM-088: the React
+      # NumericFilter's Apply button had no onClick (min/max already commit
+      # on every keystroke) and was dropped. The id remains legacy-only,
+      # still exercised by results.spec.ts's AngularJS-UI test at line 77.
       - number-filter-clear-{{column}}
       - filter-toggle-indexer
       - filter-toggle-category

@@ -1,4 +1,5 @@
-import {Box, Button, Stack, TextField} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import {Box, Button, IconButton, Stack, TextField} from "@mui/material";
 
 import {monoFontFamily} from "../../../app/theme";
 import type {NumericRange} from "./resultTable";
@@ -171,59 +172,48 @@ export function NumericFilter({
     testIdPrefix: string;
 }) {
     return (
-        <Stack data-testid={`filter-toggle-${testIdPrefix}`} sx={{gap: "6px"}}>
-            <Stack direction="row" sx={{gap: "6px"}}>
-                <TextField
-                    onChange={(event) =>
-                        onChange(name, "min", event.target.value)
-                    }
-                    placeholder="min"
-                    size="small"
-                    slotProps={{
-                        htmlInput: {
-                            "aria-label": `${label} minimum`,
-                            "data-testid": `number-filter-min-${testIdPrefix}`,
-                        },
-                    }}
-                    sx={numericFieldSx}
-                    type="number"
-                    value={range.min}
-                />
-                <TextField
-                    onChange={(event) =>
-                        onChange(name, "max", event.target.value)
-                    }
-                    placeholder="max"
-                    size="small"
-                    slotProps={{
-                        htmlInput: {
-                            "aria-label": `${label} maximum`,
-                            "data-testid": `number-filter-max-${testIdPrefix}`,
-                        },
-                    }}
-                    sx={numericFieldSx}
-                    type="number"
-                    value={range.max}
-                />
-            </Stack>
-            <Stack direction="row" sx={{gap: "6px"}}>
-                <Button
-                    data-testid={`number-filter-apply-${testIdPrefix}`}
-                    size="small"
-                    sx={{fontSize: "12px", minWidth: 0, px: "9px"}}
-                >
-                    Apply
-                </Button>
-                <Button
-                    data-testid={`number-filter-clear-${testIdPrefix}`}
-                    disabled={range.min === "" && range.max === ""}
-                    onClick={() => onClear(name)}
-                    size="small"
-                    sx={{fontSize: "12px", minWidth: 0, px: "9px"}}
-                >
-                    Clear
-                </Button>
-            </Stack>
+        <Stack
+            data-testid={`filter-toggle-${testIdPrefix}`}
+            direction="row"
+            sx={{gap: "6px"}}
+        >
+            <TextField
+                onChange={(event) => onChange(name, "min", event.target.value)}
+                placeholder="min"
+                size="small"
+                slotProps={{
+                    htmlInput: {
+                        "aria-label": `${label} minimum`,
+                        "data-testid": `number-filter-min-${testIdPrefix}`,
+                    },
+                }}
+                sx={numericFieldSx}
+                type="number"
+                value={range.min}
+            />
+            <TextField
+                onChange={(event) => onChange(name, "max", event.target.value)}
+                placeholder="max"
+                size="small"
+                slotProps={{
+                    htmlInput: {
+                        "aria-label": `${label} maximum`,
+                        "data-testid": `number-filter-max-${testIdPrefix}`,
+                    },
+                }}
+                sx={numericFieldSx}
+                type="number"
+                value={range.max}
+            />
+            <IconButton
+                aria-label={`Clear ${label} filter`}
+                data-testid={`number-filter-clear-${testIdPrefix}`}
+                disabled={range.min === "" && range.max === ""}
+                onClick={() => onClear(name)}
+                size="small"
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>
         </Stack>
     );
 }

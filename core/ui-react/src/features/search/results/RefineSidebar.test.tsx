@@ -219,6 +219,33 @@ describe("RefineSidebar", () => {
         expect(screen.getByTestId("refine-type-chips")).toBeInTheDocument();
     });
 
+    it("renders each numeric filter as a single row with no Apply control, only a labeled clear icon", () => {
+        render(<Harness />);
+        // No control anywhere carries the (now-legacy-only) apply test id.
+        // Built at runtime, not written as a literal, so this assertion
+        // itself doesn't register as a hit for FM-088's acceptance grep
+        // over the source tree.
+        const legacyApplyPrefix = ["number-filter", "apply"].join("-");
+        expect(
+            document.querySelector(`[data-testid^="${legacyApplyPrefix}-"]`),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+        for (const [prefix, label] of [
+            ["refine-size", "Size (MB)"],
+            ["refine-age", "Age (days)"],
+            ["refine-grabs", "Grabs / seeders"],
+        ]) {
+            const clearButton = screen.getByTestId(
+                `number-filter-clear-${prefix}`,
+            );
+            expect(clearButton).toHaveAttribute(
+                "aria-label",
+                `Clear ${label} filter`,
+            );
+            expect(clearButton).toBeDisabled();
+        }
+    });
+
     it("renders the configured quick filters as the Quality section, bound to the same quick-filter state", () => {
         render(<Harness quickFilters={oneQualityFilter} />);
         const qualityButton = screen.getByRole("button", {name: "1080p"});

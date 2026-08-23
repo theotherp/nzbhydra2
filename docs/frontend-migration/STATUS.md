@@ -377,6 +377,14 @@ there); a `focus-indication.spec.ts` "anchor family" strict-mode violation on `/
 diff; a system-test `minimumWidth` guard loosened to 180 when the new fixed-width section no longer meaningfully
 needs a floor that wide. Candidates for a future quickfix.
 
+FM-088 (Numeric Filter Apply Removal And Inline Clear) removed the refine sidebar `NumericFilter`'s dead "Apply"
+button (no `onClick`; the min/max fields already commit on every keystroke) and moved "Clear" up beside the min/max
+fields as a single-row icon-only `IconButton`, keeping its `data-testid`, `disabled` rule, and `onClear` wiring, and
+gaining a section-named `aria-label`. The `F-SEARCH-SORT-FILTER` selectors entry for the removed testid was dropped.
+Passed with a minor finding, not corrected (optional): the desktop screenshot strip only shows the Size row scrolled
+into view, not Age/Grabs, though the same component instance is proven correct for all three via the mobile-drawer
+capture and the uniform code diff. First of the 2026-08-23 owner-triage batch FM-088..FM-090.
+
 ## Active
 
 None.
@@ -391,9 +399,7 @@ None.
 
 ## Upcoming
 
-FM-088 (Numeric Filter Apply Removal And Inline Clear) is dependency-ready: remove the refine sidebar `NumericFilter`'s
-dead "Apply" button and move "Clear" beside the min/max fields as an icon-only control (`tasks/FM-088-numeric-filter-apply-removal.md`).
-First of the 2026-08-23 owner-triage batch FM-088..FM-090; FM-089 and FM-090 remain planned packets in `tasks/`.
+FM-089 and FM-090 (the rest of the 2026-08-23 owner-triage batch) remain planned packets in `tasks/`.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

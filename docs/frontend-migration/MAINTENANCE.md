@@ -783,13 +783,9 @@ Format, one entry per fix:
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
-- **The results size/age `NumericFilter`'s "Apply" button is dead code that should be removed** (`filterControls.tsx`,
-  `data-testid="number-filter-apply-{prefix}"`): the min/max fields already commit on every keystroke
-  (`SearchResults.tsx`'s `updateRange`), so the button has no `onClick` and does nothing. Not a bare quickfix because
-  removing it removes a `data-testid` that `tests/system/tests/results.spec.ts:77` clicks directly as part of its
-  flow, so the fix spans a source component and a system-test spec. Bundle with the "move the range filter's Clear
-  button to the right of the fields as an icon-only control" request (same control cluster, same task) via
-  `/fm-orchestrate`. Surfaced 2026-08-23 while triaging an owner batch of minor UI requests.
+- ~~**The results size/age `NumericFilter`'s "Apply" button is dead code that should be removed**~~ Discharged
+  2026-08-23 by the FM-088 packet, which removed the button and moved "Clear" beside the min/max fields as an
+  icon-only control (task packet deleted on completion per convention; see git history and `STATUS.md`).
 - **The refine sidebar's Category/Indexer expand/collapse state (`categoryOpen`/`indexerOpen` in `RefineSidebar.tsx`)
   is plain `useState` and always resets to expanded on reload.** The owner asked for this to persist. Not a quickfix:
   persisted UI state is a new user-observable capability per this ledger's own gate, and there is no existing cookie
