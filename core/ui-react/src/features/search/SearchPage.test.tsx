@@ -189,10 +189,10 @@ describe("SearchPage", () => {
         fireEvent.change(screen.getByLabelText("Search"), {
             target: {value: "query"},
         });
-        fireEvent.change(screen.getByLabelText("Minimum age (days)"), {
+        fireEvent.change(screen.getByLabelText("Min age"), {
             target: {value: "2"},
         });
-        fireEvent.change(screen.getByLabelText("Maximum size (MB)"), {
+        fireEvent.change(screen.getByLabelText("Max size"), {
             target: {value: "50"},
         });
         fireEvent.click(screen.getByTestId("search-submit"));
@@ -344,10 +344,10 @@ describe("SearchPage", () => {
         expect(screen.getAllByText(/Internal/).at(0)).toBeVisible();
         fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
         expect(screen.getByLabelText("Search")).toHaveValue("recent query");
-        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue("1");
-        expect(screen.getByLabelText("Maximum age (days)")).toHaveValue("2");
-        expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue("3");
-        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue("4");
+        expect(screen.getByLabelText("Min age")).toHaveValue("1");
+        expect(screen.getByLabelText("Max age")).toHaveValue("2");
+        expect(screen.getByLabelText("Min size")).toHaveValue("3");
+        expect(screen.getByLabelText("Max size")).toHaveValue("4");
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         fireEvent.click(
             await screen.findByRole("menuitem", {name: /^Repeat:/}),
@@ -526,8 +526,8 @@ describe("SearchPage", () => {
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         await screen.findByRole("menuitem", {name: /^Repeat:/});
         fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
-        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue("");
-        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue("");
+        expect(screen.getByLabelText("Min age")).toHaveValue("");
+        expect(screen.getByLabelText("Max size")).toHaveValue("");
     });
 
     it("should execute history repeat criteria through the canonical submission lifecycle", async () => {
@@ -929,6 +929,12 @@ describe("SearchPage", () => {
                 liveTransport={immediatelyUnavailableLiveTransport}
             />,
         );
+        // FM-087 moved the indexer selection into the Advanced panel, so it
+        // is rendered but collapsed until the disclosure is opened; what this
+        // case exists to prove -- that the permission, not the layout, gates
+        // the section -- is asserted on the same element either way.
+        expect(screen.getByLabelText("Indexer selection")).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId("search-advanced-toggle"));
         expect(screen.getByLabelText("Indexer selection")).toBeVisible();
     });
 

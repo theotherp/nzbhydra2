@@ -51,13 +51,13 @@
  * this spec in a real browser against a real backend -- not by re-reading
  * those sources.**
  *
- * ONE AUTHORED FAMILY IS NOT GATED HERE, AND THAT IS DELIBERATE. `theme.ts`
- * authors the token on `MuiChip` too, but the single `Chip` this application
- * renders (`SearchResults.tsx`'s static "Downloaded" indicator) passes neither
- * `onClick` nor `onDelete`, so it takes no DOM focus and FM-052 dispositioned
- * it outside WCAG 2.4.7/2.4.11 scope. There is no keyboard-reachable
- * representative to gate; the rule exists so the family is covered the moment
- * an interactive `Chip` appears.
+ * THE `MuiChip` FAMILY IS GATED HERE SINCE FM-087. It used to be the one
+ * authored family with no keyboard-reachable representative: the only `Chip`
+ * this application rendered (`SearchResults.tsx`'s static "Downloaded"
+ * indicator) passes neither `onClick` nor `onDelete`, so it takes no DOM
+ * focus and FM-052 dispositioned it outside WCAG 2.4.7/2.4.11 scope. The
+ * search bar's constraint chips are clickable, so the interactive `Chip` the
+ * rule was authored for now exists and is walked to below.
  */
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
 import {
@@ -631,12 +631,12 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // with a static border) is a stock outlined TextField since ADR-0014.
         await expectFocusedOutlinedInput(
             page,
-            page.getByLabel("Minimum age (days)").locator(inputRoot),
+            page.getByLabel("Min age").locator(inputRoot),
             "advanced-range-input",
         );
         await captureFocusedControl(
             page,
-            page.getByLabel("Minimum age (days)").locator(inputRoot),
+            page.getByLabel("Min age").locator(inputRoot),
             visualEvidencePath(
                 "F-SEARCH-FORM",
                 "keyboard-focus-advanced-range-input-desktop",
@@ -648,6 +648,10 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // ADR-0014.
         await page.getByTestId("search-category-control").click();
         await page.getByRole("option", {name: "TV", exact: true}).click();
+        // FM-087 put the pair inside the Advanced panel, which a category
+        // change leaves as the user left it -- here, open from the click
+        // above.
+        await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
         await expect(page.getByTestId("season-episode-pair")).toBeVisible();
         await expectFocusedOutlinedInput(
             page,
@@ -658,6 +662,29 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             page.getByTestId("workspace-primary"),
             "F-SEARCH-MEDIA",
             "keyboard-focus-season-input-desktop",
+        );
+    });
+
+    // FM-087: ADR-0013 family G's first keyboard-reachable representative.
+    test("should render the authored ring on a search constraint chip", async ({
+        page,
+    }) => {
+        await openSearchRoute(page, "desktop");
+        await page.getByTestId("search-advanced-toggle").click();
+        await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
+        await page.getByLabel("Min age").fill("10");
+        const chip = page.getByTestId("search-chip-age");
+        await expect(chip).toBeVisible();
+
+        const probe = await probeFocus(page, chip);
+        expectAuthoredFocusRing("search constraint chip", probe, OUTSET_OFFSET);
+        await captureFocusedControl(
+            page,
+            chip,
+            visualEvidencePath(
+                "F-SEARCH-FORM",
+                "keyboard-focus-constraint-chip-desktop",
+            ),
         );
     });
 
@@ -674,6 +701,9 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // below must reach `/internalapi/search` for real.
         await openSearchRoute(page, "desktop");
 
+        // FM-087 moved the indexer selection into the Advanced panel.
+        await page.getByTestId("search-advanced-toggle").click();
+        await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
         const indexersLocator = page
             .getByTestId("workspace-indexers")
             .locator(".MuiInputBase-root")

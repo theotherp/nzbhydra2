@@ -8,6 +8,22 @@ import {
 
 const movieQuery = "Hydra Browser Movie";
 
+/**
+ * FM-087 moved the media refinement, the age/size ranges, and the indexer
+ * selection into the Advanced `Collapse`, whose open state is remembered in
+ * `localStorage`, so a case that needs those controls opens the disclosure
+ * only when it is actually closed.
+ */
+async function openAdvanced(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const toggle = page.getByTestId("search-advanced-toggle");
+    if ((await toggle.getAttribute("aria-expanded")) === "false") {
+        await toggle.click();
+    }
+    await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
+}
+
 test.describe("Search", () => {
     test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
@@ -303,10 +319,10 @@ test.describe("Search", () => {
                 minimumWidth: 200,
             });
             for (const label of [
-                "Minimum age (days)",
-                "Maximum age (days)",
-                "Minimum size (MB)",
-                "Maximum size (MB)",
+                "Min age",
+                "Max age",
+                "Min size",
+                "Max size",
             ]) {
                 const field = page.getByLabel(label);
                 await expect(field).toBeVisible();
@@ -317,8 +333,9 @@ test.describe("Search", () => {
                     `${label} must not overflow horizontally`,
                 ).toBe(true);
             }
-            await advancedToggle.click();
-            await expect(advancedPanel).toBeHidden();
+            // FM-087: the indexer selection lives in this same panel now, so
+            // it stays open for the indexer geometry below and is closed
+            // again afterwards.
             await expectVisualGeometry(page, {
                 region: `dropdown-indexers-${viewport}`,
                 locator: page.getByRole("combobox", {name: "Indexers"}),
@@ -370,6 +387,8 @@ test.describe("Search", () => {
             });
             await page.keyboard.press("Escape");
             await expect(bulkActionsMenu).toBeHidden();
+            await advancedToggle.click();
+            await expect(advancedPanel).toBeHidden();
             const category = page.getByTestId("search-category-control");
             const query = page.getByTestId("search-query");
             const [categoryBox, queryBox, submitBox] = await Promise.all([
@@ -509,6 +528,7 @@ test.describe("Search", () => {
             true;
         await hydra.saveConfig(config);
         await page.reload();
+        await openAdvanced(page);
         await expect(page.getByRole("checkbox").first()).toBeVisible();
         await expectVisualGeometry(page, {
             region: "checkbox-indexers-desktop",
@@ -521,12 +541,13 @@ test.describe("Search", () => {
                 await page.goto("ui/react?redirect=/");
                 await page.getByTestId("search-category-control").click();
                 await page.getByTestId("search-category-option-TV").click();
+                await openAdvanced(page);
                 await expect(page.getByLabel("Season")).toBeVisible();
             });
             await expectVisualGeometry(page, {
                 region: `media-refinement-${viewport}`,
                 locator: page.getByTestId("workspace-media-refinement"),
-                minimumWidth: viewport === "desktop" ? 600 : 300,
+                minimumWidth: 180,
             });
             const seasonEpisode = page.getByTestId("season-episode-pair");
             await expectVisualGeometry(page, {
@@ -540,13 +561,15 @@ test.describe("Search", () => {
             ]);
             expect(pairBox).not.toBeNull();
             expect(refinementFieldBox).not.toBeNull();
-            // ADR-0014: the pair is two stock labeled TextFields (~190px
-            // together), no longer the pre-2026-08-19 40px bare inputs, so
-            // the hierarchy check is that the pair stays visibly narrower
-            // than the full-width refinement field (plus the 220px cap
-            // above), not narrower than half of it.
-            expect(pairBox?.width ?? 0).toBeLessThan(
-                refinementFieldBox?.width ?? 0,
+            // FM-087's design contract for the Media section: the additional
+            // filter is exactly as wide as the Season + Episode pair above
+            // it, so the section reads as one aligned block. This replaces
+            // the previous "pair narrower than the full-width refinement
+            // field" hierarchy check, which described the pre-FM-087 layout
+            // where the field spanned the whole form body.
+            expect(refinementFieldBox?.width ?? 0).toBeCloseTo(
+                pairBox?.width ?? 0,
+                0,
             );
             await page.getByLabel("Season").focus();
             await page.keyboard.type("3");
@@ -554,6 +577,70 @@ test.describe("Search", () => {
             await page.keyboard.type("4");
             await expect(page.getByLabel("Season")).toHaveValue("3");
             await expect(page.getByLabel("Episode")).toHaveValue("4");
+        }
+    });
+
+    // FM-087's Visual Gate: the redesigned bar in its three characteristic
+    // states, at both contract viewports.
+    test("should provide bar-and-chips visual evidence for the redesigned search form", async ({
+        page,
+    }) => {
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await expect(
+                    page.getByTestId("search-workspace"),
+                ).toBeVisible();
+            });
+            await page.getByTestId("search-category-control").click();
+            await page.getByTestId("search-category-option-TV").click();
+            await page.getByTestId("search-query").fill("Example Show");
+            await openAdvanced(page);
+            await page.getByLabel("Season").fill("1");
+            await page.getByLabel("Episode").fill("2");
+            await page.getByLabel("Min age").fill("10");
+            await page.getByLabel("Max age").fill("100");
+            await page.getByLabel("Min size").fill("500");
+            await page.getByLabel("Max size").fill("8000");
+            await expect(page.getByTestId("search-chips")).toBeVisible();
+            await expect(page.getByTestId("search-chip-season")).toHaveText(
+                "S 1",
+            );
+            await expect(page.getByTestId("search-chip-age")).toHaveText(
+                "Age 10–100 d",
+            );
+            await captureVisualRegion(
+                page.getByTestId("search-advanced-panel"),
+                "F-SEARCH-FORM",
+                `advanced-panel-sections-${viewport}`,
+            );
+            // Collapsed, every constraint set above still reads off the bar.
+            await page.getByTestId("search-advanced-toggle").click();
+            await expect(
+                page.getByTestId("search-advanced-panel"),
+            ).toBeHidden();
+            await expect(page.getByTestId("search-chip-size")).toBeVisible();
+            await captureVisualRegion(
+                page.getByTestId("workspace-primary"),
+                "F-SEARCH-FORM",
+                `bar-with-chips-collapsed-${viewport}`,
+            );
+
+            // The empty-indexer-selection state: a warning chip beside the
+            // Alert the form already showed.
+            await openAdvanced(page);
+            // prettier-ignore
+            await page.getByRole("button", {name: "More selection options"}).click();
+            await page.getByRole("menuitem", {name: "Deselect all"}).click();
+            await page.getByTestId("search-advanced-toggle").click();
+            const indexersChip = page.getByTestId("search-chip-indexers");
+            await expect(indexersChip).toHaveText("Indexers 0/2");
+            await expect(indexersChip).toHaveClass(/MuiChip-colorWarning/);
+            await captureVisualRegion(
+                page.getByTestId("search-workspace"),
+                "F-SEARCH-INDEXERS",
+                `empty-indexer-selection-chip-${viewport}`,
+            );
         }
     });
 
@@ -662,6 +749,7 @@ test.describe("Search", () => {
 
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
+        await openAdvanced(page);
         const indexerSelect = page.getByRole("combobox", {name: "Indexers"});
         await indexerSelect.click();
         await page.getByRole("option", {name: "Mock1"}).click();
@@ -678,6 +766,7 @@ test.describe("Search", () => {
         main.indexerSelectionAsCheckboxes = true;
         await hydra.saveConfig(config);
         await page.reload();
+        await openAdvanced(page);
         await expect(
             page.getByRole("checkbox", {name: "Mock1"}),
         ).not.toBeChecked();
@@ -715,16 +804,17 @@ test.describe("Search", () => {
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
         await initialRecentSearches;
+        // FM-044 relocated the age/size ranges into the collapsed `Advanced`
+        // disclosure and FM-087 moved the indexer selection in beside them;
+        // the criteria, their bindings, and the indexer semantics are
+        // unchanged, so only the disclosure has to be opened first.
+        await openAdvanced(page);
         await page.getByRole("combobox", {name: "Indexers"}).click();
         await page.getByRole("option", {name: "Mock1"}).click();
         await page.keyboard.press("Escape");
         await page.getByTestId("search-query").fill("recent criteria");
-        // FM-044 relocated the age/size ranges into the collapsed `Advanced`
-        // disclosure; the criteria, their labels, and their bindings are
-        // unchanged, so only the disclosure has to be opened first.
-        await page.getByTestId("search-advanced-toggle").click();
-        await page.getByLabel("Minimum age (days)").fill("2");
-        await page.getByLabel("Maximum size (MB)").fill("50");
+        await page.getByLabel("Min age").fill("2");
+        await page.getByLabel("Max size").fill("50");
         const firstSearch = page.waitForResponse((response) =>
             isSearchResponse(response),
         );
@@ -743,11 +833,11 @@ test.describe("Search", () => {
         ).toBeVisible();
         // prettier-ignore
         await page.getByRole("button", {name: /^Refill:/}).first().click();
-        // Refilling remounts the workspace, so the FM-044 `Advanced`
-        // disclosure holding the refilled ranges starts collapsed again.
-        await page.getByTestId("search-advanced-toggle").click();
-        await expect(page.getByLabel("Minimum age (days)")).toHaveValue("2");
-        await expect(page.getByLabel("Maximum size (MB)")).toHaveValue("50");
+        // Refilling remounts the workspace; the disclosure holding the
+        // refilled ranges reopens from its remembered state (FM-087).
+        await openAdvanced(page);
+        await expect(page.getByLabel("Min age")).toHaveValue("2");
+        await expect(page.getByLabel("Max size")).toHaveValue("50");
         await page.getByTestId("recent-searches-trigger").click();
         const repeatedSearch = page.waitForResponse((response) =>
             isSearchResponse(response),

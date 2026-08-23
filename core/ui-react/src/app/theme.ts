@@ -1,3 +1,4 @@
+import {chipClasses} from "@mui/material/Chip";
 import {
     createTheme,
     type Theme,
@@ -78,6 +79,17 @@ declare module "@mui/material/Typography" {
     interface TypographyPropsVariantOverrides {
         refineSurfaceLabel: true;
         refineSectionLabel: true;
+    }
+}
+
+declare module "@mui/material/Chip" {
+    // FM-087: the search bar's constraint chips (the redesign's status row).
+    // A themed `Chip` variant authored beside `refineChip` below, for the
+    // same reason: a live constraint is a stock, already focus-ringed `Chip`
+    // (ADR-0013 family G) whose look is a theme token (ADR-0014), never an
+    // `sx` literal in the search feature.
+    interface ChipPropsVariantOverrides {
+        constraint: true;
     }
 }
 
@@ -740,6 +752,45 @@ export function createHydraTheme(
                         "&.Mui-focusVisible": focusRing(theme),
                     }),
                 },
+                // FM-087: the search bar's constraint chips. The mock's pill
+                // language (mono 12px label on the bar ground behind a
+                // hairline) as a variant, so the search feature writes no
+                // colour, font, or radius of its own. The typography half is
+                // authored for every colour; the surface half only for the
+                // default colour, so an `color="warning"` constraint chip
+                // (the empty-indexer-selection state) keeps MUI's own stock
+                // warning treatment instead of being repainted here.
+                variants: [
+                    {
+                        props: {variant: "constraint"},
+                        style: {
+                            fontFamily: monoFontFamily,
+                            fontSize: "12px",
+                            fontWeight: 400,
+                        },
+                    },
+                    {
+                        props: {variant: "constraint", color: "default"},
+                        style: ({theme}: {theme: Theme}) => ({
+                            backgroundColor: theme.palette.surfaces.bar,
+                            border: `1px solid ${theme.palette.surfaces.hairline}`,
+                            color: theme.palette.text.secondary,
+                            "&:hover": {
+                                backgroundColor: theme.palette.surfaces.bar,
+                                borderColor: theme.alpha(
+                                    theme.palette.primary.main,
+                                    0.16,
+                                ),
+                            },
+                            [`& .${chipClasses.deleteIcon}`]: {
+                                color: theme.palette.surfaces.mutedText,
+                                "&:hover": {
+                                    color: theme.palette.primary.light,
+                                },
+                            },
+                        }),
+                    },
+                ],
             },
         },
     });

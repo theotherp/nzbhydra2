@@ -4,8 +4,11 @@ import {
     Button,
     ButtonGroup,
     Checkbox,
+    Chip,
+    Collapse,
     Divider,
     FormControlLabel,
+    IconButton,
     InputAdornment,
     ListItemIcon,
     ListItemText,
@@ -28,7 +31,7 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SearchIcon from "@mui/icons-material/Search";
 import ShareIcon from "@mui/icons-material/Share";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import type {ReactNode} from "react";
+import type {ReactNode, RefObject} from "react";
 import type {UseFormRegisterReturn} from "react-hook-form";
 import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
@@ -42,6 +45,72 @@ import type {
 
 const numericString = z.string().regex(/^\d*$/);
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
+
+/** The field a chip (or a chosen suggestion) opens the Advanced panel for. */
+type AdvancedField =
+    | "additionalQuery"
+    | "episode"
+    | "indexers"
+    | "minage"
+    | "minsize"
+    | "season";
+
+const advancedOpenStorageKey = "nzbhydra.search.advancedOpen";
+
+// Guarded on both sides, like `features/system/logs/persistence.ts`: reading
+// `window.localStorage` at all can throw (private mode, blocked site data),
+// and so can a read or a write, so a missing or refused store simply means
+// "closed" rather than a broken search form.
+function readAdvancedOpen(): boolean {
+    try {
+        return storage()?.getItem(advancedOpenStorageKey) === "true";
+    } catch {
+        return false;
+    }
+}
+
+function persistAdvancedOpen(open: boolean): void {
+    try {
+        storage()?.setItem(advancedOpenStorageKey, String(open));
+    } catch {
+        // The disclosure still opens and closes; only the memory is lost.
+    }
+}
+
+function storage(): Storage | undefined {
+    try {
+        return window.localStorage;
+    } catch {
+        return undefined;
+    }
+}
+
+function rangeLabel(
+    name: string,
+    min: string,
+    max: string,
+    unit: string,
+): string {
+    if (min !== "" && max !== "") {
+        return `${name} ${min}–${max} ${unit}`;
+    }
+    return min !== "" ? `${name} ≥ ${min} ${unit}` : `${name} ≤ ${max} ${unit}`;
+}
+
+const advancedSectionSx = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 0.75,
+} as const;
+const seasonEpisodeFieldWidth = 90;
+// The Media section is exactly as wide as its Season + Episode pair (two
+// fields plus the 10px `spacing={1.25}` gutter), so the additional-filter
+// field below them fills the same width and the section reads as one block.
+const mediaSectionWidth = seasonEpisodeFieldWidth * 2 + 10;
+const rangeFieldWidth = 132;
+// Two range fields plus their 6px `gap: 0.75` gutter, so Age & Size wraps
+// into a 2x2 block on a wide panel and a single column on a narrow one.
+const rangeSectionWidth = rangeFieldWidth * 2 + 6;
 
 export const searchFormSchema = z.object({
     query: z.string(),
@@ -203,20 +272,63 @@ export function SearchWorkspace({
     } = useForm<SearchFormValues>({defaultValues: initialValues});
     const selectedCategory = watch("category");
     const title = watch("title");
+    const values = watch();
     const [suggestions, setSuggestions] = useState<MediaSuggestion[]>([]);
     const [autocompleteState, setAutocompleteState] = useState<
         "idle" | "loading" | "empty" | "error" | "malformed"
     >("idle");
     const [activeOption, setActiveOption] = useState(-1);
-    const [advancedOpen, setAdvancedOpen] = useState(false);
+    const [advancedOpen, setAdvancedOpen] = useState(readAdvancedOpen);
+    const [pendingFocus, setPendingFocus] = useState<AdvancedField | null>(
+        null,
+    );
+    // The chosen suggestion's release year, for the matched-title chip's
+    // label. Kept as local state rather than a form field on purpose: the
+    // form schema, `valuesFromSearch`, and `canonicalSearch` are unchanged by
+    // this redesign, and the year is not part of a search request, so a
+    // restored URL simply renders the chip without one.
+    const [selectedYear, setSelectedYear] = useState("");
     const request = useRef(0);
     const searchQueryFieldRef = useRef<HTMLInputElement | null>(null);
     const autocompleteContainerRef = useRef<HTMLDivElement | null>(null);
+    const additionalQueryFieldRef = useRef<HTMLInputElement | null>(null);
+    const seasonFieldRef = useRef<HTMLInputElement | null>(null);
+    const episodeFieldRef = useRef<HTMLInputElement | null>(null);
+    const minageFieldRef = useRef<HTMLInputElement | null>(null);
+    const minsizeFieldRef = useRef<HTMLInputElement | null>(null);
+    const indexersFieldsRef = useRef<HTMLDivElement | null>(null);
     const isFirstCategoryRender = useRef(true);
     const listboxId = useId();
     const advancedPanelId = useId();
     const mediaType = mediaTypeForCategoryName(catalog, selectedCategory);
-    const selected = hasIdentifier(watch());
+    const selected = hasIdentifier(values);
+    // The Advanced panel is a `Collapse`: while it is collapsed its content
+    // is rendered but `visibility: hidden`, and focusing a hidden element is
+    // a silent no-op. Every "open Advanced and focus X" path therefore only
+    // records the wanted field and lets this effect move focus once the panel
+    // is actually expanded.
+    useEffect(() => {
+        if (!advancedOpen || pendingFocus === null) {
+            return;
+        }
+        if (pendingFocus === "indexers") {
+            indexersFieldsRef.current
+                ?.querySelector<HTMLElement>(
+                    '[role="combobox"], input[type="checkbox"]',
+                )
+                ?.focus();
+        } else {
+            const field = {
+                additionalQuery: additionalQueryFieldRef,
+                episode: episodeFieldRef,
+                minage: minageFieldRef,
+                minsize: minsizeFieldRef,
+                season: seasonFieldRef,
+            }[pendingFocus];
+            field.current?.focus();
+        }
+        setPendingFocus(null);
+    }, [advancedOpen, pendingFocus]);
     useEffect(() => {
         const current = ++request.current;
         if (!mediaType || selected || title.trim().length < 2) {
@@ -282,19 +394,37 @@ export function SearchWorkspace({
     }, [suggestions.length]);
     const clearSelection = () => {
         request.current++;
+        setSelectedYear("");
         for (const key of identifierFields) {
             setValue(key, "");
         }
     };
+    // Opening Advanced from a chip or from a chosen suggestion is not the
+    // disclosure's own toggle, so it deliberately does not persist (the
+    // design doc's persistence rule: the toggle writes, auto-open does not).
+    const revealAdvanced = (field: AdvancedField) => {
+        setAdvancedOpen(true);
+        setPendingFocus(field);
+    };
+    const toggleAdvanced = () => {
+        const open = !advancedOpen;
+        setAdvancedOpen(open);
+        persistAdvancedOpen(open);
+    };
     const chooseSuggestion = (suggestion: MediaSuggestion) => {
         request.current++;
         setValue("title", suggestion.title);
+        setSelectedYear(suggestion.year ? String(suggestion.year) : "");
         for (const key of identifierFields) {
             setValue(key, suggestion[key] ?? "");
         }
         setSuggestions([]);
         setActiveOption(-1);
-        document.getElementById("additional-query")?.focus();
+        // A TV suggestion hands the user straight to Season (the legacy
+        // form's convenience); a movie keeps the previous jump to the
+        // additional filter, which now lives in the Advanced panel, so both
+        // open the panel first.
+        revealAdvanced(mediaType === "TV" ? "season" : "additionalQuery");
     };
     const categoryChanged = (category: string) => {
         request.current++;
@@ -334,6 +464,14 @@ export function SearchWorkspace({
         },
     });
     const {ref: queryFieldRef, ...queryRegistration} = register("query");
+    const {
+        ref: additionalQueryRegistrationRef,
+        ...additionalQueryRegistration
+    } = register("additionalQuery");
+    const setAdditionalQueryInputRef = (element: HTMLInputElement | null) => {
+        additionalQueryRegistrationRef(element);
+        additionalQueryFieldRef.current = element;
+    };
     const setTitleInputRef = (element: HTMLInputElement | null) => {
         titleFieldRef(element);
         searchQueryFieldRef.current = element;
@@ -402,6 +540,104 @@ export function SearchWorkspace({
             {...queryRegistration}
         />
     );
+    // Every constraint that affects the search but is not visible in the
+    // input row renders as a live chip, so nothing is hidden behind the
+    // collapsed Advanced panel. `selectedIndexers` is always reconciled to a
+    // subset of `eligibleIndexers` (`indexersFromSearch`, the category
+    // change handler, and every bulk action pick from that list), so an
+    // equal length is exactly "all eligible indexers are selected".
+    const showIndexersChip =
+        showIndexerSelection &&
+        eligibleIndexers.length > 0 &&
+        selectedIndexers.length !== eligibleIndexers.length;
+    const chips = (
+        <>
+            {selected && (
+                <Chip
+                    data-testid="search-chip-title"
+                    label={`● ${title}${selectedYear ? ` (${selectedYear})` : ""}`}
+                    onClick={() => revealAdvanced("additionalQuery")}
+                    onDelete={clearSelection}
+                    variant="constraint"
+                />
+            )}
+            {mediaType === "TV" && values.season !== "" && (
+                <Chip
+                    data-testid="search-chip-season"
+                    label={`S ${values.season}`}
+                    onClick={() => revealAdvanced("season")}
+                    onDelete={() => setValue("season", "")}
+                    variant="constraint"
+                />
+            )}
+            {mediaType === "TV" && values.episode !== "" && (
+                <Chip
+                    data-testid="search-chip-episode"
+                    label={`E ${values.episode}`}
+                    onClick={() => revealAdvanced("episode")}
+                    onDelete={() => setValue("episode", "")}
+                    variant="constraint"
+                />
+            )}
+            {(values.minage !== "" || values.maxage !== "") && (
+                <Chip
+                    data-testid="search-chip-age"
+                    label={rangeLabel("Age", values.minage, values.maxage, "d")}
+                    onClick={() => revealAdvanced("minage")}
+                    onDelete={() => {
+                        setValue("minage", "");
+                        setValue("maxage", "");
+                    }}
+                    variant="constraint"
+                />
+            )}
+            {(values.minsize !== "" || values.maxsize !== "") && (
+                <Chip
+                    data-testid="search-chip-size"
+                    label={rangeLabel(
+                        "Size",
+                        values.minsize,
+                        values.maxsize,
+                        "MB",
+                    )}
+                    onClick={() => revealAdvanced("minsize")}
+                    onDelete={() => {
+                        setValue("minsize", "");
+                        setValue("maxsize", "");
+                    }}
+                    variant="constraint"
+                />
+            )}
+            {values.additionalQuery !== "" && (
+                <Chip
+                    data-testid="search-chip-filter"
+                    label={`Filter: ${values.additionalQuery}`}
+                    onClick={() => revealAdvanced("additionalQuery")}
+                    onDelete={() => setValue("additionalQuery", "")}
+                    variant="constraint"
+                />
+            )}
+            {showIndexersChip && (
+                <Chip
+                    color={noIndexers ? "warning" : "default"}
+                    data-testid="search-chip-indexers"
+                    label={`Indexers ${selectedIndexers.length}/${eligibleIndexers.length}`}
+                    onClick={() => revealAdvanced("indexers")}
+                    variant="constraint"
+                />
+            )}
+        </>
+    );
+    const hasChips =
+        selected ||
+        (mediaType === "TV" &&
+            (values.season !== "" || values.episode !== "")) ||
+        values.minage !== "" ||
+        values.maxage !== "" ||
+        values.minsize !== "" ||
+        values.maxsize !== "" ||
+        values.additionalQuery !== "" ||
+        showIndexersChip;
     return (
         <Paper
             component="form"
@@ -597,102 +833,268 @@ export function SearchWorkspace({
                             </Paper>
                         )}
                     </Box>
-                    {mediaType === "TV" && (
-                        <Stack
-                            data-testid="season-episode-pair"
-                            direction="row"
-                            spacing={1.25}
-                            sx={{flexShrink: 0}}
-                        >
-                            <SeasonEpisodeInput
-                                label="Season"
-                                registration={register("season", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                            <SeasonEpisodeInput
-                                label="Episode"
-                                registration={register("episode")}
-                            />
-                        </Stack>
-                    )}
-                    <Button
+                    <IconButton
                         aria-controls={advancedPanelId}
                         aria-expanded={advancedOpen}
-                        color={advancedOpen ? "primary" : "inherit"}
+                        aria-label="Advanced"
+                        color={advancedOpen ? "primary" : "default"}
                         data-testid="search-advanced-toggle"
-                        endIcon={
-                            advancedOpen ? (
-                                <ExpandLessIcon />
-                            ) : (
-                                <ExpandMoreIcon />
-                            )
-                        }
-                        onClick={() => setAdvancedOpen((open) => !open)}
-                        sx={{
-                            bgcolor: "surfaces.control",
-                            borderColor: "surfaces.hairline",
-                            flexGrow: {xs: 1, sm: 0},
-                            flexShrink: 0,
-                        }}
-                        variant="outlined"
+                        onClick={toggleAdvanced}
+                        sx={{flexShrink: 0}}
                     >
-                        Advanced
-                    </Button>
+                        {advancedOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
                 </Box>
-                <Box
+                {hasChips && (
+                    <Box
+                        data-testid="search-chips"
+                        sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.75,
+                            mt: 1.25,
+                        }}
+                    >
+                        {chips}
+                    </Box>
+                )}
+                <Collapse
                     data-testid="search-advanced-panel"
                     id={advancedPanelId}
-                    sx={{
-                        borderTop: "1px solid",
-                        borderColor: "surfaces.hairlineFaint",
-                        display: advancedOpen ? "block" : "none",
-                        mt: 1.75,
-                        pt: 1.75,
-                    }}
+                    in={advancedOpen}
                 >
                     <Box
-                        data-testid="workspace-ranges"
-                        sx={{display: "flex", flexWrap: "wrap", gap: 3}}
+                        sx={{
+                            borderTop: "1px solid",
+                            borderColor: "surfaces.hairlineFaint",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 3,
+                            mt: 1.75,
+                            pt: 1.75,
+                        }}
                     >
-                        <AdvancedRangeGroup title="Age (days)">
-                            <AdvancedRangeInput
-                                invalid={Boolean(errors.minage)}
-                                label="Minimum age (days)"
-                                placeholder="min"
-                                registration={register("minage", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                            <AdvancedRangeInput
-                                invalid={Boolean(errors.maxage)}
-                                label="Maximum age (days)"
-                                placeholder="max"
-                                registration={register("maxage", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                        </AdvancedRangeGroup>
-                        <AdvancedRangeGroup title="Size (MB)">
-                            <AdvancedRangeInput
-                                invalid={Boolean(errors.minsize)}
-                                label="Minimum size (MB)"
-                                placeholder="min"
-                                registration={register("minsize", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                            <AdvancedRangeInput
-                                invalid={Boolean(errors.maxsize)}
-                                label="Maximum size (MB)"
-                                placeholder="max"
-                                registration={register("maxsize", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                        </AdvancedRangeGroup>
+                        {mediaType && (
+                            <Box
+                                data-testid="workspace-media-refinement"
+                                sx={{
+                                    ...advancedSectionSx,
+                                    width: mediaSectionWidth,
+                                }}
+                            >
+                                <Typography
+                                    component="h2"
+                                    variant="refineSectionLabel"
+                                >
+                                    Media
+                                </Typography>
+                                {mediaType === "TV" && (
+                                    <Stack
+                                        data-testid="season-episode-pair"
+                                        direction="row"
+                                        spacing={1.25}
+                                    >
+                                        <SeasonEpisodeInput
+                                            fieldRef={seasonFieldRef}
+                                            label="Season"
+                                            registration={register("season", {
+                                                pattern: /^\d*$/,
+                                            })}
+                                        />
+                                        <SeasonEpisodeInput
+                                            fieldRef={episodeFieldRef}
+                                            label="Episode"
+                                            registration={register("episode")}
+                                        />
+                                    </Stack>
+                                )}
+                                <TextField
+                                    disabled={!selected}
+                                    fullWidth
+                                    id="additional-query"
+                                    label="Additional filter terms"
+                                    slotProps={{
+                                        htmlInput: {
+                                            "data-testid": "additional-query",
+                                        },
+                                    }}
+                                    inputRef={setAdditionalQueryInputRef}
+                                    {...additionalQueryRegistration}
+                                />
+                            </Box>
+                        )}
+                        <Box
+                            data-testid="workspace-ranges"
+                            sx={advancedSectionSx}
+                        >
+                            <Typography
+                                component="h2"
+                                variant="refineSectionLabel"
+                            >
+                                Age &amp; size
+                            </Typography>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: 0.75,
+                                    maxWidth: rangeSectionWidth,
+                                }}
+                            >
+                                <AdvancedRangeInput
+                                    fieldRef={minageFieldRef}
+                                    invalid={Boolean(errors.minage)}
+                                    label="Min age"
+                                    registration={register("minage", {
+                                        pattern: /^\d*$/,
+                                    })}
+                                    unit="d"
+                                />
+                                <AdvancedRangeInput
+                                    invalid={Boolean(errors.maxage)}
+                                    label="Max age"
+                                    registration={register("maxage", {
+                                        pattern: /^\d*$/,
+                                    })}
+                                    unit="d"
+                                />
+                                <AdvancedRangeInput
+                                    fieldRef={minsizeFieldRef}
+                                    invalid={Boolean(errors.minsize)}
+                                    label="Min size"
+                                    registration={register("minsize", {
+                                        pattern: /^\d*$/,
+                                    })}
+                                    unit="MB"
+                                />
+                                <AdvancedRangeInput
+                                    invalid={Boolean(errors.maxsize)}
+                                    label="Max size"
+                                    registration={register("maxsize", {
+                                        pattern: /^\d*$/,
+                                    })}
+                                    unit="MB"
+                                />
+                            </Box>
+                        </Box>
+                        {showIndexerSelection &&
+                            eligibleIndexers.length > 0 && (
+                                <Box
+                                    aria-label="Indexer selection"
+                                    data-testid="workspace-indexers"
+                                    sx={{
+                                        ...advancedSectionSx,
+                                        flex: "1 1 100%",
+                                    }}
+                                >
+                                    <Typography
+                                        component="h2"
+                                        variant="refineSectionLabel"
+                                    >
+                                        Indexers
+                                    </Typography>
+                                    <Box ref={indexersFieldsRef}>
+                                        {!indexerSelectionAsCheckboxes && (
+                                            <TextField
+                                                label="Indexers"
+                                                select
+                                                SelectProps={{
+                                                    multiple: true,
+                                                    value: selectedIndexers,
+                                                    onChange: (event) =>
+                                                        selectIndexers(
+                                                            typeof event.target
+                                                                .value ===
+                                                                "string"
+                                                                ? event.target.value.split(
+                                                                      ",",
+                                                                  )
+                                                                : (event.target
+                                                                      .value as string[]),
+                                                        ),
+                                                }}
+                                                fullWidth
+                                            >
+                                                {eligibleIndexers.map(
+                                                    (indexer) => (
+                                                        <MenuItem
+                                                            key={indexer.name}
+                                                            value={indexer.name}
+                                                        >
+                                                            {indexer.name}
+                                                        </MenuItem>
+                                                    ),
+                                                )}
+                                            </TextField>
+                                        )}
+                                        {indexerSelectionAsCheckboxes && (
+                                            // A real installation has 20-25
+                                            // indexers: laid out column-major
+                                            // (CSS multi-column) they read
+                                            // top-to-bottom in the catalog's own
+                                            // order within each column, instead of
+                                            // wrapping row-major across the panel.
+                                            <Box
+                                                sx={{
+                                                    columnGap: "16px",
+                                                    columnWidth: 160,
+                                                }}
+                                            >
+                                                {eligibleIndexers.map(
+                                                    (indexer) => (
+                                                        <FormControlLabel
+                                                            key={indexer.name}
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={selectedIndexers.includes(
+                                                                        indexer.name,
+                                                                    )}
+                                                                    onChange={() =>
+                                                                        selectIndexers(
+                                                                            selectedIndexers.includes(
+                                                                                indexer.name,
+                                                                            )
+                                                                                ? selectedIndexers.filter(
+                                                                                      (
+                                                                                          name,
+                                                                                      ) =>
+                                                                                          name !==
+                                                                                          indexer.name,
+                                                                                  )
+                                                                                : [
+                                                                                      ...selectedIndexers,
+                                                                                      indexer.name,
+                                                                                  ],
+                                                                        )
+                                                                    }
+                                                                    size="small"
+                                                                />
+                                                            }
+                                                            label={indexer.name}
+                                                            sx={{
+                                                                breakInside:
+                                                                    "avoid",
+                                                                display: "flex",
+                                                                m: 0,
+                                                            }}
+                                                        />
+                                                    ),
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Box>
+                                    <Box>
+                                        <IndexerSelectionButton
+                                            eligibleIndexers={eligibleIndexers}
+                                            onReset={() => resetIndexers()}
+                                            onSelect={selectIndexers}
+                                            selectedIndexers={selectedIndexers}
+                                        />
+                                    </Box>
+                                </Box>
+                            )}
                     </Box>
-                </Box>
+                </Collapse>
             </Box>
             <Stack spacing={2} sx={{p: 2}}>
                 {noIndexers && (
@@ -723,104 +1125,6 @@ export function SearchWorkspace({
                         Title suggestions are currently unavailable.
                     </Alert>
                 )}
-                {mediaType && (
-                    <Box data-testid="workspace-media-refinement">
-                        <TextField
-                            disabled={!selected}
-                            fullWidth
-                            id="additional-query"
-                            label="Additional filter terms"
-                            slotProps={{
-                                htmlInput: {"data-testid": "additional-query"},
-                            }}
-                            {...register("additionalQuery")}
-                        />
-                    </Box>
-                )}
-                {showIndexerSelection && eligibleIndexers.length > 0 && (
-                    <Box
-                        aria-label="Indexer selection"
-                        data-testid="workspace-indexers"
-                    >
-                        {!indexerSelectionAsCheckboxes && (
-                            <TextField
-                                label="Indexers"
-                                select
-                                SelectProps={{
-                                    multiple: true,
-                                    value: selectedIndexers,
-                                    onChange: (event) =>
-                                        selectIndexers(
-                                            typeof event.target.value ===
-                                                "string"
-                                                ? event.target.value.split(",")
-                                                : (event.target
-                                                      .value as string[]),
-                                        ),
-                                }}
-                                fullWidth
-                            >
-                                {eligibleIndexers.map((indexer) => (
-                                    <MenuItem
-                                        key={indexer.name}
-                                        value={indexer.name}
-                                    >
-                                        {indexer.name}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        )}
-                        {indexerSelectionAsCheckboxes && (
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: "4px 16px",
-                                }}
-                            >
-                                {eligibleIndexers.map((indexer) => (
-                                    <FormControlLabel
-                                        key={indexer.name}
-                                        control={
-                                            <Checkbox
-                                                checked={selectedIndexers.includes(
-                                                    indexer.name,
-                                                )}
-                                                onChange={() =>
-                                                    selectIndexers(
-                                                        selectedIndexers.includes(
-                                                            indexer.name,
-                                                        )
-                                                            ? selectedIndexers.filter(
-                                                                  (name) =>
-                                                                      name !==
-                                                                      indexer.name,
-                                                              )
-                                                            : [
-                                                                  ...selectedIndexers,
-                                                                  indexer.name,
-                                                              ],
-                                                    )
-                                                }
-                                                size="small"
-                                            />
-                                        }
-                                        label={indexer.name}
-                                        sx={{m: 0}}
-                                    />
-                                ))}
-                            </Box>
-                        )}
-                        <Box sx={{mt: 1}}>
-                            <IndexerSelectionButton
-                                eligibleIndexers={eligibleIndexers}
-                                onReset={() => resetIndexers()}
-                                onSelect={selectIndexers}
-                                selectedIndexers={selectedIndexers}
-                            />
-                        </Box>
-                    </Box>
-                )}
                 <Box
                     data-testid="workspace-actions"
                     sx={{
@@ -839,9 +1143,11 @@ export function SearchWorkspace({
 }
 
 function SeasonEpisodeInput({
+    fieldRef,
     label,
     registration,
 }: {
+    fieldRef?: RefObject<HTMLInputElement | null>;
     label: string;
     registration: UseFormRegisterReturn;
 }) {
@@ -850,59 +1156,54 @@ function SeasonEpisodeInput({
         <TextField
             label={label}
             slotProps={{htmlInput: {inputMode: "numeric"}}}
-            sx={{width: 90}}
-            inputRef={ref}
+            sx={{width: seasonEpisodeFieldWidth}}
+            inputRef={(element: HTMLInputElement | null) => {
+                ref(element);
+                if (fieldRef) {
+                    fieldRef.current = element;
+                }
+            }}
             {...rest}
         />
     );
 }
 
-function AdvancedRangeGroup({
-    children,
-    title,
-}: {
-    children: ReactNode;
-    title: string;
-}) {
-    return (
-        <Box sx={{display: "flex", flexDirection: "column", gap: 0.75}}>
-            <Typography
-                color="text.secondary"
-                component="h2"
-                variant="overline"
-            >
-                {title}
-            </Typography>
-            <Box sx={{display: "flex", gap: 0.75}}>{children}</Box>
-        </Box>
-    );
-}
-
-// A 100px min/max field cannot carry its full name as a floating label
-// without overflowing, so each input keeps its exact previous accessible
-// name as an `aria-label` (an allowed exception under the ADR-0014
-// conventions for genuinely label-free compact controls).
+// In the Advanced panel each range field has room for a real floating label
+// plus its unit, so the previous 100px aria-label-only compact fields (an
+// ADR-0014 exception for genuinely label-free controls) retire.
 function AdvancedRangeInput({
+    fieldRef,
     invalid,
     label,
-    placeholder,
     registration,
+    unit,
 }: {
+    fieldRef?: RefObject<HTMLInputElement | null>;
     invalid: boolean;
     label: string;
-    placeholder: string;
     registration: UseFormRegisterReturn;
+    unit: string;
 }) {
     const {ref, ...rest} = registration;
     return (
         <TextField
             error={invalid}
-            placeholder={placeholder}
+            label={label}
             slotProps={{
-                htmlInput: {"aria-label": label, inputMode: "numeric"},
+                input: {
+                    endAdornment: (
+                        <InputAdornment position="end">{unit}</InputAdornment>
+                    ),
+                },
+                htmlInput: {inputMode: "numeric"},
             }}
-            sx={{width: 100}}
-            inputRef={ref}
+            sx={{width: rangeFieldWidth}}
+            inputRef={(element: HTMLInputElement | null) => {
+                ref(element);
+                if (fieldRef) {
+                    fieldRef.current = element;
+                }
+            }}
             {...rest}
         />
     );

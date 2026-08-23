@@ -215,6 +215,61 @@ describe("createHydraTheme typography and density", () => {
         });
     });
 
+    // FM-087: the search bar's constraint chips take their whole look from
+    // the theme, so the search feature states no colour, font, or radius of
+    // its own for them (ADR-0014). The typography half applies to every
+    // colour; the surface half only to the default one, leaving MUI's stock
+    // `warning` treatment intact for the empty-indexer-selection chip.
+    it("should dress a constraint chip from the theme, without repainting its warning colour", () => {
+        const theme = createHydraTheme("dark", false);
+        const variants = theme.components?.MuiChip?.variants ?? [];
+        const resolve = (props: Record<string, unknown>) =>
+            variants
+                .filter((variant) =>
+                    Object.entries(
+                        variant.props as Record<string, unknown>,
+                    ).every(([key, value]) => props[key] === value),
+                )
+                .map((variant) =>
+                    typeof variant.style === "function"
+                        ? (
+                              variant.style as (props: {
+                                  theme: typeof theme;
+                              }) => unknown
+                          )({theme})
+                        : variant.style,
+                );
+
+        expect(resolve({variant: "constraint", color: "default"})).toEqual([
+            {
+                fontFamily: '"IBM Plex Mono", monospace',
+                fontSize: "12px",
+                fontWeight: 400,
+            },
+            {
+                backgroundColor: "#232a2c",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                color: "#9aa2a1",
+                "&:hover": {
+                    backgroundColor: "#232a2c",
+                    borderColor: theme.alpha(theme.palette.primary.main, 0.16),
+                },
+                "& .MuiChip-deleteIcon": {
+                    color: "#6b7472",
+                    "&:hover": {color: "oklch(0.82 0.1 190)"},
+                },
+            },
+        ]);
+        expect(resolve({variant: "constraint", color: "warning"})).toEqual([
+            {
+                fontFamily: '"IBM Plex Mono", monospace',
+                fontSize: "12px",
+                fontWeight: 400,
+            },
+        ]);
+        expect(resolve({variant: "filled", color: "default"})).toEqual([]);
+    });
+
     it("should round only raised, non-square paper surfaces so the AppBar stays full-bleed", () => {
         const theme = createHydraTheme("dark", false);
         const paperRoot = theme.components?.MuiPaper?.styleOverrides?.root;

@@ -360,6 +360,23 @@ per value, red-first proven against the unfixed seven-event registration before 
 event type can't silently reopen this gap. This closes the last item of the 2026-08-23 batch FM-082..FM-086.
 Passed clean on first review.
 
+FM-087 (Search Form Bar-And-Chips Redesign) restructured `SearchWorkspace` to the owner-approved 2026-08-23
+"bar + status chips" design (`search-form-redesign.md`): a four-peer input row (category, query, submit, icon-only
+Advanced toggle), a live constraint-chips row (title/season/episode/age/size/filter/indexers, each rendering only
+when non-empty, clicking one opens Advanced and focuses its section), and an Advanced `Collapse` holding Media / Age
+& Size / Indexers, so every non-empty constraint stays visible while collapsed. Focus is sequenced open-then-focus
+so a chip click never focuses into a still-collapsed panel; `advancedOpen` persists to guarded localStorage on
+explicit toggle only, never on auto-open. Form schema, `valuesFromSearch`/`canonicalSearch`/`nonIdentifierQueryText`,
+the submit path, and `SearchPage.tsx` production code are unchanged, proven by diff hunks that skip over those
+functions entirely. The chip look is a `constraint` `MuiChip` theme variant, no literals in feature code (ADR-0014).
+Passed with minor findings, not corrected (optional): a title/filter chip on a non-media category can open Advanced
+with no focus target (pre-existing invisibility, not a regression); the open-then-focus sequencing has no test that
+would catch a naive synchronous-focus regression (jsdom doesn't model `Collapse`'s hidden state); `tests/system`'s
+`npx prettier --check .` fails on nine pre-existing files this task doesn't own (no pinned Prettier dependency
+there); a `focus-indication.spec.ts` "anchor family" strict-mode violation on `/system/news`, independent of this
+diff; a system-test `minimumWidth` guard loosened to 180 when the new fixed-width section no longer meaningfully
+needs a floor that wide. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -374,9 +391,7 @@ None.
 
 ## Upcoming
 
-None. FM-077 (System Tasks tab, the last unmigrated system tab) is done, completing the 2026-08-21 platform-completion
-batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer + notifications). FM-082
-(below) starts the next batch, FM-082..FM-086.
+The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

@@ -78,6 +78,11 @@ features:
       - autocomplete-option
       - search-advanced-toggle
       - search-advanced-panel
+      # FM-087's constraint-chip row: the live status chips the search bar
+      # renders for constraints whose fields sit inside the Advanced panel.
+      - search-chips
+      - search-chip-age
+      - search-chip-size
     parity: partial
     gaps:
       - guided tour
@@ -99,6 +104,11 @@ features:
       - autocomplete-popup
       - autocomplete-option
       - season-episode-pair
+      # FM-087's constraint chips for the media criteria.
+      - search-chip-title
+      - search-chip-season
+      - search-chip-episode
+      - search-chip-filter
     parity: partial
   - id: F-SEARCH-INDEXERS
     name: Indexer selection by individual source, type, group, and preselection
@@ -112,7 +122,10 @@ features:
     tests:
       - tests/system/tests/search.spec.ts
       - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
-    selectors: []
+    selectors:
+      # FM-087's indexer-count chip (warning-coloured while nothing is
+      # selected); the selection itself carries no test id of its own.
+      - search-chip-indexers
     parity: partial
   - id: F-SEARCH-RECENT
     name: Recent-search dropdown, refill, repeat, and drag-to-search
