@@ -30,9 +30,19 @@ right. A reviewer never supplies or infers the owner's visual approval.
 If the implementation requires or silently made an unresolved fundamental decision about shared architecture, API/authentication/transport, rollout/deployment, persistence/security, or project-wide quality policy, return `BLOCKED: DECISION
 REQUIRED`. State the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not select the decision yourself.
 
-Evaluate every acceptance criterion as `PASS`, `FAIL`, or `NOT VERIFIED`. Return exactly one overall result: `PASS`, `PASS WITH MINOR FINDINGS`, `FAIL`, or
-`BLOCKED`. Findings must include concrete required corrections and distinguish them from optional follow-up. When optional follow-up fits the single-session-fix tier (`docs/frontend-migration/README.md`, *Choosing A Mechanism*), label it a
-**single-session fix candidate** rather than proposing a corrective task packet. Reserve a proposed packet for follow-up that genuinely needs one — a new capability, a contract, or a decision entry.
+Structure your final report exactly as follows, in this order, so the coordinator (and any human reader) can get the outcome without reading prose:
+
+1. A first line, alone and verbatim: `VERDICT: PASS`, `VERDICT: PASS WITH MINOR FINDINGS`, `VERDICT: FAIL`, or `VERDICT: BLOCKED`. Nothing precedes it.
+2. `## Acceptance Criteria` — one table row per packet criterion: `Criterion | Result (PASS/FAIL/NOT VERIFIED) | Evidence`.
+3. `## Required Findings` — a table (state `None` if empty): `# | File:Line | Finding | Failure Scenario`. Only corrections a fixer must make before this can pass; this table is empty if and only if the verdict is `PASS` or `PASS WITH
+   MINOR FINDINGS`.
+4. `## Minor Findings` — a table (state `None` if empty): `# | File:Line | Finding | Disposition`. Optional, non-blocking; give each a disposition of `single-session fix candidate` or `proposed packet` per README *Choosing A Mechanism* —
+   never leave one unlabeled.
+5. Prose narrative — what you audited, screenshots you opened, judgment calls, evidence-reuse reasoning — comes only after the four sections above, never before them.
+
+Never state a finding count in prose only ("eight deviations were recorded") without every one of them appearing as its own row above; the tables are the source of truth the coordinator counts against, not a summary number, and the two must
+never be allowed to drift apart. When optional follow-up fits the single-session-fix tier, label it as such rather than proposing a corrective task packet; reserve a proposed packet for follow-up that genuinely needs one — a new capability,
+a contract, or a decision entry.
 
 ## Git Attribution
 

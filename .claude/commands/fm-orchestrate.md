@@ -3,7 +3,7 @@ description: Coordinate FM frontend-migration task ranges and task batches throu
 ---
 
 This playbook runs in *this* session, which has Agent-tool access, and you act as the coordinator directly. Route work via the Agent tool to the subagents: `migration-implementer`, `migration-reviewer`, `migration-fixer`,
-`migration-task-designer`.
+`migration-task-designer`. Some invocations may instead be resumptions via `SendMessage` to an agent already live in this session — see *Invariants* for exactly which roles that applies to.
 
 Requested scope: $ARGUMENTS
 
@@ -13,10 +13,16 @@ You are a coordinator, not an implementation or design authority. Never implemen
 
 ## Invariants
 
-- Every specialized-agent invocation uses a fresh context (a new Agent tool call).
+- Every reviewer invocation uses a fresh context (a new Agent tool call, never a resumed one). This is what makes a re-review independent: a reviewer that already committed to a verdict must never be the one re-checking the fix.
+- A task's first implementer invocation and its first fixer invocation each use a fresh context. For a *later* cycle of the same task, within the same coordinator session, you may instead resume that task's already-live implementer or fixer
+  via `SendMessage` to its agent ID rather than spawning a new one — nothing about implementer/fixer independence requires amnesia between cycles, only the reviewer that checks their output needs to be fresh. When resuming, send only what
+  changed since its last turn (new findings, an updated verification basis, a linked `DECISIONS.md` entry); do not re-send the full task/baseline preamble it already has. Across a coordinator-session boundary — this playbook restarting,
+  e.g. after compaction or a new invocation — no subagent is resumable; start fresh and pass the full recorded state exactly as an initial invocation would. Record in the final report which invocations, if any, were resumed rather than
+  fresh.
 - An implementer or fixer never reviews its own work.
 - Every re-review uses a new reviewer.
-- Pass repository state, task contracts, baselines, handoffs, and review findings between agents—not their reasoning or conversation history.
+- Pass repository state, task contracts, baselines, handoffs, and review findings between agents—not their reasoning or conversation history. (This does not apply to a resumed fixer/implementer's own accumulated context, which is exactly
+  what resuming it is for — it applies to what the *coordinator* passes when starting a fresh agent.)
 - Required verification runs once per relevant task-owned implementation revision. A review audits the recorded evidence and reruns an expensive command only under the reviewer's explicit evidence-reuse exceptions.
 - Agents may raise `DECISION REQUIRED`, but only an explicit human decision resolves it. When the human decides, you (the coordinator) record a short entry in `docs/frontend-migration/DECISIONS.md` — date, question, decision, binding
   constraints, ≤ 20 lines — as a permitted coordinator write. No task proceeds on an unresolved decision.
@@ -46,7 +52,8 @@ For each task in dependency order:
 5. If a predecessor or specialized agent reports `DECISION REQUIRED`, use the AskUserQuestion tool to present the decision question and viable options to the human, with the recommendation first. Record the explicit response as a
    `DECISIONS.md` entry yourself, then invoke `migration-task-designer` to link the entry and refine the affected packet before resuming. If the human declines, keep dependent work blocked and report it.
 6. If a predecessor or specialized agent explicitly identifies the task packet as stale, incomplete, or ambiguous, invoke `migration-task-designer`.
-7. If the task is not already in `review`, invoke a fresh `migration-implementer` at the tier its packet's `Agent Routing` section suggests (see *Agent routing*).
+7. If the task is not already in `review`, invoke a `migration-implementer` at the tier its packet's `Agent Routing` section suggests (see *Agent routing*) — fresh for this task's first implementer invocation, or resumed via
+   `SendMessage` to its existing agent ID if one is already live for this task in this session (e.g., continuing after a `BLOCKED` resolution).
 8. When the task reaches `review`, invoke a fresh `migration-reviewer` with:
     - the task ID and migration contracts;
     - the Git baseline;
@@ -54,7 +61,7 @@ For each task in dependency order:
     - the task-attributable repository state.
     - the current handoff, including its `Verification Basis` and command-by-command evidence.
 
-Handle the review result as follows.
+Read the review result from the mandatory `VERDICT:` first line of the reviewer's report (see `migration-reviewer`'s output format) — never infer it from narrative prose. Handle that result as follows.
 
 ### PASS
 
@@ -89,10 +96,10 @@ A scope refinement may clarify an existing outcome but must not broaden the task
 
 If the designer reports `DECISION REQUIRED`, present the question and options to the human via AskUserQuestion, record the response as a `DECISIONS.md` entry yourself, and invoke the designer to link it before continuing.
 
-Otherwise invoke a fresh `migration-fixer` with the required review findings, the prior verification basis, and any designer outcome, then invoke a fresh reviewer. The fixer reruns only commands affected by its corrections and records which
-earlier evidence remains reusable.
+Otherwise invoke the task's fixer — resumed via `SendMessage` if one is already live for this task in this session, a fresh `migration-fixer` if not — with the required review findings, the prior verification basis, and any designer
+outcome, then invoke a fresh reviewer. The fixer reruns only commands affected by its corrections and records which earlier evidence remains reusable.
 
-If no finding concerns the task specification, invoke the fixer directly with the prior verification basis and then a fresh reviewer.
+If no finding concerns the task specification, invoke the fixer (resumed or fresh, as above) directly with the prior verification basis and then a fresh reviewer.
 
 After three correction cycles, stop if substantive findings remain.
 
@@ -107,7 +114,8 @@ If a worker reports concurrent changes or attribution ambiguity, compare every r
 
 - A path absent from the snapshot but changed after invocation is task-attributable unless there is positive evidence that an external writer changed it.
 - Staged versus unstaged state, a package manager updating its lockfile, formatter output, generated output, or mutually dependent edits within the task allowlist are not by themselves evidence of concurrent ownership.
-- If the resulting ownership is determinable and the paths are allowed, invoke a fresh implementer or fixer with the clarified attribution and continue.
+- If the resulting ownership is determinable and the paths are allowed, invoke the task's implementer or fixer — resumed via `SendMessage` if one is already live for this task in this session, fresh otherwise — with the clarified
+  attribution and continue.
 - Stop only when file contents provide a concrete conflict with pre-existing work or another writer is positively identified and safe separation is impossible.
 
 Stop and report only when resolution requires human architecture/contract input, unavailable credentials or infrastructure, destructive action, a positively evidenced concurrent conflict, or an authoritative boundary that cannot be
@@ -175,6 +183,7 @@ Stop after the final requested task and report concisely:
 
 - completed tasks and commit SHAs;
 - review/fix cycles used;
+- which implementer/fixer invocations were resumed vs. freshly spawned, if any;
 - minor findings retained;
 - blockers or unresolved findings;
 - unrelated pre-existing changes left untouched.

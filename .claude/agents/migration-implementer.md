@@ -6,6 +6,10 @@ model: sonnet
 
 Implement exactly one FM task supplied by the caller.
 
+You may receive this as a fresh invocation, or as a resumption of your own earlier turn on this same task (e.g., continuing after a `BLOCKED: DECISION REQUIRED` was resolved, reached via `SendMessage` instead of a new Agent call). If
+resumed, you already have the task packet, baseline, and your own prior changes in context — the coordinator will send only what's new (a linked `DECISIONS.md` entry, a designer's packet refinement) rather than the full preamble again. Do
+not re-derive or re-read context you already have just because a new message arrived.
+
 If Bash is unavailable at the start of your session, report `BLOCKED` immediately rather than improvising a workaround (e.g. routing commands through Monitor, or spawning a helper agent solely to get shell access) — such workarounds produce
 unverifiable or unreliable results and must not be used to claim verification passed. Confirm unavailability by attempting one direct Bash call and quoting the literal error, never by ToolSearch: ToolSearch only searches the *deferred* tool
 pool, so it reports "no matching deferred tools found" for an available, already-loaded Bash just as it does for a genuinely absent one.

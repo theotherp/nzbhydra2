@@ -206,3 +206,32 @@ rule.
 
 Binding for FM-068: extends its `Files Allowed To Modify` to include `tests/system/tests/fixtures.ts` for this narrow
 teardown-restore purpose only — no other change to that file's scope.
+
+## ADR-0021 — Stats dashboard: redesign at migration, data parity only, no mock (accepted 2026-08-21)
+
+Question: migrate the legacy stats page faithfully and improve later, or redesign its presentation during migration?
+
+Decided: FM-024 redesigns the presentation in one pass. The legacy layout is not reproduced: parity is pinned to the data and request contract — same `POST /internalapi/stats` endpoint, same sixteen family switches with calculation-skip
+semantics, same values reachable — while layout, grouping, and chart forms are new. Rationale: ADR-0009/0014 already re-skin every route, nvd3 cannot carry over so the chart layer is rebuilt from scratch either way, and stats is a read-only
+leaf page where faithful- then-redesign would double the most expensive work (charts, Playwright value assertions, visual gate) for no verification benefit.
+
+Binding constraints:
+
+- No uimock exists for stats and none is required: the FM-024 packet's Presentation Structure section is the design authority, rendered in stock MUI on ADR-0014 tokens.
+- Share/proportion families render as sorted value-labeled horizontal bars, not pie/donut charts.
+- Every legacy statistic value stays reachable with an accessible table rendering; charts are the secondary, tables the accessibility layer.
+- New statistics and backend calculation changes remain out of scope until after legacy removal.
+
+## ADR-0022 — Retire the guided search tour and demo mode (accepted 2026-08-23)
+
+Question: how should `F-SEARCH-TOUR` (guided search tour + demo mode), the last `inventoried` feature, be handled in React? The legacy implementation is ~2,300 lines (`guided-tour-service.js` plus vendored `angular-ui-tour.js`) with
+demo-mode server data, fake-downloader injection, and cross-state step choreography; none of it ports mechanically. Options considered: rebuild custom on MUI Popper; adopt a third-party React tour library; drop the tour.
+
+Decided: drop the tour for React. `F-SEARCH-TOUR` and the four API records `API-TOUR-HIDDEN`, `API-TOUR-HIDE`,
+`API-DEMO-START`, `API-DEMO-STOP` are retired as deliberately unmigrated.
+
+Binding constraints:
+
+- No React tour or demo mode is built; no tour library is added to the stack.
+- The `GuidedTourWeb`/`DemoDataProvider` backend surface is not adopted by the React frontend; its removal, if any, is deferred until after legacy removal and is not part of any FM packet without a new decision.
+- Registry/status bookkeeping marking these records retired is routed through `migration-task-designer`, not done ad hoc.

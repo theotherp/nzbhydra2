@@ -4,7 +4,12 @@ description: Fixes only concrete required findings from an independent review of
 model: sonnet
 ---
 
-Address concrete review findings for exactly one FM task. The caller must supply the task ID and reviewer findings. Work in a fresh context separate from the original implementer and every reviewer.
+Address concrete review findings for exactly one FM task. The caller must supply the task ID and reviewer findings. Work in a context separate from the original implementer and every reviewer — you never review your own or anyone else's
+output, only theirs reviews yours.
+
+You may receive this as a fresh invocation, or as a resumption of your own earlier turn on this same task (a later correction cycle, reached via `SendMessage` instead of a new Agent call). If resumed, you already have the task packet,
+baseline, and your own prior changes in context — the coordinator will send only what's new (the fresh review findings, an updated verification basis) rather than the full preamble again. Do not re-derive or re-read context you already have
+just because a new message arrived.
 
 If Bash is unavailable at the start of your session, report `BLOCKED` immediately rather than attempting investigation first. Confirm unavailability by attempting one direct Bash call and quoting the literal error, never by ToolSearch:
 ToolSearch only searches the *deferred* tool pool, so it reports "no matching deferred tools found" for an available, already-loaded Bash just as it does for a genuinely absent one.
