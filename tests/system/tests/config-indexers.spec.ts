@@ -79,7 +79,9 @@ async function save(page: Page): Promise<void> {
     };
     expect(result.errorMessages ?? []).toEqual([]);
     expect(result.ok).toBe(true);
-    await expect(page.getByText("Configuration saved.")).toBeVisible();
+    // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+    // save leaves two in the DOM and an unanchored locator trips strict mode.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
 test.describe("Config indexers round trip", () => {
@@ -297,11 +299,6 @@ test.describe("Config indexers round trip", () => {
         await page.getByTestId("config-indexer-dialog-submit").click();
         await expect(page.getByTestId("config-indexer-dialog")).toBeHidden();
         await save(page);
-        // FM-084 made toasts stack rather than replace each other; close this
-        // one before the second `save()` below so its own "Configuration
-        // saved." assertion still resolves to exactly one element.
-        await page.getByRole("button", {name: "Close"}).click();
-        await expect(page.getByText("Configuration saved.")).toBeHidden();
 
         let persisted = indexersOf((await hydra.getConfig()) as Json);
         expect(persisted[0].color).toBe("rgb(116,18,18)");

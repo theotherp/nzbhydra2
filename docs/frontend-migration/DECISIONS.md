@@ -235,3 +235,24 @@ Binding constraints:
 - No React tour or demo mode is built; no tour library is added to the stack.
 - The `GuidedTourWeb`/`DemoDataProvider` backend surface is not adopted by the React frontend; its removal, if any, is deferred until after legacy removal and is not part of any FM packet without a new decision.
 - Registry/status bookkeeping marking these records retired is routed through `migration-task-designer`, not done ad hoc.
+
+## ADR-0023 — Migration acceptance for the React default flip (accepted 2026-08-23)
+
+Question: ADR-0001 permits React to become the default UI "only after migration acceptance", and FM-094 refuses to
+promote past `planned` until that acceptance exists as a decision entry. Is the migration accepted?
+
+Decided: yes, taking effect once FM-093 and FM-096 pass review. The owner declared acceptance on that condition.
+
+Evidence at the time of declaration: after FM-091, FM-092 and FM-093, no capability remains that legacy has and React
+lacks. What is left is (a) `F-AUTH-LOGIN`'s BASIC-logout limitation, which legacy shares — `POST /loggedout` is dead
+server code no UI has ever called; (b) screen-reader verification debt on ADR-0012's keyboard affordances, which is
+verification not capability; and (c) the guided tour and demo mode, already retired by ADR-0022.
+
+Binding constraints:
+
+- Acceptance is conditional: FM-094 may not be promoted until FM-093 and FM-096 are `done`.
+- The screen-reader verification debt does not block acceptance and is recorded as open debt in the registries
+  (owner decision, same conversation). It must not be silently closed by asserting it was verified.
+- Acceptance authorises the flip and the subsequent removal of the selector and AngularJS (FM-094, FM-095). It does
+  not authorise removing the `GuidedTourWeb`/`DemoDataProvider` backend surface, which ADR-0022 still defers.
+

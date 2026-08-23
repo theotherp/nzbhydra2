@@ -94,7 +94,11 @@ test.describe("Config shell round trip", () => {
             allowReMaskedSecrets(response.request().postDataJSON(), before),
         ).toEqual(before);
 
-        await expect(page.getByText("Configuration saved.")).toBeVisible();
+        // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+        // save leaves two in the DOM and an unanchored locator trips strict mode.
+        await expect(
+            page.getByText("Configuration saved.").last(),
+        ).toBeVisible();
 
         // ADR-0017: no `window.location.reload()`, so the document that was
         // loaded before the save is still the one on screen.

@@ -39,7 +39,9 @@ async function saveAndExpectSuccess(page: Page): Promise<void> {
     };
     expect(result.errorMessages ?? []).toEqual([]);
     expect(result.ok).toBe(true);
-    await expect(page.getByText("Configuration saved.")).toBeVisible();
+    // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+    // save leaves two in the DOM and an unanchored locator trips strict mode.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
 /**
@@ -106,9 +108,7 @@ test.describe("Config categories tab round trip", () => {
         await newznabInput.fill("9998&9997");
         await newznabInput.press("Enter");
         await expect(entry.getByText("9999", {exact: true})).toBeVisible();
-        await expect(
-            entry.getByText("9998&9997", {exact: true}),
-        ).toBeVisible();
+        await expect(entry.getByText("9998&9997", {exact: true})).toBeVisible();
 
         await entry
             .getByTestId(

@@ -78,7 +78,9 @@ async function save(page: Page): Promise<void> {
     };
     expect(result.errorMessages ?? []).toEqual([]);
     expect(result.ok).toBe(true);
-    await expect(page.getByText("Configuration saved.")).toBeVisible();
+    // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+    // save leaves two in the DOM and an unanchored locator trips strict mode.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
 test.describe("Config downloading tab round trip", () => {

@@ -103,7 +103,11 @@ test.describe("Config main tab round trip", () => {
         };
         expect(result.errorMessages ?? []).toEqual([]);
         expect(result.ok).toBe(true);
-        await expect(page.getByText("Configuration saved.")).toBeVisible();
+        // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+        // save leaves two in the DOM and an unanchored locator trips strict mode.
+        await expect(
+            page.getByText("Configuration saved.").last(),
+        ).toBeVisible();
 
         // The edits survive a full document load, which proves they were
         // persisted rather than only held in the form.
@@ -277,7 +281,11 @@ test.describe("Config main tab visual evidence", () => {
         expect(mainSection(result.newConfig as Json).proxyPassword).toBe(
             UNCHANGED_MARKER,
         );
-        await expect(page.getByText("Configuration saved.")).toBeVisible();
+        // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+        // save leaves two in the DOM and an unanchored locator trips strict mode.
+        await expect(
+            page.getByText("Configuration saved.").last(),
+        ).toBeVisible();
 
         // Immediately after the save and before any reload: the proxy
         // credentials are back to their "Value unchanged" placeholder, so the
@@ -295,7 +303,10 @@ test.describe("Config main tab visual evidence", () => {
             .getByTestId("config-setting-main-proxyUsername")
             .scrollIntoViewIfNeeded();
         await page.screenshot({
-            path: visualEvidencePath("F-CONFIG-MAIN", "main-after-save-desktop"),
+            path: visualEvidencePath(
+                "F-CONFIG-MAIN",
+                "main-after-save-desktop",
+            ),
             fullPage: true,
         });
     });

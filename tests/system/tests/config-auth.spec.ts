@@ -117,7 +117,9 @@ async function saveAndExpectSuccess(page: Page): Promise<void> {
         result.restartNeeded,
         "this test's own setup already persisted the auth type; a save made only through Users-section edits must not additionally ask for a restart",
     ).toBe(false);
-    await expect(page.getByText("Configuration saved.")).toBeVisible();
+    // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+    // save leaves two in the DOM and an unanchored locator trips strict mode.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
 test.describe("Config auth tab user management", () => {
@@ -304,15 +306,23 @@ test.describe("Config auth tab visual evidence", () => {
                 page.getByRole("combobox", {name: "Auth type"}),
             ).toHaveText("None");
             await page.screenshot({
-                path: visualEvidencePath("F-CONFIG-AUTH", `auth-none-${viewport}`),
+                path: visualEvidencePath(
+                    "F-CONFIG-AUTH",
+                    `auth-none-${viewport}`,
+                ),
                 fullPage: true,
             });
 
             await page.getByRole("combobox", {name: "Auth type"}).click();
             await page.getByRole("option", {name: "Login form"}).click();
-            await expect(page.getByTestId("config-fieldset-users")).toBeVisible();
+            await expect(
+                page.getByTestId("config-fieldset-users"),
+            ).toBeVisible();
             await page.screenshot({
-                path: visualEvidencePath("F-CONFIG-AUTH", `auth-form-${viewport}`),
+                path: visualEvidencePath(
+                    "F-CONFIG-AUTH",
+                    `auth-form-${viewport}`,
+                ),
                 fullPage: true,
             });
 
@@ -338,7 +348,10 @@ test.describe("Config auth tab visual evidence", () => {
                 page.getByTestId("config-fieldset-openid connect"),
             ).toBeVisible();
             await page.screenshot({
-                path: visualEvidencePath("F-CONFIG-AUTH", `auth-oidc-${viewport}`),
+                path: visualEvidencePath(
+                    "F-CONFIG-AUTH",
+                    `auth-oidc-${viewport}`,
+                ),
                 fullPage: true,
             });
         });
@@ -389,7 +402,10 @@ test.describe("Config auth tab visual evidence", () => {
             username: "saved-user-renamed",
         });
         await page.screenshot({
-            path: visualEvidencePath("F-CONFIG-AUTH", "auth-after-save-desktop"),
+            path: visualEvidencePath(
+                "F-CONFIG-AUTH",
+                "auth-after-save-desktop",
+            ),
             fullPage: true,
         });
     });
