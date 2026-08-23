@@ -942,6 +942,10 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://api.omgwtfnzbs.org"
         },
         {
+            name: "Onlyusenet",
+            host: "https://hou-indexer.onlyusenet.com/api/v1/"
+        },
+        {
             name: "Treasure Maps",
             host: "https://treasure-maps.com",
             info: "If you want german or spanish (or other language specific) results make sure to add the newznab IDs in the categories config.<br>For example for german UHD movies add 2145.<br>You can find out the IDs by browsing https://treasure-maps.com/rss."
