@@ -462,6 +462,22 @@ name promises more coverage than it asserts (it checks the row background but no
 the criterion itself is independently satisfied by the untouched `sx` diff and the system test's stripe assertion.
 Candidate for a future quickfix.
 
+FM-094 (React Default Shell And Legacy-Test Disposition) makes a cookie-less request serve the React shell on every
+mapping, ADR-0001's first removal stage, unblocked by ADR-0023's acceptance. `/ui/react`, `/ui/legacy` and the cookie they
+write are untouched, so the rollback path stays intact and is visibly proven in the screenshot strip. The real work was the
+per-test disposition: twelve legacy-shell tests deleted and the rest retargeted, with the suite dropping 166 -> 154 exactly.
+Its first attempt would have deleted two `search-history` tests citing React siblings that covered less; the designer caught
+it, and three assertions (the category cell, the source cell, and both indexers' `^\d+ms$` response times) were moved into a
+named survivor before the deletions, the reviewer confirming them byte-equivalent rather than weakened in transit. Two traps
+were found by invariant rather than luck: `getByTestId("search-category-control")`'s text is `"CategoryAllCategory"`, because
+the testid sits on the MUI `TextField` root and so contains the label and the notch's duplicate legend (swept: no other test
+reads that node's text), and two further bare `goto("/")` in `results.spec.ts` cannot be routed through
+`ui/react?redirect=/` at all, since Playwright rewrites only a navigation's initial request and the redirect hop would deliver
+an un-rewritten document — `page.reload()` satisfies both the invariant and the interception. Full suite green, 154 passed,
+no failures, skips or flaky. Passed with eight minor findings, none corrected (optional); all are carried into
+`MAINTENANCE.md`'s open candidates rather than left in the deleted packet, including two that need an owner ruling and are
+therefore packets rather than quickfixes: the SABnzbd default-category gap and `loadLimitInternal`.
+
 ## Active
 
 None.
@@ -469,6 +485,7 @@ None.
 ## Review
 
 None.
+  system test is disposed of per test. Full suite green.
 
 ## Blocked
 

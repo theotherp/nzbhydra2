@@ -27,76 +27,51 @@ test.describe("Search results", () => {
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
             {data: true},
         );
-        await page.goto("/");
+        // FM-094: React is the server's default shell now, but this navigation
+        // stays explicit rather than bare. `ui/react?redirect=/` states which
+        // shell every test below is about instead of inheriting whatever the
+        // default happens to be, which is the same rule
+        // `focus-indication.spec.ts` documents at its head.
+        await page.goto("ui/react?redirect=/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
 
+    // FM-094: retargeted from the legacy shell, whose sort header reported
+    // `ascending`/`descending`. React's own per-column sort test below covers
+    // one direction per column only, so the both-directions toggle would have
+    // been lost with the legacy shell; it is kept here against React instead.
     test("should sort results by title in both directions", async ({page}) => {
         await searchForUiTestResults(page);
 
         const titleSort = page.getByTestId("sort-title");
         await expect(titleSort).toHaveAttribute("data-sort-direction", "none");
         await titleSort.click();
-        await expect(titleSort).toHaveAttribute(
-            "data-sort-direction",
-            "ascending",
-        );
+        await expect(titleSort).toHaveAttribute("data-sort-direction", "asc");
         await expectVisibleResultTitles(
             page,
-            testEnvironment.uiTestResultTitles,
+            [...testEnvironment.uiTestResultTitles].sort(),
         );
-        await waitForSortingOrFiltering(page);
 
         await titleSort.click();
-        await expect(titleSort).toHaveAttribute(
-            "data-sort-direction",
-            "descending",
-        );
+        await expect(titleSort).toHaveAttribute("data-sort-direction", "desc");
         await expectVisibleResultTitles(
             page,
-            [...testEnvironment.uiTestResultTitles].reverse(),
+            [...testEnvironment.uiTestResultTitles].sort().reverse(),
         );
-        await waitForSortingOrFiltering(page);
     });
 
-    test("should filter titles and sizes through result controls", async ({
-        page,
-    }) => {
-        await searchForUiTestResults(page);
-
-        const titleFilter = page.getByTestId("freetext-filter-title");
-        await titleFilter.type("indexer1");
-        await expectVisibleResultTitles(
-            page,
-            testEnvironment.uiTestResultTitles.slice(0, 3),
-        );
-        await waitForSortingOrFiltering(page);
-
-        await titleFilter.fill("");
-        await titleFilter.press("Backspace");
-        await expectVisibleResultTitles(
-            page,
-            testEnvironment.uiTestResultTitles,
-        );
-        await waitForSortingOrFiltering(page);
-
-        const sizeFilter = page.getByTestId("filter-toggle-size");
-        await sizeFilter.locator(".toggle-column-filter").click();
-        await page.getByTestId("number-filter-min-size").fill("4");
-        await page.getByTestId("number-filter-max-size").fill("5");
-        await page.getByTestId("number-filter-apply-size").click();
-
-        await expectVisibleResultTitles(
-            page,
-            testEnvironment.uiTestResultTitles.slice(3),
-        );
-        await expect(page.getByTestId("search-results-summary")).toHaveText(
-            "Loaded 5 (3 filtered, 0 duplicates) of 5 results (rejected 0)",
-        );
-        await waitForSortingOrFiltering(page);
-    });
-
+    // FM-094: the legacy "should filter titles and sizes through result
+    // controls" test is gone with the legacy shell. It drove legacy's inline
+    // per-column header filters (`freetext-filter-title`,
+    // `filter-toggle-size`, `number-filter-{min,max,apply}-size`), a surface
+    // React deliberately does not have: ADR-0009 replaced it with the single
+    // refine sidebar, and `expectNoInlineFilterControls` below asserts the
+    // inline controls stay absent. The filtering behaviour itself is covered
+    // against React by "should sort and filter deterministic results in the
+    // React shell" (title text filter, invalid-regex non-match, size minimum)
+    // and by "should sort every column and filter deterministic React results"
+    // (indexer, category, grabs and age filters plus the quick filters).
     test("should match x265 and HEVC quick filters without matching near misses", async ({
         hydra,
         page,
@@ -112,6 +87,14 @@ test.describe("Search results", () => {
         await page.getByTestId("search-query").fill("movies");
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        // FM-094: retargeted from the legacy shell. The near-miss rule itself
+        // (an `x265` quick filter must not match `HEVC` and vice versa) is a
+        // real React behaviour with no other coverage -- the React per-column
+        // test only asserts preselected quick filters against titles that
+        // carry both tokens -- so it is kept rather than deleted. Under
+        // ADR-0009 the quick filters live in the refine sidebar, not in a
+        // toolbar row, hence the extra open.
+        await openRefineSidebar(page);
         const resultTitles = page.getByTestId("search-result-title");
         await page.getByRole("button", {name: "x265", exact: true}).click();
         await expect
@@ -141,6 +124,65 @@ test.describe("Search results", () => {
             .toBe(true);
     });
 
+    // FM-094: moved here from `search.spec.ts`, where it ran against the legacy
+    // shell. Under ADR-0009 the quick filters are part of the refine sidebar,
+    // so the test belongs with this file's sidebar helpers; the extra
+    // `openRefineSidebar` is the only change its body needed. The rule it pins
+    // -- switching one preselected family's filter off leaves the remaining
+    // families still filtering -- has no other coverage: the React per-column
+    // test below switches all four families off at once.
+    test("should apply later quick filters after deselecting quality and other filters", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        const searching = config.searching as Record<string, unknown>;
+        searching.showQuickFilterButtons = true;
+        searching.alwaysShowQuickFilterButtons = true;
+        searching.customQuickFilterButtons = ["BLURAY=bluray"];
+        searching.preselectQuickFilterButtons = [
+            "quality|q720p",
+            "other|q3d",
+            "custom|BLURAY",
+        ];
+        await hydra.saveConfig(config);
+        await page.reload();
+        await expect(page.getByTestId("search-query")).toBeVisible();
+
+        await page.getByTestId("search-query").fill("movies");
+        await page.getByTestId("search-submit").click();
+
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await openRefineSidebar(page);
+        await page.getByRole("button", {name: "720p", exact: true}).click();
+
+        const resultTitles = page.getByTestId("search-result-title");
+        await expect
+            .poll(async () => {
+                const titles = await resultTitles.allTextContents();
+                return (
+                    titles.length > 0 &&
+                    titles.every((title) =>
+                        title.toLowerCase().includes("3d bluray"),
+                    )
+                );
+            })
+            .toBe(true);
+
+        await page.getByRole("button", {name: "3D", exact: true}).click();
+        await expect
+            .poll(async () => {
+                const titles = await resultTitles.allTextContents();
+                return (
+                    titles.length > 0 &&
+                    titles.every((title) =>
+                        title.toLowerCase().includes("bluray"),
+                    )
+                );
+            })
+            .toBe(true);
+    });
+
     test("should treat invalid title and quick-filter regexes as non-matches", async ({
         hydra,
         page,
@@ -161,6 +203,15 @@ test.describe("Search results", () => {
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         await expect(page.getByTestId("search-result-row")).toHaveCount(0);
 
+        // FM-094: retargeted from the legacy shell. The invalid *title* regex
+        // half is also covered by "should sort and filter deterministic
+        // results in the React shell", but the invalid *quick-filter* regex
+        // half -- a preselected custom quick filter whose pattern does not
+        // compile must reject every result until it is switched off -- has no
+        // other coverage, so the test is kept and repointed rather than
+        // deleted. The title filter moves from legacy's inline column control
+        // to the refine sidebar's `refine-filter-title` (ADR-0009).
+        await openRefineSidebar(page);
         await page
             .getByRole("button", {name: "Invalid regex", exact: true})
             .click();
@@ -168,10 +219,15 @@ test.describe("Search results", () => {
             page,
             testEnvironment.uiTestResultTitles,
         );
-        await page.getByTestId("freetext-filter-title").type("/[/");
+        await page.getByTestId("refine-filter-title").fill("/[/");
         await expect(page.getByTestId("search-result-row")).toHaveCount(0);
     });
 
+    // FM-094: retargeted from the legacy shell with the `beforeEach` above.
+    // Nothing here is shell-specific -- it rewrites one real backend result's
+    // title to `null` and asserts the table renders the remaining four -- and
+    // the rule it pins (a malformed result must not abort the render) is one
+    // React must honour too, so it is kept rather than deleted.
     test("should discard titleless results without interrupting rendering", async ({
         page,
     }) => {
@@ -192,56 +248,36 @@ test.describe("Search results", () => {
         await expect(page.getByTestId("search-result-row")).toHaveCount(4);
     });
 
-    test("should clear every filtered-out selection", async ({page}) => {
-        await searchForUiTestResults(page);
+    // FM-094: the legacy "should clear every filtered-out selection" test is
+    // gone with the legacy shell, and this behaviour is deliberately not
+    // reproduced rather than merely unimplemented. Legacy's
+    // `search-results-controller.js` dropped a row's selection as soon as a
+    // filter hid it; React models the selection as a stable set of
+    // `searchResultId`s that result-side filters never mutate -- see
+    // `SearchResults.tsx`'s `selected` state, whose only pruning is the
+    // post-download one, and the component test "should reset every
+    // result-side filter via refine-clear-all while leaving sorting,
+    // grouping, and selection untouched"
+    // (`SearchResults.test.tsx`), which pins exactly that rule. Retargeting
+    // this test would therefore assert the opposite of React's designed
+    // behaviour. See the handoff's Follow-Up Work for the one open parity
+    // question this leaves (whether a bulk send should skip selected rows the
+    // active filters hide).
 
-        const firstResult = page
-            .getByTestId("search-result-row")
-            .filter({hasText: "indexer1-result1"});
-        const secondResult = page
-            .getByTestId("search-result-row")
-            .filter({hasText: "indexer1-result2"});
-        await firstResult.locator("input[type=checkbox]").check();
-        await secondResult.locator("input[type=checkbox]").check();
-
-        const titleFilter = page.getByTestId("freetext-filter-title");
-        await titleFilter.type("indexer2");
-        await expectVisibleResultTitles(
-            page,
-            testEnvironment.uiTestResultTitles.slice(3),
-        );
-        await titleFilter.fill("");
-        await titleFilter.press("Backspace");
-
-        await expect(
-            firstResult.locator("input[type=checkbox]"),
-        ).not.toBeChecked();
-        await expect(
-            secondResult.locator("input[type=checkbox]"),
-        ).not.toBeChecked();
-    });
-
-    test("should retain the configured title-group page size after recalculation", async ({
-        hydra,
-        page,
-    }) => {
-        const config = await hydra.getConfig();
-        const searching = config.searching as Record<string, unknown>;
-        searching.loadLimitInternal = 1;
-        await hydra.saveConfig(config);
-        await page.reload();
-
-        await page.getByTestId("search-query").fill("titleduplicates");
-        await page.getByTestId("search-submit").click();
-        await expect(page.getByTestId("search-status-modal")).toBeHidden();
-
-        const rows = page
-            .getByTestId("search-results-table")
-            .getByTestId("search-result-row");
-        await expect(rows).toHaveCount(1);
-        await page.getByTestId("sort-title").click();
-        await expect(rows).toHaveCount(1);
-    });
+    // FM-094: the legacy "should retain the configured title-group page size
+    // after recalculation" test is gone with the legacy shell. It pinned
+    // legacy's own display page size: `search-results-controller.js:9` reads
+    // `searching.loadLimitInternal` into `$scope.limitTo` and paginates the
+    // rendered title groups by it. React has no such client-side page size --
+    // `loadLimitInternal` appears in its Config > Searching tab and nowhere in
+    // the results view -- so retargeting the test would assert a surface that
+    // deliberately does not exist here; verified by running it against React,
+    // which renders all 10 rows the search returned rather than 1. React's own
+    // result paging is covered by "should load more and all React results from
+    // advancing cache offsets" and "should stop React load-more after a
+    // non-advancing terminal cursor". The handoff's Follow-Up Work records the
+    // one question this leaves open: whether `loadLimitInternal` still being
+    // editable while React ignores it is intended.
 
     test("should sort and filter deterministic results in the React shell", async ({
         page,
@@ -302,18 +338,14 @@ test.describe("Search results", () => {
         await assertGroupExpansionAndBulkSelection(page);
     });
 
-    test("should expand grouped legacy results and select visible rows", async ({
-        page,
-    }) => {
-        await mockGroupedResults(page);
-        await page.addInitScript(() =>
-            window.localStorage.setItem("nzbhydra.duplicatesDisplayed", "true"),
-        );
-        await page.reload();
-        await searchForGroupedResults(page);
-
-        await assertLegacyGroupExpansionAndBulkSelection(page);
-    });
+    // FM-094: the legacy "should expand grouped legacy results and select
+    // visible rows" test and its `assertLegacyGroupExpansionAndBulkSelection`
+    // helper are gone with the legacy shell. Both drove legacy-only DOM
+    // (`.duplicate-expand-toggle`, `#search-results-selection-button` and its
+    // `.selection-button-*` dropdown entries) over the same mocked grouped
+    // payload the React sibling directly above uses; that sibling asserts the
+    // identical capability -- expand duplicates, select all, invert selection
+    // -- through React's own affordances, so no behaviour loses coverage.
 
     test("should sort every column and filter deterministic React results", async ({
         hydra,
@@ -1145,9 +1177,10 @@ test.describe("Search results", () => {
     test("should persist the refine sidebar's Category/Indexer collapse state across a reload", async ({
         page,
     }) => {
-        // `RefineSidebar` is a React-shell-only surface; the default `/`
-        // route this describe block's `beforeEach` navigates to is the
-        // legacy AngularJS UI, which has no `refine-category-toggle`.
+        // The `beforeEach` already selected the React shell (FM-094); this
+        // navigation is kept because the test needs a freshly loaded page
+        // whose persisted sidebar state comes from this test's own reload
+        // cycle below.
         await page.goto("ui/react?redirect=/");
         await searchForUiTestResults(page);
 
@@ -3227,12 +3260,17 @@ test.describe("Search results", () => {
         // sends `true`). Rewriting the flag in the served shell exercises the
         // restricted session without reconfiguring authentication on an
         // instance every other spec shares.
-        // The React shell is selected first (the selector endpoint redirects
-        // to `/`, and only the final document carries the bootstrap), then the
-        // rewritten shell is loaded directly.
+        // The React shell is selected first, then reloaded with the rewrite
+        // installed, because only the final document carries the bootstrap.
+        // FM-094: that second load is `page.reload()` rather than a bare
+        // `page.goto("/")`, so no test outside `smoke.spec.ts` depends on which
+        // shell a cookie-less `/` serves. It cannot go through the selector
+        // endpoint instead: Playwright routes the navigation's initial request,
+        // so a `ui/react?redirect=/` hop leaves the rewrite unapplied (proven
+        // by trying it -- "the shell was never requested").
         await page.goto("ui/react?redirect=/");
         const rewrite = await withRestrictedDetailsBootstrap(page);
-        await page.goto("/");
+        await page.reload();
         expect(
             rewrite.applied(),
             `the served shell must carry a maySeeDetailsDl flag to rewrite; served: ${rewrite.servedBootstrap()}`,
@@ -3288,7 +3326,9 @@ test.describe("Search results", () => {
             // downloads: the NFO action alone.
             const rewrite = await withRestrictedDetailsBootstrap(page);
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("/");
+                // FM-094: a reload rather than a bare `page.goto("/")`, for
+                // the reason given in the sibling test above.
+                await page.reload();
                 expect(
                     rewrite.applied(),
                     `the served shell must carry a maySeeDetailsDl flag to rewrite; served: ${rewrite.servedBootstrap()}`,
@@ -3422,15 +3462,13 @@ test.describe("Search results", () => {
         }
         mock1.color = "rgb(116,18,18)";
         await hydra.saveConfig(config);
-        // This file's shared `beforeEach` only navigates to "/", which the
-        // server renders as the legacy AngularJS shell absent the
-        // `nzbhydra-ui` cookie (`MainWeb.java`'s `isReactSelected`) -- every
-        // other React-targeting test in this file first visits
-        // `ui/react?redirect=/` to set it. That same navigation also
-        // re-seeds the page's `SafeConfigContext` query (ADR-0017) with the
-        // colour just saved: a save through this direct API call, unlike one
-        // through the config UI, never invalidates that already-mounted
-        // query on its own.
+        // FM-094 made React the served default and repointed this file's
+        // shared `beforeEach` at `ui/react?redirect=/`, so this navigation is
+        // no longer about picking a shell. It is still required: it re-seeds
+        // the page's `SafeConfigContext` query (ADR-0017) with the colour just
+        // saved, because a save through this direct API call, unlike one
+        // through the config UI, never invalidates that already-mounted query
+        // on its own.
         await page.goto("ui/react?redirect=/");
         await dismissWelcomeDialog(page);
         await searchForUiTestResults(page);
@@ -4169,11 +4207,8 @@ async function expectVisibleResultTitles(
         .toEqual(expectedTitles);
 }
 
-async function waitForSortingOrFiltering(
-    page: import("@playwright/test").Page,
-): Promise<void> {
-    await expect(page.locator(".block-ui-overlay:visible")).toHaveCount(0);
-}
+// FM-094: `waitForSortingOrFiltering` is gone with its two callers. It waited
+// out legacy's `blockUI` overlay, which the React shell does not render at all.
 
 async function mockGroupedResults(
     page: import("@playwright/test").Page,
@@ -4269,43 +4304,6 @@ async function assertGroupExpansionAndBulkSelection(
         .getByRole("button", {name: "Selection options"})
         .click();
     await page.getByRole("menuitem", {name: "Invert selection"}).click();
-    await expect
-        .poll(() =>
-            rows
-                .locator("input[type=checkbox]")
-                .evaluateAll((inputs) =>
-                    inputs.every(
-                        (input) => !(input as HTMLInputElement).checked,
-                    ),
-                ),
-        )
-        .toBe(true);
-}
-
-async function assertLegacyGroupExpansionAndBulkSelection(
-    page: import("@playwright/test").Page,
-): Promise<void> {
-    const rows = page.getByTestId("search-result-row");
-    const initialRowCount = await rows.count();
-    await page
-        .locator(".duplicate-expand-toggle:not(.visibility-hidden)")
-        .click();
-    await expect.poll(() => rows.count()).toBeGreaterThan(initialRowCount);
-    const selectionButton = page.locator("#search-results-selection-button");
-    await selectionButton.locator(".selection-button-toggle-dropdown").click();
-    await selectionButton.locator(".selection-button-select-all").click();
-    await expect
-        .poll(() =>
-            rows
-                .locator("input[type=checkbox]")
-                .evaluateAll((inputs) =>
-                    inputs.every(
-                        (input) => (input as HTMLInputElement).checked,
-                    ),
-                ),
-        )
-        .toBe(true);
-    await selectionButton.locator(".selection-button-invert-selection").click();
     await expect
         .poll(() =>
             rows

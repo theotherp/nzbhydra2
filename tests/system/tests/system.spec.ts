@@ -371,7 +371,9 @@ test.describe("System shell", () => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
                 await openSystem(page, "log");
-                await expect(page.getByTestId("system-log-table")).toBeVisible();
+                await expect(
+                    page.getByTestId("system-log-table"),
+                ).toBeVisible();
             });
             await page.screenshot({
                 path: visualEvidencePath(
@@ -432,9 +434,7 @@ test.describe("System shell", () => {
         await expect(page.getByTestId("system-tasks-table")).toBeVisible();
         // `Backup` (BackupTask, interval HOUR) is one of the real,
         // always-registered scheduled tasks on the running instance.
-        await expect(
-            page.getByRole("button", {name: /Backup/}),
-        ).toBeVisible();
+        await expect(page.getByRole("button", {name: /Backup/})).toBeVisible();
         await expect(page.getByTestId("system-task-run").first()).toBeVisible();
 
         expect(
@@ -494,9 +494,7 @@ test.describe("System shell", () => {
         const downloadHref = await page
             .getByTestId("system-backup-download-0")
             .getAttribute("href");
-        expect(downloadHref).toContain(
-            "internalapi/backup/download?filename=",
-        );
+        expect(downloadHref).toContain("internalapi/backup/download?filename=");
         const download = await page.request.get(downloadHref as string);
         expect(download.ok()).toBe(true);
         expect((await download.body()).length).toBeGreaterThan(0);
@@ -561,13 +559,11 @@ test.describe("System shell", () => {
             // The upload never leaves the browser: the request is held by the
             // route above, which is what keeps the progress bar on screen and
             // keeps the shared instance from being restored into.
-            await page
-                .getByTestId("system-backup-upload")
-                .setInputFiles({
-                    buffer: Buffer.alloc(256 * 1024, 1),
-                    mimeType: "application/zip",
-                    name: "nzbhydra-backup-visual-gate.zip",
-                });
+            await page.getByTestId("system-backup-upload").setInputFiles({
+                buffer: Buffer.alloc(256 * 1024, 1),
+                mimeType: "application/zip",
+                name: "nzbhydra-backup-visual-gate.zip",
+            });
             await expect(
                 page.getByTestId("system-backup-upload-progress"),
             ).toBeVisible();
@@ -619,7 +615,10 @@ test.describe("System shell", () => {
         );
         await page.getByTestId("system-thread-dump").click();
         expect((await threadDump).ok()).toBe(true);
-        await expect(page.getByRole("alert")).toContainText(
+        // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+        // one raised in the same test leaves two alerts in the DOM and an
+        // unanchored role locator trips strict mode.
+        await expect(page.getByRole("alert").last()).toContainText(
             "Thread dump written to the log file.",
         );
 
@@ -637,7 +636,7 @@ test.describe("System shell", () => {
         await expect(toggle).toHaveText(
             "Disable sensitive data in logs (currently enabled!)",
         );
-        await expect(page.getByRole("alert")).toContainText(
+        await expect(page.getByRole("alert").last()).toContainText(
             "API keys, passwords and usernames will appear unmasked in the log!",
         );
         const disabling = page.waitForResponse(

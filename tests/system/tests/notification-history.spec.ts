@@ -198,28 +198,14 @@ test.describe("Notification history", () => {
         ).toContainText("0 notifications");
     });
 
-    test("should show the same notifications in the legacy route", async ({
-        page,
-    }) => {
-        await page.goto("/");
-        await dismissWelcomeDialog(page);
-        await page
-            .getByRole("link", {name: "History & Stats", exact: true})
-            .click();
-        await page
-            .getByRole("tab", {name: "Notification history", exact: true})
-            .click();
-        const legacyRow = page
-            .getByRole("row", {name: new RegExp(DOWNLOAD_TITLE)})
-            .first();
-        await expect(legacyRow).toBeVisible();
-        // The humanized labels React ships are legacy's own
-        // (`notifications-service.js` `readable`).
-        await expect(legacyRow).toContainText("NZB download");
-        await expect(
-            page.getByRole("row", {name: new RegExp(DISABLED_TITLE)}).first(),
-        ).toContainText("Indexer disabled");
-    });
+    // FM-094: the legacy "should show the same notifications in the legacy
+    // route" test is gone with the legacy shell. It existed to show that the
+    // two shells rendered the same notifications with the same humanized
+    // labels, which stops being a question once only one shell remains, and
+    // every claim it made -- the download entry's row, its "NZB download"
+    // label, and the disabled-indexer entry's "Indexer disabled" label -- is
+    // asserted against React by "should page, refine, and render notification
+    // history safely in React" above, on `notification-history-type`.
 
     test("should capture the notification history visual evidence", async ({
         page,

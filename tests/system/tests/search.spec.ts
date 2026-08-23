@@ -27,11 +27,32 @@ async function openAdvanced(
 test.describe("Search", () => {
     test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
-        await page.goto("/");
+        // FM-094: these tests run against the React shell now, so they inherit
+        // the exposure `results.spec.ts` already documents for FM-091's
+        // one-time "Sorting of TV episodes" help dialog: it is keyed by the
+        // per-session `isGroupEpisodesHelpShown` flag, an open MUI dialog
+        // intercepts pointer events for the rest of the page, and a fresh
+        // Playwright context starts without the flag. Raise it here for the
+        // same reason that file does -- no test in this file is about that
+        // dialog, and `results.spec.ts` owns its dedicated coverage.
+        await page.request.put(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+            {data: true},
+        );
+        // React is the served default now, but the navigation stays explicit so
+        // every test below states which shell it is about.
+        await page.goto("ui/react?redirect=/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
 
+    // FM-094: retargeted from the legacy shell with the `beforeEach` above.
+    // Everything it pins is about the search and saved-search transport --
+    // the request's `searchRequestId`/`loadAll`, the response shape, and the
+    // saved-search POST body -- which no React test asserts, so it is kept
+    // rather than deleted. Only the results summary changes wording: React
+    // renders `search-results-summary` as "N of M loaded" (FM-055's one-phrase
+    // format) where legacy wrote "Loaded N ... of M results".
     test("should search configured indexers and render their results", async ({
         page,
     }) => {
@@ -65,10 +86,7 @@ test.describe("Search", () => {
                 .filter({hasText: "indexer2-result1"}),
         ).toBeVisible();
         await expect(page.getByTestId("search-results-summary")).toContainText(
-            "Loaded 5",
-        );
-        await expect(page.getByTestId("search-results-summary")).toContainText(
-            "of 5 results",
+            "5 of 5 loaded",
         );
 
         const savedSearchResponse = page.waitForResponse(
@@ -87,7 +105,13 @@ test.describe("Search", () => {
         expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
-    test("should save, reopen, rerun, and delete a React saved search with legacy comparison", async ({
+    // FM-094: the legacy-comparison step this test used to carry -- a
+    // `ui/legacy?redirect=/stats/saved-searches` visit asserting the saved
+    // entry was also listed by the AngularJS page -- is gone with the legacy
+    // shell. It compared two shells' rendering of the same record, which stops
+    // being a question once one shell remains; the record's own presence,
+    // reopening, rerun and deletion are all still asserted here against React.
+    test("should save, reopen, rerun, and delete a React saved search", async ({
         page,
     }) => {
         await page.goto("ui/react?redirect=/");
@@ -116,14 +140,6 @@ test.describe("Search", () => {
             page.getByRole("cell", {name: "saved React criteria"}),
         ).toBeVisible();
 
-        await page.goto("ui/legacy?redirect=/stats/saved-searches");
-        await expect(page).toHaveURL(/\/stats\/saved-searches$/);
-        await expect(page.getByText("saved React criteria")).toBeVisible();
-
-        await page.goto("ui/react?redirect=/stats/saved-searches");
-        await expect(
-            page.getByRole("heading", {name: "Saved searches"}),
-        ).toBeVisible();
         await page.getByRole("button", {name: "Search"}).click();
         await expect(page.getByTestId("search-query")).toHaveValue(
             "saved React criteria",
@@ -1234,12 +1250,11 @@ test.describe("Search", () => {
         const firstQuery = "fm051 first query alpha";
         const secondQuery = "fm051 second query beta";
 
-        // The shared `beforeEach`'s bare `page.goto("/")` does not carry the
-        // `nzbhydra-ui=react` cookie (`MainWeb.isReactSelected` defaults to
-        // legacy without it), and this defect exists only in
-        // `SearchWorkspace.tsx`/`SearchPage.tsx` -- legacy's `getSearchQuery()`
-        // already has no fallback chain. Select React explicitly, the same
-        // way the ADR-0012 keyboard test above does.
+        // This defect exists only in `SearchWorkspace.tsx`/`SearchPage.tsx` --
+        // legacy's `getSearchQuery()` already had no fallback chain -- so the
+        // shell is named at the point of navigation. FM-094 repointed the
+        // shared `beforeEach` at the same entry point, which used to reach the
+        // legacy shell through a bare `page.goto("/")`.
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
         await expect(page.getByTestId("search-query")).toBeVisible();
@@ -1280,6 +1295,9 @@ test.describe("Search", () => {
         await expect(page.getByTestId("search-query")).toHaveValue(secondQuery);
     });
 
+    // FM-094: retargeted from the legacy shell with the `beforeEach` above.
+    // `indexer-limit-warnings` is a surface both shells render and no React
+    // test covers it, so the test is kept rather than deleted.
     test("should warn when indexer API hit or download limits are nearly exhausted", async ({
         hydra,
         page,
@@ -1309,148 +1327,34 @@ test.describe("Search", () => {
         await expect(warnings).toContainText(/Mock2 has \d+ downloads left\./);
     });
 
-    test("should preselect configured source quick filters", async ({
-        hydra,
-        page,
-    }) => {
-        const config = await hydra.getConfig();
-        const searching = config.searching as Record<string, unknown>;
-        searching.showQuickFilterButtons = true;
-        searching.alwaysShowQuickFilterButtons = true;
-        searching.preselectQuickFilterButtons = ["source|web"];
-        await hydra.saveConfig(config);
-        await page.reload();
-        await expect(page.getByTestId("search-query")).toBeVisible();
-
-        await page.getByTestId("search-query").fill("movies");
-        await page.getByTestId("search-submit").click();
-
-        await expect(page.getByTestId("search-status-modal")).toBeHidden();
-        await expect(
-            page.getByRole("button", {name: "WEB", exact: true}),
-        ).toHaveClass(/active/);
-
-        const resultTitles = page.getByTestId("search-result-title");
-        await expect(resultTitles.first()).toBeVisible();
-        const titles = await resultTitles.allTextContents();
-        expect(titles).not.toEqual([]);
-        expect(
-            titles.every((title) => title.toLowerCase().includes("web-dl")),
-        ).toBe(true);
-    });
-
-    test("should apply later quick filters after deselecting quality and other filters", async ({
-        hydra,
-        page,
-    }) => {
-        const config = await hydra.getConfig();
-        const searching = config.searching as Record<string, unknown>;
-        searching.showQuickFilterButtons = true;
-        searching.alwaysShowQuickFilterButtons = true;
-        searching.customQuickFilterButtons = ["BLURAY=bluray"];
-        searching.preselectQuickFilterButtons = [
-            "quality|q720p",
-            "other|q3d",
-            "custom|BLURAY",
-        ];
-        await hydra.saveConfig(config);
-        await page.reload();
-        await expect(page.getByTestId("search-query")).toBeVisible();
-
-        await page.getByTestId("search-query").fill("movies");
-        await page.getByTestId("search-submit").click();
-
-        await expect(page.getByTestId("search-status-modal")).toBeHidden();
-        await page.getByRole("button", {name: "720p", exact: true}).click();
-
-        const resultTitles = page.getByTestId("search-result-title");
-        await expect
-            .poll(async () => {
-                const titles = await resultTitles.allTextContents();
-                return (
-                    titles.length > 0 &&
-                    titles.every((title) =>
-                        title.toLowerCase().includes("3d bluray"),
-                    )
-                );
-            })
-            .toBe(true);
-
-        await page.getByRole("button", {name: "3D", exact: true}).click();
-        await expect
-            .poll(async () => {
-                const titles = await resultTitles.allTextContents();
-                return (
-                    titles.length > 0 &&
-                    titles.every((title) =>
-                        title.toLowerCase().includes("bluray"),
-                    )
-                );
-            })
-            .toBe(true);
-    });
-
-    test("should select a movie autocomplete result and search by TMDB identifier", async ({
-        page,
-    }) => {
-        await page.getByTestId("search-category-control").click();
-        await page.getByTestId("search-category-option-Movies").click();
-        await page.locator("#minsize").fill("");
-        await page.locator("#maxsize").fill("");
-
-        const searchQuery = page.getByTestId("search-query");
-        await searchQuery.fill(movieQuery.slice(0, -1));
-        const autocompleteResponse = page.waitForResponse(
-            (response) =>
-                response.request().method() === "GET" &&
-                new URL(response.url()).pathname ===
-                    "/internalapi/autocomplete/MOVIE",
-        );
-        await searchQuery.press("End");
-        await searchQuery.type(movieQuery.slice(-1));
-
-        const response = await autocompleteResponse;
-        expect(response.status()).toBe(200);
-        expect(response.headers()["content-type"]).toContain(
-            "application/json",
-        );
-        const autocomplete = (await response.json()) as Array<{
-            title?: string;
-            tmdbId?: string;
-            year?: number;
-        }>;
-        expect(autocomplete).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    title: movieQuery,
-                    tmdbId: "424242",
-                    year: 2000,
-                }),
-            ]),
-        );
-
-        const movieOption = page.locator(
-            '[data-testid="autocomplete-option"][data-tmdb-id="424242"]',
-        );
-        await expect(movieOption).toBeVisible();
-        await movieOption.click();
-        await expect(searchQuery).toHaveValue(movieQuery);
-        await expect(page.getByTestId("additional-query")).toBeVisible();
-
-        const searchResponse = page.waitForResponse((response) =>
-            isSearchResponse(response),
-        );
-        await page.getByTestId("search-submit").click();
-        const searchRequest = (await searchResponse).request();
-        expect(searchRequest.postData()).toContain('"tmdbId":"424242"');
-
-        await expect(page.getByTestId("search-status-modal")).toBeHidden();
-        await expect(
-            page
-                .getByTestId("search-result-title")
-                .filter({hasText: "Hydra Downloader Integration Movie"}),
-        ).toBeVisible();
-    });
+    // FM-094: three legacy-shell tests stood here and are disposed of as
+    // follows.
+    //
+    // "should preselect configured source quick filters" is deleted: its rule
+    // -- a quick filter named in `preselectQuickFilterButtons` comes up
+    // pressed and already filtering -- is asserted against React by
+    // `results.spec.ts`'s "should sort every column and filter deterministic
+    // React results", which preselects one button from each of the four
+    // families (source, quality, other, custom), asserts all four are
+    // `aria-pressed`, and asserts the single title they leave standing.
+    //
+    // "should apply later quick filters after deselecting quality and other
+    // filters" is kept but moved to `results.spec.ts` next to the other
+    // retargeted quick-filter test, because under ADR-0009 the quick filters
+    // are part of the refine sidebar and that file owns the sidebar's
+    // helpers. Its rule -- deselecting one family's filter leaves the
+    // remaining families still filtering -- has no other coverage.
+    //
+    // "should select a movie autocomplete result and search by TMDB
+    // identifier" is deleted: the React test directly below drives the same
+    // real-backend MOVIE autocomplete, the same `data-tmdb-id` option, the
+    // same `additional-query` reveal and the same `"tmdbId":"424242"` search
+    // body, and additionally pins the backend's explicit-null serialization.
+    // Its one assertion the React sibling does not make -- that the identifier
+    // search really renders the movie -- could not be carried over, for a
+    // reason recorded at that test and in the handoff's Follow-Up Work: it
+    // depends on clearing the category's size range, which React submits
+    // anyway.
 
     test("should select a movie autocomplete result through the React route and search by TMDB identifier", async ({
         page,
@@ -1504,6 +1408,19 @@ test.describe("Search", () => {
         await page.getByTestId("search-submit").click();
         const searchRequest = (await searchResponse).request();
         expect(searchRequest.postData()).toContain('"tmdbId":"424242"');
+        // FM-094: the deleted legacy autocomplete test also asserted that this
+        // identifier search really returns "Hydra Downloader Integration
+        // Movie". That step could not be carried over, and the reason is a
+        // finding, not a shortcut: legacy reached it by clearing its
+        // `#minsize`/`#maxsize` inputs first, and React has no working
+        // equivalent -- clearing the Advanced panel's Min/Max size fields, or
+        // deleting the `search-chip-size` constraint chip, both leave the
+        // submitted request carrying the Movies category's 500-20000 MB preset
+        // (`SearchWorkspace.tsx`'s `field("minsize") || preset...` fallback),
+        // which rejects this deterministic 12 KB result. Both attempts were run
+        // against the real backend, which logged
+        // `minsize=500, maxsize=20000` either way. Carried in the handoff's
+        // Follow-Up Work as a single-session-fix candidate.
     });
 
     test("should select a TV autocomplete result with the keyboard and search by TVDB identifier", async ({

@@ -6,6 +6,11 @@ import {
     visualViewports,
 } from "./visualEvidence";
 
+// FM-094: this is the one test in the suite whose bare `page.goto("/")` is
+// deliberate rather than incidental. It now asserts the new default -- a
+// request carrying no `nzbhydra-ui` cookie is served the React shell, whose
+// nav renders these two links -- where before the flip it asserted the legacy
+// shell's. Every other test states its shell through `ui/react?redirect=...`.
 test("should load the application shell", async ({page, hydra}) => {
     await page.goto("/");
     await dismissWelcomeDialog(page);
@@ -42,8 +47,9 @@ test("should open with no startup dialog once the welcome was shown", async ({
             "/internalapi/genericstorage/FAILED_BACKUP",
         ),
     );
-    // `/` still serves the legacy UI, which runs its own checks footer; the
-    // React shell is the one this asserts about.
+    // FM-094: `/` serves React now, so this entry point no longer switches
+    // shells -- it is kept because it states, at the point of navigation,
+    // which shell the assertions below are about.
     await page.goto("ui/react?redirect=/");
     await expect(page).toHaveURL(/\/$/);
     await lastCheck;
@@ -88,9 +94,12 @@ test.describe("Branded app shell visual evidence", () => {
             });
 
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("/");
-                await dismissWelcomeDialog(page);
+                // FM-094: the preceding bare `page.goto("/")` existed only to
+                // dismiss the welcome dialog before switching shells; with
+                // React served by default that first navigation was a second
+                // load of the same shell, so it is gone.
                 await page.goto("ui/react?redirect=/");
+                await dismissWelcomeDialog(page);
                 await expect(page).toHaveURL(/\/$/);
                 await expect(page.getByRole("banner")).toBeVisible();
             });

@@ -813,11 +813,63 @@ Format, one entry per fix:
   **`shell-selector.spec.ts` could not be repaired the way it was last time.** It deep-linked at whichever route was still unmigrated, asserted the migration placeholder there, and clicked the placeholder's "Switch to legacy UI" link to return. That shape went stale twice: FM-024 took `/stats/stats?period=day` (repointed 2026-08-21, see above), and FM-077 then took `/system/tasks` as well, leaving the file red since `e28d70345` — it asserted the real Tasks body and then clicked a link only `MigrationPlaceholder` renders. There is no third route to repoint at, which is itself a migration-completeness signal. Split instead into three tests: the canonical deep link serves the React shell; `ui/legacy` switches back; and the placeholder's own link still works where the placeholder still lives. The middle one now exercises the **endpoint** rather than the link, which is the selector's actual contract and cannot go stale as routes migrate — the failure mode that broke this file twice. One correction found by probing rather than assuming: a path matching no route at all renders an empty document, not the placeholder, so the third test uses an unknown `stats/$tab`, which does render it.
   FM-094's packet folds this same `shell-selector.spec.ts` repair into its own scope and is now stale on that point; it needs a designer pass to drop it before FM-094 is implemented.
 
+### 2026-08-23 — Repair four failing system specs, two of them a regression this batch introduced
+
+- **Why not a packet:** test-only repairs — a shared fixture guard, two locator scopings, and toast-locator anchoring; no product code, contract, or `data-testid` touched.
+- **Paths:** `tests/system/tests/{focus-indication,system,stats}.spec.ts`.
+- **Gates:** `tests/system` `npx tsc --noEmit` clean; `prettier` clean; real-backend runs via `misc/run_gui_systemtest.py --runtime existing`: `focus-indication` 10/10, the three specs together 30/30, and the **full suite 154 passed / 2 failed**, the two remaining being `search-history.spec.ts:19` and `:68`, which are FM-094's own declared disposition work and not baseline failures.
+- **Commit:** `6742ebab4`
+- **Note:** the coordinator had told four subagents the suite had no known-red baselines, having verified only the specs it had itself repaired and never run the suite. FM-094's implementer reported four failures; the coordinator initially repeated its "pre-existing" framing. Both were wrong, and the distinction matters:
+  **Two were caused by this batch.** `focus-indication.spec.ts:797` and `:1084` broke on FM-091. That file's `mockSearchResponse` fixture returns a `category: "TV"` result and grouping defaults on, so every search in it is eligible for FM-091's new one-time help dialog — which is modal and traps focus, fatal to a spec whose entire method is walking focus with Tab. Proof: `"Sorting of TV episodes"` appears in both failing page snapshots. FM-091's own reviewer ran `results.spec.ts`, the packet's declared spec, and passed it; the `beforeEach` flag guard was added only there. Fixed by adding the same guard here, with the reason recorded at the site.
+  **Two were genuinely older.** `focus-indication.spec.ts:1047` is the previously-logged `NewsDialog` anchor duplication — but the logged fix ("scope the locator") is insufficient on its own: the dialog also traps focus, so the anchor must be dismissed, not merely disambiguated. A first attempt guarded the dismissal behind `isVisible()`, which polls once and loses the race against the startup checks that raise the dialog after `goto` returns; it is now awaited, which is deterministic because the test mocks a `forCurrentVersion` entry into a fresh session. `system.spec.ts:591` was FM-084 toast stacking again — the earlier sweep matched only `getByText("Configuration saved.")` and missed `getByRole("alert")`, so those `toContainText` assertions are now anchored with `.last()` here and in `stats.spec.ts`. The `toHaveCount(0)` alert assertions in `search.spec.ts` are deliberately left unanchored: they count all alerts, and `.last()` would silently change their meaning.
+  **A poisoned shared instance** was the last layer: `system.spec.ts`'s sensitive-logging test enables the setting and disables it at the end, so the earlier strict-mode failure left it enabled and the next run failed on its own precondition. Reset via the real endpoint. The fragility is real — a failed run poisons later ones — and is recorded as a candidate below.
+  Incidental: `prettier --write` on `system.spec.ts` and `stats.spec.ts` also reformatted pre-existing unformatted lines (~11 and ~20 lines), partially touching the 2026-08-18 candidate about `tests/system` specs never having been Prettier-formatted. Disclosed rather than reverted; it is mechanical and leaves both files consistent with the repo's own config.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
+- **React's bulk send ignores the downloader's configured default category.** With `category: null` ("Use downloader default")
+  the server sends SABnzbd no `cat` parameter at all, so Hydra's configured `defaultCategory` has no effect; legacy sent it
+  explicitly from the client. Evidence: the SABnzbd mock recorded `{apikey, mode: "addfile", nzbname, output, priority}` with no
+  `cat`. Surfaced by FM-094, which had to drop `downloads.spec.ts`'s `cat: testEnvironment.sabnzbdMockCategory` assertion and
+  could name no surviving test that covers it. The fix crosses `DownloadActions.tsx` and the server path that resolves a null
+  category, so per README's *Choosing A Mechanism* it is a **packet**, not a quickfix.
+- **A cleared search size constraint is still submitted.** Clearing the Advanced panel's Min/Max size fields, or deleting the
+  `search-chip-size` chip, both leave the request carrying the category's preset — the backend logged `minsize=500,
+  maxsize=20000` in both attempts against a Movies-category identifier search. Likely `SearchWorkspace.tsx`'s
+  `minsize: field("minsize") || (preset?.minSizePreset?.toString() ?? "")` fallback. This is why FM-094 could not carry the
+  deleted legacy autocomplete test's "the identifier search really returns the movie" assertion into its React sibling; once
+  fixed, restore it to `search.spec.ts`'s TMDB-identifier test.
+- **React's bulk send leaves the sent rows unmarked.** The row "Downloaded" chip is raised only by the direct NZB/torrent
+  transfer, so legacy's per-row `.sabnzbd-success` feedback has no counterpart after a bulk send
+  (`SearchResults.tsx`'s `onDownloaded` mapping from `addedIds` back to `searchResultId`s).
+- **`searching.loadLimitInternal` is editable but consumed nowhere.** React's Config > Searching tab edits it; the results view
+  ignores it, where legacy used it as the displayed page size. FM-094 deleted the last test covering it
+  (`results.spec.ts`'s title-group page-size test, which used no legacy-only selectors and failed only for this reason), so
+  nothing now evidences the gap. **Needs an owner ruling** — honour the setting or declare it backend-only — plus a registry
+  line either way, so this is a packet rather than a quickfix.
+- **`system.spec.ts:312` is log-volume fragile.** It failed once during FM-094's verification and passed on an identical rerun:
+  `toContainText("NZBHydra")` against `system-log-view-raw` depends on the current log file not having rotated its startup
+  banner away by the time the test runs, which the suite's own log volume decides. Assert on something the current file always
+  carries instead.
+- **`playwright.config.ts`'s `globalTimeout: 300_000` is below the suite's own runtime** (~4.2 minutes green, and the value
+  bounds the whole run), so any documented full-suite command needs `--global-timeout=1800000` to finish at all; without it the
+  run ends `timedout` with reporters unflushed. Raise it or split the suite. Deferred explicitly by FM-094.
+- **Stale "the default is legacy" comments** in `focus-indication.spec.ts:29-32` and `notched-label-geometry.spec.ts:185-186`.
+  Their `ui/react?redirect=…` navigations remain correct; only the stated reasons are now wrong after FM-094 flipped the
+  default.
+- **Two small unclaimed coverage trims from FM-094's deletions**, both cosmetic: `search-history.spec.ts:67-69` creates
+  `historyResponse` and never awaits it (dangling promise, pre-existing at baseline), and the React autocomplete sibling
+  (`search.spec.ts:1377-1394`) asserts `tmdbId` and the explicit-null shape but not the deleted test's `title`, `year`, or
+  `content-type: application/json`.
+- **`system.spec.ts`'s sensitive-data-logging test poisons the shared instance when it fails.** It enables the setting, asserts, and
+  disables it at the end, so any mid-test failure leaves `SensitiveDataRemovingPatternLayoutEncoder` disabled on the running
+  instance and the next run fails on its own precondition (`toHaveText("Enable sensitive data in logs")` against a toggle already
+  reading "Disable ..."). Observed 2026-08-23; reset by hand via `PUT /internalapi/debuginfos/sensitiveDataLogging?enabled=false`.
+  The durable fix is a fixture that restores the setting regardless of outcome, which is the same shape as any other
+  server-mutating test in this suite — worth a sweep for others rather than fixing this one alone.
 - **`POST /loggedout` (`core/src/main/java/org/nzbhydra/web/MainWeb.java:92`) is dead server code.** It invalidates the session,
   answers 401 with a `WWW-Authenticate: Basic` challenge, and clears the `remember-me`/`JSESSIONID` cookies — the standard trick
   for making a browser drop cached BASIC credentials. Nothing has ever called it: a case-insensitive sweep of `core/ui-src`

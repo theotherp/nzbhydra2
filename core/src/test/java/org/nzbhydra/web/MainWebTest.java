@@ -52,11 +52,50 @@ class MainWebTest {
     }
 
     @Test
-    void shouldRenderLegacyShellByDefault() {
+    void shouldRenderReactShellByDefault() {
         prepareShellRendering();
         when(request.getCookies()).thenReturn(null);
 
+        assertThat(testee.index(session, principal, request)).isEqualTo("react");
+    }
+
+    @Test
+    void shouldRenderReactShellForEveryShellMappingByDefault() {
+        prepareShellRendering();
+        when(request.getCookies()).thenReturn(null);
+
+        assertThat(testee.config(session, principal, request)).isEqualTo("react");
+        assertThat(testee.system(session, principal, request)).isEqualTo("react");
+        assertThat(testee.stats(session, principal, request)).isEqualTo("react");
+        assertThat(testee.index2(session, principal, request)).isEqualTo("react");
+    }
+
+    @Test
+    void shouldRenderReactShellForAnUnrecognizedCookieValue() {
+        prepareShellRendering();
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(MainWeb.UI_SELECTOR_COOKIE, "something-else")});
+
+        assertThat(testee.index(session, principal, request)).isEqualTo("react");
+    }
+
+    @Test
+    void shouldRenderReactShellWhenAnotherCookieIsPresent() {
+        prepareShellRendering();
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie("JSESSIONID", "abc")});
+
+        assertThat(testee.index(session, principal, request)).isEqualTo("react");
+    }
+
+    @Test
+    void shouldRenderLegacyShellForTheLegacyCookie() {
+        prepareShellRendering();
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(MainWeb.UI_SELECTOR_COOKIE, "legacy")});
+
         assertThat(testee.index(session, principal, request)).isEqualTo("index");
+        assertThat(testee.config(session, principal, request)).isEqualTo("index");
+        assertThat(testee.system(session, principal, request)).isEqualTo("index");
+        assertThat(testee.stats(session, principal, request)).isEqualTo("index");
+        assertThat(testee.index2(session, principal, request)).isEqualTo("login");
     }
 
     @Test

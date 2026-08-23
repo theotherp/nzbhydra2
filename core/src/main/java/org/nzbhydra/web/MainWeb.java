@@ -139,17 +139,23 @@ public class MainWeb {
         return isReactSelected(request) ? "react" : "index";
     }
 
+    /**
+     * React is the default shell (ADR-0001 stage one, accepted by ADR-0023): only an explicit
+     * {@code legacy} cookie value still serves the legacy AngularJS shell, so a request with no
+     * cookie -- or with a value from neither shell -- gets React. The rollback path is unchanged:
+     * {@code /ui/legacy} writes that cookie and every mapping keeps honoring it.
+     */
     private boolean isReactSelected(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return false;
+            return true;
         }
         for (Cookie cookie : cookies) {
             if (UI_SELECTOR_COOKIE.equals(cookie.getName())) {
-                return REACT_UI.equals(cookie.getValue());
+                return !LEGACY_UI.equals(cookie.getValue());
             }
         }
-        return false;
+        return true;
     }
 
     private String safeRedirectPath(String redirect) {

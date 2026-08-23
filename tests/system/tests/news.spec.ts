@@ -15,7 +15,14 @@ const newsPayload = [
     },
 ];
 
-test("should render deterministic news in legacy and React shells without overflow", async ({
+// FM-094: this used to assert the same news payload in the legacy shell first
+// and then in React. The legacy half -- a bare `system/news` navigation plus
+// the two version headings, the safe link, and the no-horizontal-overflow
+// check against the AngularJS page -- is gone with the legacy shell it was
+// about. Every claim it made about the payload is still made below against
+// React: both headings, the safe link (reached by keyboard at the end), and
+// the same `scrollWidth <= clientWidth` check at desktop and at 390px.
+test("should render deterministic news in the React shell without overflow", async ({
     page,
 }, testInfo) => {
     const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
@@ -30,20 +37,6 @@ test("should render deterministic news in legacy and React shells without overfl
     });
 
     await page.setViewportSize({width: 1280, height: 800});
-    await page.goto(applicationUrl("system/news"));
-    await expect(
-        page.getByRole("heading", {name: /2\.0\.0.*This version/}),
-    ).toBeVisible();
-    await expect(
-        page.getByRole("heading", {name: /2\.1\.0.*Newer version/}),
-    ).toBeVisible();
-    await expect(page.getByRole("link", {name: "safe link"})).toBeVisible();
-    expect(
-        await page
-            .locator("html")
-            .evaluate((element) => element.scrollWidth <= element.clientWidth),
-    ).toBe(true);
-
     await page.goto(applicationUrl("ui/react?redirect=/system/news"));
     await expect(page).toHaveURL(/\/system\/news$/);
     // FM-072: the React news page keeps its URL but now renders as the News

@@ -26,15 +26,22 @@ test.describe("UI shell selector", () => {
     }, testInfo) => {
         const url = urls(testInfo.project.use.baseURL);
 
-        await page.goto(url(""));
-        await expect(page.locator("#wrap")).toBeVisible();
-
+        // FM-094: React is the default shell now (ADR-0001 stage one, accepted
+        // by ADR-0023), so a request carrying no `nzbhydra-ui` cookie serves it
+        // -- this opening navigation is where the file used to assert legacy's
+        // `#wrap`. Waiting for the React entry asset here rather than after the
+        // deep link keeps the assertion deterministic: this is the context's
+        // first load of it, so it cannot be answered from the browser cache.
         const reactAsset = page.waitForResponse(
             (response) =>
                 new URL(response.url()).pathname.endsWith(
                     "/static/react/assets/index.js",
                 ) && response.status() === 200,
         );
+        await page.goto(url(""));
+        await expect(page.getByTestId("app-shell-nav")).toBeVisible();
+        await reactAsset;
+
         await page.goto(url("ui/react?redirect=/system/tasks"));
         await expect(page).toHaveURL(/\/system\/tasks$/);
         // The deep link lands on the route's real body. Asserting the migrated
@@ -42,7 +49,6 @@ test.describe("UI shell selector", () => {
         // further routes migrate: it says "React served this route", not
         // "React has not implemented this route yet".
         await expect(page.getByTestId("system-tasks-table")).toBeVisible();
-        await reactAsset;
     });
 
     test("should switch back to the legacy shell and keep the deep link", async ({

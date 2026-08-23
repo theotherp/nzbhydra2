@@ -1,6 +1,8 @@
 # React GUI Status
 
-Start at the configured NZBHydra base URL. Append `/ui/react` to select the React GUI, or `/ui/legacy` to return to the legacy GUI.
+The React GUI is the default: the configured NZBHydra base URL serves it, and so does every canonical route, without any
+opt-in. Append `/ui/legacy` to switch back to the legacy GUI — the choice is remembered in the `nzbhydra-ui` cookie, and
+`/ui/react` switches forward again.
 
 Currently available in React:
 

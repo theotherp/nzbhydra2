@@ -525,8 +525,19 @@ async function expectFocusedOutlinedInput(
 }
 
 test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
-    test.beforeEach(async ({hydra}) => {
+    test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
+        // FM-091 added a one-time "Sorting of TV episodes" help dialog that
+        // opens on the first eligible TV search and, being modal, traps focus
+        // -- which is fatal to a spec whose whole method is walking focus with
+        // Tab. This file's `mockSearchResponse` fixture returns a `category:
+        // "TV"` result and grouping defaults on, so every search here is
+        // eligible. Pre-raise the per-user flag so the dialog stays closed,
+        // exactly as `results.spec.ts` does for the same reason.
+        await page.request.put(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+            {data: true},
+        );
     });
 
     test("should render the authored ring on the search route's ButtonBase family and the focused border on its input family at both viewports", async ({
@@ -1066,7 +1077,27 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         });
         await page.setViewportSize(visualViewports.desktop);
         await page.goto("ui/react?redirect=/system/news");
-        const anchor = page.locator("a[href='https://example.invalid/fm053']");
+        // FM-079's startup `NewsDialog` renders the same server-authored HTML
+        // from the same mocked payload, and it does two things to this test:
+        // its copy of the anchor makes an unscoped locator resolve to two
+        // elements, and being modal it traps focus so Tab can never reach the
+        // page's own anchor. Dismissing it fixes both; scoping alone fixed
+        // only the first. The dialog is portalled outside `system-shell`, so
+        // the scope below then selects the page's anchor unambiguously.
+        // Awaited, not polled once with `isVisible()`: the dialog is raised by
+        // the startup checks, which resolve after `goto` returns, so a single
+        // synchronous check races them and usually loses.  It is deterministic
+        // here -- the route above mocks a `forCurrentVersion` entry and each
+        // test gets a fresh session -- so it is asserted rather than guarded.
+        const newsDialog = page.getByTestId("news-dialog");
+        await expect(newsDialog).toBeVisible();
+        await newsDialog
+            .getByRole("button", {name: "Close", exact: true})
+            .click();
+        await expect(newsDialog).toBeHidden();
+        const anchor = page
+            .getByTestId("system-shell")
+            .locator("a[href='https://example.invalid/fm053']");
         await expect(anchor).toBeVisible();
         const probe = await probeFocus(page, anchor);
         expectAuthoredFocusRing("news-page bare anchor", probe, OUTSET_OFFSET);

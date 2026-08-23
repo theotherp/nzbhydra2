@@ -20,8 +20,14 @@ const statisticSwitches = [
     "userAgentDownloadShares",
 ];
 
+// FM-094: what this pins -- that the stats route sends every statistic switch
+// plus `includeDisabled` as a boolean -- is a request-shape claim, not a shell
+// one, and React makes it too. So it is kept and its bare `page.goto("/")`,
+// which reached the legacy shell before the default flip and would now reach
+// React silently, is repointed at `ui/react?redirect=/` so the test states
+// which shell it runs against. Every assertion is unchanged.
 test("should send a complete stats request", async ({page}) => {
-    await page.goto("/");
+    await page.goto("ui/react?redirect=/");
     await dismissWelcomeDialog(page);
 
     const statsResponse = page.waitForResponse(
@@ -83,7 +89,10 @@ test("should render React indexer statuses and canonical history tabs responsive
         page.getByRole("table", {name: "Indexer statuses"}),
     ).toContainText("Quota reached");
     await expect(page.getByLabel("VIP access expired")).toBeVisible();
-    await expect(page.getByRole("alert")).toContainText("malformed");
+    // Anchored to the most recent toast: FM-084 made toasts stack, so a second
+    // one raised in the same test leaves two alerts in the DOM and an
+    // unanchored role locator trips strict mode.
+    await expect(page.getByRole("alert").last()).toContainText("malformed");
 
     await page.setViewportSize({width: 390, height: 844});
     expect(
@@ -166,7 +175,9 @@ function statsResponseFixture(overrides: Record<string, unknown> = {}) {
         searchSharesPerUser: [{key: "bob", count: 3, percentage: 60}],
         searchSharesPerIp: [{key: "1.2.3.4", count: 3, percentage: 60}],
         userAgentSearchShares: [{userAgent: "curl", count: 1, percentage: 100}],
-        userAgentDownloadShares: [{userAgent: "curl", count: 1, percentage: 100}],
+        userAgentDownloadShares: [
+            {userAgent: "curl", count: 1, percentage: 100},
+        ],
         ...overrides,
     };
 }
@@ -186,12 +197,12 @@ test.describe("React aggregate statistics dashboard", () => {
         });
         await page.goto(applicationUrl("ui/react?redirect=/stats/stats"));
         await expect(page).toHaveURL(/\/stats\/stats$/);
-        await expect(page.getByTestId("stats-tile-total-searches")).toContainText(
-            "13",
-        );
-        await expect(page.getByTestId("stats-tile-total-downloads")).toContainText(
-            "7",
-        );
+        await expect(
+            page.getByTestId("stats-tile-total-searches"),
+        ).toContainText("13");
+        await expect(
+            page.getByTestId("stats-tile-total-downloads"),
+        ).toContainText("7");
         await expect(
             page.getByRole("table", {name: "Indexer statistics"}),
         ).toContainText("Alpha");
@@ -298,10 +309,14 @@ test.describe("React aggregate statistics dashboard", () => {
         expect(disabledBody.includeDisabled).toBe(true);
 
         await page.getByTestId("stats-date-preset-custom").click();
-        const afterInput = page.getByTestId("stats-custom-after").locator("input");
+        const afterInput = page
+            .getByTestId("stats-custom-after")
+            .locator("input");
         await afterInput.fill("2099-01-01");
         await expect(
-            page.getByText("The After date must be earlier than the Before date."),
+            page.getByText(
+                "The After date must be earlier than the Before date.",
+            ),
         ).toBeVisible();
     });
 
@@ -319,7 +334,9 @@ test.describe("React aggregate statistics dashboard", () => {
         });
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto(applicationUrl("ui/react?redirect=/stats/stats"));
+                await page.goto(
+                    applicationUrl("ui/react?redirect=/stats/stats"),
+                );
                 await dismissWelcomeDialog(page);
                 await expect(page.getByTestId("stats-dashboard")).toBeVisible();
                 await expect(
@@ -327,7 +344,10 @@ test.describe("React aggregate statistics dashboard", () => {
                 ).toBeVisible();
             });
             await page.screenshot({
-                path: visualEvidencePath("F-STATS-MAIN", `dashboard-${viewport}`),
+                path: visualEvidencePath(
+                    "F-STATS-MAIN",
+                    `dashboard-${viewport}`,
+                ),
                 fullPage: true,
             });
         }
