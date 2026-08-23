@@ -14,6 +14,14 @@ export type SearchRequest = Required<
         "category" | "loadAll" | "searchRequestId"
     >;
 
+/**
+ * `SearchResultWebTO.hasNfo` carries the name of the backend's `HasNfo` enum.
+ * Legacy's directive additionally tested a `has_nfo === 0` field
+ * (`search-result.js:150`) that no response has ever contained — dead code, not
+ * carried over. Only these three names are real.
+ */
+export type HasNfo = "YES" | "MAYBE" | "NO";
+
 export type SearchResult = {
     searchResultId: string;
     title: string;
@@ -24,6 +32,17 @@ export type SearchResult = {
     epoch?: number;
     grabs?: number;
     seeders?: number;
+    /** Torrent leechers, shown beside `seeders` in the Details column. */
+    peers?: number;
+    /** The *number* of comments, which only gates the comments link's dimming. */
+    comments?: number;
+    /** The indexer's comments page for this result. */
+    comments_link?: string;
+    /** The indexer's details page for this result. */
+    details_link?: string;
+    /** The usenet poster/source string a Binsearch query is built from. */
+    source?: string;
+    hasNfo?: HasNfo;
     hash?: number;
     downloadType?: string;
     showtitle?: string;
@@ -156,6 +175,41 @@ const resultSchema = z.object({
         .finite()
         .nonnegative()
         .nullish()
+        .transform((value) => value ?? undefined),
+    peers: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    comments: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    comments_link: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    details_link: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    source: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    // An unknown value is dropped rather than rejecting the whole result: a
+    // result whose NFO availability cannot be classified still displays, with
+    // the NFO action treated exactly like "NO" (see `nfoTooltip`).
+    hasNfo: z
+        .enum(["YES", "MAYBE", "NO"])
+        .nullish()
+        .catch(undefined)
         .transform((value) => value ?? undefined),
     hash: z
         .number()

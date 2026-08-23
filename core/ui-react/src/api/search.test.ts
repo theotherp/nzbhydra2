@@ -109,6 +109,82 @@ describe("search API", () => {
         ]);
     });
 
+    it("should preserve the detail-link fields the result row renders", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "detailed",
+                    title: "A result",
+                    grabs: 12,
+                    seeders: 4,
+                    peers: 9,
+                    comments: 5,
+                    comments_link: "https://indexer.test/details#comments",
+                    details_link: "https://indexer.test/details",
+                    source: "poster@example.invalid",
+                    hasNfo: "YES",
+                },
+                {
+                    searchResultId: "bare",
+                    title: "Another result",
+                    peers: null,
+                    comments: null,
+                    comments_link: null,
+                    details_link: null,
+                    source: null,
+                    hasNfo: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                peers: 9,
+                comments: 5,
+                comments_link: "https://indexer.test/details#comments",
+                details_link: "https://indexer.test/details",
+                source: "poster@example.invalid",
+                hasNfo: "YES",
+            }),
+            expect.objectContaining({
+                searchResultId: "bare",
+                peers: undefined,
+                comments: undefined,
+                comments_link: undefined,
+                details_link: undefined,
+                source: undefined,
+                hasNfo: undefined,
+            }),
+        ]);
+    });
+
+    it("should keep only the three real hasNfo states and drop anything else", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {searchResultId: "yes", title: "Yes", hasNfo: "YES"},
+                {searchResultId: "maybe", title: "Maybe", hasNfo: "MAYBE"},
+                {searchResultId: "no", title: "No", hasNfo: "NO"},
+                // Legacy also tested a `has_nfo === 0` field no response ever
+                // sent; neither it nor any other value is carried over, and
+                // the result itself still displays.
+                {
+                    searchResultId: "dead",
+                    title: "Dead",
+                    has_nfo: 0,
+                    hasNfo: "PERHAPS",
+                },
+            ],
+        });
+        expect(response.searchResults.map((result) => result.hasNfo)).toEqual([
+            "YES",
+            "MAYBE",
+            "NO",
+            undefined,
+        ]);
+        expect(response.malformedResultCount).toBe(0);
+    });
+
     it("should preserve valid optional grouping fields without rejecting the result", () => {
         const response = parseSearchResponse({
             ...responseEnvelope,

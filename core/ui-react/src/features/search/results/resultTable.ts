@@ -473,3 +473,44 @@ export function formatResultSize(bytes: number | null | undefined): string {
     const value = bytes / (unit > 0 ? 1024 ** unit : 1);
     return `${Math.round(value * 100) / 100} ${RESULT_SIZE_UNITS[unit]}`;
 }
+
+// Legacy's `kify` filter (`core/ui-src/js/nzbhydra.js:317-324`): a value
+// *greater than* 1000 is rendered in thousands, everything else verbatim. The
+// boundary is deliberately `> 1000`, so 1000 stays "1000" and 1001 becomes
+// "1k" -- reproduced exactly rather than rounded to the nearest sensible rule.
+export function kify(value: number | null | undefined): string {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return "";
+    }
+    return value > 1000 ? `${Math.round(value / 1000)}k` : String(value);
+}
+
+/**
+ * The Details cell legacy renders at `search-result.html:53-63`: the grab
+ * count, then ` / `, then `seeders / peers` -- each part only when its value is
+ * present. React previously collapsed the whole cell to `seeders ?? grabs`,
+ * which showed one number and silently dropped the other two.
+ *
+ * The one place this is not a byte-for-byte port: legacy pipes a missing
+ * `peers` through `kify` too, which renders nothing and leaves a dangling
+ * "10 / " in the cell. Here a missing `peers` drops the separator with it, per
+ * this task's null-safety requirement.
+ */
+export function formatResultDetails(result: {
+    grabs?: number;
+    peers?: number;
+    seeders?: number;
+}): string {
+    const parts: string[] = [];
+    if (result.grabs !== undefined) {
+        parts.push(kify(result.grabs));
+    }
+    if (result.seeders !== undefined) {
+        parts.push(
+            result.peers === undefined
+                ? kify(result.seeders)
+                : `${kify(result.seeders)} / ${kify(result.peers)}`,
+        );
+    }
+    return parts.join(" / ");
+}

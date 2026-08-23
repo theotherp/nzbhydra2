@@ -2993,7 +2993,352 @@ test.describe("Search results", () => {
             );
         }
     });
+
+    // --- FM-082: per-result detail links, Details cell, and NFO viewer -----
+
+    test("should render every row's detail surfaces against real indexer results", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await searchForUiTestResults(page);
+
+        // `hasNfo` comes straight from the mock indexer's `nfo` attribute:
+        // result1 sends `0` (NO), result2 sends `1` (YES), and every other
+        // result sends none at all, which the backend defaults to MAYBE.
+        await expectNfoState(page, "indexer1-result1", {
+            enabled: false,
+            tooltip: "No NFO available",
+        });
+        await expectNfoState(page, "indexer1-result2", {
+            enabled: true,
+            tooltip: "Show NFO",
+        });
+        await expectNfoState(page, "indexer1-result3", {
+            enabled: true,
+            tooltip: "Try to load NFO (may not be available)",
+        });
+
+        // The full Details cell: these results carry grabs but no seeders.
+        for (const [title, details] of [
+            ["indexer1-result1", "1"],
+            ["indexer1-result2", "2"],
+            ["indexer1-result3", "3"],
+            ["indexer2-result1", "4"],
+            ["indexer2-result2", "5"],
+        ] as const) {
+            await expect(
+                resultRow(page, title).getByTestId("search-result-details"),
+            ).toHaveText(details);
+        }
+
+        // This instance configures no dereferer, so an href is the target
+        // itself. The mock's details link is its comments link without the
+        // `#comments` fragment (`Newznab.java:541`).
+        const withComments = resultRow(page, "indexer1-result3");
+        await expect(
+            withComments.getByTestId("result-comments-link"),
+        ).toHaveAttribute("href", "http://localhost/commentsLink#comments");
+        await expect(
+            withComments.getByTestId("result-comments-link"),
+        ).toHaveAttribute("target", "_blank");
+        await expect(
+            withComments.getByTestId("result-comments-link"),
+        ).toHaveAttribute("rel", "noopener");
+        await expect(
+            withComments.getByTestId("result-details-link"),
+        ).toHaveAttribute("href", "http://localhost/commentsLink");
+
+        // Only result3 carries a comment count, so every other row's comments
+        // link is disabled rather than pointing at a page with nothing on it.
+        const withoutComments = resultRow(page, "indexer1-result1");
+        await expect(
+            withoutComments.getByTestId("result-comments-link"),
+        ).toBeDisabled();
+        await expect(
+            withoutComments.getByTestId("result-details-link"),
+        ).toHaveAttribute("href", "http://some.comments/details");
+
+        // None of these results carries a `source` attribute, so no row
+        // offers Binsearch; the mocked-source case is covered below.
+        await expect(page.getByTestId("result-binsearch-link")).toHaveCount(0);
+    });
+
+    test("should build the Binsearch link from a result source", async ({
+        page,
+    }) => {
+        // The mock indexers send no `source` attribute at all, so this one
+        // field is supplied at the response level.
+        await mockSourcedResult(page);
+        await page.goto("ui/react?redirect=/");
+        await page.getByTestId("search-query").fill("binsearch source");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+
+        await expect(page.getByTestId("result-binsearch-link")).toHaveAttribute(
+            "href",
+            "http://binsearch.info/?q=alt.binaries.test&max=100&adv_age=3000&server=",
+        );
+        await expect(page.getByTestId("result-binsearch-link")).toHaveAttribute(
+            "target",
+            "_blank",
+        );
+        await expect(page.getByTestId("result-binsearch-link")).toHaveAttribute(
+            "rel",
+            "noopener",
+        );
+        await expect(page.getByTestId("search-result-details")).toHaveText(
+            "12k / 4 / 9",
+        );
+    });
+
+    test("should show a real NFO in the viewer, as inert text", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await searchForUiTestResults(page);
+
+        await resultRow(page, "indexer1-result2")
+            .getByTestId("result-nfo")
+            .click();
+
+        const dialog = page.getByTestId("nfo-dialog");
+        await expect(dialog).toBeVisible();
+        const content = page.getByTestId("nfo-dialog-content");
+        // The mock indexer answers `t=getnfo` with this description.
+        await expect(content).toContainText("NFO for NZB with ID");
+        // Rendered as one text node: nothing on this path interprets the
+        // indexer's answer as markup.
+        expect(
+            await content.evaluate((element) => element.childElementCount),
+        ).toBe(0);
+
+        await dialog.getByRole("button", {name: "Close"}).click();
+        await expect(dialog).toBeHidden();
+    });
+
+    test("should report the two non-NFO responses without opening the viewer", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await searchForUiTestResults(page);
+        const action = resultRow(page, "indexer1-result3").getByTestId(
+            "result-nfo",
+        );
+
+        await page.route("**/internalapi/nfo/*", (route) =>
+            route.fulfill({
+                json: {successful: true, hasNfo: false, content: null},
+            }),
+        );
+        await action.click();
+        const infoToast = page.getByRole("alert").filter({
+            hasText: "No NFO available",
+        });
+        await expect(infoToast).toBeVisible();
+        await expect(page.getByTestId("nfo-dialog")).toHaveCount(0);
+        await infoToast.getByRole("button", {name: "Close"}).click();
+        await expect(infoToast).toBeHidden();
+
+        await page.route("**/internalapi/nfo/*", (route) =>
+            route.fulfill({
+                json: {
+                    successful: false,
+                    hasNfo: false,
+                    content: "Indexer refused the NFO request",
+                },
+            }),
+        );
+        await action.click();
+        await expect(
+            page.getByRole("alert").filter({
+                hasText: "Indexer refused the NFO request",
+            }),
+        ).toBeVisible();
+        await expect(page.getByTestId("nfo-dialog")).toHaveCount(0);
+    });
+
+    test("should hide the external links from a session without the details permission", async ({
+        page,
+    }) => {
+        // `maySeeDetailsDl` is a server-rendered bootstrap flag, and this
+        // shared instance runs without authentication (so the server always
+        // sends `true`). Rewriting the flag in the served shell exercises the
+        // restricted session without reconfiguring authentication on an
+        // instance every other spec shares.
+        // The React shell is selected first (the selector endpoint redirects
+        // to `/`, and only the final document carries the bootstrap), then the
+        // rewritten shell is loaded directly.
+        await page.goto("ui/react?redirect=/");
+        const rewrite = await withRestrictedDetailsBootstrap(page);
+        await page.goto("/");
+        expect(
+            rewrite.applied(),
+            `the served shell must carry a maySeeDetailsDl flag to rewrite; served: ${rewrite.servedBootstrap()}`,
+        ).toBe(true);
+        await dismissWelcomeDialog(page);
+        await searchForUiTestResults(page);
+
+        await expect(page.getByTestId("result-nfo").first()).toBeVisible();
+        await expect(page.getByTestId("result-binsearch-link")).toHaveCount(0);
+        await expect(page.getByTestId("result-comments-link")).toHaveCount(0);
+        await expect(page.getByTestId("result-details-link")).toHaveCount(0);
+    });
+
+    test("captures the result detail links and the NFO viewer", async ({
+        page,
+    }) => {
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await dismissWelcomeDialog(page);
+                await searchForUiTestResults(page);
+            });
+
+            const links = resultRow(page, "indexer1-result3").getByTestId(
+                "result-links",
+            );
+            await expectVisualGeometry(page, {
+                region: `fm082-result-links-${viewport}`,
+                locator: links,
+            });
+            await captureVisualRegion(
+                links,
+                "F-SEARCH-RESULTS",
+                `fm082-result-links-${viewport}`,
+            );
+
+            await resultRow(page, "indexer1-result2")
+                .getByTestId("result-nfo")
+                .click();
+            await expect(page.getByTestId("nfo-dialog")).toBeVisible();
+            await captureVisualRegion(
+                page.getByTestId("nfo-dialog"),
+                "F-SEARCH-RESULTS",
+                `fm082-nfo-dialog-${viewport}`,
+            );
+            await page
+                .getByTestId("nfo-dialog")
+                .getByRole("button", {name: "Close"})
+                .click();
+            await expectNoPageOverflow(page);
+
+            // The same cell for a session that may not see details and
+            // downloads: the NFO action alone.
+            const rewrite = await withRestrictedDetailsBootstrap(page);
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("/");
+                expect(
+                    rewrite.applied(),
+                    `the served shell must carry a maySeeDetailsDl flag to rewrite; served: ${rewrite.servedBootstrap()}`,
+                ).toBe(true);
+                await dismissWelcomeDialog(page);
+                await searchForUiTestResults(page);
+            });
+            await expect(page.getByTestId("result-details-link")).toHaveCount(
+                0,
+            );
+            const restricted = resultRow(page, "indexer1-result3").getByTestId(
+                "result-links",
+            );
+            await expectVisualGeometry(page, {
+                region: `fm082-result-links-restricted-${viewport}`,
+                locator: restricted,
+            });
+            await captureVisualRegion(
+                restricted,
+                "F-SEARCH-RESULTS",
+                `fm082-result-links-restricted-${viewport}`,
+            );
+            await page.unrouteAll({behavior: "ignoreErrors"});
+        }
+    });
 });
+
+async function expectNfoState(
+    page: import("@playwright/test").Page,
+    title: string,
+    expected: {enabled: boolean; tooltip: string},
+): Promise<void> {
+    const action = resultRow(page, title).getByTestId("result-nfo");
+    await expect(action).toBeVisible();
+    if (expected.enabled) {
+        await expect(action).toBeEnabled();
+    } else {
+        await expect(action).toBeDisabled();
+    }
+    // The tooltip text is also the control's accessible name, so it is
+    // assertable without hovering.
+    await expect(action).toHaveAccessibleName(`${expected.tooltip}: ${title}`);
+}
+
+/**
+ * One search response carrying the fields the mock indexers never send:
+ * a `source` (the Binsearch query's input) plus a full set of Details counts.
+ */
+async function mockSourcedResult(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    await page.route("**/internalapi/search", (route) =>
+        route.fulfill({
+            json: {
+                searchResults: [
+                    {
+                        searchResultId: "sourced",
+                        title: "Sourced Result",
+                        indexer: "One",
+                        category: "TV",
+                        downloadType: "NZB",
+                        source: "alt.binaries.test",
+                        grabs: 12000,
+                        seeders: 4,
+                        peers: 9,
+                        hasNfo: "MAYBE",
+                    },
+                ],
+                indexerSearchMetaDatas: [
+                    {indexerName: "One", wasSuccessful: true},
+                ],
+                indexerLimitWarnings: [],
+                rejectedReasonsMap: {},
+                notPickedIndexersWithReason: {},
+                numberOfAvailableResults: 1,
+                numberOfRejectedResults: 0,
+            },
+        }),
+    );
+}
+
+/**
+ * Serves the React shell with `maySeeDetailsDl` flipped to false. The flag is
+ * server-rendered into the shell (`templates/react.html`), and this shared
+ * instance runs without authentication, so the server itself always reports
+ * true; rewriting the served document is the one way to exercise the
+ * restricted session without reconfiguring authentication for every other
+ * spec that shares the instance.
+ */
+async function withRestrictedDetailsBootstrap(
+    page: import("@playwright/test").Page,
+): Promise<{applied: () => boolean; servedBootstrap: () => string}> {
+    let applied = false;
+    let servedBootstrap = "(the shell was never requested)";
+    await page.route(
+        (url) => url.pathname === "/",
+        async (route) => {
+            const response = await route.fetch();
+            const body = await response.text();
+            servedBootstrap =
+                /__NZBHYDRA_BOOTSTRAP__.*/.exec(body)?.[0]?.slice(0, 400) ??
+                body.slice(0, 400);
+            const restricted = body.replace(
+                /"maySeeDetailsDl"\s*:\s*true/,
+                '"maySeeDetailsDl":false',
+            );
+            applied = applied || restricted !== body;
+            await route.fulfill({response, body: restricted});
+        },
+    );
+    return {applied: () => applied, servedBootstrap: () => servedBootstrap};
+}
 
 // The results table header row's height at 1280x800, measured against the
 // clean `89286c376` baseline (FM-044's commit) while FM-034's inline

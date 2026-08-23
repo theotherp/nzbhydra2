@@ -38,10 +38,17 @@ import {
 } from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
+import {ApiTransport} from "../../../api/transport";
+import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {pillRadius, selectAllRadius} from "../../../app/theme";
-import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
+import {
+    bootstrapBase,
+    DirectDownloadActions,
+    DownloadActions,
+} from "./DownloadActions";
+import {ResultDetailLinks} from "./ResultDetailLinks";
 import {RefineSidebar, useCompactRefineSurface} from "./RefineSidebar";
 import type {
     NumericRange,
@@ -53,6 +60,7 @@ import {
     defaultFilters,
     duplicateGroupKey,
     filterResults,
+    formatResultDetails,
     formatResultSize,
     groupResults,
     isRecentResult,
@@ -194,6 +202,28 @@ export function SearchResults({
         () => quickFiltersFromSafeConfig(safeConfig),
         [safeConfig],
     );
+    // FM-082: legacy reads `HydraAuthService.getUserInfos().maySeeDetailsDl`
+    // (`search-result.js:146`) to decide whether a row shows its external
+    // links at all. The React equivalent is the bootstrap flag, read here from
+    // the same `window.__NZBHYDRA_BOOTSTRAP__` object this component already
+    // reads `safeConfig` from -- this component is not passed `BootstrapData`,
+    // and its only caller (`SearchPage`) is outside this task's scope.
+    const maySeeDetailsDl =
+        isRecord(window.__NZBHYDRA_BOOTSTRAP__) &&
+        window.__NZBHYDRA_BOOTSTRAP__.maySeeDetailsDl === true;
+    // ADR-0017: the dereferer must come from the *live* safe configuration, so
+    // saving a new one reaches the rendered links without a page reload. The
+    // context's `undefined` means "no provider above me" (focused component
+    // tests only), which falls back to the bootstrap seed above.
+    const liveSafeConfig = useContext(SafeConfigContext);
+    const effectiveSafeConfig =
+        liveSafeConfig === undefined ? safeConfig : liveSafeConfig;
+    const dereferer = isRecord(effectiveSafeConfig)
+        ? effectiveSafeConfig.dereferer
+        : undefined;
+    // One transport for every row's `API-SEARCH-NFO` request, rather than one
+    // per rendered row.
+    const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
     const [choices] = useState(() => loadChoices());
     // Recomputed from whatever results are currently loaded, so the
     // `SearchScopedFilter` reset below always selects every value of the
@@ -1465,6 +1495,9 @@ export function SearchResults({
                                                             index === 0;
                                                         return (
                                                             <ResultRow
+                                                                dereferer={
+                                                                    dereferer
+                                                                }
                                                                 downloaded={downloadedIds.has(
                                                                     result.searchResultId,
                                                                 )}
@@ -1479,6 +1512,9 @@ export function SearchResults({
                                                                 }
                                                                 key={
                                                                     result.searchResultId
+                                                                }
+                                                                maySeeDetailsDl={
+                                                                    maySeeDetailsDl
                                                                 }
                                                                 nestingLevel={
                                                                     nestingLevel
@@ -1526,6 +1562,9 @@ export function SearchResults({
                                                                 }
                                                                 titleGroupKey={
                                                                     group.key
+                                                                }
+                                                                transport={
+                                                                    transport
                                                                 }
                                                             />
                                                         );
@@ -1578,10 +1617,15 @@ const resultColumns: ResultColumn[] = [
         value: (result) => formatResultSize(result.size),
     },
     {
+        // FM-082: legacy's full Details cell (`search-result.html:53-63`) --
+        // grabs, then `seeders / peers` -- not the single `seeders ?? grabs`
+        // value React collapsed it to. The column's *sorting* accessor is
+        // deliberately unchanged.
         align: "right",
         id: "grabs",
         label: "Details",
-        value: (result) => result.seeders ?? result.grabs ?? "",
+        testId: "search-result-details",
+        value: (result) => formatResultDetails(result),
     },
     {
         align: "right",
@@ -1592,10 +1636,12 @@ const resultColumns: ResultColumn[] = [
 ];
 
 const ResultRow = memo(function ResultRow({
+    dereferer,
     downloaded,
     duplicateExpanded,
     duplicateKey,
     isNewGroup,
+    maySeeDetailsDl,
     nestingLevel,
     onDownloaded,
     onSelectionChange,
@@ -1608,11 +1654,14 @@ const ResultRow = memo(function ResultRow({
     showTitleExpand,
     titleExpanded,
     titleGroupKey,
+    transport,
 }: {
+    dereferer: unknown;
     downloaded: boolean;
     duplicateExpanded: boolean;
     duplicateKey: string;
     isNewGroup: boolean;
+    maySeeDetailsDl: boolean;
     nestingLevel: number;
     onDownloaded: (resultId: string) => void;
     onSelectionChange: (
@@ -1632,6 +1681,7 @@ const ResultRow = memo(function ResultRow({
     showTitleExpand: boolean;
     titleExpanded: boolean;
     titleGroupKey: string;
+    transport: ApiTransport;
 }) {
     return (
         <TableRow
@@ -1807,6 +1857,16 @@ const ResultRow = memo(function ResultRow({
                     gap={0.5}
                     justifyContent="flex-end"
                 >
+                    {/* FM-082: the NFO action plus the session-gated
+                        Binsearch/comments/details links legacy rendered in its
+                        own Links column, kept in this cell so no ninth column
+                        takes width from Title (ADR-0011). */}
+                    <ResultDetailLinks
+                        dereferer={dereferer}
+                        maySeeDetailsDl={maySeeDetailsDl}
+                        result={result}
+                        transport={transport}
+                    />
                     <DirectDownloadActions
                         onDownloaded={() => onDownloaded(result.searchResultId)}
                         result={result}

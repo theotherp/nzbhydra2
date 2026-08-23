@@ -301,6 +301,19 @@ TRANSPORT` moved to `done` while still opening one STOMP client per subscription
 isn't directly asserted by its own test (only indirectly via `AppShell.test.tsx`), though the default preserves FM-080's
 behavior. Candidates for a future quickfix.
 
+FM-082 (Result Detail Links And NFO Viewer) added the last unadopted HTTP internal API, `API-SEARCH-NFO`, plus the
+`maySeeDetailsDl`-gated Binsearch/comments/details links and the full grabs + seeders/peers Details cell, to each
+search-result row's existing Actions cell (not a new column, preserving ADR-0011's no-horizontal-scroll rule). NFO
+content renders as a plain React text node in a monospace block — no `dangerouslySetInnerHTML` anywhere on the path,
+proven by a hostile-content test and a whole-tree grep. Passed with minor findings, not corrected (optional): the
+packet's `tests/system` lint/format verification commands don't exist as npm scripts there (ESLint has no config;
+Prettier does but lacks a script) — substituted `npx prettier --check .`, correct in outcome though the handoff
+initially misattributed the gap to missing Prettier config too; the handoff cited a system-test run directory the
+runner deletes on success rather than the retained junit artifact; the links-cell screenshot evidence is a tight
+element crop with no row/card layout context; a stale STATUS.md batch-completion note was briefly dropped during the
+implementer's mechanical `validate:migration` edit (restored above). Candidates for a future quickfix. First of the
+2026-08-23 batch FM-082..FM-086; later members stay planned packets in `tasks/` until dependency-ordered.
+
 ## Active
 
 None.
@@ -316,7 +329,8 @@ None.
 ## Upcoming
 
 None. FM-077 (System Tasks tab, the last unmigrated system tab) is done, completing the 2026-08-21 platform-completion
-batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer + notifications).
+batch FM-077..FM-081 (login/session, startup checks, update banners, live downloader footer + notifications). FM-082
+(below) starts the next batch, FM-082..FM-086.
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 

@@ -1496,6 +1496,78 @@ describe("SearchResults", () => {
         expect(rows[1]).toHaveAttribute("data-nesting-level", "1");
     });
 
+    it("should render the full Details cell and the row's detail links for a permitted session", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            maySeeDetailsDl: true,
+            safeConfig: {dereferer: "https://dereferer.test/?$s"},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                            grabs: 12_000,
+                            seeders: 4,
+                            peers: 9,
+                            comments: 5,
+                            comments_link: "https://indexer.test/d#comments",
+                            details_link: "https://indexer.test/d",
+                            source: "poster",
+                            hasNfo: "YES",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getByTestId("search-result-details")).toHaveTextContent(
+            "12k / 4 / 9",
+        );
+        expect(screen.getByTestId("result-nfo")).toBeEnabled();
+        expect(screen.getByTestId("result-binsearch-link")).toHaveAttribute(
+            "href",
+            `https://dereferer.test/?${encodeURIComponent("http://binsearch.info/?q=poster&max=100&adv_age=3000&server=")}`,
+        );
+        expect(screen.getByTestId("result-comments-link")).toBeEnabled();
+        expect(screen.getByTestId("result-details-link")).toBeEnabled();
+    });
+
+    it("should keep the NFO action but drop the external links without the details permission", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            maySeeDetailsDl: false,
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                            details_link: "https://indexer.test/d",
+                            source: "poster",
+                            hasNfo: "MAYBE",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getByTestId("result-nfo")).toBeEnabled();
+        expect(screen.queryByTestId("result-binsearch-link")).toBeNull();
+        expect(screen.queryByTestId("result-comments-link")).toBeNull();
+        expect(screen.queryByTestId("result-details-link")).toBeNull();
+    });
+
     it("should render a perceivable downloaded indicator distinct from the direct-download control", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
         renderResults(

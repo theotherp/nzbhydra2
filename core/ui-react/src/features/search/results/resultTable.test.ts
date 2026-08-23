@@ -3,12 +3,14 @@ import {describe, expect, it, vi} from "vitest";
 import {
     ageInDays,
     defaultFilters,
+    formatResultDetails,
     formatResultSize,
     groupResults,
     filterResults,
     isRecentResult,
     preselectedQuickFilters,
     RECENT_RESULT_MAX_AGE_DAYS,
+    kify,
     quickFilterKey,
     quickFiltersFromSafeConfig,
     selectionAfterClick,
@@ -465,5 +467,71 @@ describe("formatResultSize", () => {
     it("renders nothing for a non-finite size", () => {
         expect(formatResultSize(Number.NaN)).toBe("");
         expect(formatResultSize(Number.POSITIVE_INFINITY)).toBe("");
+    });
+});
+
+describe("kify", () => {
+    // Legacy's filter (`core/ui-src/js/nzbhydra.js:317-324`) switches at
+    // *greater than* 1000, not at 1000 itself.
+    it("matches legacy's boundary and rounding", () => {
+        expect(kify(0)).toBe("0");
+        expect(kify(1)).toBe("1");
+        expect(kify(999)).toBe("999");
+        expect(kify(1000)).toBe("1000");
+        expect(kify(1001)).toBe("1k");
+        expect(kify(1499)).toBe("1k");
+        expect(kify(1500)).toBe("2k");
+        expect(kify(12_345)).toBe("12k");
+    });
+
+    it("renders nothing for a missing or non-finite value", () => {
+        expect(kify(null)).toBe("");
+        expect(kify(undefined)).toBe("");
+        expect(kify(Number.NaN)).toBe("");
+    });
+});
+
+describe("formatResultDetails", () => {
+    it("renders grabs, seeders, and peers together, as legacy's cell does", () => {
+        expect(formatResultDetails({grabs: 12, seeders: 4, peers: 9})).toBe(
+            "12 / 4 / 9",
+        );
+    });
+
+    it("kify-formats every part", () => {
+        expect(
+            formatResultDetails({grabs: 12_000, seeders: 2500, peers: 1001}),
+        ).toBe("12k / 3k / 1k");
+    });
+
+    it("renders grabs alone when there are no seeders", () => {
+        expect(formatResultDetails({grabs: 3})).toBe("3");
+    });
+
+    it("renders the seeder pair alone when there are no grabs", () => {
+        expect(formatResultDetails({seeders: 4, peers: 9})).toBe("4 / 9");
+    });
+
+    // Legacy would leave a dangling "4 / " here, because it pipes a missing
+    // peers count through kify too.
+    it("drops the peers separator when peers is missing", () => {
+        expect(formatResultDetails({grabs: 3, seeders: 4})).toBe("3 / 4");
+        expect(formatResultDetails({seeders: 4})).toBe("4");
+    });
+
+    it("renders nothing when the result carries no counts at all", () => {
+        expect(formatResultDetails({})).toBe("");
+    });
+
+    // The defect this replaced: one collapsed `seeders ?? grabs` value.
+    it("never collapses to a single number when both are present", () => {
+        expect(formatResultDetails({grabs: 12, seeders: 4})).not.toBe("4");
+        expect(formatResultDetails({grabs: 12, seeders: 4})).not.toBe("12");
+    });
+
+    it("keeps a zero grab count visible", () => {
+        expect(formatResultDetails({grabs: 0, seeders: 0, peers: 0})).toBe(
+            "0 / 0 / 0",
+        );
     });
 });

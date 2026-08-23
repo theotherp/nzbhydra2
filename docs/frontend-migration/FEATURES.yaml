@@ -163,6 +163,7 @@ features:
       - tests/system/tests/results.spec.ts
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
       - core/ui-react/src/features/search/results/resultTable.test.ts
+      - core/ui-react/src/features/search/results/ResultDetailLinks.test.tsx
     selectors:
       - search-results
       - indexer-limit-warnings
@@ -172,6 +173,14 @@ features:
       - search-results-table
       - search-result-row
       - search-result-title
+      - search-result-details
+      - result-links
+      - result-nfo
+      - result-binsearch-link
+      - result-comments-link
+      - result-details-link
+      - nfo-dialog
+      - nfo-dialog-content
       - display-options-toggle
       - display-options
     parity: partial
