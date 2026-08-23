@@ -35,7 +35,9 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-LIVE-TRANSPORT
-    responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, outgoing frames, subscription cleanup, and typed message delivery
+    responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, outgoing frames, subscription cleanup, and typed message delivery. Since FM-085 every subscription sharing a base URL is multiplexed over one STOMP client and one
+      SockJS socket, opened for the first subscription and deactivated when the last one closes; the ready timeout, `onReady` re-invocation after reconnect, parse-failure isolation, and the per-destination STOMP unsubscribe on close stay
+      per subscription
     legacy:
       - core/ui-src/js/search-controller.js
       - core/ui-src/js/directives/downloaderStatusFooter.js

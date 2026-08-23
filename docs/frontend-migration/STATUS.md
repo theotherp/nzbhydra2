@@ -336,6 +336,21 @@ a toast raised over an open dialog is `aria-hidden`d by MUI's modal manager (pre
 introduced); the 5s lifetime no longer pauses on hover/focus, matching legacy growl but losing `Snackbar`'s
 auto-hide pause. Candidates for a future quickfix.
 
+FM-085 (Shared Live-Transport Connection) closed FM-081's consolidation caveat: `C-LIVE-TRANSPORT` now multiplexes
+every subscription over one shared SockJS/STOMP client per base URL, pooled module-scoped, instead of opening one
+client and socket per `subscribe()` call — an idle admin session drops from three server websocket sessions to one.
+Per-subscription semantics (settled/closed flags, ready timeout, per-destination STOMP unsubscribe on close,
+per-subscription `onReady` fan-out on reconnect) stayed per-subscription; activation became shared, deactivating
+only when the last open subscription closes. No consumer production file changed (`SearchPage.tsx`,
+`DownloaderStatusFooter`, `NotificationToasts`, message modules all untouched); the public `LiveTransport` interface
+is unchanged. Passed with minor findings, not corrected (optional): an unguarded `unsubscribe()` call (pre-existing,
+not introduced here) throws if a subscription closes during an outage, orphaning the shared connection rather than
+just one subscriber's slot; a connection-level STOMP/websocket error now fans out to every open subscription's
+`onUnavailable` instead of just the affected one, an inherent consequence of consolidation the acceptance wording
+doesn't quite reflect; the packet's cited server-side unsubscribe trigger (`NotificationsWeb.java`) actually fires
+on session disconnect, not per-destination STOMP unsubscribe, so the implemented unsubscribe is harmless but not
+the load-bearing mechanism the packet asserted. Candidates for a future quickfix.
+
 ## Active
 
 None.
