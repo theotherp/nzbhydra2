@@ -1,7 +1,7 @@
 # Agent Instructions for NZBHydra2
 
 This document provides essential context, commands, and guidelines for AI agents operating in this codebase.
-The project is a search aggregator for Usenet indexers, built with Spring Boot (Java 17) and a legacy AngularJS frontend.
+The project is a search aggregator for Usenet indexers, built with Spring Boot (Java 17) and a React frontend.
 
 ## CRITICAL RULES
 
@@ -13,7 +13,7 @@ The project is a search aggregator for Usenet indexers, built with Spring Boot (
 - **Root Directory**: `C:\Users\<user>\IdeaProjects\nzbhydra2`
 - **Core Logic**: `core/src/main/java`
 - **Tests**: `core/src/test/java`
-- **Frontend**: `core/ui-src` (Legacy Gulp/Bower/AngularJS)
+- **Frontend**: `core/ui-react` (React 19 + TypeScript + Vite + MUI)
 - **Java Version**: 17
 - **Build System**: Maven (but prefer IntelliJ MCP tools -- see below)
 
@@ -150,16 +150,17 @@ Do not guess Maven coordinates or versions when they can be verified with
     - **Always** assert expected outcomes (don't just run and check for no exception).
     - Use `assertThat(actual).isEqualTo(expected)` (AssertJ style).
 
-### Frontend (Legacy AngularJS)
+### Frontend (React)
 
-- The frontend is legacy AngularJS located in `core/ui-src`.
-- **Do not** manually build frontend resources. A **Gulp watch instance** runs via the IntelliJ run configuration named **"default"** and automatically rebuilds frontend assets on change. Just edit the source files.
-- **IMPORTANT:** If frontend resource changes are not taking effect, check whether the **"default"** run configuration is running in IntelliJ. If it is not running, **ask the user to start it** before proceeding.
-- After editing frontend files, you **may run Gulp tasks** to verify the UI source compiles correctly. Useful tasks:
-    - `gulp scripts` -- compiles/concatenates JavaScript files.
-    - `gulp less` -- compiles LESS stylesheets to CSS.
-    - Run these from the `core/ui-src` directory (e.g., `npx gulp scripts`).
-- Minimize frontend changes unless necessary.
+- The frontend is React 19 with TypeScript, Vite and MUI, located in `core/ui-react`. The legacy AngularJS UI in
+  `core/ui-src`, its Gulp/Bower toolchain and its checked-in output under `core/src/main/resources/static` were removed
+  by FM-095; there is no second UI and no shell selector.
+- Its conventions -- component choice, labelling, and the ban on design literals in feature code (ADR-0014) -- are in
+  `core/ui-react/AGENTS.md`. Read that before writing UI code.
+- Build and check it from the `core/ui-react` directory: `npm run typecheck`, `npm run lint`, `npm run format:check`,
+  `npm run test -- --run`, `npm run build`.
+- Nothing is checked in: `core/pom.xml` runs the npm build during the Maven build, emitting the bundle into
+  `target/classes/static/react`, which `core/src/main/resources/templates/react.html` loads.
 
 ## 6. Workflow for Agents
 

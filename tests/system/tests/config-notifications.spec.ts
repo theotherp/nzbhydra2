@@ -16,7 +16,7 @@ function entriesOf(config: Json): Json[] {
 }
 
 async function openNotificationsConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/notifications");
+    await page.goto("/config/notifications");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-notifications")).toBeVisible();

@@ -59,7 +59,7 @@ test.describe("External Tools Configuration", () => {
     test("should display External Tools tab in configuration", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/config/main");
+        await page.goto("/config/main");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("config-shell")).toBeVisible();
 
@@ -641,7 +641,7 @@ function configuredTool(
 }
 
 async function openExternalTools(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/externalTools");
+    await page.goto("/config/externalTools");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-external-tools")).toBeVisible();

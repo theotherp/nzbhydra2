@@ -14,7 +14,7 @@ function categoriesOf(config: Json): Json[] {
 }
 
 async function openCategoriesConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/categories");
+    await page.goto("/config/categories");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-categories")).toBeVisible();

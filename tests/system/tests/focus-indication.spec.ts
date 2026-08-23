@@ -26,10 +26,13 @@
  * place focus, and `click()` is used only to submit a form or open a surface,
  * never to focus a control under measurement.
  *
- * WHY `ui/react?redirect=/` AND NEVER A BARE `page.goto("/")`. A bare goto can
- * land on the legacy AngularJS shell, where none of these controls, defects,
- * or fixes exist -- the test would then pass for the wrong reason. FM-051's
- * first draft made exactly that mistake.
+ * WHY EVERY NAVIGATION IS A DIRECT CANONICAL ROUTE. Until FM-095 these were
+ * `ui/react?redirect=...` visits through the cookie selector, because a bare
+ * goto could land on the legacy AngularJS shell, where none of these controls,
+ * defects, or fixes exist -- the test would then pass for the wrong reason,
+ * which FM-051's first draft did. With the legacy shell and the selector both
+ * removed there is only one shell left to serve, so the deep link states the
+ * route directly and nothing is left to be inherited or mistaken.
  *
  * VERSION SCOPE AND RE-VERIFICATION DUTY (ADR-0012's precedent; ADR-0013's
  * `What would keep it from regressing`). Every assertion below is scoped to
@@ -467,7 +470,7 @@ async function openSearchRoute(
     viewport: keyof typeof visualViewports,
 ): Promise<void> {
     await page.setViewportSize(visualViewports[viewport]);
-    await page.goto("ui/react?redirect=/");
+    await page.goto("/");
     await expect(page).toHaveURL(/\/$/);
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("search-query")).toBeVisible();
@@ -945,7 +948,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await page.setViewportSize(visualViewports[viewport]);
-            await page.goto("ui/react?redirect=/stats/indexers");
+            await page.goto("/stats/indexers");
             await expect(page.getByRole("tab").first()).toBeVisible();
             const tab = await probeFocus(page, page.getByRole("tab").first());
             expectAuthoredFocusRing(
@@ -1016,7 +1019,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         (config.main as Record<string, unknown>).keepHistory = true;
         await hydra.saveConfig(config);
         await page.setViewportSize(visualViewports.desktop);
-        await page.goto("ui/react?redirect=/stats/searches");
+        await page.goto("/stats/searches");
         await expect(page.getByTestId("search-history-table")).toBeVisible();
 
         await expectFocusedOutlinedInput(
@@ -1076,7 +1079,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             });
         });
         await page.setViewportSize(visualViewports.desktop);
-        await page.goto("ui/react?redirect=/system/news");
+        await page.goto("/system/news");
         // FM-079's startup `NewsDialog` renders the same server-authored HTML
         // from the same mocked payload, and it does two things to this test:
         // its copy of the anchor makes an unscoped locator resolve to two
@@ -1121,7 +1124,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // must render the same literal token.
         await mockSearchResponse(page);
         await page.setViewportSize(visualViewports.desktop);
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         await page.goto(
             "/?query=fm053+focus+link&category=All&imdbId=tt0111161",
@@ -1138,7 +1141,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await page.locator("#save-search").click();
         expect((await saved).status()).toBe(200);
 
-        await page.goto("ui/react?redirect=/stats/saved-searches");
+        await page.goto("/stats/saved-searches");
         await expect(
             page.getByRole("heading", {name: "Saved searches"}),
         ).toBeVisible();

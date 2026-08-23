@@ -91,7 +91,7 @@ features:
       - search-chip-size
     parity: partial
     gaps:
-      - guided tour
+      - "deliberate - the guided tour is retired rather than migrated. ADR-0022 (accepted 2026-08-22) withdraws legacy's `angular-ui-tour` walkthrough instead of reproducing it, and FM-095 removed the AngularJS sources it lived in (`guided-tour-service.js`, `angular-ui-tour.js`). Its backend surface (`GuidedTourWeb`/`DemoDataProvider`) is deliberately left standing; ADR-0022 defers that removal and no FM packet may take it."
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
     routes:

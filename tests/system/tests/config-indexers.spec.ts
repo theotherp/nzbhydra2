@@ -37,7 +37,7 @@ function mockIndexer(overrides: Json = {}): Json {
 }
 
 async function openIndexersConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/indexers");
+    await page.goto("/config/indexers");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-indexers")).toBeVisible();

@@ -37,7 +37,7 @@ test("should render deterministic news in the React shell without overflow", asy
     });
 
     await page.setViewportSize({width: 1280, height: 800});
-    await page.goto(applicationUrl("ui/react?redirect=/system/news"));
+    await page.goto(applicationUrl("/system/news"));
     await expect(page).toHaveURL(/\/system\/news$/);
     // FM-072: the React news page keeps its URL but now renders as the News
     // tab of the admin-gated system shell, matching legacy's

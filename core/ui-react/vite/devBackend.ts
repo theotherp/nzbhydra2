@@ -14,9 +14,6 @@ import type {Plugin, ProxyOptions} from "vite";
 
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:5076";
 
-/** Cookie value `MainWeb` requires before it renders the React shell. */
-const UI_SELECTOR_COOKIE = "nzbhydra-ui=react";
-
 const BOOTSTRAP_ASSIGNMENT = "window.__NZBHYDRA_BOOTSTRAP__ =";
 
 /** Backend routes the React application talks to; everything else is the SPA. */
@@ -68,7 +65,12 @@ export function backendProxy(): Record<string, ProxyOptions> {
         changeOrigin: true,
         configure: (proxy) => {
             proxy.on("proxyReq", (proxyRequest) => {
-                proxyRequest.setHeader("Cookie", UI_SELECTOR_COOKIE);
+                // No Cookie header is set here on purpose. FM-095 removed the
+                // `nzbhydra-ui` selector, so there is nothing left to select
+                // -- and the injection was destructive: `setHeader` REPLACES
+                // the browser's own Cookie header on every proxied API call,
+                // which discarded `JSESSIONID` and broke dev-mode sessions
+                // against a backend with authentication configured.
                 if (authorization !== undefined) {
                     proxyRequest.setHeader("Authorization", authorization);
                 }
@@ -132,7 +134,6 @@ async function fetchBootstrapJson(): Promise<string> {
     const response = await fetch(new URL("/", target), {
         headers: {
             Accept: "text/html",
-            Cookie: UI_SELECTOR_COOKIE,
             ...(authorization === undefined
                 ? {}
                 : {Authorization: authorization}),

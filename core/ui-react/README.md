@@ -33,4 +33,5 @@ VITE_OUT_DIR=../target/classes/static/react npm run build
 
 Then hard-reload the browser — the entry bundle has a stable name, so a normal reload can serve a cached one.
 
-The React shell is only rendered when the `nzbhydra-ui` cookie is `react`. Visit `/ui/react` once to select it, and `/ui/legacy` to switch back.
+Every mapping the backend serves renders this shell. FM-095 removed the `nzbhydra-ui` cookie selector and its two
+`/ui/...` endpoints along with the legacy AngularJS UI, so there is nothing to opt in or out of.

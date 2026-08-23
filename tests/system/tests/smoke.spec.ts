@@ -6,11 +6,11 @@ import {
     visualViewports,
 } from "./visualEvidence";
 
-// FM-094: this is the one test in the suite whose bare `page.goto("/")` is
-// deliberate rather than incidental. It now asserts the new default -- a
-// request carrying no `nzbhydra-ui` cookie is served the React shell, whose
-// nav renders these two links -- where before the flip it asserted the legacy
-// shell's. Every other test states its shell through `ui/react?redirect=...`.
+// FM-094 flipped the served default to React and FM-095 removed the shell it
+// was the default over, together with the `nzbhydra-ui` cookie and the two
+// `/ui/...` selector endpoints that wrote and read it. So there is no
+// longer a shell to state: every test in this suite navigates straight to a
+// canonical route, and this file is where the served shell itself is asserted.
 test("should load the application shell", async ({page, hydra}) => {
     await page.goto("/");
     await dismissWelcomeDialog(page);
@@ -20,6 +20,57 @@ test("should load the application shell", async ({page, hydra}) => {
     await expect
         .poll(() => hydra.getConfig().then((config) => config.main))
         .toBeTruthy();
+});
+
+// FM-095: `shell-selector.spec.ts` is deleted with its subject -- the cookie
+// selector -- but its surviving half is not about the selector at all: it is
+// the claim that a browser carrying no cookie of ours is served the React
+// shell, entry bundle and all, on the root and on a canonical deep link. That
+// claim outlives the selector and moves here, where the served shell is
+// already this file's subject.
+test("should serve the React shell and its entry bundle to a cookie-less browser", async ({
+    page,
+}) => {
+    // A context that has never contacted this application: nothing to clear,
+    // and nothing in the HTTP cache, so waiting for the entry asset here (the
+    // context's first load of it) cannot be satisfied from cache.
+    expect(await page.context().cookies()).toEqual([]);
+
+    const reactAsset = page.waitForResponse(
+        (response) =>
+            new URL(response.url()).pathname.endsWith(
+                "/static/react/assets/index.js",
+            ) && response.status() === 200,
+    );
+    await page.goto("/");
+    await expect(page.getByTestId("app-shell-nav")).toBeVisible();
+    await reactAsset;
+
+    // The deep link lands on the route's real body. Asserting the migrated
+    // body rather than a placeholder is what keeps this honest: it says
+    // "React served this route", not "React has not implemented it yet".
+    await page.goto("/system/tasks");
+    await expect(page).toHaveURL(/\/system\/tasks$/);
+    await expect(page.getByTestId("system-tasks-table")).toBeVisible();
+});
+
+// FM-095 deletes the legacy Thymeleaf templates, and `MainWeb`'s two logout
+// mappings used to render one of them (`index`) -- FM-094's review carried
+// that forward as the thing this packet must not leave behind. Unauthenticated
+// instances like this one reach `MainWeb.logout` directly (with authentication
+// configured Spring Security's own filter answers first), so the view it names
+// has to resolve, and what has to come back is the React shell document.
+test("should still answer the logout flow with the React shell document", async ({
+    page,
+}) => {
+    const response = await page.request.post("logout");
+
+    expect(response.status()).toBe(200);
+    const body = await response.text();
+    expect(body).toContain('<div id="root">');
+    // `react.html` emits the entry script relative to its `<base href>`, so
+    // this is the same asset the browser resolves against the configured base.
+    expect(body).toContain('src="static/react/assets/index.js"');
 });
 
 // FM-079: the startup sequence's announcements are all one-shot server state
@@ -50,7 +101,7 @@ test("should open with no startup dialog once the welcome was shown", async ({
     // FM-094: `/` serves React now, so this entry point no longer switches
     // shells -- it is kept because it states, at the point of navigation,
     // which shell the assertions below are about.
-    await page.goto("ui/react?redirect=/");
+    await page.goto("/");
     await expect(page).toHaveURL(/\/$/);
     await lastCheck;
 
@@ -98,7 +149,7 @@ test.describe("Branded app shell visual evidence", () => {
                 // dismiss the welcome dialog before switching shells; with
                 // React served by default that first navigation was a second
                 // load of the same shell, so it is gone.
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await dismissWelcomeDialog(page);
                 await expect(page).toHaveURL(/\/$/);
                 await expect(page.getByRole("banner")).toBeVisible();

@@ -98,6 +98,35 @@ class WebConfigurationTest {
         assertThat(response.getContentAsString()).isEqualTo("external React asset");
     }
 
+    /**
+     * FM-095: legacy's Bootstrap-LESS webfonts lived under {@code /bower_components/bootstrap-less/fonts/**},
+     * served out of {@code classpath:/static/fonts/}. Both the fonts and the shell that asked for them are
+     * gone, so the handler must be gone too -- a surviving handler would map a URL onto a deleted directory.
+     * The favicon handler in the same method must survive, so this asserts the removal without asserting
+     * "no handlers".
+     */
+    @Test
+    void shouldNoLongerServeTheLegacyBowerFontPath() throws Exception {
+        WebConfiguration configuration = new WebConfiguration();
+        StaticApplicationContext applicationContext = new StaticApplicationContext();
+        applicationContext.refresh();
+        TestResourceHandlerRegistry registry = new TestResourceHandlerRegistry(applicationContext, new MockServletContext());
+        configuration.addResourceHandlers(registry);
+
+        AbstractUrlHandlerMapping mapping = registry.handlerMapping();
+        mapping.setApplicationContext(applicationContext);
+
+        assertThat(handlerFor(mapping, "/bower_components/bootstrap-less/fonts/glyphicons-halflings-regular.woff2")).isNull();
+        assertThat(handlerFor(mapping, "/favicon.ico")).isNotNull();
+    }
+
+    private static HandlerExecutionChain handlerFor(AbstractUrlHandlerMapping mapping, String path) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+        request.setServletPath(path);
+        ServletRequestPathUtils.parseAndCache(request);
+        return mapping.getHandler(request);
+    }
+
     @Test
     void shouldAcceptDownloaderConfigBodyWithoutPrimitiveFields() throws Exception {
         JacksonJsonHttpMessageConverter converter = installedJsonConverter();

@@ -22,12 +22,12 @@ const statisticSwitches = [
 
 // FM-094: what this pins -- that the stats route sends every statistic switch
 // plus `includeDisabled` as a boolean -- is a request-shape claim, not a shell
-// one, and React makes it too. So it is kept and its bare `page.goto("/")`,
-// which reached the legacy shell before the default flip and would now reach
-// React silently, is repointed at `ui/react?redirect=/` so the test states
-// which shell it runs against. Every assertion is unchanged.
+// one, and React makes it too, so the test was kept when the legacy shell it
+// was written against stopped being served. FM-095 removed the last shell
+// there was to state, leaving the plain root navigation below. Every
+// assertion is unchanged.
 test("should send a complete stats request", async ({page}) => {
-    await page.goto("ui/react?redirect=/");
+    await page.goto("/");
     await dismissWelcomeDialog(page);
 
     const statsResponse = page.waitForResponse(
@@ -78,7 +78,7 @@ test("should render React indexer statuses and canonical history tabs responsive
             ]),
         });
     });
-    await page.goto(applicationUrl("ui/react?redirect=/stats"));
+    await page.goto(applicationUrl("/stats"));
     await expect(page).toHaveURL(/\/stats$/);
     await expect(
         page.getByRole("tab", {name: "Indexer statuses"}),
@@ -195,7 +195,7 @@ test.describe("React aggregate statistics dashboard", () => {
                 body: JSON.stringify(statsResponseFixture()),
             });
         });
-        await page.goto(applicationUrl("ui/react?redirect=/stats/stats"));
+        await page.goto(applicationUrl("/stats/stats"));
         await expect(page).toHaveURL(/\/stats\/stats$/);
         await expect(
             page.getByTestId("stats-tile-total-searches"),
@@ -233,7 +233,7 @@ test.describe("React aggregate statistics dashboard", () => {
                 body: JSON.stringify(statsResponseFixture()),
             });
         });
-        await page.goto(applicationUrl("ui/react?redirect=/stats/stats"));
+        await page.goto(applicationUrl("/stats/stats"));
         await expect(
             page.getByTestId("stats-chart-response-times"),
         ).toBeVisible();
@@ -286,7 +286,7 @@ test.describe("React aggregate statistics dashboard", () => {
                 body: JSON.stringify(statsResponseFixture()),
             });
         });
-        await page.goto(applicationUrl("ui/react?redirect=/stats/stats"));
+        await page.goto(applicationUrl("/stats/stats"));
         await expect(page.getByTestId("stats-dashboard")).toBeVisible();
 
         const presetRequest = page.waitForResponse(
@@ -334,9 +334,7 @@ test.describe("React aggregate statistics dashboard", () => {
         });
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto(
-                    applicationUrl("ui/react?redirect=/stats/stats"),
-                );
+                await page.goto(applicationUrl("/stats/stats"));
                 await dismissWelcomeDialog(page);
                 await expect(page.getByTestId("stats-dashboard")).toBeVisible();
                 await expect(

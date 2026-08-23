@@ -30,7 +30,7 @@ function mappingsOf(config: Json): Json[] {
 }
 
 async function openSearchingConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/searching");
+    await page.goto("/config/searching");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-searching")).toBeVisible();

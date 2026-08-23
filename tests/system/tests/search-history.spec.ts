@@ -13,7 +13,7 @@ test.describe("Search history", () => {
         await hydra.configureMockIndexers(["1", "2"]);
         // FM-094: React is the served default now, but the navigation stays
         // explicit so every test below states which shell it is about.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
@@ -45,7 +45,7 @@ test.describe("Search history", () => {
         page,
     }) => {
         const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         // FM-094: read off the form before searching, so the row's category
         // cell below is compared against what this search was actually
@@ -145,7 +145,7 @@ test.describe("Search history", () => {
         page,
     }) => {
         const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         const category = (await page
             .getByRole("combobox", {name: "Category"})
@@ -220,7 +220,7 @@ test.describe("Search history", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/stats/searches");
+                await page.goto("/stats/searches");
                 await dismissWelcomeDialog(page);
                 await expect(
                     page.getByTestId("history-refine-bar"),

@@ -8,7 +8,7 @@ const UNCHANGED_MARKER = "***UNCHANGED***";
 type Json = Record<string, unknown>;
 
 async function openMainConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/main");
+    await page.goto("/config/main");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-main")).toBeVisible();

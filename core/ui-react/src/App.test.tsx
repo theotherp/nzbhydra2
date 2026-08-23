@@ -22,24 +22,27 @@ const bootstrap = {
 };
 
 describe("App", () => {
-    it("should render the migration scaffold", async () => {
+    it("should render an unknown-route notice with no way out of React", async () => {
         // FM-024 migrates `/stats/stats` (the aggregate dashboard); any other
         // `/stats/<tab>` still falls through the stats shell's own fallback
-        // route to this placeholder, which is what this test exercises.
+        // route to this notice, which is what this test exercises.
         window.history.pushState({}, "", "/hydra/stats/other?period=day");
         render(<App bootstrap={bootstrap} />);
 
         expect(
             await screen.findByRole("heading", {
-                name: "React migration placeholder",
+                name: "Page not found",
             }),
         ).toBeInTheDocument();
+        // FM-095: the legacy shell and its selector endpoints are gone, so the
+        // notice must offer no escape hatch onto them -- an `/ui/legacy` link
+        // here would now be a link to a 404.
+        expect(screen.queryByRole("link", {name: /legacy/i})).toBeNull();
         expect(
-            screen.getByRole("link", {name: "Switch to legacy UI"}),
-        ).toHaveAttribute(
-            "href",
-            "http://localhost:3000/hydra/ui/legacy?redirect=%2Fstats%2Fother%3Fperiod%3Dday",
-        );
+            Array.from(document.querySelectorAll("a[href]")).map((anchor) =>
+                anchor.getAttribute("href"),
+            ),
+        ).not.toContainEqual(expect.stringContaining("ui/legacy"));
     });
 
     it("should render the application loading convention", () => {

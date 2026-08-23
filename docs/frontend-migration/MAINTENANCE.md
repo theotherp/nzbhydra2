@@ -825,11 +825,59 @@ Format, one entry per fix:
   **A poisoned shared instance** was the last layer: `system.spec.ts`'s sensitive-logging test enables the setting and disables it at the end, so the earlier strict-mode failure left it enabled and the next run failed on its own precondition. Reset via the real endpoint. The fragility is real — a failed run poisons later ones — and is recorded as a candidate below.
   Incidental: `prettier --write` on `system.spec.ts` and `stats.spec.ts` also reformatted pre-existing unformatted lines (~11 and ~20 lines), partially touching the 2026-08-18 candidate about `tests/system` specs never having been Prettier-formatted. Disclosed rather than reverted; it is mechanical and leaves both files consistent with the repo's own config.
 
+### 2026-08-24 — Close three references the legacy removal left dangling
+
+- **Why not a packet:** three mechanical repairs, eight lines total, each closing a reference to something FM-095 deleted; no capability, contract, or `data-testid` change.
+- **Paths:** `core/src/main/resources/META-INF/native-image/resource-config.json`, `core/src/main/java/org/nzbhydra/api/CapsGenerator.java`, `core/ui-react/vite/devBackend.ts`.
+- **Gates:** `core/ui-react` typecheck / lint (0 errors, 19 pre-existing warnings) / `format:check` / `test` (1129) green; `mvn --batch-mode test -pl core -DskipTests=false` → **Tests run: 478, Failures: 0, Errors: 0**; full system suite **153 passed**, no failures, skips or flaky, against an instance packaged from this tree; `git diff --check` clean.
+- **Commit:** `776ca706d`
+- **Note:** all three were surfaced by FM-095's reviewer and designer rather than by any test, which is the point worth recording — a green suite could not have caught any of them.
+  **The native shell template.** `resource-config.json`'s hand-maintained GraalVM include list named `templates/index.html`, deleted by FM-095, and had never named `templates/react.html`. If that list is load-bearing — its explicit `templates/error.html` entry and commit `c9f27f163` ("Fix native build some more") both suggest it is — a **native** build had no shell template for any route. Neither the 478-test Java suite nor the 153-test system suite can detect this: `NativeApplicationContextTest` reads the JVM classpath, not the image. Repointed, one line.
+  A wider cleanup was started and deliberately reverted: ~30 further entries in that file name deleted legacy assets, and six were removed before it became clear the file would be left half-swept. Every one of them is inert anyway — line 23's `static/.*` pattern already covers the whole tree — so the diff is now exactly the one load-bearing line, and the dead-entry cleanup is a candidate below rather than churn inside an already-large removal.
+  **The caps image.** `CapsGenerator.java:124` advertised indexer capabilities with an image URL under `master/core/ui-src/`, a path FM-095 deletes; it would have kept resolving until the branch merged and then broken silently, since nothing tests a remote asset URL. Repointed at the retained `static/img/banner-bright.png`, the same relocation FM-095 gave `/readme.md`. `grep -rn "ui-src" core/src/main/java` is now empty.
+  **The dev proxy's Cookie header.** `devBackend.ts` set `Cookie: nzbhydra-ui=react` on every proxied request via `setHeader`, which *replaces* the browser's own header and so discarded `JSESSIONID` — dev-mode session breakage against a backend with authentication configured. Pre-existing, but its only justification was the selector FM-095 removed, so it is now pure liability. Removed, with the reason recorded at the site so nobody reintroduces it.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
+- **`resource-config.json` carries ~30 further include entries naming assets FM-095 deleted** (`static/css/*`, `static/fonts/*`,
+  legacy `static/js/*`). All are inert — line 23's `static/.*` pattern covers the tree regardless — so this is tidiness, not
+  correctness. Sweep them in one pass rather than piecemeal; a half-swept list is worse than an untouched one.
+- **The GraalVM resource-config include list still names deleted templates and never named `react.html`.**
+  `core/src/main/resources/META-INF/native-image/resource-config.json:2612,2621` includes `templates/index.html` and
+  `static/js/templates.js`, both deleted by FM-095, and has never included `templates/react.html`. If that hand-maintained list
+  is load-bearing for the native artifact — its explicit `templates/error.html` entry and commit `c9f27f163` ("Fix native build
+  some more") both suggest it is — a **native build now has no shell template for any route**. Not an FM-095 regression:
+  FM-094 already made `react` the served view, and FM-095 merely removed the last included template. `NativeApplicationContextTest`
+  cannot catch it — it reads the JVM classpath, not the native image. Fix: add a `templates/react.html` include (an extra include
+  costs nothing even if Spring Boot AOT's own hints already cover it) and drop the two dead entries. Surfaced by FM-095's reviewer.
+- **`CapsGenerator.java:124` serves a caps image URL into the deleted `core/ui-src`.**
+  `capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/ui-src/img/banner-bright.png")` stops
+  resolving the moment this branch merges to `master` — the same breakage FM-095 fixed for `/readme.md` by repointing at the
+  retained `core/src/main/resources/static/img/banner-bright.png`. Outside FM-095's allowed files; the same relocation applies.
+  `grep -rn "ui-src" core/src/main/java` returns exactly this line.
+- **`core/ui-react/vite/devBackend.ts:18,71,135` still injects the selector cookie, and does it destructively.**
+  Line 71's `proxyRequest.setHeader("Cookie", UI_SELECTOR_COOKIE)` *replaces* the browser's Cookie header on every proxied API
+  call, discarding `JSESSIONID`. Its own comment calls it "the Cookie value `MainWeb` requires before it renders the React shell";
+  `MainWeb` requires nothing now, so there is no upside left — only dev-mode auth breakage. Fix: delete `UI_SELECTOR_COOKIE` and
+  its two injections. Dev-only, no test covers it.
+- **Toolchain remnants that outlived what they configured**, all inert and deliberately not deleted by FM-095 because its Delete
+  list enumerated four files by name and an unforced deletion in an irreversible packet is the wrong side to err on:
+  `core/.bowerrc` (which is NOT inert in one respect — `docker/uiDev/Dockerfile:16` COPYs it and Docker fails on a missing COPY
+  source, so it must go together with `docker/uiDev/**`), `core/core.iml`'s two `bower_components` `excludeFolder` entries, and
+  `--exclude "bower_components"` in `misc/rsyncToServers.sh`, `misc/rsyncAndStartGraalvmDocker.sh` and both
+  `misc/buildLinuxCore/*/buildLinuxCore.sh`.
+- **`docker/uiDev/**` is broken by FM-095's deletions** — its Dockerfile COPYs `core/ui-src/`, `core/bower_components/`, and
+  gulp/bower globs that no longer exist. It is the legacy-UI dev container; it should be removed in the same sweep as
+  `core/.bowerrc`. Surfaced by FM-095's designer.
+- **Two stale "migration placeholder" wordings** in `core/ui-react/src/router.test.tsx:328` (a test name) and
+  `SystemShell.test.tsx:98` (a stub body), after FM-095 renamed the component's copy to an unknown-route notice. Both pass and
+  neither asserts the renamed text.
+- **`GUI-STATUS.md:3-4` still names "The AngularJS GUI it replaced".** FM-095's acceptance asked that the file no longer mention a
+  legacy GUI; read literally that is unmet, read as intent (nothing implies a legacy GUI is reachable) it is met, and the
+  historical sentence is arguably more useful than silence. Owner's call.
 - **React's bulk send ignores the downloader's configured default category.** With `category: null` ("Use downloader default")
   the server sends SABnzbd no `cat` parameter at all, so Hydra's configured `defaultCategory` has no effect; legacy sent it
   explicitly from the client. Evidence: the SABnzbd mock recorded `{apikey, mode: "addfile", nzbname, output, priority}` with no

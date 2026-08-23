@@ -182,9 +182,10 @@ test.describe("Outlined label notch geometry", () => {
         await hydra.configureMockIndexers(["1", "2"]);
         const {release} = holdWebFonts(page);
 
-        // `MainWeb.isReactSelected` defaults to the legacy shell without the
-        // `nzbhydra-ui=react` cookie this entry point sets.
-        await page.goto("ui/react?redirect=/", {
+        // Until FM-095 this went through the cookie selector, because `MainWeb`
+        // served the legacy shell to a browser without the `react` cookie.
+        // There is one shell now, so the root is enough.
+        await page.goto("/", {
             waitUntil: "domcontentloaded",
         });
         await dismissWelcomeDialog(page);
@@ -218,7 +219,7 @@ test.describe("Outlined label notch geometry", () => {
     }, testInfo) => {
         const {release} = holdWebFonts(page);
 
-        await page.goto("ui/react?redirect=/config/searching", {
+        await page.goto("/config/searching", {
             waitUntil: "domcontentloaded",
         });
         await dismissWelcomeDialog(page);

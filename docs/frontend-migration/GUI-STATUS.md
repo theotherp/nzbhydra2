@@ -1,10 +1,9 @@
 # React GUI Status
 
-The React GUI is the default: the configured NZBHydra base URL serves it, and so does every canonical route, without any
-opt-in. Append `/ui/legacy` to switch back to the legacy GUI — the choice is remembered in the `nzbhydra-ui` cookie, and
-`/ui/react` switches forward again.
+The React GUI is the only GUI: the configured NZBHydra base URL serves it, and so does every canonical route. The
+AngularJS GUI it replaced, and the cookie selector that used to switch between the two, were removed by FM-095.
 
-Currently available in React:
+Currently available:
 
 - Form-auth login and logout: a `/login` page, a header login/logout affordance with legacy's visibility rules, and a
   redirect to `/login` for a FORM-restricted anonymous session. BASIC-auth login (the browser credential challenge) also

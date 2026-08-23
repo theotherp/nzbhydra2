@@ -641,31 +641,12 @@ def commit_maven_versions(ctx: BuildContext) -> None:
     )
 
 
-@step("build_frontend_assets", "Build frontend assets (gulp index)")
-def build_frontend_assets(ctx: BuildContext) -> None:
-    """Build minified frontend assets before backend build."""
-    if ctx.dry_run == DryRunMode.PRINT:
-        console.print("  [cyan]PRINT mode: Skipping frontend build[/cyan]")
-        return
-    run_command(
-        ctx,
-        ["npx", "gulp", "index"],
-        "Building frontend assets",
-        cwd=PROJECT_ROOT / "core" / "ui-src",
-    )
-
-
-@step("stage_frontend_assets", "Stage frontend assets for commit")
-def stage_frontend_assets(ctx: BuildContext) -> None:
-    """Stage built frontend assets for release commit."""
-    if ctx.dry_run == DryRunMode.PRINT:
-        console.print("  [cyan]PRINT mode: Skipping staging frontend assets[/cyan]")
-        return
-    run_command(
-        ctx,
-        ["git", "add", "core/src/main/resources/static"],
-        "Staging frontend assets",
-    )
+# FM-095: the two frontend steps that used to sit here -- `build_frontend_assets`
+# (`npx gulp index` in `core/ui-src`) and `stage_frontend_assets` (`git add` of the
+# built output under `core/src/main/resources/static`) -- are gone with the legacy
+# AngularJS UI. The React UI needs neither: `core/pom.xml` builds it with npm during
+# the Maven build below, straight into `target/classes/static/react`, so nothing is
+# ever checked in and there is nothing to stage.
 
 
 @step("build_core_jar", "Build core JAR")

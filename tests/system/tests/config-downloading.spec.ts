@@ -31,7 +31,7 @@ function withoutDownloaders(config: Json): Json {
 }
 
 async function openDownloadingConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/downloading");
+    await page.goto("/config/downloading");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-downloading")).toBeVisible();

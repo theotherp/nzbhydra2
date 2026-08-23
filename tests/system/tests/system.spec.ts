@@ -151,7 +151,7 @@ const offeredChanges = [
 ];
 
 async function openSystem(page: Page, path = "control"): Promise<void> {
-    await page.goto(`ui/react?redirect=/system/${path}`);
+    await page.goto(`/system/${path}`);
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("system-shell")).toBeVisible();
 }
@@ -222,7 +222,7 @@ test.describe("System shell", () => {
         ).toEqual([]);
     });
 
-    test("should fall through to the migration placeholder for a session that may not see the admin area", async ({
+    test("should fall through to the unknown-route notice for a session that may not see the admin area", async ({
         page,
     }) => {
         const attemptedControlCalls = await blockSystemControlEndpoints(page);
@@ -260,10 +260,11 @@ test.describe("System shell", () => {
             },
         );
 
-        // Selects the React shell for this context (the `ui/react` endpoint
-        // sets the selector cookie and redirects to the deep link, whose
-        // document the route above rewrites).
-        await page.goto("ui/react?redirect=/system/control");
+        // FM-095: a direct deep link now that the selector is gone. This is
+        // also the shape the rewrite above needs: Playwright routes only a
+        // navigation's initial request, so the document it must rewrite has to
+        // be the one this `goto` asks for, not one reached through a redirect.
+        await page.goto("/system/control");
 
         for (const tab of [
             "control",
@@ -276,9 +277,11 @@ test.describe("System shell", () => {
             "about",
         ]) {
             await page.goto(`system/${tab}`);
-            await expect(
-                page.getByText("React migration placeholder"),
-            ).toBeVisible();
+            // FM-095 renamed this component's copy: with no legacy shell left
+            // to fall back to, it is an unknown-route notice, not a migration
+            // placeholder. What it proves here is unchanged -- the restricted
+            // session gets the fallback body and never the system shell.
+            await expect(page.getByText("Page not found")).toBeVisible();
             await expect(page.getByTestId("system-shell")).toHaveCount(0);
         }
 

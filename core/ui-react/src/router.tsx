@@ -1,4 +1,4 @@
-import {Button, Container, Stack, Typography} from "@mui/material";
+import {Container, Stack, Typography} from "@mui/material";
 import {
     createRootRoute,
     createRoute,
@@ -38,9 +38,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
                 </Container>
             </AppShell>
         ),
-        notFoundComponent: () => (
-            <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
-        ),
+        notFoundComponent: () => <MigrationPlaceholder />,
     });
     // The login form is reachable in every session's route tree: an anonymous
     // FORM session is sent here by the guards below, and a logged-in one can
@@ -150,7 +148,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         beforeLoad: loginGuard(bootstrap, "stats"),
         component: () => (
             <StatsShell bootstrap={bootstrap}>
-                <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
+                <MigrationPlaceholder />
             </StatsShell>
         ),
     });
@@ -173,7 +171,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         ? [
               createConfigRoute(rootRoute, transport),
               createSystemRoute(rootRoute, transport, bootstrap, () => (
-                  <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
+                  <MigrationPlaceholder />
               )),
           ]
         : bootstrap.authType === "FORM"
@@ -249,22 +247,21 @@ function StatsPage({
     );
 }
 
-export function MigrationPlaceholder({baseUrl}: {baseUrl: string}) {
+/**
+ * FM-095: with the legacy shell removed there is nothing left to switch to, so this is no longer a
+ * migration placeholder offering a way out -- it is the notice for a route this application does not
+ * have. It survives because the stats and system shells route their unknown `$tab` here rather than
+ * rendering nothing.
+ */
+export function MigrationPlaceholder() {
     return (
         <Stack component="main" spacing={3} sx={{py: 8}}>
             <Typography component="h1" variant="h4">
-                React migration placeholder
+                Page not found
             </Typography>
             <Typography>
-                This route has not yet been migrated to React.
+                This address does not match any page of NZBHydra.
             </Typography>
-            <Button
-                component="a"
-                href={legacySwitchUrl(baseUrl)}
-                variant="contained"
-            >
-                Switch to legacy UI
-            </Button>
         </Stack>
     );
 }
@@ -272,14 +269,4 @@ export function MigrationPlaceholder({baseUrl}: {baseUrl: string}) {
 function routerBasePath(baseUrl: string): string {
     const path = new URL(baseUrl, window.location.origin).pathname;
     return path === "/" ? path : path.replace(/\/$/, "");
-}
-
-function legacySwitchUrl(baseUrl: string): string {
-    const base = new URL(baseUrl, window.location.origin);
-    const currentPath = window.location.pathname.startsWith(base.pathname)
-        ? window.location.pathname.slice(base.pathname.length - 1)
-        : window.location.pathname;
-    const selector = new URL("ui/legacy", base);
-    selector.searchParams.set("redirect", currentPath + window.location.search);
-    return selector.toString();
 }

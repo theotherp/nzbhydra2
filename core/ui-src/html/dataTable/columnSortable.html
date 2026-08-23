@@ -1,8 +1,0 @@
-<span class="column-sortable-{{::column}}">
-<span ng-click="sort()" ng-transclude id="text-sortable-{{::column}}" class="text-sortable"
-      data-testid="sort-{{::column}}"
-      data-sort-direction="{{sortModel.sortMode === 0 ? 'none' : ((sortModel.sortMode === 1) !== sortModel.reversed ? 'ascending' : 'descending')}}"></span>
-<span ng-click="sort()" class="glyphicon marker-sortable" id="marker-sortable-{{::column}}"
-      ng-class="{'glyphicon-triangle-top': (sortModel.sortMode==1 && !sortModel.reversed) || (sortModel.sortMode==2 && sortModel.reversed), 'glyphicon-triangle-bottom': (sortModel.sortMode==2 && !sortModel.reversed) || (sortModel.sortMode==1 && sortModel.reversed)}"
-      style="font-size: 80%"></span>
-    </span>

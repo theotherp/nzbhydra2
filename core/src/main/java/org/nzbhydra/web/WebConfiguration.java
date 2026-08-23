@@ -103,9 +103,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             // Must match the dependency for swagger-ui
             .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
 
-        registry.addResourceHandler("/bower_components/bootstrap-less/fonts/**")
-            .addResourceLocations("classpath:/static/fonts/");
-
         registry.setOrder(0);
     }
 

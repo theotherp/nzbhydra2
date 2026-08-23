@@ -27,12 +27,11 @@ test.describe("Search results", () => {
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
             {data: true},
         );
-        // FM-094: React is the server's default shell now, but this navigation
-        // stays explicit rather than bare. `ui/react?redirect=/` states which
-        // shell every test below is about instead of inheriting whatever the
-        // default happens to be, which is the same rule
-        // `focus-indication.spec.ts` documents at its head.
-        await page.goto("ui/react?redirect=/");
+        // FM-095: with the legacy shell and its selector gone this is simply
+        // the application's root. It reached here through
+        // `ui/react?redirect=/` while two shells existed, so that every test
+        // below stated which one it was about; there is only one now.
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
@@ -282,7 +281,7 @@ test.describe("Search results", () => {
     test("should sort and filter deterministic results in the React shell", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await page
             .getByTestId("search-query")
             .fill(testEnvironment.uiTestQuery);
@@ -332,7 +331,7 @@ test.describe("Search results", () => {
         page,
     }) => {
         await mockGroupedResults(page);
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await searchForGroupedResults(page);
 
         await assertGroupExpansionAndBulkSelection(page);
@@ -409,7 +408,7 @@ test.describe("Search results", () => {
                 },
             }),
         );
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await page.getByTestId("search-query").fill("deterministic filters");
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -542,7 +541,7 @@ test.describe("Search results", () => {
                 },
             });
         });
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await page.getByTestId("search-query").fill("paging");
         await page.getByTestId("search-submit").click();
         await expectVisibleResultTitles(page, ["Paged result one"]);
@@ -605,7 +604,7 @@ test.describe("Search results", () => {
                 },
             });
         });
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await page.getByTestId("search-query").fill("non-advancing paging");
         await page.getByTestId("search-submit").click();
         await expectVisibleResultTitles(page, ["Paged result one"]);
@@ -689,7 +688,7 @@ test.describe("Search results", () => {
             mobile: 300,
         }) as Array<[keyof typeof visualViewports, number]>) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page
                     .getByTestId("search-query")
                     .fill("visual evidence results");
@@ -913,7 +912,7 @@ test.describe("Search results", () => {
         // Desktop: expanded by default ("persistent left column ... at sm
         // and up").
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page
                 .getByTestId("search-query")
                 .fill("refine sidebar evidence");
@@ -1079,7 +1078,7 @@ test.describe("Search results", () => {
         await page.evaluate(() => window.localStorage.clear());
 
         await prepareVisualEvidence(page, "mobile", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page
                 .getByTestId("search-query")
                 .fill("refine sidebar evidence");
@@ -1181,7 +1180,7 @@ test.describe("Search results", () => {
         // navigation is kept because the test needs a freshly loaded page
         // whose persisted sidebar state comes from this test's own reload
         // cycle below.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await searchForUiTestResults(page);
 
         const categoryToggle = page.getByTestId("refine-category-toggle");
@@ -1285,7 +1284,7 @@ test.describe("Search results", () => {
         // tri-state checkbox is unchecked and not indeterminate, and the
         // bar has no horizontal overflow.
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page
                 .getByTestId("search-query")
                 .fill("bulk actions evidence");
@@ -1420,7 +1419,7 @@ test.describe("Search results", () => {
         // Mobile: a fresh load starts with no stored preference.
         await page.evaluate(() => window.localStorage.clear());
         await prepareVisualEvidence(page, "mobile", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page
                 .getByTestId("search-query")
                 .fill("bulk actions evidence");
@@ -1542,7 +1541,7 @@ test.describe("Search results", () => {
         );
 
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("toolbar mock density");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -1679,7 +1678,7 @@ test.describe("Search results", () => {
         // narrower viewport.
         await page.evaluate(() => window.localStorage.clear());
         await prepareVisualEvidence(page, "mobile", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("toolbar mock density");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -1818,7 +1817,7 @@ test.describe("Search results", () => {
         );
 
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("display options");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -1985,7 +1984,7 @@ test.describe("Search results", () => {
             ),
         );
         await prepareVisualEvidence(page, "mobile", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("display options");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -2129,7 +2128,7 @@ test.describe("Search results", () => {
         // pressure and so keeps every other geometry assertion below.
         for (const viewport of ["desktop", "desktop-wide", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page.getByTestId("search-query").fill("sticky evidence");
                 await page.getByTestId("search-submit").click();
                 await expect(
@@ -2507,7 +2506,7 @@ test.describe("Search results", () => {
 
         for (const viewport of ["desktop", "desktop-wide"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page.getByTestId("search-query").fill("fit check");
                 await page.getByTestId("search-submit").click();
                 await expect(
@@ -2634,7 +2633,7 @@ test.describe("Search results", () => {
 
         for (const viewport of ["desktop", "desktop-wide"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page.getByTestId("search-query").fill("title collapse");
                 await page.getByTestId("search-submit").click();
                 await expect(
@@ -2738,7 +2737,7 @@ test.describe("Search results", () => {
 
         for (const width of [758, 780]) {
             await page.setViewportSize({width, height: 800});
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("breakpoint check");
             await page.getByTestId("search-submit").click();
             await expect(
@@ -2844,7 +2843,7 @@ test.describe("Search results", () => {
         ) => {
             Object.assign(fixture, options);
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page
                     .getByTestId("search-query")
                     .fill("fm055 toolbar evidence");
@@ -3094,7 +3093,7 @@ test.describe("Search results", () => {
     test("should render every row's detail surfaces against real indexer results", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await searchForUiTestResults(page);
 
         // `hasNfo` comes straight from the mock indexer's `nfo` attribute:
@@ -3164,7 +3163,7 @@ test.describe("Search results", () => {
         // The mock indexers send no `source` attribute at all, so this one
         // field is supplied at the response level.
         await mockSourcedResult(page);
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await page.getByTestId("search-query").fill("binsearch source");
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -3189,7 +3188,7 @@ test.describe("Search results", () => {
     test("should show a real NFO in the viewer, as inert text", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await searchForUiTestResults(page);
 
         await resultRow(page, "indexer1-result2")
@@ -3214,7 +3213,7 @@ test.describe("Search results", () => {
     test("should report the two non-NFO responses without opening the viewer", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await searchForUiTestResults(page);
         const action = resultRow(page, "indexer1-result3").getByTestId(
             "result-nfo",
@@ -3262,13 +3261,13 @@ test.describe("Search results", () => {
         // instance every other spec shares.
         // The React shell is selected first, then reloaded with the rewrite
         // installed, because only the final document carries the bootstrap.
-        // FM-094: that second load is `page.reload()` rather than a bare
-        // `page.goto("/")`, so no test outside `smoke.spec.ts` depends on which
-        // shell a cookie-less `/` serves. It cannot go through the selector
-        // endpoint instead: Playwright routes the navigation's initial request,
-        // so a `ui/react?redirect=/` hop leaves the rewrite unapplied (proven
-        // by trying it -- "the shell was never requested").
-        await page.goto("ui/react?redirect=/");
+        // That second load is `page.reload()` rather than a second `goto`
+        // because only a reload is guaranteed to re-request the document with
+        // the rewrite already installed. FM-094 also proved the negative: any
+        // redirect hop in front of it leaves the rewrite unapplied, since
+        // Playwright routes only a navigation's initial request ("the shell
+        // was never requested"). FM-095 removed the selector hop entirely.
+        await page.goto("/");
         const rewrite = await withRestrictedDetailsBootstrap(page);
         await page.reload();
         expect(
@@ -3289,7 +3288,7 @@ test.describe("Search results", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await dismissWelcomeDialog(page);
                 await searchForUiTestResults(page);
             });
@@ -3397,7 +3396,7 @@ test.describe("Search results", () => {
         );
 
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await page.getByTestId("search-query").fill("group episodes help");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -3462,14 +3461,13 @@ test.describe("Search results", () => {
         }
         mock1.color = "rgb(116,18,18)";
         await hydra.saveConfig(config);
-        // FM-094 made React the served default and repointed this file's
-        // shared `beforeEach` at `ui/react?redirect=/`, so this navigation is
-        // no longer about picking a shell. It is still required: it re-seeds
+        // This navigation is not about picking a shell -- since FM-095 there
+        // is only one. It is still required: it re-seeds
         // the page's `SafeConfigContext` query (ADR-0017) with the colour just
         // saved, because a save through this direct API call, unlike one
         // through the config UI, never invalidates that already-mounted query
         // on its own.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         await searchForUiTestResults(page);
 
@@ -3594,7 +3592,7 @@ test.describe("Search results", () => {
         );
 
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await dismissWelcomeDialog(page);
             await page.getByTestId("search-query").fill("indexer colour");
             await page.getByTestId("search-submit").click();
@@ -3636,7 +3634,7 @@ test.describe("Search results", () => {
         );
 
         await prepareVisualEvidence(page, "mobile", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await dismissWelcomeDialog(page);
             await page.getByTestId("search-query").fill("indexer colour");
             await page.getByTestId("search-submit").click();

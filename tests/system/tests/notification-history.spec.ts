@@ -57,7 +57,7 @@ test.describe("Notification history", () => {
         page,
     }) => {
         const firstResponse = waitForNotificationHistory(page);
-        await page.goto("ui/react?redirect=/stats/notifications");
+        await page.goto("/stats/notifications");
         await dismissWelcomeDialog(page);
         expect((await firstResponse).status()).toBe(200);
 
@@ -166,7 +166,7 @@ test.describe("Notification history", () => {
     test("should show the empty state for a filter that matches nothing", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/stats/notifications");
+        await page.goto("/stats/notifications");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
 
@@ -212,7 +212,7 @@ test.describe("Notification history", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/stats/notifications");
+                await page.goto("/stats/notifications");
                 await dismissWelcomeDialog(page);
                 await expect(
                     page.getByTestId("notification-history-table"),

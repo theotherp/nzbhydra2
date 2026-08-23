@@ -46,8 +46,8 @@ class NativeApplicationContextTest {
         assertThat(securityConfig).isNotNull();
         assertThat(webSocketConfig).isNotNull();
         assertThat(healthEndpoint.health().getStatus().getCode()).isEqualTo("UP");
-        assertThat(getClass().getResource("/templates/index.html")).isNotNull();
-        assertThat(getClass().getResource("/templates/login.html")).isNotNull();
+        //FM-095 deleted the legacy index/login templates with the AngularJS UI; these two are all that is left
+        assertThat(getClass().getResource("/templates/react.html")).isNotNull();
         assertThat(getClass().getResource("/templates/error.html")).isNotNull();
 
         String indexerConfigJson = objectMapper.writeValueAsString(new IndexerConfig());

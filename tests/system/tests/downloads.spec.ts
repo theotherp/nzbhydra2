@@ -21,7 +21,7 @@ test.describe("Downloads", () => {
         );
         // FM-094: React is the served default now, but the navigation stays
         // explicit so every test below states which shell it is about.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
     });
 
@@ -301,7 +301,7 @@ test.describe("Downloads", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/stats/downloads");
+                await page.goto("/stats/downloads");
                 await dismissWelcomeDialog(page);
                 await expect(
                     page.getByTestId("history-refine-bar"),

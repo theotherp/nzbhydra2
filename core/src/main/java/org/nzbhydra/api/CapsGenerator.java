@@ -121,7 +121,7 @@ public class CapsGenerator {
         capsServer.setEmail("theotherp@posteo.net");
         capsServer.setTitle("NZBHydra 2");
         capsServer.setUrl("https://github.com/theotherp/nzbhydra2");
-        capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/ui-src/img/banner-bright.png");
+        capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/src/main/resources/static/img/banner-bright.png");
         capsRoot.setServer(capsServer);
 
         CapsXmlSearching capsSearching = new CapsXmlSearching();

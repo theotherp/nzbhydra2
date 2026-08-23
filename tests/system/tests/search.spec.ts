@@ -41,7 +41,7 @@ test.describe("Search", () => {
         );
         // React is the served default now, but the navigation stays explicit so
         // every test below states which shell it is about.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
@@ -105,16 +105,16 @@ test.describe("Search", () => {
         expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
-    // FM-094: the legacy-comparison step this test used to carry -- a
-    // `ui/legacy?redirect=/stats/saved-searches` visit asserting the saved
-    // entry was also listed by the AngularJS page -- is gone with the legacy
-    // shell. It compared two shells' rendering of the same record, which stops
-    // being a question once one shell remains; the record's own presence,
-    // reopening, rerun and deletion are all still asserted here against React.
+    // FM-094: the legacy-comparison step this test used to carry -- a visit to
+    // the AngularJS saved-searches page asserting the saved entry was listed
+    // there too -- is gone with the legacy shell. It compared two shells'
+    // rendering of the same record, which stops being a question once one
+    // shell remains; the record's own presence, reopening, rerun and deletion
+    // are all still asserted here against React.
     test("should save, reopen, rerun, and delete a React saved search", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await page.getByTestId("search-query").fill("saved React criteria");
         const initialSearch = page.waitForResponse((response) =>
@@ -206,7 +206,7 @@ test.describe("Search", () => {
                 "search-result-title",
             ].map((selector) => page.getByTestId(selector).count()),
         );
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await expect(page.getByTestId("search-query")).toBeVisible();
         await page.getByTestId("search-query").fill("uitest");
@@ -217,7 +217,7 @@ test.describe("Search", () => {
         expect((await searchResponse).status()).toBe(200);
         await expect(page.getByTestId("search-results")).toBeVisible();
         // FM-055: the React summary is one phrase, `{shown} of {loaded}
-        // loaded ...` (the legacy shell above keeps its own wording).
+        // loaded ...`, which is not the wording the legacy shell used.
         await expect(page.getByTestId("search-results-summary")).toContainText(
             "5 of 5 loaded",
         );
@@ -267,7 +267,7 @@ test.describe("Search", () => {
             mobile: 300,
         }) as Array<[keyof typeof visualViewports, number]>) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await expect(page).toHaveURL(/\/$/);
                 await expect(
                     page.getByTestId("search-workspace"),
@@ -571,7 +571,7 @@ test.describe("Search", () => {
 
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await page.getByTestId("search-category-control").click();
                 await page.getByTestId("search-category-option-TV").click();
                 await openAdvanced(page);
@@ -620,7 +620,7 @@ test.describe("Search", () => {
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("ui/react?redirect=/");
+                await page.goto("/");
                 await expect(
                     page.getByTestId("search-workspace"),
                 ).toBeVisible();
@@ -681,7 +681,7 @@ test.describe("Search", () => {
         page,
     }) => {
         await prepareVisualEvidence(page, "desktop", async () => {
-            await page.goto("ui/react?redirect=/");
+            await page.goto("/");
             await expect(page).toHaveURL(/\/$/);
         });
         const enableDemo = await page.request.put("/internalapi/demomode");
@@ -728,7 +728,7 @@ test.describe("Search", () => {
     test("should cancel a real search while the progress dialog is open and return to the empty search form (FM-083)", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
 
         // Route-delay the real search request so the progress dialog stays
@@ -780,7 +780,7 @@ test.describe("Search", () => {
         const main = config.main as Record<string, unknown>;
         await hydra.saveConfig(config);
 
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await openAdvanced(page);
         const indexerSelect = page.getByRole("combobox", {name: "Indexers"});
@@ -834,7 +834,7 @@ test.describe("Search", () => {
                 new URL(response.url()).pathname ===
                     "/internalapi/history/searches/forsearching",
         );
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await initialRecentSearches;
         // FM-044 relocated the age/size ranges into the collapsed `Advanced`
@@ -901,7 +901,7 @@ test.describe("Search", () => {
         const alphaQuery = "fm050 keyboard refill alpha";
         const betaQuery = "fm050 keyboard refill beta";
 
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         const firstSubmission = page.waitForResponse((response) =>
             isSearchResponse(response),
@@ -919,7 +919,7 @@ test.describe("Search", () => {
         // this fixture's keyboard-navigation trace was established with
         // this navigation in place, and this task does not re-open that
         // evidence.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         const secondSubmission = page.waitForResponse((response) =>
             isSearchResponse(response),
@@ -1255,7 +1255,7 @@ test.describe("Search", () => {
         // shell is named at the point of navigation. FM-094 repointed the
         // shared `beforeEach` at the same entry point, which used to reach the
         // legacy shell through a bare `page.goto("/")`.
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await expect(page.getByTestId("search-query")).toBeVisible();
 
@@ -1359,7 +1359,7 @@ test.describe("Search", () => {
     test("should select a movie autocomplete result through the React route and search by TMDB identifier", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await page.getByTestId("search-category-control").click();
         await page.getByTestId("search-category-option-Movies").click();
@@ -1426,7 +1426,7 @@ test.describe("Search", () => {
     test("should select a TV autocomplete result with the keyboard and search by TVDB identifier", async ({
         page,
     }) => {
-        await page.goto("ui/react?redirect=/");
+        await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
         await page.getByTestId("search-category-control").click();
         await page.getByTestId("search-category-option-TV").click();

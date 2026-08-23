@@ -69,14 +69,17 @@ async function authorizeAsAdmin(page: Page): Promise<void> {
     });
 }
 
-/** The `/config/auth` document request itself also needs the key -- see `authorizeAsAdmin`. */
+/**
+ * The `/config/auth` document request itself also needs the key -- see `authorizeAsAdmin`. Until FM-095
+ * this went through the selector endpoint, which meant the key had to survive a URL-encoded `redirect`
+ * parameter and a redirect hop; the deep link now carries it directly.
+ */
 function authConfigUrl(): string {
-    const redirect = `/config/auth?internalApiKey=${testEnvironment.hydraInternalApiKey}`;
-    return `ui/react?redirect=${encodeURIComponent(redirect)}`;
+    return `/config/auth?internalApiKey=${testEnvironment.hydraInternalApiKey}`;
 }
 
 async function openAuthConfig(page: Page): Promise<void> {
-    await page.goto("ui/react?redirect=/config/auth");
+    await page.goto("/config/auth");
     await dismissWelcomeDialog(page);
     await expect(page.getByTestId("config-shell")).toBeVisible();
     await expect(page.getByTestId("config-auth")).toBeVisible();

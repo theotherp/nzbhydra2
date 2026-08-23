@@ -478,6 +478,20 @@ no failures, skips or flaky. Passed with eight minor findings, none corrected (o
 `MAINTENANCE.md`'s open candidates rather than left in the deleted packet, including two that need an owner ruling and are
 therefore packets rather than quickfixes: the SABnzbd default-category gap and `loadLimitInternal`.
 
+FM-095 (Legacy UI And Selector Removal) is ADR-0001's final stage, authorised by ADR-0023: `core/ui-src`, the gulp/bower
+toolchain, the checked-in legacy `static/` assets, the `index`/`login` Thymeleaf shells, the `/ui/...` selector endpoints and
+the `nzbhydra-ui` cookie are gone in one commit -- 306 deleted paths -- with every `tests/system` navigation rewritten to a
+direct canonical route and `MainWeb` serving `react` unconditionally, logout flows included. That last part is the one that
+would have broken the product: `POST /logout` and `/loggedout` still rendered the legacy `index` view, so deleting the
+templates without it breaks logout; it is now proven by a unit test and a real-backend test asserting the posted response is
+the React shell. `GuidedTourWeb`/`DemoDataProvider` stay standing (ADR-0022). Two writes outside the allowlist were forced by
+the packet's own acceptance and ratified by a designer; `core/.bowerrc` was deliberately NOT deleted, which turned out to be
+right on the facts rather than only in spirit -- `docker/uiDev/Dockerfile:16` COPYs it -- so the acceptance bullet was
+corrected instead of the file removed. Passed with four minor findings, none corrected (optional), all carried into
+`MAINTENANCE.md`. The sharpest is that the GraalVM `resource-config.json` include list still names the deleted
+`templates/index.html` and never named `templates/react.html`, so a **native** build may now have no shell template; the JVM
+suite cannot catch it, and it is fixed separately below.
+
 ## Active
 
 None.
@@ -485,7 +499,6 @@ None.
 ## Review
 
 None.
-  system test is disposed of per test. Full suite green.
 
 ## Blocked
 
