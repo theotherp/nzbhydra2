@@ -322,6 +322,20 @@ tests including one that resolves the abandoned promise after the new one. No se
 sent (client-only abandon, legacy parity) and the two-button layout (vs. legacy's single morphing button) are both
 recorded as deliberate `F-SEARCH-PROGRESS` gap lines. Passed clean on first review.
 
+FM-084 (Toast Service Queueing And Rich Content) widened `C-TOAST-SERVICE` from a single replace-on-arrival Snackbar
+into the app's one toast surface: concurrent toasts now stack in arrival order in one fixed overlay, each with its
+own 5s lifetime and close button; `showToast` gained optional rich `content` (React node, never HTML), `persistent`,
+per-toast `onClose`, and now returns an idempotent dismiss handle, while every existing caller's signature and tests
+stayed unchanged. The overlay is pointer-transparent with `auto` restored per-alert, closing FM-065's dialog-action
+interception (proven by a real click reaching a Dialog's Submit button with a long toast open). `NotificationToasts`
+gave up its private `Snackbar` for the shared service with its ack/overflow/newline behaviors pinned unchanged, and
+FM-079's VIP-expiry toasts now stack instead of replacing each other. Passed with minor findings, not corrected
+(optional): `F-PLATFORM-LIVE-STATUS.selectors` still lists the removed `notification-toasts` id instead of the live
+`toasts` overlay; `F-CONFIG-INDEXERS`' now-false "one toast at a time" justification for its acknowledgement dialog;
+a toast raised over an open dialog is `aria-hidden`d by MUI's modal manager (pre-existing gap, surfaced not
+introduced); the 5s lifetime no longer pauses on hover/focus, matching legacy growl but losing `Snackbar`'s
+auto-hide pause. Candidates for a future quickfix.
+
 ## Active
 
 None.

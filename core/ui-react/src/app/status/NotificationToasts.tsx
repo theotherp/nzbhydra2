@@ -1,27 +1,21 @@
-import {Alert, Link, Snackbar, Stack} from "@mui/material";
+import {Link} from "@mui/material";
 import {Link as RouterLink} from "@tanstack/react-router";
-import {Fragment, useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef} from "react";
 
 import {
     planNotificationBatch,
     type LiveNotification,
-    type NotificationSeverity,
     type NotificationsLiveTransport,
 } from "../../api/live/notifications";
 import type {LiveSubscription} from "../../api/live/transport";
 import {useSafeConfig, type BootstrapData} from "../../bootstrap";
+import {
+    useToasts,
+    type DismissToast,
+    type Toast,
+} from "../../components/toasts/toasts";
 
-const TOAST_LIFETIME_MS = 5_000;
 const DEFAULT_DISPLAY_NOTIFICATIONS_MAX = 5;
-
-type ShownToast = {
-    key: number;
-    severity: NotificationSeverity;
-    body: string;
-    /** Legacy's `disableCountDown` for the pile-up notice. */
-    persistent: boolean;
-    overflowCount?: number;
-};
 
 /**
  * The in-app half of `F-PLATFORM-LIVE-STATUS`' live surfaces: legacy's
@@ -30,9 +24,10 @@ type ShownToast = {
  * the session's admin permission, that acknowledges every notification it
  * handled so the server stops redelivering it.
  *
- * Notification bodies are server-authored text and are rendered as text —
- * newlines become real line breaks, never HTML. Legacy injected the body into
- * growl's HTML.
+ * Delivered notifications are raised on `C-TOAST-SERVICE`, which stacks them,
+ * gives the pile-up notice its persistence and its router link, and renders
+ * every body as text — newlines become real line breaks, never HTML. Legacy
+ * injected the body into growl's HTML.
  */
 export function NotificationToasts({
     bootstrap,
@@ -46,18 +41,32 @@ export function NotificationToasts({
         asRecord(safeConfig?.notificationConfig)?.displayNotifications === true;
     const enabled = displayNotifications && bootstrap.maySeeAdmin === true;
     const displayNotificationsMax = readMax(safeConfig);
-    const [toasts, setToasts] = useState<ShownToast[]>([]);
-    const nextKey = useRef(0);
+    const {showToast} = useToasts();
     // Read at delivery time so a config save changes the overflow threshold
     // without resubscribing (ADR-0017).
     const maxRef = useRef(displayNotificationsMax);
     useEffect(() => {
         maxRef.current = displayNotificationsMax;
     }, [displayNotificationsMax]);
+    // Whatever this subscriber still has on screen, so it can withdraw it when
+    // notifications are switched off or the shell unmounts.
+    const shown = useRef(new Set<DismissToast>());
 
-    const dismiss = useCallback((key: number) => {
-        setToasts((current) => current.filter((toast) => toast.key !== key));
-    }, []);
+    const raise = useCallback(
+        (toast: Toast) => {
+            const handle: {dismiss?: DismissToast} = {};
+            handle.dismiss = showToast({
+                ...toast,
+                onClose: () => {
+                    if (handle.dismiss !== undefined) {
+                        shown.current.delete(handle.dismiss);
+                    }
+                },
+            });
+            shown.current.add(handle.dismiss);
+        },
+        [showToast],
+    );
 
     const receive = useCallback(
         (
@@ -65,30 +74,39 @@ export function NotificationToasts({
             acknowledge: (id: number) => void,
         ) => {
             const plan = planNotificationBatch(notifications, maxRef.current);
-            const added: ShownToast[] = plan.overflow
-                ? [
-                      {
-                          body: "",
-                          key: nextKey.current++,
-                          overflowCount: plan.count,
-                          persistent: true,
-                          severity: "info",
-                      },
-                  ]
-                : plan.toasts.map((toast) => ({
-                      body: toast.body,
-                      key: nextKey.current++,
-                      persistent: false,
-                      severity: toast.severity,
-                  }));
-            if (added.length > 0) {
-                setToasts((current) => [...current, ...added]);
+            if (plan.overflow) {
+                raise({
+                    content: (
+                        <>
+                            {plan.count} notifications have piled up.{" "}
+                            <Link
+                                color="inherit"
+                                component={RouterLink}
+                                to="/stats/notifications"
+                            >
+                                Go to the notification history to view them.
+                            </Link>
+                        </>
+                    ),
+                    // Legacy's `disableCountDown` for the pile-up notice.
+                    persistent: true,
+                    severity: "info",
+                    testId: "notification-toast",
+                });
+            } else {
+                for (const toast of plan.toasts) {
+                    raise({
+                        message: toast.body,
+                        severity: toast.severity,
+                        testId: "notification-toast",
+                    });
+                }
             }
             for (const id of plan.acknowledgeIds) {
                 acknowledge(id);
             }
         },
-        [],
+        [raise],
     );
 
     useEffect(() => {
@@ -97,6 +115,7 @@ export function NotificationToasts({
         }
         let cancelled = false;
         let subscription: LiveSubscription | undefined;
+        const shownToasts = shown.current;
         liveTransport
             .subscribeNotifications(
                 (notifications, acknowledge) => {
@@ -120,86 +139,14 @@ export function NotificationToasts({
             subscription = undefined;
             // Turning notifications off in the configuration withdraws what is
             // still on screen too, rather than leaving orphaned toasts behind.
-            setToasts([]);
+            for (const dismiss of [...shownToasts]) {
+                dismiss();
+            }
+            shownToasts.clear();
         };
     }, [enabled, liveTransport, receive]);
 
-    if (toasts.length === 0) {
-        return null;
-    }
-
-    return (
-        <Snackbar
-            anchorOrigin={{horizontal: "right", vertical: "top"}}
-            data-testid="notification-toasts"
-            open
-        >
-            <Stack spacing={1} sx={{maxWidth: 420}}>
-                {toasts.map((toast) => (
-                    <NotificationToast
-                        key={toast.key}
-                        onDismiss={() => dismiss(toast.key)}
-                        toast={toast}
-                    />
-                ))}
-            </Stack>
-        </Snackbar>
-    );
-}
-
-function NotificationToast({
-    onDismiss,
-    toast,
-}: {
-    onDismiss: () => void;
-    toast: ShownToast;
-}) {
-    useEffect(() => {
-        if (toast.persistent) {
-            return;
-        }
-        const timeout = window.setTimeout(onDismiss, TOAST_LIFETIME_MS);
-        return () => window.clearTimeout(timeout);
-    }, [onDismiss, toast.persistent]);
-
-    return (
-        <Alert
-            data-testid="notification-toast"
-            onClose={onDismiss}
-            severity={toast.severity}
-            variant="filled"
-        >
-            {toast.overflowCount === undefined ? (
-                <NotificationBody body={toast.body} />
-            ) : (
-                <>
-                    {toast.overflowCount} notifications have piled up.{" "}
-                    <Link
-                        color="inherit"
-                        component={RouterLink}
-                        to="/stats/notifications"
-                    >
-                        Go to the notification history to view them.
-                    </Link>
-                </>
-            )}
-        </Alert>
-    );
-}
-
-/** Newlines become line breaks; the body itself is always a text node. */
-function NotificationBody({body}: {body: string}) {
-    const lines = body.split(/\r?\n/);
-    return (
-        <>
-            {lines.map((line, index) => (
-                <Fragment key={index}>
-                    {index > 0 ? <br /> : null}
-                    {line}
-                </Fragment>
-            ))}
-        </>
-    );
+    return null;
 }
 
 function readMax(safeConfig: Record<string, unknown> | null): number {

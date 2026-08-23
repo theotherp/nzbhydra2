@@ -103,7 +103,7 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-TOAST-SERVICE
-    responsibility: Consistent transient notifications and severity mapping
+    responsibility: Consistent transient notifications and severity mapping; concurrent toasts stack in arrival order, each with its own lifetime, optional persistence, and optional rich content, over an overlay that stays transparent to pointer input
     legacy:
       - core/ui-src/js/nzbhydra.js
     target: core/ui-react/src/components/toasts

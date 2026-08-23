@@ -244,6 +244,41 @@ describe("StartupChecks", () => {
         ).toBeInTheDocument();
     });
 
+    it("should warn about every expiring indexer at once", async () => {
+        route("internalapi/welcomeshown", true);
+        route("internalapi/usernews", []);
+        route("internalapi/news/forcurrentversion", []);
+        route("internalapi/updates/isDisplayWrapperOutdated", false);
+        storage("outOfMemoryDetected", false);
+        storage("showOpenToInternetWithoutAuth", false);
+        storage("belowJava17", false);
+        storage("FAILED_BACKUP", null);
+
+        renderChecks({
+            safeConfig: {
+                indexers: [
+                    {name: "Gone", vipExpirationDate: "2001-01-01"},
+                    {name: "Going", vipExpirationDate: "2001-02-02"},
+                ],
+                showNews: true,
+            },
+        });
+
+        // Legacy's growl stacked one warning per indexer; the shared toast
+        // service does too, instead of the second replacing the first.
+        expect(
+            await screen.findByText(
+                "VIP access for indexer Gone expired on 2001-01-01",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "VIP access for indexer Going expired on 2001-02-02",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getAllByTestId("toast")).toHaveLength(2);
+    });
+
     it("should show a raised admin warning once and clear it on acknowledgement", async () => {
         route("internalapi/welcomeshown", true);
         route("internalapi/usernews", []);

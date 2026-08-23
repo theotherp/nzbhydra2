@@ -6,6 +6,7 @@ import type {
     NotificationsLiveTransport,
 } from "../../api/live/notifications";
 import {SafeConfigContext, type BootstrapData} from "../../bootstrap";
+import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {NotificationToasts} from "./NotificationToasts";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -97,26 +98,41 @@ function fakeLiveTransport(options: {fail?: boolean} = {}) {
     };
 }
 
-function renderToasts(
+type RenderOverrides = {
+    maySeeAdmin?: boolean;
+    safeConfig?: Record<string, unknown> | null;
+};
+
+function toastsTree(
     fake: ReturnType<typeof fakeLiveTransport>,
-    overrides: {
-        maySeeAdmin?: boolean;
-        safeConfig?: Record<string, unknown> | null;
-    } = {},
+    overrides: RenderOverrides,
 ) {
-    return render(
+    return (
         <SafeConfigContext.Provider
             value={overrides.safeConfig ?? enabledConfig}
         >
-            <NotificationToasts
-                bootstrap={{
-                    ...bootstrap,
-                    maySeeAdmin: overrides.maySeeAdmin ?? true,
-                }}
-                liveTransport={fake.liveTransport}
-            />
-        </SafeConfigContext.Provider>,
+            <ToastProvider>
+                <NotificationToasts
+                    bootstrap={{
+                        ...bootstrap,
+                        maySeeAdmin: overrides.maySeeAdmin ?? true,
+                    }}
+                    liveTransport={fake.liveTransport}
+                />
+            </ToastProvider>
+        </SafeConfigContext.Provider>
     );
+}
+
+function renderToasts(
+    fake: ReturnType<typeof fakeLiveTransport>,
+    overrides: RenderOverrides = {},
+) {
+    const view = render(toastsTree(fake, overrides));
+    return {
+        ...view,
+        show: (next: RenderOverrides) => view.rerender(toastsTree(fake, next)),
+    };
 }
 
 async function waitForSubscription(fake: ReturnType<typeof fakeLiveTransport>) {
@@ -254,6 +270,32 @@ describe("NotificationToasts", () => {
         });
         // Legacy's `disableCountDown` for the pile-up notice.
         expect(screen.getByRole("alert")).toHaveTextContent("piled up");
+    });
+
+    it("should withdraw its shared-service toasts when notifications are switched off", async () => {
+        const fake = fakeLiveTransport();
+        const view = renderToasts(fake);
+        await waitForSubscription(fake);
+
+        fake.deliver([
+            notification({id: 1}),
+            notification({id: 2}),
+            notification({id: 3}),
+        ]);
+        expect(screen.getByRole("alert")).toHaveTextContent("piled up");
+
+        view.show({
+            safeConfig: {
+                notificationConfig: {
+                    displayNotifications: false,
+                    displayNotificationsMax: 2,
+                },
+            },
+        });
+
+        // The provider outlives this subscriber, so the persistent notice has
+        // to be withdrawn rather than left behind on the shared surface.
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("should close the subscription on unmount", async () => {

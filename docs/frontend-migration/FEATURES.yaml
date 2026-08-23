@@ -1282,12 +1282,9 @@ features:
       - deliberate - FAILED_BACKUP shows the stored record's message and time and then clears it; legacy's display condition (`response.data && !response.data`) is unsatisfiable dead code, so the warning could never appear
       - "deliberate - the dialogs are feature-owned bodies rendered as MUI dialogs rather than C-DIALOG-SERVICE confirmations, because each one carries structure C-DIALOG-SERVICE's plain-text message cannot hold: real anchors
         for the links legacy injected as HTML, sanitized server-authored news, and the wrapper warning's file lists"
-      - deliberate - a VIP expiry warning is a C-TOAST-SERVICE toast per indexer, and the provider shows one toast at a time, so several expiring indexers replace each other; legacy's growl stacked them
       - deliberate - FM-080's footer banners compensate the main content area's bottom padding by measuring their own rendered height (a `ResizeObserver`, with an initial synchronous measurement), rather than reproducing legacy's
         `footer.js` pixel bookkeeping (`updateFooterBottom`/`updatePaddingBottom`), per ADR-0014
       - deliberate - FM-080's "Ignore this update" only hides the banner for the current app load (no refetch); the ignored version is still recorded server-side through API-UPDATES-IGNORE, matching legacy's own scope
-      - "deliberate - FM-081's notification toasts are a feature-owned MUI Snackbar/Alert stack in app/status rather than C-TOAST-SERVICE confirmations: the shared provider's Toast.message is a plain string shown one at a time,
-        and these need a real router link in the pile-up notice, newline line breaks in every body, and legacy growl's stacking. Folding them back once C-TOAST-SERVICE accepts rich content is recorded as follow-up work"
       - deliberate - FM-081 turns every newline in a notification body into a line break and renders it as text; legacy's body.replace("\n", "<br>") replaced only the first newline and injected the result as growl HTML
       - deliberate - FM-081's rate graph really stops self-advancing once the window holds nothing but the last known rate; legacy's _.every compared its {x, y} point objects to a number, so that stop condition could never fire
         and the interval ran until new data arrived
