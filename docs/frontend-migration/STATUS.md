@@ -424,6 +424,10 @@ None.
 
 ## Upcoming
 
+- FM-091: Group-episodes one-time help dialog and its server-backed `isGroupEpisodesHelpShown` flag — earliest of the
+  2026-08-23 parity-completion batch; later members stay planned packets in `tasks/`.
+- FM-096: Indexer colour shown on result rows (owner decision 2026-08-23) — dependency-free, independent of FM-092.
+
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.

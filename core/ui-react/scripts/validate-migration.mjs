@@ -30,6 +30,19 @@ export const parityStates = new Set([
     "partial",
     "done",
     "unverified_legacy_api",
+    // A capability the migration has decided NOT to reproduce, by an
+    // accepted `DECISIONS.md` entry. Distinct from `done` (migrated) and from
+    // `partial` (migrated with open gaps): without it a dropped feature has
+    // to masquerade as one of those, and a reader cannot tell "we built this"
+    // from "we decided not to". ADR-0022 (retire the guided search tour and
+    // demo mode) is the first user; it is also why the state exists at all,
+    // since that decision was accepted with nowhere in the registries to
+    // record its outcome.
+    //
+    // A `retired` record must name the deciding ADR in its `gaps`/notes, and
+    // marking a record retired is packet work, never an ad-hoc edit
+    // (ADR-0022's own binding constraint).
+    "retired",
 ]);
 
 function report(message) {

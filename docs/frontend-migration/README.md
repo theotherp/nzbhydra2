@@ -89,6 +89,10 @@ matrices, or variance bookkeeping; add an automated geometry assertion only to p
 - A shared component or API wrapper gets a registry ID before it is implemented. Check `COMPONENTS.yaml`/`APIS.yaml` before
   introducing shared code.
 - Existing `data-testid` values are compatibility contracts unless a packet explicitly replaces them.
+- Parity states are `inventoried`, `planned`, `partial`, `done`, `unverified_legacy_api`, and `retired`. `retired` means the
+  migration decided **not** to reproduce a capability and requires an accepted `DECISIONS.md` entry naming that decision — it is
+  not a synonym for `done`, and a reader must be able to tell "we built this" from "we decided not to". Marking a record
+  retired is packet work, never an ad-hoc edit.
 - `npm run validate:migration` (in `core/ui-react`) must pass; it checks registry shape, referenced paths, task metadata, and
   `STATUS.md` consistency.
 
