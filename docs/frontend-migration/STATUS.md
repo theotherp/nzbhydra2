@@ -351,6 +351,15 @@ doesn't quite reflect; the packet's cited server-side unsubscribe trigger (`Noti
 on session disconnect, not per-destination STOMP unsubscribe, so the implemented unsubscribe is harmless but not
 the load-bearing mechanism the packet asserted. Candidates for a future quickfix.
 
+FM-086 (Notification Test-Send Event Coverage) closed the backend defect FM-062 surfaced and this proposed as its own
+packet: `NotificationsWeb.NOTIFICATION_EVENTS` now registers `EXTERNAL_TOOL_CONFIGURATION`
+(`ExternalToolConfigResultEvent`, which already had a `getTestInstance()`), so
+`GET /internalapi/notifications/test/EXTERNAL_TOOL_CONFIGURATION` answers 2xx instead of 500. A new completeness
+test iterates the `NotificationEventType` enum itself (not the registered set) and asserts exactly one registration
+per value, red-first proven against the unfixed seven-event registration before the fix landed, so a future ninth
+event type can't silently reopen this gap. This closes the last item of the 2026-08-23 batch FM-082..FM-086.
+Passed clean on first review.
+
 ## Active
 
 None.

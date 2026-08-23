@@ -36,14 +36,15 @@ public class NotificationsWeb {
     private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
     private static final int INTERVAL = 1000;
     private static final String TOPIC = "/topic/notifications";
-    private static final Set<NotificationEvent> NOTIFICATION_EVENTS = Sets.newHashSet(
+    static final Set<NotificationEvent> NOTIFICATION_EVENTS = Sets.newHashSet(
         new DownloadNotificationEvent(),
         new IndexerDisabledNotificationEvent(),
         new UpdateNotificationEvent(),
         new DownloadCompletionNotificationEvent(),
         new IndexerVipExpiryNotificationEvent(),
         new IndexerReenabledNotificationEvent(),
-        new AuthFailureNotificationEvent()
+        new AuthFailureNotificationEvent(),
+        new ExternalToolConfigResultEvent()
     );
 
     @Autowired
