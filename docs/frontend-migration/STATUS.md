@@ -425,6 +425,14 @@ rejected `readFlag` through the mounted component (only the pure function), and 
 close path for this dialog specifically — its correctness rests on inspection of the shared, out-of-scope
 `DialogProvider`. Candidates for a future quickfix.
 
+FM-092 (Indexer Colour Picker And Clear Button) restores legacy's colour picker and clear button beside the indexer
+Color field as a feature-local `ColorSetting` composite, keeping the stored contract exactly `rgb(r,g,b)`-or-`null`. The
+packet's named trap is closed at the source: the native `<input type="color">` is left uncontrolled and given no
+`defaultValue` when the model is null, so its own `#000000` default can never be read back, and only an explicit pick
+writes. Hex exists only as an internal conversion. No picker library was added (ADR-0002) and no colour literal entered
+feature code (ADR-0014). Flips F-CONFIG-INDEXERS to `done`, with the un-reproduced 0.5-alpha field tint recorded as a
+`deliberate -` line. Passed clean on first review, no findings.
+
 ## Active
 
 None.

@@ -35,6 +35,7 @@ import {
     type SettingValidator,
 } from "../components";
 import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
+import {ColorSetting} from "./ColorSetting";
 import {IndexerStateSwitch} from "./IndexerStateSwitch";
 import {
     applyCapsCheckResult,
@@ -644,12 +645,13 @@ export function IndexerDialog({
                         ) : null}
                         {/*
                          * Legacy pairs this text field with a colour picker and
-                         * a clear button (`color-control.html`); the field
-                         * itself, holding the `rgb(...)` string, is the control
-                         * that is carried forward. The picker is recorded as a
-                         * gap on `F-CONFIG-INDEXERS`.
+                         * a clear button (`color-control.html`); `ColorSetting`
+                         * carries all three forward. The field itself, holding
+                         * the `rgb(...)` string, stays freely editable; the
+                         * legacy field-tint (0.5-alpha background) is not
+                         * reproduced (`F-CONFIG-INDEXERS` gaps).
                          */}
-                        <TextSetting
+                        <ColorSetting
                             advanced
                             help="If set it will be used in the search results to mark the indexer's results."
                             label="Color"

@@ -560,6 +560,35 @@ describe("The edit modal transaction", () => {
         expect(api.connection).toEqual([]);
         expect(api.caps).toEqual([]);
     });
+
+    it("picks a colour via the native input, clears it, and commits null", async () => {
+        const api = backend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({color: "rgb(116,18,18)", name: "Mock1"}),
+            ]),
+        });
+
+        await openEntry(0);
+        const nativeColorInput = document.querySelector(
+            'input[type="color"]',
+        ) as HTMLInputElement;
+        expect(nativeColorInput.value).toBe("#741212");
+
+        fireEvent.change(nativeColorInput, {target: {value: "#0a141e"}});
+        expect(draftField("color")).toHaveValue("rgb(10,20,30)");
+
+        fireEvent.click(screen.getByTestId("config-indexer-color-clear"));
+        expect(draftField("color")).toHaveValue("");
+
+        submitDialog();
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-indexer-dialog")).toBeNull(),
+        );
+
+        expect(indexersOf(harness)[0].color).toBeNull();
+    });
 });
 
 describe("The close sequence", () => {

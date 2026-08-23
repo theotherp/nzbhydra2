@@ -725,9 +725,14 @@ features:
       - config-indexer-import-error
       - config-indexer-import-running
       - config-indexer-import-result
-    parity: partial
+      # FM-092 additions: the colour field's native-input picker trigger and
+      # its clear button, both fixed strings (not path-derived, since the
+      # field itself already carries `config-input-indexerDraft-color`).
+      - config-indexer-color-picker
+      - config-indexer-color-clear
+    parity: done
     gaps:
-      - unmigrated - the colour picker and clear button beside the indexer colour field (color-control.html); the text field holding the rgb(...) value is carried forward, the picker is not
+      - deliberate - the colour field's swatch shows the committed colour but not legacy's field-background tint at 0.5 alpha (color-control.html); ADR-0014 does not reproduce a mock's per-field styling literal
       - deliberate - the two bulk-recheck actions are two buttons side by side; legacy hides "for all indexers" inside a split button's dropdown (recheck-all-caps.html)
       - deliberate - a bulk recheck merges only updateIndexerModel's nine fields into each matching entry and requires a non-empty name on both sides, so a nameless entry can never absorb a result
       - deliberate - a failed bulk recheck shows an acknowledgement; legacy has no rejection handler there and fell through to RequestsErrorHandler's generic error modal

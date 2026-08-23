@@ -58,7 +58,8 @@ Currently available in React:
   editable — the ordered indexer list with per-entry state, priority, and incomplete-config/incomplete-caps markers;
   adding a newznab, torznab, or special indexer from a preset or as a custom entry; a modal transaction that
   connection-checks and completes an entry's capabilities before it is accepted, with credentials that are never
-  round-tripped in clear text; bulk capability rechecking for incomplete or all indexers with per-indexer progress; and
+  round-tripped in clear text; a colour field with a native picker and a clear button alongside the free-text value;
+  bulk capability rechecking for incomplete or all indexers with per-indexer progress; and
   importing a whole Jackett or Prowlarr indexer set, replacing the list and reporting added/updated/removed counts.
   All eight canonical config tabs are now fully editable.
 

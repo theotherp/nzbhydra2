@@ -43,6 +43,16 @@ async function openIndexersConfig(page: Page): Promise<void> {
     await expect(page.getByTestId("config-indexers")).toBeVisible();
 }
 
+/**
+ * The advanced toggle is a per-browser preference in `localStorage`, and the
+ * `page` fixture clears storage on every document load.
+ */
+async function showAdvanced(page: Page): Promise<void> {
+    const toggle = page.getByRole("switch", {name: "Advanced settings"});
+    await toggle.setChecked(true);
+    await expect(toggle).toBeChecked();
+}
+
 function draftField(page: Page, field: string) {
     return page.getByTestId(`config-input-indexerDraft-${field}`);
 }
@@ -266,6 +276,51 @@ test.describe("Config indexers round trip", () => {
         expect(persisted).toHaveLength(1);
         expect(persisted[0].name).toBe("Mock2");
     });
+
+    test("should set a colour via the text field, clear it, and round-trip null", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [mockIndexer({name: "Mock1"})]),
+        );
+
+        await openIndexersConfig(page);
+        await showAdvanced(page);
+
+        await page.getByTestId("config-indexer-edit-0").click();
+        await expect(page.getByTestId("config-indexer-dialog")).toBeVisible();
+
+        await draftField(page, "color").fill("rgb(116,18,18)");
+        await expect(draftField(page, "color")).toHaveValue("rgb(116,18,18)");
+        await page.getByTestId("config-indexer-dialog-submit").click();
+        await expect(page.getByTestId("config-indexer-dialog")).toBeHidden();
+        await save(page);
+        // FM-084 made toasts stack rather than replace each other; close this
+        // one before the second `save()` below so its own "Configuration
+        // saved." assertion still resolves to exactly one element.
+        await page.getByRole("button", {name: "Close"}).click();
+        await expect(page.getByText("Configuration saved.")).toBeHidden();
+
+        let persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted[0].color).toBe("rgb(116,18,18)");
+
+        // Clearing writes null -- not "" and not the native input's own
+        // black default -- and that is what the save actually commits.
+        await page.getByTestId("config-indexer-edit-0").click();
+        await expect(page.getByTestId("config-indexer-dialog")).toBeVisible();
+        await expect(draftField(page, "color")).toHaveValue("rgb(116,18,18)");
+
+        await page.getByTestId("config-indexer-color-clear").click();
+        await expect(draftField(page, "color")).toHaveValue("");
+        await page.getByTestId("config-indexer-dialog-submit").click();
+        await expect(page.getByTestId("config-indexer-dialog")).toBeHidden();
+        await save(page);
+
+        persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted[0].color).toBeNull();
+    });
 });
 
 test.describe("Config indexers visual evidence", () => {
@@ -386,6 +441,45 @@ test.describe("Config indexers visual evidence", () => {
                     `indexers-connection-failed-${viewport}`,
                 ),
             });
+        });
+    }
+
+    // FM-092: the colour row's closed state (swatch, picker, and clear
+    // adornments) with a value set. The native picker itself is an
+    // OS-native dialog outside the page's rendered DOM -- Chromium never
+    // paints it into a page screenshot, headless or headed -- so no "picker
+    // open" capture exists; this is the row's only capturable state.
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the colour row at ${viewport}`, async ({
+            page,
+            hydra,
+        }) => {
+            const before = (await hydra.getConfig()) as Json;
+            await hydra.saveConfig(
+                withIndexers(before, [
+                    mockIndexer({color: "rgb(116,18,18)", name: "Mock1"}),
+                ]),
+            );
+
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openIndexersConfig(page);
+                await showAdvanced(page);
+                await page.getByTestId("config-indexer-edit-0").click();
+                await page
+                    .getByTestId("config-indexer-color-picker")
+                    .scrollIntoViewIfNeeded();
+                await expect(
+                    page.getByTestId("config-indexer-color-picker"),
+                ).toBeVisible();
+            });
+            await page
+                .getByTestId("config-setting-indexerDraft-color")
+                .screenshot({
+                    path: visualEvidencePath(
+                        "F-CONFIG-INDEXERS",
+                        `indexers-color-row-${viewport}`,
+                    ),
+                });
         });
     }
 });
