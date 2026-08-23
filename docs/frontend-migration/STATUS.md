@@ -391,6 +391,10 @@ None.
 
 ## Upcoming
 
+FM-088 (Numeric Filter Apply Removal And Inline Clear) is dependency-ready: remove the refine sidebar `NumericFilter`'s
+dead "Apply" button and move "Clear" beside the min/max fields as an icon-only control (`tasks/FM-088-numeric-filter-apply-removal.md`).
+First of the 2026-08-23 owner-triage batch FM-088..FM-090; FM-089 and FM-090 remain planned packets in `tasks/`.
+
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.

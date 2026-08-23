@@ -2791,18 +2791,19 @@ test.describe("Search results", () => {
             await expect(
                 actions.getByTestId("send-to-downloader"),
             ).toBeVisible();
-            // Both `Select`s moved into this row. They are addressed by their
-            // rendered input roots rather than by accessible name: MUI applies
-            // a `Select`'s `aria-label` to the hidden native input, not to the
-            // visible `role="combobox"` node, so neither carries a queryable
-            // name (a pre-existing gap this task does not touch --
-            // `focus-indication.spec.ts` addresses the same two controls the
-            // same way).
+            // Both `Select`s moved into this row -- except the downloader
+            // select itself, which this instance's single configured
+            // downloader (`Deterministic SABnzbd`) makes redundant: it's
+            // already the only option, so it's hidden entirely, leaving just
+            // the downloader-category select. It's addressed by its rendered
+            // input root rather than by accessible name: MUI applies a
+            // `Select`'s `aria-label` to the hidden native input, not to the
+            // visible `role="combobox"` node, so it carries no queryable name
+            // (a pre-existing gap this task does not touch --
+            // `focus-indication.spec.ts` addresses the same control the same
+            // way).
             const selects = actions.locator(".MuiInputBase-root");
-            await expect(selects).toHaveCount(2);
-            await expect(selects.first()).toContainText(
-                "Deterministic SABnzbd",
-            );
+            await expect(selects).toHaveCount(1);
             // The ZIP button is config-gated (`showResultsAsZipButton`, off in
             // this instance) and covered by the component test instead; every
             // capability this instance's configuration does render is asserted

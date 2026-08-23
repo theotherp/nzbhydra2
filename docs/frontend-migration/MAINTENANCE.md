@@ -764,6 +764,20 @@ Format, one entry per fix:
   evidence" 3/3 (desktop, desktop-wide, mobile) against a rebuilt real backend.
 - **Commit:** `35be348ce`
 
+### 2026-08-23 — Update `results-bulk-actions` select count for the hidden single-downloader select
+
+- **Why not a packet:** single-file test-only update to match already-shipped, intentional behavior (a stale
+  assertion after a prior UI change) -- the mechanical-repair pattern already established in this ledger's
+  history.
+- **Paths:** `tests/system/tests/results.spec.ts`.
+- **Gates:** `npx tsc --noEmit` in `tests/system` clean; the previously-failing spec re-run and passing (1/1)
+  against a rebuilt real backend; `git diff --check` clean.
+- **Commit:** `5d84901e8`
+- **Note:** this was a real regression from the 2026-08-23 downloader-actions quickfix (`bdae1e73a`, see above),
+  which shipped with vitest coverage only and was never run against this real-backend system test. Surfaced
+  by FM-088's implementer running the full `results.spec.ts` suite. A lesson for next time: a downloader-actions
+  rendering change should run `results.spec.ts` in full, not just the component test suite.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
@@ -835,3 +849,14 @@ instead of leaving it to rot.
   other two history routes (identical copy-pasted `<Button>`-in-`<TableCell>` pattern, not a shared component). Not named by
   the FM-023 review so left untouched here; discharging it would be the same `TableSortLabel` swap, contained to that one
   file.
+- **`focus-indication.spec.ts`'s "authored ring on the results surfaces" test mislabels its downloader-select focus-ring
+  capture** (`page.getByTestId("results-bulk-actions").locator(".MuiInputBase-root").first()`, named `downloader-select`
+  in its screenshot path and evidence, around line 884): its fixture (`hydra.configureSabnzbdMock()`) configures exactly
+  one downloader, so since `bdae1e73a` (2026-08-23) that select is hidden and `.first()` now actually resolves to the
+  *category* select instead. The test still passes -- `expectFocusedOutlinedInput` only checks generic notched-outline
+  CSS, and `tabTo` walks Tab presses dynamically until the target locator itself gains focus, so nothing is
+  content-sensitive -- but the captured `keyboard-focus-downloader-select-desktop` evidence and the assertion's own
+  name now describe the wrong control. Not a failure, so left as a candidate rather than fixed inline while chasing
+  FM-088; the fix is either pointing the locator at `.last()` (the category select, and renaming accordingly) or
+  switching the fixture to configure two downloaders so the downloader select is actually present again. Surfaced
+  2026-08-23 while investigating the `results.spec.ts` regression above.
