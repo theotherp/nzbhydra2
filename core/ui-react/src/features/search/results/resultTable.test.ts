@@ -7,6 +7,7 @@ import {
     formatResultSize,
     groupResults,
     filterResults,
+    indexerColorsFromSafeConfig,
     isRecentResult,
     preselectedQuickFilters,
     RECENT_RESULT_MAX_AGE_DAYS,
@@ -425,6 +426,47 @@ function withPinnedClock(assertions: (nowInSeconds: number) => void): void {
         vi.useRealTimers();
     }
 }
+
+describe("indexerColorsFromSafeConfig", () => {
+    it("should map indexer name to its rgb() colour", () => {
+        expect(
+            indexerColorsFromSafeConfig({
+                indexers: [{name: "One", color: "rgb(10,20,30)"}],
+            }),
+        ).toEqual({One: "rgb(10,20,30)"});
+    });
+
+    it("should omit indexers with a null or missing colour", () => {
+        expect(
+            indexerColorsFromSafeConfig({
+                indexers: [{name: "One", color: null}, {name: "Two"}],
+            }),
+        ).toEqual({});
+    });
+
+    it("should omit an indexer whose colour is not a valid rgb() string", () => {
+        expect(
+            indexerColorsFromSafeConfig({
+                indexers: [
+                    {name: "One", color: "not-a-colour"},
+                    {name: "Two", color: "#ff0000"},
+                    {name: "Three", color: "rgba(10,20,30,0.5)"},
+                ],
+            }),
+        ).toEqual({});
+    });
+
+    it("should return an empty map for missing or malformed safe config", () => {
+        expect(indexerColorsFromSafeConfig(undefined)).toEqual({});
+        expect(indexerColorsFromSafeConfig({})).toEqual({});
+        expect(indexerColorsFromSafeConfig({indexers: "not-an-array"})).toEqual(
+            {},
+        );
+        expect(
+            indexerColorsFromSafeConfig({indexers: [null, "not-a-record"]}),
+        ).toEqual({});
+    });
+});
 
 describe("formatResultSize", () => {
     // Legacy renders the Size cell as `{{ ::result.size | byteFmt: 2 }}`

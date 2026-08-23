@@ -261,6 +261,42 @@ export function quickFiltersFromSafeConfig(value: unknown): QuickFilter[] {
     return [...sourceFilters, ...qualityFilters, ...otherFilters, ...custom];
 }
 
+// Legacy's stored format (`color-control.html`, `formly-config.js:290-322`):
+// `rgb(r,g,b)` or `null`, never an alpha channel and never `#rrggbb`. The
+// Color field is free text, so anything else -- an unfinished edit, garbage,
+// a CSS name -- must render no swatch rather than a malformed style or a
+// throw (FM-096 acceptance).
+const RGB_PATTERN = /^rgb\((\d{1,3}),(\d{1,3}),(\d{1,3})\)$/;
+
+/**
+ * FM-096: `safeConfig.indexers[].{name,color}` (`SafeIndexerConfig.java`) as
+ * an indexer-name -> validated CSS colour map, for the result rows' swatch.
+ * Only indexers with a `rgb(r,g,b)`-shaped colour are included; a missing,
+ * null, or malformed value is simply absent from the map, which is what lets
+ * `SearchResults.tsx` render no swatch for them without a null-check per
+ * lookup.
+ */
+export function indexerColorsFromSafeConfig(
+    value: unknown,
+): Record<string, string> {
+    if (!isRecord(value) || !Array.isArray(value.indexers)) {
+        return {};
+    }
+    const entries: [string, string][] = [];
+    for (const entry of value.indexers) {
+        if (
+            !isRecord(entry) ||
+            typeof entry.name !== "string" ||
+            typeof entry.color !== "string" ||
+            !RGB_PATTERN.test(entry.color.trim())
+        ) {
+            continue;
+        }
+        entries.push([entry.name, entry.color.trim()]);
+    }
+    return Object.fromEntries(entries);
+}
+
 export function preselectedQuickFilters(
     value: unknown,
     filters: QuickFilter[],

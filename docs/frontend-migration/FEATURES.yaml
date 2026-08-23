@@ -133,6 +133,8 @@ features:
       # selected); the selection itself carries no test id of its own.
       - search-chip-indexers
     parity: partial
+    gaps:
+      - deliberate - the search form's indexer-selection checkboxes are not tinted with the indexer's configured colour (legacy's `indexer-input.js:41-42`); the owner named result rows for FM-096, and the setting's help text promises only search results
   - id: F-SEARCH-RECENT
     name: Recent-search dropdown, refill, repeat, and drag-to-search
     routes:
@@ -209,7 +211,10 @@ features:
       - nfo-dialog-content
       - display-options-toggle
       - display-options
+      - search-result-indexer-swatch
     parity: partial
+    gaps:
+      - deliberate - FM-096 (owner decision 2026-08-23) replaces legacy's whole-`tbody` `rgba(colour,0.5)` row tint with a bounded, outlined swatch beside the indexer name; an arbitrary user colour at 0.5 alpha behind row text cannot meet WCAG contrast on the dark palette and collides with the FM-054 recency stripe, the nested-row `action.hover` background, and the Downloaded chip
   - id: F-SEARCH-SORT-FILTER
     name: Result sorting, column filters, quick filters, and persisted choices
     routes:

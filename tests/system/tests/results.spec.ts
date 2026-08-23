@@ -3405,6 +3405,219 @@ test.describe("Search results", () => {
 
         await page.unrouteAll({behavior: "ignoreErrors"});
     });
+
+    // FM-096: a real search against a mock indexer configured with a colour,
+    // proving the value the config dialog round-trips (`config-indexers.spec.ts`)
+    // now actually renders somewhere -- and only on the rows of the indexer it
+    // was set for.
+    test("should show a swatch only on the rows of the indexer with a configured colour", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        const indexers = config.indexers as Record<string, unknown>[];
+        const mock1 = indexers.find((indexer) => indexer.name === "Mock1");
+        if (mock1 === undefined) {
+            throw new Error("Expected a configured 'Mock1' indexer");
+        }
+        mock1.color = "rgb(116,18,18)";
+        await hydra.saveConfig(config);
+        // This file's shared `beforeEach` only navigates to "/", which the
+        // server renders as the legacy AngularJS shell absent the
+        // `nzbhydra-ui` cookie (`MainWeb.java`'s `isReactSelected`) -- every
+        // other React-targeting test in this file first visits
+        // `ui/react?redirect=/` to set it. That same navigation also
+        // re-seeds the page's `SafeConfigContext` query (ADR-0017) with the
+        // colour just saved: a save through this direct API call, unlike one
+        // through the config UI, never invalidates that already-mounted
+        // query on its own.
+        await page.goto("ui/react?redirect=/");
+        await dismissWelcomeDialog(page);
+        await searchForUiTestResults(page);
+
+        const colouredRow = resultRow(page, "indexer1-result1");
+        const swatch = colouredRow.getByTestId(
+            "search-result-indexer-swatch",
+        );
+        await expect(swatch).toBeVisible();
+        await expect(swatch).toHaveAttribute("aria-hidden");
+        expect(
+            await swatch.evaluate(
+                (element) => getComputedStyle(element).backgroundColor,
+            ),
+        ).toBe("rgb(116, 18, 18)");
+
+        const uncolouredRow = resultRow(page, "indexer2-result1");
+        await expect(
+            uncolouredRow.getByTestId("search-result-indexer-swatch"),
+        ).toHaveCount(0);
+
+        // The name text is never dropped -- colour decorates, it does not
+        // replace the row's actual carrier of the information.
+        await expect(colouredRow).toContainText("Mock1");
+        await expect(uncolouredRow).toContainText("Mock2");
+    });
+
+    // FM-096 visual gate: a dark colour, a saturated colour, and no colour
+    // side by side, plus a recency-flagged row to prove the swatch and the
+    // FM-054 teal stripe coexist without either changing the other.
+    test("should provide deterministic indexer-colour visual evidence across desktop and mobile", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        const indexers = config.indexers as Record<string, unknown>[];
+        indexers.push(
+            {
+                name: "Dark Indexer",
+                host: testEnvironment.mockserverInternalUrl,
+                apiPath: "/api",
+                apiKey: "dark",
+                backend: "NEWZNAB",
+                allCapsChecked: true,
+                supportedSearchTypes: ["SEARCH"],
+                supportedSearchIds: [],
+                color: "rgb(20,20,20)",
+            },
+            {
+                name: "Saturated Indexer",
+                host: testEnvironment.mockserverInternalUrl,
+                apiPath: "/api",
+                apiKey: "saturated",
+                backend: "NEWZNAB",
+                allCapsChecked: true,
+                supportedSearchTypes: ["SEARCH"],
+                supportedSearchIds: [],
+                color: "rgb(255,45,120)",
+            },
+            // Deliberately no config entry for "Uncoloured Indexer" -- an
+            // indexer absent from the map renders no swatch, the same as one
+            // present with a null colour.
+        );
+        await hydra.saveConfig(config);
+
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "dark",
+                            title: "Indexer Colour Dark Result",
+                            indexer: "Dark Indexer",
+                            category: "Movies",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "saturated",
+                            title: "Indexer Colour Saturated Result",
+                            indexer: "Saturated Indexer",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            seeders: 7,
+                            epoch: now - 40 * 86_400,
+                            age: "40 days",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "uncoloured",
+                            title: "Indexer Colour Uncoloured Result",
+                            indexer: "Uncoloured Indexer",
+                            category: "Movies",
+                            size: 3 * 1024 * 1024,
+                            seeders: 3,
+                            epoch: now - 40 * 86_400,
+                            age: "40 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Dark Indexer", wasSuccessful: true},
+                        {
+                            indexerName: "Saturated Indexer",
+                            wasSuccessful: true,
+                        },
+                        {
+                            indexerName: "Uncoloured Indexer",
+                            wasSuccessful: true,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("indexer colour");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        await toggleDisplayOption(page, "Highlight recent");
+
+        const darkRow = resultRow(page, "Indexer Colour Dark Result");
+        const saturatedRow = resultRow(
+            page,
+            "Indexer Colour Saturated Result",
+        );
+        const uncolouredRow = resultRow(
+            page,
+            "Indexer Colour Uncoloured Result",
+        );
+
+        await expect(
+            darkRow.getByTestId("search-result-indexer-swatch"),
+        ).toHaveCSS("background-color", "rgb(20, 20, 20)");
+        await expect(
+            saturatedRow.getByTestId("search-result-indexer-swatch"),
+        ).toHaveCSS("background-color", "rgb(255, 45, 120)");
+        await expect(
+            uncolouredRow.getByTestId("search-result-indexer-swatch"),
+        ).toHaveCount(0);
+        // The recency stripe (FM-054) and the FM-096 swatch coexist on the
+        // same row without either changing.
+        expect((await recencyTreatment(darkRow)).stripe).toContain("inset");
+
+        await captureVisualRegion(
+            page.getByTestId("search-results-table"),
+            "F-SEARCH-RESULTS",
+            "indexer-colour-desktop",
+        );
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("ui/react?redirect=/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("indexer colour");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+        await expect(
+            darkRow.getByTestId("search-result-indexer-swatch"),
+        ).toHaveCSS("background-color", "rgb(20, 20, 20)");
+        await captureVisualRegion(
+            page.getByTestId("search-results-table"),
+            "F-SEARCH-RESULTS",
+            "indexer-colour-mobile",
+        );
+
+        await page.unrouteAll({behavior: "ignoreErrors"});
+    });
 });
 
 async function expectNfoState(

@@ -1603,6 +1603,95 @@ describe("SearchResults", () => {
         expect(screen.getByTestId("result-details-link")).toBeEnabled();
     });
 
+    it("should render a swatch only beside an indexer with a valid configured colour", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                indexers: [
+                    {name: "Coloured", color: "rgb(200,50,10)"},
+                    {name: "Malformed", color: "not-a-colour"},
+                ],
+            },
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result 1",
+                            indexer: "Coloured",
+                            category: "All",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Result 2",
+                            indexer: "Uncoloured",
+                            category: "All",
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Result 3",
+                            indexer: "Malformed",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const rows = screen.getAllByTestId("search-result-row");
+        const colouredSwatch = within(rows[0]).getByTestId(
+            "search-result-indexer-swatch",
+        );
+        expect(colouredSwatch).toHaveAttribute("aria-hidden");
+        expect(colouredSwatch).toHaveStyle({
+            backgroundColor: "rgb(200, 50, 10)",
+        });
+        expect(
+            within(rows[1]).queryByTestId("search-result-indexer-swatch"),
+        ).not.toBeInTheDocument();
+        expect(
+            within(rows[2]).queryByTestId("search-result-indexer-swatch"),
+        ).not.toBeInTheDocument();
+        // The indexer name text is never dropped -- colour decorates, never
+        // replaces, the row's actual carrier of the information.
+        ["Coloured", "Uncoloured", "Malformed"].forEach((name, index) => {
+            expect(rows[index]).toHaveTextContent(name);
+        });
+    });
+
+    it("should leave row background, recency stripe, and cell styles unchanged when an indexer colour is configured", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                indexers: [{name: "Coloured", color: "rgb(200,50,10)"}],
+            },
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Coloured",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const row = screen.getByTestId("search-result-row");
+        // The row itself never carries the indexer colour -- only the
+        // bounded swatch inside the Indexer cell does.
+        expect(row).not.toHaveStyle({backgroundColor: "rgb(200, 50, 10)"});
+        expect(row.style.backgroundColor).toBe("");
+    });
+
     it("should keep the NFO action but drop the external links without the details permission", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",

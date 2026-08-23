@@ -73,6 +73,7 @@ import {
     formatResultDetails,
     formatResultSize,
     groupResults,
+    indexerColorsFromSafeConfig,
     isRecentResult,
     preselectedQuickFilters,
     quickFilterKey,
@@ -232,6 +233,15 @@ export function SearchResults({
     const dereferer = isRecord(effectiveSafeConfig)
         ? effectiveSafeConfig.dereferer
         : undefined;
+    // FM-096: same live-config read as `dereferer` above (ADR-0017), so a
+    // colour saved in Config -> Indexers reaches already-rendered rows
+    // without a reload. Memoized on `effectiveSafeConfig` so the map is
+    // referentially stable across re-renders that don't change config,
+    // which `ResultRow`'s `memo` depends on.
+    const indexerColors = useMemo(
+        () => indexerColorsFromSafeConfig(effectiveSafeConfig),
+        [effectiveSafeConfig],
+    );
     // One transport for every row's `API-SEARCH-NFO` request, rather than one
     // per rendered row.
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
@@ -1589,6 +1599,9 @@ export function SearchResults({
                                                                 duplicateKey={
                                                                     duplicateKey
                                                                 }
+                                                                indexerColors={
+                                                                    indexerColors
+                                                                }
                                                                 isNewGroup={
                                                                     isNewGroup
                                                                 }
@@ -1722,6 +1735,7 @@ const ResultRow = memo(function ResultRow({
     downloaded,
     duplicateExpanded,
     duplicateKey,
+    indexerColors,
     isNewGroup,
     maySeeDetailsDl,
     nestingLevel,
@@ -1742,6 +1756,11 @@ const ResultRow = memo(function ResultRow({
     downloaded: boolean;
     duplicateExpanded: boolean;
     duplicateKey: string;
+    // FM-096: indexer name -> validated `rgb(r,g,b)` colour, built once per
+    // config change in the parent (`indexerColorsFromSafeConfig`) and passed
+    // down as this stable reference -- looking it up here rather than
+    // rebuilding it per row keeps `ResultRow`'s `memo` meaningful.
+    indexerColors: Record<string, string>;
     isNewGroup: boolean;
     maySeeDetailsDl: boolean;
     nestingLevel: number;
@@ -1824,6 +1843,17 @@ const ResultRow = memo(function ResultRow({
             </TableCell>
             {resultColumns.map((column) => {
                 const isTitle = column.id === "title";
+                // FM-096: the swatch needs the config-derived `indexerColors`
+                // map, which `resultColumns`' `value(result)` cannot see (it
+                // is a module constant, built once, with no config in
+                // scope) -- so this column is special-cased here, the same
+                // way the title column already is for its expand buttons,
+                // rather than widening `ResultColumn.value`'s signature for
+                // one column.
+                const isIndexer = column.id === "indexer";
+                const indexerColor = isIndexer
+                    ? indexerColors[result.indexer]
+                    : undefined;
                 return (
                     <TableCell
                         align={column.align}
@@ -1924,6 +1954,32 @@ const ResultRow = memo(function ResultRow({
                                     </Button>
                                 )}
                                 <Box>{column.value(result)}</Box>
+                            </Stack>
+                        ) : isIndexer ? (
+                            <Stack
+                                alignItems="center"
+                                direction="row"
+                                gap={0.5}
+                                justifyContent="flex-end"
+                            >
+                                {indexerColor !== undefined && (
+                                    <Box
+                                        aria-hidden
+                                        data-testid="search-result-indexer-swatch"
+                                        sx={{
+                                            bgcolor: indexerColor,
+                                            border: 1,
+                                            borderColor: "divider",
+                                            borderRadius: 0.5,
+                                            flexShrink: 0,
+                                            height: (theme) =>
+                                                theme.spacing(1.5),
+                                            width: (theme) =>
+                                                theme.spacing(1.5),
+                                        }}
+                                    />
+                                )}
+                                {column.value(result)}
                             </Stack>
                         ) : (
                             column.value(result)

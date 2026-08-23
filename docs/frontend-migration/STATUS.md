@@ -449,6 +449,19 @@ two `F-AUTH-LOGIN` acceptance bullets contradict each other; and `scripts/valida
 vitest and wired into no npm script, so the parity validator's own 9 tests never run in any routine check (they pass when
 run directly). Candidates for a future quickfix.
 
+FM-096 (Indexer Colour On Result Rows) makes the per-indexer Color setting visible again: React had edited and
+round-tripped the value since the config tabs shipped but consumed it nowhere, so the setting had no effect at all.
+Each row's indexer name now carries a small `divider`-outlined swatch fed by `indexerColorsFromSafeConfig`, read off the
+same live safe config (ADR-0017) the `dereferer` already uses and threaded into the memoized `ResultRow` as a stable
+prop, so its memoization is not silently defeated. Deliberately a bounded swatch rather than legacy's whole-row
+0.5-alpha tint: an arbitrary user-chosen colour cannot sit behind row text, and the left-edge channel already belongs to
+FM-054's recency stripe — both recorded as `deliberate -` lines, along with the un-reproduced search-form checkbox
+colouring. The Color field is free text, so only a strict `rgb(r,g,b)` shape renders; hex, `rgba(...)`, empty and
+garbage all yield no swatch and no throw. Passed with one minor finding, not corrected (optional): a component test's
+name promises more coverage than it asserts (it checks the row background but not the stripe or cell styles it names) —
+the criterion itself is independently satisfied by the untouched `sx` diff and the system test's stripe assertion.
+Candidate for a future quickfix.
+
 ## Active
 
 None.
@@ -463,7 +476,7 @@ None.
 
 ## Upcoming
 
-- FM-096: Indexer colour shown on result rows (owner decision 2026-08-23) — dependency-free, independent of FM-092.
+None.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
