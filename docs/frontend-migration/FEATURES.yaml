@@ -52,14 +52,14 @@ features:
       - shell-loginout
     parity: partial
     gaps:
-      - OpenID Connect sign-in (server-side redirects; no SPA surface)
+      - deliberate - OpenID Connect sign-in; login.html/login-controller.js carry no OIDC affordance in the legacy SPA, sign-in happens entirely in server-side redirects the SPA never renders
       - deliberate - every session transition re-enters the application through a full document navigation, because the route tree, the navigation, and the affordance itself are built once from the server-rendered bootstrap (ADR-0017 keeps only the safe config reactive); legacy changed state in place
       - deliberate - legacy's post-logout toasts ("Logged out", "Logged out. Close your browser to make sure session is closed.") and its post-BASIC-challenge "Login successful!" are not shown, because the full navigation that follows discards them
       - deliberate - the anonymous affordance is not suppressed for the rest of the page's life after a logout (legacy's `event !== "loggedOut"` branch); the next page's bootstrap decides instead
       - deliberate - the user name for a BASIC challenge's `old_username` is carried across the full navigation in session storage; legacy kept it in the header controller's scope, which a navigation would have discarded
       - deliberate - a failed logout or BASIC challenge is reported as a "Logout failed!"/"Login failed!" toast; legacy left both to the global HTTP error growl the React app has no equivalent of
       - deliberate - the login form's two placeholder-only inputs carry visible MUI labels (ADR-0014)
-      - logging out of a BASIC session does not end it (verified live): the browser replays the cached `Authorization` header on the full navigation that follows the logout, so the server renders an authenticated bootstrap again and the header still reads `Logout {username}`. Legacy could not end the session either, but hid the affordance in place and so at least looked logged out. Ending a BASIC session needs a decision about the unused `POST /loggedout` endpoint (session invalidation plus a fresh challenge), which FM-078 did not own.
+      - "deliberate - logging out of a BASIC session does not end it (verified live): the browser replays the cached `Authorization` header on the full navigation that follows the logout, so the server renders an authenticated bootstrap again and the header still reads `Logout {username}`. Legacy could not end the session either, but hid the affordance in place and so at least looked logged out. Recorded as a permanent shared limitation, not a React gap: `POST /loggedout` (`MainWeb.java:92`) is dead server code no UI has ever called — a case-insensitive sweep of `core/ui-src` finds only AngularJS `user:loggedOut` *events*, never the endpoint — so this is not an endpoint React failed to adopt. React already implements legacy's actual BASIC mechanism (`session.ts`'s `askForPassword` -> `internalapi/askpassword?old_username=`). Owner ruling 2026-08-23."
   - id: F-SEARCH-FORM
     name: Search workspace, URL criteria, categories, limits, and submission
     routes:
@@ -164,16 +164,16 @@ features:
       - tests/system/tests/search.spec.ts
     selectors:
       - search-status-modal
-    parity: partial
+    parity: done
     gaps:
       - deliberate - Cancel does not send a server-side cancellation request;
         the backend keeps searching after the client abandons the submission.
         Its own text already said "legacy parity — only the client stops
         waiting", i.e. legacy behaves identically; reclassified 2026-08-23
         from a bare gap, which read as outstanding work.
-      - Two-button layout (separate Cancel and "Show early results" buttons)
+      - deliberate - Two-button layout (separate Cancel and "Show early results" buttons)
         instead of legacy's single button that morphs from Cancel to "Show
-        results" once indexers finish.
+        results" once indexers finish; recorded as deliberate by FM-083.
   - id: F-SEARCH-RESULTS
     name: Result processing, display, indexer outcomes, and malformed-result resilience
     routes:
@@ -375,10 +375,12 @@ features:
       - core/ui-src/js/search-controller.js
       - core/ui-src/js/guided-tour-service.js
       - core/ui-src/js/angular-ui-tour.js
-    target: core/ui-react/src/features/search/tour
+    target: null
     tests: []
     selectors: []
-    parity: inventoried
+    parity: retired
+    gaps:
+      - deliberate - the guided search tour and demo mode are retired, not reproduced in React (ADR-0022); the legacy implementation is ~2,300 lines of cross-state step choreography and vendored `angular-ui-tour.js` that does not port mechanically, and no React tour or demo mode is built
   - id: F-CONFIG-SHELL
     name: Configuration tabs, advanced fields, whole-config save, validation, dirty state, and API help
     routes:
@@ -642,7 +644,7 @@ features:
       - config-external-tool-dialog-test
     parity: done
     gaps:
-      - not migrated - the "Configure NZBHydra in ..." wizard (config-service.js:100-233, configure-in-modal.html) and with it API-CONFIG-EXTERNAL-DIALOG and API-CONFIG-EXTERNAL-MESSAGES; the wizard has no trigger anywhere in the legacy UI, so there is no reachable behavior to reproduce
+      - deliberate - the "Configure NZBHydra in ..." wizard (config-service.js:100-233, configure-in-modal.html) and with it API-CONFIG-EXTERNAL-DIALOG and API-CONFIG-EXTERNAL-MESSAGES; the wizard has no trigger anywhere in the legacy UI, so there is no reachable behavior to reproduce
       - deliberate - the per-type and torrent-only fields appear as soon as the type or the torrent switch changes, where legacy computed the box's field set once on open and only showed them after reopening
       - deliberate - the API key is a C-SECRET-INPUT rather than legacy's plain text input; the backend does not mask this value, so the control just round-trips it opaquely
       - deliberate - "Test connection" is always rendered and disabled until the entry has a host and an API key, where legacy removed the button entirely
@@ -1065,7 +1067,7 @@ features:
       - system-reload-config
     parity: done
     gaps:
-      - not migrated - the "Migrate from NZBHydra 1" button (system.html:19-22, migration-service.js); all three /internalapi/migration/* endpoints are recorded in APIS.yaml unverified_legacy_calls with no backend mapping, so the legacy button cannot succeed and there is no reachable behavior to reproduce
+      - deliberate - the "Migrate from NZBHydra 1" button (system.html:19-22, migration-service.js); all three /internalapi/migration/* endpoints are recorded in APIS.yaml unverified_legacy_calls with no backend mapping, so the legacy button cannot succeed and there is no reachable behavior to reproduce
       - deliberate - a failed shutdown and a failed config reload are error toasts, where legacy used growl.info for both failures and its severity for a failure was plainly unintended
       - deliberate - a config reload answering HTTP 200 with successful=false is reported as a failure carrying the server's message; legacy's promise resolves on any HTTP 200 and claimed success for a reload the server had refused
       - deliberate - a failed reload with no server message falls back to "Unable to reload the config."; legacy passed the whole response object's `message` to growl.error, which is undefined for a transport-level failure
@@ -1100,10 +1102,10 @@ features:
       - system-updates-wrapper-warning
       - system-update-progress-dialog
       - system-version-history
-    parity: partial
+    parity: done
     gaps:
-      - not migrated - ignoring a version (API-UPDATES-IGNORE); legacy offers no control for it on this page either (only hydra-checks-footer.js does), so only the "The latest version was ignored by you." text is reproduced here
-      - not migrated - the automatic-update changelog notice (API-UPDATES-AUTOMATIC-HISTORY, API-UPDATES-ACK-HISTORY, showChangesFromAutomaticUpdate); it is a footer flow and stays with F-PLATFORM-LIVE-STATUS
+      - deliberate - ignoring a version (API-UPDATES-IGNORE); legacy offers no control for it on this page either (only hydra-checks-footer.js does), so only the "The latest version was ignored by you." text is reproduced here; the actual ignore control is the footer banner FM-080 shipped under F-PLATFORM-LIVE-STATUS
+      - deliberate - the automatic-update changelog notice (API-UPDATES-AUTOMATIC-HISTORY, API-UPDATES-ACK-HISTORY, showChangesFromAutomaticUpdate); it is a footer flow FM-080 implemented under F-PLATFORM-LIVE-STATUS rather than on this page
       - deliberate - a failed install is an error toast, where legacy used growl.info for a failure it plainly meant as an error
       - deliberate - the version history and the changelog dialog report their own load failure in place; legacy's version-history request had no failure handling at all and left the list silently empty
       - deliberate - a second install click is ignored while one is running; legacy left both install buttons live behind its blocking modal
@@ -1137,9 +1139,9 @@ features:
       - system-log-refresh-toggle
       - system-log-tail-toggle
       - system-log-file-<index>
-    parity: partial
+    parity: done
     gaps:
-      - not migrated - filtering log entries; legacy's hydra-log.js offers none either, and the record's name predates the inventory of the directive
+      - deliberate - filtering log entries; legacy's hydra-log.js offers none either, and the record's name predates the inventory of the directive
       - deliberate - the paging buttons are rendered once, above the table; legacy repeats the same pair below it, which would make each selector address two elements
       - deliberate - the older/newer offset moves before the page is loaded, so a failed page reports its failure in place and stays reachable through the paging buttons; legacy committed currentJsonIndex only in getOlderFormatted's success callback (and unconditionally in getNewerFormatted)
       - deliberate - turning tailing on turns the five-second refresh on with it; legacy let tailing be switched on alone, where it silently did nothing until the refresh was enabled too
@@ -1326,9 +1328,9 @@ features:
       - downloader-status-queue
       - notification-toasts
       - notification-toast
-    parity: partial
+    parity: done
     gaps:
-      - not migrated - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; no feature record inventories that wizard
+      - deliberate - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; the link fires MigrationService.migrate, whose /internalapi/migration/* calls have no backend mapping (same reachability ruling as F-SYSTEM-CONTROL's migrate button), so there is no reachable behavior to reproduce
       - deliberate - the announcements are shown one at a time in a fixed order and the sequence waits for each one to be closed; legacy opened its modals from independent, concurrent callbacks, so several could stack on top of
         each other in an order decided by response timing
       - deliberate - a one-shot acknowledgement (API-NEWS-SAVE-SHOWN, API-UPDATES-ACK-WRAPPER, and every stored flag cleared through C-SERVER-PREFERENCES) is sent only after its dialog was closed; legacy sent the news
@@ -1350,5 +1352,4 @@ features:
       - deliberate - FM-081's downloader footer and FM-080's update banners stack by measuring their own rendered heights; legacy's footer.js moved the update footer with hardcoded 20/38 pixel offsets and padded the page with
         fixed padding-bottom-N classes
       - deliberate - FM-081's state indicator is a MUI icon carrying the state as its accessible name as well as its tooltip; legacy rendered a bare glyphicon whose state was reachable only by hovering
-      - deliberate - FM-081 keeps legacy's one connection per subscription (C-LIVE-TRANSPORT opens a STOMP client per subscribe, as the two legacy directives each opened their own SockJS); the shell shares one transport instance
-        across both live subscribers
+      - deliberate - FM-085 replaced FM-081's one-connection-per-subscription behavior with a single shared SockJS/STOMP client per base URL, pooled module-scoped across every subscriber (C-LIVE-TRANSPORT, API-LIVE-SOCKJS note); an idle admin session now opens one server websocket session instead of one per live subscription

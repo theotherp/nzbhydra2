@@ -433,6 +433,22 @@ writes. Hex exists only as an internal conversion. No picker library was added (
 feature code (ADR-0014). Flips F-CONFIG-INDEXERS to `done`, with the un-reproduced 0.5-alpha field tint recorded as a
 `deliberate -` line. Passed clean on first review, no findings.
 
+FM-093 (Registry Retirement And Reachability Rulings) records ADR-0022's retirement — `F-SEARCH-TOUR` becomes the
+registry's first `retired` record, with `target: null` and the deciding ADR named, and the four `API-TOUR-*`/`API-DEMO-*`
+records gain a retirement note — and reclassifies eight bare/`not migrated -` gap lines to `deliberate -` with their
+evidence verified rather than merely preserved. `F-SYSTEM-UPDATES`, `F-SYSTEM-LOG`, `F-SEARCH-PROGRESS` and
+`F-PLATFORM-LIVE-STATUS` flip to `done`; `F-AUTH-LOGIN` deliberately stays `partial`. It also fixed a latent YAML bug
+nobody had asked for: `F-AUTH-LOGIN`'s BASIC-logout line contained an unquoted `(verified live):`, which the `yaml`
+package parsed as a single-pair *mapping* rather than a string. The reviewer confirmed it independently — one mapping at
+the baseline, 90 string entries and zero mappings after — and `validate:migration` does not inspect `gaps[]`
+structurally, so it had been silently misrepresenting that line. Passed with five minor findings, none corrected
+(optional): `GUI-STATUS.md:9`'s "does not yet take effect" on BASIC logout now contradicts ADR-0023's permanent-limitation
+ruling; 19 of 21 `partial` records overstate outstanding work pending the unapproved `gaps:`/`deviations:` split;
+`F-SEARCH-FORM`'s bare "guided tour" line is correctly FM-095's, but is stale during the FM-094 window; the packet's own
+two `F-AUTH-LOGIN` acceptance bullets contradict each other; and `scripts/validate-migration.test.mjs` is excluded from
+vitest and wired into no npm script, so the parity validator's own 9 tests never run in any routine check (they pass when
+run directly). Candidates for a future quickfix.
+
 ## Active
 
 None.
