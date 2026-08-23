@@ -2234,6 +2234,152 @@ describe("SearchResults", () => {
         );
     });
 
+    it("should persist the refine sidebar's Category/Indexer collapse state in the existing search-results-table payload, independently of each other", () => {
+        // See `stubWorkingLocalStorage`: a genuine unmount/remount
+        // persistence round trip needs a real, working `Storage` installed
+        // first.
+        stubWorkingLocalStorage();
+        const searchResults = [
+            {
+                searchResultId: "1",
+                title: "Alpha Result",
+                indexer: "Mock",
+                category: "All",
+            },
+        ];
+        const {unmount} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults,
+                }}
+            />,
+        );
+        // The sidebar itself defaults collapsed in this non-browser test
+        // environment (matching the below-`sm` default); expand it first so
+        // its sections render at all.
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        // Both sections default to expanded (today's behavior) with no
+        // stored preference yet.
+        expect(screen.getByTestId("refine-category-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(screen.getByTestId("refine-indexer-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        fireEvent.click(screen.getByTestId("refine-category-toggle"));
+        expect(screen.getByTestId("refine-category-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(screen.getByTestId("refine-indexer-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(storedChoices()).toMatchObject({
+            refineCategoryOpen: false,
+            refineIndexerOpen: true,
+        });
+        // Collapse the docked sidebar itself back to its own default before
+        // unmounting, so only `categoryOpen`/`indexerOpen` -- not
+        // `sidebarCollapsed`, out of this assertion's scope -- differ from
+        // the fresh mount below.
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        unmount();
+
+        // A fresh mount over the same storage: Category stays collapsed while
+        // Indexer stays expanded.
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults,
+                }}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        expect(screen.getByTestId("refine-category-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(screen.getByTestId("refine-indexer-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+    });
+
+    it("should load an old-shape stored payload lacking the refine collapse keys with both sections defaulting to expanded", () => {
+        stubWorkingLocalStorage();
+        // A payload written before this task's two keys existed (or a
+        // hand-edited one) still loads cleanly through `loadChoices`.
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({sidebarCollapsed: false}),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getByTestId("refine-category-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(screen.getByTestId("refine-indexer-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+    });
+
+    it("should render both refine sections expanded without throwing when storage is unavailable", () => {
+        // No `stubWorkingLocalStorage()`: this file's jsdom environment
+        // leaves `window.localStorage` unavailable by default (see that
+        // helper's own comment above), which stands in for a genuinely
+        // blocked `Storage`.
+        expect(() =>
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 1,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Alpha Result",
+                                indexer: "Mock",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            ),
+        ).not.toThrow();
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        expect(screen.getByTestId("refine-category-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(screen.getByTestId("refine-indexer-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+    });
+
     it("should never persist the refine indexer and category selection, ignoring a stale stored one and reselecting everything on a fresh mount", () => {
         // See `stubWorkingLocalStorage`: a genuine persistence round trip
         // needs a real, working `Storage` installed first.
@@ -2747,6 +2893,8 @@ describe("SearchResults", () => {
             "compactRows",
             "filters",
             "highlightRecent",
+            "refineCategoryOpen",
+            "refineIndexerOpen",
             "sidebarCollapsed",
             "sorting",
         ]);

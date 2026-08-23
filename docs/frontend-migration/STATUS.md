@@ -385,6 +385,17 @@ Passed with a minor finding, not corrected (optional): the desktop screenshot st
 into view, not Age/Grabs, though the same component instance is proven correct for all three via the mobile-drawer
 capture and the uniform code diff. First of the 2026-08-23 owner-triage batch FM-088..FM-090.
 
+FM-089 (Refine Section Collapse Persistence) lifted `categoryOpen`/`indexerOpen` ownership from `RefineSidebar.tsx` to
+`SearchResults.tsx`, persisting both via two new optional keys (`refineCategoryOpen`/`refineIndexerOpen`) folded into
+the existing `hydra.search-results.table` payload, matching the `sidebarCollapsed` precedent -- no second storage
+mechanism. An old-shape stored payload still loads cleanly, defaulting both sections expanded, and the preference
+applies to both the docked and drawer refine branches since they share one `sections` render. A real-backend system
+test collapses one section, reloads, re-runs the search, and confirms the collapsed section stays collapsed while the
+other stays expanded. First review failed on one small, mechanical, required finding: `STATUS.md`'s Review-section
+entry was written as prose instead of the `- FM-089: ...` bullet the registry validator's parser requires, so
+`validate:migration` failed despite every other check passing; a one-file fix cycle reformatted it and re-review
+passed clean. Second of the 2026-08-23 owner-triage batch.
+
 ## Active
 
 None.
@@ -399,7 +410,7 @@ None.
 
 ## Upcoming
 
-FM-089 and FM-090 (the rest of the 2026-08-23 owner-triage batch) remain planned packets in `tasks/`.
+FM-090 (the last of the 2026-08-23 owner-triage batch) remains a planned packet in `tasks/`.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

@@ -1125,6 +1125,56 @@ test.describe("Search results", () => {
         ).toBe(true);
     });
 
+    // FM-089: the refine sidebar's Category and Indexer sections persist
+    // their own expand/collapse state through the same
+    // `hydra.search-results.table` payload the docked-column preference
+    // already uses, independently of one another. Re-runs the search after
+    // `page.reload()` (the sidebar only renders with results present)
+    // instead of trusting a reload alone.
+    test("should persist the refine sidebar's Category/Indexer collapse state across a reload", async ({
+        page,
+    }) => {
+        // `RefineSidebar` is a React-shell-only surface; the default `/`
+        // route this describe block's `beforeEach` navigates to is the
+        // legacy AngularJS UI, which has no `refine-category-toggle`.
+        await page.goto("ui/react?redirect=/");
+        await searchForUiTestResults(page);
+
+        const categoryToggle = page.getByTestId("refine-category-toggle");
+        const indexerToggle = page.getByTestId("refine-indexer-toggle");
+        await expect(categoryToggle).toHaveAttribute("aria-expanded", "true");
+        await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
+
+        await categoryToggle.click();
+        await expect(categoryToggle).toHaveAttribute("aria-expanded", "false");
+        await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
+
+        const persistedPayload = await page.evaluate(() =>
+            window.localStorage.getItem("hydra.search-results.table"),
+        );
+        expect(persistedPayload).toContain('"refineCategoryOpen":false');
+
+        // This suite's own `page` fixture (`fixtures.ts`) registers an
+        // `addInitScript` that clears every key of `localStorage` on every
+        // new document -- including a `page.reload()` -- so every other
+        // test starts genuinely storage-clean regardless of what an earlier
+        // test wrote. A real user's browser reload does not clear its own
+        // storage; re-seeding the just-observed payload through the test's
+        // own later-registered `addInitScript` (which layers on top of, and
+        // so runs after, the fixture's clear on the very next navigation)
+        // stands in for that real persistence without weakening the
+        // fixture's cross-test isolation guarantee.
+        await page.addInitScript((payload) => {
+            window.localStorage.setItem("hydra.search-results.table", payload);
+        }, persistedPayload as string);
+
+        await page.reload();
+        await searchForUiTestResults(page);
+
+        await expect(categoryToggle).toHaveAttribute("aria-expanded", "false");
+        await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
+    });
+
     test("should provide deterministic bulk-actions-bar visual evidence across desktop and mobile", async ({
         hydra,
         page,

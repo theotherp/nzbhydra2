@@ -177,6 +177,8 @@ type StoredChoices = {
     compactRows?: boolean;
     filters?: Partial<Omit<ResultFilters, SearchScopedFilter>>;
     highlightRecent?: boolean;
+    refineCategoryOpen?: boolean;
+    refineIndexerOpen?: boolean;
     sidebarCollapsed?: boolean;
     sorting?: SortingState;
 };
@@ -311,6 +313,17 @@ export function SearchResults({
     const [highlightRecent, setHighlightRecent] = useState(
         () => choices.highlightRecent ?? false,
     );
+    // Lifted from `RefineSidebar.tsx` by this task (FM-089), matching the
+    // `sidebarCollapsed`/`drawerOpen` precedent above: `RefineSidebar` stays
+    // presentational and these two persist through the same
+    // `hydra.search-results.table` blob rather than a second storage
+    // mechanism.
+    const [categoryOpen, setCategoryOpen] = useState(
+        () => choices.refineCategoryOpen ?? true,
+    );
+    const [indexerOpen, setIndexerOpen] = useState(
+        () => choices.refineIndexerOpen ?? true,
+    );
     const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(false);
     const [groupEpisodes, setGroupEpisodes] = useState(true);
     const [expandedTitles, setExpandedTitles] = useState<Set<string>>(
@@ -441,11 +454,21 @@ export function SearchResults({
                 compactRows,
                 filters: withoutSearchScopedFilters(filters),
                 highlightRecent,
+                refineCategoryOpen: categoryOpen,
+                refineIndexerOpen: indexerOpen,
                 sidebarCollapsed,
                 sorting,
             } satisfies StoredChoices),
         );
-    }, [compactRows, filters, highlightRecent, sidebarCollapsed, sorting]);
+    }, [
+        categoryOpen,
+        compactRows,
+        filters,
+        highlightRecent,
+        indexerOpen,
+        sidebarCollapsed,
+        sorting,
+    ]);
 
     useEffect(() => {
         const filteredIds = new Set(
@@ -1003,14 +1026,22 @@ export function SearchResults({
                         spacing={2}
                     >
                         <RefineSidebar
+                            categoryOpen={categoryOpen}
                             clearRange={clearRange}
                             collapsed={sidebarCollapsed}
                             drawerOpen={refineDrawerOpen}
                             filters={filters}
+                            indexerOpen={indexerOpen}
                             onClearAll={clearAllFilters}
                             onDrawerOpenChange={setRefineDrawerOpen}
+                            onToggleCategoryOpen={() =>
+                                setCategoryOpen((current) => !current)
+                            }
                             onToggleCollapsed={() =>
                                 setSidebarCollapsed((current) => !current)
+                            }
+                            onToggleIndexerOpen={() =>
+                                setIndexerOpen((current) => !current)
                             }
                             onToggleQuickFilter={toggleQuickFilter}
                             quickFilters={quickFilters}

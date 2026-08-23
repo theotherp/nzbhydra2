@@ -16,7 +16,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTheme} from "@mui/material/styles";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 
 import type {SearchResult} from "../../../api/search";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
@@ -100,13 +100,17 @@ export function useCompactRefineSurface(): boolean {
 // every control exists in the DOM at a time and no duplicate accessible name
 // or `data-testid` is ever present.
 export function RefineSidebar({
+    categoryOpen,
     clearRange,
     collapsed,
     drawerOpen,
     filters,
+    indexerOpen,
     onClearAll,
     onDrawerOpenChange,
+    onToggleCategoryOpen,
     onToggleCollapsed,
+    onToggleIndexerOpen,
     onToggleQuickFilter,
     quickFilters,
     results,
@@ -114,6 +118,11 @@ export function RefineSidebar({
     toolbarHeight,
     updateRange,
 }: {
+    // FM-089: lifted to `SearchResults.tsx` alongside `sidebarCollapsed`/
+    // `drawerOpen` so the two booleans can persist through the same
+    // `hydra.search-results.table` blob; this component stays presentational
+    // and keeps no `useState` of its own for either.
+    categoryOpen: boolean;
     clearRange: (name: "size" | "grabs" | "age") => void;
     collapsed: boolean;
     // The below-`sm` drawer's open state, owned by `SearchResults.tsx` since
@@ -124,9 +133,12 @@ export function RefineSidebar({
     // owner moved, its lifecycle did not change.
     drawerOpen: boolean;
     filters: ResultFilters;
+    indexerOpen: boolean;
     onClearAll: () => void;
     onDrawerOpenChange: (open: boolean) => void;
+    onToggleCategoryOpen: () => void;
     onToggleCollapsed: () => void;
+    onToggleIndexerOpen: () => void;
     onToggleQuickFilter: (filter: QuickFilter) => void;
     quickFilters: QuickFilter[];
     results: SearchResult[];
@@ -154,8 +166,6 @@ export function RefineSidebar({
     // itself lives in `SearchResults.tsx` (see the prop docs above) so the
     // display-options menu can drive it; that lift changed the owner only, not
     // this rationale or the state's initial value.
-    const [categoryOpen, setCategoryOpen] = useState(true);
-    const [indexerOpen, setIndexerOpen] = useState(true);
     const indexerEntries = useMemo(
         () => results.map((result) => result.indexer),
         [results],
@@ -253,7 +263,7 @@ export function RefineSidebar({
                         categories,
                     }))
                 }
-                onToggleOpen={() => setCategoryOpen((value) => !value)}
+                onToggleOpen={onToggleCategoryOpen}
                 open={categoryOpen}
                 optionTestId="refine-category-option"
                 selected={filters.categories}
@@ -269,7 +279,7 @@ export function RefineSidebar({
                         indexers,
                     }))
                 }
-                onToggleOpen={() => setIndexerOpen((value) => !value)}
+                onToggleOpen={onToggleIndexerOpen}
                 open={indexerOpen}
                 optionTestId="refine-indexer-option"
                 selected={filters.indexers}

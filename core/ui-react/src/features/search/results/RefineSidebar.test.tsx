@@ -87,9 +87,16 @@ function Harness({
     // value -- closed -- the sidebar used to hold itself, so every assertion
     // below keeps its original expectations.
     const [drawerOpen, setDrawerOpen] = useState(false);
+    // FM-089: `categoryOpen`/`indexerOpen` are lifted to `SearchResults.tsx`
+    // in the app; this harness stands in for that owner the same way it
+    // already does for `drawerOpen`, with the same initial value -- expanded
+    // -- the sidebar used to hold itself.
+    const [categoryOpen, setCategoryOpen] = useState(true);
+    const [indexerOpen, setIndexerOpen] = useState(true);
     return (
         <>
             <RefineSidebar
+                categoryOpen={categoryOpen}
                 clearRange={(name) =>
                     setFilters((current) => ({
                         ...current,
@@ -99,9 +106,16 @@ function Harness({
                 collapsed={collapsed}
                 drawerOpen={drawerOpen}
                 filters={filters}
+                indexerOpen={indexerOpen}
                 onClearAll={onClearAll}
                 onDrawerOpenChange={setDrawerOpen}
+                onToggleCategoryOpen={() =>
+                    setCategoryOpen((current) => !current)
+                }
                 onToggleCollapsed={onToggleCollapsed}
+                onToggleIndexerOpen={() =>
+                    setIndexerOpen((current) => !current)
+                }
                 onToggleQuickFilter={(filter) =>
                     setFilters((current) => ({
                         ...current,

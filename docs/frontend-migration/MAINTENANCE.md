@@ -799,13 +799,10 @@ instead of leaving it to rot.
 - ~~**The results size/age `NumericFilter`'s "Apply" button is dead code that should be removed**~~ Discharged
   2026-08-23 by the FM-088 packet, which removed the button and moved "Clear" beside the min/max fields as an
   icon-only control (task packet deleted on completion per convention; see git history and `STATUS.md`).
-- **The refine sidebar's Category/Indexer expand/collapse state (`categoryOpen`/`indexerOpen` in `RefineSidebar.tsx`)
-  is plain `useState` and always resets to expanded on reload.** The owner asked for this to persist. Not a quickfix:
-  persisted UI state is a new user-observable capability per this ledger's own gate, and there is no existing cookie
-  utility in `core/ui-react` (`localStorage` is the established persistence pattern here — see `sidebarCollapsed` in
-  `SearchResults.tsx` and `features/stats/dashboard/persistence.ts`). Route to `/fm-orchestrate`; the packet should
-  decide the storage key/shape (likely folding into `SearchResults.tsx`'s existing `hydra.search-results.table`
-  blob) rather than inventing a second mechanism. Surfaced 2026-08-23.
+- ~~**The refine sidebar's Category/Indexer expand/collapse state is plain `useState` and always resets to expanded
+  on reload.**~~ Discharged 2026-08-23 by the FM-089 packet, which persisted both via two new optional keys folded
+  into `SearchResults.tsx`'s existing `hydra.search-results.table` payload (task packet deleted on completion per
+  convention; see git history and `STATUS.md`).
 - **A long `TextField` floating label (e.g. "Additional filter terms" in `SearchWorkspace.tsx`'s Media section) can
   render with the outlined border's top line crossing through the back half of the label text**, instead of the
   notch clearing the whole label. Root cause found while triaging the owner's UI-polish batch, 2026-08-23:

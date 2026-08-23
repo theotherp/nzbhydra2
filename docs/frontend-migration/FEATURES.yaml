@@ -271,6 +271,12 @@ features:
         "isGroupEpisodesHelpShown")`, `search-results-controller.js:184-191`);
         the React results view neither shows that one-time help nor records
         the flag
+      - "deliberate - FM-089: the refine sidebar's Category and Indexer
+        sections now remember their own expand/collapse state
+        (`refineCategoryOpen`/`refineIndexerOpen`) across reloads, folded
+        into the same `hydra.search-results.table` payload
+        `sidebarCollapsed` already uses; legacy had no such per-section
+        memory for these two lists"
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
     routes:
