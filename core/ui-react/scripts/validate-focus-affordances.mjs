@@ -261,7 +261,7 @@ for (const file of files) {
 // ADR-0015: `MuiInputBase` is deliberately NOT in this list — the input/
 // select family indicates focus through MUI's own focused notchedOutline,
 // and an authored `&:has(:focus-visible)` ring there double-borders every
-// focused select.
+// focused select. The check below enforces that from the other direction.
 const requiredFamilies = [
     "MuiButton",
     "MuiIconButton",
@@ -274,12 +274,26 @@ const requiredFamilies = [
     "MuiLink",
     "MuiChip",
 ];
-if (themeBlocks.has("InputBase")) {
+// ADR-0015's guard, stated as what it actually means. It used to reject a
+// `MuiInputBase` entry of ANY kind, which was a proxy for "no authored focus
+// ring here" and stopped being true once the family took legitimate
+// non-focus declarations: the mock's 14px input text size, and the shared
+// `controlHeight` that makes a select the same box as the buttons beside it.
+// What ADR-0015 forbids is a focus *indicator* on the input root -- an
+// authored ring there double-borders every focused select, because the
+// family's indicator is MUI's own focused notchedOutline. So the block is
+// now checked for focus styling rather than for existing at all.
+const inputBaseBlock = themeBlocks.get("InputBase");
+if (
+    inputBaseBlock !== undefined &&
+    /Mui-focusVisible|:focus-visible|focusRing\(/.test(inputBaseBlock)
+) {
     findings.push(
-        `src/app/theme.ts authors a MuiInputBase entry again. ADR-0015 ` +
-            `removed it: an authored ring on the input root double-borders ` +
+        `src/app/theme.ts authors focus styling on MuiInputBase. ADR-0015 ` +
+            `forbids it: an authored ring on the input root double-borders ` +
             `every focused select; the family's indicator is MUI's own ` +
-            `focused notchedOutline.`,
+            `focused notchedOutline. Non-focus declarations (size, height) ` +
+            `are fine.`,
     );
 }
 for (const family of requiredFamilies) {

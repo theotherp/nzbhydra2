@@ -12,6 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useRef, useState} from "react";
 
 import {getRecentSearches} from "../../../api/recentSearches";
@@ -50,14 +51,23 @@ export function RecentSearches({
     const rowRefs = useRef<Map<string, HTMLLIElement>>(new Map());
     const refillButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
+    // The shared neutral-secondary action (`app/theme.ts`'s `variant="control"`),
+    // not MUI's stock teal `outlined`: teal fill means "primary action" on
+    // this page (Search, Send selected to downloader) and a teal outline on a
+    // secondary control read as a second, competing primary. The caret is not
+    // decoration -- every menu-opening trigger in the search and results
+    // surfaces carries one, and every control without one acts immediately,
+    // which is what tells this trigger apart from the same-shaped "Save
+    // search" button beside the results.
     const trigger = (
         <Button
             aria-controls={open ? "recent-searches-menu" : undefined}
             aria-expanded={open}
             aria-haspopup="menu"
             data-testid="recent-searches-trigger"
+            endIcon={<ExpandMoreIcon />}
             onClick={(event) => setAnchor(event.currentTarget)}
-            variant="outlined"
+            variant="control"
         >
             Recent searches
         </Button>

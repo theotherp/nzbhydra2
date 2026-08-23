@@ -78,11 +78,28 @@ export function ToggleRowFilter({
                                     : [...selected, entry],
                             )
                         }
+                        // A toggle in *row* shape, at the 8px action radius
+                        // rather than a stadium: a full-width list row is not
+                        // a pill, and the stadium corners are reserved for
+                        // the quality/type pills. `borderRadius` was
+                        // `theme.shape.borderRadius` here, which `sx`
+                        // multiplies by 8 (see `pillRadius` in
+                        // `app/theme.ts`) and so rendered 64px.
+                        //
+                        // The selected treatment stays deliberately quieter
+                        // than the pills' (12% fill and `text.primary`, not
+                        // their 16% and `primary.light`) and borderless:
+                        // `defaultFilters` starts with every category and
+                        // indexer selected, so "active" is the resting state
+                        // for whole columns of these rows at once. Painting
+                        // them in the pills' full selected language turns the
+                        // sidebar into a wall of teal -- verified on a live
+                        // search before settling here.
                         sx={(theme) => ({
                             backgroundColor: active
                                 ? theme.alpha(theme.palette.primary.main, 0.12)
                                 : "transparent",
-                            borderRadius: theme.shape.borderRadius,
+                            borderRadius: 1,
                             color: active ? "text.primary" : "text.secondary",
                             fontSize: "13px",
                             fontWeight: 400,

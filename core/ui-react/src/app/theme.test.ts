@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+    controlHeight,
     createHydraTheme,
     monoFontFamily,
     pillRadius,
@@ -141,12 +142,46 @@ describe("createHydraTheme typography and density", () => {
         expect(monoFontFamily).toBe('"IBM Plex Mono", monospace');
     });
 
-    it("should expose the mock's pill radius for feature code sharing it with MuiChip", () => {
-        expect(pillRadius).toBe(7);
+    // Both radius tokens are CSS *strings*, and the test asserts that rather
+    // than only their values: `sx`'s `borderRadius` key is theme-multiplied
+    // (`@mui/system`'s `defaultSxConfig.js` maps it to
+    // `themeKey: "shape.borderRadius"`), so a numeric token means one thing
+    // in `styleOverrides` and 8x that in `sx`. Both of these are consumed
+    // through both mechanisms; strings resolve identically in each.
+    it("should expose the stadium pill radius as a pass-through CSS string", () => {
+        expect(pillRadius).toBe("999px");
+        expect(typeof pillRadius).toBe("string");
+    });
+
+    it("should expose one shared control height for buttons and inputs", () => {
+        expect(controlHeight).toBe(32);
+    });
+
+    // The unification is only worth anything if the exceptions stay
+    // deliberate, so the one button family that opts out is asserted to opt
+    // out -- a future edit that drops its `minHeight: 0` would silently
+    // inflate the mock's dense 26px quality/type pills to 32px.
+    it("should let the refine pill opt out of the shared control height", () => {
+        const theme = createHydraTheme("dark", false);
+        const variants = theme.components?.MuiButton?.variants ?? [];
+        const refineChip = variants.find(
+            (variant) =>
+                (variant.props as {variant?: string}).variant === "refineChip",
+        );
+
+        expect(refineChip).toBeDefined();
+        const style = (
+            refineChip?.style as (props: {theme: typeof theme}) => {
+                minHeight?: number;
+            }
+        )({theme});
+
+        expect(style.minHeight).toBe(0);
     });
 
     it("should expose the select-all control's own radius for its two rendering paths", () => {
-        expect(selectAllRadius).toBe(5);
+        expect(selectAllRadius).toBe("5px");
+        expect(typeof selectAllRadius).toBe("string");
     });
 
     it("should adopt the mock's denser radii and sentence-case buttons", () => {
@@ -164,6 +199,12 @@ describe("createHydraTheme typography and density", () => {
         ).toEqual({
             textTransform: "none",
             borderRadius: 8,
+            // The shared control height, stated on the root so every button
+            // in the application inherits it. The two families that opt out
+            // do so explicitly and are asserted below.
+            minHeight: controlHeight,
+            paddingTop: 0,
+            paddingBottom: 0,
             "&.Mui-focusVisible": {
                 outline: "3px solid oklch(0.75 0.1 190)",
                 outlineOffset: "3px",
@@ -189,12 +230,29 @@ describe("createHydraTheme typography and density", () => {
                 borderColor: "rgba(255, 255, 255, 0.1)",
             },
         });
-        // `MuiInputBase` carries exactly one declaration -- the mock's 14px
-        // input text size -- and in particular no focus styling: ADR-0015's
-        // guard is that the input family's indicator stays MUI's own focused
-        // notchedOutline, never a reintroduced InputBase ring.
+        // `MuiInputBase` carries only sizing declarations -- the mock's 14px
+        // input text size and the shared `controlHeight` -- and in
+        // particular no focus styling: ADR-0015's guard is that the input
+        // family's indicator stays MUI's own focused notchedOutline, never a
+        // reintroduced InputBase ring. Asserted exhaustively (`toEqual`, not
+        // a property probe) so any added rule has to come through this test,
+        // which is what makes it a guard rather than a description.
         expect(theme.components?.MuiInputBase).toEqual({
-            styleOverrides: {root: {fontSize: "14px"}},
+            styleOverrides: {
+                root: {
+                    fontSize: "14px",
+                    "&:not(.MuiInputBase-multiline)": {height: controlHeight},
+                },
+                input: {
+                    height: "100%",
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                    "&.MuiSelect-select": {
+                        alignItems: "center",
+                        display: "flex",
+                    },
+                },
+            },
         });
         expect(theme.components?.MuiTextField?.defaultProps).toEqual({
             size: "small",
@@ -213,7 +271,7 @@ describe("createHydraTheme typography and density", () => {
             (chipRoot as (props: {theme: typeof theme}) => unknown)({theme}),
         ).toEqual({
             height: 26,
-            borderRadius: 7,
+            borderRadius: "999px",
             "&.Mui-focusVisible": {
                 outline: "3px solid oklch(0.75 0.1 190)",
                 outlineOffset: "3px",

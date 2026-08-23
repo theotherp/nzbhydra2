@@ -100,6 +100,15 @@ declare module "@mui/material/Button" {
     // a theme token (ADR-0014).
     interface ButtonPropsVariantOverrides {
         refineChip: true;
+        // The neutral secondary action. Every button that is a real action
+        // but not *the* action of its surface -- the results
+        // toolbar's ZIP / black hole / copy-links / save-search row, the
+        // "Display" and "Refine" popover triggers, the search bar's "Recent
+        // searches" trigger, and each result row's NZB/Torrent link. Before
+        // this variant, six call sites authored the same intent with six
+        // slightly different `sx` blocks (three paddings, two colour roles,
+        // and MUI's stock teal `outlined` in two of them).
+        control: true;
     }
 }
 
@@ -143,16 +152,44 @@ const uiFontFamily = '"IBM Plex Sans", system-ui, -apple-system, sans-serif';
 export const monoFontFamily = '"IBM Plex Mono", monospace';
 
 /**
- * The mock's small-pill corner radius (`border-radius:7px`), copied from the
- * quality/type `Chip` pills. FM-054: `SearchResults.tsx`'s display-options
- * popover row hover highlight is a second, genuine consumer of the same
- * radius (its own row is sized and rounded to match the same family of
- * dense controls), so it is exposed here once rather than restated as a
- * second bespoke literal. Exposed as a plain exported constant for the same
- * reason as `monoFontFamily` above: feature code applies it through `sx`
- * without needing a `Shape`/component-slot module augmentation.
+ * The state-pill radius: a full stadium, so a *pill* is never confused with a
+ * *button*. This is the shape half of the control-shape rule the search and
+ * results surfaces follow -- soft-cornered rectangles (`shape.borderRadius`,
+ * 8px) are things you *do*, stadiums are things that are *on or off*. Only
+ * two control families take it: the refine surfaces' quality/type selection
+ * pills (`MuiButton`'s `refineChip` variant below) and the search bar's
+ * constraint chips (`MuiChip`).
+ *
+ * Authored as a CSS string, not a number, and deliberately so: `sx`'s
+ * `borderRadius` key is theme-multiplied (`@mui/system`'s
+ * `defaultSxConfig.js` maps it to `themeKey: "shape.borderRadius"`), so a
+ * numeric token passed through `sx` is silently multiplied by 8 -- the bug
+ * that gave this token's previous `7` a 56px rendered radius in every `sx`
+ * consumer while rendering the intended 7px in `styleOverrides`. A string is
+ * passed through untouched by both mechanisms, so the token now means the
+ * same thing wherever it is used.
  */
-export const pillRadius = 7;
+export const pillRadius = "999px";
+
+/**
+ * The one control height this application uses: every button, dropdown
+ * trigger, text input, and select is 32px tall, everywhere.
+ *
+ * Before this token the app rendered ten different control heights (measured
+ * live: 25.9 / 27.3 / 27.6 / 28.0 / 30.8 / 31.5 / 35.7 / 36.5 / 37.1 / 38.8 /
+ * 40.0). None of them was chosen -- each was whatever a MUI default's
+ * line-box plus a call site's own vertical padding happened to add up to, so
+ * a row of a select, a primary button and a secondary button stepped 35.7 ->
+ * 38.8 -> 38.8 for no reason a reader could name. Height is now stated once,
+ * here, and the families that opt out do so explicitly and say why (see
+ * `MuiButton`'s `refineChip` variant and `SearchResults.tsx`'s column sort
+ * headers).
+ *
+ * Applied as `minHeight` on buttons (so a wrapping label can still grow the
+ * control rather than overflow it) and as a fixed `height` on inputs, whose
+ * single-line box should not grow.
+ */
+export const controlHeight = 32;
 
 /**
  * The mock's `toggleAll` select-all square's own corner radius
@@ -165,9 +202,11 @@ export const pillRadius = 7;
  * control in this application shares this radius (it is smaller than both
  * `pillRadius` and `shape.borderRadius`, matching the mock's own distinct,
  * denser geometry for this specific 17x17 control), so it is exposed as its
- * own constant rather than folded into either.
+ * own constant rather than folded into either. A CSS string for the same
+ * reason as `pillRadius` above -- both of this control's consumers are `sx`,
+ * where a bare `5` renders as 40px and turns the square into a circle.
  */
-export const selectAllRadius = 5;
+export const selectAllRadius = "5px";
 
 /**
  * The vertical rhythm between two filter sections of a refine surface, read
@@ -479,6 +518,18 @@ export function createHydraTheme(
                         // The mock labels its buttons "Search" / "Load more
                         // results" / "Send to downloader" in sentence case.
                         textTransform: "none",
+                        // The shared control height. `minHeight`, not
+                        // `height`, so a button whose label wraps grows
+                        // instead of clipping. The vertical padding is zeroed
+                        // with it: MUI sizes buttons purely by padding around
+                        // a line-box, which is exactly what produced the
+                        // 30.8 / 36.5 / 38.8 spread this replaces -- with a
+                        // stated height that padding has nothing left to do,
+                        // and leaving it in would only push short-labelled
+                        // buttons back above 32.
+                        minHeight: controlHeight,
+                        paddingTop: 0,
+                        paddingBottom: 0,
                         // The mock's own button radius (`border-radius:8px` on
                         // the primary Search button and the toolbar buttons).
                         borderRadius: 8,
@@ -510,6 +561,16 @@ export function createHydraTheme(
                             fontSize: "12px",
                             fontWeight: 400,
                             lineHeight: 1.3,
+                            // The one button family that is deliberately NOT
+                            // `controlHeight`. These are the mock's dense
+                            // 26px quality/type pills: a row of them is a
+                            // compact multi-select, not a row of actions, and
+                            // at 32px they read as a wall of buttons. Stated
+                            // as an explicit opt-out rather than inherited by
+                            // accident -- `minHeight: 0` releases the root's
+                            // shared height, and the padding below is what
+                            // sizes them again.
+                            minHeight: 0,
                             minWidth: 0,
                             padding: "5px 10px",
                             "&:hover": {
@@ -542,7 +603,67 @@ export function createHydraTheme(
                             },
                         }),
                     },
+                    // The neutral secondary action described on
+                    // `ButtonPropsVariantOverrides.control` above. The mock's
+                    // raised control surface behind a hairline, at the same
+                    // 8px `shape.borderRadius` the primary Search button and
+                    // every text input take -- so a secondary action reads as
+                    // the *same shape* as a primary one and differs only in
+                    // weight, while a selection pill (`refineChip`) differs in
+                    // shape because it is a different kind of thing.
+                    {
+                        props: {variant: "control"},
+                        style: ({theme}: {theme: Theme}) => ({
+                            backgroundColor: theme.palette.surfaces.control,
+                            border: `1px solid ${theme.palette.surfaces.hairline}`,
+                            color: theme.palette.text.primary,
+                            fontSize: "13px",
+                            fontWeight: 400,
+                            // Horizontal only. Height is the root's shared
+                            // `controlHeight`, which also settles what used
+                            // to need compensating for here: this variant
+                            // draws a 1px border the filled primary does not,
+                            // so matched vertical padding made it 2px taller
+                            // than the "Send selected to downloader" beside
+                            // it. A stated height is border-box, so the two
+                            // now agree by construction.
+                            padding: "0 13px",
+                            "&:hover": {
+                                backgroundColor: theme.palette.surfaces.control,
+                                borderColor: theme.alpha(
+                                    theme.palette.primary.main,
+                                    0.35,
+                                ),
+                            },
+                            // Real `disabled` semantics (ADR-0002/FM-040:
+                            // never opacity alone) on the same surface, so a
+                            // disabled secondary action keeps its footprint
+                            // and only its text goes muted.
+                            "&.Mui-disabled": {
+                                backgroundColor: theme.palette.surfaces.control,
+                                borderColor: theme.palette.surfaces.hairline,
+                                color: theme.palette.surfaces.mutedText,
+                            },
+                        }),
+                    },
                 ],
+            },
+            // `ToggleButton` is its own `styled(ButtonBase)` component, not a
+            // `Button`, so it inherits nothing from the `MuiButton` entry
+            // above -- which is exactly how the stats date-range segmented
+            // control ("Last 7 days" ... "Custom") stayed at 38.8px while
+            // every other control in the application moved to
+            // `controlHeight`. Sentence case for the same reason `MuiButton`
+            // states it: these are labels, not shouted captions.
+            MuiToggleButton: {
+                styleOverrides: {
+                    root: {
+                        minHeight: controlHeight,
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                        textTransform: "none",
+                    },
+                },
             },
             // ADR-0013 family B, continued. `IconButton` and `Tab` are
             // separate `styled(ButtonBase)` components with their own theme
@@ -552,6 +673,14 @@ export function createHydraTheme(
                 styleOverrides: {
                     root: ({theme}) => ({
                         "&.Mui-focusVisible": focusRing(theme),
+                        // 4px around MUI's 24px default glyph is exactly
+                        // `controlHeight`, so a bar control like the search
+                        // form's Advanced toggle stops being the tallest
+                        // thing in its row (it measured 40px). Expressed as
+                        // padding rather than a fixed box so `size="small"`
+                        // (a 20px glyph) stays proportionally smaller for
+                        // in-row icons instead of being padded out to match.
+                        padding: 4,
                     }),
                 },
             },
@@ -625,7 +754,33 @@ export function createHydraTheme(
             // at the same 400 weight -- than the mock.
             MuiInputBase: {
                 styleOverrides: {
-                    root: {fontSize: "14px"},
+                    root: {
+                        fontSize: "14px",
+                        // The shared control height, so a select or text
+                        // field sitting in a row of buttons (the search bar,
+                        // the results action row) is the same box as they
+                        // are. Excludes `multiline`, whose whole purpose is
+                        // to grow with its content.
+                        "&:not(.MuiInputBase-multiline)": {
+                            height: controlHeight,
+                        },
+                    },
+                    // With the root's height stated, MUI's own vertical
+                    // padding on the inner control (`8.5px`/`16.5px`
+                    // depending on size) would push the text off-centre
+                    // inside that box, so the inner element fills the height
+                    // and centres its own line instead. `input` covers text
+                    // fields; `.MuiSelect-select` is the `div` a select
+                    // renders in place of one.
+                    input: {
+                        height: "100%",
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                        "&.MuiSelect-select": {
+                            alignItems: "center",
+                            display: "flex",
+                        },
+                    },
                 },
             },
             // The mock's field labels sit permanently in the border notch

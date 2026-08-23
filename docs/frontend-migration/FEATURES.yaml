@@ -19,9 +19,15 @@ features:
       - shell-loginout
     parity: partial
     gaps:
-      - navigation
-      - not migrated - the downloader-status footer (downloaderStatusFooter.js), a websocket surface (FM-081)
-      - live status
+      # 2026-08-23: `navigation` and `live status` removed. They were never
+      # gaps -- `26648aff5` (the governance compaction) decomposed this
+      # record's own *name* ("Application shell, navigation, footer, and
+      # permission-aware links") into gap entries; `footer` and
+      # `permission-aware links` were cleared earlier, these two were missed.
+      # The downloader-status footer entry went with them: it named FM-081 as
+      # the task that would migrate `downloaderStatusFooter.js`, and FM-081
+      # shipped it (STATUS.md, `C-DOWNLOADER-STATUS`), so the line described
+      # a forward reference that had already been discharged.
       - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -160,9 +166,11 @@ features:
       - search-status-modal
     parity: partial
     gaps:
-      - Cancel does not send a server-side cancellation request; the backend
-        keeps searching after the client abandons the submission (legacy
-        parity — only the client stops waiting).
+      - deliberate - Cancel does not send a server-side cancellation request;
+        the backend keeps searching after the client abandons the submission.
+        Its own text already said "legacy parity — only the client stops
+        waiting", i.e. legacy behaves identically; reclassified 2026-08-23
+        from a bare gap, which read as outstanding work.
       - Two-button layout (separate Cancel and "Show early results" buttons)
         instead of legacy's single button that morphs from Cancel to "Show
         results" once indexers finish.
@@ -253,7 +261,16 @@ features:
       - display-options
     parity: partial
     gaps:
-      - server-backed preferences
+      # 2026-08-23: narrowed from the bare phrase "server-backed preferences",
+      # which overstated the gap. Legacy keeps sorting and every display
+      # toggle in `localStorageService` (client-side), exactly as the React
+      # results view does. Its ONLY server-backed preference in this feature
+      # is the one below.
+      - the group-episodes help dialog and its server-backed
+        "already shown" flag (`GenericStorageService.get/put(
+        "isGroupEpisodesHelpShown")`, `search-results-controller.js:184-191`);
+        the React results view neither shows that one-time help nor records
+        the flag
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
     routes:
@@ -295,8 +312,9 @@ features:
       - download-nzb
       - results-bulk-actions
     parity: partial
-    gaps:
-      - download-history route migration
+    # 2026-08-23: `download-history route migration` removed -- that route is
+    # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
+    # claimed missing capability that exists.
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:
@@ -757,8 +775,9 @@ features:
       - core/ui-react/src/features/stats/StatsShell.test.tsx
     selectors: []
     parity: partial
-    gaps:
-      - remaining history and aggregate-stat content
+    # 2026-08-23: `remaining history and aggregate-stat content` removed --
+    # the four history routes (`F-HISTORY-*`) and the statistics dashboard are
+    # migrated, so this entry claimed missing capability that exists.
   - id: F-STATS-MAIN
     name: Aggregate statistics, date ranges, switches, and charts
     routes:

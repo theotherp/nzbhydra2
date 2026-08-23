@@ -9,11 +9,15 @@ import {
     Typography,
     useMediaQuery,
 } from "@mui/material";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTheme} from "@mui/material/styles";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo, useState} from "react";
 
-import {monoFontFamily, pillRadius} from "../../../app/theme";
 import type {SearchResult} from "../../../api/search";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
@@ -354,15 +358,12 @@ export function RefineSidebar({
                     data-testid="refine-sidebar-toggle"
                     onClick={() => onDrawerOpenChange(!drawerOpen)}
                     size="small"
-                    sx={{
-                        alignSelf: "flex-start",
-                        border: "1px solid",
-                        borderColor: "surfaces.hairline",
-                        color: "text.primary",
-                        fontSize: "13px",
-                        px: "12px",
-                        py: "7px",
-                    }}
+                    // The shared neutral-secondary action; only the layout
+                    // rule is local. This trigger opens a `Drawer`, so it
+                    // carries a caret like every other menu/panel opener.
+                    endIcon={<ExpandMoreIcon />}
+                    sx={{alignSelf: "flex-start"}}
+                    variant="control"
                 >
                     Refine
                 </Button>
@@ -400,7 +401,7 @@ export function RefineSidebar({
                                         size="small"
                                         sx={{minWidth: 0, px: "6px"}}
                                     >
-                                        ✕
+                                        <CloseIcon fontSize="small" />
                                     </Button>
                                 </>
                             }
@@ -469,7 +470,11 @@ export function RefineSidebar({
                                 px: "6px",
                             }}
                         >
-                            {collapsed ? "»" : "«"}
+                            {collapsed ? (
+                                <ChevronRightIcon fontSize="small" />
+                            ) : (
+                                <ChevronLeftIcon fontSize="small" />
+                            )}
                         </Button>
                     </>
                 }
@@ -518,8 +523,13 @@ function RefineHeader({
 }
 
 // The mock's Quality and Type pills (`chip(active)`): a compact monospace
-// label in a 7px-radius bordered box that changes background, border, and
-// text color when selected.
+// label in a bordered box that changes background, border, and text color
+// when selected. Every one of those rules is `app/theme.ts`'s `MuiButton`
+// `variant="refineChip"` -- the same variant `C-HISTORY-REFINE-BAR` already
+// renders, and a byte-for-byte duplicate of what this component used to
+// author by hand. Its radius is `pillRadius`, a full stadium: a pill is a
+// thing that is on or off, and nothing in these surfaces that is merely
+// *pressable* is stadium-shaped any more.
 function RefineChip({
     active,
     label,
@@ -534,32 +544,7 @@ function RefineChip({
             aria-pressed={active}
             onClick={onToggle}
             size="small"
-            sx={(theme) => ({
-                backgroundColor: active
-                    ? theme.alpha(theme.palette.primary.main, 0.16)
-                    : "surfaces.bar",
-                border: "1px solid",
-                borderColor: active
-                    ? theme.alpha(theme.palette.primary.main, 0.45)
-                    : "surfaces.hairline",
-                borderRadius: pillRadius,
-                color: active ? "primary.light" : "text.secondary",
-                fontFamily: monoFontFamily,
-                fontSize: "12px",
-                fontWeight: 400,
-                lineHeight: 1.3,
-                minWidth: 0,
-                px: "10px",
-                py: "5px",
-                "&:hover": {
-                    backgroundColor: active
-                        ? theme.alpha(theme.palette.primary.main, 0.16)
-                        : "surfaces.bar",
-                    borderColor: active
-                        ? theme.alpha(theme.palette.primary.main, 0.45)
-                        : theme.alpha(theme.palette.primary.main, 0.16),
-                },
-            })}
+            variant="refineChip"
         >
             {label}
         </Button>
@@ -636,13 +621,11 @@ function RefineCollapsibleList({
                 }}
             >
                 {label}
-                <Box
-                    aria-hidden="true"
-                    component="span"
-                    sx={{fontSize: "10px"}}
-                >
-                    {open ? "▲" : "▼"}
-                </Box>
+                {open ? (
+                    <ExpandLessIcon fontSize="small" />
+                ) : (
+                    <ExpandMoreIcon fontSize="small" />
+                )}
             </Button>
             <Collapse in={open}>
                 <ToggleRowFilter

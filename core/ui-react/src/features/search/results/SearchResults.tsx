@@ -18,6 +18,9 @@ import {
     TableRow,
     Typography,
 } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import TuneIcon from "@mui/icons-material/Tune";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
 import {
     flexRender,
@@ -42,7 +45,7 @@ import {ApiTransport} from "../../../api/transport";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
-import {pillRadius, selectAllRadius} from "../../../app/theme";
+import {selectAllRadius} from "../../../app/theme";
 import {
     bootstrapBase,
     DirectDownloadActions,
@@ -111,14 +114,13 @@ const HEADER_LABEL_COLOR = "text.secondary";
 const ROW_PADDING_Y = "6px";
 const COMPACT_ROW_PADDING_Y = "4px";
 
-// FM-041/FM-054: the "⚙ Display" popover's own density constants -- again
-// local, not exported tokens, since none is a color or font value. The
-// popover's surface color, border, and outer radius come entirely from the
-// theme's `MuiPopover` default now (`app/theme.ts`); no local override
-// remains. The one radius value this popover does need -- the row
-// hover-highlight's corner, at the same `7px` the mock's `Chip` pills use --
-// is `app/theme.ts`'s exported `pillRadius`, not a local literal (see its
-// usage on `DisplayOption` below).
+// FM-041/FM-054: the Display popover's own density constants -- again local,
+// not exported tokens, since none is a color or font value. The popover's
+// surface color, border, and outer radius come entirely from the theme's
+// `MuiPopover` default (`app/theme.ts`); no local override remains. Its rows'
+// hover-highlight corner is the plain 8px action radius (`borderRadius: 1` in
+// `sx`), shared with every other list row and menu row in these surfaces --
+// stadium corners are reserved for state pills, which these rows are not.
 const DISPLAY_MENU_MIN_WIDTH = 220;
 const DISPLAY_MENU_PADDING = "8px";
 const DISPLAY_MENU_ITEM_PADDING_X = "8px";
@@ -2033,15 +2035,14 @@ function SelectionMenu({
                 size="small"
                 sx={{color: "text.secondary", minWidth: 0, px: 0.5}}
             >
-                ▾
+                <ExpandMoreIcon fontSize="small" />
             </Button>
             {/* FM-054 (ADR-0014): the paper surface, border, and shadow are
                 the `MuiMenu` theme default now (`app/theme.ts`); the
-                `MenuItem` density is authored locally, except its radius,
-                which reuses the theme's shared `pillRadius` -- the same
-                dense-row highlight radius `DisplayOption`'s own popover row
-                below already draws from, since both are compact custom-menu
-                row highlights in this file. */}
+                `MenuItem` density is authored locally, including its 8px
+                highlight radius -- the same one `DisplayOption`'s popover row
+                below draws, since both are compact custom-menu row
+                highlights in this file. */}
             <Menu
                 anchorEl={anchorEl}
                 onClose={close}
@@ -2050,7 +2051,11 @@ function SelectionMenu({
                     list: {
                         sx: {
                             "& .MuiMenuItem-root": {
-                                borderRadius: pillRadius,
+                                // The 8px action radius, not a stadium. This
+                                // was `pillRadius`, which `sx` multiplied to
+                                // 56px (see `app/theme.ts`) and rounded these
+                                // dense menu rows into lozenges.
+                                borderRadius: 1,
                                 fontSize: "12.5px",
                                 mx: "4px",
                                 py: "8px",
@@ -2250,32 +2255,23 @@ function DisplayOptionsMenu({
                 aria-haspopup="true"
                 aria-label="Display options"
                 data-testid="display-options-toggle"
+                // The shared neutral-secondary action (`app/theme.ts`'s
+                // `variant="control"`), which is where this button's surface,
+                // hairline, radius, and 13px type now come from -- it used to
+                // author the same four rules itself, one of six such copies.
+                // The gear and caret are real icons rather than the `⚙`/`▼`
+                // text glyphs that stood here: those did not scale with the
+                // label, sat on a different baseline, and matched nothing
+                // else in the icon set.
+                endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 onClick={(event) =>
                     setAnchorEl(anchorEl ? null : event.currentTarget)
                 }
                 size="small"
-                sx={{
-                    backgroundColor: "surfaces.control",
-                    border: "1px solid",
-                    borderColor: "surfaces.hairline",
-                    color: open ? "text.primary" : "text.secondary",
-                    fontSize: "13px",
-                    gap: "8px",
-                    px: "13px",
-                    py: "8px",
-                }}
+                startIcon={<TuneIcon />}
+                variant="control"
             >
-                <Box aria-hidden="true" component="span">
-                    ⚙
-                </Box>
                 Display
-                <Box
-                    aria-hidden="true"
-                    component="span"
-                    sx={{color: "surfaces.mutedText", fontSize: "10px"}}
-                >
-                    {open ? "▲" : "▼"}
-                </Box>
             </Button>
             {/* FM-054 (ADR-0014): the paper surface, border, radius, and
                 shadow are the `MuiPopover` theme default now
@@ -2344,8 +2340,8 @@ function DisplayOptionsMenu({
 }
 
 // One popover entry, matching the mock's `<label>` + `<input type=checkbox>`
-// shape: a row at `7px 8px` padding with a 9px gap, rounded to the theme's
-// shared `pillRadius` (the same `7px` the mock's `Chip` pills use).
+// shape: a row at `7px 8px` padding with a 9px gap, at the shared 8px action
+// radius.
 function DisplayOption({
     checked,
     label,
@@ -2362,7 +2358,9 @@ function DisplayOption({
             }
             label={label}
             sx={{
-                borderRadius: pillRadius,
+                // As with the selection menu's rows above: the 8px action
+                // radius, not the 56px `pillRadius` used to resolve to here.
+                borderRadius: 1,
                 gap: DISPLAY_MENU_ITEM_GAP,
                 m: 0,
                 px: DISPLAY_MENU_ITEM_PADDING_X,

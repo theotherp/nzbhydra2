@@ -1,5 +1,4 @@
 import {Alert, Button, MenuItem, Select, Stack} from "@mui/material";
-import type {Theme} from "@mui/material/styles";
 import type {ReactNode} from "react";
 import {useEffect, useMemo, useState} from "react";
 
@@ -23,66 +22,48 @@ import {
 import type {Downloader} from "../../../domain/downloads/actions";
 
 // The mock's primary bulk-action button (`sendToDownloader`): filled
-// `primary.main`/`primary.contrastText` when enabled, `8px` radius, `8px
-// 14px` padding, `13px` weight-600 text; when `disabled` (real control
-// semantics, unchanged from FM-040 -- never opacity alone) it renders on the
-// mock's neutral control surface with muted text instead of MUI's default
-// greyed-out disabled treatment. FM-054 (ADR-0014): the surface/text values
-// are the theme's own `surfaces.control`/`surfaces.mutedText` tokens now,
-// not restated literals.
-const primaryActionSx = (theme: Theme) =>
-    ({
-        borderRadius: theme.shape.borderRadius,
-        fontSize: "13px",
-        fontWeight: 600,
-        padding: "8px 14px",
-        "&.Mui-disabled": {
-            backgroundColor: "surfaces.control",
-            color: "surfaces.mutedText",
-        },
-    }) as const;
-
-// The mock's secondary bulk-action button (`downloadZip`): the same neutral
-// control surface and border in both states, distinguishing it from the
-// primary action by omitting the filled teal background.
-const secondaryActionSx = (theme: Theme) =>
-    ({
+// `primary.main`/`primary.contrastText` when enabled,
+// `13px` weight-600 text; when `disabled` (real control semantics, unchanged
+// from FM-040 -- never opacity alone) it renders on the mock's neutral
+// control surface with muted text instead of MUI's default greyed-out
+// disabled treatment. FM-054 (ADR-0014): the surface/text values are the
+// theme's own `surfaces.control`/`surfaces.mutedText` tokens.
+//
+// The radius is *not* stated here any more. It used to be
+// `borderRadius: theme.shape.borderRadius` inside `sx`, which is
+// theme-multiplied (see `pillRadius`'s note in `app/theme.ts`) and therefore
+// rendered 64px -- a stadium -- rather than the intended 8px. `MuiButton`'s
+// own theme default already paints the 8px this wanted.
+const primaryActionSx = {
+    fontSize: "13px",
+    fontWeight: 600,
+    // Horizontal only -- the height is the theme's shared `controlHeight`.
+    padding: "0 14px",
+    "&.Mui-disabled": {
         backgroundColor: "surfaces.control",
-        border: "1px solid",
-        borderColor: "surfaces.hairline",
-        borderRadius: theme.shape.borderRadius,
-        color: "text.primary",
-        fontSize: "13px",
-        padding: "8px 12px",
-        "&:hover": {
-            backgroundColor: "surfaces.control",
-            borderColor: "surfaces.hairline",
-        },
-        "&.Mui-disabled": {
-            backgroundColor: "surfaces.control",
-            borderColor: "surfaces.hairline",
-            color: "surfaces.mutedText",
-        },
-    }) as const;
+        color: "surfaces.mutedText",
+    },
+} as const;
 
-// The secondary bulk controls (downloader select, downloader-category
-// select, black-hole/save, copy-links, Save search -- their own
-// `results-download-actions` row until FM-055 merged it into
-// `results-bulk-actions`) restyle to the same neutral control surface,
-// radius, and typography as the bulk-actions bar's secondary button, with no
-// change to which controls are present, their order, or their behavior. The
-// downloader/category selects stay a bare `Select` with an `aria-label`
-// (ADR-0014 names `Select` with
-// `InputLabel` as the standard alternative to `TextField select`, and this
-// row genuinely lacks room for a floating label -- a real-browser measurement
-// during this task's own verification confirmed a `TextField select` with a
-// visible "Downloader category" label pushes this dense action row past the
-// viewport width and fails `results.spec.ts`'s no-horizontal-overflow
-// contract, the same trade-off `SearchWorkspace.tsx`'s own `AdvancedRangeInput`
-// already documents for its 100px min/max fields). The recessed
-// surface/hairline border still come from the theme's own `MuiOutlinedInput`
-// default -- no local select styling remains.
-const downloadActionsButtonSx = secondaryActionSx;
+// The secondary bulk controls (ZIP, black hole/save, copy links, Save search)
+// are the shared neutral-secondary action, so they render `MuiButton`'s
+// `variant="control"` and state no surface, border, radius, or typography of
+// their own -- see that variant in `app/theme.ts`. The local
+// `secondaryActionSx`/`downloadActionsButtonSx` pair this replaces was one of
+// six near-identical authorings of the same intent across the search feature,
+// and carried the same 64px radius bug as the primary block above.
+//
+// The downloader/category selects stay a bare `Select` with an `aria-label`
+// (ADR-0014 names `Select` with `InputLabel` as the standard alternative to
+// `TextField select`, and this row genuinely lacks room for a floating label
+// -- a real-browser measurement during FM-055's verification confirmed a
+// `TextField select` with a visible "Downloader category" label pushes this
+// dense action row past the viewport width and fails `results.spec.ts`'s
+// no-horizontal-overflow contract, the same trade-off
+// `SearchWorkspace.tsx`'s own `AdvancedRangeInput` already documents for its
+// 100px min/max fields). Their recessed surface and hairline border come from
+// the theme's `MuiOutlinedInput` default: inputs stay recessed, buttons
+// raised, which is the contrast that tells the two apart in this one row.
 
 export function DownloadActions({
     leading,
@@ -356,8 +337,7 @@ export function DownloadActions({
                     disabled={busy || selectedNzbs.length === 0}
                     onClick={zip}
                     size="small"
-                    sx={secondaryActionSx}
-                    variant="outlined"
+                    variant="control"
                 >
                     Download selected NZBs as ZIP
                 </Button>
@@ -389,18 +369,12 @@ export function DownloadActions({
                         ])
                     }
                     size="small"
-                    sx={downloadActionsButtonSx}
-                    variant="outlined"
+                    variant="control"
                 >
                     Send selected to black hole
                 </Button>
             )}
-            <Button
-                onClick={copy}
-                size="small"
-                sx={downloadActionsButtonSx}
-                variant="outlined"
-            >
+            <Button onClick={copy} size="small" variant="control">
                 Copy selected links
             </Button>
             {onSaveSearch && (
@@ -409,8 +383,8 @@ export function DownloadActions({
                     id="save-search"
                     onClick={() => void onSaveSearch()}
                     size="small"
-                    sx={[downloadActionsButtonSx, {ml: "auto"}]}
-                    variant="outlined"
+                    sx={{ml: "auto"}}
+                    variant="control"
                 >
                     {savingSearch ? "Saving search…" : "Save search"}
                 </Button>
@@ -440,7 +414,7 @@ export function DirectDownloadActions({
             onClick={onDownloaded}
             size="small"
             sx={{minWidth: 0, whiteSpace: "nowrap"}}
-            variant="outlined"
+            variant="control"
         >
             {type === "nzb" ? "NZB" : "Torrent"}
         </Button>
