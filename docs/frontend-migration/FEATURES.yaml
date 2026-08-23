@@ -225,6 +225,7 @@ features:
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
       - core/ui-react/src/features/search/results/resultTable.test.ts
       - core/ui-react/src/features/search/results/RefineSidebar.test.tsx
+      - core/ui-react/src/features/search/results/groupEpisodesHelp.test.ts
     selectors:
       - sort-{{column}}
       - freetext-filter-{{column}}
@@ -259,18 +260,28 @@ features:
       - filter-toggle-refine-grabs
       - display-options-toggle
       - display-options
-    parity: partial
+      - group-episodes-help-dialog
+    parity: done
     gaps:
       # 2026-08-23: narrowed from the bare phrase "server-backed preferences",
       # which overstated the gap. Legacy keeps sorting and every display
       # toggle in `localStorageService` (client-side), exactly as the React
       # results view does. Its ONLY server-backed preference in this feature
-      # is the one below.
-      - the group-episodes help dialog and its server-backed
-        "already shown" flag (`GenericStorageService.get/put(
-        "isGroupEpisodesHelpShown")`, `search-results-controller.js:184-191`);
-        the React results view neither shows that one-time help nor records
-        the flag
+      # is the one below, adopted by FM-091 (all remaining gaps deliberate).
+      - "deliberate - FM-091: the group-episodes help dialog's body drops
+        legacy's \"upper left\" locator phrase for the \"Display options\"
+        control (`search-results-controller.js:186`), since the React
+        layout does not fix that control to a corner"
+      - "deliberate - FM-091: legacy's predicate read the *searched*
+        category off `$stateParams`; the React results view is only handed
+        the results themselves, so eligibility is computed from the
+        returned results' own categories instead
+        (`groupEpisodesHelp.ts:isGroupEpisodesHelpEligible`)"
+      - "deliberate - FM-091: the server-backed
+        `isGroupEpisodesHelpShown` flag is written only after the dialog
+        closes, not on open as legacy did
+        (`search-results-controller.js:184-191`), following FM-079's
+        acknowledge-after-close precedent"
       - "deliberate - FM-089: the refine sidebar's Category and Indexer
         sections now remember their own expand/collapse state
         (`refineCategoryOpen`/`refineIndexerOpen`) across reloads, folded

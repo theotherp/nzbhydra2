@@ -45,6 +45,7 @@ import {ApiTransport} from "../../../api/transport";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
+import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {selectAllRadius} from "../../../app/theme";
 import {
     bootstrapBase,
@@ -53,6 +54,12 @@ import {
 } from "./DownloadActions";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {RefineSidebar, useCompactRefineSurface} from "./RefineSidebar";
+import {
+    GROUP_EPISODES_HELP_MESSAGE,
+    GROUP_EPISODES_HELP_TITLE,
+    isGroupEpisodesHelpEligible,
+    showGroupEpisodesHelpIfNeeded,
+} from "./groupEpisodesHelp";
 import type {
     NumericRange,
     QuickFilter,
@@ -340,6 +347,7 @@ export function SearchResults({
     const [pagingExhausted, setPagingExhausted] = useState(false);
     const dialogs = useContext(DialogContext);
     const toasts = useContext(ToastContext);
+    const groupEpisodesHelpChecked = useRef(false);
     const filteredResults = useMemo(
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
@@ -485,6 +493,47 @@ export function SearchResults({
         setPagingError(undefined);
         setPagingExhausted(false);
     }, [searchRequestId]);
+
+    // FM-091: legacy's one-time "Sorting of TV episodes" help dialog. Guarded
+    // by a ref rather than the server flag alone so a load that keeps this
+    // component mounted across several eligible searches (the normal case --
+    // `SearchPage` never remounts it) issues at most one read and shows at
+    // most one dialog, matching `StartupChecks.tsx`'s own `started` ref
+    // precedent for a once-per-load check.
+    useEffect(() => {
+        if (groupEpisodesHelpChecked.current || dialogs === null) {
+            return;
+        }
+        if (
+            !isGroupEpisodesHelpEligible({
+                categories: data.searchResults.map((result) => result.category),
+                episodeRequested,
+                groupEpisodes,
+            })
+        ) {
+            return;
+        }
+        groupEpisodesHelpChecked.current = true;
+        void showGroupEpisodesHelpIfNeeded({
+            preferences: createServerPreferences(transport),
+            show: () =>
+                dialogs
+                    .confirm({
+                        confirmLabel: "OK",
+                        message: GROUP_EPISODES_HELP_MESSAGE,
+                        testId: "group-episodes-help-dialog",
+                        title: GROUP_EPISODES_HELP_TITLE,
+                        variant: "acknowledge",
+                    })
+                    .then(() => undefined),
+        });
+    }, [
+        data.searchResults,
+        dialogs,
+        episodeRequested,
+        groupEpisodes,
+        transport,
+    ]);
 
     const allIndexersFailed =
         data.indexerSearchMetaDatas.length > 0 &&

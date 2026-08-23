@@ -16,6 +16,17 @@ import {
 test.describe("Search results", () => {
     test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
+        // FM-091: pre-raise the one-time group-episodes help flag so none of
+        // this file's other tests -- most of which run TV-category searches
+        // with grouping on by default -- unexpectedly trip a dialog they
+        // never accounted for (an open MUI dialog intercepts pointer events
+        // for the rest of the page). Only the dedicated FM-091 test below
+        // resets the flag to exercise the dialog itself, and restores it
+        // afterward.
+        await page.request.put(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+            {data: true},
+        );
         await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
@@ -3302,6 +3313,97 @@ test.describe("Search results", () => {
             );
             await page.unrouteAll({behavior: "ignoreErrors"});
         }
+    });
+
+    // FM-091: legacy's one-time "Sorting of TV episodes" help dialog
+    // (`search-results-controller.js:175-191`), keyed by the server-backed,
+    // per-user `isGroupEpisodesHelpShown` flag this shared instance already
+    // carries across specs -- explicitly reset to "not shown" first, and its
+    // end state asserted afterward, so this test neither depends on nor
+    // silently changes whatever another spec left behind.
+    test("should show the group-episodes help dialog once for an eligible TV search and record it as shown", async ({
+        page,
+    }) => {
+        await page.request.put(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+            {data: false},
+        );
+
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "tv-one",
+                            title: "Group Episodes Help Show S01E01",
+                            indexer: "Alpha",
+                            category: "TV",
+                            showtitle: "Group Episodes Help Show",
+                            season: "1",
+                            episode: "1",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Alpha", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page.getByTestId("search-query").fill("group episodes help");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("group-episodes-help-dialog"),
+            ).toBeVisible();
+        });
+
+        const dialog = page.getByTestId("group-episodes-help-dialog");
+        await expect(dialog.getByText("Sorting of TV episodes")).toBeVisible();
+        await expect(
+            dialog.getByText(/automatically grouped by episodes/),
+        ).toBeVisible();
+        await captureVisualRegion(
+            page.locator("body"),
+            "F-SEARCH-SORT-FILTER",
+            "group-episodes-help-dialog-desktop",
+        );
+
+        // Not written yet: the dialog is still open.
+        const stillUnshown = await page.request.get(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+        );
+        expect((await stillUnshown.text()).trim()).not.toBe("true");
+
+        await dialog.getByRole("button", {name: "OK"}).click();
+        await expect(dialog).toBeHidden();
+
+        await expect
+            .poll(async () => {
+                const shown = await page.request.get(
+                    "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+                );
+                return (await shown.text()).trim();
+            })
+            .toBe("true");
+
+        // A follow-up TV search in the same load shows no second dialog.
+        await page.getByTestId("search-query").fill("group episodes help two");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await expect(
+            page.getByTestId("group-episodes-help-dialog"),
+        ).toHaveCount(0);
+
+        await page.unrouteAll({behavior: "ignoreErrors"});
     });
 });
 

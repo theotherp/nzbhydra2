@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-PLATFORM-SHELL
 Component IDs: None
 API IDs: None
-Depends on: FM-091, FM-092, FM-093
+Depends on: FM-092, FM-093
 Blocks: FM-095
 
 ## Outcome

@@ -410,6 +410,21 @@ correctly left alone (outside this packet's files); logged as a single-session f
 unexplored alternative of widening the notch instead of shrinking the label. Third and last of the 2026-08-23
 owner-triage batch (FM-088..FM-090).
 
+FM-091 (Group-Episodes One-Time Help Dialog) reproduces legacy's one-time "Sorting of TV episodes" dialog behind
+`C-SERVER-PREFERENCES`' per-user `isGroupEpisodesHelpShown` flag, read through `isRaisedFlag` so neither the inverted
+polarity (raised means "do not show") nor legacy's `!response.data` truthiness bug is reproduced; the flag is written
+only after the dialog closes, and every close path (button, escape, backdrop) resolves identically for the
+`acknowledge` variant. Flips F-SEARCH-SORT-FILTER to `done` and corrects C-SERVER-PREFERENCES, whose `consumers` had
+been anticipating the wrong feature. The first real-backend run exposed a cross-test regression the implementer's own
+manual reproduction could not: most of `results.spec.ts`'s fixture data is category "TV", so the new dialog opened on
+the first eligible search and intercepted pointer events in 11 unrelated tests. Fixed in that file's shared
+`beforeEach` (pre-raising the flag), which the reviewer judged legitimate fixture setup rather than defect-masking —
+the file already did the same for the welcome dialog, no case body or assertion changed, and a real user genuinely
+does see this dialog once. Passed with two minor findings, not corrected (optional): no integration test drives a
+rejected `readFlag` through the mounted component (only the pure function), and no test exercises the escape/backdrop
+close path for this dialog specifically — its correctness rests on inspection of the shared, out-of-scope
+`DialogProvider`. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -424,8 +439,6 @@ None.
 
 ## Upcoming
 
-- FM-091: Group-episodes one-time help dialog and its server-backed `isGroupEpisodesHelpShown` flag — earliest of the
-  2026-08-23 parity-completion batch; later members stay planned packets in `tasks/`.
 - FM-096: Indexer colour shown on result rows (owner decision 2026-08-23) — dependency-free, independent of FM-092.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).

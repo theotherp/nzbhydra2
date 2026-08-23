@@ -3013,6 +3013,120 @@ describe("SearchResults", () => {
         expect(storedChoices()).not.toHaveProperty("drawerOpen");
         expect(storedChoices().sidebarCollapsed).toBe(false);
     });
+
+    describe("group-episodes help dialog (FM-091)", () => {
+        function tvResultsData() {
+            return {
+                ...response,
+                numberOfAvailableResults: 1,
+                searchResults: [
+                    {
+                        searchResultId: "1",
+                        title: "TV Show S01E01",
+                        indexer: "Mock",
+                        category: "TV SD",
+                    },
+                ],
+            };
+        }
+
+        function genericStorageFetch(stored: boolean) {
+            const puts: {body: unknown; forUser: string | null}[] = [];
+            const fetchImplementation = vi.fn(
+                (input: RequestInfo | URL, init?: RequestInit) => {
+                    const url = new URL(String(input), "http://localhost");
+                    const method = init?.method ?? "GET";
+                    if (
+                        url.pathname.includes(
+                            "internalapi/genericstorage/isGroupEpisodesHelpShown",
+                        )
+                    ) {
+                        if (method === "PUT") {
+                            puts.push({
+                                body: init?.body
+                                    ? JSON.parse(String(init.body))
+                                    : undefined,
+                                forUser: url.searchParams.get("forUser"),
+                            });
+                            return Promise.resolve(new Response(null));
+                        }
+                        return Promise.resolve(
+                            new Response(JSON.stringify(stored), {
+                                headers: {"Content-Type": "application/json"},
+                            }),
+                        );
+                    }
+                    return Promise.resolve(new Response("nope", {status: 500}));
+                },
+            );
+            vi.stubGlobal("fetch", fetchImplementation);
+            return {fetchImplementation, puts};
+        }
+
+        it("shows the help dialog for an eligible unraised search and writes the flag only after it closes", async () => {
+            const {fetchImplementation, puts} = genericStorageFetch(false);
+            renderResults(<SearchResults data={tvResultsData()} />);
+
+            const dialog = await screen.findByTestId(
+                "group-episodes-help-dialog",
+            );
+            expect(
+                within(dialog).getByText("Sorting of TV episodes"),
+            ).toBeVisible();
+            expect(
+                within(dialog).getByText(/automatically grouped by episodes/),
+            ).toBeVisible();
+            // Not written yet: the dialog is still open.
+            expect(puts).toEqual([]);
+
+            fireEvent.click(within(dialog).getByRole("button", {name: "OK"}));
+
+            await vi.waitFor(() => expect(puts).toHaveLength(1));
+            expect(puts[0]).toEqual({body: true, forUser: "true"});
+            expect(
+                screen.queryByTestId("group-episodes-help-dialog"),
+            ).not.toBeInTheDocument();
+            expect(fetchImplementation).toHaveBeenCalled();
+        });
+
+        it("shows nothing and writes nothing when the flag is already raised", async () => {
+            const {puts} = genericStorageFetch(true);
+            renderResults(<SearchResults data={tvResultsData()} />);
+
+            await vi.waitFor(() =>
+                expect(
+                    screen.queryByTestId("group-episodes-help-dialog"),
+                ).not.toBeInTheDocument(),
+            );
+            expect(puts).toEqual([]);
+        });
+
+        it("shows nothing for a non-TV, ineligible search", async () => {
+            const {puts} = genericStorageFetch(false);
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 1,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Movie",
+                                indexer: "Mock",
+                                category: "Movies",
+                            },
+                        ],
+                    }}
+                />,
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            expect(
+                screen.queryByTestId("group-episodes-help-dialog"),
+            ).not.toBeInTheDocument();
+            expect(puts).toEqual([]);
+        });
+    });
 });
 
 const STORAGE_KEY = "hydra.search-results.table";
