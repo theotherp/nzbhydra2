@@ -21,7 +21,7 @@ export const SYSTEM_TABS: readonly SystemTab[] = [
     {path: "about", label: "About"},
 ];
 
-export const SYSTEM_ROUTE_BASE = "/system";
+const SYSTEM_ROUTE_BASE = "/system";
 
 /** Legacy's default tab: every `root.system.*` state but Control is reached explicitly. */
 export const DEFAULT_SYSTEM_TAB = SYSTEM_TABS[0];

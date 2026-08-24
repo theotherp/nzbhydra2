@@ -1,5 +1,7 @@
 import {createContext, useContext} from "react";
 
+import {readItem, writeItem} from "../../domain/storage/browserStorage";
+
 export const SHOW_ADVANCED_STORAGE_KEY = "hydra.config.showAdvanced";
 
 /**
@@ -12,21 +14,11 @@ export const SHOW_ADVANCED_STORAGE_KEY = "hydra.config.showAdvanced";
  * of the form also keeps toggling it from marking the form dirty.
  */
 export function readShowAdvanced(): boolean {
-    try {
-        return (
-            window.localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY) === "true"
-        );
-    } catch {
-        return false;
-    }
+    return readItem(SHOW_ADVANCED_STORAGE_KEY) === "true";
 }
 
 export function writeShowAdvanced(value: boolean): void {
-    try {
-        window.localStorage.setItem(SHOW_ADVANCED_STORAGE_KEY, String(value));
-    } catch {
-        // A browser with storage disabled simply loses the preference.
-    }
+    writeItem(SHOW_ADVANCED_STORAGE_KEY, String(value));
 }
 
 export const ShowAdvancedContext = createContext(false);

@@ -38,9 +38,9 @@ import {
 } from "./externalToolsSettings";
 
 /** `formly-external-tools.js:87-104`' opening growl. */
-export const SYNC_STARTED = "Starting sync to all external tools...";
+const SYNC_STARTED = "Starting sync to all external tools...";
 
-export const EMPTY_STATE_HEADING = "No external tools configured";
+const EMPTY_STATE_HEADING = "No external tools configured";
 
 const ADD_MENU_ID = "config-external-tools-add-menu";
 

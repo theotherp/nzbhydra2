@@ -30,7 +30,7 @@ import {
 } from "./indexerImport";
 import {asIndexer} from "./indexerSettings";
 
-export const INDEXER_IMPORT_DIALOG_TEST_ID = "config-indexer-import-dialog";
+const INDEXER_IMPORT_DIALOG_TEST_ID = "config-indexer-import-dialog";
 
 /**
  * `F-CONFIG-INDEXERS`' Jackett/Prowlarr import dialog — legacy's indexer box

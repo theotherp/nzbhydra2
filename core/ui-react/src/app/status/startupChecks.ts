@@ -18,10 +18,10 @@ import type {ServerPreferences} from "../../services/preferences/serverPreferenc
 import {vipExpiryWarnings} from "./vipExpiry";
 
 /** The admin warnings, keyed by the storage key each one is raised with. */
-export const OUT_OF_MEMORY_KEY = "outOfMemoryDetected";
-export const OPEN_TO_INTERNET_KEY = "showOpenToInternetWithoutAuth";
-export const BELOW_JAVA_17_KEY = "belowJava17";
-export const FAILED_BACKUP_KEY = "FAILED_BACKUP";
+const OUT_OF_MEMORY_KEY = "outOfMemoryDetected";
+const OPEN_TO_INTERNET_KEY = "showOpenToInternetWithoutAuth";
+const BELOW_JAVA_17_KEY = "belowJava17";
+const FAILED_BACKUP_KEY = "FAILED_BACKUP";
 
 export type StartupWarning =
     | "outOfMemory"

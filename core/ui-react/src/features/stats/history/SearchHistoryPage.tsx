@@ -43,9 +43,11 @@ import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {recentSearchCriteria} from "../../search/history/recentSearchCriteria";
+import {historyUserInfoType} from "../shared/historyUserInfoType";
+import {Loading} from "../shared/Loading";
+import {PAGE_SIZE} from "../shared/pageSize";
 import {HistoryRefineBar} from "./refine/HistoryRefineBar";
 
-const PAGE_SIZE = 25;
 const defaultSort: SearchHistorySort = {column: "time", sortMode: 2};
 
 export function SearchHistoryPage({
@@ -123,7 +125,7 @@ export function SearchHistoryPage({
         });
     };
     if (query.isPending) {
-        return <Loading />;
+        return <Loading message="Loading search history…" />;
     }
     if (query.isError) {
         return <Alert severity="error">Unable to load search history.</Alert>;
@@ -338,15 +340,6 @@ export function SearchHistoryPage({
     );
 }
 
-function Loading() {
-    return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
-            <CircularProgress />
-            <Typography>Loading search history…</Typography>
-        </Stack>
-    );
-}
-
 function SortHeader({
     label,
     column,
@@ -387,7 +380,9 @@ function DetailsDialog({
         >
             <DialogTitle>Search details</DialogTitle>
             <DialogContent>
-                {details.isFetching && <Loading />}
+                {details.isFetching && (
+                    <Loading message="Loading search history…" />
+                )}
                 {details.isError && (
                     <Alert severity="error">
                         Unable to load search details.
@@ -572,19 +567,6 @@ function identifierHref(
                   ? `https://www.tvmaze.com/shows/${value}`
                   : undefined;
     return external ? externalLink(external, dereferer) : undefined;
-}
-
-function historyUserInfoType(safeConfig: unknown): string {
-    if (!safeConfig || typeof safeConfig !== "object") {
-        return "NONE";
-    }
-    const logging = (safeConfig as {logging?: unknown}).logging;
-    return logging &&
-        typeof logging === "object" &&
-        typeof (logging as {historyUserInfoType?: unknown})
-            .historyUserInfoType === "string"
-        ? (logging as {historyUserInfoType: string}).historyUserInfoType
-        : "NONE";
 }
 
 function showsUsername(type: string) {

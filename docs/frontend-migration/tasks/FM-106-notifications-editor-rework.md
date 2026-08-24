@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-NOTIFICATIONS
 Component IDs: C-CONFIG-FIELDS
 API IDs: API-NOTIFICATIONS-TEST
-Depends on: FM-108
+Depends on: None
 Blocks: None
 
 ## Outcome

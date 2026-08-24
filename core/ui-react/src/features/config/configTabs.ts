@@ -21,7 +21,7 @@ export const CONFIG_TABS: readonly ConfigTab[] = [
     {path: "notifications", label: "Notifications"},
 ];
 
-export const CONFIG_ROUTE_BASE = "/config";
+const CONFIG_ROUTE_BASE = "/config";
 
 export const DEFAULT_CONFIG_TAB = CONFIG_TABS[0];
 

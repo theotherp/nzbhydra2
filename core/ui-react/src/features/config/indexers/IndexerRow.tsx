@@ -11,8 +11,8 @@ import {
     vipExpiryWarning,
 } from "./indexerSettings";
 
-export const CONFIG_INCOMPLETE_MARKER = "Config incomplete";
-export const CAPS_INCOMPLETE_MARKER = "Caps check incomplete";
+const CONFIG_INCOMPLETE_MARKER = "Config incomplete";
+const CAPS_INCOMPLETE_MARKER = "Caps check incomplete";
 
 /**
  * One row of the indexer list — legacy's `indexer-input` directive.

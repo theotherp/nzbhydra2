@@ -64,9 +64,7 @@ export async function testCustomMapping(
  * "does not match", which would tell the admin their mapping is wrong when the
  * server never said so.
  */
-export function interpretCustomMappingTest(
-    value: unknown,
-): CustomMappingTestResult {
+function interpretCustomMappingTest(value: unknown): CustomMappingTestResult {
     const parsed = testResponseSchema.safeParse(value);
     if (!parsed.success) {
         return {

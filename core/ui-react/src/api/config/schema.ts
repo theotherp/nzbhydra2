@@ -28,7 +28,7 @@ import {z} from "zod";
  */
 const configSection = z.looseObject({});
 
-export const configSchema = z.looseObject({
+const configSchema = z.looseObject({
     auth: configSection.optional(),
     categoriesConfig: configSection.optional(),
     downloading: configSection.optional(),
@@ -49,7 +49,7 @@ export type ConfigValues = z.infer<typeof configSchema>;
  * secrets through `SensitiveDataConfigValidator.prepareForDisplay`, so the
  * submitted values are not what is now on disk.
  */
-export const configValidationResultSchema = z.looseObject({
+const configValidationResultSchema = z.looseObject({
     errorMessages: z.array(z.string()).nullish(),
     newConfig: configSchema.nullish(),
     ok: z.boolean(),
@@ -65,7 +65,7 @@ export type ConfigValidationResult = {
     warningMessages: string[];
 };
 
-export const apiHelpSchema = z.looseObject({
+const apiHelpSchema = z.looseObject({
     apiKey: z.string().nullish(),
     newznabApi: z.string().nullish(),
     torznabApi: z.string().nullish(),

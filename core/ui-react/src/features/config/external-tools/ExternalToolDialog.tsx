@@ -44,14 +44,14 @@ import {
     type ExternalToolValues,
 } from "./externalToolsSettings";
 
-export const EXTERNAL_TOOL_DIALOG_TEST_ID = "config-external-tool-dialog";
+const EXTERNAL_TOOL_DIALOG_TEST_ID = "config-external-tool-dialog";
 
 /** Legacy's `external-tool-config-box.html` modal title. */
-export const EXTERNAL_TOOL_DIALOG_TITLE = "External Tool Configuration";
+const EXTERNAL_TOOL_DIALOG_TITLE = "External Tool Configuration";
 
 /** `formly-external-tools.js`' connection-test messages. */
-export const CONNECTION_SUCCESS = "Connection test successful";
-export const CONNECTION_FAILURE_PREFIX = "Connection test failed: ";
+const CONNECTION_SUCCESS = "Connection test successful";
+const CONNECTION_FAILURE_PREFIX = "Connection test failed: ";
 
 /**
  * What the dialog is waiting for. The two phases are legacy's two

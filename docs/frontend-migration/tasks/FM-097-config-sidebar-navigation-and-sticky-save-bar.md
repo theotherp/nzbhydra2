@@ -1,10 +1,10 @@
 # FM-097: Config Sidebar Navigation And Sticky Save Bar
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FORM
 API IDs: None
-Depends on: FM-108, FM-109
+Depends on: None
 Blocks: FM-098, FM-099, FM-100, FM-101, FM-102
 
 ## Outcome

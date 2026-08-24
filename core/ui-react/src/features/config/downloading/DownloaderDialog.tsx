@@ -36,7 +36,7 @@ import {
     type DownloaderValues,
 } from "./downloadingSettings";
 
-export const DOWNLOADER_DIALOG_TEST_ID = "config-downloader-dialog";
+const DOWNLOADER_DIALOG_TEST_ID = "config-downloader-dialog";
 
 /** `handleConnectionCheckFail` (`config-fields-service.js:2557-2588`). */
 const CONNECTION_FAILED_TITLE = "Connection check failed";

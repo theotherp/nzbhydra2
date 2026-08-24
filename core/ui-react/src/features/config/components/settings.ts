@@ -23,7 +23,7 @@ export type ConfigFieldPath = FieldPath<ConfigValues>;
  * is ever interpreted as markup and every link still goes through
  * `C-EXTERNAL-LINKS`.
  */
-export type HelpLink = {href: string; text: string};
+type HelpLink = {href: string; text: string};
 export type HelpContent = string | ReadonlyArray<string | HelpLink>;
 
 /** `true` when valid, otherwise the message the row shows below the control. */

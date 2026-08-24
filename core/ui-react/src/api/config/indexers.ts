@@ -98,7 +98,7 @@ export type IndexerCapsCheckResult = {
     indexerConfig: IndexerValues;
 };
 
-export class CapsCheckFailedError extends Error {}
+class CapsCheckFailedError extends Error {}
 
 /**
  * `API-CONFIG-INDEXER-CAPS`: runs the capability check for one unsaved indexer
@@ -206,7 +206,7 @@ export const UNKNOWN_IMPORT_ERROR = "Unknown error occurred";
  * legacy's order (`formly-indexers.js:1180-1199`): the server's `errorMessage`,
  * then the response's status text, then an unknown-error fallback.
  */
-export class IndexerImportFailedError extends Error {}
+class IndexerImportFailedError extends Error {}
 
 const importCountSchema = z.number().nullish();
 
@@ -276,7 +276,7 @@ function importedIndexers(
  * matters on the wire: `JacketConfigRetriever` uses the posted entry as the
  * template every imported tracker is cloned from.
  */
-export async function importJackettIndexers(
+async function importJackettIndexers(
     transport: ApiTransport,
     existingIndexers: readonly IndexerValues[],
     jackettConfig: IndexerValues,
@@ -307,7 +307,7 @@ export async function importJackettIndexers(
  * A failure here is an HTTP 400 whose body is a `ProwlarrConfigReadResponse`
  * carrying only `errorMessage`, which is what `IndexerImportFailedError` shows.
  */
-export async function importProwlarrIndexers(
+async function importProwlarrIndexers(
     transport: ApiTransport,
     existingIndexers: readonly IndexerValues[],
     prowlarrConfig: IndexerValues,

@@ -69,7 +69,7 @@ const changelogSchema = z.array(changelogEntrySchema);
 
 const messagesSchema = z.array(z.string());
 
-export type PackageInfo = {
+type PackageInfo = {
     author: string | null;
     releaseType: string | null;
     version: string | null;

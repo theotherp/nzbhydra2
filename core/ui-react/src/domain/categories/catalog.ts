@@ -75,7 +75,7 @@ const safeConfigSchema = z.object({
         .default([]),
 });
 
-export type Category = z.infer<typeof categorySchema>;
+type Category = z.infer<typeof categorySchema>;
 
 export type CategoryCatalog = {
     categories: Category[];

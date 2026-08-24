@@ -1,7 +1,7 @@
 import type {paths} from "./generated/openapi";
 import {ApiTransport} from "./transport";
 
-export type NewsListResponse =
+type NewsListResponse =
     paths["/internalapi/news"]["get"]["responses"][200]["content"]["*/*"];
 
 const CURRENT_VERSION_NEWS_PATH = "internalapi/news/forcurrentversion";
@@ -103,7 +103,7 @@ export function parseUserNewsEntries(response: unknown): UserNewsEntry[] {
     });
 }
 
-export function parseNewsEntries(response: unknown): NewsEntry[] {
+function parseNewsEntries(response: unknown): NewsEntry[] {
     if (!Array.isArray(response)) {
         throw new MalformedNewsResponseError();
     }

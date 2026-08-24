@@ -68,7 +68,7 @@ const FAMILY_GROUPS: {label: string; families: StatFamily[]}[] = [
     },
 ];
 
-export const FAMILY_LABELS: Record<StatFamily, string> = {
+const FAMILY_LABELS: Record<StatFamily, string> = {
     indexerApiAccessStats: "Indexer API accesses",
     avgIndexerUniquenessScore: "Indexer scores",
     avgResponseTimes: "Avg. response times",

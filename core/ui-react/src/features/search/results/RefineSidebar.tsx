@@ -50,8 +50,8 @@ const SECTION_GAP = "22px";
 // sidebar currently claims (e.g. to size the results table's minimum width
 // consistently whether the sidebar is expanded or collapsed). The expanded
 // width is the mock's own `<aside style="flex:0 0 248px">`.
-export const EXPANDED_WIDTH = 248;
-export const COLLAPSED_WIDTH = 48;
+const EXPANDED_WIDTH = 248;
+const COLLAPSED_WIDTH = 48;
 
 // The single definition of "which refine-surface branch is live". Exported so
 // `SearchResults.tsx` resolves the same branch this component renders (FM-041's

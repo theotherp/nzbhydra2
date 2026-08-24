@@ -9,13 +9,13 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
-import type {SearchFormValues} from "./SearchWorkspace";
+import type {SearchFormValues} from "./searchFormModel";
 import {
     canonicalSearch,
     nonIdentifierQueryText,
-    SearchWorkspace,
     valuesFromSearch,
-} from "./SearchWorkspace";
+} from "./searchFormModel";
+import {SearchWorkspace} from "./SearchWorkspace";
 
 const catalog = createCategoryCatalog({
     categoriesConfig: {

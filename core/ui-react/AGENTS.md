@@ -71,7 +71,7 @@ screenshotting the running app against the mock rather than by matching CSS text
 
 ## Verification
 
-Run the gates relevant to the change (`npm run test`, `typecheck`, `lint`, `format:check`, `build`, `validate:migration`,
+Run the gates relevant to the change (`npm run test`, `typecheck`, `lint`, `format:check`, `build`, `knip`, `validate:migration`,
 `validate:focus-affordances`; system Playwright when behavior or rendering changed). Do not weaken or suppress checks. Record
 each command and result. Packet work uses the handoff template and is handed off as `review`, not `done`; single-session fixes
 append a `MAINTENANCE.md` entry instead.

@@ -22,13 +22,13 @@ import {
 } from "../../../api/config/indexers";
 import {ApiTransport} from "../../../api/transport";
 
-export const CAPS_CHECK_DIALOG_TEST_ID = "config-indexer-caps-dialog";
+const CAPS_CHECK_DIALOG_TEST_ID = "config-indexer-caps-dialog";
 
 /** `$interval(..., 500)` in `CheckCapsModalInstanceCtrl`. */
 export const CAPS_MESSAGE_POLL_INTERVAL_MS = 500;
 
-export const CAPS_CHECK_TITLE = "Checking caps... Please wait";
-export const CAPS_CHECK_FOOTER =
+const CAPS_CHECK_TITLE = "Checking caps... Please wait";
+const CAPS_CHECK_FOOTER =
     "This window will close automatically when the caps check is finished";
 
 /**

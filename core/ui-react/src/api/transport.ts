@@ -1,7 +1,7 @@
 const CSRF_COOKIE_NAME = "HYDRA-XSRF-TOKEN";
 const CSRF_HEADER_NAME = "X-XSRF-TOKEN";
 
-export type HttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
+type HttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 
 export type TransportRequest = Omit<
     RequestInit,

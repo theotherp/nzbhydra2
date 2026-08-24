@@ -30,7 +30,7 @@ const fileSystemEntrySchema = z.looseObject({
     hasParent: z.boolean().nullish(),
 });
 
-export type FileSystemSubEntry = {
+type FileSystemSubEntry = {
     fullPath: string;
     name: string;
 };

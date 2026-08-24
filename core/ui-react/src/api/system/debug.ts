@@ -50,7 +50,7 @@ const threadCpuUsageSchema = z.array(
     }),
 );
 
-export type ThreadCpuPoint = {
+type ThreadCpuPoint = {
     /** Epoch seconds, epoch millis, or a zoned string; see `C-DATE-TIME`. */
     time: number | string;
     value: number;

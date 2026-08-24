@@ -7,7 +7,7 @@ import DOMPurify from "dompurify";
  * filter; the vocabulary is narrowed per boundary instead, so a new caller has
  * to declare which content it renders rather than inherit everything.
  */
-export type RichContentBoundary = "changelog" | "news";
+type RichContentBoundary = "changelog" | "news";
 
 const ALLOWED_URI_REGEXP = /^(?:(?:https?):|[/?#]|\.{1,2}\/)/i;
 

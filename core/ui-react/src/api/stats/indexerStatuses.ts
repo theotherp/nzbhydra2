@@ -71,7 +71,7 @@ export function parseIndexerStatuses(response: unknown): IndexerStatusList {
     return {statuses: statuses.sort(statusOrder), malformedCount};
 }
 
-export class MalformedIndexerStatusesResponseError extends Error {
+class MalformedIndexerStatusesResponseError extends Error {
     constructor() {
         super("The indexer statuses response has an invalid format");
     }

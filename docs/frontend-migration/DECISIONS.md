@@ -296,3 +296,26 @@ Binding constraints:
   dependents are skipped; independent tasks continue. Failures are never papered over to keep the run moving.
 - This authority expires with this run. It does not generalise to later batches, and it does not authorise the
   coordinator to implement, review, or fix anything itself.
+
+## ADR-0026 — A handoff is reported, not written into the template file (accepted 2026-08-24)
+
+Question: every task packet's Handoff/Review section says "Implementer fills `../templates/handoff.md`". FM-108's
+implementer read that as "fill out the form that file defines" and reported its handoff to the coordinator; its
+reviewer logged the not-written-to-a-file choice as a process deviation. Acting on that finding, the coordinator told
+FM-109's implementer to write the handoff into the file — which overwrote the blank template with one task's content.
+`git log` shows no FM task has ever committed a filled `templates/handoff.md`; its only history is governance edits.
+
+Decided, by the coordinator under ADR-0025: FM-108's reading was the correct one. "Fills `../templates/handoff.md`"
+means fill out the form that template defines; the template file itself stays blank and reusable. The handoff is
+reported to the coordinator, which carries its substance into `STATUS.md` and the task-boundary commit message, and
+git history is the archive — the same lifecycle the task packets themselves follow.
+
+Binding constraints:
+
+- `docs/frontend-migration/templates/handoff.md` and `templates/review.md` are forms. No task writes its content into
+  them; the FM-109 overwrite was reverted to the FM-108 baseline.
+- A handoff must still contain everything the template asks for, command-by-command verification evidence included.
+  This decision changes where it lives, not how complete it is.
+- FM-108's corresponding MAINTENANCE.md open candidate is discharged by this entry.
+- If a written per-task handoff file is ever wanted, it needs a new decision naming its path and lifecycle; it must
+  not be the template.

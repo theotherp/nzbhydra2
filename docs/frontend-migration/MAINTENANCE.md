@@ -1021,3 +1021,66 @@ instead of leaving it to rot.
   the label down in `MuiInputLabel`) was never attempted or compared. Not a defect -- nothing to discharge -- just a
   design-space note in case the label-size reduction turns out to read too small in practice once seen across more
   of the app than the two fields FM-090 measured. Surfaced 2026-08-23 by FM-090's reviewer.
+
+- **FM-108's handoff cites the wrong precedent lines for its two `eslint-disable-next-line` comments.** The report
+  justifies the disables on `HISTORY_FILTER_KINDS` (`api/history/filters.ts`) and `searchFormSchema`
+  (`features/search/workspace/SearchWorkspace.tsx`) by pointing at `features/stats/dashboard/StatsDashboardPage.tsx:130,312`
+  as existing convention, but those two lines actually carry `react-hooks/exhaustive-deps` and
+  `@typescript-eslint/no-explicit-any` disables — not `no-unused-vars`. The disables themselves are correct and
+  necessary: FM-108's reviewer built an eslint `--stdin` repro and confirmed `@typescript-eslint/no-unused-vars`
+  fires as an *error* on a `const` read only through `typeof`, and the line-scoped `-- <reason>` style does match
+  project convention. Nothing to change in code; the citation is simply wrong in a report that is now only in git
+  history. Surfaced 2026-08-24 by FM-108's reviewer.
+- ~~**FM-108's handoff was reported to the coordinator rather than written to `templates/handoff.md`**, as that
+  packet's Handoff/Review section directs. Worth deciding once whether the template file is genuinely required per
+  task or whether a reported handoff satisfies it. Surfaced 2026-08-24 by FM-108's reviewer.~~
+  Discharged 2026-08-24 by ADR-0026, and usefully so: acting on this finding, the coordinator told FM-109's
+  implementer to write its handoff into the file, which overwrote the blank template with one task's content. That
+  exposed the right reading — "fills `../templates/handoff.md`" means fill out the form it defines, which is what
+  FM-108 did. The template was restored and ADR-0026 settles it: handoffs are reported, their substance carried into
+  `STATUS.md` and the commit message, and the templates stay blank forms.
+
+- **`SearchResults.test.tsx:38-40` explains jsdom's storage behavior in terms of a symbol FM-109 deleted.** The
+  comment still says "`getStorage()`'s `window.localStorage` access in SearchResults.tsx resolves to `undefined` …
+  so `getStorage()?.setItem(...)` silently no-ops". The mechanism it describes remains correct — the write is simply
+  routed through `writeItem` now — but `getStorage()` no longer exists. FM-109's packet permitted test-file edits
+  only for import lines and stub retargeting, so leaving it was the correct call under contract; it is doc drift, not
+  a behavior gap. Surfaced 2026-08-24 by FM-109's reviewer. Now doubly stale after FM-111: the read side it describes
+  moved out of `SearchResults.tsx` into `storedChoices.ts`. Folding this into either FM-111 candidate below closes it.
+- **`showsUsername`/`showsIp` are duplicated between `SearchHistoryPage.tsx` and `DownloadHistoryPage.tsx`.** FM-110
+  unified four other copy-pasted shapes in the same files but deliberately left these two alone: its packet enumerates
+  exactly what to unify and does not name them, and opportunistic scope creep in a behavior-preserving batch is worse
+  than a leftover duplicate. Both the implementer and the reviewer independently reached that conclusion, so this is a
+  future consolidation candidate rather than a gap in FM-110. Small and low-risk — two call sites, and
+  `features/stats/shared/` now exists as the obvious home — so it suits a single-session fix rather than a packet.
+  Surfaced 2026-08-24 by FM-110's implementer, endorsed by its reviewer.
+- **`validate:focus-affordances` has been red since the FM-092/FM-096 indexer-colour work, on five false positives.**
+  This matters beyond one task: the gate sits in several packets' Verification chains, so every future implementer
+  will meet a failing required command it did not cause. ADR-0014's colour-literal check
+  (`core/ui-react/scripts/validate-focus-affordances.mjs:218`) matches `rgb(`/`rgba(` inside comments, test titles,
+  and runtime colour fixtures. It flags `ColorSetting.tsx:46` (a JSDoc line documenting `hexToRgb`),
+  `ColorSetting.test.tsx:50` and `resultTable.test.ts:431` (test *titles* containing the words), `SearchResults.test.tsx:1611`
+  (the fixture `color: "rgb(200,50,10)"`, an indexer-config value, not a design token), and `IndexersConfigTab.test.tsx:565`
+  (which resolves to `const api = backend();` — an offset/block-scan defect on top of the substring one). None is a
+  design literal in feature code. Repair by narrowing the matcher to exclude comments, string test titles, and
+  `*.test.*` fixture values — **not** by adding entries to the script's pre-ADR-0014 exemption list at `:112`, which
+  would weaken a real gate to hide a matcher bug. FM-111's implementer had exactly that cheap workaround available
+  inside a file it was not allowed to touch, and correctly reported the failure instead. Surfaced 2026-08-24 by
+  FM-111, independently confirmed byte-identical at base by its reviewer via a pristine `git archive` tree.
+- **Teardown race in `core/ui-react/src/components/dialogs/DialogProvider.test.tsx`.** Roughly 1 run in 10 of
+  `npm run test -- --run` exits 1 on two unhandled `ReferenceError: window is not defined` from a react-dom scheduler
+  callback firing after that file's jsdom environment is torn down — while every test still reports passing
+  (1149/1149). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
+  confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
+  there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
+- **The `tests/system` visual-evidence captures are not bit-reproducible run to run.** Across identical trees, 4 of
+  335 PNGs differ, and the differing set changes membership between runs — FM-112 saw
+  `fluid-table-title-collapse-desktop.png` and `fm055-mobile-refine-drawer.png` swap places between two runs of the
+  same tree. The one in-scope shot was chased to ground: 24 differing pixels of 260,592 (0.0092%), all isolated
+  single pixels on rounded-corner antialiasing of TextField outlines, no edge displaced — and a second base run then
+  matched the after-runs byte-for-byte, showing the first base run was the outlier. This is renderer nondeterminism,
+  not a code signal, but it costs every implementer in a code-motion batch an extra base run to disambiguate a
+  "changed" screenshot. Logged here so future reviewers do not re-chase it. A small pixel tolerance, or pinning
+  fonts/antialiasing via a launch flag, would close it; the shared `prepareVisualEvidence` helper behind
+  `tests/system/tests/search.spec.ts` and `results.spec.ts` is the place. Surfaced 2026-08-24 by FM-112, endorsed by
+  its reviewer.

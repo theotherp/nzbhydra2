@@ -35,11 +35,7 @@ import {
  * one label vocabulary that two surfaces read is the point.
  */
 
-export type NotificationMessageType =
-    | "INFO"
-    | "SUCCESS"
-    | "WARNING"
-    | "FAILURE";
+type NotificationMessageType = "INFO" | "SUCCESS" | "WARNING" | "FAILURE";
 
 export type NotificationEventDefinition = {
     eventType: NotificationEventType;

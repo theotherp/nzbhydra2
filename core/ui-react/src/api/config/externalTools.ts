@@ -20,7 +20,7 @@ export type ExternalToolAddType = "DELETE_ONLY" | "PER_INDEXER" | "SINGLE";
  * `ExternalToolConfig.ExternalToolType`, which is what the configuration
  * stores — hence the translation below rather than a straight pass-through.
  */
-export type ExternalToolName = "Lidarr" | "Radarr" | "Readarr" | "Sonarr";
+type ExternalToolName = "Lidarr" | "Radarr" | "Readarr" | "Sonarr";
 
 const EXTERNAL_TOOL_NAMES: Readonly<Record<string, ExternalToolName>> = {
     LIDARR: "Lidarr",
@@ -258,7 +258,7 @@ export async function syncAllExternalTools(
 }
 
 /** Legacy's `error.data ? error.data.message : "Unknown error"`. */
-export const UNKNOWN_ERROR = "Unknown error";
+const UNKNOWN_ERROR = "Unknown error";
 
 export function errorMessage(error: unknown): string {
     if (error instanceof ApiError) {

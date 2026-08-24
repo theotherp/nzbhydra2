@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-INDEXERS
 Component IDs: C-CONFIG-FIELDS
 API IDs: None
-Depends on: FM-108
+Depends on: None
 Blocks: FM-104
 
 ## Outcome

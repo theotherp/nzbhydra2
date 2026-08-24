@@ -46,12 +46,12 @@ const FALLBACK_BOOTSTRAP = {
     serverTimeZone: "UTC",
 };
 
-export function backendUrl(): string {
+function backendUrl(): string {
     return process.env.HYDRA_BACKEND_URL ?? DEFAULT_BACKEND_URL;
 }
 
 /** `HYDRA_BACKEND_AUTH=user:password` for backends with auth configured. */
-export function backendAuthorization(): string | undefined {
+function backendAuthorization(): string | undefined {
     const credentials = process.env.HYDRA_BACKEND_AUTH;
     return credentials === undefined || credentials === ""
         ? undefined

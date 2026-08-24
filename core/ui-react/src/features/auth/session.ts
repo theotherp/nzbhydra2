@@ -79,9 +79,7 @@ export function previousUsername(): string | null {
     }
 }
 
-export async function currentSession(
-    transport: ApiTransport,
-): Promise<BootstrapData> {
+async function currentSession(transport: ApiTransport): Promise<BootstrapData> {
     return getBootstrapData(
         await transport.request<unknown>("internalapi/userinfos"),
     );

@@ -13,7 +13,7 @@ import {ApiTransport} from "../transport";
  * `malformedCount` -- is built here, so no route restates it.
  */
 
-export type HistorySortModel = {
+type HistorySortModel = {
     column: string;
     /** 1 ascending, 2 descending -- `History.java`'s own encoding. */
     sortMode: 1 | 2;

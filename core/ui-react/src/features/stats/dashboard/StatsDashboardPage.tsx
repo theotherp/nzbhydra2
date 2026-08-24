@@ -19,6 +19,8 @@ import {
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
+import {historyUserInfoType} from "../shared/historyUserInfoType";
+import {Loading} from "../shared/Loading";
 import {ControlsHeader, customDateInputsFor} from "./ControlsHeader";
 import {
     rangeForPreset,
@@ -181,7 +183,7 @@ export function StatsDashboardPage({
     const handleRefresh = () => fetchFamilies(families, range, includeDisabled);
 
     if (!hasLoadedOnce && status === "loading") {
-        return <Loading />;
+        return <Loading message="Calculating stats…" />;
     }
     if (!hasLoadedOnce && status === "error") {
         return (
@@ -295,15 +297,6 @@ export function StatsDashboardPage({
     );
 }
 
-function Loading() {
-    return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
-            <CircularProgress />
-            <Typography>Calculating stats…</Typography>
-        </Stack>
-    );
-}
-
 function mergeStats(current: StatsResult, incoming: StatsResult): StatsResult {
     const merged: StatsResult = {...current};
     for (const key of Object.keys(incoming) as (keyof StatsResult)[]) {
@@ -353,17 +346,4 @@ function isEmpty(stats: StatsResult, families: StatFamilySelection): boolean {
             );
         },
     );
-}
-
-function historyUserInfoType(safeConfig: unknown): string {
-    if (!safeConfig || typeof safeConfig !== "object") {
-        return "NONE";
-    }
-    const logging = (safeConfig as {logging?: unknown}).logging;
-    return logging &&
-        typeof logging === "object" &&
-        typeof (logging as {historyUserInfoType?: unknown})
-            .historyUserInfoType === "string"
-        ? (logging as {historyUserInfoType: string}).historyUserInfoType
-        : "NONE";
 }

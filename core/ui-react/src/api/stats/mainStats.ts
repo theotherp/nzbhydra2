@@ -74,9 +74,7 @@ const indexerApiAccessStatsSchema = z.object({
     percentConnectionError: optionalNumber,
     averageAccessesPerDay: optionalNumber,
 });
-export type IndexerApiAccessStatsEntry = z.infer<
-    typeof indexerApiAccessStatsSchema
->;
+type IndexerApiAccessStatsEntry = z.infer<typeof indexerApiAccessStatsSchema>;
 
 const indexerScoreSchema = z.object({
     indexerName: optionalString,
@@ -91,21 +89,21 @@ const indexerScoreSchema = z.object({
     legacyObservations: optionalNumber,
     correctedObservations: optionalNumber,
 });
-export type IndexerScore = z.infer<typeof indexerScoreSchema>;
+type IndexerScore = z.infer<typeof indexerScoreSchema>;
 
 const averageResponseTimeSchema = z.object({
     indexer: optionalString,
     avgResponseTime: optionalNumber,
     delta: optionalNumber,
 });
-export type AverageResponseTime = z.infer<typeof averageResponseTimeSchema>;
+type AverageResponseTime = z.infer<typeof averageResponseTimeSchema>;
 
 const indexerDownloadShareSchema = z.object({
     indexerName: optionalString,
     total: optionalNumber,
     share: optionalNumber,
 });
-export type IndexerDownloadShare = z.infer<typeof indexerDownloadShareSchema>;
+type IndexerDownloadShare = z.infer<typeof indexerDownloadShareSchema>;
 
 const countPerDayOfWeekSchema = z.object({
     day: optionalString,
@@ -126,7 +124,7 @@ const successfulDownloadsPerIndexerSchema = z.object({
     countError: optionalNumber,
     percentSuccessful: optionalNumber,
 });
-export type SuccessfulDownloadsPerIndexer = z.infer<
+type SuccessfulDownloadsPerIndexer = z.infer<
     typeof successfulDownloadsPerIndexerSchema
 >;
 
@@ -148,7 +146,6 @@ const downloadPerAgeSchema = z.object({
     age: optionalNumber,
     count: optionalNumber,
 });
-export type DownloadPerAge = z.infer<typeof downloadPerAgeSchema>;
 
 const downloadPerAgeStatsSchema = z.object({
     percentOlder1000: optionalNumber,
@@ -157,7 +154,7 @@ const downloadPerAgeStatsSchema = z.object({
     averageAge: optionalNumber,
     downloadsPerAge: z.array(downloadPerAgeSchema).optional(),
 });
-export type DownloadPerAgeStats = z.infer<typeof downloadPerAgeStatsSchema>;
+type DownloadPerAgeStats = z.infer<typeof downloadPerAgeStatsSchema>;
 
 /**
  * The dashboard's held state: every family the response can carry, each

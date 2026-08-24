@@ -22,7 +22,7 @@ import {
     type IndexerPreset,
 } from "./indexerPresets";
 
-export const ADD_INDEXER_DIALOG_TEST_ID = "config-indexer-add-dialog";
+const ADD_INDEXER_DIALOG_TEST_ID = "config-indexer-add-dialog";
 
 /**
  * `indexer-config-selection.html` / `IndexerConfigSelectionBoxInstanceController`:

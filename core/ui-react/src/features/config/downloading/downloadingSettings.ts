@@ -104,7 +104,7 @@ export const DOWNLOADER_PRESETS: readonly DownloaderPreset[] = [
     },
 ];
 
-export function downloaderPreset(value: string): DownloaderPreset | undefined {
+function downloaderPreset(value: string): DownloaderPreset | undefined {
     return DOWNLOADER_PRESETS.find((preset) => preset.value === value);
 }
 
@@ -150,7 +150,7 @@ export function downloaderText(value: unknown): string {
 }
 
 /** The heading a list row and the dialog show; legacy shows `model.name`. */
-export const UNNAMED_DOWNLOADER = "Downloader";
+const UNNAMED_DOWNLOADER = "Downloader";
 
 export function downloaderLegend(entry: DownloaderValues): string {
     const name = downloaderText(entry.name);
@@ -203,12 +203,7 @@ export function visibleDownloaderFields(
  * `formly-downloaders.js:157-215`). A brand-new entry is always checked
  * (`DownloaderCheckBeforeCloseService.checkBeforeClose`'s `isInitial`).
  */
-export const CONNECTION_FIELDS = [
-    "url",
-    "apiKey",
-    "username",
-    "password",
-] as const;
+const CONNECTION_FIELDS = ["url", "apiKey", "username", "password"] as const;
 
 export function connectionSettingsChanged(
     initial: DownloaderValues,

@@ -32,7 +32,7 @@ import {
 } from "./searchingSettings";
 
 /** The `data-testid` of every control in the dialog. */
-export const MAPPING_DIALOG_TEST_ID = "config-custom-mapping-dialog";
+const MAPPING_DIALOG_TEST_ID = "config-custom-mapping-dialog";
 
 type TestOutcome = {failed: boolean; text: string};
 

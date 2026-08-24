@@ -1,7 +1,7 @@
 import type {ThreadCpuSeries} from "../../../api/system/debug";
 import {parseServerDateTime} from "../../../domain/date-time/dateTime";
 
-export type CpuChartSeries = {
+type CpuChartSeries = {
     label: string;
     /** One value per entry of `times`; `null` where the thread had no sample. */
     data: (number | null)[];

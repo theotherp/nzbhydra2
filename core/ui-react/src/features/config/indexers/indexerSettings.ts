@@ -60,7 +60,7 @@ export function indexerList(value: unknown): string[] {
 }
 
 /** The heading a row and the dialog show; legacy's `indexer-config-box.html`. */
-export const UNNAMED_INDEXER = "Unnamed indexer";
+const UNNAMED_INDEXER = "Unnamed indexer";
 
 export function indexerLegend(entry: IndexerValues): string {
     const name = indexerText(entry.name);
@@ -119,7 +119,7 @@ function scoreOf(entry: IndexerValues): number {
  * enabled and otherwise carries the *reason* it is off, which is what makes the
  * three disabled states distinguishable at a glance in the list.
  */
-export const INDEXER_STATE_LABELS: Readonly<Record<string, string>> = {
+const INDEXER_STATE_LABELS: Readonly<Record<string, string>> = {
     ENABLED: "Enabled",
     DISABLED_USER: "Disabled by user",
     DISABLED_SYSTEM_TEMPORARY: "Temporary disabled",
@@ -194,12 +194,7 @@ export function vipExpiryWarning(
  * A brand-new entry is always checked (`IndexerCheckBeforeCloseService`'s
  * `isInitial`).
  */
-export const CONNECTION_FIELDS = [
-    "host",
-    "apiKey",
-    "apiPath",
-    "username",
-] as const;
+const CONNECTION_FIELDS = ["host", "apiKey", "apiPath", "username"] as const;
 
 export function connectionSettingsChanged(
     initial: IndexerValues,

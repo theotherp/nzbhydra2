@@ -216,7 +216,7 @@ export function externalToolText(value: unknown): string {
 }
 
 /** The heading a list row shows; legacy shows `entry.name`. */
-export const UNNAMED_EXTERNAL_TOOL = "External tool";
+const UNNAMED_EXTERNAL_TOOL = "External tool";
 
 export function externalToolLegend(entry: ExternalToolValues): string {
     const name = externalToolText(entry.name);
@@ -256,7 +256,7 @@ export function sortedExternalTools(
  * `formly-external-tools.js:199-231`). A brand-new entry is always tested
  * (legacy's `isInitial`).
  */
-export const CONNECTION_FIELDS = ["host", "apiKey"] as const;
+const CONNECTION_FIELDS = ["host", "apiKey"] as const;
 
 export function connectionSettingsChanged(
     initial: ExternalToolValues,

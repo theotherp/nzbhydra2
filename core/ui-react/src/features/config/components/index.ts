@@ -5,7 +5,6 @@
  * gets it unchanged.
  */
 export {ApiKeySetting} from "./ApiKeySetting";
-export {generateApiKey} from "./apiKey";
 export {ChipsSetting} from "./ChipsSetting";
 export {ConfigFieldset} from "./ConfigFieldset";
 export {FileBrowserSetting} from "./FileBrowserSetting";
@@ -20,15 +19,11 @@ export {SwitchSetting} from "./SwitchSetting";
 export {TextAreaSetting} from "./TextAreaSetting";
 export {TextSetting} from "./TextSetting";
 export {
-    maximumValidator,
-    minimumValidator,
     patternValidator,
     settingInputTestId,
-    settingRowTestId,
     settingTestId,
     textValue,
     type ConfigFieldPath,
     type HelpContent,
-    type SettingProps,
     type SettingValidator,
 } from "./settings";

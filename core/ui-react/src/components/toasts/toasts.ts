@@ -1,6 +1,6 @@
 import {createContext, useContext} from "react";
 
-export type ToastSeverity = "success" | "info" | "warning" | "error";
+type ToastSeverity = "success" | "info" | "warning" | "error";
 
 /**
  * A toast body is either plain text or rich content, never both. Text bodies

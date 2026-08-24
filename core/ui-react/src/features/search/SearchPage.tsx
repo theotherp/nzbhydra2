@@ -40,14 +40,14 @@ import {createCategoryCatalog} from "../../domain/categories/catalog";
 import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
-import type {SearchFormValues} from "./workspace/SearchWorkspace";
+import type {SearchFormValues} from "./workspace/searchFormModel";
 import {
     canonicalSearch,
     hasIdentifier,
     nonIdentifierQueryText,
-    SearchWorkspace,
     valuesFromSearch,
-} from "./workspace/SearchWorkspace";
+} from "./workspace/searchFormModel";
+import {SearchWorkspace} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
     bootstrap,

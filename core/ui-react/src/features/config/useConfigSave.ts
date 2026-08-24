@@ -9,7 +9,7 @@ import {ApiError, ApiTransport} from "../../api/transport";
 import {useDialogs} from "../../components/dialogs/dialogs";
 import {useToasts} from "../../components/toasts/toasts";
 
-export type ConfigSaveOutcome =
+type ConfigSaveOutcome =
     /** Persisted; the form now holds the server's own view of the config. */
     | "saved"
     /** The server refused it; nothing was written and the form stays dirty. */

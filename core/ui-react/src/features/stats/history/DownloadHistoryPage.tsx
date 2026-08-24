@@ -15,7 +15,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TableSortLabel,
     Typography,
 } from "@mui/material";
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
@@ -40,9 +39,12 @@ import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {DirectDownloadActions} from "../../search/results/DownloadActions";
+import {historyUserInfoType} from "../shared/historyUserInfoType";
+import {Loading} from "../shared/Loading";
+import {PAGE_SIZE} from "../shared/pageSize";
+import {SortHeader} from "../shared/SortHeader";
 import {HistoryRefineBar} from "./refine/HistoryRefineBar";
 
-const PAGE_SIZE = 25;
 const defaultSort: DownloadHistorySort = {column: "time", sortMode: 2};
 
 export function DownloadHistoryPage({
@@ -100,7 +102,7 @@ export function DownloadHistoryPage({
         }));
     };
     if (query.isPending) {
-        return <Loading />;
+        return <Loading message="Loading download history…" />;
     }
     if (query.isError) {
         return <Alert severity="error">Unable to load download history.</Alert>;
@@ -277,41 +279,6 @@ export function DownloadHistoryPage({
     );
 }
 
-function Loading() {
-    return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
-            <CircularProgress />
-            <Typography>Loading download history…</Typography>
-        </Stack>
-    );
-}
-
-function SortHeader({
-    label,
-    column,
-    sort,
-    onSort,
-}: {
-    label: string;
-    column: DownloadHistorySort["column"];
-    sort: DownloadHistorySort;
-    onSort(column: DownloadHistorySort["column"]): void;
-}) {
-    const active = sort.column === column;
-    const direction = active ? (sort.sortMode === 1 ? "asc" : "desc") : "asc";
-    return (
-        <TableCell sortDirection={active ? direction : false}>
-            <TableSortLabel
-                active={active}
-                direction={direction}
-                onClick={() => onSort(column)}
-            >
-                {label}
-            </TableSortLabel>
-        </TableCell>
-    );
-}
-
 function TitleCell({
     entry,
     dereferer,
@@ -393,19 +360,6 @@ function sourceLabel(accessSource: "INTERNAL" | "API" | undefined): string {
     if (accessSource === "INTERNAL") return "Internal";
     if (accessSource === "API") return "API";
     return "";
-}
-
-function historyUserInfoType(safeConfig: unknown): string {
-    if (!safeConfig || typeof safeConfig !== "object") {
-        return "NONE";
-    }
-    const logging = (safeConfig as {logging?: unknown}).logging;
-    return logging &&
-        typeof logging === "object" &&
-        typeof (logging as {historyUserInfoType?: unknown})
-            .historyUserInfoType === "string"
-        ? (logging as {historyUserInfoType: string}).historyUserInfoType
-        : "NONE";
 }
 
 /**

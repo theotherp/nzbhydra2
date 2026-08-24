@@ -10,7 +10,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TableSortLabel,
     Typography,
 } from "@mui/material";
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
@@ -30,9 +29,11 @@ import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
+import {Loading} from "../shared/Loading";
+import {PAGE_SIZE} from "../shared/pageSize";
+import {SortHeader} from "../shared/SortHeader";
 import {HistoryRefineBar} from "./refine/HistoryRefineBar";
 
-const PAGE_SIZE = 25;
 const defaultSort: NotificationHistorySort = {column: "time", sortMode: 2};
 
 export function NotificationHistoryPage({
@@ -79,7 +80,7 @@ export function NotificationHistoryPage({
         }));
     };
     if (query.isPending) {
-        return <Loading />;
+        return <Loading message="Loading notification history…" />;
     }
     if (query.isError) {
         return (
@@ -217,41 +218,6 @@ export function NotificationHistoryPage({
                 </Button>
             </Stack>
         </Stack>
-    );
-}
-
-function Loading() {
-    return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
-            <CircularProgress />
-            <Typography>Loading notification history…</Typography>
-        </Stack>
-    );
-}
-
-function SortHeader({
-    column,
-    label,
-    onSort,
-    sort,
-}: {
-    column: NotificationHistorySort["column"];
-    label: string;
-    onSort(column: NotificationHistorySort["column"]): void;
-    sort: NotificationHistorySort;
-}) {
-    const active = sort.column === column;
-    const direction = active ? (sort.sortMode === 1 ? "asc" : "desc") : "asc";
-    return (
-        <TableCell sortDirection={active ? direction : false}>
-            <TableSortLabel
-                active={active}
-                direction={direction}
-                onClick={() => onSort(column)}
-            >
-                {label}
-            </TableSortLabel>
-        </TableCell>
     );
 }
 

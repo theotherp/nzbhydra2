@@ -3,6 +3,7 @@ import {
     STAT_FAMILIES,
     type StatFamilySelection,
 } from "../../../api/stats/mainStats";
+import {readItem, writeItem} from "../../../domain/storage/browserStorage";
 
 const INCLUDE_DISABLED_KEY = "hydra.stats-dashboard.include-disabled";
 const FAMILIES_KEY = "hydra.stats-dashboard.families";
@@ -30,28 +31,19 @@ export function defaultFamilySelection(
 }
 
 export function loadIncludeDisabled(): boolean | undefined {
-    try {
-        const raw = getStorage()?.getItem(INCLUDE_DISABLED_KEY);
-        if (raw === "true") return true;
-        if (raw === "false") return false;
-        return undefined;
-    } catch {
-        return undefined;
-    }
+    const raw = readItem(INCLUDE_DISABLED_KEY);
+    if (raw === "true") return true;
+    if (raw === "false") return false;
+    return undefined;
 }
 
 export function saveIncludeDisabled(value: boolean): void {
-    try {
-        getStorage()?.setItem(INCLUDE_DISABLED_KEY, String(value));
-    } catch {
-        // Storage may be unavailable (private mode, quota); persistence is a
-        // convenience, not a requirement for the dashboard to function.
-    }
+    writeItem(INCLUDE_DISABLED_KEY, String(value));
 }
 
 export function loadFamilySelection(): StatFamilySelection | undefined {
     try {
-        const raw = getStorage()?.getItem(FAMILIES_KEY);
+        const raw = readItem(FAMILIES_KEY);
         if (!raw) return undefined;
         const parsed: unknown = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return undefined;
@@ -68,17 +60,5 @@ export function loadFamilySelection(): StatFamilySelection | undefined {
 }
 
 export function saveFamilySelection(selection: StatFamilySelection): void {
-    try {
-        getStorage()?.setItem(FAMILIES_KEY, JSON.stringify(selection));
-    } catch {
-        // See saveIncludeDisabled.
-    }
-}
-
-function getStorage(): Storage | undefined {
-    try {
-        return window.localStorage;
-    } catch {
-        return undefined;
-    }
+    writeItem(FAMILIES_KEY, JSON.stringify(selection));
 }

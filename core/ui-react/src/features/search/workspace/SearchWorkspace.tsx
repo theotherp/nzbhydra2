@@ -2,49 +2,42 @@ import {
     Alert,
     Box,
     Button,
-    ButtonGroup,
     Checkbox,
     CircularProgress,
     Chip,
     Collapse,
-    Divider,
     FormControlLabel,
     IconButton,
     InputAdornment,
-    ListItemIcon,
-    ListItemText,
-    ListSubheader,
-    Menu,
     MenuItem,
     Paper,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import DnsIcon from "@mui/icons-material/Dns";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import RemoveDoneIcon from "@mui/icons-material/RemoveDone";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SearchIcon from "@mui/icons-material/Search";
-import ShareIcon from "@mui/icons-material/Share";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import type {ReactNode, RefObject} from "react";
-import type {UseFormRegisterReturn} from "react-hook-form";
+import type {ReactNode} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
-import {z} from "zod";
 
 import type {MediaSuggestion} from "../../../api/media";
-import type {
-    CategoryCatalog,
-    SearchIndexer,
-} from "../../../domain/categories/catalog";
+import type {CategoryCatalog} from "../../../domain/categories/catalog";
+import {readItem, writeItem} from "../../../domain/storage/browserStorage";
+import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
+import {IndexerSelectionButton} from "./IndexerSelectionButton";
+import type {SearchFormValues} from "./searchFormModel";
+import {
+    hasIdentifier,
+    identifierFields,
+    mediaTypeForCategoryName,
+} from "./searchFormModel";
+import {
+    SeasonEpisodeInput,
+    seasonEpisodeFieldWidth,
+} from "./SeasonEpisodeInput";
 
-const numericString = z.string().regex(/^\d*$/);
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
 
 /** The field a chip (or a chosen suggestion) opens the Advanced panel for. */
@@ -58,32 +51,16 @@ type AdvancedField =
 
 const advancedOpenStorageKey = "nzbhydra.search.advancedOpen";
 
-// Guarded on both sides, like `features/system/logs/persistence.ts`: reading
-// `window.localStorage` at all can throw (private mode, blocked site data),
-// and so can a read or a write, so a missing or refused store simply means
-// "closed" rather than a broken search form.
+// `domain/storage/browserStorage` absorbs every way `localStorage` can fail,
+// so a missing or refused store simply means "closed" rather than a broken
+// search form.
 function readAdvancedOpen(): boolean {
-    try {
-        return storage()?.getItem(advancedOpenStorageKey) === "true";
-    } catch {
-        return false;
-    }
+    return readItem(advancedOpenStorageKey) === "true";
 }
 
 function persistAdvancedOpen(open: boolean): void {
-    try {
-        storage()?.setItem(advancedOpenStorageKey, String(open));
-    } catch {
-        // The disclosure still opens and closes; only the memory is lost.
-    }
-}
-
-function storage(): Storage | undefined {
-    try {
-        return window.localStorage;
-    } catch {
-        return undefined;
-    }
+    // The disclosure still opens and closes; only the memory is lost.
+    writeItem(advancedOpenStorageKey, String(open));
 }
 
 function rangeLabel(
@@ -103,143 +80,13 @@ const advancedSectionSx = {
     flexDirection: "column",
     gap: 0.75,
 } as const;
-const seasonEpisodeFieldWidth = 90;
 // The Media section is exactly as wide as its Season + Episode pair (two
 // fields plus the 10px `spacing={1.25}` gutter), so the additional-filter
 // field below them fills the same width and the section reads as one block.
 const mediaSectionWidth = seasonEpisodeFieldWidth * 2 + 10;
-const rangeFieldWidth = 132;
 // Two range fields plus their 6px `gap: 0.75` gutter, so Age & Size wraps
 // into a 2x2 block on a wide panel and a single column on a narrow one.
 const rangeSectionWidth = rangeFieldWidth * 2 + 6;
-
-export const searchFormSchema = z.object({
-    query: z.string(),
-    category: z.string().min(1),
-    minage: numericString,
-    maxage: numericString,
-    minsize: numericString,
-    maxsize: numericString,
-    title: z.string(),
-    additionalQuery: z.string(),
-    season: numericString,
-    episode: z.string(),
-    imdbId: z.string(),
-    tmdbId: z.string(),
-    tvdbId: z.string(),
-    tvmazeId: z.string(),
-    tvrageId: z.string(),
-    indexers: z.array(z.string()),
-});
-
-export type SearchFormValues = z.infer<typeof searchFormSchema>;
-
-export function valuesFromSearch(
-    search: Record<string, unknown>,
-    catalog: CategoryCatalog,
-): SearchFormValues {
-    const category =
-        typeof search.category === "string" &&
-        catalog.categories.some((entry) => entry.name === search.category)
-            ? search.category
-            : catalog.defaultCategory.name;
-    const field = (name: string) =>
-        typeof search[name] === "string" && /^\d*$/.test(search[name])
-            ? search[name]
-            : "";
-    const preset =
-        catalog.enableCategorySizes && category === catalog.defaultCategory.name
-            ? catalog.defaultCategory
-            : catalog.categories.find((entry) => entry.name === category);
-    return {
-        query: typeof search.query === "string" ? search.query : "",
-        category,
-        minage: field("minage"),
-        maxage: field("maxage"),
-        minsize: field("minsize") || (preset?.minSizePreset?.toString() ?? ""),
-        maxsize: field("maxsize") || (preset?.maxSizePreset?.toString() ?? ""),
-        title:
-            typeof search.title === "string"
-                ? search.title
-                : typeof search.query === "string"
-                  ? search.query
-                  : "",
-        additionalQuery:
-            typeof search.query === "string" && typeof search.title === "string"
-                ? search.query
-                : "",
-        season: field("season"),
-        episode: typeof search.episode === "string" ? search.episode : "",
-        imdbId: fieldValue(search, "imdbId"),
-        tmdbId: fieldValue(search, "tmdbId"),
-        tvdbId: fieldValue(search, "tvdbId"),
-        tvmazeId: fieldValue(search, "tvmazeId"),
-        tvrageId: fieldValue(search, "tvrageId"),
-        indexers: indexersFromSearch(search, catalog, category),
-    };
-}
-
-function indexersFromSearch(
-    search: Record<string, unknown>,
-    catalog: CategoryCatalog,
-    category: string,
-): string[] {
-    const eligible = new Set(
-        catalog.eligibleIndexers(category).map((indexer) => indexer.name),
-    );
-    if (typeof search.indexers !== "string") {
-        return catalog.preselectedIndexerNames(category);
-    }
-    return search.indexers.split(",").filter((name) => eligible.has(name));
-}
-
-function fieldValue(search: Record<string, unknown>, name: string): string {
-    return typeof search[name] === "string" ? search[name] : "";
-}
-
-// The single source of truth for which form field's text a non-identifier
-// search submits: the visible `search-query` input registers to `title` for
-// a media category and to `query` otherwise (`mediaTypeForCategoryName`,
-// mirrored from the render's own resolution at `mediaType` below), never a
-// `title || query` fallback. Both `canonicalSearch` (the URL writer) and
-// `SearchPage.submit()` (the request builder) call this one function so the
-// address bar and the executed request can never disagree about which
-// field's text was actually submitted -- see FM-051.
-export function nonIdentifierQueryText(
-    values: SearchFormValues,
-    catalog: CategoryCatalog,
-): string {
-    return mediaTypeForCategoryName(catalog, values.category)
-        ? values.title
-        : values.query;
-}
-
-export function canonicalSearch(
-    values: SearchFormValues,
-    catalog: CategoryCatalog,
-): Record<string, string> {
-    return Object.fromEntries(
-        Object.entries({
-            query: hasIdentifier(values)
-                ? values.additionalQuery
-                : nonIdentifierQueryText(values, catalog),
-            category: values.category,
-            minage: values.minage,
-            maxage: values.maxage,
-            minsize: values.minsize,
-            maxsize: values.maxsize,
-            title: hasIdentifier(values) ? values.title : "",
-            season: values.season,
-            episode: values.episode,
-            imdbId: values.imdbId,
-            tmdbId: values.tmdbId,
-            tvdbId: values.tvdbId,
-            tvmazeId: values.tvmazeId,
-            tvrageId: values.tvrageId,
-            indexers: values.indexers.join(","),
-        }).filter(([, value]) => value !== ""),
-    );
-}
 
 export function SearchWorkspace({
     catalog,
@@ -1175,263 +1022,5 @@ export function SearchWorkspace({
                 </Box>
             </Stack>
         </Paper>
-    );
-}
-
-function SeasonEpisodeInput({
-    fieldRef,
-    label,
-    registration,
-}: {
-    fieldRef?: RefObject<HTMLInputElement | null>;
-    label: string;
-    registration: UseFormRegisterReturn;
-}) {
-    const {ref, ...rest} = registration;
-    return (
-        <TextField
-            label={label}
-            slotProps={{htmlInput: {inputMode: "numeric"}}}
-            sx={{width: seasonEpisodeFieldWidth}}
-            inputRef={(element: HTMLInputElement | null) => {
-                ref(element);
-                if (fieldRef) {
-                    fieldRef.current = element;
-                }
-            }}
-            {...rest}
-        />
-    );
-}
-
-// In the Advanced panel each range field has room for a real floating label
-// plus its unit, so the previous 100px aria-label-only compact fields (an
-// ADR-0014 exception for genuinely label-free controls) retire.
-function AdvancedRangeInput({
-    fieldRef,
-    invalid,
-    label,
-    registration,
-    unit,
-}: {
-    fieldRef?: RefObject<HTMLInputElement | null>;
-    invalid: boolean;
-    label: string;
-    registration: UseFormRegisterReturn;
-    unit: string;
-}) {
-    const {ref, ...rest} = registration;
-    return (
-        <TextField
-            error={invalid}
-            label={label}
-            slotProps={{
-                input: {
-                    endAdornment: (
-                        <InputAdornment position="end">{unit}</InputAdornment>
-                    ),
-                },
-                htmlInput: {inputMode: "numeric"},
-            }}
-            sx={{width: rangeFieldWidth}}
-            inputRef={(element: HTMLInputElement | null) => {
-                ref(element);
-                if (fieldRef) {
-                    fieldRef.current = element;
-                }
-            }}
-            {...rest}
-        />
-    );
-}
-
-const identifierFields = [
-    "imdbId",
-    "tmdbId",
-    "tvdbId",
-    "tvmazeId",
-    "tvrageId",
-] as const;
-
-export function hasIdentifier(values: SearchFormValues): boolean {
-    return identifierFields.some((field) => values[field] !== "");
-}
-
-// A split button mirroring the legacy UI's actual search-page indexer
-// selection control: a default "Invert selection" action plus a dropdown
-// for the other bulk actions, with named-group actions broken into a
-// labeled "Indexer groups" subsection.
-//
-// Legacy source: `core/ui-src/js/search-controller.js`'s
-// `buildIndexerSelectionActions`/`buildGroupSelectionActions`, rendered by
-// `core/ui-src/html/states/search.html`'s own split button. Action order
-// matches legacy exactly: invert (always visible), then
-// reset/select-all/deselect-all/usenet/torznab in the dropdown, then one
-// action per indexer group under an "Indexer groups" subheader, exactly as
-// legacy's `group: 'Indexer groups'` actions render. Icons substitute a
-// semantically equivalent MUI icon per legacy glyphicon (ADR-0002).
-function IndexerSelectionButton({
-    eligibleIndexers,
-    selectedIndexers,
-    onSelect,
-    onReset,
-}: {
-    eligibleIndexers: SearchIndexer[];
-    selectedIndexers: string[];
-    onSelect(names: string[]): void;
-    onReset(): void;
-}) {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const open = Boolean(anchorEl);
-    const close = () => setAnchorEl(null);
-    const choose = (names: string[]) => {
-        onSelect(names);
-        close();
-    };
-    const usenetIndexers = eligibleIndexers
-        .filter((indexer) => indexer.searchModuleType !== "TORZNAB")
-        .map((indexer) => indexer.name);
-    const torznabIndexers = eligibleIndexers
-        .filter((indexer) => indexer.searchModuleType === "TORZNAB")
-        .map((indexer) => indexer.name);
-    const groups = [
-        ...new Set(eligibleIndexers.flatMap((indexer) => indexer.groupNames)),
-    ].sort();
-    return (
-        <>
-            <ButtonGroup
-                color="inherit"
-                size="small"
-                sx={{
-                    "& .MuiButton-root": {
-                        bgcolor: "surfaces.control",
-                        borderColor: "surfaces.hairline",
-                    },
-                }}
-                variant="outlined"
-            >
-                <Button
-                    onClick={() =>
-                        onSelect(
-                            eligibleIndexers
-                                .filter(
-                                    (indexer) =>
-                                        !selectedIndexers.includes(
-                                            indexer.name,
-                                        ),
-                                )
-                                .map((indexer) => indexer.name),
-                        )
-                    }
-                    startIcon={<SwapHorizIcon />}
-                >
-                    Invert selection
-                </Button>
-                <Button
-                    aria-expanded={open ? "true" : undefined}
-                    aria-haspopup="menu"
-                    aria-label="More selection options"
-                    onClick={(event) => setAnchorEl(event.currentTarget)}
-                    sx={{px: 0.5}}
-                >
-                    <ArrowDropDownIcon />
-                </Button>
-            </ButtonGroup>
-            <Menu anchorEl={anchorEl} onClose={close} open={open}>
-                <MenuItem
-                    onClick={() => {
-                        onReset();
-                        close();
-                    }}
-                >
-                    <ListItemIcon>
-                        <RestartAltIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Reset to preselection</ListItemText>
-                </MenuItem>
-                <MenuItem
-                    onClick={() =>
-                        choose(eligibleIndexers.map((indexer) => indexer.name))
-                    }
-                >
-                    <ListItemIcon>
-                        <DoneAllIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Select all</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={() => choose([])}>
-                    <ListItemIcon>
-                        <RemoveDoneIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Deselect all</ListItemText>
-                </MenuItem>
-                {usenetIndexers.length > 0 && (
-                    <MenuItem onClick={() => choose(usenetIndexers)}>
-                        <ListItemIcon>
-                            <DnsIcon fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Select all usenet indexers</ListItemText>
-                    </MenuItem>
-                )}
-                {torznabIndexers.length > 0 && (
-                    <MenuItem onClick={() => choose(torznabIndexers)}>
-                        <ListItemIcon>
-                            <ShareIcon fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Select all torznab indexers</ListItemText>
-                    </MenuItem>
-                )}
-                {groups.length > 0 && [
-                    <Divider key="indexer-groups-divider" />,
-                    <ListSubheader
-                        key="indexer-groups-header"
-                        sx={{backgroundColor: "transparent"}}
-                    >
-                        Indexer groups
-                    </ListSubheader>,
-                    ...groups.map((group) => (
-                        <MenuItem
-                            key={group}
-                            onClick={() =>
-                                choose(
-                                    eligibleIndexers
-                                        .filter((indexer) =>
-                                            indexer.groupNames.includes(group),
-                                        )
-                                        .map((indexer) => indexer.name),
-                                )
-                            }
-                        >
-                            <ListItemIcon>
-                                <FolderOpenIcon fontSize="small" />
-                            </ListItemIcon>
-                            <ListItemText>Select group {group}</ListItemText>
-                        </MenuItem>
-                    )),
-                ]}
-            </Menu>
-        </>
-    );
-}
-
-function mediaTypeForCategory(
-    searchType: "BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH" | undefined,
-): "MOVIE" | "TV" | undefined {
-    if (searchType === "MOVIE") {
-        return "MOVIE";
-    }
-    if (searchType === "TVSEARCH") {
-        return "TV";
-    }
-    return undefined;
-}
-
-function mediaTypeForCategoryName(
-    catalog: CategoryCatalog,
-    categoryName: string,
-): "MOVIE" | "TV" | undefined {
-    return mediaTypeForCategory(
-        catalog.categories.find((category) => category.name === categoryName)
-            ?.searchType,
     );
 }

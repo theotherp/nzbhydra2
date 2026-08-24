@@ -69,7 +69,7 @@ import {
     type IndexerField,
 } from "./indexerSettings";
 
-export const INDEXER_DIALOG_TEST_ID = "config-indexer-dialog";
+const INDEXER_DIALOG_TEST_ID = "config-indexer-dialog";
 
 /** `handleConnectionCheckFail` (`config-fields-service.js:2557-2588`). */
 const CONNECTION_FAILED_TITLE = "Connection check failed";

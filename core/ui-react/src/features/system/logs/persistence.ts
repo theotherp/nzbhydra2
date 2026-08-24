@@ -1,3 +1,5 @@
+import {readItem, writeItem} from "../../../domain/storage/browserStorage";
+
 const AUTO_REFRESH_KEY = "hydra.system-log.auto-refresh";
 const TAIL_KEY = "hydra.system-log.tail";
 
@@ -8,9 +10,9 @@ const TAIL_KEY = "hydra.system-log.tail";
  * prefixes and JSON-encodes them, and neither UI should be able to corrupt the
  * other's state while both shells exist (ADR-0001).
  *
- * Every access is guarded on both sides, like
- * `features/stats/dashboard/persistence.ts`: `localStorage` itself can throw
- * on access (private mode, blocked site data) and so can a read or a write.
+ * Every access goes through `domain/storage/browserStorage`, which absorbs the
+ * three ways `localStorage` can fail; the default-off semantics below stay
+ * here, at the call site.
  */
 export function loadAutoRefresh(): boolean {
     return readFlag(AUTO_REFRESH_KEY);
@@ -30,26 +32,9 @@ export function saveTail(value: boolean): void {
 
 /** Legacy's default for both toggles is off (`hydra-log.js:13-14`). */
 function readFlag(key: string): boolean {
-    try {
-        return getStorage()?.getItem(key) === "true";
-    } catch {
-        return false;
-    }
+    return readItem(key) === "true";
 }
 
 function writeFlag(key: string, value: boolean): void {
-    try {
-        getStorage()?.setItem(key, String(value));
-    } catch {
-        // Storage may be unavailable; persisting the toggles is a
-        // convenience, not a requirement for the log viewer to work.
-    }
-}
-
-function getStorage(): Storage | undefined {
-    try {
-        return window.localStorage;
-    } catch {
-        return undefined;
-    }
+    writeItem(key, String(value));
 }

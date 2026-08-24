@@ -8,7 +8,7 @@ import {ApiTransport} from "./transport";
  * property is optional in the generated contract, which is why the response is
  * validated below rather than trusted.
  */
-export type NfoResultResponse = components["schemas"]["NfoResult"];
+type NfoResultResponse = components["schemas"]["NfoResult"];
 
 /**
  * `API-SEARCH-NFO`'s three states, flattened from the wire shape:

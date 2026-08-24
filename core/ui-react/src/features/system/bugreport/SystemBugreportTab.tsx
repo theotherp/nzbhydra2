@@ -48,13 +48,13 @@ export const SENSITIVE_DISABLED_INFO =
     "Sensitive data logging disabled. Values will be masked in the log again.";
 
 /** Legacy's two tooltips (`bugreport.html:57-62`). */
-export const SENSITIVE_ENABLE_TOOLTIP =
+const SENSITIVE_ENABLE_TOOLTIP =
     "Temporarily disables masking of API keys, passwords and usernames in the log file. Useful for debugging connection issues. Will reset on restart.";
-export const SENSITIVE_DISABLE_TOOLTIP =
+const SENSITIVE_DISABLE_TOOLTIP =
     "Sensitive data logging is active. API keys, passwords and usernames appear unmasked in the log. Click to disable.";
 
 /** Legacy's heap-dump tooltip (`bugreport.html:66-67`). */
-export const HEAP_DUMP_TOOLTIP =
+const HEAP_DUMP_TOOLTIP =
     "Will not work on J9 based JREs (and possibly others as well).";
 
 export const UPLOAD_RESULT_PREFIX =

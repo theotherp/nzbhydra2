@@ -492,6 +492,127 @@ corrected instead of the file removed. Passed with four minor findings, none cor
 `templates/index.html` and never named `templates/react.html`, so a **native** build may now have no shell template; the JVM
 suite cannot catch it, and it is fixed separately below.
 
+FM-108 (Dead Export Pruning And Knip Guard) opens the 2026-08-24 behavior-preserving cleanup batch FM-108..FM-112
+(dead-export pruning + knip gate, the shared guarded-storage helper, stats-history helper dedup, and the
+SearchResults/SearchWorkspace decompositions), sequenced ahead of the config-improvements batch FM-097..FM-107 wherever
+files overlap. A fresh `npx knip` run reproduced the packet's baseline exactly (58 unused exports, 29 unused exported
+types), confirming the packet current rather than stale. Every reported symbol was resolved by one of two branches and
+no third kind of edit appears in the diff: the `export` modifier removed where the only consumer is in-module or
+imports from the concrete file, or the declaration deleted where nothing references it anywhere — which happened
+exactly once, for `DownloadPerAge` in `api/stats/mainStats.ts`. The five dead `C-CONFIG-FIELDS` barrel re-exports
+(`generateApiKey`, `maximumValidator`, `minimumValidator`, `settingRowTestId`, `type SettingProps`) are gone from
+`features/config/components/index.ts` with its doc comment intact; every remaining consumer of those five was
+grep-confirmed to import from the concrete file already. `knip` is now a permanent gate: pinned devDependency,
+committed `knip.json` ignoring the generated `openapi.ts` via config rather than editing it, `npm run knip` script,
+listed in `AGENTS.md`'s Verification gates. The one wrinkle worth remembering: two symbols (`HISTORY_FILTER_KINDS`,
+`searchFormSchema`) are read only through `typeof` to derive an exported type that has real consumers, and
+`@typescript-eslint/no-unused-vars` fires as an *error* on exactly that shape — the reviewer built an eslint `--stdin`
+repro to confirm the rule limitation is real before accepting the two line-scoped disables. No system-test run: every
+hunk is compiler-provable safe, and the reviewer independently reran the full gate chain (typecheck, lint at an
+unchanged 0 errors / 17 warnings, format:check, 1129 tests, build, knip, validate:migration) rather than trusting the
+handoff. Passed with two minor findings, both documentation-only, neither corrected (optional), both carried into
+`MAINTENANCE.md`: a handoff citing the wrong precedent lines for those disables, and the handoff being reported to the
+coordinator instead of written to `templates/handoff.md`.
+
+FM-109 (Guarded Browser Storage Helper) collapses five byte-similar `getStorage()`/try-catch copies into
+`core/ui-react/src/domain/storage/browserStorage.ts`, which exports exactly `readItem`/`writeItem` and is registered as
+`C-BROWSER-STORAGE`. The abstraction is deliberately thin: keys, defaults, JSON encoding, and payload-shape validation
+stay at the call sites, and both the module header and the registry responsibility line forbid fattening it later.
+Every adopter's semantics was diffed function-by-function and holds — stats' tri-state `loadIncludeDisabled`, logs'
+default-false `readFlag`, `advancedFields`' default-false `readShowAdvanced` — the mapping surviving because
+`readItem`'s `undefined` and `getItem`'s `null` are both falsy and both fail the `=== "true"` tests. `loadFamilySelection`
+keeps its own try-catch on purpose: it still guards `JSON.parse` and a per-family boolean check, which the shared module
+must not absorb. Storage keys re-verified byte-identical against `758747cc8` by the reviewer independently of the
+handoff's grep. One real behavior change, contract-directed and reviewed on its merits rather than on the implementer's
+reasoning: `SearchResults`' choices write was previously guarded on the `localStorage` accessor but not on `setItem`, so
+a quota or private-mode throw escaped into React's passive-effect flush and could trip an error boundary, destroying the
+results view over a lost display preference. Routed through `writeItem` it is swallowed like the other four sites; the
+effect has no cleanup and sets no state, `loadChoices` already treats an absent payload as `{}`, and no test asserted
+propagation — so the previous behavior was strictly worse. `advancedFields` gained coverage it never had: its old form
+was a bare `window.localStorage.getItem` that reached `false` by throwing into its own catch. Verified with the full
+gate chain plus real-backend `search.spec.ts`/`results.spec.ts` at 45 passed; the reviewer re-ran the whole deterministic
+chain itself and matched every number. Passed with two minor findings, neither corrected (optional): a stale
+`getStorage()` reference in a `SearchResults.test.tsx` comment, carried into `MAINTENANCE.md`, and a one-word
+`STATUS.md` cross-reference, fixed here in the same bookkeeping pass.
+
+FM-110 (Stats History Shared Helpers) unifies the stats area's copy-pasted page plumbing where — and only where — the
+copies were provably identical: `historyUserInfoType` (three copies), the `TableSortLabel`-based `SortHeader` (two), the
+`Loading` block (four, differing only in the message string), and `PAGE_SIZE = 25` (three), all now in
+`features/stats/shared/` with a focused unit test each. `SortHeader` is generic over each page's sort-column union and
+reproduces the `sortMode === 1 ? "asc" : "desc"` derivation character-for-character. The exclusion held: `SearchHistoryPage`'s
+own `SortHeader` renders a `Button` rather than a `TableSortLabel`, so folding it in would have changed visible anatomy —
+it is untouched, verified by diffing its body against baseline. `SavedSearchesPage` was inspected and holds none of the
+four shapes. DOM identity was proven empirically rather than argued: the implementer stashed its changes, rendered
+`DownloadHistoryPage` through a throwaway probe, captured the sort header's `outerHTML` before and after, and diffed them
+byte-for-byte — identical down to the emotion class hash and `aria-sort`. The reviewer re-derived every identity claim
+independently from `git show 1b15a42d7:<path>` rather than trusting the handoff, and confirmed each per-page loading
+message survives verbatim as an argument. Verified with the full gate chain (108 files / 1149 tests) plus real-backend
+`search-history`/`downloads`/`notification-history`/`stats` specs at 16/16. Passed clean on first review, no findings.
+One deliberate non-unification: `showsUsername`/`showsIp` are genuinely duplicated across two history pages but are not
+named in the packet, so they were left alone rather than opportunistically folded in — the reviewer agreed that packet
+scope beats a leftover duplicate, and it is logged in `MAINTENANCE.md` for a future pass.
+
+FM-111 (Search Results Module Decomposition) takes `SearchResults.tsx` from 2579 to 1639 lines by moving its
+already-independent module-level units into siblings under `results/`: `ResultRow` + `ResultColumn` into `ResultRow.tsx`,
+the select-all icons + `SelectionMenu` into `SelectionMenu.tsx`, the two popovers into `ResultsPopovers.tsx`, and the
+persistence helpers into `storedChoices.ts`. Pure code motion, proven rather than asserted: the reviewer tiled every
+destination range back onto the base file and showed the fourteen ranges partition base:88-2580 with no gap, no overlap,
+and each body surviving as one unbroken contiguous byte-identical run — `ResultRow` as a single 346-line run, the
+`SearchResults` component itself as a single 1485-line run, so no hook order or memo identity was disturbed. The only
+textual delta anywhere is added `export ` prefixes, new import lines, and new file-header comments. `ResultRow` keeps its
+`memo` wrapper with no comparator added and FM-096's `indexerColors` stable-prop threading intact; `storedChoices.ts`
+keeps FM-109's `readItem`/`writeItem` adoption and FM-089's `refineCategoryOpen`/`refineIndexerOpen` payload keys.
+`SearchResults.test.tsx` is byte-unchanged — it imports only `SearchResults`, so no internal became a test dependency.
+`isRecord` moved with `loadChoices` because leaving it behind would have created a `storedChoices → SearchResults →
+storedChoices` cycle. Verified with the gate chain, real-backend `results`/`search`/`downloads` at 49 passed (re-run by
+the reviewer, not reused, since the packet elevates the selection and persistence cases above the screenshots), and a
+before/after capture pair that is byte-identical at md5 `e28a1d4e`. Two rulings were needed and both went to the
+implementation. **The packet asked for something ADR-0014 forbids**: its Outcome named the shared style constants as a
+unit moving to its own sibling module, but `AGENTS.md` bans per-feature `*Styles.ts` token files, FM-054 deleted three
+such files, the constants carry comments saying they are local *because* of that rule, and `POPOVER_HEADING_SX` holds
+font values — the squarely forbidden case. Each constant went to its sole consumer instead; the reviewer resolved all
+ten definitions and references repo-wide and found every reference sits in the same file as its definition, so the
+"shared" constants were never shared across the split and a module would have converted ten same-file references into
+cross-module imports. **`validate:focus-affordances` failed and was correctly reported as failed**: it is red at base
+too, byte-identically, on five false positives that predate this batch — see `MAINTENANCE.md`, and note the gate sits in
+later packets' chains, so it will recur. The cheap silent workaround (five entries in the script's exemption list) was
+available in a file FM-111 could not touch, and was not taken. Passed with three minor findings, none corrected
+(optional), all carried into `MAINTENANCE.md`: the gate defect, a ~1-in-10 `DialogProvider.test.tsx` teardown flake
+characterized across 15 runs and confirmed unrelated on mechanism, and the now-doubly-stale `getStorage()` comment.
+
+FM-112 (Search Workspace Module Decomposition) closes the 2026-08-24 cleanup batch, taking `SearchWorkspace.tsx` from
+1423 to 1026 lines: the pure form model into `workspace/searchFormModel.ts`, and `SeasonEpisodeInput`,
+`AdvancedRangeInput` and `IndexerSelectionButton` into their own siblings. The reviewer re-derived the byte-identity
+tiling with its own maximal-run matcher rather than accepting the handoff's table, and called it the cleanest code
+motion audited in this batch: outside the rewritten import block, fourteen blocks partition the base file with zero
+overlaps, one uncovered blank line, and thirteen uncovered lines that are nine import lines plus the four declarations
+that gained `export`. The `SearchWorkspace` component body arrives as **one unbroken 937-line run**, which is what makes
+the hook-order and focus-sequencing questions answerable without running anything — no insertion, deletion, or
+reordering inside the component is expressible in such a diff. FM-087's frozen `valuesFromSearch`, `canonicalSearch` and
+`nonIdentifierQueryText` were additionally checked as isolated extractions so the finding does not rest only on run
+contiguity; all three match base modulo the `export` keyword. `SearchPage.tsx` has exactly one hunk, entirely inside its
+import block. `searchFormSchema` moved together with `SearchFormValues` (keeping the `z.infer` link intra-module under
+`isolatedModules`) carrying FM-108's eslint-disable verbatim, and `advancedOpen` keeps FM-109's shared-storage adoption.
+The lint-warning drop from 17 to 13 was verified rather than welcomed: four `react-refresh/only-export-components`
+warnings disappeared because the four non-component value exports moved to a `.ts` file with no component in it.
+**The line target was missed deliberately and declared**: Acceptance asks for below ~1000 and it landed at 1026. The
+reviewer ruled that acceptable — the tilde is in the contract, and the residual module scope is eight units each used
+only by `SearchWorkspace`, none of them on the Acceptance's closed list of `searchFormModel.ts` contents, with the
+`advancedOpen` helpers named in Out Of Scope. Closing the last 26 lines would have required either splitting the
+component body, explicitly forbidden for hook-order risk, or inventing destination modules the contract does not
+sanction. Note the precise reason, since the implementer's phrasing overstated it: those residuals were movable in
+principle, so the justification is that the contract forbids it, not that it was impossible. Verified with the gate
+chain (1149 tests) and real-backend `search`/`results` at 45/45; `validate:focus-affordances` is red at base and stays
+red, with the validator and its exemption list provably untouched. Passed with minor findings, none corrected
+(optional): packet drift in the Outcome's stale line numbers, two tiling figures that were understated rather than
+overstated, and the visual-capture nondeterminism now in `MAINTENANCE.md`.
+
+The cleanup batch FM-108..FM-112 is complete: dead exports pruned behind a permanent `knip` gate, one guarded-storage
+helper replacing five copies, the stats/history duplicates unified, and the two largest hand-written files decomposed —
+`SearchResults.tsx` 2579 → 1639 and `SearchWorkspace.tsx` 1423 → 1026. No behavior changed anywhere in it; the one
+semantic difference, FM-109's swallowed `setItem` throw, was contract-directed and strictly safer. Every task passed on
+first review with no fix cycle.
+
 ## Active
 
 None.
@@ -506,13 +627,11 @@ None.
 
 ## Upcoming
 
-- FM-108: Dead Export Pruning And Knip Guard — first of the 2026-08-24 behavior-preserving cleanup batch
-  (FM-108..FM-112: dead-export pruning + knip gate, the shared guarded-storage helper, stats-history helper dedup, and
-  the SearchResults/SearchWorkspace decompositions). Sequenced ahead of the config-improvements batch where files
-  overlap: FM-097 now depends on FM-108/FM-109, FM-103 and FM-106 on FM-108; FM-105/FM-107 stay independent. Later
-  members of both batches stay `planned` until promoted; the config batch (FM-097..FM-107, designed from the owner
-  backlog `docs/config-ui-improvements.md`, fed into design; the packets, not that file, are the contracts) follows:
-  FM-098/FM-099 chain off FM-097, FM-100/FM-101/FM-102 off those, FM-103..FM-107 are per-section.
+- FM-097: Config Sidebar Navigation And Sticky Save Bar — opens the config batch FM-097..FM-107 (designed from the
+  owner backlog `docs/config-ui-improvements.md`; the packets, not that file, are the contracts). FM-098/FM-099 chain
+  off FM-097 and FM-100/FM-101/FM-102 off those; FM-103..FM-107 are per-section and independent of that chain. Unlike
+  the cleanup batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay
+  `planned` until promoted.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

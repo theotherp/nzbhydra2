@@ -44,7 +44,7 @@ export const APPLY_RESTRICTIONS_OPTIONS: readonly SettingOption[] = [
 ];
 
 /** `config-fields-service.js:1493-1506`, the built-in quick filters. */
-export const PRESELECT_QUICK_FILTER_OPTIONS: readonly SettingOption[] = [
+const PRESELECT_QUICK_FILTER_OPTIONS: readonly SettingOption[] = [
     {label: "CAM / TS", value: "source|camts"},
     {label: "TV", value: "source|tv"},
     {label: "WEB", value: "source|web"},

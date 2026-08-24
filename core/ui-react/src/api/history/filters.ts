@@ -13,7 +13,8 @@
  * a route means declaring dimensions, never extending either abstraction.
  */
 
-export const HISTORY_FILTER_KINDS = [
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- read only via `typeof` below, which derives the exported HistoryFilterKind union.
+const HISTORY_FILTER_KINDS = [
     "freetext",
     "checkboxes",
     "boolean",
@@ -21,7 +22,7 @@ export const HISTORY_FILTER_KINDS = [
     "time",
 ] as const;
 
-export type HistoryFilterKind = (typeof HISTORY_FILTER_KINDS)[number];
+type HistoryFilterKind = (typeof HISTORY_FILTER_KINDS)[number];
 
 /**
  * The `boolean` value the server itself reads as "no filter"
@@ -31,7 +32,7 @@ export type HistoryFilterKind = (typeof HISTORY_FILTER_KINDS)[number];
  */
 export const HISTORY_BOOLEAN_ALL = "all";
 
-export type HistoryFilterOption = {
+type HistoryFilterOption = {
     /** The value sent to the server for this option. */
     value: string;
     /** The option's visible text. */
@@ -86,7 +87,7 @@ export type HistoryFilterValue =
 export type HistoryFilterValues = Readonly<Record<string, HistoryFilterValue>>;
 
 /** One `org.nzbhydra.historystats.FilterDefinition` as it goes over the wire. */
-export type HistoryFilterDefinition = {
+type HistoryFilterDefinition = {
     filterType: HistoryFilterKind;
     filterValue: unknown;
 };
