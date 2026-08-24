@@ -506,7 +506,13 @@ None.
 
 ## Upcoming
 
-None.
+- FM-108: Dead Export Pruning And Knip Guard — first of the 2026-08-24 behavior-preserving cleanup batch
+  (FM-108..FM-112: dead-export pruning + knip gate, the shared guarded-storage helper, stats-history helper dedup, and
+  the SearchResults/SearchWorkspace decompositions). Sequenced ahead of the config-improvements batch where files
+  overlap: FM-097 now depends on FM-108/FM-109, FM-103 and FM-106 on FM-108; FM-105/FM-107 stay independent. Later
+  members of both batches stay `planned` until promoted; the config batch (FM-097..FM-107, designed from the owner
+  backlog `docs/config-ui-improvements.md`, fed into design; the packets, not that file, are the contracts) follows:
+  FM-098/FM-099 chain off FM-097, FM-100/FM-101/FM-102 off those, FM-103..FM-107 are per-section.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

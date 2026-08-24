@@ -256,3 +256,43 @@ Binding constraints:
 - Acceptance authorises the flip and the subsequent removal of the selector and AngularJS (FM-094, FM-095). It does
   not authorise removing the `GuidedTourWeb`/`DemoDataProvider` backend surface, which ADR-0022 still defers.
 
+
+## ADR-0024 — Keep the config tooltip affordance; no tooltip-into-help merge (accepted 2026-08-24)
+
+Question: `docs/config-ui-improvements.md` §2 proposes merging each setting's tooltip content into the inline help
+text, leaving a separate tooltip icon only where the text is genuinely long. The FM-097..FM-107 designer declined to
+package it and asked the owner to confirm, because the proposal's premise does not match the current code. The owner
+delegated the decision to the coordinator.
+
+Decided: do not merge. The tooltip affordance stays as it is, and no packet in the FM-097..FM-107 batch changes it.
+
+Rationale: §2 describes the legacy four-column grid as "today", but `SettingRow.tsx` is already single-column with
+help rendered below the control as `FormHelperText`, so the readability problem the merge was meant to solve is
+already solved. The merge's remaining effect would be to delete the `config-tooltip-*` affordance and its selectors —
+a user-visible and test-visible removal with no demonstrated benefit.
+
+Binding constraints:
+
+- No FM packet removes or re-homes the `config-tooltip-*` affordance or its selectors on the strength of §2.
+- Reopening this requires a new decision entry naming a concrete problem with the current tooltip presentation.
+- This decision governs §2 only; it does not touch FM-098's inline "Advanced" chip, which is separately packaged.
+
+## ADR-0025 — Unattended coordination authority for the FM-108..FM-107 run (accepted 2026-08-24)
+
+Question: the FM-097..FM-112 run is coordinated unattended overnight, but the orchestration playbook stops and asks
+the owner at two points: a worker raising `DECISION REQUIRED`, and a task that exhausts its three fix/review cycles or
+blocks. No owner is available during the run.
+
+Decided, by explicit owner instruction: the coordinator carries bounded decision authority for this run only.
+
+Binding constraints:
+
+- The coordinator may resolve a `DECISION REQUIRED` itself **only** when the choice is front-end-only and reversible.
+  Each such resolution is recorded as its own dated ADR entry here, with rationale and constraints, before the
+  affected task resumes.
+- Anything touching a backend contract, an API shape, a persisted format, or another shared boundary is **not**
+  self-resolvable: that task blocks and waits for the owner, as the playbook requires.
+- A task that exhausts three fix/review cycles or blocks is left at its true status with findings recorded; its
+  dependents are skipped; independent tasks continue. Failures are never papered over to keep the run moving.
+- This authority expires with this run. It does not generalise to later batches, and it does not authorise the
+  coordinator to implement, review, or fix anything itself.

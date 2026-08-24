@@ -359,3 +359,14 @@ components:
       - F-CONFIG-NOTIFICATIONS
     classification: feature_specific
     state: done
+  - id: C-CONFIG-SETTINGS-INDEX
+    responsibility: A hand-maintained, post-parity metadata index over every setting the eight config tabs render directly -- per row its config path, label, help text, tab, fieldset, advanced flag, and a `conditional` marker for rows whose
+      rendering depends on another field -- because the tabs define fields as JSX, not data, and search/labelling features need the metadata as values. Created by FM-099 (settings search) and consumed by FM-100 (review-changes labels) and
+      FM-101 (invalid-field listing). Kept honest by FM-099's two-directional drift test rendering each tab and comparing `config-setting-*` testids against the index, so an unindexed new setting fails a named test rather than silently
+      missing from search. It never reads or writes config values; dialog-internal fields are out of its vocabulary and list sections contribute one navigable entry each.
+    legacy: []
+    target: core/ui-react/src/features/config/settingsSearch
+    consumers:
+      - F-CONFIG-SHELL
+    classification: feature_specific
+    state: planned
