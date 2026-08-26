@@ -1151,3 +1151,35 @@ instead of leaving it to rot.
   sticky save bar, so the red `config-error-main-host` text sits off-frame in both captures. The assertion itself
   still passes, so the spec is honest — it is the *evidence* that stopped showing the thing. Pre-existing framing
   rather than an FM-098 change, but FM-098 owns the current bytes. Surfaced 2026-08-26 by FM-098's reviewer.
+- **A settings-search reveal request is never retired, so a fieldset re-reveals itself on remount.**
+  `useSettingsNavigation.tsx:178` bumps the token but nothing clears it once honoured, so a fieldset that unmounts and
+  remounts while the last request still names it opens again on its own: search to "Indexer access" on Searching,
+  navigate away by hand, come back, and it is expanded again. Harmless — nothing is lost and no stored preference
+  changes — but not intended, and the same applies to the auth-type-gated fieldsets. Retiring the request once
+  honoured, or matching on a request id the fieldset records, would close it. Surfaced 2026-08-26 by FM-099's
+  re-review.
+- **The cross-tab reveal into a wholly advanced fieldset has no visual capture.** FM-099's strip captures the
+  per-fieldset-expander shape only. The other FM-098 gate shape — a fieldset that was not on the page at all, opened
+  by search, with the highlight painted inside a settling `Collapse` — is now headline behaviour and is asserted in
+  two harnesses but never seen. It is also the shape whose defect (cross-tab reveal silently doing nothing) survived a
+  green suite precisely because no test crossed tabs. One shot at `config.spec.ts:375` would close it. Surfaced
+  2026-08-26 by FM-099's re-review.
+- **`SettingHighlight` trips `react-refresh/only-export-components`.** `useSettingsNavigation.tsx:178` exports a
+  component from a module that also exports the `useSettingsNavigation` hook, taking the tree from 13 lint warnings to
+  14. Zero errors, and consistent with several pre-existing peers, so it was left. Splitting the component into its own
+  module would close it. Note FM-099's handoff claimed "none in touched files", which was inaccurate — the warning is
+  in a task-owned file. Surfaced 2026-08-26 by FM-099's reviewer.
+- **One of FM-099's 48 `conditional` index entries is never rendered by any drift-test fixture.**
+  `settingsIndex.ts:897`'s `downloading.primaryDownloader` renders under no fixture, so neither drift direction nor the
+  `advanced`/`fieldset` column checks ever touch it. FM-099's reviewer hand-verified it correct today (not advanced,
+  inside `General`, label and help verbatim against `DownloadingConfigTab.tsx:124-135`), but nothing would catch it
+  drifting. Either a `should render every conditional entry under at least one fixture` guard, or a Downloading
+  alternative fixture with `showDownloaderStatus` and two downloaders, would close it. Surfaced 2026-08-26 by FM-099's
+  reviewer.
+- **Proposed packet, not a quickfix — settings search offers rows whose render condition is unmet.**
+  `settingsSearchMatching.ts:38` matches the whole index, so with SSL off the results still offer "SSL keystore file"
+  and "SSL keystore password" (visible in `search-results-desktop.png`). Picking one routes to the tab and then
+  silently no-ops until `ANCHOR_DEADLINE_MS` expires, with no feedback. The timeout is deliberate and documented at
+  `useSettingsNavigation.tsx:24-29`, and FM-099's packet neither required nor forbade this. Choosing between hiding
+  such hits, marking them as unavailable, or explaining the no-op is a product decision rather than a mechanical fix,
+  so it wants a packet and an owner ruling. Surfaced 2026-08-26 by FM-099's reviewer.

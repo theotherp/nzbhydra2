@@ -401,6 +401,8 @@ features:
       - tests/system/tests/external-tools.spec.ts
       - core/ui-react/src/features/config/ConfigShell.test.tsx
       - core/ui-react/src/features/config/configFormState.test.ts
+      - core/ui-react/src/features/config/settingsSearch/settingsIndex.test.ts
+      - core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx
       - core/ui-react/src/router.test.tsx
     selectors:
       # FM-097: the per-section badges follow the tab's own URL segment --
@@ -432,6 +434,15 @@ features:
       - config-api-help-dialog
       - restart-progress-dialog
       - restart-progress-message
+      # FM-099: the settings search in the sticky bar. `config-search` is the
+      # input itself (not the Autocomplete root), so it can be filled and
+      # tabbed to directly. Each option in the grouped listbox carries
+      # `config-search-option-<path with dots as dashes>` -- the same stem as
+      # the `config-setting-<path>` row it navigates to, so a selector for a
+      # result can be predicted from the setting's own selector.
+      - config-search
+      - config-search-option-main-urlBase
+      - config-search-option-searching-coverSize
     parity: done
     gaps: []
   - id: F-CONFIG-MAIN

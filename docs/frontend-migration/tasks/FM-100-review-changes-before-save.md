@@ -1,10 +1,10 @@
 # FM-100: Review Changes Before Save
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FORM, C-CONFIG-SETTINGS-INDEX
 API IDs: None
-Depends on: FM-099
+Depends on: None
 Blocks: None
 
 ## Outcome
@@ -23,7 +23,8 @@ None (the save contract `API-CONFIG-PUT` is untouched; this is presentation over
 ## Files Allowed To Modify
 
 - New directory `core/ui-react/src/features/config/reviewChanges/` (diff computation, panel component, tests)
-- `core/ui-react/src/features/config/ConfigShell.tsx` + test (wiring the summary button and panel)
+- `core/ui-react/src/features/config/ConfigShell.tsx` + test (owning the panel's open state and wiring it to the bar)
+- `core/ui-react/src/features/config/ConfigSaveBar.tsx` — only the summary-to-button change described in Acceptance
 - `tests/system/tests/config.spec.ts` — add cases; existing cases stay green
 - The `F-CONFIG-SHELL` record in `../FEATURES.yaml`; the `C-CONFIG-SETTINGS-INDEX` consumers list in `../COMPONENTS.yaml`
 - This task packet, `../STATUS.md`, `../GUI-STATUS.md` if its derived row changes
@@ -35,8 +36,9 @@ None (the save contract `API-CONFIG-PUT` is untouched; this is presentation over
 
 ## Context To Read
 
-- `ConfigShell.tsx:88-113` (form + submit the panel's Save must call — the same `submit`, so `trigger()` still runs) and
-  FM-097's dirty-count helper (the leaf-path walk this diff extends with values)
+- `ConfigShell.tsx`'s `ConfigForm` (the form and the `submit` the panel's Save must call — the same `submit`, so
+  `trigger()` still runs), `ConfigSaveBar.tsx` (owns the summary), and `configFormState.ts`'s `countDirtyFields` (the
+  leaf-path walk this diff extends with values)
 - `useConfigSave.ts:86-89` (the loaded config lives in the query cache under `CONFIG_QUERY_KEY` and in
   `formState.defaultValues` after every reset — the "old" side of the diff)
 - `api/config/schema.ts:1-40` (sections are passthrough objects: a diff walker must tolerate keys the UI never modelled)
@@ -45,6 +47,10 @@ None (the save contract `API-CONFIG-PUT` is untouched; this is presentation over
 
 ## Acceptance
 
+- Mount seam: FM-097 extracted the bar into `ConfigSaveBar.tsx`, which owns `config-dirty-summary`, so the summary can
+  only become a button there, and only so: it keeps its testid and "N settings changed" text verbatim, gains one new
+  callback prop fired on click, and the bar gains no panel, diff knowledge or state; `config-save-bar`,
+  `config-discard` and `config-save` keep their testids, order, props and `sx`. The panel mounts from `ConfigShell`.
 - Clicking the dirty summary (`config-dirty-summary`, now a button) opens the panel (`config-review-changes`), a stock
   MUI `Dialog`; it lists one row per dirty leaf path: index label (falling back to the raw path for a path the index
   does not know), "Tab › Fieldset" origin, old and new values rendered as text (`config-review-entry-<path testid>`),

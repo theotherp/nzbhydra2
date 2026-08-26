@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FORM, C-CONFIG-SETTINGS-INDEX
 API IDs: API-CONFIG-PUT
-Depends on: FM-099
+Depends on: None
 Blocks: None
 
 ## Outcome
@@ -12,7 +12,7 @@ Blocks: None
 Save feedback stops being modal: the "Config validation failed" and "warnings" acknowledge dialogs
 (`useConfigSave.ts:66-84,91-100`) become a persistent banner region at the top of the config area — errors stay until the
 next save attempt or dismissal, warnings are dismissible, the success toast stays. The client-side pre-submit rejection
-("Config invalid" toast, `ConfigShell.tsx:100-106`) becomes a banner listing each invalid setting by its index label,
+("Config invalid" toast in `ConfigShell.tsx`'s `submit`) becomes a banner listing each invalid setting by its index label,
 navigating to the field on click — client-side errors carry field paths, so this half of inline validation needs no
 backend. Source: owner backlog `docs/config-ui-improvements.md` §3.3 short-term, fed into design 2026-08-24; this packet
 is the contract, implementers ignore that file per its banner. Server messages remain flat strings by contract — the
@@ -41,7 +41,7 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
 ## Context To Read
 
 - `useConfigSave.ts` in full (the outcome contract `ConfigSaveOutcome` must survive: errors still mean "rejected" and a
-  dirty form; warnings still mean "saved") and `ConfigShell.tsx:94-113`
+  dirty form; warnings still mean "saved") and `ConfigShell.tsx`'s `ConfigForm`/`submit`
 - `F-CONFIG-SHELL.selectors` in `../FEATURES.yaml` (`config-validation-errors` / `config-validation-warnings` — testids
   this packet explicitly re-homes from dialogs to banners, an authorized selector replacement)
 - FM-099's navigation/reveal helper (what a clicked invalid-field entry drives)
@@ -56,7 +56,7 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
 - Warnings-only save: the config is saved and the form resets (unchanged); a dismissible warning `Alert` (testid
   `config-validation-warnings`) says the config was already saved, matching the current wording. Success toast and
   restart dialog behavior unchanged; `submit`'s returned outcomes unchanged so the unsaved-changes blocker still works
-  (`ConfigShell.tsx:131-133` relies on `"saved"`).
+  (the `useBlocker` confirm branch in `ConfigShell.tsx` relies on `"saved"`).
 - Client-side rejection: instead of the toast alone, the error banner lists each field from `formState.errors` as
   "<Tab> › <label>: <message>" (label via `C-CONFIG-SETTINGS-INDEX`, raw path fallback), each entry a link that
   navigates/reveals/highlights the field via FM-099's helper. Entries testid `config-invalid-field-<path testid>`.

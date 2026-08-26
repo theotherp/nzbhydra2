@@ -16,6 +16,9 @@ import {useShowAdvanced} from "../advancedFields";
 import {
     AdvancedDisclosureContext,
     FULLY_REVEALED_ADVANCED_DISCLOSURE,
+    NO_ADVANCED_REVEAL_REQUEST,
+    revealRequestMatches,
+    useAdvancedRevealRequest,
     type AdvancedDisclosure,
 } from "./advancedDisclosure";
 import {advancedExpanderTestId, fieldsetTestId} from "./settings";
@@ -70,6 +73,38 @@ export function ConfigFieldset({
         [registerHiddenAdvancedRow, revealed],
     );
     const hiddenCount = hiddenRowKeys.length;
+
+    // FM-099: settings search asking this fieldset to open, so a hit on a row
+    // the global toggle is hiding can be scrolled to. It only ever opens --
+    // a request never collapses a fieldset the admin opened themselves -- and
+    // it changes nothing but this component's own momentary state, which is
+    // why the global toggle's stored preference is untouched by a search.
+    //
+    // Applied while rendering rather than from an effect: React's documented
+    // way to adjust state when an incoming value changes. An effect would
+    // paint the collapsed fieldset first and only then open it, and each
+    // request is a token that must be acted on exactly once -- honouring it
+    // again would re-open a fieldset the admin had since collapsed by hand.
+    //
+    // The marker starts at the *no request* token rather than at the live one:
+    // a cross-tab search bumps the token before the router mounts the target
+    // tab's bodies, so every fieldset over there mounts with a request already
+    // outstanding. Seeding from the live token would make each of them believe
+    // it had already honoured that request and skip the reveal — the whole
+    // cross-tab case, which is most of them (the global toggle is off by
+    // default). `NO_ADVANCED_REVEAL_REQUEST.token` is the one value no live
+    // request can carry: `navigateToSetting` bumps before it ever hands a
+    // request out, so a real one is always greater.
+    const revealRequest = useAdvancedRevealRequest();
+    const [honouredRequest, setHonouredRequest] = useState(
+        NO_ADVANCED_REVEAL_REQUEST.token,
+    );
+    if (honouredRequest !== revealRequest.token) {
+        setHonouredRequest(revealRequest.token);
+        if (revealRequestMatches(revealRequest, label)) {
+            setRevealed(true);
+        }
+    }
 
     const fieldset = (
         <Box

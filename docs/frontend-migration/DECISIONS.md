@@ -348,3 +348,33 @@ Binding constraints:
   `F-CONFIG-MAIN.selectors`.
 - This is a presentation decision only. It does not touch the registration invariant, the count, or which rows are
   hidden.
+
+## ADR-0028 — The config "on this page" list is a sibling below the nav, not a nested expansion (accepted 2026-08-26)
+
+Question: FM-102 requires "the active sidebar entry expands to an 'on this page' list" of fieldset anchors that are
+buttons or links in the Tab order. FM-097 built that sidebar as a vertical MUI `Tabs` with eight `Tab` children
+(`ConfigNav.tsx:80-115`), deliberately, to preserve the `tab`/`tablist` roles, `aria-selected`, and every
+`config-tab-<path>` selector. Anchors cannot nest inside a `Tab` — it is a button, so nested interactive content is
+invalid and unreachable — and non-`Tab` children cannot be interleaved in the `tablist` without breaking both ARIA and
+MUI's child-index and roving-tabindex handling. FM-102 is therefore unbuildable as written. Raised by the task
+designer while sweeping the config batch for assumptions FM-097 invalidated; resolved by the coordinator under
+ADR-0025.
+
+Decided: option (a). The anchor list renders as a sibling *below* the `Tabs` element in the nav column, headed with the
+active tab's name, rather than nested under its own entry.
+
+Rationale: the alternative of replacing vertical `Tabs` with a hand-built `List`/`ListItemButton` nav would reopen
+FM-097's recorded decision and discard the role, `aria-selected`, and selector guarantees it was chosen to protect —
+a large, contract-visible regression taken as a side effect of adding an anchor list, which is exactly the kind of
+incidental scope creep the packet discipline exists to prevent. Moving the list into the tab body was the other
+option; it is defensible, but sub-navigation belongs with navigation, and a list at the top of a long tab scrolls
+away, which is the defect FM-097's sticky bar was built to fix. Heading the sibling list with the active tab's name
+recovers the association that nesting would have carried structurally.
+
+Binding constraints:
+
+- `ConfigNav.tsx`'s `Tabs`/`Tab` structure, its `tab`/`tablist` roles, `aria-selected`, and every `config-tab-<path>`
+  selector are unchanged by FM-102. The anchor list is a sibling element, never a `Tabs` child.
+- The list is headed with the active tab's name, so its scope is unambiguous when it sits under all eight entries.
+- FM-102's Acceptance wording ("the active sidebar entry expands") is refined to match; the anchors' keyboard
+  reachability requirement stands.

@@ -19,6 +19,7 @@ import {
     ShowAdvancedContext,
     writeShowAdvanced,
 } from "./advancedFields";
+import {AdvancedRevealRequestContext} from "./components/advancedDisclosure";
 import {
     countDirtyFields,
     dirtyConfigTabs,
@@ -27,6 +28,8 @@ import {
 import {ConfigNav} from "./ConfigNav";
 import {ConfigSaveBar} from "./ConfigSaveBar";
 import {activeConfigTab, isConfigLocation} from "./configTabs";
+import {SettingsSearchField} from "./settingsSearch/SettingsSearchField";
+import {useSettingsNavigation} from "./settingsSearch/useSettingsNavigation";
 import {useConfigSave} from "./useConfigSave";
 
 /**
@@ -77,6 +80,9 @@ function ConfigForm({
     const save = useConfigSave({form, restart: restart.restart, transport});
     const [showAdvanced, setShowAdvanced] = useState(readShowAdvanced);
     const [saving, setSaving] = useState(false);
+    // FM-099: routing to a searched setting, revealing it when an advanced
+    // gate hides it, and marking it once it is on screen.
+    const settingsNavigation = useSettingsNavigation();
     const pathname = useLocation({select: (location) => location.pathname});
     const activeTab = activeConfigTab(pathname);
     const {dirtyFields, errors, isDirty} = form.formState;
@@ -192,41 +198,53 @@ function ConfigForm({
     return (
         <FormProvider {...form}>
             <ShowAdvancedContext.Provider value={showAdvanced}>
-                <Box
-                    component="form"
-                    data-testid="config-shell"
-                    noValidate
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        void submit();
-                    }}
-                    sx={{pb: 3}}
+                <AdvancedRevealRequestContext.Provider
+                    value={settingsNavigation.revealRequest}
                 >
-                    <ConfigSaveBar
-                        dirty={isDirty}
-                        dirtyCount={dirtyCount}
-                        onDiscard={discardChanges}
-                        saving={saving}
-                    />
-                    <Stack
-                        direction={{xs: "column", md: "row"}}
-                        spacing={3}
-                        sx={{pt: 3}}
+                    <Box
+                        component="form"
+                        data-testid="config-shell"
+                        noValidate
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void submit();
+                        }}
+                        sx={{pb: 3}}
                     >
-                        <ConfigNav
-                            activeTabPath={activeTab.path}
-                            dirtyTabs={dirtyTabs}
-                            invalidTabs={invalidTabs}
-                            onOpenApiHelp={() => void openApiHelp()}
-                            onToggleAdvanced={toggleAdvanced}
-                            showAdvanced={showAdvanced}
+                        <ConfigSaveBar
+                            dirty={isDirty}
+                            dirtyCount={dirtyCount}
+                            onDiscard={discardChanges}
+                            saving={saving}
+                            search={
+                                <SettingsSearchField
+                                    onSelect={
+                                        settingsNavigation.navigateToSetting
+                                    }
+                                />
+                            }
                         />
-                        <Box sx={{flexGrow: 1, minWidth: 0}}>
-                            <Outlet />
-                        </Box>
-                    </Stack>
-                </Box>
-                {restart.dialog}
+                        <Stack
+                            direction={{xs: "column", md: "row"}}
+                            spacing={3}
+                            sx={{pt: 3}}
+                        >
+                            <ConfigNav
+                                activeTabPath={activeTab.path}
+                                dirtyTabs={dirtyTabs}
+                                invalidTabs={invalidTabs}
+                                onOpenApiHelp={() => void openApiHelp()}
+                                onToggleAdvanced={toggleAdvanced}
+                                showAdvanced={showAdvanced}
+                            />
+                            <Box sx={{flexGrow: 1, minWidth: 0}}>
+                                <Outlet />
+                            </Box>
+                        </Stack>
+                    </Box>
+                    {settingsNavigation.highlight}
+                    {restart.dialog}
+                </AdvancedRevealRequestContext.Provider>
             </ShowAdvancedContext.Provider>
         </FormProvider>
     );

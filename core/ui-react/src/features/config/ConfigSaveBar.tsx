@@ -16,11 +16,21 @@ export function ConfigSaveBar({
     dirtyCount,
     onDiscard,
     saving,
+    search,
 }: {
     dirty: boolean;
     dirtyCount: number;
     onDiscard: () => void;
     saving: boolean;
+    /**
+     * FM-099's settings search, as a slot. The bar holds no search state and
+     * knows nothing about what is put here: it is the only place a control can
+     * be mounted that stays reachable at every scroll position, which is the
+     * whole reason this component exists, so it offers the position and the
+     * shell decides what fills it. Absent, the bar renders exactly as FM-097
+     * left it.
+     */
+    search?: React.ReactNode;
 }) {
     return (
         <Paper
@@ -47,6 +57,7 @@ export function ConfigSaveBar({
                 spacing={2}
                 sx={{flexWrap: "wrap"}}
             >
+                {search}
                 <Box sx={{flexGrow: 1, minWidth: 0}}>
                     {dirty && (
                         <Typography

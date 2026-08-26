@@ -54,3 +54,55 @@ export const AdvancedDisclosureContext = createContext(NO_ADVANCED_DISCLOSURE);
 export function useAdvancedDisclosure(): AdvancedDisclosure {
     return useContext(AdvancedDisclosureContext);
 }
+
+/**
+ * FM-099: the programmatic side of the same disclosure. A settings-search hit
+ * on an advanced row is behind whichever expander FM-098 gave its fieldset —
+ * the per-fieldset "N advanced settings hidden" one, or the whole-fieldset one
+ * — and both are the *same* piece of `ConfigFieldset` state, so one request
+ * naming the fieldset drives either shape.
+ *
+ * A request, not a command: it asks the fieldset with this label to open, and
+ * only that fieldset decides. Nothing here reads or writes the global advanced
+ * toggle, whose stored preference must survive a search untouched — revealing
+ * is a momentary "show me that one thing", exactly as expanding by hand is.
+ */
+export type AdvancedRevealRequest = {
+    /** Label of the fieldset asked to reveal, or `null` for no request. */
+    fieldset: string | null;
+    /**
+     * Bumped on every request. Searching for the same setting twice must
+     * reveal twice — after the admin collapsed it in between — and without a
+     * changing token the second request would be an identical value that no
+     * effect re-runs for.
+     */
+    token: number;
+};
+
+export const NO_ADVANCED_REVEAL_REQUEST: AdvancedRevealRequest = {
+    fieldset: null,
+    token: 0,
+};
+
+export const AdvancedRevealRequestContext = createContext(
+    NO_ADVANCED_REVEAL_REQUEST,
+);
+
+export function useAdvancedRevealRequest(): AdvancedRevealRequest {
+    return useContext(AdvancedRevealRequestContext);
+}
+
+/**
+ * Whether a request names this fieldset. Compared case-insensitively because a
+ * fieldset's identity in a selector is already its lowercased label
+ * (`fieldsetTestId`), so the two spellings must not be able to disagree.
+ */
+export function revealRequestMatches(
+    request: AdvancedRevealRequest,
+    label: string,
+): boolean {
+    return (
+        request.fieldset !== null &&
+        request.fieldset.toLowerCase() === label.toLowerCase()
+    );
+}

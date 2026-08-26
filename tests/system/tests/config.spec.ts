@@ -197,6 +197,246 @@ test.describe("Config shell round trip", () => {
     });
 });
 
+test.describe("Config settings search", () => {
+    /** Type into the search field and wait for its listbox to open. */
+    async function search(page: Page, query: string): Promise<void> {
+        await page.getByTestId("config-search").fill(query);
+        await expect(page.getByRole("listbox")).toBeVisible();
+    }
+
+    test("should jump from Main to a setting on the Searching tab", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openConfig(page);
+        // The field is in the sticky bar, so it is reachable from anywhere in
+        // a long tab; scrolling to the bottom of Main first proves that.
+        await page.getByTestId("config-search").scrollIntoViewIfNeeded();
+
+        await search(page, "cover width");
+        await page
+            .getByTestId("config-search-option-searching-coverSize")
+            .click();
+
+        await expect(page).toHaveURL(/\/config\/searching$/);
+        const row = page.getByTestId("config-setting-searching-coverSize");
+        await expect(row).toBeVisible();
+        await expect(row).toBeInViewport();
+        // The query is cleared, so the next search starts fresh.
+        await expect(page.getByTestId("config-search")).toHaveValue("");
+    });
+
+    test("should find a setting by its help text, not only its label", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openConfig(page);
+
+        // "garbage collection" appears only in this setting's help text.
+        await search(page, "garbage collection");
+        await expect(
+            page.getByTestId("config-search-option-main-logging-logGc"),
+        ).toBeVisible();
+    });
+
+    test("should reveal and highlight an advanced setting while the toggle stays off", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openConfig(page);
+
+        const toggle = page.getByTestId("config-advanced-toggle");
+        await expect(toggle).not.toBeChecked();
+        const row = page.getByTestId("config-setting-main-urlBase");
+        await expect(row).toBeHidden();
+        await expect(
+            page.getByTestId("config-advanced-expander-hosting"),
+        ).toBeVisible();
+
+        await search(page, "url base");
+        await page.getByTestId("config-search-option-main-urlBase").click();
+
+        await expect(row).toBeVisible();
+        await expect(row).toBeInViewport();
+        // Revealed in place: the global preference is untouched, so every
+        // other advanced row on the tab is still hidden.
+        await expect(toggle).not.toBeChecked();
+        await expect(
+            page.getByTestId("config-setting-main-dereferer"),
+        ).toBeHidden();
+        expect(
+            await page.evaluate(() =>
+                window.localStorage.getItem("hydra.config.showAdvanced"),
+            ),
+        ).toBeNull();
+
+        // The temporary mark is really painted, and really clears itself.
+        await expect
+            .poll(() =>
+                row.evaluate((element) => getComputedStyle(element).boxShadow),
+            )
+            .not.toBe("none");
+        await expect
+            .poll(
+                () =>
+                    row.evaluate(
+                        (element) => getComputedStyle(element).boxShadow,
+                    ),
+                {timeout: 10_000},
+            )
+            .toBe("none");
+    });
+
+    test("should reveal an advanced setting on another tab, in a wholly advanced fieldset", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openConfig(page);
+
+        // The case above picks a Main setting while already on Main, so its
+        // fieldset was mounted before the reveal was ever asked for. Crossing
+        // tabs is the other, ordinary half: the router mounts the Searching
+        // fieldsets only after the request exists, so each of them must act on
+        // a request that was already outstanding at its first render. This is
+        // also the shape FM-098 gives a fieldset that is advanced as a whole
+        // ("Indexer access"), whose expander replaces the fieldset itself.
+        const toggle = page.getByTestId("config-advanced-toggle");
+        await expect(toggle).not.toBeChecked();
+
+        await search(page, "timeout when accessing");
+        await page
+            .getByTestId("config-search-option-searching-timeout")
+            .click();
+
+        await expect(page).toHaveURL(/\/config\/searching$/);
+        const expander = page.getByTestId(
+            "config-advanced-expander-indexer access",
+        );
+        await expect(expander).toHaveAttribute("aria-expanded", "true");
+        const row = page.getByTestId("config-setting-searching-timeout");
+        await expect(row).toBeVisible();
+        await expect(row).toBeInViewport();
+        // Only the fieldset that was asked, and never the stored preference.
+        await expect(
+            page.getByTestId("config-advanced-expander-category handling"),
+        ).toHaveAttribute("aria-expanded", "false");
+        await expect(toggle).not.toBeChecked();
+        expect(
+            await page.evaluate(() =>
+                window.localStorage.getItem("hydra.config.showAdvanced"),
+            ),
+        ).toBeNull();
+
+        await expect
+            .poll(() =>
+                row.evaluate((element) => getComputedStyle(element).boxShadow),
+            )
+            .not.toBe("none");
+    });
+
+    test("should not save the configuration when Enter is pressed in the search field", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openConfig(page);
+
+        const puts: string[] = [];
+        page.on("request", (request) => {
+            if (
+                request.method() === "PUT" &&
+                new URL(request.url()).pathname === "/internalapi/config"
+            ) {
+                puts.push(request.url());
+            }
+        });
+
+        // A real browser, a real form, a real Enter: this is the implicit
+        // submission that would otherwise save the whole configuration.
+        await page.getByTestId("config-search").fill("cover width");
+        await page.getByTestId("config-search").press("Enter");
+
+        // Enter still does what the listbox means it to do.
+        await expect(page).toHaveURL(/\/config\/searching$/);
+        await expect(
+            page.getByTestId("config-setting-searching-coverSize"),
+        ).toBeVisible();
+        expect(puts, "Enter in the settings search must not save").toEqual([]);
+        await expect(page.getByText("Configuration saved.")).toBeHidden();
+    });
+});
+
+test.describe("Config settings search visual evidence", () => {
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the settings search at ${viewport}`, async ({
+            page,
+            hydra,
+        }) => {
+            await hydra.getConfig();
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openConfig(page);
+            });
+
+            // The grouped result list, open over more than one tab's worth of
+            // hits so the group headers and the advanced marks are both shown.
+            await page.getByTestId("config-search").fill("restart");
+            await expect(page.getByRole("listbox")).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `search-results-${viewport}`,
+                ),
+            });
+            await page.keyboard.press("Escape");
+
+            // The landed-on row: an advanced setting revealed by the search
+            // with the global toggle still off, while its highlight is up.
+            await page.getByTestId("config-search").fill("url base");
+            await expect(page.getByRole("listbox")).toBeVisible();
+            await page.getByTestId("config-search-option-main-urlBase").click();
+            const row = page.getByTestId("config-setting-main-urlBase");
+            await expect(row).toBeVisible();
+            // The row was revealed by an advanced expander, so it mounts inside
+            // a `Collapse` that is still opening. `prepareVisualEvidence` kills
+            // CSS transitions but not MUI's own JS transition state, and while
+            // that is in flight the Collapse still clips: a shot taken then
+            // shows the mark cut off at the row's top edge rather than as it
+            // renders. Wait for the Collapse to report itself settled.
+            await expect
+                .poll(() =>
+                    row.evaluate((element) => {
+                        const collapse = element.closest(".MuiCollapse-root");
+                        return collapse === null
+                            ? "visible"
+                            : getComputedStyle(collapse).overflow;
+                    }),
+                )
+                .toBe("visible");
+            // The mark clears itself after a couple of seconds, so fail loudly
+            // rather than capturing a shot that silently missed the window.
+            await expect
+                .poll(
+                    () =>
+                        row.evaluate(
+                            (element) => getComputedStyle(element).boxShadow,
+                        ),
+                    {timeout: 1000},
+                )
+                .not.toBe("none");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `search-highlight-${viewport}`,
+                ),
+            });
+        });
+    }
+});
+
 test.describe("Config shell visual evidence", () => {
     for (const viewport of ["desktop", "mobile"] as const) {
         test(`should capture the config shell states at ${viewport}`, async ({

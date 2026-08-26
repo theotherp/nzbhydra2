@@ -167,9 +167,17 @@ function HostFieldTab({tab}: {tab: ConfigTab}) {
 
 function renderConfigArea({
     backend,
+    realTabBodies = false,
     withStatsShell = false,
 }: {
     backend: Backend;
+    /**
+     * FM-099: render the actual tab components instead of `HostFieldTab`. The
+     * settings-search tests need the real rows, since what they prove is that
+     * a hit reaches a row that a `ConfigFieldset` was hiding — a stub body has
+     * no advanced gate to open.
+     */
+    realTabBodies?: boolean;
     withStatsShell?: boolean;
 }) {
     // `SafeConfigProvider` builds its own transport from the bootstrap base
@@ -205,9 +213,11 @@ function renderConfigArea({
         history: createMemoryHistory({initialEntries: ["/hydra/config/main"]}),
         routeTree: rootRoute.addChildren([
             elsewhereRoute,
-            createConfigRoute(rootRoute, transport, (tab) => (
-                <HostFieldTab tab={tab} />
-            )),
+            realTabBodies
+                ? createConfigRoute(rootRoute, transport)
+                : createConfigRoute(rootRoute, transport, (tab) => (
+                      <HostFieldTab tab={tab} />
+                  )),
         ]),
     });
     render(
@@ -753,6 +763,278 @@ describe("ConfigShell unsaved-changes guard", () => {
 
         expect(await screen.findByText("Downloading body")).toBeVisible();
         expect(screen.queryByTestId("config-unsaved-changes")).toBeNull();
+    });
+});
+
+describe("settings search (FM-099)", () => {
+    async function openSearchResults(query: string) {
+        const field = await screen.findByTestId("config-search");
+        fireEvent.change(field, {target: {value: query}});
+        return field;
+    }
+
+    it("should mount the search field inside the sticky save bar", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        const bar = screen.getByTestId("config-save-bar");
+        const field = within(bar).getByTestId("config-search");
+
+        expect(field).toBeVisible();
+        // Ahead of the bar's own controls, which is where the slot is.
+        expect(
+            field.compareDocumentPosition(
+                within(bar).getByTestId("config-save"),
+            ) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        // The bar keeps everything FM-097 put in it.
+        expect(within(bar).getByTestId("config-save")).toBeVisible();
+    });
+
+    it("should carry a visible label and be reachable by Tab", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        // A real, associated, visible label (ADR-0014) -- not an aria-label.
+        expect(screen.getByLabelText("Search settings")).toBe(
+            screen.getByTestId("config-search"),
+        );
+        expect(screen.getByTestId("config-search")).not.toHaveAttribute(
+            "tabindex",
+            "-1",
+        );
+    });
+
+    it("should suppress implicit form submission on Enter in the search field", async () => {
+        const backend = createBackend();
+        renderConfigArea({backend});
+        await waitForShell();
+
+        const field = screen.getByTestId("config-search");
+        // The bar really is inside the form, and Save really is its submit
+        // button -- the two facts that make implicit submission possible.
+        expect(field.closest("form")).toBe(screen.getByTestId("config-shell"));
+        expect(screen.getByTestId("config-save")).toHaveAttribute(
+            "type",
+            "submit",
+        );
+
+        // A real Enter keydown, dispatched on the real field inside that form
+        // and observed on the way out. jsdom implements no implicit form
+        // submission at all, so asserting "no PUT happened" here would pass
+        // whether or not the guard exists; what actually suppresses the
+        // browser's submission is the default being prevented, so that is what
+        // is asserted. `config.spec.ts` proves the consequence in a real
+        // browser, where implicit submission does exist.
+        const pressEnter = (element: Element) => {
+            const event = new KeyboardEvent("keydown", {
+                bubbles: true,
+                cancelable: true,
+                key: "Enter",
+            });
+            element.dispatchEvent(event);
+            return event.defaultPrevented;
+        };
+
+        expect(
+            pressEnter(field),
+            "Enter in the settings search must not reach the form as a submit",
+        ).toBe(true);
+
+        // The control that keeps the assertion above honest: an ordinary field
+        // in the same form does not prevent it, so `true` above is this
+        // component's doing and not something every element reports.
+        expect(pressEnter(screen.getByLabelText("Host"))).toBe(false);
+
+        expect(backend.puts).toEqual([]);
+        // The guard is specific to this field: Save itself still submits.
+        fireEvent.click(screen.getByTestId("config-save"));
+        await waitFor(() => expect(backend.puts).toHaveLength(1));
+    });
+
+    it("should navigate to the tab of the setting picked from the results", async () => {
+        const {router} = renderConfigArea({
+            backend: createBackend(),
+            realTabBodies: true,
+        });
+        await waitForShell();
+        expect(router.state.location.pathname).toBe("/config/main");
+
+        await openSearchResults("cover width");
+        fireEvent.click(
+            await screen.findByTestId(
+                "config-search-option-searching-coverSize",
+            ),
+        );
+
+        await waitFor(() =>
+            expect(router.state.location.pathname).toBe("/config/searching"),
+        );
+        expect(
+            await screen.findByTestId("config-setting-searching-coverSize"),
+        ).toBeVisible();
+    });
+
+    it("should group the results by tab and mark the advanced ones", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        await openSearchResults("restart");
+        const listbox = await screen.findByRole("listbox");
+
+        // Group headers are the tabs' display names, in tab order.
+        const groups = [
+            ...listbox.querySelectorAll(".MuiAutocomplete-groupLabel"),
+        ].map((header) => header.textContent ?? "");
+        // One header per tab, no tab repeated, and in the nav's own order --
+        // which is what breaks if the index ever stops being tab-contiguous.
+        expect(groups).toContain("Main");
+        expect(groups).toContain("Authorization");
+        expect(new Set(groups).size).toBe(groups.length);
+        expect(groups).toEqual(
+            CONFIG_TABS.map((tab) => tab.label).filter((label) =>
+                groups.includes(label),
+            ),
+        );
+        // An advanced hit says so; a plain one does not.
+        expect(
+            within(
+                screen.getByTestId("config-search-option-main-urlBase"),
+            ).getByText("Advanced"),
+        ).toBeVisible();
+        expect(
+            within(
+                screen.getByTestId("config-search-option-main-port"),
+            ).queryByText("Advanced"),
+        ).toBeNull();
+    });
+
+    it("should reveal a setting the advanced toggle is hiding, and highlight it", async () => {
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        // The global toggle is off, so FM-098 offers the row behind an
+        // expander instead of rendering it.
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+        expect(screen.queryByTestId("config-setting-main-urlBase")).toBeNull();
+        expect(
+            screen.getByTestId("config-advanced-expander-hosting"),
+        ).toBeVisible();
+
+        await openSearchResults("URL base");
+        fireEvent.click(
+            await screen.findByTestId("config-search-option-main-urlBase"),
+        );
+
+        // Revealed in place, without the stored preference being changed.
+        expect(
+            await screen.findByTestId("config-setting-main-urlBase"),
+        ).toBeVisible();
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
+
+        // …and marked, by a rule scoped to that row's own test id.
+        await waitFor(() =>
+            expect(
+                [...document.querySelectorAll("style")].some((style) =>
+                    (style.textContent ?? "").includes(
+                        '[data-testid="config-setting-main-urlBase"]',
+                    ),
+                ),
+                "the landed-on row should carry a temporary highlight",
+            ).toBe(true),
+        );
+    });
+
+    // The two cases above both pick a Main setting while already on Main, so
+    // the target fieldset is mounted before the reveal request exists. The
+    // interesting half is the other one: on a cross-tab hit the router mounts
+    // the target tab's fieldsets *after* the request was made, so each of them
+    // sees an outstanding request on its very first render and has to act on
+    // it rather than assume it has already been honoured. Most advanced rows
+    // are on some other tab than the one being searched from, so this is the
+    // ordinary case, not an edge one — and it is covered here for both shapes
+    // FM-098 gives a gate.
+    it("should reveal an advanced setting on another tab, inside a wholly advanced fieldset", async () => {
+        const {router} = renderConfigArea({
+            backend: createBackend(),
+            realTabBodies: true,
+        });
+        await waitForShell();
+        expect(router.state.location.pathname).toBe("/config/main");
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+
+        await openSearchResults("timeout when accessing");
+        fireEvent.click(
+            await screen.findByTestId("config-search-option-searching-timeout"),
+        );
+
+        await waitFor(() =>
+            expect(router.state.location.pathname).toBe("/config/searching"),
+        );
+        // "Indexer access" is advanced as a whole, so FM-098 replaces it with
+        // its own expander; the request has to open that.
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("config-advanced-expander-indexer access"),
+            ).toHaveAttribute("aria-expanded", "true"),
+        );
+        expect(
+            await screen.findByTestId("config-setting-searching-timeout"),
+        ).toBeVisible();
+        // Still only this fieldset, and still not the stored preference.
+        expect(
+            screen.getByTestId("config-advanced-expander-category handling"),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
+
+        await waitFor(() =>
+            expect(
+                [...document.querySelectorAll("style")].some((style) =>
+                    (style.textContent ?? "").includes(
+                        '[data-testid="config-setting-searching-timeout"]',
+                    ),
+                ),
+                "the landed-on row should carry a temporary highlight",
+            ).toBe(true),
+        );
+    });
+
+    it("should reveal an advanced setting on another tab behind its fieldset's own expander", async () => {
+        const {router} = renderConfigArea({
+            backend: createBackend(),
+            realTabBodies: true,
+        });
+        await waitForShell();
+        expect(router.state.location.pathname).toBe("/config/main");
+
+        await openSearchResults("Convert media IDs");
+        fireEvent.click(
+            await screen.findByTestId(
+                "config-search-option-searching-alwaysConvertIds",
+            ),
+        );
+
+        await waitFor(() =>
+            expect(router.state.location.pathname).toBe("/config/searching"),
+        );
+        // The other gate shape: an ordinary fieldset offering the advanced
+        // rows the global toggle hides from it.
+        await waitFor(() =>
+            expect(
+                screen.getByTestId(
+                    "config-advanced-expander-media ids / query generation / query processing",
+                ),
+            ).toHaveAttribute("aria-expanded", "true"),
+        );
+        expect(
+            await screen.findByTestId(
+                "config-setting-searching-alwaysConvertIds",
+            ),
+        ).toBeVisible();
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
     });
 });
 

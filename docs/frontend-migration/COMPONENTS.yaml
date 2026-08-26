@@ -391,4 +391,4 @@ components:
     consumers:
       - F-CONFIG-SHELL
     classification: feature_specific
-    state: planned
+    state: done

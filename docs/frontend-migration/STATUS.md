@@ -676,6 +676,38 @@ real-backend `config-main.spec.ts` at 6/6. Passed with minor findings, none corr
 React context crosses portals, an incomplete boundary note omitting `CustomMappingsSection`, two unannotated spacing
 magnitudes, a dead conjunct in the chip guard, and a validation-error capture that no longer frames its own error.
 
+FM-099 (Settings Search) puts a `config-search` Autocomplete in FM-097's sticky bar that filters all eight config tabs
+by label and help text, grouped by tab; picking a result routes to the tab, reveals the row if an advanced gate hides
+it, scrolls to it and marks it briefly, without touching the global toggle's stored preference. Because the tabs define
+fields as JSX rather than data, the searchable metadata is the new hand-maintained `C-CONFIG-SETTINGS-INDEX` — 142
+entries, 135 rows plus one per list section — whose only defence against silent rot is a drift test that genuinely
+bites. It does: the implementer demonstrated six mutations, the reviewer independently reproduced five on a scratch
+copy, and the implementer strengthened it beyond the packet to also assert each row's `advanced` flag and enclosing
+fieldset against the DOM, since path-level agreement alone would not catch a mislabelled column that breaks the reveal
+path. Index completeness was not sampled but proven: a static extraction of every label, name and help from the eight
+tab bodies is set-identical to the index's 135 row paths with zero label or help mismatches, the 16 non-plain `help`
+cases hand-compared. The mount seam into `ConfigSaveBar.tsx` is 11 insertions and 0 deletions, every original line
+byte-identical, and leaves room for FM-100's summary-button change in the same `Stack`. Two things are worth carrying
+forward. **The designer's mid-task refinement caught a trap the packet could not have stated**: the bar sits inside a
+`<Box component="form">` whose Save is `type="submit"`, so an `Autocomplete` there gets implicit form submission and
+Enter would have saved the whole config; the guard calls `preventDefault()` only, so MUI's Enter-selects still works.
+**And the implementer caught its own vacuous test for that guard** — jsdom implements no implicit submission, so its
+first assertion passed with or without the guard; it replaced it with a real keydown asserting `defaultPrevented` plus
+a discriminating control on an ordinary field in the same form, and proved the browser consequence separately with a
+zero-PUT assertion. One fix cycle, over a real defect a green suite could not see: `ConfigFieldset` seeded its
+"already honoured" reveal marker from the *live* token, so any fieldset mounting after a request — every fieldset on
+the target tab when search crosses tabs, since the router mounts the new body only after the token is bumped —
+initialised as already-honoured and never revealed. With the toggle off by default and 81 of 135 indexed rows
+advanced, most cross-tab searches routed correctly and then silently did nothing. Both existing reveal tests picked
+`main.urlBase` *while already on Main*, so the fieldset was pre-mounted and the defect was structurally invisible to
+them; 11 of 11 system tests passed alongside it. The fix seeds from `NO_ADVANCED_REVEAL_REQUEST.token` (`0`) against a
+monotonic counter that only ever emits `>= 1`, and the regression tests cross tabs through *both* FM-098 gate shapes.
+Verified with the gate chain (1244 tests) and real-backend `config.spec.ts` at 12/12. Passed with minor findings, none
+corrected (optional), all carried into `MAINTENANCE.md`: a reveal request that is never retired so a fieldset
+re-reveals on remount, no capture of the cross-tab reveal, a `react-refresh` warning on `SettingHighlight`, one
+`conditional` entry no fixture renders, and — as a proposed packet rather than a quickfix — search offering rows whose
+render condition is unmet, which route and then silently time out.
+
 ## Active
 
 None.
@@ -690,9 +722,18 @@ None.
 
 ## Upcoming
 
-- FM-099: Settings Search — next up, now unblocked by FM-098; FM-100/FM-101/FM-102 chain off it. Unlike the cleanup
+- FM-100: Review Changes Before Save — next up, now unblocked by FM-099; FM-101 and FM-102 follow. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
-  promoted.
+  promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
+  bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the
+  allowlist named. Both FM-099 and FM-100 now allow `ConfigSaveBar.tsx` fenced to a pure composition seam (one optional
+  slot prop; the summary becoming a button) with FM-097's four bar selectors, their order and props frozen — the
+  FM-097 precedent of tightening rather than widening. FM-101 needed only stale `ConfigShell.tsx` line refs
+  re-anchored to symbols. FM-102 had a structural conflict of the same vintage — its "on this page" anchor list cannot
+  nest inside FM-097's vertical MUI `Tabs`, since a `Tab` is a button and interleaved non-`Tab` children break ARIA and
+  MUI's roving tabindex — resolved by ADR-0028 (a sibling list below the `Tabs`, headed with the active tab's name,
+  rather than rebuilding the nav as a `List` and discarding the role and selector guarantees FM-097 protects), and its
+  packet refined to match.
 - FM-103: Indexer List Table is unblocked and independent of the FM-098 chain, but this run proceeds in packet order.
 - FM-106: Notifications Editor Rework is likewise unblocked and independent.
 
