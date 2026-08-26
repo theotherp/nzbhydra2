@@ -1222,3 +1222,49 @@ instead of leaving it to rot.
   an implementer wrote the parenthetical form above in Active. Both are natural prose. Either loosen the regex to
   accept `- FM-NNN` followed by any delimiter, or make the error message say what shape it expected — the second is
   probably worth more than the first, since the current message actively misleads. Surfaced 2026-08-26.
+- **No toast is in the accessibility tree while any MUI modal is open — application-wide, pre-existing, WCAG 4.1.3.**
+  `@mui/material/Snackbar` contains no `Portal` (verify with `grep -c Portal node_modules/@mui/material/Snackbar/Snackbar.js`
+  → 0), and `ToastProvider` renders it in-tree at `App.tsx:48`, so it is one of the `container.children` that MUI's
+  `ariaHiddenSiblings` marks `aria-hidden` when a modal opens. Every toast raised while a dialog is up is therefore
+  announced to nobody. It hits hardest where a toast is raised *from inside* its own dialog, which is always the broken
+  state: `ExternalToolDialog.tsx:225`, `DownloaderDialog.tsx:190`, `IndexerDialog.tsx:382`.
+  **Record both halves of this or the fix will be half-done.** Toasts are already *clickable* today — the `Snackbar` is
+  `position: fixed` at `zIndex.snackbar` 1400 against the modal's 1300 — so the current defect is announcement-only,
+  which is exactly why it survived visual review. Wrapping the toast layer in a `Portal` fixes the `aria-hidden` half
+  and leaves the second: a modal's `FocusTrap` owns focus regardless of DOM position, so a portalled toast is announced
+  but still untabbable. A complete fix needs the focus story too. Surfaced 2026-08-26 by FM-101's fixer, which found it
+  by probing the ancestor chain after its reviewer suggested a toast as the remedy; confirmed and extended by FM-101's
+  re-review.
+- **FM-101's raised error report is announced and clickable over the review panel, but not keyboard-focusable.**
+  `ConfigShell.tsx:379-438` portals the report above FM-100's modal panel, which fixes the `aria-hidden` half — but
+  MUI's `FocusTrap` steals focus straight back into the dialog: focusing the raised Alert's Close button leaves
+  `document.activeElement` as `DIV.MuiDialog-container`. Measured by FM-101's re-review, not inferred. Not a regression
+  (the toast it replaced was equally untabbable, and the acknowledge dialog it replaced carried no actionable entry),
+  and a keyboard user can Escape the panel and use the in-place banner. But the comment at `ConfigShell.tsx:384-386`
+  claims the entries "could be neither announced nor clicked" and now can, which overstates what was fixed — the
+  reachability tests assert `aria-hidden` ancestry only, so they are green on a claim they establish half of. The fix
+  is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes focus enforcement), so
+  this is packet-shaped rather than a quickfix. Surfaced 2026-08-26 by FM-101's re-review.
+- **Two comments in `ConfigFeedbackBanner.tsx` describe a mechanism the same diff disproves.** `:39` and `:104-105`
+  state that the `"filled"` surface *is* the toast surface `C-TOAST-SERVICE` renders on, and that the shell "relocates
+  this exact markup onto the toast surface". Both are false, and directly contradicted by `ConfigShell.tsx:390-394` in
+  the same change ("It is a `Portal` and not a toast because `Snackbar` does not portal"). A future reader is told the
+  report rides the toast service; it does not. Surfaced 2026-08-26 by FM-101's re-review.
+- **"Is there an error report?" is computed twice by different means in FM-101.** The shell uses
+  `errorMessages.length > 0 || refusedBySelf` (`ConfigShell.tsx:167-170`); the banner uses
+  `collectInvalidFields(...).length > 0` (`ConfigFeedbackBanner.tsx:82-93`). The shared-markup extraction unified the
+  rendering but not this predicate, and the reason it was not unified is a `react-refresh/only-export-components`
+  warning whose own message prescribes the remedy: put `hasConfigErrorReport` in a small non-component module and use
+  it in both places. If the two ever disagree the portal renders an error `Alert` with a `null` body — a bare close
+  button floating over the modal. Unreachable today, since fields cannot be edited while the panel is modal. Surfaced
+  2026-08-26 by FM-101's re-review.
+- **FM-101's `ConfigShell.tsx:384-386` comment credits JSX sibling order for something it does not cause.** It explains
+  the portal-versus-modal ordering as working "because the panel is the earlier JSX sibling". The re-review read MUI's
+  `Portal.js` and `ModalManager.js` and established the real mechanism: `Portal` inserts on the render pass *after* its
+  layout effect, while `ariaHiddenSiblings` snapshots `container.children` inside `useModal`'s passive effect of the
+  first pass — and MUI's own `Modal` goes through the same two-pass `Portal`, so `add()` always runs while neither
+  subtree is mounted. Order is irrelevant, and the reviewer proved it by moving the whole `Portal` block above
+  `<ReviewChangesPanel>` in a sandbox copy and getting 50/50 green. Harmless today, but the comment invites a future
+  maintainer to preserve an ordering that does nothing — and hides the dependency that is real: a *second* modal
+  opening while the raised layer is already mounted would snapshot it as a body sibling and hide it. Surfaced
+  2026-08-26 by FM-101's re-review.

@@ -1,5 +1,5 @@
 import {useQueryClient} from "@tanstack/react-query";
-import {useCallback} from "react";
+import {useCallback, useState} from "react";
 import type {UseFormReturn} from "react-hook-form";
 
 import {CONFIG_QUERY_KEY, getConfig, saveConfig} from "../../api/config/config";
@@ -17,15 +17,35 @@ type ConfigSaveOutcome =
     /** The request never produced a validation result. */
     | "failed";
 
-export type ConfigSave = () => Promise<ConfigSaveOutcome>;
+type ConfigSave = () => Promise<ConfigSaveOutcome>;
+
+/**
+ * What the last save attempt has to report, as the banner region renders it.
+ * The two kinds are mutually exclusive by contract: `ConfigWeb.setConfig`
+ * writes the file only when validation passed, so a result either carries
+ * errors and changed nothing, or was saved and may carry warnings.
+ */
+type ConfigSaveFeedback = {
+    kind: "errors" | "warnings";
+    messages: readonly string[];
+};
+
+export type ConfigSaveController = {
+    /** Drop the current report; the next save attempt does this too. */
+    clearFeedback: () => void;
+    /** What the last save attempt reported, or `null`. */
+    feedback: ConfigSaveFeedback | null;
+    save: ConfigSave;
+};
 
 /**
  * The save half of `C-CONFIG-FORM`, mapping `ConfigValidationResult`
  * (`ConfigWeb.setConfig`) onto the UI:
  *
- * - `errorMessages` -> a blocking dialog; `ConfigWeb.java:84` only writes the
- *   file when validation passed, so the form deliberately stays dirty;
- * - `ok` plus `warningMessages` -> the config *is* saved and the dialog says
+ * - `errorMessages` -> a persistent error banner (FM-101, replacing an
+ *   acknowledge dialog); `ConfigWeb.java:84` only writes the file when
+ *   validation passed, so the form deliberately stays dirty;
+ * - `ok` plus `warningMessages` -> the config *is* saved and the banner says
  *   so, matching legacy's wording (`config-controller.js:126`);
  * - success -> the form resets from `newConfig`, never from what was
  *   submitted: the server normalizes the config and re-masks secrets before
@@ -37,6 +57,12 @@ export type ConfigSave = () => Promise<ConfigSaveOutcome>;
  * ADR-0017: there is no page reload. The safe-config query is invalidated
  * instead, which is what refreshes the navigation, the stats tabs, and the
  * history routes' metadata.
+ *
+ * FM-101: the two validation reports are state rather than awaited dialogs.
+ * The restart prompt is still awaited and still comes last, but it no longer
+ * waits behind an acknowledgement that carried no decision — the warning is on
+ * screen while the restart question is answered, which is the order the admin
+ * needs them in.
  */
 export function useConfigSave({
     form,
@@ -46,12 +72,16 @@ export function useConfigSave({
     form: UseFormReturn<ConfigValues>;
     restart: (prefix?: string) => Promise<void>;
     transport: ApiTransport;
-}): ConfigSave {
+}): ConfigSaveController {
     const dialogs = useDialogs();
     const toasts = useToasts();
     const queryClient = useQueryClient();
+    const [feedback, setFeedback] = useState<ConfigSaveFeedback | null>(null);
 
-    return useCallback(async (): Promise<ConfigSaveOutcome> => {
+    const save = useCallback(async (): Promise<ConfigSaveOutcome> => {
+        // Whatever the previous attempt reported is about a config that no
+        // longer exists; a report never outlives the next attempt.
+        setFeedback(null);
         let result;
         try {
             result = await saveConfig(transport, form.getValues());
@@ -64,11 +94,9 @@ export function useConfigSave({
         }
 
         if (!result.ok || result.errorMessages.length > 0) {
-            await dialogs.confirm({
-                title: "Config validation failed",
-                message:
-                    "The following errors have been found in your config. They need to be fixed.",
-                details: [
+            setFeedback({
+                kind: "errors",
+                messages: [
                     ...(result.errorMessages.length > 0
                         ? result.errorMessages
                         : ["The server rejected the configuration."]),
@@ -76,9 +104,6 @@ export function useConfigSave({
                         (warning) => `Warning (may be ignored): ${warning}`,
                     ),
                 ],
-                confirmLabel: "OK",
-                variant: "acknowledge",
-                testId: "config-validation-errors",
             });
             return "rejected";
         }
@@ -89,14 +114,9 @@ export function useConfigSave({
         await queryClient.invalidateQueries({queryKey: SAFE_CONFIG_QUERY_KEY});
 
         if (result.warningMessages.length > 0) {
-            await dialogs.confirm({
-                title: "Config validation warnings",
-                message:
-                    "The following warnings have been found. You can ignore them if you wish. The config was already saved.",
-                details: result.warningMessages,
-                confirmLabel: "OK",
-                variant: "acknowledge",
-                testId: "config-validation-warnings",
+            setFeedback({
+                kind: "warnings",
+                messages: result.warningMessages,
             });
         } else {
             toasts.showToast({
@@ -121,6 +141,10 @@ export function useConfigSave({
 
         return "saved";
     }, [dialogs, form, queryClient, restart, toasts, transport]);
+
+    const clearFeedback = useCallback(() => setFeedback(null), []);
+
+    return {clearFeedback, feedback, save};
 }
 
 function saveFailureMessage(error: unknown): string {

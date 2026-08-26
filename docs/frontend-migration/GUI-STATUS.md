@@ -48,7 +48,10 @@ Currently available:
   "N settings changed" summary, listing every changed setting with its section and its old and new value — a list entry
   summarized as added, removed or edited, a secret never shown on either side — and offering the same Save; and a
   whole-config save that round-trips losslessly
-  (including sections and fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
+  (including sections and fields no tab yet models) with restart support and with validation reported in a banner below
+  that save bar rather than in a dialog to click away: the server's own errors and warnings verbatim, and, when the form
+  itself refuses to submit, every invalid setting named by section and label, each one leading to its control even when
+  another tab or an advanced gate is hiding it. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
   API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
   field groups, OpenID Connect provider settings, area restrictions, and inline add/edit/remove of the user list, with

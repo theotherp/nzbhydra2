@@ -400,6 +400,7 @@ features:
       - tests/system/tests/config.spec.ts
       - tests/system/tests/external-tools.spec.ts
       - core/ui-react/src/features/config/ConfigShell.test.tsx
+      - core/ui-react/src/features/config/ConfigFeedbackBanner.test.tsx
       - core/ui-react/src/features/config/configFormState.test.ts
       - core/ui-react/src/features/config/settingsSearch/settingsIndex.test.ts
       - core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx
@@ -428,8 +429,18 @@ features:
       - config-advanced-toggle
       - config-api-help
       - config-save
+      # FM-101 is the authority for the two validation ids below: they are
+      # re-homed from the acknowledge dialogs they used to name onto the
+      # persistent banners that replaced them, keeping the ids because the
+      # thing they identify -- "where the server's validation errors are" and
+      # "where its warnings are" -- is unchanged. Each entry of the
+      # client-side invalid list additionally carries
+      # `config-invalid-field-<path with dots as dashes>`, the same stem as the
+      # `config-setting-<path>` row it navigates to.
       - config-validation-errors
       - config-validation-warnings
+      - config-invalid-field-main-host
+      - config-invalid-field-main-urlBase
       - config-restart-required
       - config-unsaved-changes
       - config-api-help-dialog

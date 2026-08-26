@@ -1,6 +1,6 @@
 # FM-102: In-Tab Fieldset Anchor Navigation
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-SHELL, F-CONFIG-MAIN
 Component IDs: C-CONFIG-FIELDS
 API IDs: None

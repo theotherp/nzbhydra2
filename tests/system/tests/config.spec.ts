@@ -195,6 +195,66 @@ test.describe("Config shell round trip", () => {
             before,
         );
     });
+
+    test("should name an invalid setting that is hidden, and lead back to it", async ({
+        page,
+        hydra,
+    }) => {
+        const before = await hydra.getConfig();
+        await openConfig(page);
+
+        const puts: string[] = [];
+        page.on("request", (request) => {
+            if (
+                request.method() === "PUT" &&
+                new URL(request.url()).pathname === "/internalapi/config"
+            ) {
+                puts.push(request.url());
+            }
+        });
+
+        // Break an advanced setting and then let it go back into hiding. This
+        // is the case the growl this replaces could not answer at all: it said
+        // the config was invalid while the control it meant was not on screen,
+        // on any tab, and named nothing.
+        const toggle = page.getByTestId("config-advanced-toggle");
+        await toggle.click();
+        const urlBase = page.getByTestId("config-input-main-urlBase");
+        await expect(urlBase).toBeVisible();
+        await urlBase.fill("nope");
+        await urlBase.blur();
+        await toggle.click();
+        await expect(
+            page.getByTestId("config-setting-main-urlBase"),
+        ).toBeHidden();
+
+        await page.getByTestId("config-save").click();
+
+        const entry = page.getByTestId("config-invalid-field-main-urlBase");
+        await expect(entry).toHaveText(
+            "Main › URL base: URL base has to start and may not end with /",
+        );
+        expect(puts, "an invalid form must not be submitted").toEqual([]);
+
+        await entry.click();
+
+        // FM-099's helper does the rest: reveal the row behind its gate,
+        // scroll to it and mark it, without touching the stored preference.
+        const row = page.getByTestId("config-setting-main-urlBase");
+        await expect(row).toBeVisible();
+        await expect(row).toBeInViewport();
+        await expect(toggle).not.toBeChecked();
+        await expect
+            .poll(() =>
+                row.evaluate((element) => getComputedStyle(element).boxShadow),
+            )
+            .not.toBe("none");
+
+        // Reporting an invalid config is not writing one.
+        expect(allowReMaskedSecrets(await hydra.getConfig(), before)).toEqual(
+            before,
+        );
+    });
 });
 
 test.describe("Config review changes before save", () => {
@@ -266,6 +326,49 @@ test.describe("Config review changes before save", () => {
             updateAutomatically !== true,
         );
         expect(((after.indexers as Json[])[0] as Json).score).toBe(9);
+    });
+
+    test("should report a refused save over the panel, and lead to the setting", async ({
+        page,
+        hydra,
+    }) => {
+        const before = await hydra.getConfig();
+        await openConfig(page);
+
+        // The panel's Save is the form's own Save, so a config the form
+        // refuses is refused from here too -- and the report has to arrive
+        // somewhere the admin can reach, which under a modal dialog is the
+        // whole difficulty. Playwright's actionability checks are the proof:
+        // it refuses to click an element the backdrop covers.
+        const host = page.getByTestId("config-input-main-host");
+        await host.fill("not-an-ip");
+        await host.blur();
+
+        await page.getByTestId("config-dirty-summary").click();
+        const panel = page.getByTestId("config-review-changes");
+        await expect(panel).toBeVisible();
+        await panel.getByTestId("config-review-save").click();
+
+        const entry = page.getByTestId("config-invalid-field-main-host");
+        await expect(entry).toHaveText(
+            "Main › Host: not-an-ip is not a valid IP Address",
+        );
+        // FM-100's contract: only a real save closes the panel.
+        await expect(panel).toBeVisible();
+
+        await entry.click();
+
+        // Acting on the report means leaving the review that was covering the
+        // control, and arriving at the control itself.
+        await expect(panel).toBeHidden();
+        const row = page.getByTestId("config-setting-main-host");
+        await expect(row).toBeVisible();
+        await expect(row).toBeInViewport();
+
+        // Nothing was sent, so nothing was written.
+        expect(allowReMaskedSecrets(await hydra.getConfig(), before)).toEqual(
+            before,
+        );
     });
 
     test("should never show a secret's value, and close without changing anything", async ({
@@ -597,10 +700,32 @@ test.describe("Config shell visual evidence", () => {
                 await expect(page.getByTestId("config-nav")).toBeHidden();
             }
 
-            // The three dialog states are driven from crafted validation
-            // results: the real backend cannot be asked for a validation
-            // error, a warning, and a restart on demand, and a system test
-            // must never restart the instance it is running against.
+            // FM-101's client-side half needs no crafted response at all: the
+            // form refuses to submit and names the offending settings itself.
+            const invalidHost = page.getByTestId("config-input-main-host");
+            await invalidHost.fill("not-an-ip");
+            await invalidHost.blur();
+            await page.getByTestId("config-save").click();
+            await expect(
+                page.getByTestId("config-invalid-field-main-host"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `validation-invalid-fields-${viewport}`,
+                ),
+            });
+            // Discarding resets the form, which clears the errors the report
+            // was derived from.
+            await page.getByTestId("config-discard").click();
+            await expect(
+                page.getByTestId("config-validation-errors"),
+            ).toBeHidden();
+
+            // The remaining states are driven from crafted validation results:
+            // the real backend cannot be asked for a validation error, a
+            // warning, and a restart on demand, and a system test must never
+            // restart the instance it is running against.
             await routeSaveResult(page, {
                 ok: false,
                 restartNeeded: false,
@@ -620,7 +745,7 @@ test.describe("Config shell visual evidence", () => {
                     `validation-errors-${viewport}`,
                 ),
             });
-            await errors.getByRole("button", {name: "OK"}).click();
+            await errors.getByRole("button", {name: "Close"}).click();
             await expect(errors).toBeHidden();
 
             const currentConfig = await hydra.getConfig();
@@ -642,7 +767,7 @@ test.describe("Config shell visual evidence", () => {
                     `validation-warnings-${viewport}`,
                 ),
             });
-            await warnings.getByRole("button", {name: "OK"}).click();
+            await warnings.getByRole("button", {name: "Close"}).click();
             await expect(warnings).toBeHidden();
 
             await routeSaveResult(page, {
@@ -694,6 +819,33 @@ test.describe("Config review changes visual evidence", () => {
             await expect(page.getByTestId("config-nav")).toBeVisible();
         }
         await page.getByTestId(`config-tab-${tab}`).click();
+    }
+
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture a refused save over the panel at ${viewport}`, async ({
+            page,
+        }) => {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openConfig(page);
+            });
+
+            const host = page.getByTestId("config-input-main-host");
+            await host.fill("not-an-ip");
+            await host.blur();
+            await page.getByTestId("config-dirty-summary").click();
+            const panel = page.getByTestId("config-review-changes");
+            await expect(panel).toBeVisible();
+            await panel.getByTestId("config-review-save").click();
+            await expect(
+                page.getByTestId("config-invalid-field-main-host"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `validation-over-review-${viewport}`,
+                ),
+            });
+        });
     }
 
     for (const viewport of ["desktop", "mobile"] as const) {

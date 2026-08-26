@@ -249,10 +249,12 @@ test.describe("Config searching tab round trip", () => {
         expect(warnings).toContain(
             'You selected not to apply any word restrictions in "Searching" but supplied forbidden or required words there',
         );
-        const warningDialog = page.getByTestId("config-validation-warnings");
-        await expect(warningDialog).toBeVisible();
-        await warningDialog.getByRole("button", {name: "OK"}).click();
-        await expect(warningDialog).toBeHidden();
+        // FM-101: the same warning, reported in a dismissible banner instead
+        // of an acknowledge dialog.
+        const warningBanner = page.getByTestId("config-validation-warnings");
+        await expect(warningBanner).toBeVisible();
+        await warningBanner.getByRole("button", {name: "Close"}).click();
+        await expect(warningBanner).toBeHidden();
 
         const after = (await hydra.getConfig()) as Json;
         expect(searching(after).applyRestrictions).toBe("NONE");

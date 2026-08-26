@@ -739,12 +739,36 @@ real-backend `config.spec.ts` at 16/16. Passed with minor findings, none correct
 row can show no visible change, the summary button's low discoverability and unjustified `sx`, the entry-row status
 cell reading as an old value, the bar counting leaves while the panel counts rows, and two unreachable hardening gaps.
 
+FM-101 (Save Feedback Banner) replaces the two blocking validation dialogs with one persistent banner region between
+the sticky bar and the tab body, and turns the client-side "Config invalid" toast into a list of the offending settings
+that navigate to their field through FM-099's helper. `ConfigSaveBar.tsx` was not touched — the one config task in this
+chain that needed no bar surgery. The two fenced sibling-spec assertions were re-pointed and nothing else in either file
+moved: three hunks total, every load-bearing assertion byte-identical, verified line by line rather than by summary. The
+implementer retracted a claim mid-task rather than softening it — it had documented the invalid list as shrinking live
+as fields are fixed, which it does not, because `submit()` calls `trigger()` rather than `handleSubmit` so RHF never
+switches to live revalidation; the behaviour is right because it matches the inline `config-error-*` messages, and a
+banner clearing while the inline error persisted would be worse. One fix cycle, over a reachability regression the first
+round introduced: a save refused from FM-100's review panel reported into a subtree MUI marks `aria-hidden`, behind the
+panel's backdrop, so the invalid-field entries — the only mechanism FM-101 offers for acting on a refusal — were
+announced to nobody. Both affordances FM-101 replaced had rendered *above* the modal, so this was FM-101's regression to
+own rather than a gap it inherited. The report now moves rather than duplicating: while the panel is open the banner
+stands down and the same markup, testid and entries render on a portalled layer above it, with exactly one report in the
+DOM at any moment. **Two measurements from that cycle are worth more than the fix.** First, the obvious remedy is
+broken: MUI's `Snackbar` does not portal, so every toast in this application is `aria-hidden` while any modal is open —
+a pre-existing, application-wide WCAG 4.1.3 defect that hits hardest where a toast is raised from inside its own dialog,
+which is always. Second, the fix is honestly incomplete: the raised report is announced and clickable but **not
+keyboard-focusable**, because a modal's `FocusTrap` owns focus regardless of DOM position — measured, not inferred, and
+the reachability tests assert `aria-hidden` ancestry only, so they are green on a claim they establish half of. Both are
+in `MAINTENANCE.md`, the first with an explicit warning that portalling the toast layer would fix only its first half.
+The re-review also corrected the fix's own explanation of why it works: it credits JSX sibling order, but MUI's `Portal`
+inserts a pass after `ariaHiddenSiblings` snapshots the container, so order is irrelevant — proven by moving the portal
+block above the panel in a sandbox and getting 50/50 green. Verified with the gate chain (1295 tests) and real-backend
+runs across all four fenced specs at 49/49. Passed with minor findings, none corrected (optional), all carried into
+`MAINTENANCE.md`.
+
 ## Active
 
-- FM-101: Save Feedback Banner — in progress. The two validation dialogs become one persistent banner region between the
-  sticky bar and the tab body, and the client-side "Config invalid" toast becomes a list of the offending settings that
-  navigate to their field through FM-099's helper. Allowlist fenced to two assertion blocks in `config-searching.spec.ts`
-  and `config-main.spec.ts`.
+None.
 
 ## Review
 

@@ -10,12 +10,12 @@ import {
     RouterProvider,
 } from "@tanstack/react-router";
 import {
+    act,
     cleanup,
     fireEvent,
     render,
     screen,
     waitFor,
-    waitForElementToBeRemoved,
     within,
 } from "@testing-library/react";
 import {useFormContext} from "react-hook-form";
@@ -377,7 +377,7 @@ describe("ConfigShell", () => {
         expect(backend.puts[0]).toEqual(serverConfig);
     });
 
-    it("should block on validation errors and keep the form dirty", async () => {
+    it("should report validation errors in a banner that outlives a tab switch, and keep the form dirty", async () => {
         const backend = createBackend({
             saveResults: [
                 {
@@ -393,13 +393,31 @@ describe("ConfigShell", () => {
         setHost("0.0.0.0x");
         fireEvent.click(screen.getByTestId("config-save"));
 
-        const dialog = await screen.findByTestId("config-validation-errors");
-        expect(dialog).toHaveTextContent("Config validation failed");
-        expect(dialog).toHaveTextContent("Port must be a number");
-        expect(dialog).toHaveTextContent(
+        const banner = await screen.findByTestId("config-validation-errors");
+        expect(banner).toHaveTextContent("Config validation failed");
+        expect(banner).toHaveTextContent("Port must be a number");
+        expect(banner).toHaveTextContent(
             "Warning (may be ignored): Consider setting a password",
         );
-        fireEvent.click(within(dialog).getByRole("button", {name: "OK"}));
+        // FM-101's whole point: a report, not a question. Nothing modal is on
+        // screen, so the settings it names can be edited while it is read.
+        expect(screen.queryByRole("dialog")).toBeNull();
+        // It sits above the tab body and below the sticky bar.
+        const shell = screen.getByTestId("config-shell");
+        expect(
+            within(shell)
+                .getByTestId("config-save-bar")
+                .compareDocumentPosition(banner) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+
+        // The rejection is about the whole config, so it is not a property of
+        // the tab that happened to be open when it arrived.
+        fireEvent.click(screen.getByTestId("config-tab-auth"));
+        expect(await screen.findByText("Authorization body")).toBeVisible();
+        expect(
+            screen.getByTestId("config-validation-errors"),
+        ).toHaveTextContent("Port must be a number");
 
         // Nothing was persisted, so the form must still be dirty: leaving now
         // has to raise the unsaved-changes guard.
@@ -407,6 +425,56 @@ describe("ConfigShell", () => {
         expect(
             await screen.findByTestId("config-unsaved-changes"),
         ).toBeVisible();
+    });
+
+    it("should let a rejection be dismissed and still report the next one", async () => {
+        const backend = createBackend({
+            saveResults: [
+                {ok: false, errorMessages: ["Port must be a number"]},
+                {ok: false, errorMessages: ["The API key must not be empty"]},
+            ],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("0.0.0.0x");
+        fireEvent.click(screen.getByTestId("config-save"));
+        const banner = await screen.findByTestId("config-validation-errors");
+        fireEvent.click(within(banner).getByRole("button", {name: "Close"}));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
+
+        // Dismissal is not a promise never to speak again, and the second
+        // report is the second server's, not a repeat of the first.
+        fireEvent.click(screen.getByTestId("config-save"));
+        const second = await screen.findByTestId("config-validation-errors");
+        expect(second).toHaveTextContent("The API key must not be empty");
+        expect(second).not.toHaveTextContent("Port must be a number");
+    });
+
+    it("should clear a rejection's banner once a later save succeeds", async () => {
+        const backend = createBackend({
+            saveResults: [
+                {ok: false, errorMessages: ["Port must be a number"]},
+                {ok: true, restartNeeded: false, newConfig: serverConfig},
+            ],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("0.0.0.0x");
+        fireEvent.click(screen.getByTestId("config-save"));
+        expect(
+            await screen.findByTestId("config-validation-errors"),
+        ).toBeVisible();
+
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        expect(await screen.findByText("Configuration saved.")).toBeVisible();
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
     });
 
     it("should state that a warned-about config was already saved and reset from the server copy", async () => {
@@ -429,10 +497,19 @@ describe("ConfigShell", () => {
         setHost("submitted-value");
         fireEvent.click(screen.getByTestId("config-save"));
 
-        const dialog = await screen.findByTestId("config-validation-warnings");
-        expect(dialog).toHaveTextContent("The config was already saved");
-        expect(dialog).toHaveTextContent("No indexer configured");
-        fireEvent.click(within(dialog).getByRole("button", {name: "OK"}));
+        const banner = await screen.findByTestId("config-validation-warnings");
+        expect(banner).toHaveTextContent("The config was already saved");
+        expect(banner).toHaveTextContent("No indexer configured");
+        // A warning is a report about a config that *is* saved, so it never
+        // needed an answer either.
+        expect(screen.queryByRole("dialog")).toBeNull();
+        expect(screen.queryByTestId("config-validation-errors")).toBeNull();
+        fireEvent.click(within(banner).getByRole("button", {name: "Close"}));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-validation-warnings"),
+            ).toBeNull(),
+        );
 
         // The form holds the server's own copy, not what was submitted.
         await waitFor(() =>
@@ -442,6 +519,54 @@ describe("ConfigShell", () => {
         );
         fireEvent.click(screen.getByTestId("leave-config"));
         expect(await screen.findByText("Somewhere else")).toBeVisible();
+    });
+
+    it("should still ask about a restart after a warned-about save, with the warning on screen", async () => {
+        const normalized = {
+            ...serverConfig,
+            main: {...serverConfig.main, host: "normalized-by-server"},
+        };
+        const backend = createBackend({
+            saveResults: [
+                {
+                    ok: true,
+                    restartNeeded: true,
+                    warningMessages: ["No indexer configured"],
+                    newConfig: normalized,
+                },
+            ],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("submitted-value");
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        // The warning used to be an acknowledge dialog the restart prompt
+        // queued behind. It no longer blocks, so the question still arrives —
+        // and the reset it follows has already happened, rather than racing it.
+        const restartDialog = await screen.findByTestId(
+            "config-restart-required",
+        );
+        expect(
+            screen.getByTestId("config-validation-warnings"),
+        ).toHaveTextContent("No indexer configured");
+        expect(screen.getByLabelText("Host")).toHaveValue(
+            "normalized-by-server",
+        );
+
+        fireEvent.click(
+            within(restartDialog).getByRole("button", {name: "No"}),
+        );
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-restart-required")).toBeNull(),
+        );
+        expect(backend.restarts).toBe(0);
+        // Declining the restart says nothing about the warning, which is still
+        // the last thing the server said about this config.
+        expect(
+            screen.getByTestId("config-validation-warnings"),
+        ).toHaveTextContent("No indexer configured");
     });
 
     it("should surface a transport failure instead of reporting success", async () => {
@@ -470,6 +595,10 @@ describe("ConfigShell", () => {
             await screen.findByText(/Unable to save the configuration/),
         ).toBeVisible();
         expect(screen.queryByText("Configuration saved.")).toBeNull();
+        // A blip in the transport is not something the config was told about,
+        // so it stays a toast and never becomes a validation report.
+        expect(screen.queryByTestId("config-validation-errors")).toBeNull();
+        expect(screen.queryByTestId("config-validation-warnings")).toBeNull();
     });
 
     it("should offer a restart when the server asks for one", async () => {
@@ -796,6 +925,151 @@ describe("ConfigShell unsaved-changes guard", () => {
 
         expect(await screen.findByText("Downloading body")).toBeVisible();
         expect(screen.queryByTestId("config-unsaved-changes")).toBeNull();
+    });
+});
+
+/**
+ * The real Main tab, over a config whose API key passes its own validator: the
+ * shared fixture's `***UNCHANGED***` marker does not, so every invalid-field
+ * list below would otherwise carry an entry nobody asked for. What is invalid
+ * in these cases is exactly what each one breaks.
+ */
+function createValidBackend() {
+    return createBackend({
+        config: {
+            ...serverConfig,
+            main: {...serverConfig.main, apiKey: "apikey123"},
+        },
+    });
+}
+
+describe("ConfigShell invalid-field banner (FM-101)", () => {
+    function invalidEntry(path: string) {
+        return screen.getByTestId(`config-invalid-field-${path}`);
+    }
+
+    it("should name each invalid setting instead of only growling, and send nothing", async () => {
+        const backend = createValidBackend();
+        renderConfigArea({backend, realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.change(screen.getByTestId("config-input-main-host"), {
+            target: {value: "not-an-ip"},
+        });
+        fireEvent.change(screen.getByTestId("config-input-main-port"), {
+            target: {value: ""},
+        });
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        const banner = await screen.findByTestId("config-validation-errors");
+        expect(banner).toHaveTextContent("Config invalid");
+        // Named by the settings index, tab included, because the offending
+        // control is often not the one on screen.
+        expect(invalidEntry("main-host")).toHaveTextContent(
+            "Main › Host: not-an-ip is not a valid IP Address",
+        );
+        expect(invalidEntry("main-port")).toHaveTextContent(
+            "Main › Port: This field is required",
+        );
+        // Nothing else: the list is the form's error tree, not a fixed sermon.
+        expect(
+            within(banner).getAllByTestId(/^config-invalid-field-/),
+        ).toHaveLength(2);
+        // The growl this replaces is gone, and so is the whole request.
+        expect(
+            screen.queryByText("Config invalid. Please check your settings."),
+        ).toBeNull();
+        expect(backend.puts).toHaveLength(0);
+
+        // Dismissible like any other report.
+        fireEvent.click(within(banner).getByRole("button", {name: "Close"}));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
+    });
+
+    it("should re-derive the list on each attempt and submit once none are left", async () => {
+        const backend = createValidBackend();
+        renderConfigArea({backend, realTabBodies: true});
+        await waitForShell();
+
+        const host = screen.getByTestId("config-input-main-host");
+        const port = screen.getByTestId("config-input-main-port");
+        fireEvent.change(host, {target: {value: "not-an-ip"}});
+        fireEvent.change(port, {target: {value: ""}});
+        fireEvent.click(screen.getByTestId("config-save"));
+        await screen.findByTestId("config-invalid-field-main-host");
+
+        // One fixed, one still wrong: the report is re-derived from the form's
+        // own error tree on the next attempt, never replayed from the last one.
+        fireEvent.change(host, {target: {value: "127.0.0.1"}});
+        fireEvent.click(screen.getByTestId("config-save"));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-invalid-field-main-host"),
+            ).toBeNull(),
+        );
+        expect(invalidEntry("main-port")).toBeVisible();
+        expect(backend.puts).toHaveLength(0);
+
+        fireEvent.change(port, {target: {value: "5077"}});
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        await waitFor(() => expect(backend.puts).toHaveLength(1));
+        expect(backend.puts[0]).toMatchObject({
+            main: {host: "127.0.0.1", port: 5077},
+        });
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
+    });
+
+    it("should navigate to an invalid setting the advanced toggle is hiding", async () => {
+        renderConfigArea({backend: createValidBackend(), realTabBodies: true});
+        await waitForShell();
+
+        // Make an advanced row invalid, then let it go back into hiding: this
+        // is the case the old growl could not answer at all, because the
+        // control it was complaining about was not on the page.
+        fireEvent.click(screen.getByTestId("config-advanced-toggle"));
+        fireEvent.change(
+            await screen.findByTestId("config-input-main-urlBase"),
+            {target: {value: "nope"}},
+        );
+        fireEvent.click(screen.getByTestId("config-advanced-toggle"));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-setting-main-urlBase"),
+            ).toBeNull(),
+        );
+
+        fireEvent.click(screen.getByTestId("config-save"));
+        const entry = await screen.findByTestId(
+            "config-invalid-field-main-urlBase",
+        );
+        expect(entry).toHaveTextContent(
+            "Main › URL base: URL base has to start and may not end with /",
+        );
+
+        fireEvent.click(entry);
+
+        // FM-099's helper does the work: reveal the row behind its gate,
+        // scroll to it, and mark it — without touching the stored preference.
+        expect(
+            await screen.findByTestId("config-setting-main-urlBase"),
+        ).toBeVisible();
+        expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
+        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBe("false");
+        await waitFor(() =>
+            expect(
+                [...document.querySelectorAll("style")].some((style) =>
+                    (style.textContent ?? "").includes(
+                        '[data-testid="config-setting-main-urlBase"]',
+                    ),
+                ),
+                "the setting the entry points at should be marked",
+            ).toBe(true),
+        );
     });
 });
 
@@ -1263,18 +1537,28 @@ describe("ConfigShell review changes (FM-100)", () => {
         fireEvent.click(within(panel).getByTestId("config-review-save"));
 
         const errors = await screen.findByTestId("config-validation-errors");
-        fireEvent.click(within(errors).getByRole("button", {name: "OK"}));
+        expect(errors).toHaveTextContent("Nope");
 
         // A closed MUI `Dialog` stays mounted for the length of its exit
         // transition, so merely finding `config-review-changes` after the
         // rejection proves nothing -- it is there either way. Two things make
-        // this assertion discriminate. The wait puts it after any exit the
-        // panel could have started (the error dialog was closed later and
-        // transitions for the same duration, so its removal is the later
-        // bound). And the row is what a *still open* panel has: the shell
-        // computes its rows only while `reviewOpen`, so a panel the shell
-        // closed empties in the same commit, husk or not.
-        await waitForElementToBeRemoved(errors);
+        // this assertion discriminate. FM-101 removed the acknowledge dialog
+        // whose removal used to be the clock here, so the wait is now on the
+        // panel's own Save coming back out of its `saving` state, plus one
+        // more turn of the loop: `saveFromReview` decides whether to close in
+        // the continuation *after* `submit()` resolves, which is a microtask
+        // later than the flag that re-enables the button. And the row is what
+        // a *still open* panel has: the shell computes its rows only while
+        // `reviewOpen`, so a panel the shell closed empties in the same
+        // commit, husk or not.
+        await waitFor(() =>
+            expect(
+                within(panel).getByTestId("config-review-save"),
+            ).toBeEnabled(),
+        );
+        await act(async () => {
+            await Promise.resolve();
+        });
         const stillOpen = screen.getByTestId("config-review-changes");
         expect(
             within(stillOpen).getByTestId("config-review-entry-main-host"),
@@ -1282,5 +1566,195 @@ describe("ConfigShell review changes (FM-100)", () => {
         expect(
             within(stillOpen).queryByTestId("config-review-empty"),
         ).toBeNull();
+    });
+});
+
+describe("ConfigShell save report over the review panel (FM-101)", () => {
+    /**
+     * A report has to be *reachable*, which is not the same as present. MUI's
+     * `ModalManager` marks every sibling of an open `Modal` `aria-hidden`, so
+     * an element `getByTestId` happily returns can be wholly absent from the
+     * accessibility tree — and, behind the backdrop, unclickable with it. That
+     * is precisely the state the first version of this feature shipped in, and
+     * a test that only found the element in the DOM passed straight through
+     * it. Every case here walks the ancestor chain instead of trusting the
+     * query.
+     */
+    function ariaHiddenAncestor(element: Element): Element | null {
+        for (
+            let node: Element | null = element;
+            node !== null;
+            node = node.parentElement
+        ) {
+            if (node.getAttribute("aria-hidden") === "true") {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    async function openReviewPanel() {
+        fireEvent.click(await screen.findByTestId("config-dirty-summary"));
+        return screen.findByTestId("config-review-changes");
+    }
+
+    it("should raise a server rejection out of the shell's hidden subtree", async () => {
+        const backend = createBackend({
+            saveResults: [{ok: false, errorMessages: ["Nope"]}],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+
+        const report = await screen.findByTestId("config-validation-errors");
+        expect(report).toHaveTextContent("Nope");
+        // The control that gives the next assertion its meaning: the config
+        // area really is hidden from assistive technology while the panel is
+        // open, which is exactly where this report used to render.
+        expect(
+            ariaHiddenAncestor(screen.getByTestId("config-shell")),
+            "the panel should be hiding the shell -- otherwise this case proves nothing",
+        ).not.toBeNull();
+        expect(ariaHiddenAncestor(report)).toBeNull();
+        // It moved; it was not duplicated. Two reports would mean two sets of
+        // entries carrying one set of testids.
+        expect(screen.getAllByTestId("config-validation-errors")).toHaveLength(
+            1,
+        );
+        // FM-100's own contract is untouched: the panel is still open, with
+        // its rows, over a config the server refused.
+        expect(
+            within(panel).getByTestId("config-review-entry-main-host"),
+        ).toBeVisible();
+
+        // Still a report and not a question: the panel underneath stays
+        // usable, so the admin can attempt the save again without first
+        // acknowledging anything. This is what the acknowledge dialog FM-101
+        // removed would not allow, and what a second modal here would undo.
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+        await waitFor(() => expect(backend.puts).toHaveLength(2));
+        expect(
+            ariaHiddenAncestor(screen.getByTestId("config-validation-errors")),
+        ).toBeNull();
+
+        // Closing the review hands the report back to the banner rather than
+        // withdrawing it: the config is still rejected.
+        fireEvent.click(within(panel).getByTestId("config-review-close"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+        const banner = screen.getByTestId("config-validation-errors");
+        expect(banner).toHaveTextContent("Nope");
+        expect(ariaHiddenAncestor(banner)).toBeNull();
+    });
+
+    it("should let an invalid-setting entry be acted on from over the panel", async () => {
+        const backend = createValidBackend();
+        renderConfigArea({backend, realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.change(screen.getByTestId("config-input-main-host"), {
+            target: {value: "not-an-ip"},
+        });
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+
+        const entry = await screen.findByTestId(
+            "config-invalid-field-main-host",
+        );
+        expect(entry).toHaveTextContent(
+            "Main › Host: not-an-ip is not a valid IP Address",
+        );
+        // Announcing the failure is not the point; acting on it is. The entry
+        // is the only route FM-101 offers to the offending control, so it has
+        // to be in the accessibility tree and in front of the backdrop.
+        expect(ariaHiddenAncestor(entry)).toBeNull();
+        expect(
+            ariaHiddenAncestor(screen.getByTestId("config-shell")),
+        ).not.toBeNull();
+        expect(backend.puts).toHaveLength(0);
+
+        fireEvent.click(entry);
+
+        // Going to a setting means leaving the review that was covering it,
+        // and FM-099's helper marks the control on arrival.
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+        expect(screen.getByTestId("config-setting-main-host")).toBeVisible();
+        await waitFor(() =>
+            expect(
+                [...document.querySelectorAll("style")].some((style) =>
+                    (style.textContent ?? "").includes(
+                        '[data-testid="config-setting-main-host"]',
+                    ),
+                ),
+                "the setting the entry points at should be marked",
+            ).toBe(true),
+        );
+        // The report is still standing, now in place, still naming the field.
+        expect(
+            screen.getByTestId("config-invalid-field-main-host"),
+        ).toBeVisible();
+    });
+
+    it("should raise a report that predates the panel, not leave it hidden underneath", async () => {
+        // The ordering case, because it is the one that could go wrong
+        // silently: here the report is already on screen as a banner and the
+        // panel opens *over* it, so the raised layer and the modal arrive in
+        // the same commit. `ModalManager` hides whatever is already a sibling
+        // when it runs, so this asserts the layer really is outside what it
+        // hid, whichever of the two mounted first.
+        const backend = createBackend({
+            saveResults: [{ok: false, errorMessages: ["Nope"]}],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        fireEvent.click(screen.getByTestId("config-save"));
+        const banner = await screen.findByTestId("config-validation-errors");
+        expect(ariaHiddenAncestor(banner)).toBeNull();
+
+        const panel = await openReviewPanel();
+
+        const raised = screen.getByTestId("config-validation-errors");
+        expect(raised).toHaveTextContent("Nope");
+        expect(
+            ariaHiddenAncestor(screen.getByTestId("config-shell")),
+        ).not.toBeNull();
+        expect(ariaHiddenAncestor(raised)).toBeNull();
+        expect(
+            within(panel).getByTestId("config-review-entry-main-host"),
+        ).toBeVisible();
+    });
+
+    it("should keep the report dismissed when the admin dismisses it over the panel", async () => {
+        const backend = createBackend({
+            saveResults: [{ok: false, errorMessages: ["Nope"]}],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+
+        const report = await screen.findByTestId("config-validation-errors");
+        fireEvent.click(within(report).getByRole("button", {name: "Close"}));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
+
+        // A dismissal by the admin is a dismissal, not a relocation: closing
+        // the panel afterwards must not bring the report back.
+        fireEvent.click(within(panel).getByTestId("config-review-close"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+        expect(screen.queryByTestId("config-validation-errors")).toBeNull();
     });
 });

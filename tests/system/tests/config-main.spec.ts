@@ -251,9 +251,11 @@ test.describe("Config main tab round trip", () => {
         await expect(page.getByTestId("config-error-main-host")).toHaveText(
             "not-an-ip is not a valid IP Address",
         );
+        // FM-101: the growl that named nothing is now a banner entry that
+        // names the setting by its index label and leads back to it.
         await expect(
-            page.getByText("Config invalid. Please check your settings."),
-        ).toBeVisible();
+            page.getByTestId("config-invalid-field-main-host"),
+        ).toHaveText("Main › Host: not-an-ip is not a valid IP Address");
         expect(puts, "an invalid form must not be submitted").toEqual([]);
         expect(await hydra.getConfig()).toEqual(before);
     });
