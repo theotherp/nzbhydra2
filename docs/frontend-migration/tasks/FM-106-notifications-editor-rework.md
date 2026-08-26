@@ -1,6 +1,6 @@
 # FM-106: Notifications Editor Rework
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-NOTIFICATIONS
 Component IDs: C-CONFIG-FIELDS
 API IDs: API-NOTIFICATIONS-TEST

@@ -150,6 +150,51 @@ test.describe("Config shell round trip", () => {
         await expect(dialog).toContainText("Torznab API endpoint:");
         await expect(dialog).toContainText("API key:");
     });
+
+    test("should summarize unsaved changes, badge their section, and undo them on Discard", async ({
+        page,
+        hydra,
+    }) => {
+        const before = await hydra.getConfig();
+        await openConfig(page);
+
+        const host = page.getByTestId("config-input-main-host");
+        const loaded = await host.inputValue();
+        await expect(page.getByTestId("config-dirty-summary")).toBeHidden();
+        await expect(page.getByTestId("config-discard")).toBeHidden();
+        await expect(page.getByTestId("config-nav-dirty-main")).toBeHidden();
+
+        await host.fill("127.0.0.2");
+        // Blur so React Hook Form has committed the edit before the assertions.
+        await host.blur();
+
+        await expect(page.getByTestId("config-dirty-summary")).toHaveText(
+            "1 setting changed",
+        );
+        const dirtyDot = page.getByTestId("config-nav-dirty-main");
+        await expect(dirtyDot).toBeVisible();
+        // Colour is never the sole carrier of the badge's meaning.
+        await expect(dirtyDot).toHaveAttribute(
+            "aria-label",
+            "Main has unsaved changes",
+        );
+        // Only the edited section is badged.
+        await expect(
+            page.getByTestId("config-nav-dirty-searching"),
+        ).toBeHidden();
+
+        await page.getByTestId("config-discard").click();
+
+        await expect(host).toHaveValue(loaded);
+        await expect(page.getByTestId("config-dirty-summary")).toBeHidden();
+        await expect(page.getByTestId("config-discard")).toBeHidden();
+        await expect(page.getByTestId("config-nav-dirty-main")).toBeHidden();
+
+        // Discard is a form reset, never a write: the instance is untouched.
+        expect(allowReMaskedSecrets(await hydra.getConfig(), before)).toEqual(
+            before,
+        );
+    });
 });
 
 test.describe("Config shell visual evidence", () => {
@@ -166,6 +211,43 @@ test.describe("Config shell visual evidence", () => {
             await page.screenshot({
                 path: visualEvidencePath("F-CONFIG-SHELL", `shell-${viewport}`),
             });
+
+            // FM-097's two new chrome states. Desktop shows the sticky bar's
+            // dirty branch with a section badge beside it; mobile shows the
+            // settings nav in its drawer, since the docked column only exists
+            // at `md` and up (the shot above is that viewport's closed state).
+            if (viewport === "desktop") {
+                const host = page.getByTestId("config-input-main-host");
+                await host.fill("127.0.0.2");
+                await host.blur();
+                await expect(
+                    page.getByTestId("config-dirty-summary"),
+                ).toBeVisible();
+                await expect(
+                    page.getByTestId("config-nav-dirty-main"),
+                ).toBeVisible();
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-CONFIG-SHELL",
+                        `shell-dirty-${viewport}`,
+                    ),
+                });
+                await page.getByTestId("config-discard").click();
+                await expect(
+                    page.getByTestId("config-dirty-summary"),
+                ).toBeHidden();
+            } else {
+                await page.getByTestId("config-nav-open").click();
+                await expect(page.getByTestId("config-nav")).toBeVisible();
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-CONFIG-SHELL",
+                        `shell-nav-drawer-${viewport}`,
+                    ),
+                });
+                await page.keyboard.press("Escape");
+                await expect(page.getByTestId("config-nav")).toBeHidden();
+            }
 
             // The three dialog states are driven from crafted validation
             // results: the real backend cannot be asked for a validation

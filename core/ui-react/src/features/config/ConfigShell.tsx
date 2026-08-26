@@ -1,17 +1,6 @@
-import {
-    Alert,
-    Box,
-    Button,
-    CircularProgress,
-    FormControlLabel,
-    Stack,
-    Switch,
-    Tab,
-    Tabs,
-    Typography,
-} from "@mui/material";
+import {Alert, Box, CircularProgress, Stack, Typography} from "@mui/material";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {Link, Outlet, useBlocker, useLocation} from "@tanstack/react-router";
+import {Outlet, useBlocker, useLocation} from "@tanstack/react-router";
 import {useState} from "react";
 import {FormProvider, useForm} from "react-hook-form";
 
@@ -31,12 +20,13 @@ import {
     writeShowAdvanced,
 } from "./advancedFields";
 import {
-    activeConfigTab,
-    CONFIG_TABS,
-    configTabHref,
-    configTabTestId,
-    isConfigLocation,
-} from "./configTabs";
+    countDirtyFields,
+    dirtyConfigTabs,
+    invalidConfigTabs,
+} from "./configFormState";
+import {ConfigNav} from "./ConfigNav";
+import {ConfigSaveBar} from "./ConfigSaveBar";
+import {activeConfigTab, isConfigLocation} from "./configTabs";
 import {useConfigSave} from "./useConfigSave";
 
 /**
@@ -89,7 +79,17 @@ function ConfigForm({
     const [saving, setSaving] = useState(false);
     const pathname = useLocation({select: (location) => location.pathname});
     const activeTab = activeConfigTab(pathname);
-    const isDirty = form.formState.isDirty;
+    const {dirtyFields, errors, isDirty} = form.formState;
+    // Derived from the same RHF state the sticky bar's own dirty branch reads,
+    // so a section badge can never disagree with the bar's summary. Recomputed
+    // on every render rather than memoized on the two trees' identity: React
+    // Hook Form mutates `errors` and `dirtyFields` in place as often as it
+    // replaces them, so an identity-keyed `useMemo` here silently serves a
+    // stale badge set (observed: the invalid dot never appeared after a
+    // rejected save). Both walks are over a config-sized object.
+    const dirtyCount = countDirtyFields(dirtyFields);
+    const dirtyTabs = dirtyConfigTabs(dirtyFields);
+    const invalidTabs = invalidConfigTabs(errors);
 
     const submit = async () => {
         // Legacy refuses to submit an invalid form and only says so in a growl
@@ -112,6 +112,17 @@ function ConfigForm({
         }
     };
 
+    // The one definition of "throw the edits away": the sticky bar's Discard
+    // and the unsaved-changes guard's Discard answer are the same act, so they
+    // reset from the same cached server copy rather than from two expressions
+    // that could drift.
+    const discardChanges = () => {
+        form.reset(
+            queryClient.getQueryData<ConfigValues>(CONFIG_QUERY_KEY) ??
+                initialConfig,
+        );
+    };
+
     useBlocker({
         disabled: !isDirty,
         enableBeforeUnload: () => form.formState.isDirty,
@@ -132,10 +143,7 @@ function ConfigForm({
                 return (await submit()) !== "saved";
             }
             if (answer === "denied") {
-                form.reset(
-                    queryClient.getQueryData<ConfigValues>(CONFIG_QUERY_KEY) ??
-                        initialConfig,
-                );
+                discardChanges();
                 return false;
             }
             return true;
@@ -192,74 +200,31 @@ function ConfigForm({
                         event.preventDefault();
                         void submit();
                     }}
-                    sx={{py: 3}}
+                    sx={{pb: 3}}
                 >
+                    <ConfigSaveBar
+                        dirty={isDirty}
+                        dirtyCount={dirtyCount}
+                        onDiscard={discardChanges}
+                        saving={saving}
+                    />
                     <Stack
-                        alignItems={{md: "center"}}
                         direction={{xs: "column", md: "row"}}
-                        justifyContent="space-between"
-                        spacing={2}
+                        spacing={3}
+                        sx={{pt: 3}}
                     >
-                        <Tabs
-                            aria-label="Configuration"
-                            value={activeTab.path}
-                            variant="scrollable"
-                        >
-                            {CONFIG_TABS.map((tab) => (
-                                <Tab
-                                    component={Link}
-                                    data-testid={configTabTestId(tab)}
-                                    key={tab.path}
-                                    label={tab.label}
-                                    to={configTabHref(tab)}
-                                    value={tab.path}
-                                />
-                            ))}
-                        </Tabs>
-                        <Stack
-                            alignItems="center"
-                            direction="row"
-                            spacing={1}
-                            sx={{flexShrink: 0}}
-                        >
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={showAdvanced}
-                                        data-testid="config-advanced-toggle"
-                                        onChange={(event) =>
-                                            toggleAdvanced(event.target.checked)
-                                        }
-                                    />
-                                }
-                                label="Advanced settings"
-                            />
-                            <Button
-                                data-testid="config-api-help"
-                                onClick={() => void openApiHelp()}
-                                type="button"
-                            >
-                                API?
-                            </Button>
-                            <Button
-                                // Legacy signalled unsaved changes on the Save
-                                // button itself (`config.html:21`: success
-                                // colour while pristine, an attention colour
-                                // while a save is needed). Same signal, stock
-                                // palette colours instead of a pulse class.
-                                color={isDirty ? "primary" : "success"}
-                                data-testid="config-save"
-                                disabled={saving}
-                                type="submit"
-                                variant="contained"
-                            >
-                                Save
-                            </Button>
-                        </Stack>
+                        <ConfigNav
+                            activeTabPath={activeTab.path}
+                            dirtyTabs={dirtyTabs}
+                            invalidTabs={invalidTabs}
+                            onOpenApiHelp={() => void openApiHelp()}
+                            onToggleAdvanced={toggleAdvanced}
+                            showAdvanced={showAdvanced}
+                        />
+                        <Box sx={{flexGrow: 1, minWidth: 0}}>
+                            <Outlet />
+                        </Box>
                     </Stack>
-                    <Box sx={{pt: 3}}>
-                        <Outlet />
-                    </Box>
                 </Box>
                 {restart.dialog}
             </ShowAdvancedContext.Provider>

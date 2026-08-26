@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-SETTINGS-INDEX, C-CONFIG-FIELDS
 API IDs: None
-Depends on: FM-097, FM-098
+Depends on: FM-098
 Blocks: FM-100, FM-101
 
 ## Outcome

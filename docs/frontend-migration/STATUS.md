@@ -613,6 +613,42 @@ helper replacing five copies, the stats/history duplicates unified, and the two 
 semantic difference, FM-109's swallowed `setItem` throw, was contract-directed and strictly safer. Every task passed on
 first review with no fix cycle.
 
+FM-097 (Config Sidebar Navigation And Sticky Save Bar) opens the config-improvements batch, turning the eight
+horizontal config tabs into a left settings nav — vertical MUI `Tabs` deliberately kept rather than hand-built markup,
+since that is what preserves `tab`/`tablist` roles, `aria-selected`, and every `config-tab-<path>` testid while still
+satisfying icon-plus-label via `icon`/`iconPosition="start"` — docked at `md`+ and a temporary `Drawer` below it
+(`config-nav-open`), following `RefineSidebar.tsx`'s no-duplicate-testid idiom. The advanced toggle and API button move
+to its foot unchanged; each entry carries a dirty dot and an invalid dot for its own top-level config section, neither
+colour-only (each has an `aria-label`). A sticky `config-save-bar` holds Save at every scroll position — verified by
+the reviewer against the live instance at `scrollY 3076`, not just the zero-scroll screenshots — and adds
+`config-dirty-summary` ("N settings changed") and `config-discard` while dirty, which now shares one `discardChanges()`
+expression with the blocker's existing deny branch. Routes, `useConfigSave.ts`, the blocker semantics, and every tab
+body are untouched; the `isDirty` colour switch on Save is deliberately dropped, recorded as the deviation it is.
+
+**The run's first blocker, resolved in-flight.** The packet's own Acceptance clauses were conjunctive — the toggle
+moves to the sidebar foot, and the sidebar becomes a drawer below `md` — which together put the toggle inside a closed
+mobile drawer and broke six sibling specs (`config-main`, `config-categories`, `config-downloading`, `config-searching`,
+`config-indexers`, `external-tools`) that reach it directly. The implementer stopped rather than edit files outside its
+allowlist; a task designer confirmed the placement was genuinely compelled rather than one reading among several
+(`RefineSidebar.tsx:97-101`'s rule that a temporary drawer exists precisely so exactly one `data-testid` is ever
+mounted) and refined the packet to permit exactly a mechanical drawer-open/close repair in those six files, with a new
+Acceptance bullet forbidding any weakened, skipped, or deleted assertion or desktop path. The reviewer treated this as
+the seam most likely to hide a corner cut and audited it hardest: all six diffs are 16 insertions / 0 deletions, every
+original line byte-identical, the drawer-open provably mobile-only by construction (`config-nav-open` renders only
+inside the same `useMediaQuery` branch as the drawer itself, so the probe is false by construction at desktop, not an
+unconditional open that happens to no-op), and `external-tools.spec.ts`'s two call sites both route through the one
+repaired helper. Two RHF quirks were discovered by probing live `useForm`/`useFieldArray` output rather than trusting
+docs — array holes appear both as true holes and as present-but-`undefined` depending on whether a structural edit
+rebuilt the array, and `remove(0)` re-marks every survivor plus a trailing slot — and are pinned by tests against that
+real output. A `useMemo` keyed on RHF's `errors` was found silently serving stale badges, since RHF mutates those trees
+in place as often as it replaces them; fixed by recomputing per render, confirmed in the diff rather than only in the
+handoff. The reviewer independently confirmed the `--runtime existing` evidence reuse was sound by `cmp`-ing the served
+bundle against the local build byte-for-byte, then re-ran the system tests anyway given the packet's own instruction to
+distrust jsdom badge evidence: 59/59 passed. Passed clean, no required findings; two minor findings carried into
+`MAINTENANCE.md`, neither corrected (optional): the six specs' drawer-open probe has no auto-retry (stable today only
+because each helper runs after an existing wait), and `ColorSetting.tsx` legitimately needs the literal `rgb(` string,
+so at least one of `validate:focus-affordances`'s five false positives cannot be fixed by removing the literal.
+
 ## Active
 
 None.
@@ -627,11 +663,11 @@ None.
 
 ## Upcoming
 
-- FM-097: Config Sidebar Navigation And Sticky Save Bar — opens the config batch FM-097..FM-107 (designed from the
-  owner backlog `docs/config-ui-improvements.md`; the packets, not that file, are the contracts). FM-098/FM-099 chain
-  off FM-097 and FM-100/FM-101/FM-102 off those; FM-103..FM-107 are per-section and independent of that chain. Unlike
+- FM-098: Per-Fieldset Advanced Disclosure is next up. FM-099 chains off it, FM-100/FM-101/FM-102 off those. Unlike
   the cleanup batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay
   `planned` until promoted.
+- FM-103: Indexer List Table is unblocked and independent of the FM-098 chain, but this run proceeds in packet order.
+- FM-106: Notifications Editor Rework is likewise unblocked and independent.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

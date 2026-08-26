@@ -1,6 +1,6 @@
 # FM-103: Indexer List Table
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-INDEXERS
 Component IDs: C-CONFIG-FIELDS
 API IDs: None

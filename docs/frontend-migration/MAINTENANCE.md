@@ -1084,3 +1084,38 @@ instead of leaving it to rot.
   fonts/antialiasing via a launch flag, would close it; the shared `prepareVisualEvidence` helper behind
   `tests/system/tests/search.spec.ts` and `results.spec.ts` is the place. Surfaced 2026-08-24 by FM-112, endorsed by
   its reviewer.
+- **The six sibling specs' drawer-open probe is a bare `await navOpen.isVisible()` with no auto-retry.** If the shell
+  has not painted when the helper runs, the mobile path is silently skipped and the subsequent `setChecked` times
+  out rather than opening the drawer. Fails loudly, so it cannot mask a regression, and each helper's first line
+  already runs after an `openXConfig` wait, which is why it is stable today — but it is a flake surface across six
+  specs (`config-main.spec.ts:26` and the same pattern in `config-categories`, `config-downloading`,
+  `config-searching`, `config-indexers`, `external-tools`). A short retry-until-visible would close it. Surfaced
+  2026-08-24 by FM-097's reviewer.
+- **`ColorSetting.tsx:46` legitimately needs the literal string `rgb(`** because legacy persists colours in that
+  format — so `validate:focus-affordances`'s five-finding false-positive set (tracked above since FM-111) includes
+  at least one site where the fix cannot be "remove the literal", only "teach the matcher this is data". Keeps a
+  required gate red for every task touching `features/config/indexers/`. Surfaced 2026-08-24 by FM-097's reviewer,
+  confirming FM-111's and FM-112's reports.
+- **`F-CONFIG-SHELL.gaps` is still `[]` although FM-097 deliberately dropped a legacy signal.** Save's pristine/dirty
+  colour switch (legacy `config.html:21`, old `ConfigShell.tsx:250`) is gone, replaced by the save bar's worded
+  summary and a Discard button that exists only while dirty — a better signal, and one that satisfies ADR-0014's
+  colour-is-never-sole-carrier rule where the hue did not. The deviation is justified at the site in
+  `ConfigSaveBar.tsx` and recorded in `COMPONENTS.yaml`'s `C-CONFIG-FORM`, and FM-097's packet only required it in
+  the handoff — but `gaps` is where a future parity reader looks, and there it is invisible. Add a one-line
+  `deliberate - ...` entry at `FEATURES.yaml:436`. Surfaced 2026-08-24 by FM-097's reviewer.
+- **The config nav's mobile `Drawer` has no visible close affordance.** It dismisses only via Escape, a backdrop tap,
+  or choosing a section, whereas `RefineSidebar.tsx:414` — the idiom FM-097's packet names as its model — ships a
+  `CloseIcon` button in its drawer header. `config-nav-open` also only opens, so it is not literally the "toggleable"
+  control the Acceptance wording describes. The gap is discoverable dismissal on touch, where Escape is unavailable
+  and a backdrop tap is undiscoverable. `ConfigNav.tsx:144-184`. Surfaced 2026-08-24 by FM-097's reviewer.
+- **`ConfigNav.tsx:88-93`'s `minHeight: 44` is an unexplained magnitude.** The comment justifies overriding MUI's
+  vertical-`Tab` default but not the number, which sits next to the app-wide `controlHeight = 32` token
+  (`theme.ts:192`) established by the 2026-08-23 height unification. 44 is defensible on its own terms as a touch
+  target, but the ledger entry for that unification is explicit that unstated heights are exactly how the app
+  accumulated ten of them. Either derive it from a token or say at the site why a nav row is not a control.
+  Surfaced 2026-08-24 by FM-097's reviewer.
+- **`features/config/notifications` unit tests can fail under parallel load.** FM-097's reviewer saw two failures at
+  `expect(harness.form.formState.isDirty).toBe(false)` in a run that compressed 244s of aggregated test time into 24s
+  wall; the immediate re-run was 1175/1175 green and three isolated runs of that directory were 26/26. Reads as a
+  timeout under contention rather than a regression, and the file is untouched by FM-097. Recorded so the next
+  implementer meets it as a known shape rather than a mystery. Surfaced 2026-08-24.

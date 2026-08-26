@@ -328,7 +328,8 @@ components:
     state: done
   - id: C-CONFIG-FORM
     responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all eight tabs, and the
-      save pipeline that refuses to submit an invalid form and maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`
+      save pipeline that refuses to submit an invalid form and maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`. Since FM-097 it also derives the shell's
+      unsaved-work summary from that one form state -- how many settings changed, and which top-level section each change or validation error belongs to -- so the sticky save bar and the settings nav's per-section badges cannot disagree
     legacy:
       - core/ui-src/js/config/config-controller.js
       - core/ui-src/js/config/config-service.js

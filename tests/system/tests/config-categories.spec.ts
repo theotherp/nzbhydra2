@@ -21,9 +21,25 @@ async function openCategoriesConfig(page: Page): Promise<void> {
 }
 
 async function setAdvanced(page: Page, shown: boolean): Promise<void> {
+    // FM-097: below `md` the settings nav is a temporary `Drawer`, so the
+    // advanced toggle at its foot is only mounted while that drawer is open
+    // (`RefineSidebar.tsx:97-101`: exactly one copy, never a duplicated
+    // testid). `config-nav-open` is rendered only below `md`, so this branch
+    // is inert at desktop viewports, and the drawer is closed again below so
+    // the page is left in exactly the state this helper always left it in.
+    const navOpen = page.getByTestId("config-nav-open");
+    const inDrawer = await navOpen.isVisible();
+    if (inDrawer) {
+        await navOpen.click();
+        await expect(page.getByTestId("config-nav")).toBeVisible();
+    }
     const toggle = page.getByRole("switch", {name: "Advanced settings"});
     await toggle.setChecked(shown);
     await expect(toggle).toBeChecked({checked: shown});
+    if (inDrawer) {
+        await page.keyboard.press("Escape");
+        await expect(page.getByTestId("config-nav")).toBeHidden();
+    }
 }
 
 async function saveAndExpectSuccess(page: Page): Promise<void> {

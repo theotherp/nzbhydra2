@@ -29,6 +29,7 @@ import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {StatsShell} from "../stats/StatsShell";
 import {SHOW_ADVANCED_STORAGE_KEY} from "./advancedFields";
 import type {ConfigTab} from "./configTabs";
+import {CONFIG_TABS, configTabTestId} from "./configTabs";
 import {createConfigRoute} from "./routes";
 
 const serverConfig = {
@@ -144,7 +145,12 @@ const bootstrap: BootstrapData = {
 /** A tab body of the shape FM-059 onwards will ship: bound to the shell's form. */
 function HostFieldTab({tab}: {tab: ConfigTab}) {
     const {register} = useFormContext();
-    const field = register("main.host");
+    const field = register("main.host", {
+        // FM-097: one real React Hook Form validation error the shell can
+        // derive an invalid badge from. Only the invalid-badge test uses this
+        // sentinel; every other test's host value passes it.
+        validate: (value) => value !== "invalid-host" || "Not a host",
+    });
     return (
         <div>
             <p>{`${tab.label} body`}</p>
@@ -245,6 +251,23 @@ function stubWorkingLocalStorage(): void {
             store.set(key, value);
         },
     } satisfies Storage);
+}
+
+// Below `md` the settings nav renders inside a MUI `Drawer` instead of the
+// docked column, decided by `useMediaQuery` rather than by CSS `display`.
+// jsdom's own `matchMedia` never matches anything, so a mobile viewport has to
+// be stated explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it.
+function stubMobileViewport(): void {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: query.includes("max-width"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+    }));
 }
 
 beforeEach(() => {
@@ -482,6 +505,190 @@ describe("ConfigShell", () => {
             "Torznab API endpoint: http://host/torznab",
         );
         expect(dialog).toHaveTextContent("API key: the-api-key");
+    });
+});
+
+describe("ConfigShell settings navigation", () => {
+    it("should hold every tab plus the advanced toggle and API button in one nav", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        const nav = screen.getByTestId("config-nav");
+        for (const tab of CONFIG_TABS) {
+            expect(within(nav).getByTestId(configTabTestId(tab))).toBeVisible();
+        }
+        expect(within(nav).getByTestId("config-advanced-toggle")).toBeVisible();
+        expect(within(nav).getByTestId("config-api-help")).toBeVisible();
+        // The nav is the docked desktop column here, so its drawer opener is
+        // not rendered at all (jsdom resolves the `md` media query to false).
+        expect(screen.queryByTestId("config-nav-open")).toBeNull();
+    });
+
+    it("should collapse into a drawer below the md breakpoint", async () => {
+        stubMobileViewport();
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        // Closed: exactly one copy of every control exists, so the nav and its
+        // entries are not in the DOM at all until the drawer is opened.
+        expect(screen.getByTestId("config-nav-open")).toBeVisible();
+        expect(screen.queryByTestId("config-nav")).toBeNull();
+        expect(screen.queryByTestId("config-tab-main")).toBeNull();
+        expect(screen.queryByTestId("config-advanced-toggle")).toBeNull();
+
+        fireEvent.click(screen.getByTestId("config-nav-open"));
+
+        const nav = await screen.findByTestId("config-nav");
+        for (const tab of CONFIG_TABS) {
+            expect(within(nav).getByTestId(configTabTestId(tab))).toBeVisible();
+        }
+        expect(within(nav).getByTestId("config-advanced-toggle")).toBeVisible();
+        expect(within(nav).getByTestId("config-api-help")).toBeVisible();
+
+        // Choosing a section navigates and closes the overlay it was chosen in.
+        fireEvent.click(within(nav).getByTestId("config-tab-searching"));
+        expect(await screen.findByText("Searching body")).toBeVisible();
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-tab-searching")).toBeNull(),
+        );
+    });
+
+    it("should mark the active entry as the selected tab", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        expect(screen.getByTestId("config-tab-main")).toHaveAttribute(
+            "aria-selected",
+            "true",
+        );
+
+        fireEvent.click(screen.getByTestId("config-tab-downloading"));
+        expect(await screen.findByText("Downloading body")).toBeVisible();
+        expect(screen.getByTestId("config-tab-downloading")).toHaveAttribute(
+            "aria-selected",
+            "true",
+        );
+        expect(screen.getByTestId("config-tab-main")).toHaveAttribute(
+            "aria-selected",
+            "false",
+        );
+    });
+
+    it("should badge only the section that was edited, naming the state in words", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        expect(screen.queryByTestId("config-nav-dirty-main")).toBeNull();
+
+        setHost("192.168.0.5");
+
+        const dot = await screen.findByTestId("config-nav-dirty-main");
+        // Colour is never the sole carrier of the badge's meaning.
+        expect(dot).toHaveAttribute("aria-label", "Main has unsaved changes");
+        for (const tab of CONFIG_TABS.filter(
+            (entry) => entry.path !== "main",
+        )) {
+            expect(
+                screen.queryByTestId(`config-nav-dirty-${tab.path}`),
+            ).toBeNull();
+        }
+        expect(screen.queryByTestId("config-nav-invalid-main")).toBeNull();
+    });
+
+    it("should badge a section whose fields failed validation", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        setHost("invalid-host");
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        const dot = await screen.findByTestId("config-nav-invalid-main");
+        expect(dot).toHaveAttribute("aria-label", "Main has invalid settings");
+        for (const tab of CONFIG_TABS.filter(
+            (entry) => entry.path !== "main",
+        )) {
+            expect(
+                screen.queryByTestId(`config-nav-invalid-${tab.path}`),
+            ).toBeNull();
+        }
+    });
+});
+
+describe("ConfigShell sticky save bar", () => {
+    it("should offer Save alone while the form is pristine", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        expect(screen.getByTestId("config-save")).toBeVisible();
+        expect(screen.queryByTestId("config-dirty-summary")).toBeNull();
+        expect(screen.queryByTestId("config-discard")).toBeNull();
+    });
+
+    it("should summarize how many settings changed once the form is dirty", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+
+        expect(
+            await screen.findByTestId("config-dirty-summary"),
+        ).toHaveTextContent("1 setting changed");
+        expect(screen.getByTestId("config-discard")).toBeVisible();
+    });
+
+    it("should restore the loaded config and clear the summary when Discard is used", async () => {
+        const backend = createBackend();
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("discard-me");
+        expect(await screen.findByTestId("config-dirty-summary")).toBeVisible();
+
+        fireEvent.click(screen.getByTestId("config-discard"));
+
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue("0.0.0.0"),
+        );
+        expect(screen.queryByTestId("config-dirty-summary")).toBeNull();
+        expect(screen.queryByTestId("config-discard")).toBeNull();
+        expect(screen.queryByTestId("config-nav-dirty-main")).toBeNull();
+        expect(backend.puts).toHaveLength(0);
+
+        // Nothing is unsaved any more, so leaving must not raise the guard.
+        fireEvent.click(screen.getByTestId("leave-config"));
+        expect(await screen.findByText("Somewhere else")).toBeVisible();
+        expect(screen.queryByTestId("config-unsaved-changes")).toBeNull();
+    });
+
+    it("should discard from the server's own copy after a save, not the initially loaded one", async () => {
+        const normalized = {
+            ...serverConfig,
+            main: {...serverConfig.main, host: "normalized-by-server"},
+        };
+        const backend = createBackend({
+            saveResults: [
+                {ok: true, restartNeeded: false, newConfig: normalized},
+            ],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("submitted-value");
+        fireEvent.click(screen.getByTestId("config-save"));
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue(
+                "normalized-by-server",
+            ),
+        );
+
+        setHost("edited-again");
+        fireEvent.click(await screen.findByTestId("config-discard"));
+
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue(
+                "normalized-by-server",
+            ),
+        );
     });
 });
 

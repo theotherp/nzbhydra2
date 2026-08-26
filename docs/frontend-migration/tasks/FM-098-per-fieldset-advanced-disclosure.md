@@ -1,10 +1,10 @@
 # FM-098: Per-Fieldset Advanced Disclosure
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-MAIN, F-CONFIG-SHELL
 Component IDs: C-CONFIG-FIELDS
 API IDs: None
-Depends on: FM-097
+Depends on: None
 Blocks: FM-099
 
 ## Outcome

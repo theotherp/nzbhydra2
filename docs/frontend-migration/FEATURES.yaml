@@ -387,7 +387,7 @@ features:
     gaps:
       - deliberate - the guided search tour and demo mode are retired, not reproduced in React (ADR-0022); the legacy implementation is ~2,300 lines of cross-state step choreography and vendored `angular-ui-tour.js` that does not port mechanically, and no React tour or demo mode is built
   - id: F-CONFIG-SHELL
-    name: Configuration tabs, advanced fields, whole-config save, validation, dirty state, and API help
+    name: Configuration settings navigation, advanced fields, whole-config save, validation, dirty state, and API help
     routes:
       - /config
     legacy_sources:
@@ -400,9 +400,19 @@ features:
       - tests/system/tests/config.spec.ts
       - tests/system/tests/external-tools.spec.ts
       - core/ui-react/src/features/config/ConfigShell.test.tsx
+      - core/ui-react/src/features/config/configFormState.test.ts
       - core/ui-react/src/router.test.tsx
     selectors:
+      # FM-097: the per-section badges follow the tab's own URL segment --
+      # `config-nav-dirty-<tab>` (unsaved changes in that section) and
+      # `config-nav-invalid-<tab>` (validation errors in it), one pair per
+      # `config-tab-<tab>` below. The fixed selectors are listed here.
       - config-shell
+      - config-nav
+      - config-nav-open
+      - config-save-bar
+      - config-dirty-summary
+      - config-discard
       - config-tab-main
       - config-tab-auth
       - config-tab-searching
