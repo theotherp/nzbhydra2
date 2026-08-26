@@ -801,6 +801,26 @@ features:
       # field itself already carries `config-input-indexerDraft-color`).
       - config-indexer-color-picker
       - config-indexer-color-clear
+      # FM-103 additions: the list surface became a table. Every row selector
+      # above is unchanged and still keyed by the entry's *configuration*
+      # index, including the two path-derived controls; the row now also emits
+      # `config-indexer-type-<index>` and carries a third path-derived control,
+      # `config-input-indexers-<index>-enabledForSearchSource`. The header sort
+      # buttons are `config-indexers-sort-<name|state|priority>`.
+      # `config-indexers-empty` still marks the zero-indexers state and now
+      # holds the message plus its hint; a filter that matches nothing is the
+      # separate `config-indexers-no-matches`. Below `sm` the table keeps one
+      # column and each entry stacks (ADR-0029), so the three header sort
+      # buttons are absent there and `config-indexers-sort` — a named "Sort by"
+      # select offering the same seven orderings — is present instead. Every
+      # per-entry selector is identical in both layouts.
+      - config-indexers-table
+      - config-indexers-filter
+      - config-indexers-shown-count
+      - config-indexers-no-matches
+      - config-indexers-enable-shown
+      - config-indexers-disable-shown
+      - config-indexers-sort
     parity: done
     gaps:
       - deliberate - the colour field's swatch shows the committed colour but not legacy's field-background tint at 0.5 alpha (color-control.html); ADR-0014 does not reproduce a mock's per-field styling literal
@@ -816,6 +836,12 @@ features:
       - deliberate - a successful capability check writes back only updateIndexerModel's nine fields, not the server's whole IndexerConfig, because the response carries credentials resolved from the ***UNCHANGED*** markers
       - deliberate - name uniqueness is checked against the other indexers; legacy's expression compares the typed value with the two-way-bound model, so renaming an existing indexer onto another's name was never rejected
       - deliberate - a picked preset's `info` prose is passed to the dialog rather than merged into the entry; legacy extends the model with it and writes an `info` key the backend has no field for into the saved config
+      - deliberate - the list is a table with a name filter, header sorting, and bulk enable/disable over the shown rows (FM-103); legacy has a fixed stack in one order with no filter, sort, or bulk state action
+      - deliberate - a bulk enable skips an entry whose configuration is incomplete, exactly as that entry's own state switch refuses to be operated; legacy has no bulk state action at all
+      - deliberate - a sort by a column that is also inline-editable (state, priority) is deferred while a control in the table has focus, so a row does not move out from under an edit in progress; legacy's orderBy re-sorted on every keystroke
+      - deliberate - the search-source select is on the list without being gated by the advanced toggle, though the same field is advanced inside the edit dialog; a column the toggle empties would leave a headed blank cell in every row
+      - deliberate - neither the filter nor the sort is persisted; both are momentary view state, as the packet scopes them
+      - deliberate - below sm the table keeps one column and each entry stacks, with sorting moved to a named "Sort by" select, because five columns need about 900px and even three overflow a 390px phone once a VIP-expiry chip or the search-source control is in one of them (ADR-0029; measured, not estimated)
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
     routes:

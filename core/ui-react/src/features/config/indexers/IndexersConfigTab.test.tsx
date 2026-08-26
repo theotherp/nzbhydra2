@@ -274,8 +274,29 @@ async function clickIn(testId: string, name: string): Promise<void> {
     fireEvent.click(within(dialog).getByRole("button", {name}));
 }
 
+/**
+ * Below `sm` the table drops its Type and Used-for columns and folds them into
+ * the name cell (ADR-0029), decided by `useMediaQuery` rather than by CSS
+ * `display` — the Used-for cell holds a real form control, and two copies of it
+ * would mean two controls on one configuration path. jsdom's own `matchMedia`
+ * never matches anything, so a phone viewport has to be stated explicitly.
+ */
+function stubMobileViewport(): void {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+        addEventListener: () => {},
+        addListener: () => {},
+        dispatchEvent: () => false,
+        matches: query.includes("max-width"),
+        media: query,
+        onchange: null,
+        removeEventListener: () => {},
+        removeListener: () => {},
+    }));
+}
+
 afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
 });
 
 describe("Indexer list", () => {
@@ -348,6 +369,352 @@ describe("Indexer list", () => {
         });
 
         expect(screen.getByRole("switch")).toBeDisabled();
+    });
+});
+
+/**
+ * FM-103. The cases here are deliberately the *uncomfortable* ones: an entry
+ * that has never been caps-checked, one the backend turned off with a reason,
+ * an empty list, a name too long for its column, and every write made from a
+ * sorted and filtered view rather than from the list as it loads.
+ */
+describe("The indexer table", () => {
+    function rowNames(): (string | null)[] {
+        return screen
+            .getAllByTestId(/^config-indexer-edit-/)
+            .map((button) => button.textContent);
+    }
+
+    function shownIndices(): string[] {
+        return screen
+            .getAllByTestId(/^config-indexer-entry-/)
+            .map(
+                (row) =>
+                    row
+                        .getAttribute("data-testid")
+                        ?.replace("config-indexer-entry-", "") ?? "",
+            );
+    }
+
+    it("shows a type, a search-source select, a state and a priority per entry", () => {
+        renderIndexers({
+            values: configWith([
+                newznab({name: "Mock1"}),
+                newznab({
+                    enabledForSearchSource: "INTERNAL",
+                    name: "Tracker",
+                    searchModuleType: "TORZNAB",
+                }),
+            ]),
+        });
+
+        expect(screen.getByTestId("config-indexers-table")).toBeVisible();
+        expect(screen.getByTestId("config-indexer-type-0")).toHaveTextContent(
+            "Newznab",
+        );
+        expect(screen.getByTestId("config-indexer-type-1")).toHaveTextContent(
+            "Torznab",
+        );
+        expect(
+            screen.getByTestId(
+                "config-input-indexers-1-enabledForSearchSource",
+            ),
+        ).toHaveTextContent("Internal searches only");
+        // The fence FM-100's review-panel case depends on: the priority input
+        // for configuration entry 0 is on the page with no filter, sort, or
+        // expansion applied first.
+        expect(
+            screen.getByTestId("config-input-indexers-0-score"),
+        ).toBeVisible();
+    });
+
+    it("edits the search source straight into the configuration", async () => {
+        const harness = renderIndexers({
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        fireEvent.mouseDown(
+            within(
+                screen.getByTestId(
+                    "config-input-indexers-0-enabledForSearchSource",
+                ),
+            ).getByRole("combobox"),
+        );
+        fireEvent.click(
+            await screen.findByRole("option", {name: "API searches only"}),
+        );
+
+        await waitFor(() =>
+            expect(indexersOf(harness)[0].enabledForSearchSource).toBe("API"),
+        );
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("true");
+    });
+
+    it("says what an entry with no capability check and one the backend disabled are", () => {
+        renderIndexers({
+            values: configWith([
+                newznab({allCapsChecked: false, name: "Never checked"}),
+                newznab({name: "Given up on", state: "DISABLED_SYSTEM"}),
+            ]),
+        });
+
+        // Not colour alone: each state dimension is a word.
+        expect(
+            screen.getByTestId("config-indexer-caps-incomplete-0"),
+        ).toHaveTextContent("Caps check incomplete");
+        expect(screen.getByText("Disabled by system")).toBeVisible();
+        expect(
+            screen.getByText(
+                /disabled by the program due to error from which it cannot recover/,
+            ),
+        ).toBeVisible();
+    });
+
+    it("keeps a name too long for its column readable in full", () => {
+        const name = `Very long indexer name ${"x".repeat(80)}`;
+        renderIndexers({values: configWith([newznab({name})])});
+
+        // The cell truncates visually; the whole value stays available without
+        // opening the editor.
+        expect(screen.getByTestId("config-indexer-edit-0")).toHaveAttribute(
+            "title",
+            name,
+        );
+    });
+
+    it("points an empty list at the button that fixes it", () => {
+        renderIndexers({values: configWith([])});
+
+        const empty = screen.getByTestId("config-indexers-empty");
+        expect(empty).toHaveTextContent("No indexers are configured yet.");
+        expect(empty).toHaveTextContent("Add new indexer");
+        expect(screen.queryByTestId("config-indexers-table")).toBeNull();
+    });
+
+    it("filters by name without touching the form", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Alpha"}),
+                newznab({name: "Beta"}),
+                newznab({name: "Bravo"}),
+            ]),
+        });
+        const before = structuredClone(indexersOf(harness));
+
+        fireEvent.change(screen.getByTestId("config-indexers-filter"), {
+            target: {value: "br"},
+        });
+
+        expect(rowNames()).toEqual(["Bravo"]);
+        expect(
+            screen.getByTestId("config-indexers-shown-count"),
+        ).toHaveTextContent("1 of 3 indexers shown");
+        expect(indexersOf(harness)).toEqual(before);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+
+        fireEvent.change(screen.getByTestId("config-indexers-filter"), {
+            target: {value: "nothing"},
+        });
+        expect(screen.queryAllByTestId(/^config-indexer-edit-/)).toEqual([]);
+        expect(
+            screen.getByTestId("config-indexers-no-matches"),
+        ).toHaveTextContent("No indexer matches");
+        expect(
+            screen.getByTestId("config-indexers-enable-shown"),
+        ).toBeDisabled();
+        expect(
+            screen.getByTestId("config-indexers-disable-shown"),
+        ).toBeDisabled();
+    });
+
+    it("sorts by name, priority, and state, and back to legacy's order", () => {
+        renderIndexers({
+            values: configWith([
+                newznab({name: "Beta", score: 5}),
+                newznab({name: "alpha", score: 50}),
+                newznab({name: "Gamma", score: 5, state: "DISABLED_USER"}),
+            ]),
+        });
+
+        expect(rowNames()).toEqual(["alpha", "Beta", "Gamma"]);
+
+        fireEvent.click(screen.getByTestId("config-indexers-sort-name"));
+        expect(rowNames()).toEqual(["alpha", "Beta", "Gamma"]);
+        fireEvent.click(screen.getByTestId("config-indexers-sort-name"));
+        expect(rowNames()).toEqual(["Gamma", "Beta", "alpha"]);
+
+        fireEvent.click(screen.getByTestId("config-indexers-sort-priority"));
+        expect(rowNames()).toEqual(["Beta", "Gamma", "alpha"]);
+
+        fireEvent.click(screen.getByTestId("config-indexers-sort-state"));
+        expect(rowNames()).toEqual(["alpha", "Beta", "Gamma"]);
+        fireEvent.click(screen.getByTestId("config-indexers-sort-state"));
+        expect(rowNames()).toEqual(["Gamma", "alpha", "Beta"]);
+        // The third click on the active column restores the load order.
+        fireEvent.click(screen.getByTestId("config-indexers-sort-state"));
+        expect(rowNames()).toEqual(["alpha", "Beta", "Gamma"]);
+    });
+
+    it("edits the right configuration entry from a sorted and filtered view", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Alpha", score: 1}),
+                newznab({name: "Beta", score: 2}),
+                newznab({name: "Bravo", score: 3}),
+            ]),
+        });
+
+        fireEvent.click(screen.getByTestId("config-indexers-sort-name"));
+        fireEvent.click(screen.getByTestId("config-indexers-sort-name"));
+        fireEvent.change(screen.getByTestId("config-indexers-filter"), {
+            target: {value: "b"},
+        });
+
+        // Descending by name over the two matches: Bravo (config index 2)
+        // first, Beta (config index 1) second. Neither is at its own
+        // configuration position.
+        expect(rowNames()).toEqual(["Bravo", "Beta"]);
+        expect(shownIndices()).toEqual(["2", "1"]);
+
+        fireEvent.change(screen.getByTestId("config-input-indexers-1-score"), {
+            target: {value: "42"},
+        });
+
+        await waitFor(() =>
+            expect(indexersOf(harness).map((entry) => entry.score)).toEqual([
+                1, 42, 3,
+            ]),
+        );
+    });
+
+    it("does not re-sort the row being typed in until focus leaves the table", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Alpha", score: 1}),
+                newznab({name: "Beta", score: 2}),
+                newznab({name: "Gamma", score: 3}),
+            ]),
+        });
+
+        fireEvent.click(screen.getByTestId("config-indexers-sort-priority"));
+        expect(rowNames()).toEqual(["Alpha", "Beta", "Gamma"]);
+
+        const alphaScore = screen.getByTestId("config-input-indexers-0-score");
+        fireEvent.focus(alphaScore);
+        fireEvent.change(alphaScore, {target: {value: "99"}});
+
+        await waitFor(() => expect(indexersOf(harness)[0].score).toBe(99));
+        // Alpha now sorts last, but the row the cursor is in has not moved.
+        expect(rowNames()).toEqual(["Alpha", "Beta", "Gamma"]);
+
+        fireEvent.blur(alphaScore);
+        await waitFor(() =>
+            expect(rowNames()).toEqual(["Beta", "Gamma", "Alpha"]),
+        );
+    });
+
+    it("disables exactly the shown rows and leaves every other field byte-equal", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Alpha"}),
+                newznab({name: "Beta"}),
+                newznab({name: "Bravo"}),
+            ]),
+        });
+        const before = structuredClone(indexersOf(harness));
+
+        fireEvent.change(screen.getByTestId("config-indexers-filter"), {
+            target: {value: "br"},
+        });
+        fireEvent.click(screen.getByTestId("config-indexers-disable-shown"));
+
+        await waitFor(() =>
+            expect(indexersOf(harness)[2].state).toBe("DISABLED_USER"),
+        );
+        expect(indexersOf(harness)[0]).toEqual(before[0]);
+        expect(indexersOf(harness)[1]).toEqual(before[1]);
+        expect(indexersOf(harness)[2]).toEqual({
+            ...before[2],
+            state: "DISABLED_USER",
+        });
+    });
+
+    it("stacks every column of an entry into one cell on a phone, dropping nothing", () => {
+        stubMobileViewport();
+        renderIndexers({
+            values: configWith([
+                newznab({name: "Mock1", searchModuleType: "TORZNAB"}),
+            ]),
+        });
+
+        expect(
+            screen.getAllByRole("columnheader").map((cell) => cell.textContent),
+        ).toEqual(["Indexer"]);
+
+        // Every piece is still there, still once, and still in this entry's
+        // own row — a stacked cell, not a dropped column.
+        const row = screen.getByTestId("config-indexer-entry-0");
+        expect(
+            within(row).getByTestId("config-indexer-type-0"),
+        ).toHaveTextContent("Torznab");
+        expect(
+            within(row).getByTestId("config-input-indexers-0-score"),
+        ).toBeVisible();
+        expect(within(row).getByRole("switch")).toBeEnabled();
+        expect(screen.getByText("Enabled")).toBeVisible();
+        // Exactly one control per configuration path: the two layouts are
+        // branches, never two rendered variants sharing a binding.
+        expect(
+            screen.getAllByTestId(
+                "config-input-indexers-0-enabledForSearchSource",
+            ),
+        ).toHaveLength(1);
+        expect(screen.getAllByRole("switch")).toHaveLength(1);
+    });
+
+    it("offers the same orderings as a named control where there are no headers", async () => {
+        stubMobileViewport();
+        renderIndexers({
+            values: configWith([
+                newznab({name: "Beta", score: 5}),
+                newznab({name: "alpha", score: 50}),
+            ]),
+        });
+
+        // The header sort labels do not exist in this layout.
+        expect(screen.queryByTestId("config-indexers-sort-name")).toBeNull();
+        expect(rowNames()).toEqual(["alpha", "Beta"]);
+
+        fireEvent.mouseDown(
+            within(screen.getByTestId("config-indexers-sort")).getByRole(
+                "combobox",
+            ),
+        );
+        fireEvent.click(
+            await screen.findByRole("option", {name: "Priority (low first)"}),
+        );
+
+        await waitFor(() => expect(rowNames()).toEqual(["Beta", "alpha"]));
+    });
+
+    it("bulk-enables the shown rows but never one that cannot be searched", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Alpha", state: "DISABLED_USER"}),
+                newznab({
+                    configComplete: false,
+                    name: "Broken",
+                    state: "DISABLED_SYSTEM",
+                }),
+            ]),
+        });
+
+        fireEvent.click(screen.getByTestId("config-indexers-enable-shown"));
+
+        await waitFor(() =>
+            expect(indexersOf(harness)[0].state).toBe("ENABLED"),
+        );
+        expect(indexersOf(harness)[1].state).toBe("DISABLED_SYSTEM");
     });
 });
 

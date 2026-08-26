@@ -797,6 +797,29 @@ filter. Passed with nine minor findings, none corrected (optional), all carried 
 invalid `ul > button` content model in the anchor list, an untested short-tab guard, and a latent `contentRect` trap in
 `UpdateFooterBanners.tsx` that the re-review scoped to "not yet a bug" before agreeing to log it.
 
+FM-103 (Indexer List Table) replaces the indexer stack with a real table — name, type, search-source scope, state with
+its disabled reason, priority, plus caps and config-completeness chips — filterable, sortable on three columns through a
+three-state cycle that keeps the composite load order reachable, with bulk enable/disable over the shown rows as a
+single form write. Sorted and filtered display never re-targets a control: the row testid and the control's field path
+derive from one `index` prop, so a display-index regression corrupts both together. Two defects were found by
+measurement rather than by the suite. **The whole page scrolled sideways at 390px**, because `ConfigFieldset` renders a
+real `<fieldset>` whose user-agent `min-inline-size: min-content` propagated the table's 900px minimum outward — the
+390px viewport rendered a 916px page. And after that, dropping the two descriptive columns was *still* not enough: the
+priority field's right edge measured 515px, floored by a non-wrapping VIP-expiry chip and the search-source control, so
+below `sm` the table becomes a one-column stack with sorting moved into a named select. That branch uses
+`useMediaQuery`, deliberately against ADR-0029's one-rendering-path constraint, and the reviewer judged it sound on
+grounds ADR-0029's case did not have: a CSS-only restack cannot solve *sorting* — hiding the headers removes the only
+sort affordance — and dual-rendering the cells would put two live form controls and two copies of every testid on one
+configuration path. The implementation pins that with assertions that exactly one switch and one select exist per row,
+in jsdom and again at 390px against the real backend. Four deviations were declared and all four accepted, the sharpest
+being that **bulk enable skips an indexer whose config is incomplete**: `IndexerStateSwitch` disables that row's own
+switch, so a bulk action flipping it would be the only route in the UI past a gate every per-row path enforces. The
+reviewer said it would have called the opposite behaviour a defect. Verified with the gate chain (1329 tests) and
+real-backend `config-indexers` plus `config.spec.ts` at 41/41, the latter byte-untouched, which is the fence holding —
+FM-100's review-panel case fills `config-input-indexers-0-score` directly at two places. Passed with six minor findings,
+none corrected (optional), all carried into `MAINTENANCE.md`. This task also broke a four-task streak of unannotated
+magnitudes: every one in the new file carries its justification at the site.
+
 ## Active
 
 None.
@@ -811,7 +834,7 @@ None.
 
 ## Upcoming
 
-- The per-section reworks FM-103..FM-107 follow FM-102 (in Review above). Unlike the cleanup
+- FM-104: Indexer Preset Gallery — next, then FM-105, FM-106 and FM-107 close the batch. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the
@@ -823,8 +846,8 @@ None.
   MUI's roving tabindex — resolved by ADR-0028 (a sibling list below the `Tabs`, headed with the active tab's name,
   rather than rebuilding the nav as a `List` and discarding the role and selector guarantees FM-097 protects), and its
   packet refined to match.
-- FM-103: Indexer List Table is unblocked and independent of the FM-098 chain, but this run proceeds in packet order.
-- FM-106: Notifications Editor Rework is likewise unblocked and independent.
+- FM-106: Notifications Editor Rework is unblocked and independent of the FM-098 chain, but this run proceeds in packet
+  order.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 

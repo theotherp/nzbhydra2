@@ -390,6 +390,36 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
         );
     });
 
+    it("should floor the fieldset's minimum width at zero so wide content cannot widen the page", () => {
+        renderSetting(
+            <ConfigFieldset label="Hosting">
+                <TextSetting label="Host" name="main.host" />
+            </ConfigFieldset>,
+        );
+
+        // ADR-0029's defect, fixed centrally rather than per tab. A
+        // `<fieldset>` is not a `<div>`: its user-agent `min-inline-size:
+        // min-content` makes it at least as wide as its widest descendant's
+        // minimum contribution, and that minimum keeps propagating outward
+        // until something stops it -- so a tab holding anything wider than
+        // the column (a table with a `minWidth`, an unbreakable string)
+        // scrolls *the document* sideways instead of scrolling its own
+        // container. `min-width: 0` reproduces the `<div>` default exactly
+        // and clamps regardless of what any descendant contributes, which a
+        // wrapper inside the fieldset cannot do for its siblings.
+        //
+        // Matched as a zero length however it is serialised -- MUI emits the
+        // unitless `0`, other stacks `0px`. Without the declaration the
+        // property resolves to the empty string, which is the state this
+        // pins against: the assertion was observed failing on `''` before
+        // the fix.
+        expect(
+            globalThis.getComputedStyle(
+                screen.getByTestId("config-fieldset-hosting"),
+            ).minWidth,
+        ).toMatch(/^0(?:px)?$/);
+    });
+
     it("should show a validation message and refuse to validate the form", async () => {
         const harness = renderSetting(
             <NumberSetting

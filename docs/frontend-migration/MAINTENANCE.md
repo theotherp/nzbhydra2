@@ -837,6 +837,17 @@ Format, one entry per fix:
   **The caps image.** `CapsGenerator.java:124` advertised indexer capabilities with an image URL under `master/core/ui-src/`, a path FM-095 deletes; it would have kept resolving until the branch merged and then broken silently, since nothing tests a remote asset URL. Repointed at the retained `static/img/banner-bright.png`, the same relocation FM-095 gave `/readme.md`. `grep -rn "ui-src" core/src/main/java` is now empty.
   **The dev proxy's Cookie header.** `devBackend.ts` set `Cookie: nzbhydra-ui=react` on every proxied request via `setHeader`, which *replaces* the browser's own header and so discarded `JSESSIONID` — dev-mode session breakage against a backend with authentication configured. Pre-existing, but its only justification was the selector FM-095 removed, so it is now pure liability. Removed, with the reason recorded at the site so nobody reintroduces it.
 
+### 2026-08-26 — Clamp `ConfigFieldset`'s minimum width at zero
+
+- **Why not a packet:** one contained layout defect in a single component, shipping a regression test observed failing before the fix and passing after; no capability, contract, registry, or `data-testid` change.
+- **Paths:** `core/ui-react/src/features/config/components/ConfigFieldset.tsx`, `core/ui-react/src/features/config/components/configFields.test.tsx`, `core/ui-react/src/features/config/indexers/IndexerTable.tsx`.
+- **Gates:** in `core/ui-react` — `typecheck`, `format:check`, `build`, `check:api`, `validate:migration` all pass; `lint` **14 warnings / 0 errors**, equal to base; `test -- --run` **114 files / 1330 tests passed**; `knip` reports only the pre-existing `NO_ADVANCED_DISCLOSURE`; `validate:focus-affordances` **red on exactly the five known base findings**, no sixth and no exemption entries (pre-existing, unchanged by this fix). Real backend from the repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config tests/external-tools.spec.ts` → **86 passed**, plus a confirming `tests/config-indexers.spec.ts` run → **12 passed**. `git diff --check` clean. Install skipped — no manifest changed and `node_modules` already matched the lockfile.
+- **Commit:** `1b24f85f9`
+- **Note:** the mechanism, because it is not obvious and the project kept collecting findings against it. `ConfigFieldset` renders a real `<fieldset>`, and a `<fieldset>` computes `min-inline-size: min-content` where a `<div>` computes `0`. So the fieldset is always at least as wide as the widest min-content *contribution* of anything inside it, and that width propagates outward until an ancestor stops it — which in the config shell means the document. Any config tab holding content wider than its column therefore scrolled **the page** sideways rather than scrolling its own container: at a 390px viewport the indexers tab rendered a 916px document. `minWidth: 0` on the fieldset's `sx` restores the `<div>` floor and clamps it regardless of what any descendant contributes.
+  **FM-103's local workaround is removed with it.** That task wrapped the indexer table in a `minmax(0, 1fr)` grid, which did work but only for its own subtree — a `minmax(0,1fr)` track contributes 0, while a wide *sibling* would still push the fieldset out (proven by FM-103's reviewer: an 800px sibling next to the wrapper settled the fieldset at exactly 800). Both the wrapper and its comment — which claimed a child "cannot override" the floor, which the wrapper's own success disproves — are gone. `config-indexers.spec.ts`'s 390px page-width assertion still passes with the wrapper removed, which is the evidence that the central fix subsumes the local one.
+  **Swept before changing anything**, since this component renders on every config tab and the fix only *lowers* a floor: the failure mode it could introduce is a fieldset holding wide unscrollable content, which would clip instead of widening the page. There is none. The only fieldset content wider than its column is `IndexerTable`'s 900px table, which owns an `overflowX: auto` `TableContainer`. The three `minWidth: 180` `<dt>` labels (`CustomMappingsSection`, `ExternalToolsSection`, `DownloadersSection`) are far below any supported viewport and stack to a column at `xs`; `ReviewChangesPanel`'s table lives in a `Dialog`, not a fieldset; the only `whiteSpace: nowrap` outside a scrolling table is `ColorSetting`'s visually-hidden `<input type="color">`. No `<pre>` blocks and no unbroken long strings without `overflowWrap` in the config tree.
+  Visual evidence for `F-CONFIG-INDEXERS` was re-captured (the strip is git-ignored under `tests/system/visual-evidence/`); the mobile list and the tablet scroll-container captures are unchanged in layout from FM-103's, confirming the wrapper's removal shifted nothing.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
@@ -1305,3 +1316,36 @@ instead of leaving it to rot.
   so its two boxes are the same height today and the footer offset is correct. It becomes a real bug the moment anyone
   adds padding or a border to that container. Fix is one line for uniformity. Surfaced 2026-08-26 by FM-102's fixer,
   scoped by its re-review.
+- **FM-103's search-source select renders for a type the dialog withholds it from.** `IndexerTable.tsx:404-415` shows
+  the `enabledForSearchSource` control on every row, but `visibleIndexerFields` (`indexerSettings.ts:761-763`) hides
+  that field for `TORBOX`, which is an addable preset (`indexerPresets.ts:256`). So the list offers a control the edit
+  dialog deliberately does not. Undeclared — it is not in the `FEATURES.yaml` gaps alongside FM-103's other three
+  deviations. Gate the cell on `visibleIndexerFields(entry.searchModuleType)`, or declare it. Surfaced 2026-08-26 by
+  FM-103's reviewer.
+- **Between `sm` and ~900px the indexer table's Priority column is invisible with no scroll affordance.** Not merely
+  cut off — value, label and header are all off-canvas at 700px, and nothing on screen suggests the content continues
+  (`indexers-list-scroll-container-tablet.png`). FM-103's packet sanctions container scrolling at narrow widths so this
+  is not a contract breach, and its implementer was right to reject a stacked layout at 880px as reading worse. The
+  proportionate remedy is an affordance rather than a layout change: a scroll-edge shadow on the `TableContainer`, or
+  an explicit acknowledgement that content continues. Surfaced 2026-08-26 by FM-103's reviewer.
+- **"Enable shown" silently skips indexers whose config is incomplete.** Correct behaviour — `IndexerStateSwitch.tsx:54`
+  disables the per-row switch for those, so a bulk enable that flipped them would be the only route in the UI past a
+  gate every per-row path enforces — but nothing on screen says *why* the bulk action passed a row over. The row keeps
+  its `Disabled by system` caption so it is not invisible, just unexplained. A note beside the button, or a count in
+  `config-indexers-shown-count`, would close it. Surfaced 2026-08-26 by FM-103's reviewer.
+- ~~**FM-103's grid-wrapper comment states a mechanism its own workaround disproves.** `IndexerTable.tsx:164-172` says the
+  fieldset's min-content floor "cannot be overridden by anything a child does" — but the `minmax(0, 1fr)` wrapper it
+  justifies *is* a child, and does work. The real mechanism, established by the reviewer's probe: `min-content` is not a
+  fixed floor, it is computed from children's min-content *contributions*, and a `minmax(0,1fr)` track contributes 0.
+  Proven by adding an 800px sibling next to the wrapper, whereupon the fieldset settled at exactly 800, not 900. Both
+  the comment and the wrapper should go when the central `ConfigFieldset` fix lands. Surfaced 2026-08-26 by FM-103's
+  reviewer.~~ Discharged 2026-08-26 by the ledger entry above, which landed the central `ConfigFieldset` `min-width: 0`
+  fix and removed both the wrapper and the comment.
+- **The unit runner should write a machine-readable report so an unexplained failure has a name.** Two consecutive
+  tasks (FM-102, FM-103) each reported a single unreproducible unit failure and each lost the failing test's name to a
+  truncated pipe — FM-103's was `1 failed / 1325 passed` on one of nine runs, green on the other eight. The honest
+  reporting is right; the mechanical fix is to have `npm run test` emit a JSON or JUnit reporter to a file so the next
+  one is identifiable instead of anecdotal. FM-103's reviewer names a plausible candidate in that task's own new tests
+  — a synchronous negative assertion (`expect(rowNames()).toEqual([...])` immediately after a `waitFor` that only
+  guarantees an unrelated write landed) is the classic shape that goes red under scheduler jitter — but could not prove
+  it. Surfaced 2026-08-26.

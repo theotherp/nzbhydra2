@@ -295,6 +295,189 @@ test.describe("Config indexers round trip", () => {
         expect(persisted[0].name).toBe("Mock2");
     });
 
+    test("should filter, sort, edit the right entry from that view, and bulk-disable only what is shown", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [
+                mockIndexer({name: "Alpha", score: 1}),
+                mockIndexer({name: "Beta", apiKey: "2", score: 2}),
+                mockIndexer({name: "Bravo", apiKey: "3", score: 3}),
+            ]),
+        );
+        // The backend does not promise to keep the order it was handed, and a
+        // row's controls bind to the *configuration* index, so the indices are
+        // read back rather than assumed.
+        const stored = indexersOf((await hydra.getConfig()) as Json);
+        const indexOf = (name: string) => {
+            const at = stored.findIndex((entry) => entry.name === name);
+            expect(at).toBeGreaterThanOrEqual(0);
+            return at;
+        };
+        const alpha = indexOf("Alpha");
+        const beta = indexOf("Beta");
+        const bravo = indexOf("Bravo");
+
+        await openIndexersConfig(page);
+        await expect(page.getByTestId("config-indexers-table")).toBeVisible();
+
+        // Filtering is display-only: two rows survive, and the form is not
+        // dirtied by looking at it.
+        await page.getByTestId("config-indexers-filter").fill("b");
+        await expect(
+            page.getByTestId(`config-indexer-entry-${alpha}`),
+        ).toBeHidden();
+        await expect(
+            page.getByTestId("config-indexers-shown-count"),
+        ).toHaveText("2 of 3 indexers shown");
+
+        // Sorted descending by name over the filtered pair: Bravo, then Beta —
+        // so neither row sits at its own configuration position.
+        await page.getByTestId("config-indexers-sort-name").click();
+        await page.getByTestId("config-indexers-sort-name").click();
+        await expect(
+            page.getByTestId("config-indexers-table").getByRole("row"),
+        ).toHaveCount(3);
+        const names = await page
+            .getByTestId("config-indexers-table")
+            .locator("tbody tr")
+            .evaluateAll((rows) =>
+                rows.map((row) => row.getAttribute("data-testid")),
+            );
+        expect(names).toEqual([
+            `config-indexer-entry-${bravo}`,
+            `config-indexer-entry-${beta}`,
+        ]);
+
+        // The edit made from that sorted, filtered view lands on Beta.
+        await page
+            .getByTestId(`config-input-indexers-${beta}-score`)
+            .fill("42");
+        // Blur, so the deferred re-sort runs the way it does for a real admin.
+        await page.getByTestId("config-indexers-filter").click();
+        await save(page);
+
+        let persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted[alpha]).toMatchObject({name: "Alpha", score: 1});
+        expect(persisted[beta]).toMatchObject({name: "Beta", score: 42});
+        expect(persisted[bravo]).toMatchObject({name: "Bravo", score: 3});
+
+        // The bulk disable reaches exactly the two shown rows.
+        await expect(
+            page.getByTestId("config-indexers-shown-count"),
+        ).toHaveText("2 of 3 indexers shown");
+        await page.getByTestId("config-indexers-disable-shown").click();
+        await save(page);
+
+        persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted[alpha]).toMatchObject({
+            name: "Alpha",
+            score: 1,
+            state: "ENABLED",
+        });
+        expect(persisted[beta]).toMatchObject({
+            name: "Beta",
+            score: 42,
+            state: "DISABLED_USER",
+        });
+        expect(persisted[bravo]).toMatchObject({
+            name: "Bravo",
+            score: 3,
+            state: "DISABLED_USER",
+        });
+    });
+
+    test("should never scroll the page sideways, and keep state and priority on screen at 390px", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [
+                mockIndexer({name: "Mock1"}),
+                mockIndexer({name: "Mock2", apiKey: "2"}),
+            ]),
+        );
+
+        /** The page itself must never gain a horizontal scroll. */
+        const pageOverflow = () =>
+            page.evaluate(() => ({
+                document: document.documentElement.scrollWidth,
+                viewport: window.innerWidth,
+            }));
+
+        // Tablet width: `sm` and up keeps all five columns, and the table is
+        // wider than the viewport, so the *container* scrolls. This is the
+        // regression that actually happened: the enclosing `<fieldset>`'s
+        // user-agent `min-inline-size: min-content` carried the table's own
+        // `minWidth` out to the document instead, and the whole page scrolled.
+        await page.setViewportSize({height: 844, width: 700});
+        await openIndexersConfig(page);
+        await expect(page.getByTestId("config-indexers-table")).toBeVisible();
+        expect(await pageOverflow()).toMatchObject({
+            document: 700,
+            viewport: 700,
+        });
+        const scroll = await page
+            .getByTestId("config-indexers-table")
+            .evaluate((table) => {
+                const container = table.parentElement as HTMLElement;
+                return {
+                    client: container.clientWidth,
+                    scrollable: container.scrollWidth,
+                };
+            });
+        expect(scroll.scrollable).toBeGreaterThan(scroll.client);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-INDEXERS",
+                "indexers-list-scroll-container-tablet",
+            ),
+            fullPage: true,
+        });
+
+        // Phone width: ADR-0029's remedy. The table keeps one column and each
+        // entry stacks, so State and Priority — the two the tab exists to edit
+        // — are on screen rather than behind a scroll with no affordance.
+        await page.setViewportSize({height: 844, width: 390});
+        await expect(
+            page.getByTestId("config-indexers-table").getByRole("columnheader"),
+        ).toHaveText(["Indexer"]);
+        await expect(page.getByTestId("config-indexers-sort")).toBeVisible();
+        const widths = await pageOverflow();
+        expect(widths.document).toBeLessThanOrEqual(widths.viewport);
+
+        // Every control of the first entry is inside the viewport, measured
+        // rather than assumed: this is the check the earlier five-column
+        // layout failed, with the priority field's right edge at 515px.
+        for (const control of [
+            page.getByTestId("config-input-indexers-0-score"),
+            page.getByTestId("config-input-indexers-0-enabledForSearchSource"),
+            // The switch's own input is MUI's visually hidden one, so its row
+            // is what has a measurable box.
+            page.getByTestId("config-setting-indexers-0-state"),
+        ]) {
+            const box = await control.boundingBox();
+            expect(box?.x).toBeGreaterThanOrEqual(0);
+            expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+        }
+
+        // Exactly one search-source control per entry across the switch, not
+        // two rendered variants sharing a configuration path.
+        await expect(
+            page.getByTestId("config-input-indexers-0-enabledForSearchSource"),
+        ).toHaveCount(1);
+
+        const priority = page.getByTestId("config-input-indexers-0-score");
+        await priority.fill("7");
+        await save(page);
+        expect(indexersOf((await hydra.getConfig()) as Json)[0]).toMatchObject({
+            score: 7,
+        });
+    });
+
     test("should set a colour via the text field, clear it, and round-trip null", async ({
         page,
         hydra,
@@ -379,6 +562,45 @@ test.describe("Config indexers visual evidence", () => {
                 path: visualEvidencePath(
                     "F-CONFIG-INDEXERS",
                     `indexers-list-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            // FM-103: the same table filtered down to one row, with the two
+            // bulk actions and the shown-count that says what they apply to.
+            await page.getByTestId("config-indexers-filter").fill("caps");
+            await expect(
+                page.getByTestId("config-indexers-shown-count"),
+            ).toHaveText("1 of 4 indexers shown");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-list-filtered-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            // The sorted view: descending by priority, which is also one of
+            // the two inline-editable sort keys. Below `sm` the table has one
+            // column and no header sort labels, so its sorting is the named
+            // "Sort by" control instead (ADR-0029).
+            await page.getByTestId("config-indexers-filter").fill("");
+            if (viewport === "mobile") {
+                await page
+                    .getByTestId("config-indexers-sort")
+                    .getByRole("combobox")
+                    .click();
+                await page
+                    .getByRole("option", {name: "Priority (high first)"})
+                    .click();
+            } else {
+                await page.getByTestId("config-indexers-sort-priority").click();
+                await page.getByTestId("config-indexers-sort-priority").click();
+            }
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-list-sorted-${viewport}`,
                 ),
                 fullPage: true,
             });

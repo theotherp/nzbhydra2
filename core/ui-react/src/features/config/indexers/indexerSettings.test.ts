@@ -14,20 +14,28 @@ import {
 } from "./indexerPresets";
 import {
     applyCapsCheckResult,
+    applyIndexerStates,
     completenessBanner,
     connectionSettingsChanged,
+    filterIndexers,
     greaterThanOneValidator,
     greaterThanZeroValidator,
     groupNameSuggestions,
     hourOfDayValidator,
     indexerCategoryOptions,
+    INDEXER_SORT_OPTIONS,
+    indexerSortFromValue,
+    indexerSortValue,
     indexerStateHelp,
     indexerStateLabel,
+    indexerTypeLabel,
     mergeCapsCheckResults,
     needsCapsCheck,
+    nextIndexerSort,
     noCommaValidator,
     orderedIndexers,
     showsCapabilityControls,
+    sortIndexers,
     toggledIndexerState,
     uniqueIndexerNameValidator,
     vipExpirationValidator,
@@ -67,6 +75,159 @@ describe("orderedIndexers", () => {
             {entry: entries[1], index: 1},
             {entry: entries[0], index: 0},
         ]);
+    });
+});
+
+describe("the list surface's order, filter, and bulk write", () => {
+    /** Deliberately not in configuration order, so index ≠ position. */
+    const entries = [
+        {
+            configComplete: true,
+            name: "Beta",
+            score: 5,
+            searchModuleType: "TORZNAB",
+            state: "DISABLED_USER",
+        },
+        {
+            configComplete: true,
+            name: "alpha",
+            score: 50,
+            searchModuleType: "NEWZNAB",
+            state: "ENABLED",
+        },
+        {
+            configComplete: false,
+            name: "Gamma",
+            score: 5,
+            searchModuleType: "NZBINDEX_API",
+            state: "DISABLED_SYSTEM",
+        },
+    ];
+
+    function names(rows: readonly {entry: {name?: unknown}}[]): unknown[] {
+        return rows.map(({entry}) => entry.name);
+    }
+
+    it("starts in legacy's order and returns to it after a full header cycle", () => {
+        expect(names(sortIndexers(entries, null))).toEqual([
+            "alpha",
+            "Beta",
+            "Gamma",
+        ]);
+
+        let sort = nextIndexerSort(null, "name");
+        expect(sort).toEqual({direction: "asc", key: "name"});
+        sort = nextIndexerSort(sort, "name");
+        expect(sort).toEqual({direction: "desc", key: "name"});
+        expect(nextIndexerSort(sort, "name")).toBeNull();
+        // A different column always starts ascending.
+        expect(nextIndexerSort(sort, "priority")).toEqual({
+            direction: "asc",
+            key: "priority",
+        });
+    });
+
+    it("sorts each column in both directions, keeping the configuration index", () => {
+        expect(sortIndexers(entries, {direction: "asc", key: "name"})).toEqual([
+            {entry: entries[1], index: 1},
+            {entry: entries[0], index: 0},
+            {entry: entries[2], index: 2},
+        ]);
+        expect(
+            names(sortIndexers(entries, {direction: "desc", key: "name"})),
+        ).toEqual(["Gamma", "Beta", "alpha"]);
+
+        // Ascending priority is lowest first; the two 5s tie and are broken by
+        // name, so the order is total rather than whatever `sort` happened to
+        // do with them.
+        expect(
+            names(sortIndexers(entries, {direction: "asc", key: "priority"})),
+        ).toEqual(["Beta", "Gamma", "alpha"]);
+        expect(
+            names(sortIndexers(entries, {direction: "desc", key: "priority"})),
+        ).toEqual(["alpha", "Beta", "Gamma"]);
+
+        // Ascending state is usable first, then the disabled meanings in
+        // increasing severity.
+        expect(
+            names(sortIndexers(entries, {direction: "asc", key: "state"})),
+        ).toEqual(["alpha", "Beta", "Gamma"]);
+        expect(
+            names(sortIndexers(entries, {direction: "desc", key: "state"})),
+        ).toEqual(["Gamma", "Beta", "alpha"]);
+    });
+
+    it("ranks an unknown state as enabled, exactly as the switch labels it", () => {
+        const odd = [
+            {name: "known", state: "DISABLED_USER"},
+            {name: "odd", state: "SOMETHING_NEW"},
+        ];
+
+        expect(
+            names(sortIndexers(odd, {direction: "asc", key: "state"})),
+        ).toEqual(["odd", "known"]);
+    });
+
+    it("filters case-insensitively by substring and finds an unnamed entry by its label", () => {
+        const rows = sortIndexers([...entries, {score: 0}], null);
+
+        expect(names(filterIndexers(rows, "a"))).toEqual([
+            "alpha",
+            "Beta",
+            "Gamma",
+            undefined,
+        ]);
+        expect(names(filterIndexers(rows, "  ETA "))).toEqual(["Beta"]);
+        expect(filterIndexers(rows, "nothing here")).toEqual([]);
+        expect(names(filterIndexers(rows, "unnamed"))).toEqual([undefined]);
+        // An empty query is not a filter, and never the same array object.
+        expect(filterIndexers(rows, "")).toEqual(rows);
+        expect(filterIndexers(rows, "")).not.toBe(rows);
+    });
+
+    it("disables only the named entries and returns the others by identity", () => {
+        const next = applyIndexerStates(entries, [1], false);
+
+        expect(next[1]).toEqual({...entries[1], state: "DISABLED_USER"});
+        expect(next[0]).toBe(entries[0]);
+        expect(next[2]).toBe(entries[2]);
+    });
+
+    it("refuses to bulk-enable an indexer whose configuration is incomplete", () => {
+        const next = applyIndexerStates(entries, [0, 1, 2], true);
+
+        expect(next[0]).toEqual({...entries[0], state: "ENABLED"});
+        // Already enabled, so untouched by identity.
+        expect(next[1]).toBe(entries[1]);
+        // Incomplete: its own switch is inoperable, and bulk is not a way past
+        // that.
+        expect(next[2]).toBe(entries[2]);
+    });
+
+    it("round-trips every ordering through the compact sort control's values", () => {
+        for (const option of INDEXER_SORT_OPTIONS) {
+            expect(indexerSortValue(indexerSortFromValue(option.value))).toBe(
+                option.value,
+            );
+        }
+        expect(indexerSortValue(null)).toBe("default");
+        // The seven options are exactly the default plus each key in each
+        // direction, so the control can reach every order a header click can.
+        expect(INDEXER_SORT_OPTIONS).toHaveLength(7);
+        // Anything unrecognised falls back to the default order rather than to
+        // a sort that does not exist.
+        expect(indexerSortFromValue("default")).toBeNull();
+        expect(indexerSortFromValue("nonsense-asc")).toBeNull();
+        expect(indexerSortFromValue("name-sideways")).toBeNull();
+    });
+
+    it("names each search module type the way its preset does", () => {
+        expect(indexerTypeLabel("NEWZNAB")).toBe("Newznab");
+        expect(indexerTypeLabel("NZBINDEX_API")).toBe("NZBIndex API");
+        expect(indexerTypeLabel("WTFNZB")).toBe("WtfNzb");
+        // A constant the backend adds later still reads as words.
+        expect(indexerTypeLabel("SOME_NEW_SOURCE")).toBe("Some New Source");
+        expect(indexerTypeLabel(undefined)).toBe("Unknown");
     });
 });
 

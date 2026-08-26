@@ -68,7 +68,9 @@ Currently available:
   clear text. The External Tools tab is fully editable — the sync-on-config-change switch and a list of Sonarr, Radarr,
   Lidarr, and Readarr entries, each added from a preset or custom and edited in a modal transaction that tests the
   connection before writing NZBHydra's settings into the tool, plus a sync-all action. The Indexers tab is fully
-  editable — the ordered indexer list with per-entry state, priority, and incomplete-config/incomplete-caps markers;
+  editable — the indexer list as a table with per-entry type, search-source scope, state, priority, and
+  incomplete-config/incomplete-caps/VIP markers, filterable by name, sortable by name, state, or priority, with bulk
+  enable/disable over the rows currently shown;
   adding a newznab, torznab, or special indexer from a preset or as a custom entry; a modal transaction that
   connection-checks and completes an entry's capabilities before it is accepted, with credentials that are never
   round-tripped in clear text; a colour field with a native picker and a clear button alongside the free-text value;

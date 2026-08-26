@@ -152,7 +152,22 @@ export function ConfigFieldset({
             // technology announces. Its user-agent border and inset padding are
             // browser chrome rather than a design decision, so they are reset
             // here; everything visible comes from the theme.
-            sx={{border: 0, m: 0, p: 0, pt: 1}}
+            //
+            // `minWidth: 0` is the one reset that is not cosmetic, and it is
+            // needed because this is a `<fieldset>` and not a `<div>`. A
+            // `<div>` computes `min-width: 0`; a `<fieldset>` computes
+            // `min-inline-size: min-content`, so it is at least as wide as
+            // the widest minimum contribution of anything inside it -- and
+            // that width propagates outward until an ancestor stops it,
+            // which in the config shell means the document. Without this a
+            // tab holding content wider than its column (a table with a
+            // `minWidth`, an unbreakable URL) scrolls *the page* sideways
+            // instead of scrolling its own container: at 390px the document
+            // measured 916px. Restoring the `<div>` floor clamps the
+            // fieldset regardless of what any descendant contributes. A
+            // wrapper inside the fieldset can only zero out its own subtree's
+            // contribution, so it cannot cover a wide sibling; this can.
+            sx={{border: 0, m: 0, minWidth: 0, p: 0, pt: 1}}
         >
             <Stack
                 alignItems="center"

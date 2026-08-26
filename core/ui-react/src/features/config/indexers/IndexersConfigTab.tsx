@@ -1,5 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
-import {Box, Button, Divider, Stack, Typography} from "@mui/material";
+import {Box, Button, Stack, Typography} from "@mui/material";
 import {useRef, useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
@@ -18,7 +18,7 @@ import {AddIndexerDialog} from "./AddIndexerDialog";
 import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
 import {IndexerDialog} from "./IndexerDialog";
 import {IndexerImportDialog} from "./IndexerImportDialog";
-import {IndexerRow} from "./IndexerRow";
+import {IndexerTable} from "./IndexerTable";
 import {
     importResultLines,
     importResultSummary,
@@ -31,12 +31,12 @@ import {
     type IndexerPreset,
 } from "./indexerPresets";
 import {
+    applyIndexerStates,
     asIndexer,
     indexerCategoryOptions,
     indexersOf,
     INDEXERS_PATH,
     mergeCapsCheckResults,
-    orderedIndexers,
 } from "./indexerSettings";
 
 /** `CheckCapsModalInstanceCtrl`'s growl for an empty result list. */
@@ -259,7 +259,18 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         });
     };
 
-    const ordered = orderedIndexers(entries);
+    /**
+     * FM-103's bulk enable/disable, over the rows the list is *currently
+     * showing*. One `setValue` for the whole array, as every other change to
+     * the list is, so it is a single undoable step in the shell's review panel
+     * and marks the form dirty once. `applyIndexerStates` returns every
+     * untargeted entry by identity, which is what makes "a disable never
+     * touches any other field" a property of the write rather than a claim
+     * about it.
+     */
+    const setStates = (indices: readonly number[], enabled: boolean) => {
+        write(applyIndexerStates(currentEntries(), indices, enabled));
+    };
 
     return (
         <Box data-testid="config-indexers">
@@ -274,26 +285,26 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                 >
                     Add new indexer
                 </Button>
-                {ordered.length === 0 ? (
-                    <Typography
-                        data-testid="config-indexers-empty"
-                        variant="body2"
-                    >
-                        No indexers are configured yet.
-                    </Typography>
+                {entries.length === 0 ? (
+                    // §5's empty-state note: the message alone left the reader
+                    // to work out that the button above is what fixes it.
+                    <Box data-testid="config-indexers-empty">
+                        <Typography variant="body2">
+                            No indexers are configured yet.
+                        </Typography>
+                        <Typography variant="body2">
+                            Use “Add new indexer” above to pick a preset or
+                            configure a custom newznab or torznab indexer.
+                        </Typography>
+                    </Box>
                 ) : (
-                    <Stack divider={<Divider />} spacing={2}>
-                        {ordered.map(({entry, index}) => (
-                            <IndexerRow
-                                entry={entry}
-                                index={index}
-                                key={index}
-                                onEdit={() =>
-                                    openTransaction(index, asIndexer(entry))
-                                }
-                            />
-                        ))}
-                    </Stack>
+                    <IndexerTable
+                        entries={entries}
+                        onEdit={(index) =>
+                            openTransaction(index, asIndexer(entries[index]))
+                        }
+                        onSetStates={setStates}
+                    />
                 )}
                 {/*
                  * `recheck-all-caps.html`: legacy's split button, whose

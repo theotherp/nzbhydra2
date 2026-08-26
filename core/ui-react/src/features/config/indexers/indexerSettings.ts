@@ -114,6 +114,236 @@ function scoreOf(entry: IndexerValues): number {
     return typeof entry.score === "number" ? entry.score : 0;
 }
 
+// ---- FM-103: the list surface's display order and filter -------------------
+
+/**
+ * The column a header click sorts by. `null` — no column — is legacy's own
+ * `orderedIndexers` order, which is what the list starts in and what a third
+ * click on the active column returns it to.
+ */
+export type IndexerSortKey = "name" | "priority" | "state";
+
+export type IndexerSort = {
+    direction: "asc" | "desc";
+    key: IndexerSortKey;
+} | null;
+
+/**
+ * A header click: an inactive column starts ascending, the active column
+ * reverses, and a reversed column's next click drops back to `null`.
+ *
+ * The third step exists because the default order is not reachable any other
+ * way: it is a three-key composite (`orderedIndexers`) no single column
+ * reproduces, and it is the order the admin sees on load, so a two-state cycle
+ * would make the first click irreversible for the rest of the visit.
+ */
+export function nextIndexerSort(
+    sort: IndexerSort,
+    key: IndexerSortKey,
+): IndexerSort {
+    if (sort === null || sort.key !== key) {
+        return {direction: "asc", key};
+    }
+    return sort.direction === "asc" ? {direction: "desc", key} : null;
+}
+
+/** The `null` sort — legacy's own order — as a select value. */
+const DEFAULT_SORT_VALUE = "default";
+
+/**
+ * The same seven orderings the three sortable headers can produce, as one
+ * list of choices.
+ *
+ * Below `sm` the table has no per-column headers to click (see
+ * `IndexerTable`'s `compact`), so sorting needs a control of its own there.
+ * Naming each ordering in words rather than pairing a column with an
+ * asc/desc arrow is also the only way to say what "ascending state" means —
+ * an arrow next to "State" does not.
+ */
+export const INDEXER_SORT_OPTIONS: readonly SettingOption[] = [
+    {label: "Default order", value: DEFAULT_SORT_VALUE},
+    {label: "Name (A–Z)", value: "name-asc"},
+    {label: "Name (Z–A)", value: "name-desc"},
+    {label: "State (usable first)", value: "state-asc"},
+    {label: "State (disabled first)", value: "state-desc"},
+    {label: "Priority (low first)", value: "priority-asc"},
+    {label: "Priority (high first)", value: "priority-desc"},
+];
+
+export function indexerSortValue(sort: IndexerSort): string {
+    return sort === null ? DEFAULT_SORT_VALUE : `${sort.key}-${sort.direction}`;
+}
+
+export function indexerSortFromValue(value: string): IndexerSort {
+    const [key, direction] = value.split("-");
+    if (
+        (key !== "name" && key !== "priority" && key !== "state") ||
+        (direction !== "asc" && direction !== "desc")
+    ) {
+        // Anything unrecognised — `DEFAULT_SORT_VALUE` included — is the
+        // default order, so the control can never land on a sort that does not
+        // exist.
+        return null;
+    }
+    return {direction, key};
+}
+
+/**
+ * The state column's ascending order: usable first, then the three disabled
+ * meanings from "I turned it off" to "Hydra gave up on it". Legacy's list
+ * sorts `-state` as a *string* and happens to land on the same sequence
+ * (`indexer-config.html:14`); ranking the enum explicitly says why that
+ * sequence is the right one instead of relying on the alphabet to keep
+ * agreeing with it.
+ */
+const INDEXER_STATE_RANK: Readonly<Record<string, number>> = {
+    ENABLED: 0,
+    DISABLED_USER: 1,
+    DISABLED_SYSTEM_TEMPORARY: 2,
+    DISABLED_SYSTEM: 3,
+};
+
+function stateRank(entry: IndexerValues): number {
+    // An unrecognised state reads as "Enabled" in the switch
+    // (`indexerStateLabel`), so it has to rank as one too.
+    return INDEXER_STATE_RANK[indexerText(entry.state)] ?? 0;
+}
+
+function compareByKey(
+    key: IndexerSortKey,
+    left: IndexerValues,
+    right: IndexerValues,
+): number {
+    if (key === "name") {
+        return compareText(indexerLegend(left), indexerLegend(right));
+    }
+    if (key === "priority") {
+        return scoreOf(left) - scoreOf(right);
+    }
+    return stateRank(left) - stateRank(right);
+}
+
+/**
+ * The list's display order. `null` is `orderedIndexers` unchanged — the order
+ * FM-103 inherited and the one the tab still loads in.
+ *
+ * Ties are broken by name and then by configuration index so the result is a
+ * *total* order. That is not tidiness: rows carry live form controls, and two
+ * entries that compare equal must land in the same place on every render or a
+ * click can be delivered to a row that moved out from under the pointer.
+ */
+export function sortIndexers(
+    entries: readonly IndexerValues[],
+    sort: IndexerSort,
+): OrderedIndexer[] {
+    if (sort === null) {
+        return orderedIndexers(entries);
+    }
+    const factor = sort.direction === "asc" ? 1 : -1;
+    return entries
+        .map((entry, index) => ({entry, index}))
+        .sort((left, right) => {
+            const primary =
+                compareByKey(sort.key, left.entry, right.entry) * factor;
+            if (primary !== 0) {
+                return primary;
+            }
+            const byName = compareText(
+                indexerLegend(left.entry),
+                indexerLegend(right.entry),
+            );
+            return byName === 0 ? left.index - right.index : byName;
+        });
+}
+
+/**
+ * The name filter: a case-insensitive substring of what the list *shows*, so
+ * an entry with no name yet is findable by the "Unnamed indexer" it is
+ * labelled with rather than by a blank it cannot be typed as.
+ *
+ * Filtering is display-only — it never touches the form, and every surviving
+ * row keeps binding to its own configuration index.
+ */
+export function filterIndexers(
+    rows: readonly OrderedIndexer[],
+    query: string,
+): OrderedIndexer[] {
+    const needle = query.trim().toLowerCase();
+    if (needle === "") {
+        return [...rows];
+    }
+    return rows.filter((row) =>
+        indexerLegend(row.entry).toLowerCase().includes(needle),
+    );
+}
+
+/**
+ * `IndexerConfig.searchModuleType` as a reader sees it. The enum constants are
+ * the product names the presets are labelled with
+ * (`indexerPresets.ts`), so they are mapped rather than mechanically
+ * lower-cased; anything the backend adds later falls back to a readable
+ * title-casing of the constant instead of disappearing.
+ */
+const INDEXER_TYPE_LABELS: Readonly<Record<string, string>> = {
+    ANIZB: "Anizb",
+    BINSEARCH: "Binsearch",
+    NEWZNAB: "Newznab",
+    NZBINDEX: "NZBIndex",
+    NZBINDEX_API: "NZBIndex API",
+    NZBINDEX_BETA: "NZBIndex Beta",
+    NZBKING: "NZBKing",
+    TORBOX: "Torbox",
+    TORZNAB: "Torznab",
+    WTFNZB: "WtfNzb",
+};
+
+/** Shown when an entry carries no type at all; nothing else would be true. */
+const UNKNOWN_INDEXER_TYPE = "Unknown";
+
+export function indexerTypeLabel(searchModuleType: unknown): string {
+    const type = indexerText(searchModuleType);
+    if (type === "") {
+        return UNKNOWN_INDEXER_TYPE;
+    }
+    return (
+        INDEXER_TYPE_LABELS[type] ??
+        type
+            .split("_")
+            .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+            .join(" ")
+    );
+}
+
+/**
+ * The bulk enable/disable write: one new array for the whole list, with only
+ * the named entries' `state` replaced.
+ *
+ * Two rules make it safe to run over a filtered view. An entry no index names
+ * is returned *by identity*, so a bulk disable provably cannot touch another
+ * indexer's fields. And enabling skips an entry whose configuration is
+ * incomplete, exactly as its own switch refuses to
+ * (`IndexerStateSwitch`): such an indexer cannot be searched, so turning it on
+ * in bulk would promise something the backend will not do — a bulk action must
+ * not be a way around a per-row invariant.
+ */
+export function applyIndexerStates(
+    entries: readonly IndexerValues[],
+    indices: readonly number[],
+    enabled: boolean,
+): IndexerValues[] {
+    const targets = new Set(indices);
+    const state = toggledIndexerState(enabled);
+    return entries.map((entry, index) => {
+        if (!targets.has(index) || entry.state === state) {
+            return entry;
+        }
+        if (enabled && entry.configComplete !== true) {
+            return entry;
+        }
+        return {...entry, state};
+    });
+}
+
 /**
  * `indexer-state-switch.js`: the switch reads "Enabled" while the indexer is
  * enabled and otherwise carries the *reason* it is off, which is what makes the

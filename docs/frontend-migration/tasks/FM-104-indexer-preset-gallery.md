@@ -1,10 +1,10 @@
 # FM-104: Indexer Preset Gallery
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-INDEXERS
 Component IDs: None
 API IDs: None
-Depends on: FM-103
+Depends on: None
 Blocks: None
 
 ## Outcome
