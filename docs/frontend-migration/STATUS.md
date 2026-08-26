@@ -649,6 +649,33 @@ distrust jsdom badge evidence: 59/59 passed. Passed clean, no required findings;
 because each helper runs after an existing wait), and `ColorSetting.tsx` legitimately needs the literal `rgb(` string,
 so at least one of `validate:focus-affordances`'s five false positives cannot be fixed by removing the literal.
 
+FM-098 (Per-Fieldset Advanced Disclosure) makes hidden advanced settings announce themselves instead of vanishing. With
+the global toggle off, a fieldset renders its plain rows plus one `config-advanced-expander-<label>` reading "N advanced
+settings hidden"; expanding reveals those rows in place. A wholly advanced fieldset offers itself by name
+("Proxy — advanced, hidden") rather than disappearing, and its `config-fieldset-<label>` testid exists only once
+expanded — which is what keeps the pre-existing "advanced fieldset is absent" assertions in Categories and Searching
+honest rather than passing for a new reason. **No tab file needed editing**: all eight inherit through
+`C-CONFIG-FIELDS`, and the reviewer verified that by tracking `ConfigFieldset` nesting depth across every non-test
+`tsx` under `features/config/` rather than by checking that the tabs import it. The count is live, not derived: a
+globally-hidden advanced row stays *mounted* and registered while rendering no DOM at all (`Collapse` +
+`unmountOnExit`), and `hiddenCount` is read off state every render with no memo — the packet forbade memoizing it, and
+FM-097 had just proved that failure mode next door, so a test deliberately reproduces it by mounting a second advanced
+row behind a `useWatch` gate and asserting the count moves 1→2→1. The registration invariant holds: `shouldUnregister:
+false` untouched, and a real-backend test edits a revealed row, collapses it, switches tabs so the whole body unmounts,
+returns, saves, and compares the *whole* config to prove exactly one key moved. One fix cycle, the run's first, over a
+contradiction inside the packet itself: Acceptance bullet 1 promised toggle-on rendering identical to before while
+bullet 3 required an `Advanced` chip on every visible advanced row. The implementer followed the specific bullet and
+flagged the conflict rather than choosing quietly. The reviewer then found the substantive reason to settle it the
+other way — the chip marks rows flagged advanced *individually*, so wholly advanced fieldsets render none at all while
+Security renders five, and absence of a chip therefore reads as "not advanced", which is false for every row in those
+five fieldsets. ADR-0027 resolves it: the chip marks revealed rows only, restoring pixel-identical toggle-on rendering.
+The re-review confirmed no state produces a wrong chip, including the mixed case of an individually-flagged row inside
+a wholly advanced fieldset, which does not exist in the tree today. Verified with the gate chain (1181 tests) and
+real-backend `config-main.spec.ts` at 6/6. Passed with minor findings, none corrected (optional), all carried into
+`MAINTENANCE.md`: the spurious expander that appears behind the Downloading and External Tools dialog backdrops because
+React context crosses portals, an incomplete boundary note omitting `CustomMappingsSection`, two unannotated spacing
+magnitudes, a dead conjunct in the chip guard, and a validation-error capture that no longer frames its own error.
+
 ## Active
 
 None.
@@ -663,9 +690,9 @@ None.
 
 ## Upcoming
 
-- FM-098: Per-Fieldset Advanced Disclosure is next up. FM-099 chains off it, FM-100/FM-101/FM-102 off those. Unlike
-  the cleanup batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay
-  `planned` until promoted.
+- FM-099: Settings Search — next up, now unblocked by FM-098; FM-100/FM-101/FM-102 chain off it. Unlike the cleanup
+  batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
+  promoted.
 - FM-103: Indexer List Table is unblocked and independent of the FM-098 chain, but this run proceeds in packet order.
 - FM-106: Notifications Editor Rework is likewise unblocked and independent.
 

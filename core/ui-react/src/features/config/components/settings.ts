@@ -58,6 +58,29 @@ export function settingRowTestId(name: string): string {
     return `config-setting-${settingTestId(name)}`;
 }
 
+/** The fieldset wrapper's test id (`config-fieldset-hosting`). */
+export function fieldsetTestId(label: string): string {
+    return `config-fieldset-${label.toLowerCase()}`;
+}
+
+/**
+ * The test id of the expander a fieldset shows for the advanced settings the
+ * global toggle is hiding from it (`config-advanced-expander-hosting`), and of
+ * the one an advanced fieldset shows in place of itself. Same suffix as the
+ * fieldset's own test id, so a selector stays predictable from the label.
+ */
+export function advancedExpanderTestId(label: string): string {
+    return `config-advanced-expander-${label.toLowerCase()}`;
+}
+
+/**
+ * The "Advanced" chip an advanced row shows once its fieldset's expander has
+ * revealed it. Absent in the toggle-on state (ADR-0027).
+ */
+export function advancedChipTestId(name: string): string {
+    return `config-advanced-chip-${settingTestId(name)}`;
+}
+
 /** The editable control's test id (`config-input-main-host`). */
 export function settingInputTestId(name: string): string {
     return `config-input-${settingTestId(name)}`;

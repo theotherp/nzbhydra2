@@ -1,10 +1,10 @@
 # FM-099: Settings Search
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-SETTINGS-INDEX, C-CONFIG-FIELDS
 API IDs: None
-Depends on: FM-098
+Depends on: None
 Blocks: FM-100, FM-101
 
 ## Outcome

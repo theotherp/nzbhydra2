@@ -456,7 +456,15 @@ features:
       # `config-setting-<path>` (row), `config-input-<path>` (control),
       # `config-error-<path>` (validation message), `config-tooltip-<path>`,
       # `config-secret-reveal-<path>`, `config-apikey-generate-<path>`, and
-      # `config-file-browse-<path>`. The fixed selectors are listed below.
+      # `config-file-browse-<path>`. FM-098 adds two more of the same kind:
+      # `config-advanced-chip-<path>` on an advanced row revealed through its
+      # fieldset's expander (ADR-0027 -- absent in the toggle-on state), and
+      # `config-advanced-expander-<fieldset label lowercased>` -- the same
+      # suffix as `config-fieldset-<label>` -- for the expander a fieldset
+      # shows for the advanced rows the global toggle hides from it, and for
+      # the one an advanced fieldset shows in place of itself (whose own
+      # `config-fieldset-<label>` exists only once it is expanded).
+      # The fixed selectors are listed below.
       - config-main
       - config-fieldset-hosting
       - config-fieldset-proxy

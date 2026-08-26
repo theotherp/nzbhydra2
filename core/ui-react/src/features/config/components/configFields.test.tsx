@@ -10,7 +10,12 @@ import {
     within,
 } from "@testing-library/react";
 import {useEffect} from "react";
-import {FormProvider, useForm, type UseFormReturn} from "react-hook-form";
+import {
+    FormProvider,
+    useForm,
+    useWatch,
+    type UseFormReturn,
+} from "react-hook-form";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import type {ConfigValues} from "../../../api/config/schema";
@@ -354,6 +359,8 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
         );
 
         const hidden = renderSetting(advancedRow, {values});
+        // FM-098: an advanced fieldset offers itself by name, but neither the
+        // fieldset nor anything in it is rendered until that offer is taken up.
         expect(screen.queryByTestId("config-fieldset-security")).toBeNull();
         expect(
             screen.queryByTestId("config-setting-main-dereferer"),
@@ -427,6 +434,198 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
             {target: {value: ""}},
         );
         expect(await harness.form.trigger()).toBe(true);
+    });
+});
+
+/**
+ * A fieldset whose second advanced row exists only while a plain switch in the
+ * same fieldset is on -- the shape of `F-CONFIG-NOTIFICATIONS`' Apprise URL and
+ * of every other `useWatch`-gated row. It is here so the hidden count is tested
+ * against rows that come and go, not only against a static tree.
+ */
+function ConditionalAdvancedFieldset() {
+    const newsShown = useWatch<ConfigValues>({name: "main.showNews"}) === true;
+    return (
+        <ConfigFieldset label="Hosting">
+            <TextSetting label="Host" name="main.host" />
+            <TextSetting advanced label="URL base" name="main.urlBase" />
+            <SwitchSetting label="Show news" name="main.showNews" />
+            {newsShown ? (
+                <TextSetting advanced label="Dereferer" name="main.dereferer" />
+            ) : null}
+        </ConfigFieldset>
+    );
+}
+
+const HOSTING_FIELDSET = (
+    <ConfigFieldset label="Hosting">
+        <TextSetting label="Host" name="main.host" />
+        <TextSetting advanced label="URL base" name="main.urlBase" />
+        <SwitchSetting advanced label="Use SSL" name="main.ssl" />
+    </ConfigFieldset>
+);
+
+describe("C-CONFIG-FIELDS per-fieldset advanced disclosure", () => {
+    it("should count the advanced rows it is hiding and reveal them in place", async () => {
+        renderSetting(HOSTING_FIELDSET, {values: {main: {host: "0.0.0.0"}}});
+
+        const expander = screen.getByTestId("config-advanced-expander-hosting");
+        expect(expander).toHaveTextContent("2 advanced settings hidden");
+        expect(expander).toHaveAttribute("aria-expanded", "false");
+        expect(screen.getByTestId("config-setting-main-host")).toBeVisible();
+        expect(screen.queryByTestId("config-setting-main-urlBase")).toBeNull();
+        expect(screen.queryByTestId("config-setting-main-ssl")).toBeNull();
+
+        fireEvent.click(expander);
+
+        expect(screen.getByTestId("config-setting-main-urlBase")).toBeVisible();
+        expect(screen.getByTestId("config-setting-main-ssl")).toBeVisible();
+        expect(expander).toHaveTextContent("Hide 2 advanced settings");
+        expect(expander).toHaveAttribute("aria-expanded", "true");
+        // Revealed in place: the two advanced rows sit where they were
+        // declared, not appended below the expander.
+        expect(
+            screen
+                .getAllByTestId(/^config-setting-/)
+                .map((element) => element.getAttribute("data-testid")),
+        ).toEqual([
+            "config-setting-main-host",
+            "config-setting-main-urlBase",
+            "config-setting-main-ssl",
+        ]);
+
+        fireEvent.click(expander);
+
+        expect(expander).toHaveTextContent("2 advanced settings hidden");
+        // Collapsing is the `Collapse` transition running in reverse, so the
+        // rows leave the DOM when it finishes rather than in the click's own
+        // tick; the value behind them never depended on that timing.
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-setting-main-urlBase"),
+            ).toBeNull(),
+        );
+    });
+
+    it("should follow an advanced row that comes and goes with a condition", () => {
+        renderSetting(<ConditionalAdvancedFieldset />, {
+            values: {main: {showNews: false}},
+        });
+
+        const expander = screen.getByTestId("config-advanced-expander-hosting");
+        expect(expander).toHaveTextContent("1 advanced setting hidden");
+
+        fireEvent.click(screen.getByRole("switch", {name: "Show news"}));
+        expect(expander).toHaveTextContent("2 advanced settings hidden");
+
+        fireEvent.click(screen.getByRole("switch", {name: "Show news"}));
+        expect(expander).toHaveTextContent("1 advanced setting hidden");
+    });
+
+    it("should keep a value edited in a revealed row when it is hidden again", async () => {
+        const harness = renderSetting(HOSTING_FIELDSET, {
+            values: {main: {host: "0.0.0.0", urlBase: "/"}},
+        });
+
+        const expander = screen.getByTestId("config-advanced-expander-hosting");
+        fireEvent.click(expander);
+        fireEvent.change(screen.getByTestId("config-input-main-urlBase"), {
+            target: {value: "/nzbhydra"},
+        });
+        fireEvent.click(expander);
+
+        // The row is gone from the page and its value is still in the form,
+        // which is what the next save writes back.
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-input-main-urlBase"),
+            ).toBeNull(),
+        );
+        expect(harness.form.getValues().main).toMatchObject({
+            urlBase: "/nzbhydra",
+        });
+
+        fireEvent.click(expander);
+        expect(screen.getByTestId("config-input-main-urlBase")).toHaveValue(
+            "/nzbhydra",
+        );
+    });
+
+    it("should offer a whole advanced fieldset by name and reveal everything in it", () => {
+        renderSetting(
+            <ConfigFieldset advanced label="Categories">
+                <TextSetting advanced label="Dereferer" name="main.dereferer" />
+            </ConfigFieldset>,
+            {values: {main: {dereferer: "https://deref.test/"}}},
+        );
+
+        const expander = screen.getByTestId(
+            "config-advanced-expander-categories",
+        );
+        expect(expander).toHaveTextContent("Categories — advanced, hidden");
+
+        fireEvent.click(expander);
+
+        expect(screen.getByTestId("config-fieldset-categories")).toBeVisible();
+        // Revealing the block reveals the block: its advanced rows come with
+        // it rather than hiding behind a second expander inside the first.
+        expect(
+            screen.getByTestId("config-setting-main-dereferer"),
+        ).toBeVisible();
+        expect(
+            screen.getAllByTestId(/^config-advanced-expander-/),
+        ).toHaveLength(1);
+        expect(expander).toHaveTextContent("Hide Categories");
+    });
+
+    it("should mark every row revealed through an expander with a chip and no other row", () => {
+        renderSetting(HOSTING_FIELDSET, {values: {main: {host: "0.0.0.0"}}});
+
+        fireEvent.click(screen.getByTestId("config-advanced-expander-hosting"));
+        expect(
+            screen.getByTestId("config-advanced-chip-main-urlBase"),
+        ).toHaveTextContent("Advanced");
+        expect(
+            screen.getByTestId("config-advanced-chip-main-ssl"),
+        ).toBeVisible();
+        expect(
+            screen.queryByTestId("config-advanced-chip-main-host"),
+        ).toBeNull();
+
+        cleanup();
+        renderSetting(HOSTING_FIELDSET, {
+            showAdvanced: true,
+            values: {main: {host: "0.0.0.0"}},
+        });
+
+        // ADR-0027: with the global toggle on, nothing is revealed through an
+        // expander, so no row carries the chip -- an unchipped row in a
+        // wholly-advanced fieldset would otherwise misleadingly read as "not
+        // advanced". Toggle-on rendering is pixel-identical with the
+        // pre-FM-098 baseline.
+        expect(screen.queryAllByTestId(/^config-advanced-expander-/)).toEqual(
+            [],
+        );
+        expect(
+            screen.queryByTestId("config-advanced-chip-main-urlBase"),
+        ).toBeNull();
+    });
+
+    it("should leave an advanced row outside any fieldset hidden", () => {
+        const harness = renderSetting(
+            <TextSetting advanced label="Dereferer" name="main.dereferer" />,
+            {values: {main: {dereferer: "https://deref.test/"}}},
+        );
+
+        expect(
+            screen.queryByTestId("config-setting-main-dereferer"),
+        ).toBeNull();
+        expect(screen.queryAllByTestId(/^config-advanced-expander-/)).toEqual(
+            [],
+        );
+        expect(harness.form.getValues().main).toEqual({
+            dereferer: "https://deref.test/",
+        });
     });
 });
 

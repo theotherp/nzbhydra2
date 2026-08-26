@@ -1,13 +1,39 @@
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import {Box, IconButton, Stack, Tooltip, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Collapse,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+} from "@mui/material";
+import {useCallback, useMemo, useState} from "react";
 
 import {useShowAdvanced} from "../advancedFields";
+import {
+    AdvancedDisclosureContext,
+    FULLY_REVEALED_ADVANCED_DISCLOSURE,
+    type AdvancedDisclosure,
+} from "./advancedDisclosure";
+import {advancedExpanderTestId, fieldsetTestId} from "./settings";
 
 /**
  * `C-CONFIG-FIELDS`: a titled group of settings — the replacement for legacy's
- * `fieldset-wrapper.html`. An advanced fieldset hides itself and everything in
- * it, exactly as legacy's `ng-show="model.showAdvanced || !to.advanced"` on the
- * `<fieldset>` does.
+ * `fieldset-wrapper.html`.
+ *
+ * Legacy simply dropped whatever the advanced toggle hid
+ * (`ng-show="model.showAdvanced || !to.advanced"` on the `<fieldset>` and on
+ * each row), so a setting a user had never turned the toggle on for was
+ * undiscoverable. FM-098 keeps the global toggle's semantics exactly — on, every
+ * advanced setting is shown everywhere — and replaces the silent drop with a
+ * disclosure: a fieldset that is hiding advanced rows offers "N advanced
+ * settings hidden", and a fieldset that is *itself* advanced offers itself.
+ * Expansion is this component's own state on purpose: it is a momentary "show me
+ * that one thing", not a preference, and the toggle remains the thing that
+ * persists.
  */
 export function ConfigFieldset({
     advanced,
@@ -21,13 +47,34 @@ export function ConfigFieldset({
     tooltip?: string;
 }) {
     const showAdvanced = useShowAdvanced();
-    if (advanced && !showAdvanced) {
-        return null;
-    }
-    return (
+    const [revealed, setRevealed] = useState(false);
+    // The registrations of the advanced rows the global toggle is currently
+    // hiding, held as a bag of keys rather than a set: a doubly-invoked effect
+    // and a repeated path both settle at the right *number*. The count below is
+    // read straight off this state on every render — memoizing it would freeze
+    // the answer across exactly the churn it exists to follow (a `useWatch`-gated
+    // advanced row appearing or disappearing while the tab is open).
+    const [hiddenRowKeys, setHiddenRowKeys] = useState<readonly string[]>([]);
+    const registerHiddenAdvancedRow = useCallback((key: string) => {
+        setHiddenRowKeys((keys) => [...keys, key]);
+        return () =>
+            setHiddenRowKeys((keys) => {
+                const index = keys.indexOf(key);
+                return index < 0
+                    ? keys
+                    : [...keys.slice(0, index), ...keys.slice(index + 1)];
+            });
+    }, []);
+    const disclosure = useMemo<AdvancedDisclosure>(
+        () => ({registerHiddenAdvancedRow, revealed}),
+        [registerHiddenAdvancedRow, revealed],
+    );
+    const hiddenCount = hiddenRowKeys.length;
+
+    const fieldset = (
         <Box
             component="fieldset"
-            data-testid={`config-fieldset-${label.toLowerCase()}`}
+            data-testid={fieldsetTestId(label)}
             // A native `<fieldset>`/`<legend>` pair is the semantic grouping
             // for a set of related form controls, and it is what assistive
             // technology announces. Its user-agent border and inset padding are
@@ -58,6 +105,87 @@ export function ConfigFieldset({
                 )}
             </Stack>
             {children}
+            {hiddenCount === 0 ? null : (
+                <AdvancedExpander
+                    expanded={revealed}
+                    label={
+                        revealed
+                            ? `Hide ${advancedSettings(hiddenCount)}`
+                            : `${advancedSettings(hiddenCount)} hidden`
+                    }
+                    onToggle={() => setRevealed((open) => !open)}
+                    testId={advancedExpanderTestId(label)}
+                />
+            )}
         </Box>
+    );
+
+    if (advanced === true && !showAdvanced) {
+        // A whole advanced fieldset: the group announces itself by name and
+        // stays out of the way until asked for. Its own test id appears only
+        // once it is revealed — collapsed, there is no fieldset on the page,
+        // which is exactly what it looked like before this feature.
+        return (
+            <Box sx={{pt: 1}}>
+                <AdvancedExpander
+                    expanded={revealed}
+                    label={
+                        revealed
+                            ? `Hide ${label}`
+                            : `${label} — advanced, hidden`
+                    }
+                    onToggle={() => setRevealed((open) => !open)}
+                    testId={advancedExpanderTestId(label)}
+                />
+                <Collapse in={revealed} unmountOnExit>
+                    <AdvancedDisclosureContext.Provider
+                        value={FULLY_REVEALED_ADVANCED_DISCLOSURE}
+                    >
+                        {fieldset}
+                    </AdvancedDisclosureContext.Provider>
+                </Collapse>
+            </Box>
+        );
+    }
+
+    return (
+        <AdvancedDisclosureContext.Provider value={disclosure}>
+            {fieldset}
+        </AdvancedDisclosureContext.Provider>
+    );
+}
+
+function advancedSettings(count: number): string {
+    return `${count} advanced ${count === 1 ? "setting" : "settings"}`;
+}
+
+/**
+ * The disclosure control itself: a stock text `Button` whose caption is the
+ * whole affordance, with `aria-expanded` and a chevron that follows the state
+ * rather than a rotation of one icon, so nothing here is a design decision.
+ */
+function AdvancedExpander({
+    expanded,
+    label,
+    onToggle,
+    testId,
+}: {
+    expanded: boolean;
+    label: string;
+    onToggle: () => void;
+    testId: string;
+}) {
+    return (
+        <Button
+            aria-expanded={expanded}
+            data-testid={testId}
+            onClick={onToggle}
+            size="small"
+            startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            sx={{mb: 2.5}}
+            type="button"
+        >
+            {label}
+        </Button>
     );
 }

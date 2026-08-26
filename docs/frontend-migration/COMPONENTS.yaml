@@ -360,7 +360,11 @@ components:
       optional properties, each carrying a legacy template option the vocabulary had no word for and each defaulting to the previous behaviour -- the help block takes a `severity` (legacy's `templateOptions.class`, so the indexer box can
       render the same block as a danger or a warning alert), the chips control takes `suggestions` (legacy's `typeaheadSource`, used only by the indexer group names and filtered against the values already held), and the multiselect takes an
       `emptyLabel` (legacy's `settings.noSelectedText`, which is "None/All" and "All" for the indexer category lists because selecting nothing there means everything). An enum-valued switch is *not* part of the vocabulary -- `F-CONFIG-INDEXERS`'
-      state control owns its four-value `IndexerConfig.State` and the reason-for-being-off caption that goes with it
+      state control owns its four-value `IndexerConfig.State` and the reason-for-being-off caption that goes with it. Advanced gating is a *disclosure* since FM-098 rather than a silent drop -- a row keeps rendering nothing while the
+      global toggle hides it but stays mounted and registers with its fieldset, so the fieldset offers `config-advanced-expander-<label>` ("N advanced settings hidden") and reveals those rows in place, an advanced fieldset offers
+      itself by name under the same selector instead of vanishing, and a row revealed through its fieldset's expander carries an "Advanced" chip (`config-advanced-chip-<path>`) -- ADR-0027 keeps the chip out of the toggle-on state, where
+      an unflagged row in a wholly-advanced fieldset would misread as not advanced, so toggle-on rendering stays pixel-identical with the pre-FM-098 baseline. The count is derived from live registrations on every render, never memoized,
+      because `useWatch`-gated advanced rows mount and unmount while the tab is open. An advanced `HelpBlock`, and an advanced row outside any fieldset, are the documented boundary -- both stay hidden outright
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

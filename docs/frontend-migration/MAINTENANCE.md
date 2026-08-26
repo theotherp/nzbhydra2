@@ -1119,3 +1119,35 @@ instead of leaving it to rot.
   wall; the immediate re-run was 1175/1175 green and three isolated runs of that directory were 26/26. Reads as a
   timeout under contention rather than a regression, and the file is untouched by FM-097. Recorded so the next
   implementer meets it as a known shape rather than a mystery. Surfaced 2026-08-24.
+- **Advanced rows inside the Downloading and External Tools dialogs register with the fieldset behind the modal.**
+  React context crosses portals, so the 3 advanced `SettingRow`s in `DownloaderDialog` and the 11 in
+  `ExternalToolDialog` are descendants of `<ConfigFieldset label="Downloaders">` / `<ConfigFieldset label="External
+  tools">` (`DownloadersSection.tsx:185`, `ExternalToolsSection.tsx:256`) and count toward them. With the advanced
+  toggle off, opening either dialog makes a spurious "3 advanced settings hidden" / "11 advanced settings hidden"
+  expander appear *behind* the modal backdrop, vanishing on close. No value or reveal impact — both host fieldsets own
+  zero advanced rows of their own, so the expander is never clickable — but FM-098's claim that dialog bodies are
+  unaffected holds only for `IndexerDialog`, which is rendered outside its fieldset (`IndexersConfigTab.tsx:328`
+  closes before `:354`). Fix: wrap the two dialog bodies in `AdvancedDisclosureContext.Provider
+  value={NO_ADVANCED_DISCLOSURE}`. Surfaced 2026-08-26 by FM-098's reviewer, which checked all three dialogs rather
+  than accepting the claim.
+- **FM-098's recorded disclosure boundary omits a third case: `CustomMappingsSection`.** `COMPONENTS.yaml`'s
+  `C-CONFIG-FIELDS` note says only an advanced `HelpBlock` and an advanced row outside any fieldset stay hidden. But
+  `searching/CustomMappingsSection.tsx:78-79` self-gates with its own `if (!showAdvanced) return null` and sits
+  outside every fieldset (`SearchingConfigTab.tsx:268`), so a whole *editable section* of Searching — not prose —
+  still vanishes with no expander announcing it. FM-098's allowlist excluded tab files, so this was correctly out of
+  scope; the ledger item is the note's accuracy, and the underlying disclosure gap belongs in a future packet's
+  design. Surfaced 2026-08-26 by FM-098's reviewer.
+- **Two FM-098 spacing magnitudes are correct but unannotated.** `ConfigFieldset.tsx`'s `mb: 2.5` on the expander is
+  exactly `SettingRow`'s row rhythm and its `pt: 1` on the collapsed advanced-fieldset wrapper is exactly the
+  fieldset Box's own `pt`, so both keep the layout from shifting on expand — but neither carries the at-site note
+  tying it to its neighbour. Same treatment as FM-097's `minHeight: 44` above, logged for consistency. Surfaced
+  2026-08-26 by FM-098's reviewer.
+- **`SettingRow.tsx:85`'s chip guard carries a dead conjunct.** It reads `advanced === true && hiddenByToggle`, but
+  `hiddenByToggle` is defined as `advanced === true && !showAdvanced`, so the first half can never independently be
+  false. Harmless today; it invites a future reader to believe the two conditions are independent and to "fix" one of
+  them. `hiddenByToggle` alone is the whole condition. Surfaced 2026-08-26 by FM-098's re-review.
+- **`main-validation-error-{desktop,mobile}.png` no longer frame the error they are evidence of.**
+  `config-main.spec.ts:365-372` calls `scrollIntoViewIfNeeded()`, which since FM-097 puts the Host field under the
+  sticky save bar, so the red `config-error-main-host` text sits off-frame in both captures. The assertion itself
+  still passes, so the spec is honest — it is the *evidence* that stopped showing the thing. Pre-existing framing
+  rather than an FM-098 change, but FM-098 owns the current bytes. Surfaced 2026-08-26 by FM-098's reviewer.

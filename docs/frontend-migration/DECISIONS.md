@@ -319,3 +319,32 @@ Binding constraints:
 - FM-108's corresponding MAINTENANCE.md open candidate is discharged by this entry.
 - If a written per-task handoff file is ever wanted, it needs a new decision naming its path and lifecycle; it must
   not be the template.
+
+## ADR-0027 — The Advanced chip marks revealed rows only, not the toggle-on state (accepted 2026-08-26)
+
+Question: FM-098's Acceptance contradicts itself. Bullet 1 says that with the global advanced toggle on "everything
+renders exactly as today"; bullet 3 says every advanced row carries an `Advanced` chip "whenever visible (toggle on or
+revealed)". Its reviewer prompt independently demands pixel-identical toggle-on rendering. The implementer followed the
+specific bullet over the general one, which is textually correct, and flagged the conflict rather than choosing quietly.
+The owner delegated design calls of this kind to the coordinator for this run (ADR-0025).
+
+Decided: the chip marks a row **revealed through a per-fieldset expander**, and is absent when the global toggle is on.
+This amends FM-098 Acceptance bullet 3; bullets 1 and 2 stand unchanged, and the conflict disappears.
+
+Rationale, from the reviewer's inspection of `main-advanced-shown-desktop.png` rather than from principle: the chip in
+the toggle-on state is not merely redundant on a page the user reached *by asking for advanced settings* — it is an
+inconsistent signal that actively misleads. The chip marks rows flagged advanced *individually*. Rows inside a wholly
+advanced fieldset carry no individual flag, so Proxy, Logging, Backup, History and Database render no chips at all,
+while Security renders five in a column. A reader infers that an unchipped row is not advanced, which is false for
+every row in those five fieldsets. `main-after-save-desktop.png` shows both cases stacked. In the revealed state the
+same chip is unambiguous and does exactly the job bullet 3 describes, because there the chip distinguishes the rows the
+expander just added from the plain rows they were inserted among.
+
+Binding constraints:
+
+- The chip renders only for a row revealed by its fieldset's expander — gate it on the hidden-by-toggle condition.
+  Toggle-on rendering returns to pixel-identical with the pre-FM-098 baseline.
+- The `config-advanced-chip-<path>` selector and the chip's anatomy are otherwise unchanged, and it stays recorded in
+  `F-CONFIG-MAIN.selectors`.
+- This is a presentation decision only. It does not touch the registration invariant, the count, or which rows are
+  hidden.

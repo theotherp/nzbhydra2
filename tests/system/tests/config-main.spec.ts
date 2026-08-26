@@ -150,6 +150,84 @@ test.describe("Config main tab round trip", () => {
         expect(allowReMaskedSecrets(after, expected)).toEqual(expected);
     });
 
+    test("should disclose a fieldset's hidden advanced settings and keep an edit made in one", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        const checkboxesBefore =
+            mainSection(before).indexerSelectionAsCheckboxes === true;
+
+        await openMainConfig(page);
+        await setAdvanced(page, false);
+
+        // Hosting holds two advanced rows (`urlBase`, `ssl`) among plain ones:
+        // with the global toggle off they are not on the page, but the fieldset
+        // says how many of them there are instead of dropping them silently.
+        const hosting = page.getByTestId("config-advanced-expander-hosting");
+        await expect(hosting).toHaveText("2 advanced settings hidden");
+        await expect(
+            page.getByTestId("config-setting-main-urlBase"),
+        ).toBeHidden();
+
+        await hosting.click();
+        const urlBase = page.getByTestId("config-input-main-urlBase");
+        await expect(urlBase).toBeEditable();
+        await expect(urlBase).toHaveValue(
+            String(mainSection(before).urlBase ?? ""),
+        );
+        await expect(
+            page.getByTestId("config-advanced-chip-main-urlBase"),
+        ).toBeVisible();
+
+        // A fieldset that is itself advanced offers itself by name; the
+        // fieldset only exists once that offer is taken up.
+        await expect(
+            page.getByTestId("config-advanced-expander-proxy"),
+        ).toHaveText("Proxy — advanced, hidden");
+        await expect(page.getByTestId("config-fieldset-proxy")).toBeHidden();
+
+        // The edit that has to survive: an advanced switch revealed in the UI
+        // fieldset, then hidden again, then carried across a tab switch (which
+        // unmounts the whole tab body) and a save.
+        const ui = page.getByTestId("config-advanced-expander-ui");
+        await expect(ui).toHaveText("1 advanced setting hidden");
+        await ui.click();
+        const checkboxes = page
+            .getByTestId("config-setting-main-indexerSelectionAsCheckboxes")
+            .getByRole("switch");
+        await checkboxes.setChecked(!checkboxesBefore);
+        await ui.click();
+        await expect(
+            page.getByTestId(
+                "config-setting-main-indexerSelectionAsCheckboxes",
+            ),
+        ).toBeHidden();
+
+        await page.getByTestId("config-tab-searching").click();
+        await expect(page).toHaveURL(/\/config\/searching$/);
+        await page.getByTestId("config-tab-main").click();
+        await expect(page.getByTestId("config-main")).toBeVisible();
+
+        const saved = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname === "/internalapi/config",
+        );
+        await page.getByTestId("config-save").click();
+        const result = (await (await saved).json()) as {
+            errorMessages?: string[];
+            ok?: boolean;
+        };
+        expect(result.errorMessages ?? []).toEqual([]);
+        expect(result.ok).toBe(true);
+
+        const expected = structuredClone(before);
+        mainSection(expected).indexerSelectionAsCheckboxes = !checkboxesBefore;
+        const after = (await hydra.getConfig()) as Json;
+        expect(allowReMaskedSecrets(after, expected)).toEqual(expected);
+    });
+
     test("should block the save on an invalid field and leave the config untouched", async ({
         page,
         hydra,
@@ -197,6 +275,32 @@ test.describe("Config main tab visual evidence", () => {
                 path: visualEvidencePath(
                     "F-CONFIG-MAIN",
                     `main-advanced-hidden-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            // FM-098: the same toggle-off state with one fieldset's hidden
+            // settings revealed, so the strip carries both the collapsed
+            // expanders and a revealed row's "Advanced" chip.
+            await page.getByTestId("config-advanced-expander-hosting").click();
+            await expect(
+                page.getByTestId("config-advanced-chip-main-urlBase"),
+            ).toBeVisible();
+            // Capture the settled state. `prepareVisualEvidence` has already
+            // disabled the CSS transition, but MUI still flips `Collapse` to
+            // its `entered` class on its own timer, and that is the class that
+            // restores `overflow: visible` -- without it a revealed text
+            // field's floating label is still clipped by the collapsing box.
+            await expect(
+                page
+                    .getByTestId("config-fieldset-hosting")
+                    .locator(".MuiCollapse-entered")
+                    .first(),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-MAIN",
+                    `main-advanced-revealed-${viewport}`,
                 ),
                 fullPage: true,
             });

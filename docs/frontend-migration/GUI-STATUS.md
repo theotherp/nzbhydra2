@@ -40,7 +40,9 @@ Currently available:
   canonical system tabs are now fully working.
 - The config area's shell: all eight canonical sections in a left settings sidebar (a drawer on narrow viewports), each
   entry flagging its own unsaved changes and validation errors; a save bar that stays in reach while a long tab scrolls,
-  saying how many settings changed and offering to discard them; and a whole-config save that round-trips losslessly
+  saying how many settings changed and offering to discard them; advanced settings that announce themselves instead of
+  disappearing, so a fieldset hiding them offers "N advanced settings hidden" and reveals them in place (the sidebar's
+  advanced toggle still shows them all at once); and a whole-config save that round-trips losslessly
   (including sections and fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
   API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
