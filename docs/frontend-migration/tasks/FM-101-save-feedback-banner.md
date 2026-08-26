@@ -1,6 +1,6 @@
 # FM-101: Save Feedback Banner
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FORM, C-CONFIG-SETTINGS-INDEX
 API IDs: API-CONFIG-PUT

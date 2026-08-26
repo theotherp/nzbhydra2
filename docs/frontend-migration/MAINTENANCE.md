@@ -1183,3 +1183,34 @@ instead of leaving it to rot.
   `useSettingsNavigation.tsx:24-29`, and FM-099's packet neither required nor forbade this. Choosing between hiding
   such hits, marking them as unavailable, or explaining the no-op is a product decision rather than a mechanical fix,
   so it wants a packet and an owner ruling. Surfaced 2026-08-26 by FM-099's reviewer.
+- **FM-100's review panel keys a whole list positionally when any single entry is unkeyed.** `reviewChangesDiff.ts`'s
+  `listKeys` returns `null` for the entire list if one entry lacks a `name`/`username` or repeats one, whereas the
+  backend (`SensitiveDataConfigValidator.findCorrespondingOldItem`) keys each entry independently. Removing a named
+  indexer while a freshly added blank row is present therefore makes the panel report N spurious "edited entry K" rows
+  instead of "X removed / entry N added". Display-only — no leak, and the save itself is unaffected — but it
+  misdescribes the change in the one place the admin looks before committing. Surfaced 2026-08-26 by FM-100's reviewer.
+- **`null` and `""` both render as `(empty)` in the review panel, so a row can show no visible change.**
+  `reviewChangesDiff.ts:151` maps both to the same text while `isDeepEqual(null, "")` is false, so the row survives the
+  value-equal filter and displays `(empty)` → `(empty)` on desktop, or a bare `(empty)` on mobile where the prefix is
+  suppressed when both sides match — with nothing saying what changed. Plausible whenever RHF turns an unset optional
+  string default into `""`. Surfaced 2026-08-26 by FM-100's re-review.
+- **FM-100's summary button is the only entrance to the review panel but looks like static text.** No underline, no
+  button chrome, `color: "text.secondary"` — visually unchanged from FM-097's `Typography` by design, at the cost of
+  discoverability for the feature it now gates. That `sx` override also carries no at-site justification comment, which
+  `AGENTS.md` *UI Conventions* requires at every deviation from stock MUI. Surfaced 2026-08-26 by FM-100's reviewer.
+- **The review panel's entry-row status reads as if it were the old value.** An array entry renders `edited` in a
+  `colSpan={2}` cell that starts under the "Previously" header, so `Indexers: Mock1 · edited` scans as "Mock1 was
+  edited before". `align="right"` or a leading em-dash would disambiguate. Visible in `review-changes-desktop.png`.
+  Surfaced 2026-08-26 by FM-100's reviewer.
+- **The sticky bar counts dirty leaves while the review panel counts rows.** Editing five fields of one indexer reads
+  "5 settings changed" on the bar and opens a panel with a single row. Both are contract-driven — FM-100's packet
+  fences the summary text verbatim and specifies one row per list entry — so this is a recorded consequence rather than
+  a defect, logged so it is a decision someone made rather than a surprise someone finds. Surfaced 2026-08-26 by
+  FM-100's reviewer.
+- **Two hardening gaps in the review panel, neither reachable today.** `reviewValueText` falls through to
+  `JSON.stringify` for a dirty leaf whose value is a plain object, and `isHiddenSetting` tests only the path, never the
+  object's keys — so that is the one place a secret could reach the screen without any of the three masking layers
+  firing. No reachable path exists today (RHF recurses into objects, and arrays of records are intercepted earlier by
+  the dispatch on value shape). Separately, no test pins the post-save re-baseline — that a second round of edits diffs
+  against the newly saved config rather than the initial fetch — which is correct by construction via
+  `form.formState.defaultValues` but was flagged as a trap by the packet. Surfaced 2026-08-26 by FM-100's reviewer.

@@ -403,6 +403,7 @@ features:
       - core/ui-react/src/features/config/configFormState.test.ts
       - core/ui-react/src/features/config/settingsSearch/settingsIndex.test.ts
       - core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx
+      - core/ui-react/src/features/config/reviewChanges/reviewChangesDiff.test.ts
       - core/ui-react/src/router.test.tsx
     selectors:
       # FM-097: the per-section badges follow the tab's own URL segment --
@@ -443,6 +444,20 @@ features:
       - config-search
       - config-search-option-main-urlBase
       - config-search-option-searching-coverSize
+      # FM-100: the review-changes panel behind the (now clickable) dirty
+      # summary. Each row carries `config-review-entry-<id>`, where the id is
+      # the setting's own path for a setting row -- the same stem as its
+      # `config-setting-<path>` row -- and `<list path>.<entry name>` for a
+      # list-section entry, with every non-alphanumeric run collapsed to a
+      # dash. `config-review-empty` replaces the table when every dirty path
+      # turned out to hold its original value.
+      - config-review-changes
+      - config-review-close
+      - config-review-save
+      - config-review-empty
+      - config-review-entry-main-apiKey
+      - config-review-entry-main-updateAutomatically
+      - config-review-entry-indexers-Mock1
     parity: done
     gaps: []
   - id: F-CONFIG-MAIN

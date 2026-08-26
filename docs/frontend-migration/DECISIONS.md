@@ -378,3 +378,31 @@ Binding constraints:
 - The list is headed with the active tab's name, so its scope is unambiguous when it sits under all eight entries.
 - FM-102's Acceptance wording ("the active sidebar entry expands") is refined to match; the anchors' keyboard
   reachability requirement stands.
+
+## ADR-0029 — The review-changes panel must show the new value on mobile (accepted 2026-08-26)
+
+Question: FM-100's review panel renders four columns (setting, origin, previous value, new value). At 390px they do not
+fit, so the "Now" column sits entirely outside the dialog and the table scrolls horizontally inside its own
+`TableContainer`, with no scrollbar, gradient, or other affordance indicating more exists to the right. FM-100's
+implementer deliberately did not add a breakpoint-dependent layout, reasoning that a second rendering path is scope the
+packet did not ask for. Its reviewer, judging the actual capture rather than the principle, said it should not ship.
+Resolved by the coordinator under ADR-0025.
+
+Decided: the panel must show the new value at every supported viewport. Below `sm`, drop the origin ("Section") column
+and merge the value pair into a single cell (`off → on`, `(hidden) — changed`).
+
+Rationale: the panel exists to answer "what is about to be written to my config", and below `sm` it currently answers
+only "what does my config say now" — the one column that carries the panel's purpose is the one off-canvas, with the
+header clipped mid-word and nothing signalling it. The implementer's engineering instinct was right in general and
+applied to the wrong question: the packet did not ask for a second rendering path, but it did ask for old and new
+values to be legible, and they are not. The chosen remedy is deliberately not a stacked card layout — dropping a column
+and merging a cell is one responsive decision inside the existing table, so there remains a single rendering path to
+test and reason about.
+
+Binding constraints:
+
+- The new value is legible at 390px without horizontal scrolling. Origin may be dropped below `sm`; the setting label
+  and both values may not.
+- One rendering path: no separate mobile component, no `useMediaQuery` branch returning different markup.
+- Secret hiding is unchanged — a merged cell renders `(hidden) — changed`, never a value.
+- The mobile capture is re-taken as evidence.

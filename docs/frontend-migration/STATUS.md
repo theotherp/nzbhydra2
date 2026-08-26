@@ -708,6 +708,37 @@ re-reveals on remount, no capture of the cross-tab reveal, a `react-refresh` war
 `conditional` entry no fixture renders, and — as a proposed packet rather than a quickfix — search offering rows whose
 render condition is unmet, which route and then silently time out.
 
+FM-100 (Review Changes Before Save) turns the sticky bar's "N settings changed" summary into a button opening
+`config-review-changes`, a stock MUI dialog listing every change the admin has made, with the same Save the form runs.
+The diff is a pure function over the dirty tree and the two value trees; the panel is presentational and never touches
+the form, proven by a probe that serializes `dirtyFields`, `errors`, `touchedFields`, `isDirty`, `isSubmitted` and
+`submitCount` and asserts byte-equality across open and close. The `ConfigSaveBar` seam held at 15 insertions and 3
+deletions, the deletions being exactly the `Typography` import name and its tag pair, composing with FM-099's search
+slot in the same `Stack`. **The secret defence is structural rather than enumerated**, which is what makes it durable:
+`collect` dispatches on the *value's* shape, so an array of records is intercepted before any descent and every
+list-entry row renders no values at all — the blanket over per-indexer, per-downloader and per-user credentials holds
+for all seven sections by construction, not by a list someone must remember to extend. Three further layers cover
+scalars: the `***UNCHANGED***` marker, an explicit path set, and a deliberately over-eager credential-shaped-segment
+regex. The reviewer enumerated the schema itself and found the five secret-bearing scalars are exactly the five in the
+explicit set. One correction of a stale premise, worth recording because it nearly propagated: the panel's positional
+keying fallback was documented as mirroring a live backend defect FM-060 escalated, but **FM-068 closed that defect** —
+`SensitiveDataConfigValidator` now resolves by record identity first and refuses the marker when the list length
+changed, rather than guessing. The comment was corrected against the Java source, not against a summary of it. One fix
+cycle, over a test that did not discriminate: "should stay open when the server rejects the configuration" resolved its
+assertion *during* MUI's exit transition, so it passed whether the panel stayed open or closed — the second task
+running where a test certified the comfortable path under an awkward name, and again caught only by mutating the
+implementation and watching the suite stay green. The replacement does not depend on timing at all: because the shell
+computes the change rows only while the panel is open, a shell-closed panel empties in the same commit, so asserting a
+specific row is present distinguishes a live panel from a husk however the transition races. ADR-0029 also settled the
+mobile layout against the implementer's judgement: at 390px the "Now" column sat off-canvas with the header clipped
+mid-word, so a panel whose purpose is "what is about to be written" showed only what the config already said. Below
+`sm` the origin column is dropped and the value pair merged, in one rendering path with no `useMediaQuery` branch, and
+the masked case renders `(hidden) — changed` rather than a value. Verified with the gate chain (1274 tests) and a fresh
+real-backend `config.spec.ts` at 16/16. Passed with minor findings, none corrected (optional), all carried into
+`MAINTENANCE.md`: whole-list positional keying when one entry is unkeyed, `null` and `""` both rendering `(empty)` so a
+row can show no visible change, the summary button's low discoverability and unjustified `sx`, the entry-row status
+cell reading as an old value, the bar counting leaves while the panel counts rows, and two unreachable hardening gaps.
+
 ## Active
 
 None.
@@ -722,7 +753,7 @@ None.
 
 ## Upcoming
 
-- FM-100: Review Changes Before Save — next up, now unblocked by FM-099; FM-101 and FM-102 follow. Unlike the cleanup
+- FM-101: Save Feedback Banner — next up, then FM-102, then the per-section reworks FM-103..FM-107. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the

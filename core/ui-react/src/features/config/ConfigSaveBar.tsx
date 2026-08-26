@@ -1,4 +1,4 @@
-import {Box, Button, Paper, Stack, Typography} from "@mui/material";
+import {Box, Button, Paper, Stack} from "@mui/material";
 
 /**
  * `F-CONFIG-SHELL`'s sticky action bar. It holds Save at every scroll position
@@ -15,12 +15,20 @@ export function ConfigSaveBar({
     dirty,
     dirtyCount,
     onDiscard,
+    onReviewChanges,
     saving,
     search,
 }: {
     dirty: boolean;
     dirtyCount: number;
     onDiscard: () => void;
+    /**
+     * FM-100: the summary is the way into the review-changes panel, so the
+     * count that says *how much* is unsaved is also what shows *what* is. The
+     * bar owns neither the panel nor the diff behind it — it reports a click
+     * and nothing else.
+     */
+    onReviewChanges: () => void;
     saving: boolean;
     /**
      * FM-099's settings search, as a slot. The bar holds no search state and
@@ -60,14 +68,18 @@ export function ConfigSaveBar({
                 {search}
                 <Box sx={{flexGrow: 1, minWidth: 0}}>
                     {dirty && (
-                        <Typography
+                        <Button
+                            aria-haspopup="dialog"
                             data-testid="config-dirty-summary"
+                            onClick={onReviewChanges}
                             sx={{color: "text.secondary"}}
+                            type="button"
+                            variant="text"
                         >
                             {dirtyCount === 1
                                 ? "1 setting changed"
                                 : `${dirtyCount} settings changed`}
-                        </Typography>
+                        </Button>
                     )}
                 </Box>
                 {dirty && (

@@ -15,6 +15,7 @@ import {
     render,
     screen,
     waitFor,
+    waitForElementToBeRemoved,
     within,
 } from "@testing-library/react";
 import {useFormContext} from "react-hook-form";
@@ -165,9 +166,36 @@ function HostFieldTab({tab}: {tab: ConfigTab}) {
     );
 }
 
+/**
+ * FM-100: a read-only window on the form state the review panel must not
+ * disturb. Serialized whole rather than asserted field by field, so a change
+ * anywhere in the dirty, touched or error trees fails the comparison; `ref`
+ * holds the DOM node an error was raised on and is dropped because it cannot
+ * be serialized, not because it is uninteresting.
+ */
+function FormStateProbe() {
+    const {formState} = useFormContext();
+    return (
+        <span data-testid="form-state-probe">
+            {JSON.stringify(
+                {
+                    dirtyFields: formState.dirtyFields,
+                    errors: formState.errors,
+                    isDirty: formState.isDirty,
+                    isSubmitted: formState.isSubmitted,
+                    submitCount: formState.submitCount,
+                    touchedFields: formState.touchedFields,
+                },
+                (key, value: unknown) => (key === "ref" ? undefined : value),
+            )}
+        </span>
+    );
+}
+
 function renderConfigArea({
     backend,
     realTabBodies = false,
+    withFormStateProbe = false,
     withStatsShell = false,
 }: {
     backend: Backend;
@@ -178,6 +206,8 @@ function renderConfigArea({
      * no advanced gate to open.
      */
     realTabBodies?: boolean;
+    /** FM-100: render `FormStateProbe` alongside the stub tab body. */
+    withFormStateProbe?: boolean;
     withStatsShell?: boolean;
 }) {
     // `SafeConfigProvider` builds its own transport from the bootstrap base
@@ -216,7 +246,10 @@ function renderConfigArea({
             realTabBodies
                 ? createConfigRoute(rootRoute, transport)
                 : createConfigRoute(rootRoute, transport, (tab) => (
-                      <HostFieldTab tab={tab} />
+                      <>
+                          <HostFieldTab tab={tab} />
+                          {withFormStateProbe ? <FormStateProbe /> : null}
+                      </>
                   )),
         ]),
     });
@@ -1062,5 +1095,192 @@ describe("post-save safe-config refresh (ADR-0017)", () => {
         expect(
             screen.getByRole("tab", {name: "Download history"}),
         ).toBeVisible();
+    });
+});
+
+describe("ConfigShell review changes (FM-100)", () => {
+    async function openReviewPanel() {
+        fireEvent.click(await screen.findByTestId("config-dirty-summary"));
+        return screen.findByTestId("config-review-changes");
+    }
+
+    it("should open the panel from the dirty summary and list the changed setting", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        const summary = await screen.findByTestId("config-dirty-summary");
+        // The summary is still the same words the bar has always shown; it is
+        // only now the way into the panel.
+        expect(summary).toHaveTextContent("1 setting changed");
+        expect(summary.tagName).toBe("BUTTON");
+        expect(screen.queryByTestId("config-review-changes")).toBeNull();
+
+        const panel = await openReviewPanel();
+        const row = within(panel).getByTestId("config-review-entry-main-host");
+        expect(row).toHaveTextContent("Host");
+        expect(row).toHaveTextContent("0.0.0.0");
+        expect(row).toHaveTextContent("192.168.0.5");
+
+        fireEvent.click(within(panel).getByTestId("config-review-close"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+    });
+
+    it("should list a change made on a tab that is no longer on screen", async () => {
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.change(screen.getByTestId("config-input-main-port"), {
+            target: {value: "5081"},
+        });
+        fireEvent.click(screen.getByTestId("config-tab-downloading"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-input-main-port")).toBeNull(),
+        );
+
+        const panel = await openReviewPanel();
+        const row = within(panel).getByTestId("config-review-entry-main-port");
+        expect(row).toHaveTextContent("Port");
+        expect(row).toHaveTextContent("Main › Hosting");
+        expect(row).toHaveTextContent("5076");
+        expect(row).toHaveTextContent("5081");
+    });
+
+    it("should render neither side of a secret and never leak its value", async () => {
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.click(
+            screen.getByTestId("config-apikey-generate-main-apiKey"),
+        );
+        const generated = (
+            screen.getByTestId("config-input-main-apiKey") as HTMLInputElement
+        ).value;
+        expect(generated).not.toBe("");
+
+        const panel = await openReviewPanel();
+        const row = within(panel).getByTestId(
+            "config-review-entry-main-apiKey",
+        );
+        expect(row).toHaveTextContent("API key");
+        expect(row).toHaveTextContent("(hidden)");
+        expect(row).toHaveTextContent("changed");
+        // Neither the generated key nor the marker the server sent for the
+        // stored one reaches the screen.
+        expect(panel.textContent ?? "").not.toContain(generated);
+        expect(panel.textContent ?? "").not.toContain("***UNCHANGED***");
+    });
+
+    it("should summarize an added list entry instead of its fields", async () => {
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.click(screen.getByTestId("config-advanced-toggle"));
+        fireEvent.click(screen.getByTestId("config-tab-categories"));
+        fireEvent.click(
+            await screen.findByRole("button", {name: "Add new category"}),
+        );
+
+        const panel = await openReviewPanel();
+        const rows = within(panel).getAllByTestId(/^config-review-entry-/);
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toHaveTextContent("Categories:");
+        expect(rows[0]).toHaveTextContent("added");
+    });
+
+    it("should not list a setting that was changed and then changed back", async () => {
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.change(screen.getByTestId("config-input-main-port"), {
+            target: {value: "5081"},
+        });
+        fireEvent.change(screen.getByTestId("config-input-main-host"), {
+            target: {value: "10.0.0.1"},
+        });
+        fireEvent.change(screen.getByTestId("config-input-main-host"), {
+            target: {value: "0.0.0.0"},
+        });
+
+        const panel = await openReviewPanel();
+        expect(
+            within(panel).getByTestId("config-review-entry-main-port"),
+        ).toBeVisible();
+        expect(
+            within(panel).queryByTestId("config-review-entry-main-host"),
+        ).toBeNull();
+    });
+
+    it("should change nothing about the form when it is opened and closed", async () => {
+        const backend = createBackend();
+        renderConfigArea({backend, withFormStateProbe: true});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        await screen.findByTestId("config-dirty-summary");
+        const before = screen.getByTestId("form-state-probe").textContent;
+
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-close"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+
+        expect(screen.getByTestId("form-state-probe").textContent).toBe(before);
+        expect(screen.getByLabelText("Host")).toHaveValue("192.168.0.5");
+        expect(backend.puts).toHaveLength(0);
+    });
+
+    it("should save through the shell's own submit and close on success", async () => {
+        const backend = createBackend();
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+
+        await waitFor(() => expect(backend.puts).toHaveLength(1));
+        expect(backend.puts[0]).toMatchObject({
+            main: {host: "192.168.0.5"},
+        });
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-review-changes")).toBeNull(),
+        );
+    });
+
+    it("should stay open when the server rejects the configuration", async () => {
+        const backend = createBackend({
+            saveResults: [{ok: false, errorMessages: ["Nope"]}],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("192.168.0.5");
+        const panel = await openReviewPanel();
+        fireEvent.click(within(panel).getByTestId("config-review-save"));
+
+        const errors = await screen.findByTestId("config-validation-errors");
+        fireEvent.click(within(errors).getByRole("button", {name: "OK"}));
+
+        // A closed MUI `Dialog` stays mounted for the length of its exit
+        // transition, so merely finding `config-review-changes` after the
+        // rejection proves nothing -- it is there either way. Two things make
+        // this assertion discriminate. The wait puts it after any exit the
+        // panel could have started (the error dialog was closed later and
+        // transitions for the same duration, so its removal is the later
+        // bound). And the row is what a *still open* panel has: the shell
+        // computes its rows only while `reviewOpen`, so a panel the shell
+        // closed empties in the same commit, husk or not.
+        await waitForElementToBeRemoved(errors);
+        const stillOpen = screen.getByTestId("config-review-changes");
+        expect(
+            within(stillOpen).getByTestId("config-review-entry-main-host"),
+        ).toBeVisible();
+        expect(
+            within(stillOpen).queryByTestId("config-review-empty"),
+        ).toBeNull();
     });
 });

@@ -197,6 +197,114 @@ test.describe("Config shell round trip", () => {
     });
 });
 
+test.describe("Config review changes before save", () => {
+    /**
+     * A save rewrites the whole configuration file, so the panel's job is to
+     * make an accidental edit visible before it is persisted. These cases
+     * therefore drive a *real* mixed edit: a scalar on the tab that is left
+     * behind, and a list entry that must be summarized rather than exploded
+     * into one row per field.
+     */
+    test("should list a scalar change and a list entry, then persist both from the panel", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.configureMockIndexers(["1"]);
+        const before = (await hydra.getConfig()) as Json;
+        const updateAutomatically = (before.main as Json).updateAutomatically;
+
+        await openConfig(page);
+        await page.getByTestId("config-input-main-updateAutomatically").click();
+        await expect(page.getByTestId("config-dirty-summary")).toBeVisible();
+
+        // Move on to another tab and change a list entry there: the Main edit
+        // is now on a tab that is not mounted any more, which is exactly the
+        // state the panel has to survive.
+        await page.getByTestId("config-tab-indexers").click();
+        const score = page.getByTestId("config-input-indexers-0-score");
+        await expect(score).toBeVisible();
+        await score.fill("9");
+        await score.blur();
+
+        await page.getByTestId("config-dirty-summary").click();
+        const panel = page.getByTestId("config-review-changes");
+        await expect(panel).toBeVisible();
+
+        const switchRow = panel.getByTestId(
+            "config-review-entry-main-updateAutomatically",
+        );
+        await expect(switchRow).toContainText("Install updates automatically");
+        await expect(switchRow).toContainText("Main › Updates");
+        await expect(switchRow).toContainText(
+            updateAutomatically === true ? "on" : "off",
+        );
+        await expect(switchRow).toContainText(
+            updateAutomatically === true ? "off" : "on",
+        );
+
+        // One row for the whole entry, naming it the way the save resolves it.
+        const indexerRow = panel.getByTestId(
+            "config-review-entry-indexers-Mock1",
+        );
+        await expect(indexerRow).toContainText("Indexers: Mock1");
+        await expect(indexerRow).toContainText("edited");
+        await expect(panel.getByTestId(/^config-review-entry-/)).toHaveCount(2);
+
+        const saved = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname === "/internalapi/config",
+        );
+        await panel.getByTestId("config-review-save").click();
+        expect((await saved).status()).toBe(200);
+
+        await expect(panel).toBeHidden();
+        await expect(page.getByTestId("config-dirty-summary")).toBeHidden();
+
+        const after = (await hydra.getConfig()) as Json;
+        expect((after.main as Json).updateAutomatically).toBe(
+            updateAutomatically !== true,
+        );
+        expect(((after.indexers as Json[])[0] as Json).score).toBe(9);
+    });
+
+    test("should never show a secret's value, and close without changing anything", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        const apiKey = (before.main as Json).apiKey;
+        await openConfig(page);
+
+        await page.getByTestId("config-apikey-generate-main-apiKey").click();
+        const generated = await page
+            .getByTestId("config-input-main-apiKey")
+            .inputValue();
+        expect(generated).not.toBe("");
+
+        await page.getByTestId("config-dirty-summary").click();
+        const panel = page.getByTestId("config-review-changes");
+        const row = panel.getByTestId("config-review-entry-main-apiKey");
+        await expect(row).toContainText("API key");
+        await expect(row).toContainText("changed");
+        const shown = (await panel.textContent()) ?? "";
+        expect(shown).toContain("(hidden)");
+        expect(shown).not.toContain(generated);
+        expect(shown).not.toContain(UNCHANGED_MARKER);
+
+        // Close is not a save and not a discard: the edit is still pending and
+        // the instance is untouched.
+        await panel.getByTestId("config-review-close").click();
+        await expect(panel).toBeHidden();
+        await expect(page.getByTestId("config-input-main-apiKey")).toHaveValue(
+            generated,
+        );
+        expect(((await hydra.getConfig()) as Json).main).toMatchObject({
+            apiKey,
+        });
+    });
+});
+
 test.describe("Config settings search", () => {
     /** Type into the search field and wait for its listbox to open. */
     async function search(page: Page, query: string): Promise<void> {
@@ -571,6 +679,60 @@ test.describe("Config shell visual evidence", () => {
                 path: visualEvidencePath(
                     "F-CONFIG-SHELL",
                     `restart-progress-${viewport}`,
+                ),
+            });
+        });
+    }
+});
+
+test.describe("Config review changes visual evidence", () => {
+    /** Below `md` the settings nav is a temporary `Drawer` (FM-097). */
+    async function goToConfigTab(page: Page, tab: string): Promise<void> {
+        const navOpen = page.getByTestId("config-nav-open");
+        if (await navOpen.isVisible()) {
+            await navOpen.click();
+            await expect(page.getByTestId("config-nav")).toBeVisible();
+        }
+        await page.getByTestId(`config-tab-${tab}`).click();
+    }
+
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the review panel at ${viewport}`, async ({
+            page,
+            hydra,
+        }) => {
+            await hydra.configureMockIndexers(["1"]);
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openConfig(page);
+            });
+
+            // The three row shapes the panel has to render at once: a plain
+            // scalar, a secret that must not be shown, and a list entry.
+            await page
+                .getByTestId("config-input-main-updateAutomatically")
+                .click();
+            await page
+                .getByTestId("config-apikey-generate-main-apiKey")
+                .click();
+            await goToConfigTab(page, "indexers");
+            const score = page.getByTestId("config-input-indexers-0-score");
+            await expect(score).toBeVisible();
+            await score.fill("9");
+            await score.blur();
+
+            await page.getByTestId("config-dirty-summary").click();
+            const panel = page.getByTestId("config-review-changes");
+            await expect(panel).toBeVisible();
+            await expect(
+                panel.getByTestId("config-review-entry-main-apiKey"),
+            ).toBeVisible();
+            await expect(
+                panel.getByTestId("config-review-entry-indexers-Mock1"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `review-changes-${viewport}`,
                 ),
             });
         });

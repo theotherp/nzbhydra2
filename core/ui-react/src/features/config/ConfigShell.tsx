@@ -28,6 +28,8 @@ import {
 import {ConfigNav} from "./ConfigNav";
 import {ConfigSaveBar} from "./ConfigSaveBar";
 import {activeConfigTab, isConfigLocation} from "./configTabs";
+import {ReviewChangesPanel} from "./reviewChanges/ReviewChangesPanel";
+import {computeConfigChanges} from "./reviewChanges/reviewChangesDiff";
 import {SettingsSearchField} from "./settingsSearch/SettingsSearchField";
 import {useSettingsNavigation} from "./settingsSearch/useSettingsNavigation";
 import {useConfigSave} from "./useConfigSave";
@@ -80,6 +82,7 @@ function ConfigForm({
     const save = useConfigSave({form, restart: restart.restart, transport});
     const [showAdvanced, setShowAdvanced] = useState(readShowAdvanced);
     const [saving, setSaving] = useState(false);
+    const [reviewOpen, setReviewOpen] = useState(false);
     // FM-099: routing to a searched setting, revealing it when an advanced
     // gate hides it, and marking it once it is on screen.
     const settingsNavigation = useSettingsNavigation();
@@ -96,6 +99,19 @@ function ConfigForm({
     const dirtyCount = countDirtyFields(dirtyFields);
     const dirtyTabs = dirtyConfigTabs(dirtyFields);
     const invalidTabs = invalidConfigTabs(errors);
+    // FM-100's review rows, computed only while the panel is open and read
+    // straight off the form: `defaultValues` is the "old" side because
+    // `useConfigSave` re-baselines it with `form.reset(saved)` after every
+    // successful save, so the initial fetch stops being the truth the moment
+    // one save succeeds. Reading is all this does — no `setValue`, no
+    // `trigger`, nothing that could mark a field the admin never touched.
+    const reviewChanges = reviewOpen
+        ? computeConfigChanges({
+              current: form.getValues(),
+              dirtyFields,
+              previous: form.formState.defaultValues,
+          })
+        : [];
 
     const submit = async () => {
         // Legacy refuses to submit an invalid form and only says so in a growl
@@ -115,6 +131,16 @@ function ConfigForm({
             return await save();
         } finally {
             setSaving(false);
+        }
+    };
+
+    // The panel's Save is the form's own Save, not a second path to the
+    // server: same `trigger()`, same validation dialogs, same restart handoff.
+    // It closes only on a real "saved" — a rejected config leaves the panel
+    // open over the reasons it was rejected.
+    const saveFromReview = async () => {
+        if ((await submit()) === "saved") {
+            setReviewOpen(false);
         }
     };
 
@@ -215,6 +241,7 @@ function ConfigForm({
                             dirty={isDirty}
                             dirtyCount={dirtyCount}
                             onDiscard={discardChanges}
+                            onReviewChanges={() => setReviewOpen(true)}
                             saving={saving}
                             search={
                                 <SettingsSearchField
@@ -242,6 +269,13 @@ function ConfigForm({
                             </Box>
                         </Stack>
                     </Box>
+                    <ReviewChangesPanel
+                        changes={reviewChanges}
+                        onClose={() => setReviewOpen(false)}
+                        onSave={() => void saveFromReview()}
+                        open={reviewOpen}
+                        saving={saving}
+                    />
                     {settingsNavigation.highlight}
                     {restart.dialog}
                 </AdvancedRevealRequestContext.Provider>

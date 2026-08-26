@@ -44,7 +44,10 @@ Currently available:
   disappearing, so a fieldset hiding them offers "N advanced settings hidden" and reveals them in place (the sidebar's
   advanced toggle still shows them all at once); a search field in that save bar that finds any setting on any of the
   eight tabs by its name or its help text, grouped by section, and on picking one jumps to its tab, scrolls to it,
-  reveals it if an advanced gate was hiding it, and marks it briefly; and a whole-config save that round-trips losslessly
+  reveals it if an advanced gate was hiding it, and marks it briefly; a review panel opened from that save bar's
+  "N settings changed" summary, listing every changed setting with its section and its old and new value — a list entry
+  summarized as added, removed or edited, a secret never shown on either side — and offering the same Save; and a
+  whole-config save that round-trips losslessly
   (including sections and fields no tab yet models) with validation-error/warning handling and restart support. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
   API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
