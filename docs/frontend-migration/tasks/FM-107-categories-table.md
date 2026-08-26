@@ -1,6 +1,6 @@
 # FM-107: Categories Table
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-CATEGORIES
 Component IDs: C-CONFIG-FIELDS
 API IDs: None

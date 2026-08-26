@@ -59,8 +59,10 @@ Currently available:
   never round-tripped in clear text nor shown in the table at all. The Categories tab is fully editable — the three catalog-wide
   settings and inline add/edit/remove of categories with their search type, subtype, word and regex restrictions, size
   presets, newznab category numbers, and ignore rules. The Notifications tab is fully editable — the Apprise transport and
-  GUI display settings, and per-event notification entries added from an event-type menu, each with its own URLs, title and
-  body templates, message type, per-event template help, and a test-send action. The Searching tab is fully editable —
+  GUI display settings, and per-event notification entries added from an event-type menu, each collapsed to an accordion
+  summarizing its event and message type, and each with its own URLs, title and body templates, message type, per-event
+  template help, insertable variable chips, a live preview rendered from that event's sample values, and a test-send
+  action reporting its outcome inline. The Searching tab is fully editable —
   indexer access, category handling, query generation/processing, result filtering, processing, display, quick filters,
   and duplicate detection, plus custom title mappings edited through a help-and-test dialog that proves a mapping against
   example input before it is kept. The Downloading tab is fully editable — the general download settings and black-hole

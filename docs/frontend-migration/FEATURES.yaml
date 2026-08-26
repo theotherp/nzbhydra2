@@ -890,6 +890,7 @@ features:
       - tests/system/tests/config-notifications.spec.ts
       - core/ui-react/src/features/config/notifications/NotificationsConfigTab.test.tsx
       - core/ui-react/src/features/config/notifications/notificationEvents.test.ts
+      - core/ui-react/src/features/config/notifications/notificationTemplate.test.ts
     selectors:
       # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
       # (`config-setting-notificationConfig-appriseType`,
@@ -900,14 +901,26 @@ features:
       # `config-repeat-add-notificationConfig-entries` (the "Add new
       # notification" menu button),
       # `config-repeat-add-option-notificationConfig-entries-<EVENT_TYPE>`
-      # (one menu entry per NotificationEventType constant -- new in FM-062,
-      # emitted by `RepeatSection`'s `addChoices` mode), and
-      # `config-repeat-remove-notificationConfig-entries-<index>`. The fixed
+      # (one menu entry per NotificationEventType constant -- new in FM-062),
+      # and `config-repeat-remove-notificationConfig-entries-<index>`.
+      # FM-106 turned each entry into an accordion owned by
+      # `NotificationEntriesSection` rather than by `RepeatSection`; every
+      # selector above kept its meaning, and
+      # `config-repeat-toggle-notificationConfig-entries-<index>` (the entry's
+      # expand control, carrying its summary) was added. The fixed
       # selectors are listed below;
       # `config-notification-test-notificationConfig-entries-<index>` is the
-      # per-entry test-send action and
+      # per-entry test-send action,
+      # `config-notification-test-result-<index>` its inline outcome
+      # (rendered only while it describes the entry's current fields),
       # `config-notification-unknown-event-<index>` the warning shown for an
-      # entry whose stored event type this build has no templates for.
+      # entry whose stored event type this build has no templates for,
+      # `config-notification-variable-<index>-<name>` one insertable variable
+      # chip per name the backend event substitutes, and
+      # `config-notification-preview-<index>` the sample-value preview
+      # (`-title` / `-body` for its two rendered rows). The chip and preview
+      # selectors are absent for an unknown event type, which has neither
+      # variables nor samples.
       - config-notifications
       - config-notifications-help
       - config-fieldset-main

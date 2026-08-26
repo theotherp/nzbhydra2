@@ -9,23 +9,15 @@ import {
     FileBrowserSetting,
     HelpBlock,
     NumberSetting,
-    RepeatSection,
     SelectSetting,
     SwitchSetting,
     TextSetting,
 } from "../components";
-import {NotificationEntryFields} from "./NotificationEntryFields";
-import {
-    newNotificationEntry,
-    NOTIFICATION_EVENTS,
-    type NotificationEntryValues,
-} from "./notificationEvents";
+import {NotificationEntriesSection} from "./NotificationEntriesSection";
 import {
     APPRISE_API_URL,
     APPRISE_CLI_URL,
     APPRISE_TYPE_OPTIONS,
-    NOTIFICATION_ENTRIES_PATH,
-    notificationEntryLegend,
     NOTIFICATIONS_HELP_LINES,
 } from "./notificationsSettings";
 
@@ -42,8 +34,8 @@ import {
  *
  * The entries list is not the generic add-a-blank-row section: an entry is
  * created *from an event type* and seeded with that event's own templates
- * (`notificationEvents.ts`), which is what `RepeatSection`'s `addChoices`
- * mode expresses.
+ * (`notificationEvents.ts`), and since FM-106 each entry is an accordion with
+ * its own template editor. `NotificationEntriesSection` owns all of that.
  */
 export function NotificationsConfigTab({transport}: {transport: ApiTransport}) {
     const appriseType = useWatch<ConfigValues>({
@@ -124,22 +116,7 @@ export function NotificationsConfigTab({transport}: {transport: ApiTransport}) {
                 ) : null}
             </ConfigFieldset>
             <ConfigFieldset label="Notifications">
-                <RepeatSection<NotificationEntryValues>
-                    addChoices={NOTIFICATION_EVENTS.map((event) => ({
-                        label: event.label,
-                        value: event.eventType,
-                    }))}
-                    addLabel="Add new notification"
-                    defaultEntry={(choice) => newNotificationEntry(choice)}
-                    entryLegend={notificationEntryLegend}
-                    name={NOTIFICATION_ENTRIES_PATH}
-                    renderEntry={(index) => (
-                        <NotificationEntryFields
-                            index={index}
-                            transport={transport}
-                        />
-                    )}
-                />
+                <NotificationEntriesSection transport={transport} />
             </ConfigFieldset>
         </Box>
     );

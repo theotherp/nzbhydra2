@@ -34,6 +34,20 @@ export const MESSAGE_TYPE_OPTIONS: readonly SettingOption[] = [
     {label: "Failure", value: "FAILURE"},
 ];
 
+/**
+ * The readable message type an entry's accordion summary shows beside its
+ * event legend, so the two facts that distinguish two entries for the same
+ * event are both visible while they are collapsed. An unrecognized stored value
+ * is shown as itself rather than hidden -- the same rule the legend follows for
+ * an unknown event type.
+ */
+export function messageTypeLabel(messageType: unknown): string {
+    const option = MESSAGE_TYPE_OPTIONS.find(
+        (candidate) => candidate.value === messageType,
+    );
+    return option?.label ?? String(messageType ?? "");
+}
+
 export const APPRISE_API_URL = "https://github.com/caronc/apprise-api";
 export const APPRISE_CLI_URL = "https://github.com/caronc/apprise";
 

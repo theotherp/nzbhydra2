@@ -1397,3 +1397,26 @@ instead of leaving it to rot.
   from FM-068) shows the identical artifact, while `auth-form-desktop.png`, whose page fits without scrolling, does
   not. Not worth changing that file's convention for, but it will recur in any `fullPage` capture of a scrolling
   config page now that FM-097's bar is sticky. Surfaced 2026-08-26.
+- **A stale count in FM-106's packet, worth knowing if the `RepeatSection` opt-in is ever reconsidered.** Its
+  Verification section prices the opt-in branch as affecting "other four consumers". There is exactly **one**:
+  `features/config/categories/CategoriesConfigTab.tsx:83`. Every other hit in `src` is a prose comment explaining why
+  that file owns its list locally instead — `AuthUsersSection`, `DownloadersSection`, `ExternalToolsSection`,
+  `CustomMappingsSection`, and now `NotificationEntriesSection`. The six-spec verification filter written for that
+  branch was a conservative superset. Moot for FM-106, which took the local branch, but the sentence would misprice the
+  next task that considers opting in. Surfaced 2026-08-26 by FM-106's implementer, confirmed by its reviewer.
+- **`RepeatSection`'s `addChoices` mode is now unused in production.** Notifications was its only consumer, and
+  FM-106 moved that list into a locally-owned section; Categories, the sole remaining consumer, does not use the mode.
+  Removing the prop, its `Menu`/`MenuItem` and the `config-repeat-add-option-*` selectors from `RepeatSection.tsx`,
+  plus the cases in `RepeatSection.test.tsx`/`configFields.test.tsx` and the `C-CONFIG-FIELDS` note, is mechanical.
+  Covering command: `npm run test -- --run` in `core/ui-react`. Surfaced 2026-08-26 by FM-106's implementer, which
+  correctly left it alone — its allowlist permitted `RepeatSection.tsx` only for an accordion opt-in it did not take.
+- **A magnitude in an FM-106 justification comment is 1.5px off.** `NotificationEntryFields.tsx:178` says the adjacent
+  outlined `Button` is "~38px"; measured in Chromium it is 36.5px, against a stock `Alert` at 48.0px and the
+  `py: 0` Alert at 36.0px. The argument — that the actions row would grow ~10px taller the moment a result appears,
+  shifting everything below — is unaffected and correct; only the quoted number drifts. Worth correcting because the
+  comment exists precisely to justify the number. Surfaced 2026-08-26 by FM-106's re-review.
+- **Two `STATUS.md` passages contradicted a third about `EXTERNAL_TOOL_CONFIGURATION`** — the FM-062 entry and an
+  Upcoming line both still described the `NotificationsWeb.NOTIFICATION_EVENTS` gap as open and "not yet packaged",
+  while the FM-086 entry a few hundred lines above recorded it closed. Corrected in bookkeeping 2026-08-26; recorded
+  here because it is the second stale-cross-reference this batch has produced in that file (see the `- FM-NNN:` entry
+  shape above), and a status file that disagrees with itself is worse than one that is merely behind.

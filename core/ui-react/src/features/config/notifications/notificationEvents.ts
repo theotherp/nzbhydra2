@@ -16,7 +16,7 @@ import {
  * has to live in one module here, and its completeness has to be proven rather
  * than assumed.
  *
- * Three checks keep it honest:
+ * Four checks keep it honest:
  *
  * - `EVENT_TEMPLATES` is a `Record<NotificationEventType, ...>` over the union
  *   `api/history/notifications.ts` already declares, so the compiler rejects a
@@ -26,6 +26,10 @@ import {
  *   that union is exactly the backend enum, so adding a constant on the Java
  *   side fails the suite instead of silently dropping an event out of the
  *   "Add new notification" menu;
+ * - the same test re-derives every event's `variables` and `sampleValues` from
+ *   the backend event classes' `getVariablesWithContent()` and
+ *   `getTestInstance()`, so a renamed variable or a changed test fixture fails
+ *   here instead of quietly making the editor's chips and preview lie;
  * - `requireNotificationEvent` throws rather than returning a generic default,
  *   so a seeding path can never invent an entry with the wrong templates.
  *
@@ -49,6 +53,20 @@ export type NotificationEventDefinition = {
     templateHelp: string;
     /** Legacy's `messageType`, the seeded value -- not a fallback. */
     messageType: NotificationMessageType;
+    /**
+     * The variable names this event substitutes, from the backend event class's
+     * `getVariablesWithContent()`. Ordered as that method `put`s them, which is
+     * only a display order -- the map is a `HashMap`, so the backend itself has
+     * none.
+     */
+    variables: readonly string[];
+    /**
+     * What each variable holds in the event's `getTestInstance()`, which is the
+     * instance `API-NOTIFICATIONS-TEST` actually publishes. Using those exact
+     * values means the preview shows what a *test send* will deliver, not an
+     * invented example.
+     */
+    sampleValues: Readonly<Record<string, string>>;
 };
 
 type EventTemplates = Omit<NotificationEventDefinition, "eventType" | "label">;
@@ -65,6 +83,13 @@ type EventTemplates = Omit<NotificationEventDefinition, "eventType" | "label">;
  * The second is persisted into every entry an admin creates, so changing it
  * would change stored configuration, not just prose; both are reported as
  * follow-up work instead of being fixed inside this task.
+ *
+ * `variables` and `sampleValues` are *not* parsed out of `templateHelp` for
+ * exactly that reason -- the help prose is legacy text kept with its defects,
+ * and `RESULT_DOWNLOAD`'s reads `$title` with no closing `$`. They are
+ * transcribed from the backend event classes' `getVariablesWithContent()` and
+ * `getTestInstance()` and re-derived from that Java on every test run
+ * (`notificationEvents.test.ts`).
  */
 const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
     AUTH_FAILURE: {
@@ -73,6 +98,9 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
             "NZBHydra: A login for username $username$ failed. IP: $ip$.",
         templateHelp: "Available variables: $username$, $ip$.",
         messageType: "FAILURE",
+        // `AuthFailureNotificationEvent`
+        variables: ["ip", "username"],
+        sampleValues: {ip: "Some IP", username: "Some username"},
     },
     RESULT_DOWNLOAD: {
         titleTemplate: "NZB download",
@@ -81,6 +109,14 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
         templateHelp:
             "Available variables: $title, $indexerName$, $source$ (NZB or torrent), $age$ ([] for torrents).",
         messageType: "INFO",
+        // `DownloadNotificationEvent`
+        variables: ["indexerName", "title", "age", "source"],
+        sampleValues: {
+            age: "100d",
+            indexerName: "Some Indexer",
+            source: "NZB",
+            title: "Some result",
+        },
     },
     RESULT_DOWNLOAD_COMPLETION: {
         titleTemplate: "Download completion",
@@ -89,6 +125,12 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
         templateHelp:
             "Requires the downloading tool to be configured. Available variables: $title, $downloadResult$.",
         messageType: "INFO",
+        // `DownloadCompletionNotificationEvent`
+        variables: ["downloadResult", "title"],
+        sampleValues: {
+            downloadResult: "Download successful",
+            title: "Some result",
+        },
     },
     INDEXER_DISABLED: {
         titleTemplate: "Indexer disabled",
@@ -96,6 +138,16 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
             "NZBHydra: Indexer $indexerName$ was disabled (state: $state$). Message:\n$message$.",
         templateHelp: "Available variables: $indexerName$, $state$, $message$.",
         messageType: "WARNING",
+        // `IndexerDisabledNotificationEvent`. `state` is not the raw constant:
+        // the event substitutes `state.humanize()`, and the test instance's
+        // `DISABLED_SYSTEM_TEMPORARY` humanizes to "Disabled temporarily"
+        // (`IndexerConfig.State.humanize`).
+        variables: ["indexerName", "state", "message"],
+        sampleValues: {
+            indexerName: "Some indexer",
+            message: "Some message",
+            state: "Disabled temporarily",
+        },
     },
     INDEXER_REENABLED: {
         titleTemplate: "Indexer reenabled after error",
@@ -103,12 +155,25 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
             "NZBHydra: Indexer $indexerName$ was reenabled after a previous error. It had been disabled since $disabledAt$.",
         templateHelp: "Available variables: $indexerName$, $disabledAt$.",
         messageType: "SUCCESS",
+        // `IndexerReenabledNotificationEvent`. The only sample that cannot be
+        // copied from the Java: its test instance passes `Instant.now()`, so
+        // the delivered text is whatever moment the test send happened. A fixed
+        // instant of the same shape (`Instant.toString()`) is shown instead --
+        // the drift test asserts that shape rather than the digits.
+        variables: ["indexerName", "disabledAt"],
+        sampleValues: {
+            disabledAt: "2026-01-31T09:15:00Z",
+            indexerName: "Some indexer",
+        },
     },
     UPDATE_INSTALLED: {
         titleTemplate: "Update installed",
         bodyTemplate: "NZBHydra: A new version of was installed: $version$",
         templateHelp: "Available variables: $version$.",
         messageType: "SUCCESS",
+        // `UpdateNotificationEvent`
+        variables: ["version"],
+        sampleValues: {version: "v1.2.3"},
     },
     VIP_RENEWAL_REQUIRED: {
         titleTemplate: "VIP renewal required",
@@ -116,12 +181,22 @@ const EVENT_TEMPLATES: Record<NotificationEventType, EventTemplates> = {
             "NZBHydra: VIP access for indexer $indexerName$ will run out soon: $expirationDate$.",
         templateHelp: "Available variables: $indexerName$, $expirationDate$.",
         messageType: "WARNING",
+        // `IndexerVipExpiryNotificationEvent`
+        variables: ["indexerName", "expirationDate"],
+        sampleValues: {
+            expirationDate: "2030-03-03",
+            indexerName: "Some Indexer",
+        },
     },
     EXTERNAL_TOOL_CONFIGURATION: {
         titleTemplate: "External tool configuration",
         bodyTemplate: "NZBHydra: Result of external tool configuration: $body$",
         templateHelp: "Available variables: $body$",
         messageType: "INFO",
+        // `ExternalToolConfigResultEvent` -- the one event class whose file is
+        // not named `*NotificationEvent.java`.
+        variables: ["body"],
+        sampleValues: {body: "Successfully synced to 1 external tool(s)"},
     },
 };
 

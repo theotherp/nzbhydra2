@@ -21,10 +21,10 @@ whose completeness is asserted against the backend `NotificationEventType` enum 
 and an optional add-from-a-menu mode to `C-CONFIG-FIELDS`. It passed with minor findings, not corrected (optional): the
 `RepeatSection` menu button lacks `aria-expanded`/`aria-controls`/menu `id`, and the new test-id naming is inconsistent
 between the test action and the unknown-event warning (both documented in `F-CONFIG-NOTIFICATIONS.selectors`). It also
-surfaced two follow-up candidates, not yet packaged: a backend fix so `NotificationsWeb.NOTIFICATION_EVENTS` covers
-`EXTERNAL_TOOL_CONFIGURATION` (the test-send endpoint 500s for that event type today), and a feature record for the
-legacy-only live in-app notification channel (`hydra-checks-footer.js`, `/topic/notifications`) that consumes the settings
-this tab now edits.
+surfaced two follow-up candidates, **both since closed**: a backend fix so `NotificationsWeb.NOTIFICATION_EVENTS`
+covers `EXTERNAL_TOOL_CONFIGURATION`, whose test-send endpoint used to answer 500 — done by FM-086, see below — and a
+feature record for the legacy-only live in-app notification channel (`hydra-checks-footer.js`, `/topic/notifications`)
+that consumes the settings this tab now edits, migrated by FM-081 under `F-PLATFORM-LIVE-STATUS`.
 
 FM-063 (Config Searching Tab) reconstructed legacy's nine setting groups plus the custom-mapping list, whose entries are
 edited entirely through a help-and-test modal dialog (clone-on-open, discard-on-cancel, commit-on-submit) rather than
@@ -860,6 +860,35 @@ delete, a raw-password render, and removing the uniqueness refusal all fail as c
 and the stale-transaction token guard survive their mutations, so the handoff's "with a test pinning that" overstated
 two of its own claims.
 
+FM-106 (Notifications Editor Rework) turns the entries list into one stock MUI accordion per entry — summary carrying
+the event legend and a readable message-type chip, expanded body holding the existing fields plus insertable variable
+chips, a live preview from backend sample values, and the per-event test result rendered inline instead of as a toast.
+It took the **local-ownership branch**: `RepeatSection.tsx` is byte-identical, so the narrow single-spec verification
+filter is honest. The reason is better than cheapness — the accordion summary needs this feature's own vocabulary, so an
+opt-in would have genericized a shared component for one caller. The reviewer found the packet's premise for that branch
+stale in the task's favour: it describes "other four consumers", and there is exactly **one** (`CategoriesConfigTab`);
+every other hit is a comment explaining why that file owns its list locally. The strongest artefact is the drift test.
+`variables` and `sampleValues` are transcribed from the Java rather than scraped from the deliberately typo-preserving
+`templateHelp` prose, and the test reads the notifications *directory* filtering on `implements NotificationEvent` —
+not a filename glob, because `ExternalToolConfigResultEvent` does not follow the convention — resolves constants, traces
+each expression to its field, maps that field to its `@AllArgsConstructor` position, and compares against the
+`getTestInstance()` argument, with non-literal fixtures handled as an exhaustive asserted set so a ninth one fails the
+suite rather than being waved through. Its reviewer reproduced five mutations against it, each naming the offending
+event, including adding a brand-new event class to the directory. Substitution mirrors `NotificationHandler.fillTemplate`
+using `split`/`join` rather than `replaceAll`, because `replaceAll`'s string replacement interprets `$&`, `` $` `` and
+`$$` — pinned by a test the reviewer confirmed by swapping the implementation and watching it corrupt output. One fix
+cycle, on a finding I promoted above its reviewer's classification: the entry legend was a `<Typography component="h3">`
+nested inside `AccordionSummary`, which MUI renders as a button, so it was pruned as a presentational child. **My stated
+premise for that was wrong and the fixer corrected it**: MUI already wraps the summary in a real `<h3>`
+(`Accordion.js:129`), so the list was never headingless — FM-106 had shipped a *duplicate* heading, two level-3 headings
+where there should be one. Worse, the proof I prescribed would have been vacuous: Playwright's role engine does not
+prune presentational children either, so a name-only `getByRole("heading")` assertion matched both headings before the
+fix. It pinned by count instead, and the re-review reproduced the discrimination independently by server-rendering all
+three variants — pre-fix 2, post-fix 1, and `component` omitted planting an `<h6>` inside the button, which is why the
+explicit `span` was necessary rather than tidy. Verified with the gate chain (1408 tests) and real-backend
+`config-notifications.spec.ts` at 5/5. Passed with minor findings, none corrected (optional), carried into
+`MAINTENANCE.md`.
+
 ## Active
 
 None.
@@ -874,7 +903,7 @@ None.
 
 ## Upcoming
 
-- FM-106: Notifications Editor Rework — next, then FM-107 closes the batch. Unlike the cleanup
+- FM-107: Categories Table — the last packet of the batch. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the
@@ -886,16 +915,14 @@ None.
   MUI's roving tabindex — resolved by ADR-0028 (a sibling list below the `Tabs`, headed with the active tab's name,
   rather than rebuilding the nav as a `List` and discarding the role and selector guarantees FM-097 protects), and its
   packet refined to match.
-- FM-106: Notifications Editor Rework is unblocked and independent of the FM-098 chain, but this run proceeds in packet
-  order.
 
 The 2026-08-21 batch FM-077..FM-081 and the 2026-08-23 batch FM-082..FM-086 are complete (see above).
 
 FM-073's, FM-074's, FM-075's, and FM-076's minor findings (see above) are candidates for a future quickfix.
 
-Not yet packaged: a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`
-(surfaced by FM-062; see above). The live in-app notification channel it also flagged is migrated by FM-081 under
-`F-PLATFORM-LIVE-STATUS`.
+Both follow-ups FM-062 surfaced are closed: `NotificationsWeb.NOTIFICATION_EVENTS` registers
+`EXTERNAL_TOOL_CONFIGURATION` since FM-086, so its test-send endpoint no longer answers 500, and the live in-app
+notification channel is migrated by FM-081 under `F-PLATFORM-LIVE-STATUS`.
 
 FM-024's minor findings (see above) are candidates for a future quickfix.
 

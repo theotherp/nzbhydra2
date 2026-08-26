@@ -115,6 +115,45 @@ async function addEntry(eventType: string): Promise<void> {
     );
 }
 
+function expandEntry(index: number): void {
+    fireEvent.click(
+        screen.getByTestId(`config-repeat-toggle-${ENTRIES}-${index}`),
+    );
+}
+
+function templateInput(
+    index: number,
+    field: "bodyTemplate" | "titleTemplate",
+): HTMLTextAreaElement {
+    return screen.getByTestId(
+        `config-input-${ENTRIES}-${index}-${field}`,
+    ) as HTMLTextAreaElement;
+}
+
+/** Put the caret where an admin would have put it, then insert a chip. */
+function insertVariableAt(
+    index: number,
+    field: "bodyTemplate" | "titleTemplate",
+    name: string,
+    caret?: {end: number; start: number},
+): void {
+    const input = templateInput(index, field);
+    fireEvent.focus(input);
+    if (caret !== undefined) {
+        input.setSelectionRange(caret.start, caret.end);
+    }
+    fireEvent.click(
+        screen.getByTestId(`config-notification-variable-${index}-${name}`),
+    );
+}
+
+function previewText(index: number, part: "body" | "title"): string {
+    return (
+        screen.getByTestId(`config-notification-preview-${index}-${part}`)
+            .textContent ?? ""
+    );
+}
+
 afterEach(cleanup);
 
 describe("F-CONFIG-NOTIFICATIONS main fieldset", () => {
@@ -299,37 +338,64 @@ describe("F-CONFIG-NOTIFICATIONS entries", () => {
     });
 
     it("should seed an added entry from its own event type, for every event type", async () => {
-        const harness = renderNotifications();
-        expect(harness.form.formState.isDirty).toBe(false);
-
+        // One tab per event rather than eight entries in one tab: the claim is
+        // per event, and an accordion carrying a template editor and a preview
+        // is expensive enough that the accumulated tree, not the assertions,
+        // dominated this test's runtime.
         for (const event of NOTIFICATION_EVENTS) {
-            await addEntry(event.eventType);
-        }
+            const harness = renderNotifications();
+            expect(harness.form.formState.isDirty).toBe(false);
 
-        const entries = entriesOf(harness);
-        expect(entries).toHaveLength(NOTIFICATION_EVENTS.length);
-        NOTIFICATION_EVENTS.forEach((event, index) => {
-            expect(entries[index], event.eventType).toEqual({
-                eventType: event.eventType,
-                appriseUrls: null,
-                titleTemplate: event.titleTemplate,
-                bodyTemplate: event.bodyTemplate,
-                messageType: event.messageType,
-            });
+            await addEntry(event.eventType);
+
+            expect(entriesOf(harness), event.eventType).toEqual([
+                {
+                    eventType: event.eventType,
+                    appriseUrls: null,
+                    titleTemplate: event.titleTemplate,
+                    bodyTemplate: event.bodyTemplate,
+                    messageType: event.messageType,
+                },
+            ]);
             const entry = screen.getByTestId(
-                `config-repeat-entry-${ENTRIES}-${index}`,
+                `config-repeat-entry-${ENTRIES}-0`,
             );
             expect(
                 within(entry).getByTestId(
-                    `config-input-${ENTRIES}-${index}-bodyTemplate`,
+                    `config-input-${ENTRIES}-0-bodyTemplate`,
                 ),
                 event.eventType,
             ).toHaveValue(event.bodyTemplate);
+            // The heading is MUI's own `<h3>` around the summary button, so its
+            // name is the whole summary (legend + message type), not the legend
+            // alone. jsdom is not the proof this is exposed -- it does not
+            // implement presentational children, so it would pass just as
+            // happily on a heading nested *inside* the button, which no browser
+            // exposes; `config-notifications.spec.ts` pins it in Chromium.
             expect(
-                screen.getByRole("heading", {level: 3, name: event.label}),
+                screen.getByRole("heading", {
+                    level: 3,
+                    name: (name: string) => name.startsWith(event.label),
+                }),
+                event.eventType,
             ).toBeVisible();
-        });
-        expect(harness.form.formState.isDirty).toBe(true);
+            expect(harness.form.formState.isDirty, event.eventType).toBe(true);
+            cleanup();
+        }
+    });
+
+    it("should append each added entry rather than replacing the last", async () => {
+        const harness = renderNotifications();
+
+        await addEntry("AUTH_FAILURE");
+        await addEntry("UPDATE_INSTALLED");
+        await addEntry("AUTH_FAILURE");
+
+        expect(entriesOf(harness).map((entry) => entry.eventType)).toEqual([
+            "AUTH_FAILURE",
+            "UPDATE_INSTALLED",
+            "AUTH_FAILURE",
+        ]);
     });
 
     it("should show each entry's own template help under its template fields", async () => {
@@ -380,6 +446,7 @@ describe("F-CONFIG-NOTIFICATIONS entries", () => {
         });
         expect(harness.form.formState.isDirty).toBe(false);
 
+        expandEntry(1);
         fireEvent.click(
             screen.getByTestId(`config-repeat-remove-${ENTRIES}-1`),
         );
@@ -415,7 +482,10 @@ describe("F-CONFIG-NOTIFICATIONS entries", () => {
             screen.getByTestId("config-notification-unknown-event-0"),
         ).toHaveTextContent("SOME_FUTURE_EVENT");
         expect(
-            screen.getByRole("heading", {level: 3, name: "SOME_FUTURE_EVENT"}),
+            screen.getByRole("heading", {
+                level: 3,
+                name: (name: string) => name.startsWith("SOME_FUTURE_EVENT"),
+            }),
         ).toBeVisible();
         expect(
             screen.getByTestId(`config-input-${ENTRIES}-0-appriseUrls`),
@@ -425,6 +495,280 @@ describe("F-CONFIG-NOTIFICATIONS entries", () => {
         expect(
             screen.getByTestId(`config-notification-test-${ENTRIES}-0`),
         ).toBeDisabled();
+    });
+});
+
+describe("F-CONFIG-NOTIFICATIONS entry accordions", () => {
+    it("should keep stored entries collapsed and summarize each by event and message type", () => {
+        renderNotifications({
+            values: configWithEntries([
+                entryFor("AUTH_FAILURE", "json://one"),
+                entryFor("UPDATE_INSTALLED", "json://two"),
+            ]),
+        });
+
+        const summary = screen.getByTestId(`config-repeat-toggle-${ENTRIES}-0`);
+        expect(summary).toHaveTextContent("Auth failure");
+        // The message type is on the summary as text, not as a colour alone.
+        expect(summary).toHaveTextContent("Failure");
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-1`),
+        ).toHaveTextContent("Success");
+        expect(summary).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.getByTestId(`config-setting-${ENTRIES}-0-appriseUrls`),
+        ).not.toBeVisible();
+
+        expandEntry(0);
+
+        expect(summary).toHaveAttribute("aria-expanded", "true");
+        expect(
+            screen.getByTestId(`config-setting-${ENTRIES}-0-appriseUrls`),
+        ).toBeVisible();
+        // Opening one entry does not close the others' fields out from under a
+        // comparison.
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-1`),
+        ).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("should expand a newly added entry so its fields are reachable", async () => {
+        renderNotifications();
+
+        expect(screen.getByTestId("config-notifications-empty")).toBeVisible();
+        await addEntry("UPDATE_INSTALLED");
+
+        expect(screen.queryByTestId("config-notifications-empty")).toBeNull();
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-0`),
+        ).toHaveAttribute("aria-expanded", "true");
+        expect(
+            screen.getByTestId(`config-setting-${ENTRIES}-0-appriseUrls`),
+        ).toBeVisible();
+    });
+
+    it("should move expansion with the entries when one is removed", () => {
+        renderNotifications({
+            values: configWithEntries([
+                entryFor("AUTH_FAILURE", "json://one"),
+                entryFor("UPDATE_INSTALLED", "json://two"),
+                entryFor("INDEXER_DISABLED", "json://three"),
+            ]),
+        });
+
+        expandEntry(0);
+        expandEntry(2);
+        fireEvent.click(
+            screen.getByTestId(`config-repeat-remove-${ENTRIES}-0`),
+        );
+
+        // What was entry 2 is entry 1 now, and it is the one still open.
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-0`),
+        ).toHaveTextContent("Automatic update installed");
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-0`),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-1`),
+        ).toHaveTextContent("Indexer disabled");
+        expect(
+            screen.getByTestId(`config-repeat-toggle-${ENTRIES}-1`),
+        ).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("should summarize an entry whose event type this build does not know", () => {
+        renderNotifications({
+            values: configWithEntries([
+                {
+                    eventType: "SOME_FUTURE_EVENT",
+                    appriseUrls: "json://future",
+                    titleTemplate: "Future",
+                    bodyTemplate: "Body",
+                    messageType: "INFO",
+                },
+            ]),
+        });
+
+        const summary = screen.getByTestId(`config-repeat-toggle-${ENTRIES}-0`);
+        expect(summary).toHaveTextContent("SOME_FUTURE_EVENT");
+        expect(summary).toHaveTextContent("Info");
+    });
+});
+
+describe("F-CONFIG-NOTIFICATIONS variable chips", () => {
+    it("should offer one chip per variable the backend event provides", async () => {
+        renderNotifications();
+
+        await addEntry("RESULT_DOWNLOAD");
+
+        const event = NOTIFICATION_EVENTS.find(
+            (candidate) => candidate.eventType === "RESULT_DOWNLOAD",
+        );
+        expect(event?.variables).toBeDefined();
+        for (const name of event?.variables ?? []) {
+            expect(
+                screen.getByTestId(`config-notification-variable-0-${name}`),
+                name,
+            ).toHaveTextContent(`$${name}$`);
+        }
+        expect(
+            screen.getAllByTestId(/^config-notification-variable-0-/),
+        ).toHaveLength(event?.variables.length ?? 0);
+        // The help prose writes `$title` unclosed; the chip must not.
+        expect(
+            screen.getByTestId("config-notification-variable-0-title"),
+        ).toHaveTextContent("$title$");
+    });
+
+    it("should insert a token at the caret in the middle of existing text", async () => {
+        const harness = renderNotifications({
+            values: configWithEntries([
+                entryFor("UPDATE_INSTALLED", "json://one"),
+            ]),
+        });
+        // Read once up front so React Hook Form's formState proxy subscribes.
+        expect(harness.form.formState.isDirty).toBe(false);
+        expandEntry(0);
+        fireEvent.change(templateInput(0, "titleTemplate"), {
+            target: {value: "Updated to  today"},
+        });
+        insertVariableAt(0, "titleTemplate", "version", {end: 11, start: 11});
+
+        expect(templateInput(0, "titleTemplate")).toHaveValue(
+            "Updated to $version$ today",
+        );
+        expect(entriesOf(harness)[0].titleTemplate).toBe(
+            "Updated to $version$ today",
+        );
+        expect(harness.form.formState.isDirty).toBe(true);
+        expect(templateInput(0, "titleTemplate").selectionStart).toBe(20);
+    });
+
+    it("should insert into an empty field the admin has focused", async () => {
+        const harness = renderNotifications();
+
+        await addEntry("UPDATE_INSTALLED");
+        fireEvent.change(templateInput(0, "bodyTemplate"), {
+            target: {value: ""},
+        });
+        insertVariableAt(0, "bodyTemplate", "version", {end: 0, start: 0});
+
+        expect(entriesOf(harness)[0].bodyTemplate).toBe("$version$");
+    });
+
+    it("should target the field the admin last focused, and say which", async () => {
+        const harness = renderNotifications();
+
+        await addEntry("UPDATE_INSTALLED");
+        // The caption names the default target before either field is touched.
+        expect(
+            screen.getByText("Insert a variable into the Body template field:"),
+        ).toBeVisible();
+
+        fireEvent.focus(templateInput(0, "titleTemplate"));
+        expect(
+            screen.getByText(
+                "Insert a variable into the Title template field:",
+            ),
+        ).toBeVisible();
+        fireEvent.click(
+            screen.getByTestId("config-notification-variable-0-version"),
+        );
+
+        const seeded = NOTIFICATION_EVENTS.find(
+            (candidate) => candidate.eventType === "UPDATE_INSTALLED",
+        );
+        expect(entriesOf(harness)[0].titleTemplate).toBe(
+            `${seeded?.titleTemplate ?? ""}$version$`,
+        );
+        // The body was not touched.
+        expect(entriesOf(harness)[0].bodyTemplate).toBe(seeded?.bodyTemplate);
+    });
+
+    it("should offer no chips and no preview for an unknown event type", () => {
+        renderNotifications({
+            values: configWithEntries([
+                {
+                    eventType: "SOME_FUTURE_EVENT",
+                    appriseUrls: "json://future",
+                    titleTemplate: "Future $whatever$",
+                    bodyTemplate: "Body",
+                    messageType: "INFO",
+                },
+            ]),
+        });
+
+        expandEntry(0);
+
+        expect(
+            screen.queryAllByTestId(/^config-notification-variable-0-/),
+        ).toHaveLength(0);
+        expect(
+            screen.queryByTestId("config-notification-preview-0"),
+        ).toBeNull();
+        // Still editable, which is the whole point of keeping the entry.
+        expect(templateInput(0, "titleTemplate")).toHaveValue(
+            "Future $whatever$",
+        );
+    });
+});
+
+describe("F-CONFIG-NOTIFICATIONS template preview", () => {
+    it("should render the seeded template with the event's sample values", async () => {
+        renderNotifications();
+
+        await addEntry("INDEXER_DISABLED");
+
+        expect(previewText(0, "title")).toBe("Indexer disabled");
+        expect(previewText(0, "body")).toBe(
+            "NZBHydra: Indexer Some indexer was disabled (state: Disabled temporarily). Message:\nSome message.",
+        );
+    });
+
+    it("should follow the admin's typing, leaving unknown tokens standing", async () => {
+        renderNotifications();
+
+        await addEntry("UPDATE_INSTALLED");
+        fireEvent.change(templateInput(0, "bodyTemplate"), {
+            target: {value: "Now on $version$, was $vorsion$"},
+        });
+
+        // `NotificationHandler.fillTemplate` replaces only the variables the
+        // event provides, so the typo is delivered verbatim and the preview
+        // has to show that rather than blanking it.
+        expect(previewText(0, "body")).toBe("Now on v1.2.3, was $vorsion$");
+    });
+
+    it("should say what an entry with no title template will send", async () => {
+        renderNotifications();
+
+        await addEntry("UPDATE_INSTALLED");
+        fireEvent.change(templateInput(0, "titleTemplate"), {
+            target: {value: ""},
+        });
+        fireEvent.change(templateInput(0, "bodyTemplate"), {
+            target: {value: ""},
+        });
+
+        expect(previewText(0, "title")).toBe(
+            "No title template — the notification is sent untitled.",
+        );
+        expect(previewText(0, "body")).toBe(
+            "No body template — this entry cannot be saved.",
+        );
+    });
+
+    it("should show a chip insertion immediately", async () => {
+        renderNotifications();
+
+        await addEntry("AUTH_FAILURE");
+        fireEvent.change(templateInput(0, "bodyTemplate"), {
+            target: {value: "Failed login: "},
+        });
+        insertVariableAt(0, "bodyTemplate", "username", {end: 14, start: 14});
+
+        expect(previewText(0, "body")).toBe("Failed login: Some username");
     });
 });
 
@@ -441,13 +785,15 @@ describe("F-CONFIG-NOTIFICATIONS test action", () => {
         });
         expect(harness.form.formState.isDirty).toBe(false);
 
+        expandEntry(0);
         fireEvent.click(
             screen.getByTestId(`config-notification-test-${ENTRIES}-0`),
         );
 
-        expect(
-            await screen.findByText("Test notification sent."),
-        ).toBeVisible();
+        const result = await screen.findByTestId(
+            "config-notification-test-result-0",
+        );
+        expect(result).toHaveTextContent("Test notification sent.");
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(String(fetchMock.mock.calls[0][0])).toContain(
             "internalapi/notifications/test/INDEXER_DISABLED",
@@ -458,9 +804,10 @@ describe("F-CONFIG-NOTIFICATIONS test action", () => {
         );
     });
 
-    it("should report a failed test send without dirtying the form", async () => {
-        // `NotificationsWeb` has no registered event for
-        // EXTERNAL_TOOL_CONFIGURATION, so this is the real failure shape.
+    it("should report a failed test send inline without dirtying the form", async () => {
+        // Since FM-086 every event type is registered, so the failure the
+        // admin actually hits is the transport one: Apprise unreachable or the
+        // configured URLs rejected. The endpoint answers with a status only.
         const fetchMock = vi.fn<typeof fetch>(
             async () => new Response("failed", {status: 500}),
         );
@@ -471,13 +818,18 @@ describe("F-CONFIG-NOTIFICATIONS test action", () => {
             ]),
         });
 
+        expandEntry(0);
         fireEvent.click(
             screen.getByTestId(`config-notification-test-${ENTRIES}-0`),
         );
 
-        expect(
-            await screen.findByText("Unable to send the test notification."),
-        ).toBeVisible();
+        const result = await screen.findByTestId(
+            "config-notification-test-result-0",
+        );
+        expect(result).toHaveTextContent(
+            "Unable to send the test notification.",
+        );
+        // Not carried by colour alone: the wording says what happened.
         expect(harness.form.formState.isDirty).toBe(false);
         await waitFor(() =>
             expect(
@@ -486,11 +838,75 @@ describe("F-CONFIG-NOTIFICATIONS test action", () => {
         );
     });
 
+    it("should clear the inline result once the entry's fields change", async () => {
+        const fetchMock = vi.fn<typeof fetch>(
+            async () => new Response(null, {status: 200}),
+        );
+        renderNotifications({
+            fetchMock,
+            values: configWithEntries([
+                entryFor("UPDATE_INSTALLED", "json://one"),
+            ]),
+        });
+
+        expandEntry(0);
+        fireEvent.click(
+            screen.getByTestId(`config-notification-test-${ENTRIES}-0`),
+        );
+        expect(
+            await screen.findByTestId("config-notification-test-result-0"),
+        ).toBeVisible();
+
+        // The server sends the *saved* entry, so a success that stayed on
+        // screen while the admin edited would claim something untrue.
+        fireEvent.change(templateInput(0, "bodyTemplate"), {
+            target: {value: "Changed"},
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-notification-test-result-0"),
+            ).toBeNull(),
+        );
+    });
+
+    it("should report each entry's own result rather than one shared banner", async () => {
+        const fetchMock = vi.fn<typeof fetch>(async (input) =>
+            String(input).includes("UPDATE_INSTALLED")
+                ? new Response(null, {status: 200})
+                : new Response("failed", {status: 500}),
+        );
+        renderNotifications({
+            fetchMock,
+            values: configWithEntries([
+                entryFor("UPDATE_INSTALLED", "json://one"),
+                entryFor("AUTH_FAILURE", "json://two"),
+            ]),
+        });
+
+        expandEntry(0);
+        expandEntry(1);
+        fireEvent.click(
+            screen.getByTestId(`config-notification-test-${ENTRIES}-0`),
+        );
+        fireEvent.click(
+            screen.getByTestId(`config-notification-test-${ENTRIES}-1`),
+        );
+
+        expect(
+            await screen.findByTestId("config-notification-test-result-0"),
+        ).toHaveTextContent("Test notification sent.");
+        expect(
+            await screen.findByTestId("config-notification-test-result-1"),
+        ).toHaveTextContent("Unable to send the test notification.");
+    });
+
     it("should carry legacy's save-first guidance next to the action", () => {
         renderNotifications({
             values: configWithEntries([entryFor("AUTH_FAILURE", null)]),
         });
 
+        expandEntry(0);
         expect(
             screen.getByText(
                 "Send a test notification. You need to save the config first.",
