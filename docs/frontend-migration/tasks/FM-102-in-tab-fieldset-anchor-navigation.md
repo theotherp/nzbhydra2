@@ -66,6 +66,10 @@ ADR-0014 also governs; route URLs unchanged — anchors are scroll targets, not 
   (scrollspy via `IntersectionObserver` or scroll position — implementer's choice; jsdom-untestable parts belong in the
   system test).
 - Keyboard: anchors are buttons/links in the Tab order; the current marker is not colour-only (e.g. `aria-current`).
+- No sibling spec may need editing. `ConfigNav.tsx`/`ConfigFieldset.tsx` render on every tab and each anchor's
+  accessible name duplicates a fieldset legend, so a role/text locator in any per-tab spec can newly match twice and
+  trip strict mode; anchors therefore carry only `config-nav-anchor-*` testids and duplicate no `config-fieldset-*` id.
+  A spec outside this allowlist needing a change is a `BLOCKED` report, not an edit.
 - Tests: context unit tests (register/unregister/order); `config.spec.ts` adds: on Main, the list shows all ten legends
   with advanced on, fewer with advanced off; clicking "Logging" brings that fieldset into view; scrolling moves the
   current marker.
@@ -76,8 +80,15 @@ ADR-0014 also governs; route URLs unchanged — anchors are scroll targets, not 
 
 ## Verification
 
-- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config.spec.ts` passes in full.
+- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds — except that the last is
+  **red at base** on five known false positives (`../MAINTENANCE.md`), none of them in this packet's files. Report it
+  *failed* with a base-comparison run on a pristine tree (stash or `git archive`) proving your finding set is
+  byte-identical to base; a sixth finding is yours to fix. Never silence it by adding entries to the exemption list at
+  `scripts/validate-focus-affordances.mjs:112` — that weakens a real gate to hide a matcher bug, and FM-111 refused
+  exactly that workaround.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config tests/external-tools.spec.ts
+  tests/notched-label-geometry.spec.ts` passes in full. Playwright's positional args are path filters, so `tests/config`
+  selects `config.spec.ts` **and** all seven per-tab specs — the real blast radius of a nav rendered on every tab.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 
 ## Handoff / Review

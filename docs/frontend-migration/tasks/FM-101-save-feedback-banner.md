@@ -1,6 +1,6 @@
 # FM-101: Save Feedback Banner
 
-Status: ready Owner:
+Status: in_progress Owner: migration-implementer
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FORM, C-CONFIG-SETTINGS-INDEX
 API IDs: API-CONFIG-PUT
@@ -26,7 +26,9 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
 
 - `core/ui-react/src/features/config/useConfigSave.ts` + test, `ConfigShell.tsx` + test, and a new banner component +
   test directly in `core/ui-react/src/features/config/`
-- `tests/system/tests/config.spec.ts` — existing dialog-based cases may be rewritten to the banner; nothing else
+- `tests/system/tests/config.spec.ts` — existing dialog-based cases may be rewritten to the banner
+- `tests/system/tests/config-searching.spec.ts:250-255` and `tests/system/tests/config-main.spec.ts:253-256` — **only**
+  those two assertion blocks, rewritten per the Acceptance bullet below; every other line of both files is out of bounds
 - The `F-CONFIG-SHELL` record in `../FEATURES.yaml`; the `API-CONFIG-PUT` note in `../APIS.yaml` if its UI-mapping
   sentence changes
 - This task packet, `../STATUS.md`, `../GUI-STATUS.md` if its derived row changes
@@ -37,6 +39,8 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
   decision must settle the response shape, path vocabulary, and compatibility for external API callers; do not start it)
 - The restart-required dialog (`useConfigSave.ts:108-120`) and the unsaved-changes dialog — both stay modal (they demand
   an answer, unlike a report); the save-blocked-while-dirty API-help toast; FM-100's panel
+- The identical "Config invalid" toasts in `ExternalToolDialog.tsx:225`, `DownloaderDialog.tsx:190`,
+  `IndexerDialog.tsx:382` — dialog-level, not the shell's `submit`; they and `external-tools.spec.ts:156` stay as they are
 
 ## Context To Read
 
@@ -64,6 +68,13 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
 - Tests: `useConfigSave` unit tests updated from dialog-mock to banner-state assertions for all four outcomes;
   `config.spec.ts` rewrites the dialog assertions to the banner and adds the click-through from an invalid-field entry
   to its revealed control.
+- Sibling specs, re-pointed at the banner and no further: in `config-searching.spec.ts` the `{name: "OK"}` click and its
+  hidden check become the warning banner's dismiss control, leaving the `save(page)` response check, the `toContain`
+  warning text and the three `after`-config assertions — this case's actual proof — untouched. In `config-main.spec.ts`
+  the `getByText("Config invalid…")` line becomes the banner's `main.host` entry named by its index label
+  (`config-invalid-field-main-host`, the path suffix `config-input-main-host` uses); `config-error-main-host`, the
+  empty-`puts` assertion and the `getConfig` equality stay verbatim. No assertion may be weakened, skipped or deleted to
+  make a case pass; a case that cannot be re-pointed this way is a `BLOCKED` report, not an edit.
 - Registry: `F-CONFIG-SHELL.selectors` updated (re-homed + new ids, with a comment naming this packet as the authority).
 - Screenshot strip per `../README.md` *Visual Gate*: desktop 1280x800 server-error banner, warnings banner, and
   client-side invalid list; mobile 390x844 if layout differs.
@@ -71,7 +82,9 @@ None (`API-CONFIG-PUT`'s response shape is consumed as-is; ADR-0014 governs the 
 ## Verification
 
 - In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config.spec.ts` passes in full.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config.spec.ts
+  tests/config-searching.spec.ts tests/config-main.spec.ts tests/external-tools.spec.ts` passes in full — the three
+  siblings are the blast radius of removing two shell affordances; the last proves the dialog toast survived untouched.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 
 ## Handoff / Review
@@ -93,4 +106,5 @@ were `await`ed, sequencing the restart prompt *after* acknowledgement — banner
 still appear after a warnings-only save without racing the reset. Prove first that a rejected save leaves the form dirty
 with the banner surviving a tab switch, against a real backend rejection.
 Reviewer prompt: Check hardest the blocker interaction (save-from-dialog path returns "saved") and that no error string
-is truncated or HTML-interpreted. Distrust rewritten spec assertions — confirm they still assert the same server truths.
+is truncated or HTML-interpreted. Distrust the two sibling-spec rewrites hardest — diff them line by line and confirm
+they still assert the same server truths, not merely that something rendered.

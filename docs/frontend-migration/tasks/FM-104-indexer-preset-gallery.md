@@ -65,7 +65,13 @@ None (ADR-0014 governs; preset data in `indexerPresets.ts` is read-only for this
 
 ## Verification
 
-- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds.
+- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds — except that the last is
+  **red at base** on five known false positives (`../MAINTENANCE.md`), one in a file this packet *may* edit
+  (`IndexersConfigTab.test.tsx:565`) and two more in `indexers/ColorSetting{,.test}.tsx`, which it may not — so a
+  pre-existing finding here is easy to mistake for one you caused. Report it *failed* with a base-comparison run on a
+  pristine tree (stash or `git archive`) proving your finding set is byte-identical to base; a sixth finding is yours to
+  fix. Never silence it by adding entries to the exemption list at `scripts/validate-focus-affordances.mjs:112` — that
+  weakens a real gate to hide a matcher bug, and FM-111 refused exactly that workaround.
 - From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-indexers.spec.ts` passes in full.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 

@@ -73,8 +73,18 @@ None (no API change: `API-NOTIFICATIONS-TEST` is consumed as-is; the preview is 
 
 ## Verification
 
-- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-notifications.spec.ts` passes in full.
+- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds — except that the last is
+  **red at base** on five known false positives (`../MAINTENANCE.md`), none of them in this packet's files. Report it
+  *failed* with a base-comparison run on a pristine tree (stash or `git archive`) proving your finding set is
+  byte-identical to base; a sixth finding is yours to fix. Never silence it by adding entries to the exemption list at
+  `scripts/validate-focus-affordances.mjs:112` — that weakens a real gate to hide a matcher bug, and FM-111 refused
+  exactly that workaround.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-notifications.spec.ts`
+  passes in full. If the accordion lands as a `RepeatSection.tsx` opt-in, its other four consumers are in the blast
+  radius and the run is instead `-- tests/config-notifications.spec.ts tests/config-downloading.spec.ts
+  tests/config-searching.spec.ts tests/config-auth.spec.ts tests/config-categories.spec.ts
+  tests/external-tools.spec.ts` — all six unedited and green, "existing consumers byte-identical" proved rather than
+  asserted. Owning the list locally keeps the narrow filter honest; that is the cheaper path.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 
 ## Handoff / Review

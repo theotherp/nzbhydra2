@@ -1214,3 +1214,11 @@ instead of leaving it to rot.
   the dispatch on value shape). Separately, no test pins the post-save re-baseline — that a second round of edits diffs
   against the newly saved config rather than the initial fetch — which is correct by construction via
   `form.formState.defaultValues` but was flagged as a trap by the packet. Surfaced 2026-08-26 by FM-100's reviewer.
+- **`STATUS.md` section entries must start exactly `- FM-NNN:` or the validator cannot see them.**
+  `validate-migration.mjs:163` extracts task ids with `/^- (FM-\d{3}):/`, so a perfectly readable entry like
+  `- FM-101 (Save Feedback Banner): in progress` is invisible to it, and the task is reported "absent from STATUS.md
+  Active" while sitting plainly in that section — a confusing error that points at the wrong problem. This has now cost
+  time twice in one batch: once when a coordinator wrote `- FM-112 closes the cleanup batch` in Upcoming, and once when
+  an implementer wrote the parenthetical form above in Active. Both are natural prose. Either loosen the regex to
+  accept `- FM-NNN` followed by any delimiter, or make the error message say what shape it expected — the second is
+  probably worth more than the first, since the current message actively misleads. Surfaced 2026-08-26.

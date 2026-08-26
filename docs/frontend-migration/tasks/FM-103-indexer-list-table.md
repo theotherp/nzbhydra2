@@ -63,6 +63,9 @@ None (ADR-0014 governs; every edit still flows through `C-CONFIG-FORM`'s `setVal
 - Empty state (`config-indexers-empty`) keeps its message and gains a hint naming the Add button (§5's empty-state note).
 - The Add button, recheck buttons, and all dialog flows keep their selectors and behavior; every existing
   `config-indexers.spec.ts` scenario still passes, rewritten only where it asserted the stacked layout.
+- `config.spec.ts` is **not** in the allowlist and must stay green unedited: FM-100's review-panel case (`:223-268`,
+  again at `:704-730`) opens the Indexers tab and fills `config-input-indexers-0-score` directly, so that testid keeps
+  its path binding and is visible on load with no filter, sort or expansion first. If it cannot, report `BLOCKED`.
 - Tests: table rendering/sort/filter/bulk unit tests; `config-indexers.spec.ts` adds filter + bulk-disable + sorted-edit
   cases. Selector changes recorded in `F-CONFIG-INDEXERS.selectors`.
 - Screenshot strip per `../README.md` *Visual Gate*: desktop 1280x800 with mixed states/markers, one filtered view;
@@ -70,8 +73,16 @@ None (ADR-0014 governs; every edit still flows through `C-CONFIG-FORM`'s `setVal
 
 ## Verification
 
-- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-indexers.spec.ts` passes in full.
+- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds — except that the last is
+  **red at base** on five known false positives (`../MAINTENANCE.md`), one in a file this packet *may* edit
+  (`IndexersConfigTab.test.tsx:565`) and two more in `indexers/ColorSetting{,.test}.tsx`, which it may not — so a
+  pre-existing finding here is easy to mistake for one you caused. Report it *failed* with a base-comparison run on a
+  pristine tree (stash or `git archive`) proving your finding set is byte-identical to base; a sixth finding is yours to
+  fix. Never silence it by adding entries to the exemption list at `scripts/validate-focus-affordances.mjs:112` — that
+  weakens a real gate to hide a matcher bug, and FM-111 refused exactly that workaround.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-indexers.spec.ts
+  tests/config.spec.ts` passes in full — `config.spec.ts` drives this tab's priority field from the review panel and is
+  the only thing that catches a re-homed or interaction-gated `config-input-indexers-0-score`.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 
 ## Handoff / Review

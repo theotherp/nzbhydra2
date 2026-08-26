@@ -68,8 +68,19 @@ None (client-side validation mirrors the backend's parse; the config schema is u
 
 ## Verification
 
-- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-categories.spec.ts` passes in full.
+- In `core/ui-react`: `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration && npm run validate:focus-affordances` succeeds — except that the last is
+  **red at base** on five known false positives (`../MAINTENANCE.md`). None is in this packet's files: all three
+  config-side ones live in `features/config/indexers/`, which this packet may not touch. Report it *failed* with a
+  base-comparison run on a pristine tree (stash or `git archive`) proving your finding set is byte-identical to base; a
+  sixth finding — including any the new chip-refusal styling introduces — is yours to fix. Never silence it by adding
+  entries to the exemption list at `scripts/validate-focus-affordances.mjs:112` — that weakens a real gate to hide a
+  matcher bug, and FM-111 refused exactly that workaround.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-categories.spec.ts` passes
+  in full. If the per-chip validator lands on `ChipsSetting` (`C-CONFIG-FIELDS`), its five other consumers — Main,
+  Searching, Auth, Notifications, `IndexerDialog` — are in the blast radius and the run is instead
+  `-- tests/config-categories.spec.ts tests/config-searching.spec.ts tests/config-main.spec.ts
+  tests/config-indexers.spec.ts`, all unedited and green (`config-searching.spec.ts:212-260,290` is the one case that
+  renders stored chip values end to end). A local validator in the categories table keeps the narrow filter honest.
 - `git diff --check` clean; changed files match `Files Allowed To Modify`; no stray generated files.
 
 ## Handoff / Review

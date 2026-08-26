@@ -741,7 +741,10 @@ cell reading as an old value, the bar counting leaves while the panel counts row
 
 ## Active
 
-None.
+- FM-101: Save Feedback Banner — in progress. The two validation dialogs become one persistent banner region between the
+  sticky bar and the tab body, and the client-side "Config invalid" toast becomes a list of the offending settings that
+  navigate to their field through FM-099's helper. Allowlist fenced to two assertion blocks in `config-searching.spec.ts`
+  and `config-main.spec.ts`.
 
 ## Review
 
@@ -753,7 +756,7 @@ None.
 
 ## Upcoming
 
-- FM-101: Save Feedback Banner — next up, then FM-102, then the per-section reworks FM-103..FM-107. Unlike the cleanup
+- FM-102: In-Tab Fieldset Anchor Navigation — next, then the per-section reworks FM-103..FM-107. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the
