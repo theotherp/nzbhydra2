@@ -1349,3 +1349,16 @@ instead of leaving it to rot.
   — a synchronous negative assertion (`expect(rowNames()).toEqual([...])` immediately after a `waitFor` that only
   guarantees an unrelated write landed) is the classic shape that goes red under scheduler jitter — but could not prove
   it. Surfaced 2026-08-26.
+- **FM-104's truncation test asserts a class, not the clipping.** `AddIndexerDialog.test.tsx:99-113` checks that
+  `MuiTypography-noWrap` is present, which still passes if a future refactor breaks the shrink chain — removing
+  `minmax(0, 1fr)` from the grid columns, say — and leaves the label unclipped. No live defect: FM-104's reviewer built
+  a standalone reproduction of the exact grid → button → `Typography noWrap` nesting, served it over local HTTP and
+  drove it with playwright-cli, and measured a long label genuinely clipped (span `scrollWidth` 804px against a
+  rendered 324px) with no page-level horizontal scroll. But the test proves less than the reviewer had to do to
+  establish it. Asserting `scrollWidth > clientWidth` would close the gap. Surfaced 2026-08-26 by FM-104's reviewer.
+- **The preset gallery's "Import" heading stays visible with nothing under it.** Filtering to a term that matches only
+  presets (e.g. "geek") leaves the Import section's heading rendered over zero importer buttons, because importers are
+  filtered independently against their own labels rather than being hidden when the preset groups empty. That follows
+  FM-104's packet text literally ("hide them only when the filter also misses their labels") and is visible in both
+  filtered captures, so it is a packet-sanctioned choice rather than a defect — but a bare heading over nothing is
+  worth the owner's eye in practice. Surfaced 2026-08-26 by FM-104's reviewer.

@@ -820,6 +820,24 @@ FM-100's review-panel case fills `config-input-indexers-0-score` directly at two
 none corrected (optional), all carried into `MAINTENANCE.md`. This task also broke a four-task streak of unannotated
 magnitudes: every one in the new file carries its justification at the site.
 
+FM-104 (Indexer Preset Gallery) replaces the two anchor menus with a searchable gallery: every preset from all three
+groups is a directly clickable button in a responsive grid under its group heading, custom newznab/torznab entries
+first and marked with an icon plus emphasis rather than colour, narrowed by a case-insensitive substring filter that
+hides an empty group's heading without reordering anything. The importers keep their own always-present section,
+filtered against their own labels rather than the preset groups'. Two things went right by construction rather than by
+effort. It needed **no fieldset workaround** — the first task after `1b24f85f9` clamped `ConfigFieldset`'s minimum width
+centrally, which is that fix doing its job. And it used a plain responsive CSS grid with no `useMediaQuery` branch,
+the single rendering path ADR-0029 prefers: FM-103's compact branch was justified by *controls* differing, and a
+gallery has no such need. The preset testid scheme was preserved rather than renamed to suit the new markup, so
+`addPreset`'s helper and the once-only refusal test carried over byte-identical — the reviewer enumerated every
+`config-indexer-preset-*` reference across `src/` and `tests/` to confirm it rather than taking the claim. Verified with
+the gate chain (1340 tests) and real-backend `config-indexers.spec.ts` at 12/12, including the rewritten filter-then-pick
+add flow that proves a filtered pick seeds the same draft the menu path did. Passed with two minor findings, neither
+corrected (optional), both carried into `MAINTENANCE.md`. Worth recording how the truncation case was settled: the test
+asserts only that a `noWrap` class is present, which is weaker than the behaviour it stands for, so the reviewer built a
+standalone reproduction of the exact grid nesting and measured the clipping directly (804px of text in 324px of box, no
+page overflow) rather than accepting the class as proof.
+
 ## Active
 
 None.
@@ -834,7 +852,7 @@ None.
 
 ## Upcoming
 
-- FM-104: Indexer Preset Gallery — next, then FM-105, FM-106 and FM-107 close the batch. Unlike the cleanup
+- FM-105: Auth Users Table — next, then FM-106 and FM-107 close the batch. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the

@@ -1,6 +1,6 @@
 # FM-105: Auth Users Table
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-CONFIG-AUTH
 Component IDs: C-CONFIG-FIELDS
 API IDs: API-CONFIG-PUT

@@ -736,6 +736,7 @@ features:
     tests:
       - tests/system/tests/config-indexers.spec.ts
       - core/ui-react/src/features/config/indexers/IndexersConfigTab.test.tsx
+      - core/ui-react/src/features/config/indexers/AddIndexerDialog.test.tsx
       - core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx
       - core/ui-react/src/features/config/indexers/indexerSettings.test.ts
     selectors:
@@ -755,11 +756,17 @@ features:
       # button that opens the editor), `config-indexer-incomplete-<index>`,
       # `config-indexer-caps-incomplete-<index>`, and
       # `config-indexer-vip-warning-<index>`.
-      # The add chooser emits `config-indexer-preset-menu-<newznab|torznab>` and
-      # one `config-indexer-preset-<newznab|torznab|special>-<slug>` per preset,
-      # where the slug is the lower-cased label with non-alphanumerics collapsed
-      # to dashes (`nzbgeek`, `torbox-newznab`, `custom-newznab`,
-      # `custom-torznab`, `jackett-cardigann`, `torbox`).
+      # The add chooser (FM-104: a filterable gallery, not the two anchor
+      # menus FM-066 introduced) emits `config-indexer-preset-filter` and one
+      # `config-indexer-preset-<newznab|torznab|special>-<slug>` per preset,
+      # where the slug is the lower-cased label with non-alphanumerics
+      # collapsed to dashes (`nzbgeek`, `torbox-newznab`, `custom-newznab`,
+      # `custom-torznab`, `jackett-cardigann`, `torbox`); the custom-newznab
+      # and custom-torznab items are the blank-entry choices and render first
+      # in their groups. A filter matching no preset at all shows
+      # `config-indexer-preset-no-matches`; the two importer buttons below are
+      # narrowed by the same filter text against their own labels but are
+      # never treated as members of a preset group.
       # The edit dialog's controls bind to the draft path `indexerDraft`, so
       # they read `config-input-indexerDraft-<field>` /
       # `config-setting-indexerDraft-<field>` and never collide with the list
@@ -770,6 +777,8 @@ features:
       - config-indexer-add
       - config-indexer-add-dialog
       - config-indexer-add-dialog-cancel
+      - config-indexer-preset-filter
+      - config-indexer-preset-no-matches
       - config-indexer-dialog
       - config-indexer-dialog-cancel
       - config-indexer-dialog-checking
@@ -842,6 +851,7 @@ features:
       - deliberate - the search-source select is on the list without being gated by the advanced toggle, though the same field is advanced inside the edit dialog; a column the toggle empties would leave a headed blank cell in every row
       - deliberate - neither the filter nor the sort is persisted; both are momentary view state, as the packet scopes them
       - deliberate - below sm the table keeps one column and each entry stacks, with sorting moved to a named "Sort by" select, because five columns need about 900px and even three overflow a 390px phone once a VIP-expiry chip or the search-source control is in one of them (ADR-0029; measured, not estimated)
+      - deliberate - the add surface is a filterable, grouped gallery with every preset a directly clickable item (FM-104), replacing legacy's two "Choose from presets" anchor menus; filtering is a substring match over the label and never reorders, and a group with no matches hides its own heading rather than showing an empty one
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
     routes:

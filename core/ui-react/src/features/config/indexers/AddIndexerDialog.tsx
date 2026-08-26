@@ -1,12 +1,13 @@
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Menu,
-    MenuItem,
     Stack,
+    TextField,
     Typography,
 } from "@mui/material";
 import {useState} from "react";
@@ -25,8 +26,45 @@ import {
 const ADD_INDEXER_DIALOG_TEST_ID = "config-indexer-add-dialog";
 
 /**
+ * One of the three preset groups the gallery renders, in the arrays' order.
+ * `customPreset`, where present, is prepended ahead of the array — it is the
+ * blank-entry choice for that backend, not one of the parity presets.
+ */
+type PresetGroup = {
+    customPreset?: IndexerPreset;
+    /** Also the `data-testid` group segment, `config-indexer-preset-<key>-*`. */
+    key: "newznab" | "special" | "torznab";
+    heading: string;
+    presets: readonly IndexerPreset[];
+};
+
+const PRESET_GROUPS: readonly PresetGroup[] = [
+    {
+        customPreset: CUSTOM_NEWZNAB_PRESET,
+        heading: "Usenet",
+        key: "newznab",
+        presets: NEWZNAB_PRESETS,
+    },
+    {
+        customPreset: CUSTOM_TORZNAB_PRESET,
+        heading: "Torrents",
+        key: "torznab",
+        presets: TORZNAB_PRESETS,
+    },
+    {heading: "Special", key: "special", presets: SPECIAL_PRESETS},
+];
+
+function matches(label: string, normalizedQuery: string): boolean {
+    return (
+        normalizedQuery === "" || label.toLowerCase().includes(normalizedQuery)
+    );
+}
+
+/**
  * `indexer-config-selection.html` / `IndexerConfigSelectionBoxInstanceController`:
- * the "Add indexer" chooser, with legacy's three groups.
+ * the "Add indexer" chooser, as a searchable gallery (FM-104) rather than
+ * legacy's two anchor menus — every preset is a directly clickable item, so
+ * picking one is a single click instead of open-menu-then-click.
  *
  * Picking a preset here only *seeds* a new entry — the entry itself is composed
  * in `IndexerDialog` and does not exist until that dialog is submitted
@@ -37,7 +75,9 @@ const ADD_INDEXER_DIALOG_TEST_ID = "config-indexer-add-dialog";
  * reason (`indexer-config-selection.html`'s "Read from ..." menu entries): they
  * are reached from the same add surface but they replace the whole list rather
  * than seeding one entry, which is why they are visibly separated from the
- * presets and open their own dialog.
+ * presets and open their own dialog. The gallery's filter still narrows them by
+ * their own label — they are just never treated as members of a *preset*
+ * group, so a group emptying out never hides them.
  */
 export function AddIndexerDialog({
     onCancel,
@@ -48,109 +88,123 @@ export function AddIndexerDialog({
     onImport: (source: IndexerImportSource) => void;
     onSelect: (preset: IndexerPreset) => void;
 }) {
-    const [newznabAnchor, setNewznabAnchor] = useState<HTMLElement | null>(
-        null,
-    );
-    const [torznabAnchor, setTorznabAnchor] = useState<HTMLElement | null>(
-        null,
-    );
+    const [query, setQuery] = useState("");
+    const normalizedQuery = query.trim().toLowerCase();
 
-    const pick = (preset: IndexerPreset) => {
-        setNewznabAnchor(null);
-        setTorznabAnchor(null);
-        onSelect(preset);
-    };
+    const groups = PRESET_GROUPS.map((group) => {
+        const items = group.customPreset
+            ? [group.customPreset, ...group.presets]
+            : group.presets;
+        return {
+            ...group,
+            filtered: items.filter((preset) =>
+                matches(preset.label, normalizedQuery),
+            ),
+        };
+    });
+    const totalMatches = groups.reduce(
+        (sum, group) => sum + group.filtered.length,
+        0,
+    );
+    const visibleImporters = INDEXER_IMPORT_ORDER.filter((source) =>
+        matches(INDEXER_IMPORT_SOURCES[source].openLabel, normalizedQuery),
+    );
 
     return (
         <Dialog
             data-testid={ADD_INDEXER_DIALOG_TEST_ID}
             fullWidth
-            maxWidth="sm"
+            maxWidth="md"
             onClose={onCancel}
             open
         >
             <DialogTitle>Add indexer</DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={3}>
-                    <Stack spacing={1}>
-                        <Typography component="h3" variant="subtitle1">
-                            Usenet
-                        </Typography>
-                        <Stack
-                            direction={{xs: "column", sm: "row"}}
-                            spacing={1}
-                        >
-                            <Button
-                                aria-haspopup="menu"
-                                data-testid="config-indexer-preset-menu-newznab"
-                                onClick={(event) =>
-                                    setNewznabAnchor(event.currentTarget)
-                                }
-                                type="button"
-                                variant="outlined"
-                            >
-                                Choose from presets
-                            </Button>
-                            <Button
-                                data-testid="config-indexer-preset-newznab-custom-newznab"
-                                onClick={() => pick(CUSTOM_NEWZNAB_PRESET)}
-                                type="button"
-                                variant="outlined"
-                            >
-                                {CUSTOM_NEWZNAB_PRESET.label}
-                            </Button>
-                        </Stack>
-                    </Stack>
-                    <Stack spacing={1}>
-                        <Typography component="h3" variant="subtitle1">
-                            Torrents
-                        </Typography>
-                        <Stack
-                            direction={{xs: "column", sm: "row"}}
-                            spacing={1}
-                        >
-                            <Button
-                                aria-haspopup="menu"
-                                data-testid="config-indexer-preset-menu-torznab"
-                                onClick={(event) =>
-                                    setTorznabAnchor(event.currentTarget)
-                                }
-                                type="button"
-                                variant="outlined"
-                            >
-                                Choose from presets
-                            </Button>
-                            <Button
-                                data-testid="config-indexer-preset-torznab-custom-torznab"
-                                onClick={() => pick(CUSTOM_TORZNAB_PRESET)}
-                                type="button"
-                                variant="outlined"
-                            >
-                                {CUSTOM_TORZNAB_PRESET.label}
-                            </Button>
-                        </Stack>
-                    </Stack>
-                    <Stack spacing={1}>
-                        <Typography component="h3" variant="subtitle1">
-                            Special
-                        </Typography>
-                        <Stack
-                            direction={{xs: "column", sm: "row"}}
-                            spacing={1}
-                        >
-                            {SPECIAL_PRESETS.map((preset) => (
-                                <Button
-                                    data-testid={`config-indexer-preset-special-${preset.slug}`}
-                                    key={preset.slug}
-                                    onClick={() => pick(preset)}
-                                    type="button"
-                                    variant="outlined"
+                    <TextField
+                        autoFocus
+                        label="Filter presets"
+                        onChange={(event) => setQuery(event.target.value)}
+                        slotProps={{
+                            htmlInput: {
+                                "data-testid": "config-indexer-preset-filter",
+                            },
+                        }}
+                        type="search"
+                        value={query}
+                    />
+                    {groups.map((group) =>
+                        group.filtered.length === 0 ? null : (
+                            <Stack key={group.key} spacing={1}>
+                                <Typography component="h3" variant="subtitle1">
+                                    {group.heading}
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gap: 1,
+                                        // Three widths are enough to notice
+                                        // reflow with the panel's own widths
+                                        // (390 / ~700 tablet / desktop `md`)
+                                        // without needing an `auto-fill`
+                                        // measurement.
+                                        gridTemplateColumns: {
+                                            md: "repeat(3, minmax(0, 1fr))",
+                                            sm: "repeat(2, minmax(0, 1fr))",
+                                            xs: "1fr",
+                                        },
+                                    }}
                                 >
-                                    {preset.label}
-                                </Button>
-                            ))}
-                        </Stack>
-                    </Stack>
+                                    {group.filtered.map((preset) => {
+                                        const isCustom =
+                                            group.customPreset !== undefined &&
+                                            preset.slug ===
+                                                group.customPreset.slug;
+                                        return (
+                                            <Button
+                                                data-testid={`config-indexer-preset-${group.key}-${preset.slug}`}
+                                                key={preset.slug}
+                                                onClick={() => onSelect(preset)}
+                                                startIcon={
+                                                    isCustom ? (
+                                                        <AddCircleOutlineIcon fontSize="small" />
+                                                    ) : undefined
+                                                }
+                                                sx={{
+                                                    justifyContent:
+                                                        "flex-start",
+                                                    textAlign: "left",
+                                                }}
+                                                title={preset.label}
+                                                type="button"
+                                                variant="outlined"
+                                            >
+                                                <Typography
+                                                    component="span"
+                                                    noWrap
+                                                    variant="body2"
+                                                >
+                                                    {isCustom ? (
+                                                        <em>{preset.label}</em>
+                                                    ) : (
+                                                        preset.label
+                                                    )}
+                                                </Typography>
+                                            </Button>
+                                        );
+                                    })}
+                                </Box>
+                            </Stack>
+                        ),
+                    )}
+                    {totalMatches === 0 ? (
+                        <Typography
+                            data-testid="config-indexer-preset-no-matches"
+                            variant="body2"
+                        >
+                            No presets match “{query}”.
+                        </Typography>
+                    ) : null}
                     <Stack spacing={1}>
                         <Typography component="h3" variant="subtitle1">
                             Import
@@ -159,7 +213,7 @@ export function AddIndexerDialog({
                             direction={{xs: "column", sm: "row"}}
                             spacing={1}
                         >
-                            {INDEXER_IMPORT_ORDER.map((source) => (
+                            {visibleImporters.map((source) => (
                                 <Button
                                     data-testid={`config-indexer-import-${source}`}
                                     key={source}
@@ -183,36 +237,6 @@ export function AddIndexerDialog({
                     Cancel
                 </Button>
             </DialogActions>
-            <Menu
-                anchorEl={newznabAnchor}
-                onClose={() => setNewznabAnchor(null)}
-                open={newznabAnchor !== null}
-            >
-                {NEWZNAB_PRESETS.map((preset) => (
-                    <MenuItem
-                        data-testid={`config-indexer-preset-newznab-${preset.slug}`}
-                        key={preset.slug}
-                        onClick={() => pick(preset)}
-                    >
-                        {preset.label}
-                    </MenuItem>
-                ))}
-            </Menu>
-            <Menu
-                anchorEl={torznabAnchor}
-                onClose={() => setTorznabAnchor(null)}
-                open={torznabAnchor !== null}
-            >
-                {TORZNAB_PRESETS.map((preset) => (
-                    <MenuItem
-                        data-testid={`config-indexer-preset-torznab-${preset.slug}`}
-                        key={preset.slug}
-                        onClick={() => pick(preset)}
-                    >
-                        {preset.label}
-                    </MenuItem>
-                ))}
-            </Menu>
         </Dialog>
     );
 }

@@ -71,7 +71,7 @@ Currently available:
   editable — the indexer list as a table with per-entry type, search-source scope, state, priority, and
   incomplete-config/incomplete-caps/VIP markers, filterable by name, sortable by name, state, or priority, with bulk
   enable/disable over the rows currently shown;
-  adding a newznab, torznab, or special indexer from a preset or as a custom entry; a modal transaction that
+  adding a newznab, torznab, or special indexer from a searchable, filterable preset gallery or as a custom entry; a modal transaction that
   connection-checks and completes an entry's capabilities before it is accepted, with credentials that are never
   round-tripped in clear text; a colour field with a native picker and a clear button alongside the free-text value;
   bulk capability rechecking for incomplete or all indexers with per-indexer progress; and

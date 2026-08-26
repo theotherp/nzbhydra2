@@ -605,25 +605,35 @@ test.describe("Config indexers visual evidence", () => {
                 fullPage: true,
             });
 
+            // FM-104: the two anchor menus became a searchable gallery, so
+            // adding an indexer is filter-then-click rather than
+            // open-menu-then-click.
             await page.getByTestId("config-indexer-add").click();
             await expect(
                 page.getByTestId("config-indexer-add-dialog"),
             ).toBeVisible();
-            await page
-                .getByTestId("config-indexer-preset-menu-newznab")
-                .click();
+            await page.getByTestId("config-indexer-preset-filter").fill("geek");
             await expect(
                 page.getByTestId("config-indexer-preset-newznab-nzbgeek"),
             ).toBeVisible();
-            // Not `fullPage`: the menu is anchored in the viewport.
+            // Not `fullPage`: the gallery is anchored in the viewport.
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-INDEXERS",
-                    `indexers-add-menu-${viewport}`,
+                    `indexers-add-gallery-filtered-${viewport}`,
                 ),
             });
-            await page.keyboard.press("Escape");
-            await page.keyboard.press("Escape");
+            await page
+                .getByTestId("config-indexer-preset-newznab-nzbgeek")
+                .click();
+            await expect(
+                page.getByTestId("config-indexer-dialog"),
+            ).toBeVisible();
+            await expect(draftField(page, "name")).toHaveValue("NZBGeek");
+            await page.getByTestId("config-indexer-dialog-cancel").click();
+            await expect(
+                page.getByTestId("config-indexer-dialog"),
+            ).toBeHidden();
             await expect(
                 page.getByTestId("config-indexer-add-dialog"),
             ).toBeHidden();
