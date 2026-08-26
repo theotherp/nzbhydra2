@@ -1,7 +1,12 @@
 import type {Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
-import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+import {
+    expectVisualGeometry,
+    prepareVisualEvidence,
+    visualEvidencePath,
+    visualViewports,
+} from "./visualEvidence";
 
 const UNCHANGED_MARKER = "***UNCHANGED***";
 
@@ -125,50 +130,94 @@ async function saveAndExpectSuccess(page: Page): Promise<void> {
     await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
+/** Seeds `auth` with a non-`NONE` type and the given users, through the API. */
+async function seedUsers(
+    hydra: {
+        getConfig: () => Promise<unknown>;
+        saveConfig: (config: Json) => Promise<unknown>;
+    },
+    users: Json[],
+): Promise<void> {
+    const seeded = structuredClone((await hydra.getConfig()) as Json);
+    // `AuthConfigValidator` refuses a non-`NONE` auth type with no users and
+    // no restriction enabled, and the Users section only renders for a
+    // non-`NONE` type. Seeding both through the API keeps the browser-driven
+    // part of each test on the flow it actually owns.
+    authSection(seeded).authType = "BASIC";
+    authSection(seeded).restrictSearch = true;
+    authSection(seeded).users = users;
+    await hydra.saveConfig(seeded);
+}
+
+/**
+ * A seed user. The password is a `{noop}` literal that the backend stores as
+ * given and masks on every load, so no test ever types or reads a credential
+ * that would be plausible anywhere else.
+ */
+function seedUser(username: string, overrides: Json = {}): Json {
+    return {
+        maySeeAdmin: true,
+        maySeeDetailsDl: true,
+        maySeeStats: true,
+        password: `{noop}seed-${username}`,
+        showIndexerSelection: true,
+        username,
+        ...overrides,
+    };
+}
+
+/** Opens the dialog over the row at `index` and waits for it. */
+async function openUserDialog(page: Page, index: number): Promise<void> {
+    await page.getByTestId(`config-user-edit-${index}`).click();
+    await expect(page.getByTestId("config-user-dialog")).toBeVisible();
+}
+
+async function submitUserDialog(page: Page): Promise<void> {
+    await page.getByTestId("config-user-dialog-submit").click();
+    await expect(page.getByTestId("config-user-dialog")).toBeHidden();
+}
+
 test.describe("Config auth tab user management", () => {
-    test("should add a user through the UI, persist it, and mask its password on reload", async ({
+    test("should add a user through the dialog with the rights it was given, and mask its password on reload", async ({
         page,
         hydra,
     }) => {
-        const before = (await hydra.getConfig()) as Json;
-        // A seed user makes the auth-type change (`NONE` -> `BASIC`) valid on
-        // its own: `AuthConfigValidator` refuses to persist a non-`NONE` auth
-        // type with no users and no access restriction enabled, and the UI's
-        // Users section itself only ever renders for a non-`NONE` auth type.
-        // Seeding both directly through the API keeps the browser-driven part
-        // of this test focused on the add flow this task actually owns.
-        const seeded = structuredClone(before);
-        authSection(seeded).authType = "BASIC";
-        authSection(seeded).restrictSearch = true;
-        authSection(seeded).users = [
-            {
-                maySeeAdmin: true,
-                maySeeDetailsDl: true,
-                maySeeStats: true,
-                password: "{noop}seed-password",
-                showIndexerSelection: true,
-                username: "seed-admin",
-            },
-        ];
-        await hydra.saveConfig(seeded);
+        await seedUsers(hydra, [seedUser("seed-admin")]);
 
         await openAuthConfigAsAdmin(page);
-        await expect(
-            page.getByTestId("config-repeat-entry-auth-users-0"),
-        ).toBeVisible();
-        await expect(
-            page.getByTestId("config-input-auth-users-0-password"),
-        ).toHaveAttribute("placeholder", "Value unchanged");
+        await expect(page.getByTestId("config-user-entry-0")).toBeVisible();
+        await expect(page.getByTestId("config-user-username-0")).toHaveText(
+            "seed-admin",
+        );
+        // The table states that a password exists and shows nothing of it.
+        await expect(page.getByTestId("config-user-password-0")).toHaveText(
+            "Set",
+        );
 
-        await page.getByTestId("config-repeat-add-auth-users").click();
-        const newEntry = page.getByTestId("config-repeat-entry-auth-users-1");
-        await expect(newEntry).toBeVisible();
-        await newEntry
-            .getByTestId("config-input-auth-users-1-username")
+        await page.getByTestId("config-users-add").click();
+        await expect(page.getByTestId("config-user-dialog")).toBeVisible();
+        await page
+            .getByTestId("config-input-auth-userDraft-username")
             .fill("new-user");
-        await newEntry
-            .getByTestId("config-input-auth-users-1-password")
+        await page
+            .getByTestId("config-input-auth-userDraft-password")
             .fill("correct-horse-battery");
+        // Turn the new user from an admin into a limited one and drop one of
+        // the three individual rights, so the row has something to show that
+        // is neither "Admin" nor everything.
+        await page.getByRole("switch", {name: "May see admin area"}).click();
+        await page.getByRole("switch", {name: "May see stats"}).click();
+        await submitUserDialog(page);
+
+        await expect(page.getByTestId("config-user-username-1")).toHaveText(
+            "new-user",
+        );
+        await expect(page.getByTestId("config-user-rights-1")).toHaveText(
+            "Details & DLIndexer selection",
+        );
+        await expect(page.getByTestId("config-user-password-1")).toHaveText(
+            "Set (unsaved)",
+        );
 
         await saveAndExpectSuccess(page);
 
@@ -177,20 +226,21 @@ test.describe("Config auth tab user management", () => {
         await page.reload();
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("config-auth")).toBeVisible();
-        await expect(
-            page.getByTestId("config-repeat-entry-auth-users-1"),
-        ).toBeVisible();
-        await expect(
-            page.getByTestId("config-input-auth-users-1-username"),
-        ).toHaveValue("new-user");
-        await expect(
-            page.getByTestId("config-input-auth-users-1-password"),
-        ).toHaveAttribute("placeholder", "Value unchanged");
+        await expect(page.getByTestId("config-user-username-1")).toHaveText(
+            "new-user",
+        );
+        await expect(page.getByTestId("config-user-password-1")).toHaveText(
+            "Set",
+        );
 
         const after = (await hydra.getConfig()) as Json;
         expect(usersOf(after)).toHaveLength(2);
         expect(usersOf(after)[1]).toMatchObject({
+            maySeeAdmin: false,
+            maySeeDetailsDl: true,
+            maySeeStats: false,
             password: UNCHANGED_MARKER,
+            showIndexerSelection: true,
             username: "new-user",
         });
     });
@@ -199,69 +249,51 @@ test.describe("Config auth tab user management", () => {
         page,
         hydra,
     }) => {
-        const before = (await hydra.getConfig()) as Json;
-        const seeded = structuredClone(before);
-        authSection(seeded).authType = "BASIC";
-        authSection(seeded).restrictSearch = true;
-        // Two users, matching `SensitiveDataConfigValidator.
-        // findCorrespondingOldItem`'s risk exactly: it matches an edited
-        // `UserAuthConfig` back to its stored counterpart *positionally*
-        // before `UserAuthConfigValidator` ever gets a chance to match it by
-        // username (`BaseConfigValidator.prepareForSaving:137-149`), because
-        // `UserAuthConfig` has no `name` field for the generic pass to use. A
-        // second, untouched user at a different index is what would expose a
-        // real mismatch if the positional fallback ever confused the two.
-        authSection(seeded).users = [
-            {
-                maySeeAdmin: true,
-                maySeeDetailsDl: true,
-                maySeeStats: true,
-                password: "{noop}rename-password",
-                showIndexerSelection: true,
-                username: "rename-me",
-            },
-            {
-                maySeeAdmin: false,
-                maySeeDetailsDl: true,
-                maySeeStats: true,
-                password: "{noop}bystander-password",
-                showIndexerSelection: true,
-                username: "bystander",
-            },
-        ];
-        await hydra.saveConfig(seeded);
+        // Two users, matching what `SensitiveDataConfigValidator` has to get
+        // right: a submitted `UserAuthConfig` is matched back to its stored
+        // counterpart by username, and only falls back to the index while the
+        // list length is unchanged. A second, untouched user at a different
+        // index is what would expose a mismatch.
+        await seedUsers(hydra, [
+            seedUser("rename-me"),
+            seedUser("bystander", {maySeeAdmin: false}),
+        ]);
 
         await openAuthConfigAsAdmin(page);
-        await expect(
-            page.getByTestId("config-repeat-entry-auth-users-0"),
-        ).toBeVisible();
-        await expect(
-            page.getByTestId("config-repeat-entry-auth-users-1"),
-        ).toBeVisible();
+        await expect(page.getByTestId("config-user-entry-1")).toBeVisible();
 
-        // Rename the first user; its password field is never touched, and
-        // the second (`bystander`) user's row is never opened at all -- that
-        // is the whole point of this test.
+        // Rename the first user. Its password field is opened but never
+        // typed into, and the second user's row is never opened at all --
+        // that is the whole point of this test.
+        await openUserDialog(page, 0);
+        const password = page.getByTestId(
+            "config-input-auth-userDraft-password",
+        );
+        await expect(password).toHaveValue("");
+        await expect(password).toHaveAttribute(
+            "placeholder",
+            "Value unchanged",
+        );
         await page
-            .getByTestId("config-input-auth-users-0-username")
+            .getByTestId("config-input-auth-userDraft-username")
             .fill("renamed");
+        await submitUserDialog(page);
         await saveAndExpectSuccess(page);
 
         await page.reload();
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("config-auth")).toBeVisible();
-        await expect(
-            page.getByTestId("config-input-auth-users-0-username"),
-        ).toHaveValue("renamed");
-        await expect(
-            page.getByTestId("config-input-auth-users-0-password"),
-        ).toHaveAttribute("placeholder", "Value unchanged");
-        await expect(
-            page.getByTestId("config-input-auth-users-1-username"),
-        ).toHaveValue("bystander");
-        await expect(
-            page.getByTestId("config-input-auth-users-1-password"),
-        ).toHaveAttribute("placeholder", "Value unchanged");
+        await expect(page.getByTestId("config-user-username-0")).toHaveText(
+            "renamed",
+        );
+        await expect(page.getByTestId("config-user-username-1")).toHaveText(
+            "bystander",
+        );
+        for (const index of [0, 1]) {
+            await expect(
+                page.getByTestId(`config-user-password-${index}`),
+            ).toHaveText("Set");
+        }
 
         const after = (await hydra.getConfig()) as Json;
         expect(usersOf(after)).toHaveLength(2);
@@ -291,6 +323,60 @@ test.describe("Config auth tab user management", () => {
             password: UNCHANGED_MARKER,
             username: "bystander",
         });
+    });
+
+    test("should delete a user out of the middle of the list after confirming, leaving the others' passwords resolvable", async ({
+        page,
+        hydra,
+    }) => {
+        // The exact shape of the defect FM-068 closed. Removing an entry
+        // changes the list length, so the positional fallback is refused
+        // outright and every remaining marker has to be resolved by username.
+        // If it were not, this save would either fail with an unresolved
+        // marker or move one user's hash onto another.
+        await seedUsers(hydra, [
+            seedUser("first"),
+            seedUser("middle"),
+            seedUser("last", {maySeeAdmin: false, maySeeStats: false}),
+        ]);
+
+        await openAuthConfigAsAdmin(page);
+        await expect(page.getByTestId("config-user-entry-2")).toBeVisible();
+
+        await page.getByTestId("config-user-delete-1").click();
+        const confirmation = page.getByTestId("config-user-delete-confirm");
+        await expect(confirmation).toContainText('Delete the user "middle"?');
+        await confirmation.getByRole("button", {name: "Delete"}).click();
+        await expect(confirmation).toBeHidden();
+
+        await expect(page.getByTestId("config-user-username-1")).toHaveText(
+            "last",
+        );
+        await expect(page.getByTestId("config-user-entry-2")).toBeHidden();
+        // After a delete, focus is on the table rather than lost to the body.
+        await expect(page.getByTestId("config-users-table")).toBeFocused();
+
+        await saveAndExpectSuccess(page);
+
+        const after = (await hydra.getConfig()) as Json;
+        expect(usersOf(after)).toHaveLength(2);
+        expect(usersOf(after)[0]).toMatchObject({
+            password: UNCHANGED_MARKER,
+            username: "first",
+        });
+        expect(usersOf(after)[1]).toMatchObject({
+            maySeeAdmin: false,
+            password: UNCHANGED_MARKER,
+            username: "last",
+        });
+
+        await page.reload();
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("config-auth")).toBeVisible();
+        await expect(page.getByTestId("config-user-username-1")).toHaveText(
+            "last",
+        );
+        await expect(page.getByTestId("config-user-entry-2")).toBeHidden();
     });
 });
 
@@ -329,22 +415,6 @@ test.describe("Config auth tab visual evidence", () => {
                 fullPage: true,
             });
 
-            // Two Users-section entries, captured while auth type is still
-            // `FORM` so both rows' password fields are visible too (they hide
-            // for `OIDC`, captured separately below).
-            await page.getByTestId("config-repeat-add-auth-users").click();
-            await page.getByTestId("config-repeat-add-auth-users").click();
-            await expect(
-                page.getByTestId("config-repeat-entry-auth-users-1"),
-            ).toBeVisible();
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-CONFIG-AUTH",
-                    `auth-users-two-entries-${viewport}`,
-                ),
-                fullPage: true,
-            });
-
             await page.getByRole("combobox", {name: "Auth type"}).click();
             await page.getByRole("option", {name: "OpenID Connect"}).click();
             await expect(
@@ -358,6 +428,64 @@ test.describe("Config auth tab visual evidence", () => {
                 fullPage: true,
             });
         });
+
+        // FM-105's visual gate: the Users table with an admin and a limited
+        // user, and the dialog that edits one. Both users are seeded through
+        // the API with `{noop}` literals and the dialog's password field is
+        // never typed into, so no capture in this file ever contains a
+        // password a reader could mistake for a real one.
+        test(`should capture the Users table and its dialog at ${viewport}`, async ({
+            page,
+            hydra,
+        }) => {
+            await seedUsers(hydra, [
+                seedUser("admin-user"),
+                seedUser("limited-user", {
+                    maySeeAdmin: false,
+                    maySeeStats: false,
+                }),
+            ]);
+
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openAuthConfigAsAdmin(page);
+            });
+            await expect(page.getByTestId("config-user-entry-1")).toBeVisible();
+            // Pinning a regression this task actually had: a four-column
+            // layout put Edit and Delete off-canvas at 390px behind a
+            // scrollbar with no affordance. The table must fit the width it
+            // is given, and the row's controls must sit inside the viewport.
+            await expectVisualGeometry(page, {
+                region: `auth-users-table-${viewport}`,
+                locator: page.getByTestId("config-users-table"),
+            });
+            const deleteBox = await page
+                .getByTestId("config-user-delete-1")
+                .boundingBox();
+            expect(deleteBox).not.toBeNull();
+            expect(
+                (deleteBox?.x ?? 0) + (deleteBox?.width ?? 0),
+                "the row's Delete must be inside the viewport, not behind a scroll",
+            ).toBeLessThanOrEqual(visualViewports[viewport].width);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-AUTH",
+                    `auth-users-table-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            await openUserDialog(page, 1);
+            await expect(
+                page.getByTestId("config-input-auth-userDraft-password"),
+            ).toHaveAttribute("placeholder", "Value unchanged");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-AUTH",
+                    `auth-user-dialog-${viewport}`,
+                ),
+                fullPage: true,
+            });
+        });
     }
 
     // FM-068's visual gate. Desktop only: the save changes what the password
@@ -366,40 +494,27 @@ test.describe("Config auth tab visual evidence", () => {
         page,
         hydra,
     }) => {
-        const before = (await hydra.getConfig()) as Json;
-        const seeded = structuredClone(before);
-        authSection(seeded).authType = "BASIC";
-        authSection(seeded).restrictSearch = true;
-        authSection(seeded).users = [
-            {
-                maySeeAdmin: true,
-                maySeeDetailsDl: true,
-                maySeeStats: true,
-                password: "{noop}saved-password",
-                showIndexerSelection: true,
-                username: "saved-user",
-            },
-        ];
-        await hydra.saveConfig(seeded);
+        await seedUsers(hydra, [seedUser("saved-user")]);
 
         await prepareVisualEvidence(page, "desktop", async () => {
             await openAuthConfigAsAdmin(page);
         });
+        await openUserDialog(page, 0);
         await page
-            .getByTestId("config-input-auth-users-0-username")
+            .getByTestId("config-input-auth-userDraft-username")
             .fill("saved-user-renamed");
+        await submitUserDialog(page);
         await saveAndExpectSuccess(page);
 
         // Immediately after the save and before any reload: the password the
-        // response reset the form with is the marker again, so the field is
-        // back to its placeholder and the reveal button has nothing to
+        // response reset the form with is the marker again, so the row is back
+        // to reporting a stored password it has no value for. Re-opening the
+        // dialog shows the same thing from the control's side -- an empty field
+        // with the unchanged placeholder, and a reveal button with nothing to
         // disclose.
-        await expect(
-            page.getByTestId("config-input-auth-users-0-password"),
-        ).toHaveValue("");
-        await expect(
-            page.getByTestId("config-input-auth-users-0-password"),
-        ).toHaveAttribute("placeholder", "Value unchanged");
+        await expect(page.getByTestId("config-user-password-0")).toHaveText(
+            "Set",
+        );
         expect(usersOf((await hydra.getConfig()) as Json)[0]).toMatchObject({
             password: UNCHANGED_MARKER,
             username: "saved-user-renamed",

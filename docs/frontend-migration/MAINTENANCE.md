@@ -1362,3 +1362,38 @@ instead of leaving it to rot.
   FM-104's packet text literally ("hide them only when the filter also misses their labels") and is visible in both
   filtered captures, so it is a packet-sanctioned choice rather than a defect — but a bare heading over nothing is
   worth the owner's eye in practice. Surfaced 2026-08-26 by FM-104's reviewer.
+- **FM-105's case-sensitivity test does not pin case-sensitivity.** "should keep two usernames that differ only by
+  case apart" (`AuthUsersSection.test.tsx:333-353`) renames index 1 from `alice` to `alice-lower`, which collides with
+  `Alice` under no matcher — so FM-105's reviewer mutated `uniqueUsername` to compare `toLowerCase()` and all 48 tests
+  still passed. The *behaviour* is correct (both Java matchers use `String.equals`, verified against the source), but
+  the handoff's "with a test pinning that" overstates what exists. Renaming index 1 to `ALICE` and asserting Save is
+  **accepted** would bite. Surfaced 2026-08-26 by FM-105's reviewer.
+- **FM-105's stale-transaction token guard is unreachable and untested.** Deleting the guard at
+  `AuthUsersSection.tsx:136-138` leaves all 48 tests green. Unlike `DownloadersSection`, whose equivalent guard is
+  reachable through its async connection check, `UserDialog` has no async step and both dialogs are modal, so no UI
+  path can produce a stale commit. Correct defence-in-depth and honestly documented at the site — logged only so the
+  coverage asymmetry with `DownloadersSection` is not later mistaken for parity. Surfaced 2026-08-26 by FM-105's
+  reviewer.
+- **FM-105 added a username-uniqueness refusal that no contract records.** The user dialog refuses a username another
+  entry already holds exactly, because `UserAuthConfigValidator.findCorrespondingOldUserConfig` filters on
+  `String.equals` and takes `.findFirst()` — with two identical usernames the *same* stored record is handed to both
+  submitted entries, so one user's `***UNCHANGED***` marker resolves to the other's hash, and
+  `reviewChangesDiff.ts:268-278` independently degrades a duplicate-keyed list to positional comparison so the review
+  panel stops naming the affected rows. The refusal is right and its reviewer endorsed it — but it lives only in the
+  handoff, so a later task could remove it as unexplained. Record it in `F-CONFIG-AUTH`. Two consequences also worth
+  noting: a config already holding two identical usernames (seeded outside the UI, or saved before FM-105) makes each
+  such row unsaveable from the dialog until renamed, with the error attached to a field the admin did not change.
+  Surfaced 2026-08-26 by FM-105's reviewer.
+- **`userFieldPath` in `authSettings.ts:72-82` is production-dead, kept alive by its own test.** FM-105's table binds
+  no control to a row, so nothing in production calls it; `knip` stays silent only because `authSettings.test.ts:168`
+  imports it. It was kept deliberately because `categoriesSettings.ts:140`'s comment points at it and that file is
+  outside FM-105's allowlist — the right call for that task, since re-pointing the comment there would have been the
+  scope violation. But a test-only export kept alive to hold a comment reference upright should not persist: remove
+  the helper and its test case, and re-point that comment, in one session. Surfaced 2026-08-26, declared by FM-105's
+  implementer and endorsed by its reviewer.
+- **`fullPage: true` captures duplicate the sticky save bar.** `auth-user-dialog-{desktop,mobile}.png` show the bar
+  twice — Playwright's scroll-and-stitch behaviour meeting a `position: sticky` element, not a rendering bug.
+  Confirmed by FM-105's reviewer against two controls: `auth-after-save-desktop.png` (the same convention, inherited
+  from FM-068) shows the identical artifact, while `auth-form-desktop.png`, whose page fits without scrolling, does
+  not. Not worth changing that file's convention for, but it will recur in any `fullPage` capture of a scrolling
+  config page now that FM-097's bar is sticky. Surfaced 2026-08-26.

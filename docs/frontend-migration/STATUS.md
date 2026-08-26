@@ -838,6 +838,28 @@ asserts only that a `noWrap` class is present, which is weaker than the behaviou
 standalone reproduction of the exact grid nesting and measured the clipping directly (804px of text in 324px of box, no
 page overflow) rather than accepting the class as proof.
 
+FM-105 (Auth Users Table) turns the users repeat section into a table — username or the "Authless" legend, rights as
+chips, and a password *state* — with editing moved into a modal transaction over a clone. **No password value can reach
+the table DOM**: the Password column renders one of four fixed labels from an exhaustive pure function with no
+fall-through, asserted by a test that checks the table's text contains neither the marker nor a `*` and that the table
+holds no `<input>` at all. The `auth.users` shape is untouched, so FM-100's structural secret defence still covers it —
+the reviewer verified that behaviourally rather than by shape, confirming `collect` still intercepts an array of records
+before any descent and that `entryChange` hardcodes both value sides to `null`. **The task added a guard no contract
+asked for, and the reviewer ruled it correct**: the dialog refuses a username another entry already holds exactly,
+because `UserAuthConfigValidator` filters on `String.equals` and takes `.findFirst()`, so two identical usernames hand
+the *same* stored record to both entries and one user's marker resolves to the other's hash. Usernames differing only by
+case stay legal, since both Java matchers treat them as distinct — read from the source, not from a summary of it. The
+implementer also caught an ADR-0029 defect in itself *after* every gate was green: its first four-column layout put Edit
+and Delete off-canvas at 390px behind a scrollbar with no affordance, and cell padding alone eats 128px of 390 at four
+columns, so it restructured to three columns with the row actions inside the User cell and pinned it with a geometry
+assertion — the README's "pin a regression that actually happened". Verified with the gate chain (1375 tests) and
+real-backend `config-auth.spec.ts` at 8/8. Passed with six minor findings, none corrected (optional), all carried into
+`MAINTENANCE.md`. The review is worth reading for how it was conducted: it ran six mutations in a sandbox outside the
+repository and reported that **four bite and two do not** — the empty-seeded clone (6 failures), a tail-instead-of-middle
+delete, a raw-password render, and removing the uniqueness refusal all fail as claimed, but the case-sensitivity test
+and the stale-transaction token guard survive their mutations, so the handoff's "with a test pinning that" overstated
+two of its own claims.
+
 ## Active
 
 None.
@@ -852,7 +874,7 @@ None.
 
 ## Upcoming
 
-- FM-105: Auth Users Table — next, then FM-106 and FM-107 close the batch. Unlike the cleanup
+- FM-106: Notifications Editor Rework — next, then FM-107 closes the batch. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the

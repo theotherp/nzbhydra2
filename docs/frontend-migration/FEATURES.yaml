@@ -541,15 +541,39 @@ features:
     tests:
       - tests/system/tests/config-auth.spec.ts
       - core/ui-react/src/features/config/auth/AuthConfigTab.test.tsx
-      - core/ui-react/src/features/config/components/RepeatSection.test.tsx
+      - core/ui-react/src/features/config/auth/AuthUsersSection.test.tsx
+      - core/ui-react/src/features/config/auth/authSettings.test.ts
     selectors:
       # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
       # (`config-setting-auth-authType`, `config-input-auth-oidcClientSecret`,
-      # etc). The Users repeat section additionally uses:
-      # `config-repeat-auth-users` (the list), `config-repeat-entry-auth-users-<index>`
-      # (one user's fieldset), `config-repeat-add-auth-users`, and
-      # `config-repeat-remove-auth-users-<index>`. The fixed selectors are
-      # listed below.
+      # etc).
+      #
+      # FM-105 replaced the Users repeat section with a table and a modal
+      # editor, and with it the `config-repeat-auth-users`,
+      # `config-repeat-entry-auth-users-<index>`, `config-repeat-add-auth-users`
+      # and `config-repeat-remove-auth-users-<index>` ids this record used to
+      # list, along with every `config-input-auth-users-<index>-<field>` a row
+      # exposed. The Users section is no longer a `RepeatSection` consumer, so
+      # `RepeatSection.test.tsx` is no longer one of this feature's tests
+      # either (the component itself stays, for its other consumers).
+      #
+      # The table: `config-users-table`, `config-users-empty`,
+      # `config-users-add`, `config-user-entry-<index>`,
+      # `config-user-username-<index>`, `config-user-rights-<index>`,
+      # `config-user-right-<index>-<right>` (`maySeeAdmin`, `maySeeStats`,
+      # `maySeeDetailsDl`, `showIndexerSelection`, or `none`),
+      # `config-user-password-<index>`, `config-user-edit-<index>`, and
+      # `config-user-delete-<index>`; the delete confirmation is
+      # `config-user-delete-confirm`.
+      #
+      # The dialog: `config-user-dialog`, `-cancel`, `-submit`, and its fields
+      # under the draft path `auth.userDraft`
+      # (`config-input-auth-userDraft-username`, `-password`, and the
+      # `config-setting-auth-userDraft-<right>` switches). The draft path
+      # exists so the dialog's controls never collide with the row that opened
+      # them; nothing ever saves it.
+      #
+      # The fixed selectors are listed below.
       - config-auth
       - config-fieldset-main
       - config-fieldset-openid connect

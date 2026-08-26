@@ -5,6 +5,7 @@ import {
     fireEvent,
     render,
     screen,
+    waitForElementToBeRemoved,
     within,
 } from "@testing-library/react";
 import {useEffect} from "react";
@@ -13,6 +14,7 @@ import {afterEach, describe, expect, it} from "vitest";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {createHydraTheme} from "../../../app/theme";
+import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ShowAdvancedContext} from "../advancedFields";
 import {UNCHANGED_SECRET_MARKER} from "../components";
 import {AuthConfigTab} from "./AuthConfigTab";
@@ -75,11 +77,14 @@ function renderAuth({
         return (
             <ThemeProvider theme={createHydraTheme("dark")}>
                 <QueryClientProvider client={queryClient}>
-                    <FormProvider {...form}>
-                        <ShowAdvancedContext.Provider value={showAdvanced}>
-                            <AuthConfigTab />
-                        </ShowAdvancedContext.Provider>
-                    </FormProvider>
+                    {/* The Users table's Delete asks the shared confirm dialog. */}
+                    <DialogProvider>
+                        <FormProvider {...form}>
+                            <ShowAdvancedContext.Provider value={showAdvanced}>
+                                <AuthConfigTab />
+                            </ShowAdvancedContext.Provider>
+                        </FormProvider>
+                    </DialogProvider>
                 </QueryClientProvider>
             </ThemeProvider>
         );
@@ -229,136 +234,70 @@ describe("F-CONFIG-AUTH conditional fields", () => {
 });
 
 describe("F-CONFIG-AUTH Users section", () => {
-    it("should add a new user with legacy's default permissions and mark the form dirty", () => {
-        const harness = renderAuth();
-        expect(harness.form.formState.isDirty).toBe(false);
+    it("should render the users as a table inside the Users fieldset", () => {
+        renderAuth();
 
-        fireEvent.click(screen.getByTestId("config-repeat-add-auth-users"));
-
-        const users = authValues(harness).users as Record<string, unknown>[];
-        expect(users).toHaveLength(2);
-        expect(users[1]).toEqual({
-            maySeeAdmin: true,
-            maySeeDetailsDl: true,
-            maySeeStats: true,
-            password: null,
-            showIndexerSelection: true,
-            username: null,
-        });
-        expect(harness.form.formState.isDirty).toBe(true);
+        const fieldset = screen.getByTestId("config-fieldset-users");
         expect(
-            screen.getByRole("heading", {level: 3, name: "Authless"}),
+            within(fieldset).getByTestId("config-users-table"),
+        ).toBeVisible();
+        expect(
+            within(fieldset).getByTestId("config-user-username-0"),
+        ).toHaveTextContent("alice");
+        // The tab body no longer binds a single control to `auth.users.*`:
+        // every user is edited through `UserDialog`'s transaction, which is
+        // what keeps a half-filled user out of the whole-config form.
+        expect(
+            screen.queryByTestId("config-input-auth-users-0-username"),
+        ).toBeNull();
+        expect(
+            within(fieldset).getByRole("button", {name: "Add new user"}),
         ).toBeVisible();
     });
 
-    it("should remove a user and mark the form dirty", () => {
+    it("should commit a user edited in the dialog into the shared form", async () => {
         const harness = renderAuth();
-        // Reading `isDirty` first subscribes this harness to it; React Hook
-        // Form only maintains the flag for the fields a consumer observes.
         expect(harness.form.formState.isDirty).toBe(false);
 
-        fireEvent.click(
-            screen.getByTestId("config-repeat-remove-auth-users-0"),
-        );
-
-        expect(authValues(harness).users).toEqual([]);
-        expect(harness.form.formState.isDirty).toBe(true);
-        expect(
-            screen.queryByTestId("config-repeat-entry-auth-users-0"),
-        ).toBeNull();
-    });
-
-    it("should rename an existing user without touching the masked password field", () => {
-        const harness = renderAuth();
-
+        fireEvent.click(screen.getByTestId("config-user-edit-0"));
+        await screen.findByTestId("config-user-dialog");
         fireEvent.change(
-            screen.getByTestId("config-input-auth-users-0-username"),
+            screen.getByTestId("config-input-auth-userDraft-username"),
             {target: {value: "alice-renamed"}},
         );
+        fireEvent.click(screen.getByTestId("config-user-dialog-submit"));
+        await waitForElementToBeRemoved(() =>
+            screen.queryByTestId("config-user-dialog"),
+        );
 
-        const users = authValues(harness).users as Record<string, unknown>[];
-        expect(users[0]).toMatchObject({
+        expect(
+            (authValues(harness).users as Record<string, unknown>[])[0],
+        ).toMatchObject({
             password: UNCHANGED_SECRET_MARKER,
             username: "alice-renamed",
         });
-        expect(
-            screen.getByRole("heading", {level: 3, name: "alice-renamed"}),
-        ).toBeVisible();
+        expect(harness.form.formState.isDirty).toBe(true);
+        // The draft path the dialog wrote to lives in the dialog's own form
+        // and must never appear in the configuration this tab would save.
+        expect(authValues(harness).userDraft).toBeUndefined();
     });
 
-    it("should hide the password field for OIDC and never require it there", () => {
-        const oidcValues: ConfigValues = {
-            auth: {...fullyVisibleConfig.auth, authType: "OIDC"},
-        };
-        renderAuth({values: oidcValues});
-
-        expect(
-            screen.queryByTestId("config-input-auth-users-0-password"),
-        ).toBeNull();
-    });
-
-    it("should require a password only for a newly added user", async () => {
+    it("should keep the users array in the shared form across an unmount and remount of the tab", async () => {
         const harness = renderAuth();
 
-        fireEvent.click(screen.getByTestId("config-repeat-add-auth-users"));
-        expect(await harness.form.trigger()).toBe(false);
-        expect(
-            await screen.findByTestId("config-error-auth-users-1-password"),
-        ).toBeVisible();
-        // The existing user's password is the unchanged marker, never empty,
-        // so it never trips the same rule.
-        expect(
-            screen.queryByTestId("config-error-auth-users-0-password"),
-        ).toBeNull();
-
+        fireEvent.click(screen.getByTestId("config-users-add"));
+        await screen.findByTestId("config-user-dialog");
         fireEvent.change(
-            screen.getByTestId("config-input-auth-users-1-username"),
+            screen.getByTestId("config-input-auth-userDraft-username"),
             {target: {value: "bob"}},
         );
         fireEvent.change(
-            screen.getByTestId("config-input-auth-users-1-password"),
-            {target: {value: "s3cret"}},
+            screen.getByTestId("config-input-auth-userDraft-password"),
+            {target: {value: "typed"}},
         );
-        expect(await harness.form.trigger()).toBe(true);
-    });
-
-    it("should hide the three dependent permission switches while may-see-admin is on", () => {
-        renderAuth();
-        const entry = screen.getByTestId("config-repeat-entry-auth-users-0");
-        expect(
-            within(entry).getByTestId(
-                "config-setting-auth-users-0-maySeeStats",
-            ),
-        ).toBeVisible();
-
-        fireEvent.click(
-            within(entry).getByRole("switch", {name: "May see admin area"}),
-        );
-
-        expect(
-            within(entry).queryByTestId(
-                "config-setting-auth-users-0-maySeeStats",
-            ),
-        ).toBeNull();
-        expect(
-            within(entry).queryByTestId(
-                "config-setting-auth-users-0-maySeeDetailsDl",
-            ),
-        ).toBeNull();
-        expect(
-            within(entry).queryByTestId(
-                "config-setting-auth-users-0-showIndexerSelection",
-            ),
-        ).toBeNull();
-    });
-
-    it("should keep the users array in the shared form across an unmount and remount of the tab", () => {
-        const harness = renderAuth();
-
-        fireEvent.click(screen.getByTestId("config-repeat-add-auth-users"));
-        fireEvent.change(
-            screen.getByTestId("config-input-auth-users-1-username"),
-            {target: {value: "bob"}},
+        fireEvent.click(screen.getByTestId("config-user-dialog-submit"));
+        await waitForElementToBeRemoved(() =>
+            screen.queryByTestId("config-user-dialog"),
         );
         expect(
             authValues(harness).users as Record<string, unknown>[],
@@ -370,18 +309,20 @@ describe("F-CONFIG-AUTH Users section", () => {
         function Remount() {
             return (
                 <ThemeProvider theme={createHydraTheme("dark")}>
-                    <FormProvider {...harness.form}>
-                        <ShowAdvancedContext.Provider value={true}>
-                            <AuthConfigTab />
-                        </ShowAdvancedContext.Provider>
-                    </FormProvider>
+                    <DialogProvider>
+                        <FormProvider {...harness.form}>
+                            <ShowAdvancedContext.Provider value={true}>
+                                <AuthConfigTab />
+                            </ShowAdvancedContext.Provider>
+                        </FormProvider>
+                    </DialogProvider>
                 </ThemeProvider>
             );
         }
         render(<Remount />);
 
-        expect(
-            screen.getByTestId("config-input-auth-users-1-username"),
-        ).toHaveValue("bob");
+        expect(screen.getByTestId("config-user-username-1")).toHaveTextContent(
+            "bob",
+        );
     });
 });

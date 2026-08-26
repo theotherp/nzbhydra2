@@ -54,8 +54,9 @@ Currently available:
   another tab or an advanced gate is hiding it. The Main tab is fully editable —
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
   API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
-  field groups, OpenID Connect provider settings, area restrictions, and inline add/edit/remove of the user list, with
-  passwords that are never round-tripped in clear text. The Categories tab is fully editable — the three catalog-wide
+  field groups, OpenID Connect provider settings, area restrictions, and a users table listing each account's rights and
+  whether it has a password, with add, edit in a dialog, and delete behind a confirmation, and with passwords that are
+  never round-tripped in clear text nor shown in the table at all. The Categories tab is fully editable — the three catalog-wide
   settings and inline add/edit/remove of categories with their search type, subtype, word and regex restrictions, size
   presets, newznab category numbers, and ignore rules. The Notifications tab is fully editable — the Apprise transport and
   GUI display settings, and per-event notification entries added from an event-type menu, each with its own URLs, title and
