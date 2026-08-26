@@ -177,6 +177,58 @@ async function submitUserDialog(page: Page): Promise<void> {
     await expect(page.getByTestId("config-user-dialog")).toBeHidden();
 }
 
+test.describe("Config auth users search anchor", () => {
+    /**
+     * The behaviour the missing anchor cost, asserted end to end rather than
+     * as "the id exists in the DOM". `settingsIndex.ts` indexes the Users list
+     * as one section pointing at `config-repeat-auth-users`; FM-105's table
+     * dropped that id, so from FM-105 until 2026-08-26 picking an Auth Users
+     * hit routed to the tab and then silently did nothing -- the anchor poll
+     * ran out its two seconds and no highlight was ever painted. Nothing was
+     * red, which is exactly why this walks the whole path: search from another
+     * tab, pick the hit, and require the section to be scrolled to *and*
+     * marked.
+     */
+    test("should scroll to and highlight the Users section when its settings-search hit is picked", async ({
+        page,
+        hydra,
+    }) => {
+        await seedUsers(hydra, [seedUser("searchable-admin")]);
+
+        await authorizeAsAdmin(page);
+        // Started from another tab, so the hit has to route as well as scroll.
+        await page.goto(
+            `/config/main?internalApiKey=${testEnvironment.hydraInternalApiKey}`,
+        );
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("config-shell")).toBeVisible();
+
+        await page.getByTestId("config-search").fill("users who may log in");
+        await expect(page.getByRole("listbox")).toBeVisible();
+        await page.getByTestId("config-search-option-auth-users").click();
+
+        await expect(page).toHaveURL(/\/config\/auth(\?|$)/);
+        const section = page.getByTestId("config-repeat-auth-users");
+        // The highlight is asserted first because it is deliberately temporary
+        // (2.2s), and it is the half that silently never happened: the mark is
+        // a `boxShadow` painted by a scoped global rule keyed on this very test
+        // id, so its presence proves the anchor was resolved rather than polled
+        // to its deadline.
+        await expect
+            .poll(() =>
+                section.evaluate(
+                    (element) => getComputedStyle(element).boxShadow,
+                ),
+            )
+            .not.toBe("none");
+        await expect(section).toBeVisible();
+        await expect(section).toBeInViewport();
+        // The table the section holds came along, so what was scrolled to is
+        // the list itself and not an empty wrapper.
+        await expect(page.getByTestId("config-users-table")).toBeVisible();
+    });
+});
+
 test.describe("Config auth tab user management", () => {
     test("should add a user through the dialog with the rights it was given, and mask its password on reload", async ({
         page,

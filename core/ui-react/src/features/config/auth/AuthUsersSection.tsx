@@ -3,6 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import KeyIcon from "@mui/icons-material/Key";
 import KeyOffIcon from "@mui/icons-material/KeyOff";
 import {
+    Box,
     Button,
     Chip,
     Stack,
@@ -19,6 +20,7 @@ import {useFormContext, useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {useDialogs} from "../../../components/dialogs/dialogs";
+import {settingTestId} from "../components";
 import {
     defaultUser,
     userLegend,
@@ -32,6 +34,16 @@ import {
 import {UserDialog} from "./UserDialog";
 
 const USERS_TABLE_TEST_ID = "config-users-table";
+/**
+ * The search anchor for this section, restored 2026-08-26. `settingsIndex.ts`
+ * derives it from the config path through its own `repeatAnchor` helper (the id
+ * `RepeatSection` emitted for this list before FM-105 replaced it with the
+ * table below), so it is derived from `USERS_PATH` here rather than typed out
+ * again -- the same precedent `CategoriesTable.tsx:36-47` follows. FM-105
+ * dropped it, and neither FM-099's settings search nor FM-102's "on this page"
+ * list could reach the Users section until it came back.
+ */
+const USERS_ANCHOR_TEST_ID = `config-repeat-${settingTestId(USERS_PATH)}`;
 const ADD_LABEL = "Add new user";
 
 type Editing = {
@@ -187,7 +199,7 @@ export function AuthUsersSection() {
     };
 
     return (
-        <>
+        <Box data-testid={USERS_ANCHOR_TEST_ID}>
             <TableContainer
                 // Whatever cannot fit scrolls here rather than pushing the page
                 // sideways (ADR-0029). Which is close to nothing: three columns
@@ -280,7 +292,7 @@ export function AuthUsersSection() {
                     }
                 />
             )}
-        </>
+        </Box>
     );
 }
 

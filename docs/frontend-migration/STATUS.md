@@ -889,6 +889,37 @@ explicit `span` was necessary rather than tidy. Verified with the gate chain (14
 `config-notifications.spec.ts` at 5/5. Passed with minor findings, none corrected (optional), carried into
 `MAINTENANCE.md`.
 
+FM-107 (Categories Table) closes the 2026-08-24 config batch, replacing the categories repeat section with a table
+whose rows expand in place. Its packet had to be refined first: it *offered* a shared-`ChipsSetting` branch its own
+allowlist could not execute — the same internal contradiction FM-099, FM-100 and FM-101 hit, and resolved the same way,
+by a designer refinement rather than an implementer quietly taking the executable path. The ruling came from the
+registry rather than either argument: `COMPONENTS.yaml` states the `C-CONFIG-FIELDS` contract as one component per
+*control kind*, never one per field, and chips is a kind the vocabulary already owns, so a categories-local chips
+control would be a second implementation of an existing kind; FM-066 had already grown that vocabulary with three
+optional props each defaulting to previous behaviour. The designer also froze a trap the winning argument had got
+imprecise: this is **not** un-`Omit`ting `validate` — `ChipsSetting` never calls `settingRules`, so the whole-value
+`validate` stays omitted and the new prop is a per-chip gate at entry time; wiring `settingRules` would have changed
+when five other consumers block a save. And it found the packet's own "wide" verification filter was missing two
+consumer specs, `config-auth` and `config-notifications`. **Two things the implementer corrected in the contract it was
+given.** The packet asserted `settingsIndexDrift.test.tsx` would catch loss of the `config-repeat-categoriesConfig-categories`
+anchor; it does not — the implementer deleted the testid and that file stayed 37/37 green, because
+`renderedSettingTestIds()` only queries `^config-setting-` and direction (a) filters `kind: "row"`, so neither
+direction can see a section anchor. The check was relocated somewhere that bites. And the expanded row's fields were
+clipped at 390px, because an expansion is a cell of a table wider than its scroll container — ADR-0029's shape for the
+fourth time, caught once again only in the mobile capture after every gate was green. **The implementer also caught a
+vacuous test of its own**: mutating the refusal to filter the whole value rather than the rejected addition initially
+*passed*, which is the data-loss path — refusing `abc` while a backend-legal `-5` sits stored — and it added the
+missing round-trip assertion rather than reporting the case as covered. Verified with the gate chain (1437 tests) and a
+six-spec real-backend run at 38 passed, the five foreign specs unedited. Passed with five minor findings, none
+corrected (optional), all carried into `MAINTENANCE.md`. **One of those findings was a live regression in shipped
+work, since fixed**: probing every section anchor across all eight tabs, the reviewer found `config-repeat-auth-users`
+missing from the codebase entirely — FM-105 had replaced the users `RepeatSection` with `config-users-table` and
+dropped the anchor `settingsIndex.ts:550` still points at, so settings search and the "on this page" list could not
+reach Auth Users, and the drift test's blindness to `kind: "section"` entries is why nothing noticed. Both halves are
+closed by the maintenance entry *Restore the Auth Users search anchor, and close the drift blindness that hid its
+loss*: the anchor is back and derived from `settingTestId` so it cannot drift again, and the drift test gained a third
+direction asserting every section anchor renders. The remaining seven all did.
+
 ## Active
 
 None.
@@ -903,7 +934,7 @@ None.
 
 ## Upcoming
 
-- FM-107: Categories Table — the last packet of the batch. Unlike the cleanup
+- The 2026-08-26 batch is complete with FM-107; nothing is queued behind it. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the

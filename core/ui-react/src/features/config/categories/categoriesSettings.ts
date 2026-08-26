@@ -1,4 +1,8 @@
-import type {ConfigFieldPath, SettingOption} from "../components";
+import type {
+    ConfigFieldPath,
+    SettingOption,
+    SettingValidator,
+} from "../components";
 
 /**
  * `F-CONFIG-CATEGORIES`'s option lists, tooltips, and the Categories repeat
@@ -149,4 +153,60 @@ export function categoryEntryLegend(entry: CategoryValues): string {
     return entry.name !== null && entry.name.length > 0
         ? entry.name
         : "New category";
+}
+
+/**
+ * The shape one `newznabCategories` entry may have, and the whole of the
+ * client-side validation legacy never had ("The category configuration is not
+ * validated in any way", `CATEGORIES_HELP_LINES` above).
+ *
+ * It is the shape `NewznabCategoriesDeserializer` parses -- `Splitter.on("&")`
+ * over the entry, then `Integer::valueOf` on each piece -- narrowed on purpose
+ * to digits only. `Integer.valueOf` would also take `-5` and `+5`, and a
+ * newznab category is never negative, so a token the backend *would* accept is
+ * refused here. That narrowing is a gate on *entry*, never a filter on stored
+ * values: a `-5` already in the configuration keeps round-tripping, flagged
+ * where the admin can see it (`ChipsSetting`'s `validateChip`), because
+ * silently dropping it would corrupt a config the UI merely disapproves of.
+ */
+const NEWZNAB_CATEGORY_PATTERN = /^\d+(&\d+)*$/;
+
+/**
+ * Refuses one newznab-categories entry, naming the offending token and the
+ * accepted shape. Not a form-level `validate`: it decides whether a typed entry
+ * becomes a chip, not whether the config may be saved.
+ */
+export const newznabCategoryValidator: SettingValidator = (value) => {
+    const token = String(value);
+    return NEWZNAB_CATEGORY_PATTERN.test(token)
+        ? true
+        : `"${token}" is not a newznab category. Use a number, or several joined with "&" (for example 2010&11000).`;
+};
+
+/** A search type's label, as the Search type select spells it. */
+export function categorySearchTypeLabel(entry: CategoryValues): string {
+    return (
+        CATEGORY_SEARCH_TYPE_OPTIONS.find(
+            (option) => option.value === entry.searchType,
+        )?.label ??
+        // A value the select cannot offer (an older config, or one edited by
+        // hand) is shown as itself rather than as an empty cell.
+        String(entry.searchType)
+    );
+}
+
+/**
+ * The size preset pair as one summary cell. The dash is an en dash between two
+ * numbers and the open ends are spelled in words, because "1 -" and "- 250"
+ * are unreadable as a range; `null` on both sides has nothing to say at all.
+ */
+export function categorySizeSummary(entry: CategoryValues): string | null {
+    const {maxSizePreset: max, minSizePreset: min} = entry;
+    if (min === null && max === null) {
+        return null;
+    }
+    if (min !== null && max !== null) {
+        return `${min}–${max} MB`;
+    }
+    return min === null ? `up to ${String(max)} MB` : `from ${min} MB`;
 }

@@ -235,6 +235,87 @@ describe("C-CONFIG-FIELDS control kinds", () => {
         );
     });
 
+    /**
+     * FM-107's per-chip validator, in its *absent* state -- which is the state
+     * of all five other `ChipsSetting` consumers. Nothing about the control may
+     * change for them: an entry no validator would like is still accepted, no
+     * error node appears, and `aria-describedby` still names the help text
+     * alone (it was a hardcoded `hasError: false` before the property existed).
+     */
+    it("should accept any chip and describe itself by help alone with no validator", () => {
+        const harness = renderSetting(
+            <ChipsSetting
+                help="Hosts to disable SNI for"
+                label="Disable SNI"
+                name="main.sniDisabledFor"
+            />,
+            {values: {main: {sniDisabledFor: []}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+        fireEvent.change(input, {target: {value: "not a number at all"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["not a number at all"],
+        });
+        expect(
+            screen.queryByTestId("config-error-main-sniDisabledFor"),
+        ).toBeNull();
+        expect(
+            input
+                .closest("[aria-describedby]")
+                ?.getAttribute("aria-describedby"),
+        ).toBe("config-help-main-sniDisabledFor");
+    });
+
+    /**
+     * The same control with the property present: the entry is refused rather
+     * than written, the message is the validator's own, and only now does the
+     * error id join `aria-describedby`.
+     */
+    it("should refuse a chip its validator rejects and describe the refusal", () => {
+        const harness = renderSetting(
+            <ChipsSetting
+                help="Hosts to disable SNI for"
+                label="Disable SNI"
+                name="main.sniDisabledFor"
+                validateChip={(value) =>
+                    /^\d+$/.test(String(value))
+                        ? true
+                        : `"${String(value)}" is not a number`
+                }
+            />,
+            {values: {main: {sniDisabledFor: ["1"]}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+        fireEvent.change(input, {target: {value: "nope"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+
+        expect(harness.form.getValues().main).toEqual({sniDisabledFor: ["1"]});
+        expect(
+            screen.getByTestId("config-error-main-sniDisabledFor"),
+        ).toHaveTextContent('"nope" is not a number');
+        expect(
+            input
+                .closest("[aria-describedby]")
+                ?.getAttribute("aria-describedby"),
+        ).toBe(
+            "config-help-main-sniDisabledFor config-error-main-sniDisabledFor",
+        );
+
+        // A later acceptable entry clears the refusal and is written.
+        fireEvent.change(input, {target: {value: "2"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["1", "2"],
+        });
+        expect(
+            screen.queryByTestId("config-error-main-sniDisabledFor"),
+        ).toBeNull();
+    });
+
     it("should generate a 24-character alphanumeric API key and dirty the form", () => {
         const harness = renderSetting(
             <ApiKeySetting label="API key" name="main.apiKey" />,

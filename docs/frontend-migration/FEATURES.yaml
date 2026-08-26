@@ -549,13 +549,20 @@ features:
       # etc).
       #
       # FM-105 replaced the Users repeat section with a table and a modal
-      # editor, and with it the `config-repeat-auth-users`,
+      # editor, and with it the
       # `config-repeat-entry-auth-users-<index>`, `config-repeat-add-auth-users`
       # and `config-repeat-remove-auth-users-<index>` ids this record used to
       # list, along with every `config-input-auth-users-<index>-<field>` a row
       # exposed. The Users section is no longer a `RepeatSection` consumer, so
       # `RepeatSection.test.tsx` is no longer one of this feature's tests
       # either (the component itself stays, for its other consumers).
+      #
+      # `config-repeat-auth-users` is the one id from that set that stayed: it
+      # is this section's settings-search anchor, derived by `settingsIndex.ts`
+      # from the config path, and it now sits on the container that wraps the
+      # table. FM-105 dropped it with the repeat section and the loss went
+      # unnoticed until 2026-08-26 (see MAINTENANCE.md), because it broke
+      # nothing but the silent half of search navigation.
       #
       # The table: `config-users-table`, `config-users-empty`,
       # `config-users-add`, `config-user-entry-<index>`,
@@ -627,21 +634,48 @@ features:
     tests:
       - tests/system/tests/config-categories.spec.ts
       - core/ui-react/src/features/config/categories/CategoriesConfigTab.test.tsx
+      - core/ui-react/src/features/config/categories/categoriesSettings.test.ts
     selectors:
       # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
       # (`config-setting-categoriesConfig-defaultCategory`,
       # `config-input-categoriesConfig-categories-<index>-name`, etc). The
-      # Categories repeat section additionally uses:
-      # `config-repeat-categoriesConfig-categories` (the list),
-      # `config-repeat-entry-categoriesConfig-categories-<index>` (one
-      # category's fieldset), `config-repeat-add-categoriesConfig-categories`,
-      # and `config-repeat-remove-categoriesConfig-categories-<index>`. The
       # min/max size preset pair shares one row and one `data-testid`, derived
       # from its `minSizePreset` path -- there is no single config path for
-      # the pair as a whole. The fixed selectors are listed below.
+      # the pair as a whole.
+      #
+      # FM-107 replaced the shared repeat section with this feature's own
+      # catalog table, so three of its four repeat-section ids are gone:
+      # `config-repeat-entry-categoriesConfig-categories-<index>` is now
+      # `config-category-entry-<index>` (a table row, not a fieldset),
+      # `config-repeat-add-categoriesConfig-categories` is
+      # `config-categories-add`, and
+      # `config-repeat-remove-categoriesConfig-categories-<index>` is
+      # `config-category-remove-<index>` -- the same shape `F-CONFIG-AUTH`'s
+      # users table uses. The fourth, `config-repeat-categoriesConfig-categories`,
+      # is deliberately kept on the table's container: `settingsIndex.ts`
+      # derives this section's search anchor from the config path through its
+      # own `repeatAnchor` helper, so FM-099's settings search and FM-102's
+      # "on this page" list would break silently without it.
+      #
+      # A row additionally carries `config-category-expand-<index>` (the
+      # disclosure toggle, `aria-expanded` on it being the open/closed state),
+      # `config-category-name-<index>`, `config-category-searchType-<index>`,
+      # `config-category-newznabCategories-<index>`, and
+      # `config-category-size-<index>` (present only while
+      # `enableCategorySizes` is on) for its summary cells;
+      # `config-category-delete-confirm` is the shared confirmation dialog.
+      # A refused or stored-invalid newznab token is a chip at
+      # `config-input-categoriesConfig-categories-<index>-newznabCategories-chip-<token>`,
+      # and the refusal message reuses `C-CONFIG-FIELDS`'s existing
+      # `config-error-<path>` row id.
       - config-categories
       - config-categories-help
       - config-fieldset-categories
+      - config-categories-table
+      - config-categories-scroller
+      - config-categories-add
+      - config-categories-empty
+      - config-repeat-categoriesConfig-categories
     parity: done
     gaps: []
   - id: F-CONFIG-DOWNLOADING

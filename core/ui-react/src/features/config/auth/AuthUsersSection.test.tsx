@@ -16,6 +16,7 @@ import {createHydraTheme} from "../../../app/theme";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ShowAdvancedContext} from "../advancedFields";
 import {UNCHANGED_SECRET_MARKER} from "../components";
+import {settingsIndexForTab} from "../settingsSearch/settingsIndex";
 import {AuthUsersSection} from "./AuthUsersSection";
 import {type UserAuthConfigValues} from "./authSettings";
 
@@ -197,6 +198,27 @@ describe("F-CONFIG-AUTH users table", () => {
         expect(table.textContent).not.toContain(UNCHANGED_SECRET_MARKER);
         expect(table.textContent).not.toContain("*");
         expect(table.querySelector("input")).toBeNull();
+    });
+
+    /**
+     * The selector this section lost once already. `settingsIndex.ts` derives
+     * the Users section's search anchor from its config path, and FM-105's
+     * table dropped the id the repeat section had emitted, leaving FM-099's
+     * settings search and FM-102's "on this page" list navigating to an id that
+     * was in no DOM. Read off the index rather than typed out again, so the two
+     * cannot drift apart.
+     */
+    it("should keep the search anchor settingsIndex.ts derives for this section", () => {
+        const anchors = settingsIndexForTab("auth")
+            .filter((entry) => entry.kind === "section")
+            .map((entry) => entry.anchorTestId);
+        expect(anchors).toEqual(["config-repeat-auth-users"]);
+
+        renderUsers(configWith([user()]));
+
+        for (const anchor of anchors) {
+            expect(screen.getByTestId(anchor)).toBeVisible();
+        }
     });
 
     it("should say the password is not used when auth type is OIDC", () => {

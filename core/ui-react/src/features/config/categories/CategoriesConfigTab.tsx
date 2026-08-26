@@ -5,23 +5,18 @@ import type {ConfigValues} from "../../../api/config/schema";
 import {
     ConfigFieldset,
     HelpBlock,
-    RepeatSection,
     SelectSetting,
     SwitchSetting,
     type SettingOption,
 } from "../components";
-import {CategoryEntryFields} from "./CategoryEntryFields";
-import {
-    CATEGORIES_HELP_LINES,
-    categoryEntryLegend,
-    defaultCategoryEntry,
-    type CategoryValues,
-} from "./categoriesSettings";
+import {CategoriesTable} from "./CategoriesTable";
+import {CATEGORIES_HELP_LINES, type CategoryValues} from "./categoriesSettings";
 
 /**
  * `F-CONFIG-CATEGORIES`: the Categories configuration tab -- the three
- * catalog-wide settings plus the Categories repeat section of
- * `config-fields-service.js:1604-1836`, in legacy's order, bound to
+ * catalog-wide settings plus the category catalog of
+ * `config-fields-service.js:1604-1836` (FM-107's `CategoriesTable`, which
+ * replaced the shared repeat section), in legacy's order, bound to
  * `C-CONFIG-FORM`'s whole-config form through the `C-CONFIG-FIELDS`
  * vocabulary.
  *
@@ -80,15 +75,7 @@ export function CategoriesConfigTab() {
                 testId="config-categories-help"
             />
             <ConfigFieldset advanced label="Categories">
-                <RepeatSection<CategoryValues>
-                    addLabel="Add new category"
-                    defaultEntry={defaultCategoryEntry}
-                    entryLegend={categoryEntryLegend}
-                    name="categoriesConfig.categories"
-                    renderEntry={(index) => (
-                        <CategoryEntryFields index={index} />
-                    )}
-                />
+                <CategoriesTable />
             </ConfigFieldset>
         </Box>
     );

@@ -19,12 +19,16 @@ import {
     IGNORE_RESULTS_FROM_OPTIONS,
     IGNORE_RESULTS_FROM_TOOLTIP,
     NEWZNAB_CATEGORIES_TOOLTIP,
+    newznabCategoryValidator,
 } from "./categoriesSettings";
 
 /**
  * `F-CONFIG-CATEGORIES`'s per-category fields, in legacy's order
  * (`config-fields-service.js:1663-1832`), bound to one entry of
- * `categoriesConfig.categories` through `RepeatSection`.
+ * `categoriesConfig.categories`. Since FM-107 they are what an expanded row of
+ * `CategoriesTable` renders, in place, rather than the body of a repeat-section
+ * fieldset; they are unchanged apart from the newznab field's new per-chip
+ * validator.
  */
 export function CategoryEntryFields({index}: {index: number}) {
     return (
@@ -84,6 +88,7 @@ export function CategoryEntryFields({index}: {index: number}) {
                 label="Newznab categories"
                 name={categoryFieldPath(index, "newznabCategories")}
                 tooltip={NEWZNAB_CATEGORIES_TOOLTIP}
+                validateChip={newznabCategoryValidator}
             />
             <SelectSetting
                 help="Ignore results from this category"

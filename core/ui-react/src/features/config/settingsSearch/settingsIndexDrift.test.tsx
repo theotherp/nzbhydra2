@@ -31,8 +31,13 @@ import {settingsIndexForTab, type SettingsIndexEntry} from "./settingsIndex";
  *   (a) every non-conditional index entry is actually on screen — an entry for
  *       a setting that was renamed or removed fails here;
  *   (b) every setting row on screen is in the index — a task that adds a
- *       setting and forgets to index it fails here, by name.
+ *       setting and forgets to index it fails here, by name;
+ *   (c) every indexed list *section*'s anchor is an id its tab renders — a
+ *       task that reshapes a list and drops the anchor search navigates to
+ *       fails here, by name. Neither (a) nor (b) can see a section anchor:
+ *       (a) filters `kind === "row"`, and (b) matches only `config-setting-*`.
  *
+
  * Direction (b) is the one that matters most and the one that is easiest to
  * make vacuous, so it also asserts that it is looking at a non-trivial number
  * of rows and that its one exclusion (below) cannot swallow a real one.
@@ -293,6 +298,20 @@ function indexRows(tab: string): SettingsIndexEntry[] {
     return settingsIndexForTab(tab).filter((entry) => entry.kind === "row");
 }
 
+/**
+ * Direction (c)'s subject. A list section contributes one entry pointing at the
+ * list itself, and its anchor is *not* a `config-setting-*` id, so neither of
+ * the directions above can see it: (a) filters `kind === "row"`, and (b) only
+ * ever looks at what `renderedSettingTestIds()` matched. That blind spot hid a
+ * live defect for two tasks — FM-105 replaced the Auth users `RepeatSection`
+ * with a table and dropped `config-repeat-auth-users`, which `settingsIndex.ts`
+ * still pointed at, so every Auth Users search hit navigated to an id in no DOM
+ * and silently did nothing while this file stayed green.
+ */
+function indexSections(tab: string): SettingsIndexEntry[] {
+    return settingsIndexForTab(tab).filter((entry) => entry.kind === "section");
+}
+
 afterEach(cleanup);
 
 describe("C-CONFIG-SETTINGS-INDEX drift", () => {
@@ -337,6 +356,48 @@ describe("C-CONFIG-SETTINGS-INDEX drift", () => {
     }
 
     for (const tabCase of TAB_CASES) {
+        /**
+         * Direction (c): every list section's anchor is an id something on its
+         * tab actually renders. A section anchor is what a search hit and the
+         * "on this page" list scroll to, and losing one fails silently — the
+         * anchor poll expires and no highlight is ever painted — so it is
+         * asserted here by name rather than left to a per-feature test that a
+         * later task may not think to update.
+         *
+         * A section may be conditional (Auth's Users renders only for some auth
+         * types), so the anchor has to render in *at least one* of the tab's
+         * fixtures rather than in the default one, which is the same latitude
+         * direction (b) gives its alternative fixtures.
+         */
+        it(`should render the anchor of every indexed section of the ${tabCase.label} tab`, () => {
+            const fixtures = [
+                {label: "default", values: tabCase.values},
+                ...(tabCase.alternativeFixtures ?? []),
+            ];
+            const found = new Set<string>();
+            for (const fixture of fixtures) {
+                renderTab(tabCase, fixture.values);
+                for (const entry of indexSections(tabCase.tab)) {
+                    if (screen.queryByTestId(entry.anchorTestId) !== null) {
+                        found.add(entry.anchorTestId);
+                    }
+                }
+                cleanup();
+            }
+
+            const missing = indexSections(tabCase.tab)
+                .filter((entry) => !found.has(entry.anchorTestId))
+                .map(
+                    (entry) =>
+                        `${entry.path} is indexed with anchor ${entry.anchorTestId}, which nothing on the ${tabCase.label} tab renders`,
+                );
+
+            expect(
+                missing,
+                `indexed list sections whose anchor is in no DOM — settings search and the "on this page" list navigate to these and silently do nothing`,
+            ).toEqual([]);
+        });
+
         /**
          * The `advanced` column, checked against the thing it claims to
          * describe rather than against itself. It is what decides whether a
@@ -417,6 +478,20 @@ describe("C-CONFIG-SETTINGS-INDEX drift", () => {
         }
 
         expect(compared).toBeGreaterThan(100);
+    });
+
+    /**
+     * Direction (c), like (b), is only worth anything if it is looking at
+     * something. Every list in the configuration is one section entry, so if
+     * this count ever drops the tabs above stopped contributing them and the
+     * per-tab assertions went vacuous rather than the lists disappearing.
+     */
+    it("should check an anchor for every list section the index holds", () => {
+        const sections = TAB_CASES.flatMap((tabCase) =>
+            indexSections(tabCase.tab).map((entry) => entry.path),
+        );
+
+        expect(sections.length).toBeGreaterThanOrEqual(7);
     });
 
     /**

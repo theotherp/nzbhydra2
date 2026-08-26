@@ -848,6 +848,48 @@ Format, one entry per fix:
   **Swept before changing anything**, since this component renders on every config tab and the fix only *lowers* a floor: the failure mode it could introduce is a fieldset holding wide unscrollable content, which would clip instead of widening the page. There is none. The only fieldset content wider than its column is `IndexerTable`'s 900px table, which owns an `overflowX: auto` `TableContainer`. The three `minWidth: 180` `<dt>` labels (`CustomMappingsSection`, `ExternalToolsSection`, `DownloadersSection`) are far below any supported viewport and stack to a column at `xs`; `ReviewChangesPanel`'s table lives in a `Dialog`, not a fieldset; the only `whiteSpace: nowrap` outside a scrolling table is `ColorSetting`'s visually-hidden `<input type="color">`. No `<pre>` blocks and no unbroken long strings without `overflowWrap` in the config tree.
   Visual evidence for `F-CONFIG-INDEXERS` was re-captured (the strip is git-ignored under `tests/system/visual-evidence/`); the mobile list and the tablet scroll-container captures are unchanged in layout from FM-103's, confirming the wrapper's removal shifted nothing.
 
+### 2026-08-26 — Restore the Auth Users search anchor, and close the drift blindness that hid its loss
+
+- **Why not a packet:** one restored `data-testid` on an existing container plus one new assertion in the test that was
+  supposed to catch its loss; no capability, contract, registry, or behavior change beyond making an already-indexed
+  navigation target reachable again.
+- **Paths:** `core/ui-react/src/features/config/auth/AuthUsersSection.tsx` and `AuthUsersSection.test.tsx`;
+  `core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx`;
+  `tests/system/tests/config-auth.spec.ts`; `docs/frontend-migration/FEATURES.yaml` (`F-CONFIG-AUTH.selectors`).
+- **Gates:** in `core/ui-react` — `typecheck`, `format:check`, `build`, `validate:migration` pass; `lint`
+  **14 warnings / 0 errors**, equal to base; `test -- --run` **119 files / 1447 tests passed**; `knip` reports exactly
+  the two base findings (`NO_ADVANCED_DISCLOSURE` and the now-dead `RepeatSection` barrel export), no third;
+  `validate:focus-affordances` **red on exactly the five known base findings** — its output is byte-identical
+  (`md5 039971a77a37040d111114af7b1175ed`) to the same script run against a `git archive 1b4a46362` extraction, and the
+  exemption list is untouched. `tests/system`: `npx tsc --noEmit` clean, `prettier --check` clean. Real backend from
+  the repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-auth.spec.ts
+  tests/config.spec.ts` → **38 passed**, plus a confirming `tests/config-auth.spec.ts` run → **9 passed**.
+- **Commit:** _pending — filled in on commit_
+- **Note:** the defect and the reason nothing saw it are two different things, and both are fixed here.
+  **The anchor.** `settingsIndex.ts:550` indexes the Auth Users list as one `kind: "section"` entry anchored on
+  `repeatAnchor("auth.users")` → `config-repeat-auth-users`. FM-105 replaced the users `RepeatSection` with a table
+  carrying `config-users-table` and dropped that id, so from FM-105 until now FM-099's settings search and FM-102's
+  "on this page" list navigated to an id in no DOM: `useSettingsNavigation`'s anchor poll simply ran out its 2s
+  deadline and no highlight was ever painted — the same silent-no-op shape as FM-099's own cross-tab reveal bug.
+  Restored on a `Box` wrapping the table, derived from `USERS_PATH` through `settingTestId` rather than typed out, the
+  precedent FM-107 set in `CategoriesTable.tsx:36-47`. `config-users-table` is untouched: it is the focus target after
+  an add or delete and is asserted by four unit tests and two system assertions.
+  **The blindness.** `settingsIndexDrift.test.tsx`'s two directions cannot see a section anchor *at all* — (a) filters
+  `kind === "row"`, and (b) only ever looks at what `^config-setting-` matched — so the file stayed 37/37 green with
+  the anchor gone. A third direction (c) now asserts, per tab, that every `kind: "section"` entry's `anchorTestId` is
+  rendered by something, naming the offending path and anchor on failure. It checks the anchor across *all* of a tab's
+  fixtures rather than the default one, because Auth's Users section is `conditional` (it renders only for a non-`NONE`
+  auth type) and filtering conditionals out — as direction (a) does for rows — would have skipped the very entry that
+  was broken. Verified negatively: with the restored anchor deleted, (c) fails with
+  `auth.users is indexed with anchor config-repeat-auth-users, which nothing on the Authorization tab renders`.
+  A companion assertion pins the number of section entries at ≥7 so (c) cannot go vacuous the way (b) could.
+  **The other six section anchors pass** under (c) — indexers, downloaders, external tools, custom mappings,
+  notifications, categories. `config-repeat-auth-users` was the only one missing; the true scope is one anchor.
+  **The system test asserts the behaviour, not the id.** `config-auth.spec.ts` now searches from the Main tab, picks
+  the Auth Users hit, and requires the section to be scrolled into view *and* carrying the highlight `boxShadow` —
+  which only appears once the anchor poll resolves, so it is direct evidence the navigation completed rather than
+  expired. A DOM-presence check would have been the weaker claim.
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
@@ -1420,3 +1462,37 @@ instead of leaving it to rot.
   while the FM-086 entry a few hundred lines above recorded it closed. Corrected in bookkeeping 2026-08-26; recorded
   here because it is the second stale-cross-reference this batch has produced in that file (see the `- FM-NNN:` entry
   shape above), and a status file that disagrees with itself is worse than one that is merely behind.
+- **Backend defect, outside every FM allowlist — saving a blank category NPEs.**
+  `shared/mapping/src/main/java/org/nzbhydra/config/category/CategoriesConfig.java:35-38`'s `setCategories` runs
+  `categories.sort(Comparator.comparing(Category::getName))` on every deserialization, over entries whose `name` may
+  be `null` — and both the React default entry and legacy's `defaultModel` start with a null name. So adding a
+  category and saving before typing a name throws on the write path rather than being refused with a validation
+  message. Wants its own packet: the fix is server-side (null-safe comparator, or a validator that refuses a nameless
+  category with a field-attributed message), and a client-side guard alone would leave the API defect standing for any
+  other caller. Surfaced 2026-08-26 while investigating FM-107.
+- **The same `setCategories` sort is also the evidence that nothing in the categories config is order-dependent.**
+  It sorts by name on every write, and `withoutAll()` filters by equality rather than position, so any order an admin
+  arranged is discarded on write-back. That is a stronger justification for FM-107's "do not invent reordering" note
+  than the packet's original "legacy has none", and worth carrying into the packet if reordering is ever reconsidered.
+  Surfaced 2026-08-26.
+- **FM-107's mobile scroll comment overstates its own claim.** `CategoriesTable.tsx:218-222` and the matching
+  `config-categories.spec.ts` assertion say "Both of a row's controls … sit in the first two cells, so nothing scrolled
+  out of view is operable" — but the packet's own `categories-scroll-container-mobile.png` shows the expand-toggle
+  column scrolled entirely off the left edge, so an operable control *can* be out of view. The true, narrower claim is
+  that both controls are visible at the container's default scroll position and cost one swipe to reach again.
+  Surfaced 2026-08-26 by FM-107's reviewer.
+- **At 390px the categories table's Size column is off-canvas with no affordance.** The shape ADR-0029 refused for
+  FM-100's review panel, in a case where it is non-blocking: FM-107's Acceptance explicitly asked for a "mobile
+  390x844 showing the scroll container", ratifying the scroll, and the row expansion repeats every value as a real
+  editable field, so nothing is unreachable. A below-`sm` column drop or merge would be a design decision rather than
+  a fix. Surfaced 2026-08-26 by FM-107's reviewer.
+- **`RepeatSection` has no production consumer left.** FM-106 moved notifications to a locally-owned section and
+  FM-107 moved categories to a table, so `knip` now reports its barrel export dead
+  (`components/index.ts:14:9`). FM-107 correctly left it: deleting the line would exceed its fence on that file and
+  would immediately make `RepeatSection.tsx` — explicitly out of scope — an unused *file* rather than an unused
+  export. The contained follow-up is deleting the component, its test, the barrel line, and trimming the
+  `C-CONFIG-FIELDS` paragraph — worth doing only after confirming no planned list wants the vocabulary back. Surfaced
+  2026-08-26 by FM-107, ruling endorsed by its reviewer.
+- **FM-107's summary chips key on the token value.** `CategoriesTable.tsx:414` uses `key={category}`, so two identical
+  stored newznab tokens in one category collide. `ChipsSetting` is `freeSolo` and does not prevent entering a
+  duplicate. Cosmetic React warning only. Surfaced 2026-08-26 by FM-107's reviewer.

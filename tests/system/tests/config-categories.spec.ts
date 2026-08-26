@@ -1,4 +1,4 @@
-import type {Page} from "@playwright/test";
+import type {Locator, Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
@@ -61,10 +61,30 @@ async function saveAndExpectSuccess(page: Page): Promise<void> {
 }
 
 /**
- * The Categories repeat section re-sorts by name on every save
+ * FM-107: a row's fields are behind its expand toggle, and they stay mounted
+ * while it is collapsed, so `fill()` needs the row opened first. Idempotent --
+ * a row already open is left open.
+ */
+async function expandCategory(page: Page, index: number): Promise<void> {
+    const toggle = page.getByTestId(`config-category-expand-${index}`);
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+        await toggle.click();
+    }
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(
+        page.getByTestId(
+            `config-input-categoriesConfig-categories-${index}-name`,
+        ),
+    ).toBeVisible();
+}
+
+/**
+ * The Categories catalog re-sorts by name on every save
  * (`CategoriesConfig.setCategories`), so a newly added category's row index
  * is never stable across a save+reload -- it has to be located by its own
- * `name` input's current value instead.
+ * `name` input's current value instead. The inputs of collapsed rows are still
+ * in the DOM (FM-107 keeps them mounted), which is what lets this read them
+ * without opening every row.
  */
 async function categoryIndexByName(page: Page, name: string): Promise<number> {
     const inputs = page.locator(
@@ -86,6 +106,23 @@ async function categoryIndexByName(page: Page, name: string): Promise<number> {
     throw new Error(`No category named "${name}" found on the page`);
 }
 
+/**
+ * Scrolls `target`'s top edge to just below the sticky save bar, which overlays
+ * the top of the page and would otherwise cover it.
+ */
+async function scrollToTopOf(page: Page, target: Locator): Promise<void> {
+    await target.evaluate((element) =>
+        element.scrollIntoView({block: "start"}),
+    );
+    const bar = await page.getByTestId("config-save-bar").boundingBox();
+    if (bar !== null) {
+        await page.evaluate(
+            (height) => window.scrollBy(0, -height),
+            bar.height,
+        );
+    }
+}
+
 test.describe("Config categories tab round trip", () => {
     test("should add a category with a newznab tuple and a size preset, save, reload, and leave other categories unchanged", async ({
         page,
@@ -98,16 +135,14 @@ test.describe("Config categories tab round trip", () => {
         await openCategoriesConfig(page);
         await setAdvanced(page, true);
 
-        await page
-            .getByTestId("config-repeat-add-categoriesConfig-categories")
-            .click();
+        await page.getByTestId("config-categories-add").click();
         const addedIndex = categoriesBefore.length;
-        const entry = page.getByTestId(
-            `config-repeat-entry-categoriesConfig-categories-${addedIndex}`,
-        );
+        const entry = page.getByTestId(`config-category-entry-${addedIndex}`);
         await expect(entry).toBeVisible();
+        // A new row opens itself: its `name` is blank and required.
+        await expandCategory(page, addedIndex);
 
-        await entry
+        await page
             .getByTestId(
                 `config-input-categoriesConfig-categories-${addedIndex}-name`,
             )
@@ -116,26 +151,51 @@ test.describe("Config categories tab round trip", () => {
         // A plain newznab category and an `&`-joined tuple requiring two
         // numbers to be present in one result
         // (`config-fields-service.js:1789-1795`).
-        const newznabInput = entry.getByTestId(
+        const newznabInput = page.getByTestId(
             `config-input-categoriesConfig-categories-${addedIndex}-newznabCategories`,
         );
         await newznabInput.fill("9999");
         await newznabInput.press("Enter");
         await newznabInput.fill("9998&9997");
         await newznabInput.press("Enter");
-        await expect(entry.getByText("9999", {exact: true})).toBeVisible();
-        await expect(entry.getByText("9998&9997", {exact: true})).toBeVisible();
 
-        await entry
+        // FM-107: a token the backend's `NewznabCategoriesDeserializer` could
+        // not parse is refused at entry, naming itself, and never becomes a
+        // chip -- so it also never reaches the save below.
+        const refusal = page.getByTestId(
+            `config-error-categoriesConfig-categories-${addedIndex}-newznabCategories`,
+        );
+        await newznabInput.fill("9996,9995");
+        await newznabInput.press("Enter");
+        await expect(refusal).toContainText('"9996,9995"');
+        await expect(page.getByText("9996,9995", {exact: true})).toHaveCount(0);
+
+        // The two accepted ones are chips, and the row's summary cell shows
+        // them without the row having to be open.
+        const summary = page.getByTestId(
+            `config-category-newznabCategories-${addedIndex}`,
+        );
+        await expect(summary).toContainText("9999");
+        await expect(summary).toContainText("9998&9997");
+
+        await page
             .getByTestId(
                 `config-input-categoriesConfig-categories-${addedIndex}-minSizePreset`,
             )
             .fill("10");
-        await entry
+        await page
             .getByTestId(
                 `config-input-categoriesConfig-categories-${addedIndex}-maxSizePreset`,
             )
             .fill("250");
+        // The size column is there only while the catalog-wide switch is on,
+        // and this test does not change that switch: it asserts the summary
+        // cell exactly when the instance's own configuration renders one.
+        if (categoriesConfig(before).enableCategorySizes === true) {
+            await expect(
+                page.getByTestId(`config-category-size-${addedIndex}`),
+            ).toContainText("10–250 MB");
+        }
 
         await saveAndExpectSuccess(page);
 
@@ -147,27 +207,22 @@ test.describe("Config categories tab round trip", () => {
         await setAdvanced(page, true);
 
         const savedIndex = await categoryIndexByName(page, categoryName);
+        // Auditable while every row is still collapsed: the summary cell alone
+        // answers "which category claims 9998&9997".
+        const reloadedSummary = page.getByTestId(
+            `config-category-newznabCategories-${savedIndex}`,
+        );
+        await expect(reloadedSummary).toContainText("9999");
+        await expect(reloadedSummary).toContainText("9998&9997");
+
+        await expandCategory(page, savedIndex);
         await expect(
             page.getByTestId(
-                `config-input-categoriesConfig-categories-${savedIndex}-newznabCategories`,
-            ),
-        ).toBeVisible();
-        const reloadedEntry = page.getByTestId(
-            `config-repeat-entry-categoriesConfig-categories-${savedIndex}`,
-        );
-        await expect(
-            reloadedEntry.getByText("9999", {exact: true}),
-        ).toBeVisible();
-        await expect(
-            reloadedEntry.getByText("9998&9997", {exact: true}),
-        ).toBeVisible();
-        await expect(
-            reloadedEntry.getByTestId(
                 `config-input-categoriesConfig-categories-${savedIndex}-minSizePreset`,
             ),
         ).toHaveValue("10");
         await expect(
-            reloadedEntry.getByTestId(
+            page.getByTestId(
                 `config-input-categoriesConfig-categories-${savedIndex}-maxSizePreset`,
             ),
         ).toHaveValue("250");
@@ -208,49 +263,107 @@ test.describe("Config categories tab visual evidence", () => {
                 await openCategoriesConfig(page);
                 await setAdvanced(page, true);
             });
-            // As loaded, unedited -- the list "collapsed to defaults".
+            const table = page.getByTestId("config-categories-table");
+            await expect(table).toBeVisible();
+
+            // Every capture below is a viewport screenshot with the region
+            // scrolled into view first, not `fullPage`: FM-106 found `fullPage`
+            // unreliable on these tabs once the content exceeds the viewport
+            // with the sticky save bar in play, and each state here has to be
+            // legible in the frame to be evidence of anything.
+            // `scrollIntoView({block: "start"})`, not
+            // `scrollIntoViewIfNeeded`: the catalog is far taller than the
+            // viewport, and the minimal scroll the latter performs leaves the
+            // column headers off the top of the frame. The extra scroll back is
+            // the sticky save bar's own measured height -- it overlays the top
+            // of the page, so `block: "start"` alone parks the header row
+            // underneath it. Measured rather than guessed, since the bar's
+            // height depends on whether it is showing a dirty summary.
+            await scrollToTopOf(page, table);
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-CATEGORIES",
-                    `categories-defaults-${viewport}`,
+                    `categories-table-collapsed-${viewport}`,
                 ),
-                fullPage: true,
             });
 
-            // One category actively being edited. `RepeatSection` has no
-            // collapse/expand affordance of its own (`C-CONFIG-FIELDS`,
-            // shared with `F-CONFIG-AUTH`'s Users section) -- every entry's
-            // fields are always fully rendered -- so "expanded for editing"
-            // is captured as a focused, in-progress edit of the first entry
-            // rather than a distinct disclosure state.
-            const firstNameInput = page
-                .getByTestId(
-                    /^config-input-categoriesConfig-categories-\d+-name$/,
-                )
-                .first();
-            await firstNameInput.click();
+            // One row expanded in place, with a refused newznab token visible
+            // underneath its own field.
+            await expandCategory(page, 0);
+            const newznabInput = page.getByTestId(
+                "config-input-categoriesConfig-categories-0-newznabCategories",
+            );
+            await newznabInput.scrollIntoViewIfNeeded();
+            await newznabInput.fill("2010,3000");
+            await newznabInput.press("Enter");
+            const refusal = page.getByTestId(
+                "config-error-categoriesConfig-categories-0-newznabCategories",
+            );
+            await expect(refusal).toBeVisible();
+            await refusal.scrollIntoViewIfNeeded();
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-CATEGORIES",
-                    `categories-editing-${viewport}`,
+                    `categories-row-expanded-refused-${viewport}`,
                 ),
-                fullPage: true,
             });
 
-            // A newly added, still-blank category.
-            await page
-                .getByTestId("config-repeat-add-categoriesConfig-categories")
-                .click();
-            await expect(
-                page.getByRole("heading", {level: 3, name: "New category"}),
-            ).toBeVisible();
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-CONFIG-CATEGORIES",
-                    `categories-new-category-${viewport}`,
-                ),
-                fullPage: true,
-            });
+            if (viewport === "mobile") {
+                // The expansion is a cell of a table that is wider than its
+                // scroll container at this width, so without the pinning in
+                // `CategoriesTable` the right-hand edge of every field in it
+                // would sit behind that horizontal scroll. Summary text may
+                // scroll out of view; an input may not (ADR-0029).
+                const fields = await page
+                    .getByTestId("config-category-fields-box-0")
+                    .boundingBox();
+                expect(
+                    fields,
+                    "the expanded fields must have a box",
+                ).not.toBeNull();
+                const viewportSize = page.viewportSize();
+                expect(
+                    (fields?.x ?? 0) + (fields?.width ?? 0),
+                    "an expanded row's fields must fit the viewport",
+                ).toBeLessThanOrEqual(viewportSize?.width ?? 0);
+
+                // ADR-0029, asserted rather than eyeballed: the table's own
+                // container is what scrolls sideways at 390px, the document
+                // does not, and both of a row's controls stay reachable without
+                // any horizontal scrolling at all.
+                await page.getByTestId("config-category-expand-0").click();
+                const container = page.getByTestId(
+                    "config-categories-scroller",
+                );
+                await scrollToTopOf(page, container);
+                expect(
+                    await container.evaluate(
+                        (element) => element.scrollWidth > element.clientWidth,
+                    ),
+                    "the table container is what overflows at 390px",
+                ).toBe(true);
+                expect(
+                    await page
+                        .locator("html")
+                        .evaluate(
+                            (element) =>
+                                element.scrollWidth <= element.clientWidth,
+                        ),
+                    "the page itself must never scroll horizontally",
+                ).toBe(true);
+                // Scrolled to its right edge, so the capture shows the columns
+                // the 390px frame cannot hold *and* that reaching them costs
+                // nothing but a swipe inside the table.
+                await container.evaluate((element) => {
+                    element.scrollLeft = element.scrollWidth;
+                });
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-CONFIG-CATEGORIES",
+                        `categories-scroll-container-${viewport}`,
+                    ),
+                });
+            }
         });
     }
 });
