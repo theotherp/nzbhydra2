@@ -15,6 +15,32 @@ async function openConfig(page: Page): Promise<void> {
 }
 
 /**
+ * FM-102: scrolls the named fieldset to sit just under the sticky bar --
+ * deliberately overlapping where a naive scrollspy reading only the bar's own
+ * edge, rather than a generous activation line below it, would miss the
+ * target entirely. The same geometry `ConfigNav.tsx`'s own anchor click uses,
+ * so this also stands in for "click an anchor" wherever a test wants a
+ * deterministic scroll position rather than whatever the browser's default
+ * `scrollIntoView` alignment happens to land on.
+ */
+async function scrollFieldsetUnderBar(
+    page: Page,
+    fieldsetTestId: string,
+): Promise<void> {
+    await page.evaluate((id) => {
+        const bar = document.querySelector('[data-testid="config-save-bar"]');
+        const node = document.querySelector(`[data-testid="${id}"]`);
+        if (!(bar instanceof HTMLElement) || !(node instanceof HTMLElement)) {
+            throw new Error(`missing element for ${id}`);
+        }
+        const barHeight = bar.getBoundingClientRect().height;
+        const top =
+            node.getBoundingClientRect().top + window.scrollY - barHeight - 4;
+        window.scrollTo(0, Math.max(top, 0));
+    }, fieldsetTestId);
+}
+
+/**
  * The only difference a load-save-load round trip may show: the backend
  * re-masks `@HiddenInUI` values on every read
  * (`SensitiveDataConfigValidator.prepareForDisplay`), so a value that was
@@ -254,6 +280,188 @@ test.describe("Config shell round trip", () => {
         expect(allowReMaskedSecrets(await hydra.getConfig(), before)).toEqual(
             before,
         );
+    });
+});
+
+// FM-102 / ADR-0028: the sidebar's "on this page" list of the active tab's
+// mounted fieldsets. Only real browser layout can prove the sticky-bar scroll
+// offset and scrollspy at all -- jsdom lays nothing out -- so every case in
+// this block, not only the visual capture below, runs against the real app.
+test.describe("Config fieldset anchor navigation (FM-102)", () => {
+    test("should list every Main fieldset with advanced on, and fewer with it off", async ({
+        page,
+    }) => {
+        await openConfig(page);
+
+        await expect(
+            page.getByTestId("config-nav-anchor-list-heading"),
+        ).toHaveText("Main");
+        const alwaysVisible = ["hosting", "ui", "security", "updates", "other"];
+        const wholeAdvanced = [
+            "proxy",
+            "logging",
+            "backup",
+            "history",
+            "database",
+        ];
+        for (const suffix of alwaysVisible) {
+            await expect(
+                page.getByTestId(`config-nav-anchor-${suffix}`),
+            ).toBeVisible();
+        }
+        // Collapsed behind their own expander: no `<fieldset>` on the page
+        // yet, so no entry for it either -- the list is correct by
+        // construction rather than needing a per-tab table to filter it.
+        for (const suffix of wholeAdvanced) {
+            await expect(
+                page.getByTestId(`config-nav-anchor-${suffix}`),
+            ).toBeHidden();
+        }
+
+        await page.getByTestId("config-advanced-toggle").click();
+
+        for (const suffix of [...alwaysVisible, ...wholeAdvanced]) {
+            await expect(
+                page.getByTestId(`config-nav-anchor-${suffix}`),
+            ).toBeVisible();
+        }
+    });
+
+    test("should add a fieldset to the list once its own expander reveals it, without the global toggle", async ({
+        page,
+    }) => {
+        await openConfig(page);
+
+        await expect(page.getByTestId("config-nav-anchor-proxy")).toBeHidden();
+
+        await page.getByTestId("config-advanced-expander-proxy").click();
+
+        await expect(page.getByTestId("config-nav-anchor-proxy")).toBeVisible();
+        await expect(
+            page.getByTestId("config-advanced-toggle"),
+        ).not.toBeChecked();
+    });
+
+    test("should drop a revealed fieldset from the list again when its expander collapses it", async ({
+        page,
+    }) => {
+        await openConfig(page);
+
+        await page.getByTestId("config-advanced-expander-logging").click();
+        const anchor = page.getByTestId("config-nav-anchor-logging");
+        await expect(anchor).toBeVisible();
+
+        await page.getByTestId("config-advanced-expander-logging").click();
+
+        // Gone, not merely detached behind a finished transition. Only a real
+        // browser runs the `Collapse` exit at all -- react-transition-group
+        // keeps the `<fieldset>` mounted through `EXITING` and removes it at
+        // `EXITED`, which is exactly the window an implementation can leave a
+        // registration stranded in. A stale entry stays *visible* here, and
+        // clicking it scrolls to the top of the page because its node's
+        // `getBoundingClientRect()` is all zeroes once detached.
+        await expect(anchor).toBeHidden();
+        await expect(page.getByTestId("config-fieldset-logging")).toBeHidden();
+        // The rest of the list is untouched by the collapse.
+        await expect(
+            page.getByTestId("config-nav-anchor-hosting"),
+        ).toBeVisible();
+    });
+
+    test("should have no list at all for a tab whose only fieldset is entirely advanced-hidden", async ({
+        page,
+    }) => {
+        await openConfig(page);
+
+        await page.getByTestId("config-tab-categories").click();
+        await expect(page.getByTestId("config-categories")).toBeVisible();
+
+        await expect(
+            page.getByTestId("config-nav-anchor-list-heading"),
+        ).toBeHidden();
+        await expect(
+            page.getByTestId("config-nav-anchor-categories"),
+        ).toBeHidden();
+
+        await page.getByTestId("config-advanced-toggle").click();
+
+        await expect(
+            page.getByTestId("config-nav-anchor-list-heading"),
+        ).toHaveText("Categories");
+        await expect(
+            page.getByTestId("config-nav-anchor-categories"),
+        ).toBeVisible();
+    });
+
+    test("should scroll the clicked fieldset's legend below the sticky bar and mark its anchor current", async ({
+        page,
+    }) => {
+        await openConfig(page);
+        await page.getByTestId("config-advanced-toggle").click();
+        const anchor = page.getByTestId("config-nav-anchor-logging");
+        await expect(anchor).toBeVisible();
+
+        await anchor.click();
+
+        const legend = page
+            .getByTestId("config-fieldset-logging")
+            .getByText("Logging", {exact: true});
+        await expect(legend).toBeInViewport();
+        await expect
+            .poll(async () => {
+                const bar = await page
+                    .getByTestId("config-save-bar")
+                    .boundingBox();
+                const legendBox = await legend.boundingBox();
+                if (bar === null || legendBox === null) {
+                    return false;
+                }
+                // Under the sticky bar, not hidden beneath it.
+                return legendBox.y >= bar.y + bar.height;
+            })
+            .toBe(true);
+        await expect(anchor).toHaveAttribute("aria-current", "location");
+    });
+
+    test("should move the current marker as the admin scrolls, even where the sticky bar overlaps the target", async ({
+        page,
+    }) => {
+        await openConfig(page);
+        await expect(
+            page.getByTestId("config-nav-anchor-security"),
+        ).toBeVisible();
+
+        await scrollFieldsetUnderBar(page, "config-fieldset-security");
+        await expect(
+            page.getByTestId("config-nav-anchor-security"),
+        ).toHaveAttribute("aria-current", "location");
+
+        await scrollFieldsetUnderBar(page, "config-fieldset-other");
+        await expect(
+            page.getByTestId("config-nav-anchor-other"),
+        ).toHaveAttribute("aria-current", "location");
+        await expect(
+            page.getByTestId("config-nav-anchor-security"),
+        ).not.toHaveAttribute("aria-current", "location");
+    });
+
+    test("should scroll to the fieldset and close the drawer when an anchor is clicked on mobile", async ({
+        page,
+    }) => {
+        await page.setViewportSize({width: 390, height: 844});
+        await openConfig(page);
+
+        await page.getByTestId("config-nav-open").click();
+        const anchor = page.getByTestId("config-nav-anchor-security");
+        await expect(anchor).toBeVisible();
+
+        await anchor.click();
+
+        await expect(page.getByTestId("config-nav")).toBeHidden();
+        await expect(page.getByTestId("config-nav-open")).toBeVisible();
+        await expect(
+            page.getByTestId("config-fieldset-security"),
+        ).toBeInViewport();
     });
 });
 
@@ -887,6 +1095,50 @@ test.describe("Config review changes visual evidence", () => {
                     `review-changes-${viewport}`,
                 ),
             });
+        });
+    }
+});
+
+test.describe("Config fieldset anchor navigation visual evidence (FM-102)", () => {
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the anchor list at ${viewport}`, async ({
+            page,
+        }) => {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openConfig(page);
+            });
+
+            if (viewport === "mobile") {
+                // Docked at `md`+ only; below it the identical list renders
+                // inside the drawer FM-097 already opens for the entries.
+                await page.getByTestId("config-nav-open").click();
+                await expect(page.getByTestId("config-nav")).toBeVisible();
+            }
+            await expect(
+                page.getByTestId("config-nav-anchor-list-heading"),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `fieldset-anchors-${viewport}`,
+                ),
+            });
+
+            if (viewport === "desktop") {
+                // A mid-page current marker: scroll to a fieldset in the
+                // middle of Main's ten and capture the anchor list showing it
+                // current, not merely visible.
+                await scrollFieldsetUnderBar(page, "config-fieldset-security");
+                await expect(
+                    page.getByTestId("config-nav-anchor-security"),
+                ).toHaveAttribute("aria-current", "location");
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-CONFIG-SHELL",
+                        `fieldset-anchors-current-${viewport}`,
+                    ),
+                });
+            }
         });
     }
 });

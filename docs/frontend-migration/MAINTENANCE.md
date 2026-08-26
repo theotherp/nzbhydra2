@@ -1268,3 +1268,40 @@ instead of leaving it to rot.
   maintainer to preserve an ordering that does nothing — and hides the dependency that is real: a *second* modal
   opening while the raised layer is already mounted would snapshot it as a body sibling and hide it. Surfaced
   2026-08-26 by FM-101's re-review.
+- **FM-102's anchor list renders `<button>` as a direct child of `<ul>`.** `ConfigNav.tsx:181-217` uses
+  `ListItemButton component="button"` inside a `List`, so the DOM is `ul > button` with no `li` — an invalid content
+  model that yields a `list` with zero `listitem`s, so assistive tech announces no item count for the "on this page"
+  list. Stock MUI nav anatomy is `List > ListItem disablePadding > ListItemButton`. Verified by DOM probe, not
+  inferred. Surfaced 2026-08-26 by FM-102's re-review.
+- **FM-102's short-tab scrollspy guard has no test.** The fix for the document-end fallback firing at scroll 0 added a
+  `scrollHeight > clientHeight` check, but no case asserts that on a short tab (Downloading, Notifications, External
+  Tools, Authorization — all of which fit a 1280x800 viewport with advanced off) the *first* anchor rather than the
+  last is current at rest. The guard is correct by inspection; nothing would catch its removal. Surfaced 2026-08-26 by
+  FM-102's re-review.
+- **`ConfigNav.tsx`'s current-anchor magnitudes and activation fraction are unannotated or half-annotated.**
+  `borderLeft: "3px solid"`, `pl: 1.5` and `py: 0.25` (`:193-200`) carry no justification comment, which *UI
+  Conventions* requires at every deviation from stock MUI; and `:418`'s `0.3` viewport fraction justifies *why a
+  fraction* ("keeps the same behaviour across viewport heights") but never why one third. Same class as FM-097's
+  `minHeight: 44` and FM-098's spacing values above — this is now the fourth task to collect it, which suggests the
+  convention wants a lint rule or a template line rather than another ledger entry. Surfaced 2026-08-26 by FM-102's
+  reviews.
+- **FM-102 nests two navigation landmarks.** The anchor list is a `Box component="nav"` inside the nav column's own
+  `component="nav"` (`ConfigNav.tsx:162`), so a screen-reader rotor lists "Configuration sections" containing "Main on
+  this page". Valid HTML, but a labelled region inside the outer landmark would read better. Also `useScrollspy`
+  (`:456-465`) listens for `scroll` only, so a viewport resize changes the activation line without recomputing the
+  marker until the next scroll. Surfaced 2026-08-26 by FM-102's reviews.
+- **The unit suite failed once in thirteen consecutive runs, unidentified.** FM-102's re-reviewer saw
+  `1 failed | 1307 passed` on a cold-cache first run and green 1308/1308 on the twelve that followed, without
+  capturing the failing test's name. Not attributable to FM-102 on the available evidence. Note the separately-logged
+  `DialogProvider.test.tsx` teardown race (roughly 1 run in 10) and the `features/config/notifications` timeout under
+  parallel load are both plausible candidates — a suite that fails once in thirteen for unknown reasons is worth
+  identifying before it trains people to re-run. Surfaced 2026-08-26.
+- **`UpdateFooterBanners.tsx:93` measures a different box than its own initial measurement — a latent trap, not a live
+  bug.** The initial read uses `getBoundingClientRect().height` while the `ResizeObserver` callback uses
+  `entry.contentRect.height`, so the two paths measure border box and content box respectively. FM-102's fixer hit
+  exactly this pattern in its own new `useSaveBarHeight` — the padded save bar measured ~24px short and the sticky
+  column painted over the first tab entry — and flagged the sibling occurrence. FM-102's re-review checked before
+  agreeing: the observed `Box` at `:105` sets only `bottom`/`left`/`right`/`position`/`zIndex`, no padding or border,
+  so its two boxes are the same height today and the footer offset is correct. It becomes a real bug the moment anyone
+  adds padding or a border to that container. Fix is one line for uniformity. Surfaced 2026-08-26 by FM-102's fixer,
+  scoped by its re-review.

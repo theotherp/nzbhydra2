@@ -786,6 +786,104 @@ describe("ConfigShell settings navigation", () => {
     });
 });
 
+// The Main tab's fieldsets whose whole `ConfigFieldset` is advanced -- Proxy,
+// Logging, Backup, History, Database -- collapse to just their expander when
+// the global toggle is off, so they have no `<fieldset>` on the page and no
+// anchor. `mainSettings.ts`/`MainConfigTab.tsx` are read-only context here,
+// not files this task edits.
+const MAIN_ALWAYS_VISIBLE_FIELDSETS = [
+    "Hosting",
+    "UI",
+    "Security",
+    "Updates",
+    "Other",
+];
+const MAIN_WHOLE_ADVANCED_FIELDSETS = [
+    "Proxy",
+    "Logging",
+    "Backup",
+    "History",
+    "Database",
+];
+
+describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
+    it("should show no anchor list for a tab body that mounts no ConfigFieldset", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        expect(screen.queryByTestId(/^config-nav-anchor-/)).toBeNull();
+        expect(
+            screen.queryByTestId("config-nav-anchor-list-heading"),
+        ).toBeNull();
+    });
+
+    it("should head the list with the active tab's name and list only the mounted fieldsets, growing as advanced is turned on", async () => {
+        renderConfigArea({backend: createValidBackend(), realTabBodies: true});
+        await waitForShell();
+
+        expect(
+            screen.getByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Main");
+        for (const label of MAIN_ALWAYS_VISIBLE_FIELDSETS) {
+            expect(
+                screen.getByTestId(`config-nav-anchor-${label.toLowerCase()}`),
+            ).toBeVisible();
+        }
+        for (const label of MAIN_WHOLE_ADVANCED_FIELDSETS) {
+            expect(
+                screen.queryByTestId(
+                    `config-nav-anchor-${label.toLowerCase()}`,
+                ),
+            ).toBeNull();
+        }
+
+        fireEvent.click(screen.getByTestId("config-advanced-toggle"));
+
+        for (const label of [
+            ...MAIN_ALWAYS_VISIBLE_FIELDSETS,
+            ...MAIN_WHOLE_ADVANCED_FIELDSETS,
+        ]) {
+            expect(
+                await screen.findByTestId(
+                    `config-nav-anchor-${label.toLowerCase()}`,
+                ),
+            ).toBeVisible();
+        }
+    });
+
+    it("should scroll a fieldset into view without navigating when its anchor is clicked", async () => {
+        const {router} = renderConfigArea({
+            backend: createValidBackend(),
+            realTabBodies: true,
+        });
+        await waitForShell();
+        const scrollTo = vi.fn();
+        vi.stubGlobal("scrollTo", scrollTo);
+
+        fireEvent.click(screen.getByTestId("config-nav-anchor-security"));
+
+        expect(scrollTo).toHaveBeenCalled();
+        expect(router.state.location.pathname).toBe("/config/main");
+    });
+
+    it("should close the mobile drawer when an anchor inside it is clicked", async () => {
+        stubMobileViewport();
+        renderConfigArea({backend: createValidBackend(), realTabBodies: true});
+        await waitForShell();
+        vi.stubGlobal("scrollTo", vi.fn());
+
+        fireEvent.click(screen.getByTestId("config-nav-open"));
+        const anchor = await screen.findByTestId("config-nav-anchor-security");
+
+        fireEvent.click(anchor);
+
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-nav")).toBeNull(),
+        );
+        expect(screen.getByTestId("config-nav-open")).toBeVisible();
+    });
+});
+
 describe("ConfigShell sticky save bar", () => {
     it("should offer Save alone while the form is pristine", async () => {
         renderConfigArea({backend: createBackend()});

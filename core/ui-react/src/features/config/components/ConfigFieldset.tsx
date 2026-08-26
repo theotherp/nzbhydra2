@@ -10,9 +10,10 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useId, useMemo, useState} from "react";
 
 import {useShowAdvanced} from "../advancedFields";
+import {useFieldsetNavRegistry} from "../fieldsetNav";
 import {
     AdvancedDisclosureContext,
     FULLY_REVEALED_ADVANCED_DISCLOSURE,
@@ -51,6 +52,41 @@ export function ConfigFieldset({
 }) {
     const showAdvanced = useShowAdvanced();
     const [revealed, setRevealed] = useState(false);
+
+    // FM-102: this fieldset's entry in the sidebar's "on this page" list
+    // (ADR-0028), registered against its own `<fieldset>` element for exactly
+    // as long as that element is actually on the page. A whole advanced
+    // fieldset collapsed behind its expander (`advanced === true &&
+    // !showAdvanced && !revealed`) offers no such element -- `Collapse`'s
+    // `unmountOnExit` removes it -- so it is correct by construction for the
+    // list to have no entry for it either: there is nothing on the page yet
+    // to jump to. Revealing it, individually or via the global toggle, mounts
+    // the real element and the effect below picks it up; collapsing it again
+    // withdraws the entry the moment the click is handled.
+    //
+    // The node is held in *state* set from a callback ref, not in a `useRef`,
+    // and `collapsed` gates registration on top of it. Both halves are load
+    // bearing. A ref read from an effect is a snapshot taken whenever some
+    // dependency happens to change, and `Collapse` forwards `unmountOnExit`
+    // to react-transition-group, which keeps the child rendered right through
+    // `EXITING` and only unmounts it at `EXITED` -- so on the collapse click
+    // the ref still points at the outgoing element, and by the time it really
+    // goes away no dependency changes again and the effect never re-runs. The
+    // entry outlived its node, leaving the anchor pointing at a detached
+    // element whose `getBoundingClientRect()` is all zeroes (clicking it
+    // scrolled to the top of the page). The callback ref makes the unmount
+    // itself a state change the effect must follow, and `collapsed` withdraws
+    // the entry immediately rather than a transition later.
+    const fieldsetNav = useFieldsetNavRegistry();
+    const navId = useId();
+    const [fieldsetNode, setFieldsetNode] = useState<HTMLElement | null>(null);
+    const collapsed = advanced === true && !showAdvanced && !revealed;
+    useEffect(() => {
+        if (fieldsetNode === null || collapsed) {
+            return undefined;
+        }
+        return fieldsetNav.register(navId, label, fieldsetNode);
+    }, [fieldsetNav, navId, label, fieldsetNode, collapsed]);
     // The registrations of the advanced rows the global toggle is currently
     // hiding, held as a bag of keys rather than a set: a doubly-invoked effect
     // and a repeated path both settle at the right *number*. The count below is
@@ -110,6 +146,7 @@ export function ConfigFieldset({
         <Box
             component="fieldset"
             data-testid={fieldsetTestId(label)}
+            ref={setFieldsetNode}
             // A native `<fieldset>`/`<legend>` pair is the semantic grouping
             // for a set of related form controls, and it is what assistive
             // technology announces. Its user-agent border and inset padding are

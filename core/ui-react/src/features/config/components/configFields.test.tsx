@@ -9,7 +9,7 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {
     FormProvider,
     useForm,
@@ -23,6 +23,7 @@ import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {SafeConfigContext} from "../../../bootstrap";
 import {ShowAdvancedContext} from "../advancedFields";
+import {FieldsetNavContext, type FieldsetNavRegistry} from "../fieldsetNav";
 import {ApiKeySetting} from "./ApiKeySetting";
 import {generateApiKey} from "./apiKey";
 import {ChipsSetting} from "./ChipsSetting";
@@ -44,10 +45,13 @@ function renderSetting(
     ui: React.ReactNode,
     {
         dereferer,
+        fieldsetNavRegistry,
         showAdvanced = false,
         values = {},
     }: {
         dereferer?: string;
+        /** FM-102: defaults to the inert registry every other test relies on. */
+        fieldsetNavRegistry?: FieldsetNavRegistry;
         showAdvanced?: boolean;
         values?: ConfigValues;
     } = {},
@@ -67,6 +71,11 @@ function renderSetting(
         useEffect(() => {
             harness.form = form;
         }, [form]);
+        const body = (
+            <ShowAdvancedContext.Provider value={showAdvanced}>
+                {ui}
+            </ShowAdvancedContext.Provider>
+        );
         return (
             <ThemeProvider theme={createHydraTheme("dark")}>
                 <QueryClientProvider client={queryClient}>
@@ -74,9 +83,15 @@ function renderSetting(
                         value={dereferer === undefined ? null : {dereferer}}
                     >
                         <FormProvider {...form}>
-                            <ShowAdvancedContext.Provider value={showAdvanced}>
-                                {ui}
-                            </ShowAdvancedContext.Provider>
+                            {fieldsetNavRegistry === undefined ? (
+                                body
+                            ) : (
+                                <FieldsetNavContext.Provider
+                                    value={fieldsetNavRegistry}
+                                >
+                                    {body}
+                                </FieldsetNavContext.Provider>
+                            )}
                         </FormProvider>
                     </SafeConfigContext.Provider>
                 </QueryClientProvider>
@@ -626,6 +641,155 @@ describe("C-CONFIG-FIELDS per-fieldset advanced disclosure", () => {
         expect(harness.form.getValues().main).toEqual({
             dereferer: "https://deref.test/",
         });
+    });
+});
+
+/**
+ * Records every `register` call and every id withdrawn through its returned
+ * cleanup — and, separately, the set that is *live* right now.
+ *
+ * The two are not interchangeable, which is the point of keeping both.
+ * `register` hands back a fresh closure per call, so a component that
+ * withdraws and immediately re-registers (React runs an effect's cleanup
+ * before its body) appends to `registered` and to `unregisteredIds` and looks
+ * perfectly balanced from either list alone. Only `live` — what
+ * `useFieldsetNav`'s own map would hold — shows that the entry came back. A
+ * "did it unregister?" assertion written against `unregisteredIds` alone
+ * therefore passes whether or not the entry is really gone.
+ */
+function createRecordingRegistry(): {
+    live: ReadonlyMap<string, {label: string; node: HTMLElement}>;
+    registered: {id: string; label: string; node: HTMLElement}[];
+    registry: FieldsetNavRegistry;
+    unregisteredIds: string[];
+} {
+    const registered: {id: string; label: string; node: HTMLElement}[] = [];
+    const unregisteredIds: string[] = [];
+    const live = new Map<string, {label: string; node: HTMLElement}>();
+    const registry: FieldsetNavRegistry = {
+        register: (id, label, node) => {
+            registered.push({id, label, node});
+            live.set(id, {label, node});
+            return () => {
+                unregisteredIds.push(id);
+                live.delete(id);
+            };
+        },
+    };
+    return {live, registered, registry, unregisteredIds};
+}
+
+/** Mounts `children` until "toggle" is clicked, then unmounts them. */
+function Toggleable({children}: {children: React.ReactNode}) {
+    const [shown, setShown] = useState(true);
+    return (
+        <>
+            <button
+                data-testid="toggle"
+                onClick={() => setShown((current) => !current)}
+                type="button"
+            >
+                Toggle
+            </button>
+            {shown ? children : null}
+        </>
+    );
+}
+
+describe("C-CONFIG-FIELDS FM-102 on-this-page registration", () => {
+    it("should register its own <fieldset> element under its legend", () => {
+        const {registered, registry} = createRecordingRegistry();
+        renderSetting(HOSTING_FIELDSET, {
+            fieldsetNavRegistry: registry,
+            values: {main: {host: "0.0.0.0"}},
+        });
+
+        expect(registered).toHaveLength(1);
+        expect(registered[0].label).toBe("Hosting");
+        expect(registered[0].node).toBe(
+            screen.getByTestId("config-fieldset-hosting"),
+        );
+    });
+
+    it("should withdraw its registration when it unmounts", () => {
+        const {live, registered, registry, unregisteredIds} =
+            createRecordingRegistry();
+        renderSetting(<Toggleable>{HOSTING_FIELDSET}</Toggleable>, {
+            fieldsetNavRegistry: registry,
+            values: {main: {host: "0.0.0.0"}},
+        });
+        const [{id}] = registered;
+
+        fireEvent.click(screen.getByTestId("toggle"));
+
+        expect(unregisteredIds).toEqual([id]);
+        expect([...live.keys()]).toEqual([]);
+    });
+
+    it("should have no entry for a collapsed whole-advanced fieldset, and register/withdraw it as it is revealed and hidden again", () => {
+        const {live, registered, registry, unregisteredIds} =
+            createRecordingRegistry();
+        renderSetting(
+            <ConfigFieldset advanced label="Categories">
+                <TextSetting advanced label="Dereferer" name="main.dereferer" />
+            </ConfigFieldset>,
+            {
+                fieldsetNavRegistry: registry,
+                values: {main: {dereferer: "https://deref.test/"}},
+            },
+        );
+
+        // Nothing to register while collapsed: there is no `<fieldset>`
+        // element on the page yet, so the list is correct by construction
+        // rather than needing this case filtered back out.
+        expect(registered).toHaveLength(0);
+        expect([...live.keys()]).toEqual([]);
+
+        fireEvent.click(
+            screen.getByTestId("config-advanced-expander-categories"),
+        );
+
+        expect(registered).toHaveLength(1);
+        expect(registered[0].label).toBe("Categories");
+        expect(registered[0].node).toBe(
+            screen.getByTestId("config-fieldset-categories"),
+        );
+        const [{id}] = registered;
+
+        fireEvent.click(
+            screen.getByTestId("config-advanced-expander-categories"),
+        );
+
+        // Withdrawn the moment the click is handled, without waiting for the
+        // `Collapse` exit transition to finish removing the element.
+        expect(unregisteredIds).toEqual([id]);
+        // And *stays* withdrawn. This is the assertion that bites: `Collapse`
+        // forwards `unmountOnExit` to react-transition-group, which keeps the
+        // `<fieldset>` mounted right through `EXITING`, so an implementation
+        // that re-reads a ref in the same effect finds the outgoing element
+        // still there and immediately re-registers — balanced from
+        // `unregisteredIds`' point of view, and a permanently stale entry
+        // pointing at a node that is about to be detached.
+        expect([...live.keys()]).toEqual([]);
+    });
+
+    it("should register an advanced fieldset directly, against its own <fieldset>, once the global toggle is on", () => {
+        const {registered, registry} = createRecordingRegistry();
+        renderSetting(
+            <ConfigFieldset advanced label="Categories">
+                <TextSetting advanced label="Dereferer" name="main.dereferer" />
+            </ConfigFieldset>,
+            {
+                fieldsetNavRegistry: registry,
+                showAdvanced: true,
+                values: {main: {dereferer: "https://deref.test/"}},
+            },
+        );
+
+        expect(registered).toHaveLength(1);
+        expect(registered[0].node).toBe(
+            screen.getByTestId("config-fieldset-categories"),
+        );
     });
 });
 

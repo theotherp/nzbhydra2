@@ -766,6 +766,37 @@ block above the panel in a sandbox and getting 50/50 green. Verified with the ga
 runs across all four fenced specs at 49/49. Passed with minor findings, none corrected (optional), all carried into
 `MAINTENANCE.md`.
 
+FM-102 (In-Tab Fieldset Anchor Navigation) closes the FM-097 shell chain: each tab's nav column now carries an "on
+this page" list of that tab's fieldsets, headed by the tab's name, rendered as a sibling below the `Tabs` per ADR-0028
+and never as a `Tabs` child — the `Tabs`/`Tab` subtree's only diff line is a removed unused import. Fieldsets
+self-register their own node and the order is re-derived from live `compareDocumentPosition` on every change rather
+than trusted from registration sequence, because a conditionally-mounted fieldset's effect commits after siblings that
+sit later in the JSX. The real-browser run earned its keep twice over: the first scrollspy threshold required the
+target's top within a pixel of the bar, which the click-scroll's deliberate gap made unreachable, and Main's last
+fieldset has too little trailing content to ever scroll up to the activation line — neither is visible without real
+scroll clamping. **One fix cycle, six required findings, and the review that found them is the strongest of the run.**
+Two were real defects invisible to the tests as written: collapsing a revealed whole-advanced fieldset left a permanent
+stale anchor, because MUI's `Collapse` keeps children mounted through the exit transition so the effect re-registered
+the node it had just withdrawn and never ran again — the anchor then pointed at a detached node and clicking it
+scrolled to the top; and the document-end fallback fired at scroll position 0 on any tab fitting the viewport, marking
+the *last* section current while the admin looked at the first, which is four of eight tabs at 1280x800 and all of them
+on a taller monitor. A third finding was a gate: `validate:migration` was red on the delivered tree and the handoff
+reported it green, the cause being the `- FM-NNN:` shape the validator's regex requires. A fourth was that the single
+unit test written to prove the task's contested behaviour **could not fail for the defect it targeted** — it asserted
+an unregistration had happened, while the bug was a re-registration afterwards; the fourth task in this batch where a
+test certified the comfortable path. The correction was structural rather than a patch: the node moved from a ref into
+state via a callback ref, so the eventual unmount is a dependency change the effect must follow, and the re-review
+probed three neighbouring paths (global toggle mid-reveal, unrelated unmount, unmount mid-`EXITING`) asserting no live
+entry ever points at a disconnected node. ADR-0030 settled the last finding against the implementer's judgement: the
+nav column was not sticky, so the list scrolled away with the page — reproducing the exact defect ADR-0028 cited when
+choosing this placement. The whole docked column now sticks below the save bar with internal scrolling, keeping the tab
+entries reachable too. The fixer self-caught a defect there worth remembering: it first measured the bar with
+`contentRect.height`, the content box, so the padded bar came up ~24px short and the column painted over the first tab
+entry. Verified with the gate chain (1308 tests) and real-backend runs at 86/86 across all ten specs in the widened
+filter. Passed with nine minor findings, none corrected (optional), all carried into `MAINTENANCE.md` — including an
+invalid `ul > button` content model in the anchor list, an untested short-tab guard, and a latent `contentRect` trap in
+`UpdateFooterBanners.tsx` that the re-review scoped to "not yet a bug" before agreeing to log it.
+
 ## Active
 
 None.
@@ -780,7 +811,7 @@ None.
 
 ## Upcoming
 
-- FM-102: In-Tab Fieldset Anchor Navigation — next, then the per-section reworks FM-103..FM-107. Unlike the cleanup
+- The per-section reworks FM-103..FM-107 follow FM-102 (in Review above). Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky
   bar into `ConfigSaveBar.tsx`, so "a search field in FM-097's sticky bar" was unreachable from the only shell file the

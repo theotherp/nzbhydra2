@@ -402,6 +402,7 @@ features:
       - core/ui-react/src/features/config/ConfigShell.test.tsx
       - core/ui-react/src/features/config/ConfigFeedbackBanner.test.tsx
       - core/ui-react/src/features/config/configFormState.test.ts
+      - core/ui-react/src/features/config/fieldsetNav.test.tsx
       - core/ui-react/src/features/config/settingsSearch/settingsIndex.test.ts
       - core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx
       - core/ui-react/src/features/config/reviewChanges/reviewChangesDiff.test.ts
@@ -469,6 +470,14 @@ features:
       - config-review-entry-main-apiKey
       - config-review-entry-main-updateAutomatically
       - config-review-entry-indexers-Mock1
+      # FM-102 / ADR-0028: the "on this page" list of the active tab's
+      # mounted fieldsets, a sibling below the nav's `Tabs` (never a `Tabs`
+      # child), headed with the active tab's name. Each entry carries
+      # `config-nav-anchor-<fieldset label lowercased>` -- the same suffix as
+      # `config-fieldset-<label>`, but a distinct prefix so a role/text
+      # locator in a per-tab spec cannot match both a legend and its anchor.
+      - config-nav-anchor-hosting
+      - config-nav-anchor-logging
     parity: done
     gaps: []
   - id: F-CONFIG-MAIN

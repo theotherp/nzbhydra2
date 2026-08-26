@@ -406,3 +406,34 @@ Binding constraints:
 - One rendering path: no separate mobile component, no `useMediaQuery` branch returning different markup.
 - Secret hiding is unchanged — a merged cell renders `(hidden) — changed`, never a value.
 - The mobile capture is re-taken as evidence.
+
+## ADR-0030 — The config nav column is sticky, so its anchor list survives scrolling (accepted 2026-08-26)
+
+Question: FM-102 renders an "on this page" anchor list as a sibling below the nav's `Tabs`, per ADR-0028. But the nav
+column is not sticky, so on a long tab the list scrolls off the top with the page — FM-102's own mid-page capture shows
+the heading, all eight tab entries, and the first two anchors gone. Its implementer judged that acceptable; its
+reviewer refused to sign it and referred the scope question here, since the remedy exceeds FM-102's allowlist fence of
+"only the additive sibling list", and declined to choose between making the whole column sticky or only the list within
+it. Resolved by the coordinator under ADR-0025.
+
+Decided: the **whole nav column** is sticky at the docked (`md`+) breakpoint — sticky below the save bar, with its own
+`max-height` and internal scrolling so a column taller than the viewport stays fully reachable. The mobile `Drawer`
+branch is unaffected; it is already an overlay.
+
+Rationale: ADR-0028 chose the sibling-below-`Tabs` placement expressly because "a list at the top of a long tab scrolls
+away, which is the defect FM-097's sticky bar was built to fix" — so a non-sticky column reproduces the exact defect
+that decision was made to avoid, and FM-102's Outcome, ending the endless scroll, is unmet in precisely the state that
+needed it. ADR-0029 is the standing precedent for refusing a layout that hides its own point. Sticking the whole column
+rather than only the list is the better of the two: the tab entries are navigation too, and a user deep in Main who
+wants Searching should not have to scroll up to reach it. The internal scroll is not optional — eight tab entries plus
+up to ten anchors plus the foot can exceed a short viewport, and a sticky element taller than its container silently
+clips.
+
+Binding constraints:
+
+- Sticky applies to the docked branch only; the `Drawer` branch is untouched.
+- The column must never clip its own content: constrain its height and let it scroll internally.
+- ADR-0028 still holds — the `Tabs`/`Tab` subtree, its roles, `aria-selected` and every `config-tab-<path>` selector
+  are unchanged, and the anchor list remains a sibling, never a `Tabs` child.
+- This authorises FM-102 to modify `ConfigNav.tsx`'s docked-column container beyond the "additive sibling list" fence,
+  for this purpose only. The visual capture is re-taken as evidence.

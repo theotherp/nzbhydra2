@@ -36,6 +36,7 @@ import {
     invalidConfigTabs,
 } from "./configFormState";
 import {ConfigNav} from "./ConfigNav";
+import {FieldsetNavContext, useFieldsetNav} from "./fieldsetNav";
 import {ConfigSaveBar} from "./ConfigSaveBar";
 import {activeConfigTab, isConfigLocation} from "./configTabs";
 import {ReviewChangesPanel} from "./reviewChanges/ReviewChangesPanel";
@@ -133,6 +134,11 @@ function ConfigForm({
     const {navigateToSetting} = settingsNavigation;
     const pathname = useLocation({select: (location) => location.pathname});
     const activeTab = activeConfigTab(pathname);
+    // FM-102: the active tab's mounted `ConfigFieldset`s, for ADR-0028's "on
+    // this page" list. One registry for the whole shell -- the tab body
+    // registering through `<Outlet />` and `ConfigNav` reading the result are
+    // both reachable from here and nowhere narrower.
+    const fieldsetNav = useFieldsetNav();
     const {dirtyFields, errors, isDirty} = form.formState;
     // Derived from the same RHF state the sticky bar's own dirty branch reads,
     // so a section badge can never disagree with the bar's summary. Recomputed
@@ -357,15 +363,21 @@ function ConfigForm({
                             sx={{pt: 3}}
                         >
                             <ConfigNav
+                                activeTabLabel={activeTab.label}
                                 activeTabPath={activeTab.path}
                                 dirtyTabs={dirtyTabs}
+                                fieldsets={fieldsetNav.entries}
                                 invalidTabs={invalidTabs}
                                 onOpenApiHelp={() => void openApiHelp()}
                                 onToggleAdvanced={toggleAdvanced}
                                 showAdvanced={showAdvanced}
                             />
                             <Box sx={{flexGrow: 1, minWidth: 0}}>
-                                <Outlet />
+                                <FieldsetNavContext.Provider
+                                    value={fieldsetNav.registry}
+                                >
+                                    <Outlet />
+                                </FieldsetNavContext.Provider>
                             </Box>
                         </Stack>
                     </Box>
