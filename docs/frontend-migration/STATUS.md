@@ -1022,7 +1022,10 @@ page"` beside its corrected label, a fourth surface the design pass did not name
 
 ## Active
 
-None.
+- FM-117: Config Control Treatment — in_progress. Theme-level fixes for clipped chips fields, native number spinners,
+  the outline/ground treatment (ADR-0036) and `error.main` contrast (ADR-0035).
+- FM-121: Stats Shell Layout Route And Caching — in_progress. Run concurrently with FM-117: the two are file-disjoint
+  (`app/theme.ts` vs `router.tsx`/`features/stats`), and FM-121 depends on nothing.
 
 ## Review
 
@@ -1034,7 +1037,10 @@ None.
 
 ## Upcoming
 
-- Nothing is queued. The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.
+- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-118/FM-119 stay `planned` until promoted,
+  and FM-120 stays `planned` behind FM-117.
+
+- The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.
 
 - The 2026-08-26 batch is complete with FM-107; nothing is queued behind it. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until

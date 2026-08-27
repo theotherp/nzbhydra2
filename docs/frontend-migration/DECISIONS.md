@@ -497,3 +497,133 @@ Binding constraints:
 Lesson recorded: the ledger entry asserting the setting was "consumed nowhere" was wrong, and it was wrong because the
 consumer is a *default substituted server-side for an absent field*, which greps for the setting name in the frontend
 cannot see. A "nothing consumes this" claim needs a check on the backend read path before it becomes a decision.
+
+## ADR-0033 — Downloaders get a bespoke table, not a shared table extraction (accepted 2026-08-27)
+
+Question: the owner wants downloaders shown the way indexers are — a table whose name cell is a button opening the edit
+modal, plus Type and URL columns — replacing today's `DownloadersSection` list of `Edit <name>` buttons. Should
+`IndexerTable` be extracted into a reusable table first, or should a bespoke `DownloaderTable` be written?
+
+Evidence: there is no shared table component in this codebase. `IndexerTable.tsx`, `CategoriesTable.tsx` and
+`auth/AuthUsersSection.tsx` each hand-roll MUI `Table`/`TableContainer` and cross-reference one another only in comments
+(`AuthUsersSection.tsx:42` cites `CategoriesTable.tsx:36-47`). `IndexerTable` is indexer-typed throughout: 15 imports
+from `./indexerSettings`, a module-level `COLUMNS` constant rather than a prop, hand-written cell bodies including three
+indexer-only status chips, and every `data-testid` literally `config-indexer(s)-…`. The three existing tables have
+divergent requirements — indexers need sort + filter + bulk state actions + a responsive single-cell collapse, auth users
+need two action buttons per row, categories need expansion rows.
+
+Decided, by the owner: **bespoke `DownloaderTable`, following the shape the other three already use.** An extraction now
+would be designed against three divergent call sites at once and would put the working indexers table at risk to serve a
+fourth that does not exist yet.
+
+Binding constraints:
+
+- These `data-testid`s are load-bearing and must survive unchanged: the container anchor
+  `config-repeat-downloading-downloaders` (asserted by `settingsIndexDrift.test.tsx`, indexed at `settingsIndex.ts:905`),
+  the row entry `config-repeat-entry-downloading-downloaders-${index}`, the edit control
+  `config-repeat-edit-downloading-downloaders-${index}`, the add menu `config-repeat-add-downloading-downloaders` and its
+  `config-repeat-add-option-…` items, and the summary cells `config-downloader-value-${index}-${field}`. E2E
+  (`tests/system/tests/config-downloading.spec.ts`) asserts all of them.
+- The per-row Enabled switch stays on the row and out of the modal (`DownloadersSection.tsx:268-273` records why).
+- Rows keep binding to the config index, never the display position; row N edits index N.
+- Order stays the configured array order. Legacy's name sort was deliberately dropped
+  (`DownloadersSection.tsx:56-61`); do not reintroduce it, and do not add drag reorder — neither exists today.
+- Torbox entries have no `url` and no user-set `name` (`visibleDownloaderFields`, `downloadingSettings.ts:186-191`). The
+  URL cell must render an explicit empty state, not the string "undefined".
+- `downloaderType` currently renders as the raw enum (`NZBGET`). Add a label map mirroring
+  `indexerSettings.ts:287-315`; a table column showing constants where the indexer table shows prose is the kind of
+  inconsistency this change exists to remove.
+- A follow-up packet candidate is recorded, not scheduled: extract the common table core once a fourth table exists and
+  the genuinely shared shape can be read off four instances instead of guessed from three.
+
+## ADR-0034 — Categories move to edit modals; the required-name guarantee is replaced, not dropped (accepted 2026-08-27)
+
+Question: categories today are accordion rows — an expanded row renders `CategoryEntryFields` in place. The owner wants
+edit modals instead, matching the indexers/downloaders concept. What replaces the behaviour the accordion was carrying?
+
+Evidence: `CategoriesTable.tsx:448-455` renders `<Collapse in={expanded}>` with `unmountOnExit` deliberately absent, and
+the module doc comment (`:66-73`) records why: `name` is `required`, so unmounting a collapsed row's controls would let a
+nameless category through with no error anywhere in the DOM. `add` (`:155-162`) expands the new row immediately for the
+same reason. A modal unmounts those fields, so that mechanism cannot survive the change.
+
+The same eager mount is also the reported performance defect. The base config ships 16 categories
+(`baseConfig.yml:33-263`) and `CategoryEntryFields` registers 13 controllers each — 208 registered inputs, including 48
+`Autocomplete`s and 64 `Select`s, all mounted on entering the tab whether or not any row is expanded.
+
+Decided: **modals, with dialog-local validation replacing the always-mounted guarantee.** The dialog refuses to commit a
+blank name via its own `trigger()`, as `DownloaderDialog.tsx:191-198` already does. This is a strictly better guarantee:
+the invalid state cannot be created, rather than being created and reported later from a control the user must hunt for.
+This is a front-end-only, reversible change and was decided by the coordinator under the owner's standing delegation.
+
+Binding constraints:
+
+- The container anchor `config-repeat-categoriesConfig-categories` (`settingsIndex.ts:837`) must survive unchanged.
+- The dialog follows the established shape — a throwaway `useForm` over `structuredClone`, bound to a new
+  `CATEGORY_DRAFT_PATH` constant alongside `INDEXER_DRAFT_PATH`/`DOWNLOADER_DRAFT_PATH`, with Delete/Cancel/Reset/Submit
+  and the `AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}` wrapper. `auth/UserDialog.tsx` is the
+  closest template.
+- `CategoryEntryFields` and `SizePresetRow` currently build every path from `index: number`
+  (`CategoryEntryFields.tsx:33`, `:111-171`). They need a path-builder prop so they can bind to a draft path. This is a
+  signature change, not a rewrite; the field list and its order must not change.
+- `mayBeSelected` and `preselect` are persisted but have no control (`categoriesSettings.ts:90-96`). A commit that
+  replaces the entry must clone them through — the ADR-0003 round-trip hazard.
+- `CategoriesConfig.setCategories` re-sorts by name on every deserialization, so a config index is not stable across a
+  save. The commit must be synchronous into form state; no transaction may hold an index across an async gap.
+- The summary cell's invalid-newznab-token flagging (`CategoriesTable.tsx:386-425`) stays. It is what makes a bad stored
+  token findable without opening anything, and it is independent of how editing happens.
+- Dead on arrival, and to be removed rather than left: the `fieldsWidth` `ResizeObserver` machinery (`:118-133`,
+  `:456-472`), the `config-categories-scroller` sticky box, and the expanded-index fixup after delete (`:188-194`).
+- Roughly a dozen unit cases and the E2E `expandCategory` helper encode expansion directly and must be rewritten, not
+  deleted. `CategoriesConfigTab.test.tsx:331` asserts an input is present *because nothing was expanded* — that case
+  encodes the old guarantee and must be replaced by one proving the dialog blocks a blank name.
+
+## ADR-0035 — `palette.error.main` is corrected app-wide (accepted 2026-08-27)
+
+Question: the Delete button in the indexer and downloader dialogs is hard to read. It is a text-variant
+`Button color="error"`, so `palette.error.main` is the foreground. Fix the token, or override the two buttons?
+
+Evidence: `theme.ts:281` sets `error: "#a33938"`, and its own comment records it as a carried-over legacy value with no
+mock evidence, while the rest of the palette was re-authored in oklch. Against `background.paper` `#262c2e` that is about
+2.1:1, versus roughly 9.6:1 for a neighbouring `text.primary` button label. The dyschromatopsia variant already overrides
+`error` to a much lighter `#b090c8` (`theme.ts:468-471`); the default dark theme never received the same pass. Three call
+sites use it as a foreground: `IndexerDialog.tsx:757-768`, `DownloaderDialog.tsx:342-352`, `RepeatSection.tsx:120`.
+
+Decided, by the owner: **raise `error.main`'s lightness to clear 4.5:1 against both `background.paper` and
+`background.default`, preserving hue.** A per-button override would leave the identical failure everywhere else the token
+is used as a foreground, and would add exactly the kind of call-site colour literal ADR-0014 exists to prevent.
+
+Binding constraints:
+
+- The measured contrast ratio against both grounds is recorded in the handoff. "Looks better" is not evidence.
+- The change is to the token only. No call site gains a colour literal or an override.
+- Error-coloured surfaces where the token is a *background* (with white/dark text on it) must be re-checked, since
+  lightening a foreground colour can break a background pairing. Any such site is reported.
+- The dyschromatopsia variant's own override stays as it is.
+
+## ADR-0036 — Config field treatment: one ground, one readable border (accepted 2026-08-27)
+
+Question: the owner reports that field labels "look weird" in the indexer and downloader dialogs, suspecting the fields
+lack a visual border. What is actually wrong, and what is the fix?
+
+Evidence: the fields *are* `outlined` — no config `TextField` passes a `variant`, so MUI's default applies. Two theme
+rules make them not read that way. `MuiOutlinedInput` (`theme.ts:892-947`) paints `backgroundColor: surfaces.recessed`
+`#1c2224` with `notchedOutline` `borderColor: surfaces.hairline` `rgba(255,255,255,0.1)`, and `MuiInputLabel`
+(`theme.ts:806-819`) sets `shrink: true` globally, so every label is permanently floated into the notch rather than
+resting in the field. The result reads as a filled field with a floating label, and the near-invisible outline gives the
+label nothing to sit on. The grounds then differ: config tab bodies render on `background.default` `#1f2426` with no
+`Paper` wrapper, while dialogs take `background.paper` `#262c2e`. The same field is a ~3-unit-invisible edge on one
+surface and a visibly darker well on the other.
+
+Decided: **strengthen the outline so the notch reads as a notch, and stop the same control reading two ways.** This is
+front-end-only and reversible, decided by the coordinator under the owner's standing delegation.
+
+Binding constraints:
+
+- Raise `surfaces.hairline`'s alpha (or give `MuiOutlinedInput.notchedOutline` its own stronger token) until the border
+  is visible on both `background.default` and `background.paper`. Record the chosen value and why.
+- Resolve the two-grounds problem in one direction only, and state which: either the input background follows its
+  surface, or the config tab bodies gain the `Paper` the dialogs already have. Do not do both.
+- `shrink: true` stays. Unshrinking labels would change every field's geometry and is not what was reported.
+- Verify against a dialog *and* a config tab in the same pass. A fix proven on one surface is exactly the failure mode
+  being corrected.
+- Hover, focus, disabled and error states must all still be distinguishable from rest after the border weight changes.
