@@ -39,5 +39,18 @@ export default defineConfig({
             ...configDefaults.exclude,
             "scripts/validate-migration.test.mjs",
         ],
+        // `default` first, unchanged: every agent and every gate chain reads
+        // the console output, so it must keep its current shape. The `json`
+        // reporter is additive and writes to a file because this suite fails
+        // intermittently -- roughly once in ten to thirteen full runs -- and
+        // three separate tasks lost the failing test's name to a truncated
+        // pipe before it could be investigated. A file survives scrollback.
+        reporters: ["default", "json"],
+        outputFile: {
+            // Git-ignored via `.gitignore`, mirroring how `tests/system`'s
+            // Playwright `test-results/` output is ignored rather than
+            // committed.
+            json: "test-results/vitest-results.json",
+        },
     },
 });

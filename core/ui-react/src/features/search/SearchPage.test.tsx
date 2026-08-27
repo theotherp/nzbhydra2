@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
@@ -95,6 +96,28 @@ const mediaBootstrap = {
             ...bootstrap.safeConfig.categoriesConfig,
             categories: [{name: "Movies", searchType: "MOVIE"}],
             defaultCategory: "Movies",
+        },
+    },
+};
+
+// A category whose size preset the form fills in, so that "the user cleared
+// the range" and "the user never touched it" are distinguishable states.
+const sizePresetBootstrap = {
+    ...mediaBootstrap,
+    safeConfig: {
+        ...mediaBootstrap.safeConfig,
+        categoriesConfig: {
+            ...mediaBootstrap.safeConfig.categoriesConfig,
+            categories: [
+                {
+                    name: "Movies",
+                    searchType: "MOVIE",
+                    minSizePreset: 500,
+                    maxSizePreset: 20000,
+                },
+            ],
+            defaultCategory: "Movies",
+            enableCategorySizes: true,
         },
     },
 };
@@ -1996,6 +2019,100 @@ describe("SearchPage", () => {
         ).not.toBeInTheDocument();
         expect(screen.getByText("New search result")).toBeVisible();
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+    });
+
+    // A cleared size range survives the round trip through the canonical URL.
+    // `canonicalSearch` omits the emptied field and `valuesFromSearch` refills
+    // an absent one from the category preset, so re-resolving the URL a submit
+    // just wrote used to hand the preset back and re-run the search with the
+    // constraint the user had removed -- silently filtering their results by a
+    // size range they had explicitly deleted.
+    describe.each([
+        [
+            "clearing the Min and Max size fields",
+            () => {
+                fireEvent.change(screen.getByLabelText("Min size"), {
+                    target: {value: ""},
+                });
+                fireEvent.change(screen.getByLabelText("Max size"), {
+                    target: {value: ""},
+                });
+            },
+        ],
+        [
+            "deleting the size constraint chip",
+            () => {
+                fireEvent.click(
+                    within(screen.getByTestId("search-chip-size")).getByTestId(
+                        "CancelIcon",
+                    ),
+                );
+            },
+        ],
+    ])("when a size constraint is removed by %s", (_label, removeSize) => {
+        it("should keep it out of the submitted request and of the search the resulting URL re-runs", async () => {
+            const fetchImplementation = vi.fn(() =>
+                Promise.resolve(searchResponse()),
+            );
+            const transport = new ApiTransport("/hydra/", fetchImplementation);
+            const rendered = render(
+                <SearchPage
+                    bootstrap={sizePresetBootstrap}
+                    transport={transport}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            expect(screen.getByLabelText("Min size")).toHaveValue("500");
+            removeSize();
+            expect(
+                screen.queryByTestId("search-chip-size"),
+            ).not.toBeInTheDocument();
+
+            fireEvent.change(screen.getByLabelText("Search"), {
+                target: {value: "unconstrained"},
+            });
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            expect(searchRequestBody(fetchImplementation)).not.toHaveProperty(
+                "minsize",
+            );
+            expect(searchRequestBody(fetchImplementation)).not.toHaveProperty(
+                "maxsize",
+            );
+
+            // What a real router does after `navigate()`: the canonical URL of
+            // the search just submitted becomes the route, which the page
+            // re-reads and `AutoSubmitFromRoute` re-runs.
+            router.search = (router.navigate.mock.calls[0]?.[0]?.search ??
+                {}) as Record<string, unknown>;
+            expect(router.search).not.toHaveProperty("minsize");
+            rendered.rerender(
+                <SearchPage
+                    bootstrap={sizePresetBootstrap}
+                    transport={transport}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            expect(
+                screen.queryByTestId("search-chip-size"),
+            ).not.toBeInTheDocument();
+            await waitFor(() =>
+                expect(
+                    searchRequestCalls(fetchImplementation).length,
+                ).toBeGreaterThan(0),
+            );
+            for (const [index] of searchRequestCalls(
+                fetchImplementation,
+            ).entries()) {
+                const body = searchRequestBodyAt(fetchImplementation, index);
+                expect(body).not.toHaveProperty("minsize");
+                expect(body).not.toHaveProperty("maxsize");
+            }
+        });
     });
 });
 

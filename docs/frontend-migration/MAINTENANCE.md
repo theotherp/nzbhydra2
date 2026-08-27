@@ -864,7 +864,7 @@ Format, one entry per fix:
   exemption list is untouched. `tests/system`: `npx tsc --noEmit` clean, `prettier --check` clean. Real backend from
   the repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-auth.spec.ts
   tests/config.spec.ts` → **38 passed**, plus a confirming `tests/config-auth.spec.ts` run → **9 passed**.
-- **Commit:** _pending — filled in on commit_
+- **Commit:** `034b42088`
 - **Note:** the defect and the reason nothing saw it are two different things, and both are fixed here.
   **The anchor.** `settingsIndex.ts:550` indexes the Auth Users list as one `kind: "section"` entry anchored on
   `repeatAnchor("auth.users")` → `config-repeat-auth-users`. FM-105 replaced the users `RepeatSection` with a table
@@ -889,6 +889,171 @@ Format, one entry per fix:
   the Auth Users hit, and requires the section to be scrolled into view *and* carrying the highlight `boxShadow` —
   which only appears once the anchor poll resolves, so it is direct evidence the navigation completed rather than
   expired. A DOM-presence check would have been the weaker claim.
+
+### 2026-08-27 — Narrow the focus-affordance colour-literal check to design positions
+
+- **Why not a packet:** mechanical repair of one build-time validation script. No runtime source, no rendering, no
+  contract, registry, decision entry or `data-testid` touched; the gate's intent is unchanged, only which positions it
+  reads as design values.
+- **Paths:** `core/ui-react/scripts/validate-focus-affordances.mjs`; this file.
+- **Gates:** in `core/ui-react` — `validate:focus-affordances` now **passes** (345 source files, 10 authored families),
+  `typecheck`, `format:check`, `build`, `validate:migration` pass; `lint` **14 warnings / 0 errors**, equal to base;
+  `test -- --run` **119 files / 1458 tests passed**; `knip` reports exactly the two base findings
+  (`NO_ADVANCED_DISCLOSURE`, `RepeatSection`), no third. No system-test run: the change is confined to a script that
+  never ships and renders nothing, so there is no screenshot strip and none is owed.
+- **Commit:** `034b42088`
+- **Note:** check 4 had been red at base for the whole FM-097..FM-116 run on five findings, none of them a design
+  literal, so every implementer met a required gate failing for something it did not cause and had to prove the finding
+  set byte-identical against a pristine tree to show it had not added a sixth.
+  **The defect.** The check matched `#hex`/`rgba?(`/`oklch(` anywhere in a feature file. But legacy persists an
+  indexer's colour as an `rgb(r,g,b)` string, so feature code legitimately builds, parses, documents and fixtures that
+  shape. The five: `ColorSetting.tsx`'s `` return `rgb(${r},${g},${b})` `` (the wire format `hexToRgb` exists to
+  produce — the one site that *cannot* be fixed by removing the literal), two test *titles* containing the words
+  (`ColorSetting.test.tsx`, `resultTable.test.ts`), and two indexer-config fixture values
+  (`SearchResults.test.tsx`, `IndexersConfigTab.test.tsx`).
+  **The fix.** A new `designLiteralRegions()` returns the byte ranges where a colour is a design decision rather than
+  data — a style object or prop (`sx={…}`, `sx: {…}`, `style={…}`), an Emotion authoring site
+  (`styled(X)(…)`, ``css`…` ``, ``keyframes`…` ``), a presentational JSX attribute (`fill`, `stroke`, `color`,
+  `htmlColor`, `bgcolor`, `borderColor`, `backgroundColor`), and a binding whose whole value is a colour string, so
+  hoisting a literal out of an `sx` block does not evade the gate. Check 4 fires only inside those, and never in
+  `*.test.*`, whose fixtures and titles are data by construction. Delimiter scanning is nesting-aware and deliberately
+  naive about delimiters inside strings: over-running widens a region, which can only make the check flag more.
+  **The exemption list at `:112` was not touched and is still empty.** Adding the five files there was the cheap
+  workaround available to every task in this run and refused by all of them, FM-111 included; it would have weakened a
+  real gate to hide a matcher bug.
+  **Proven to still bite, not asserted.** A probe file carrying a literal in each of the four design positions was
+  flagged four times at the exact lines, while the same file's comment, `` `rgb(${…})` `` template and
+  `{color: "rgb(10,20,30)"}` data fixture were correctly ignored; separately, inserting `color: "rgb(200,50,10)"` into
+  a real `sx` block at `ResultRow.tsx:132` produced exactly one finding naming that line. Both probes reverted; the
+  tree scanned clean afterwards, with no new finding anywhere.
+  **Line numbers are now true.** `stripComments` collapsed each comment to a single space, shifting every index after
+  it — which is why the old output blamed `ColorSetting.tsx:46` for a literal on line 51 and
+  `IndexersConfigTab.test.tsx:921` for a line containing no colour at all. Comments are now blanked to an equal-length
+  run of spaces with their newlines kept, so reported positions match the file the reader opens. Checks 1-3 are
+  otherwise untouched and benefit from the same correction.
+
+### 2026-08-27 — Stop a cleared search size range from being refilled by the category preset
+
+- **Why not a packet:** single-module bugfix inside `features/search`, shipping the regression test FM-094 had to leave
+  behind. No new capability; the URL, request and `data-testid` contracts are unchanged, and the FM-087-frozen
+  `valuesFromSearch`/`canonicalSearch`/`nonIdentifierQueryText` are untouched — the fix is entirely in `SearchPage`'s own
+  reading of the route.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`,
+  `tests/system/tests/search.spec.ts`; this file.
+- **Gates:** in `core/ui-react` — `typecheck`, `format:check`, `build`, `validate:migration`,
+  `validate:focus-affordances` (345 files, 10 families) pass; `lint` **14 warnings / 0 errors**, equal to base;
+  `test -- --run` **119 files / 1460 tests passed** (1458 at base plus the two new ones); `knip` reports exactly the two
+  base findings (`NO_ADVANCED_DISCLOSURE`, `RepeatSection`), no third. Real backend from the repo root:
+  `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts tests/results.spec.ts` — **45 passed, 0
+  failed**, including the restored assertion.
+- **Screenshot strip:** `tests/system/visual-evidence/F-SEARCH-FORM/cleared-size-{1-preset-untouched,2-cleared,3-after-submit}-desktop.png`
+  (1280x800) — the untouched preset still raises its `Size 500–20000 MB` chip, clearing the range drops it, and it stays
+  dropped across the submit, where it used to reappear. Desktop only: the chip bar is one wrapping row with no separate
+  mobile layout.
+- **Commit:** `034b42088`
+- **Note:** the ledger's suspected cause was checked and is not where the constraint leaks. The submitted request is
+  correct; the *second* one is not. Instrumenting the real-backend run showed two navigations for one click —
+  `?category=Movies&title=…&indexers=…` (cleared range correctly absent, because `canonicalSearch` drops an empty field),
+  then `?category=Movies&minsize="500"&maxsize="20000"&…`. `AutoSubmitFromRoute` re-resolves the canonical URL that the
+  submit had just written, `valuesFromSearch` cannot tell an absent `minsize` from a cleared one and so refills it from
+  the category preset, and that second submission's `releaseSubmission()` cancels the correct request still in flight
+  before it is sent. One search reaches the backend and it is the preset one — which is why the log showed
+  `minsize=500, maxsize=20000` and only one entry. The same non-idempotence made the workspace, keyed on the resolved
+  values, remount with the size chip restored.
+  **The fix.** `SearchPage` remembers the values behind each route it submits, keyed by that route, and prefers them
+  over re-resolving it; `AutoSubmitFromRoute` is handed that resolution instead of computing a second, independent one.
+  A route this page never submitted still resolves through `valuesFromSearch`, so a fresh load, a bookmark, a deep link
+  and a category change all keep their presets. The map is bounded at 20 routes.
+  **Both removal routes are covered**, by a parametrised `SearchPage` test that clears the Min/Max fields and one that
+  deletes the `search-chip-size` chip; each drives the submit and then the route round trip the real router performs.
+  Both were observed failing against the unfixed `SearchPage.tsx` (the size chip returns after the round trip) and
+  passing after.
+  **Route resolution is deliberately kept separate from the form's.** Feeding `AutoSubmitFromRoute` the form's values
+  instead made a Refill — which prefills the form without touching the route — auto-run its search; caught by
+  `search.spec.ts`'s ADR-0012 keyboard-Refill test on the first real-backend run, and fixed by resolving the route
+  independently of `refillCriteria`.
+
+### 2026-08-27 — Stop the entry dialogs' advanced rows registering with the fieldset behind them
+
+- **Why not a packet:** single-module bugfix inside `features/config`, shipping regression tests that were observed
+  failing first. It consumes an existing exported constant rather than introducing anything; no new capability, no
+  contract, registry or `data-testid` change, and no `DECISIONS.md` subject matter. `IndexerDialog` is deliberately
+  untouched — it is rendered outside its fieldset (`IndexersConfigTab.tsx:328` closes before `:354`) and was already
+  correct.
+- **Paths:** `core/ui-react/src/features/config/downloading/DownloaderDialog.tsx`,
+  `core/ui-react/src/features/config/downloading/DownloadingConfigTab.test.tsx`,
+  `core/ui-react/src/features/config/external-tools/ExternalToolDialog.tsx`,
+  `core/ui-react/src/features/config/external-tools/ExternalToolsConfigTab.test.tsx`; this file.
+- **Gates:** in `core/ui-react` — `typecheck`, `format:check`, `build`, `check:api`, `validate:migration`,
+  `validate:focus-affordances` (345 files, 10 families) pass; `lint` **14 warnings / 0 errors**, equal to base;
+  `test -- --run` **119 files / 1464 tests passed** (1460 at base plus the four new ones); `knip` **drops from two
+  findings to one** — `NO_ADVANCED_DISCLOSURE` is now consumed, leaving only the pre-existing `RepeatSection` barrel
+  export. Real backend from the repo root:
+  `python3 misc/run_gui_systemtest.py --runtime local -- tests/config-downloading.spec.ts tests/external-tools.spec.ts tests/config-indexers.spec.ts`
+  — **35 passed, 0 failed**, the indexers spec included to prove `IndexerDialog` is undisturbed. `git diff --check`
+  clean. Install skipped — no manifest changed and `node_modules` already matched the lockfile.
+- **Screenshot strip:** `tests/system/visual-evidence/QUICKFIX-DIALOG-ADVANCED/after/{downloading-dialog-closed,downloading-dialog-open}-{desktop,mobile}.png`
+  and `.../{external-tools-dialog-closed,external-tools-dialog-open}-desktop.png` — each captured with the global
+  advanced toggle **off**, full-page so the whole host fieldset is in frame. The Downloaders and External tools
+  fieldsets end at their "Add new …" button with no expander after it while the dialog is open; the Downloading tab's
+  *General* fieldset keeps its own genuine "4 advanced settings hidden" expander, which is what the strip is contrasted
+  against. (The directory is under the git-ignored `visual-evidence/` root, as all evidence here is.)
+- **Commit:** `034b42088`
+- **Note:** the registration is a React context effect, not a DOM relationship, so the portal that moves the dialog out
+  of the fieldset's markup does not move it out of the fieldset's *count*. The fix wraps each dialog body in
+  `AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}` — the value `advancedDisclosure.ts:32-40` already
+  documents as "what an advanced row outside any fieldset sees". Only the hidden state changes: with the toggle on,
+  `SettingRow` shows an advanced row regardless of what any disclosure says, which is the second of the four new tests.
+  **The count, not the expander, is what the tests assert.** FM-098's `hiddenCount` is read off state every render with
+  no memoisation (deliberately — FM-097 shipped a stale badge by memoising on React Hook Form state), so a fix that left
+  a stale or replacement registration could hide the expander while the count stayed wrong. `hiddenCount === 0` renders
+  *no element at all*, so each test compares the whole set of `config-advanced-expander-*` elements and their count text
+  before and after the dialog opens, and additionally asserts the host fieldset's own expander is absent rather than
+  merely invisible. Both were observed failing against the unfixed dialogs, on exactly that assertion: the phantom
+  button was present, reading "3 advanced settings hidden" for Downloaders and "4 advanced settings hidden" for External
+  tools.
+  **The candidate's "11" is the upper bound, not the number you will usually see.** `ExternalToolDialog` declares 11
+  advanced rows but gates them behind `visibleExternalToolFields`, so a Usenet-only tool (the fixture, and the common
+  case) reaches only 4; the torrent seeding rows account for the rest. The defect and the fix are unaffected — the
+  correct count is zero either way.
+
+### 2026-08-27 — Make the next intermittent unit failure identifiable: write a JSON report to a file
+
+- **Why not a packet:** test-runner configuration only. No source file, no test, no rendering, no contract, registry,
+  `data-testid` or `DECISIONS.md` subject matter; the console reporter is untouched, so every agent and gate chain
+  reads exactly the output it read before. The one behavioural change is an additional git-ignored file on disk.
+- **Paths:** `core/ui-react/vite.config.ts`, `core/ui-react/.gitignore`; this file.
+- **What it does:** `test.reporters` becomes `["default", "json"]` with
+  `outputFile.json = "test-results/vitest-results.json"`. `default` stays first and unchanged. The report is
+  git-ignored via a `test-results/` line in `core/ui-react/.gitignore` — the same name and the same treatment
+  `tests/.gitignore` gives `system/test-results` for Playwright's output, rather than a new convention. Prettier reads
+  the `.gitignore` next to its working directory, so no `.prettierignore` change was needed; `format:check` passes
+  with the report present.
+- **Evidence it captures a name:** a temporary `expect(true).toBe(false)` was added at
+  `DialogProvider.test.tsx:38` and the full suite run. Console: `Tests 1 failed | 1463 passed (1464)`, with the failure
+  block in its usual shape. The report named it independently of the console —
+  `numFailedTests: 1`, `assertionResults[].fullName` =
+  `"DialogProvider should expose an accessible confirmation dialog and return a typed result"`, with the file path and
+  the `AssertionError` message and stack. The forced failure was then reverted and `git status` confirmed only the two
+  intended files modified.
+- **Gates:** in `core/ui-react`, after reverting the forced failure — `typecheck`, `format:check`, `build`,
+  `validate:migration`, `validate:focus-affordances` (345 files, 10 families) pass; `lint` **14 warnings / 0 errors**,
+  equal to base; `knip` **exactly one finding** (`RepeatSection`), equal to base; `test -- --run` **119 files / 1464
+  tests passed**. `git check-ignore -v core/ui-react/test-results/vitest-results.json` resolves to
+  `core/ui-react/.gitignore:4`, and the file does not appear in `git status`. **No system-test run and no screenshot
+  strip: nothing renders.**
+- **Known limitation, stated because it bounds the claim:** Vitest's `JsonReporter.onTestRunEnd` receives only
+  `testModules`, not `unhandledErrors` — verified in `node_modules/vitest/dist/chunks/index.UpGiHP7g.js:3538`. So the
+  separately-logged `DialogProvider.test.tsx` teardown race, which exits 1 while every test passes, will produce a
+  report reading `numFailedTests: 0, success: true`. The JUnit reporter has the same signature, so adding it would buy
+  nothing; JSON alone is the right single choice. A report that says green next to a non-zero exit is therefore a
+  *discriminator*, not a miss: it says the run hit the unhandled-error class, whose file the console already names.
+- **The flake is not fixed, and was not chased.** This closes the identification half only. Nine further green full
+  runs were made after the gates (8 consecutive plus the gate run, 1464/1464 each, exit 0 every time), so the flake was
+  **not** caught in the act and nothing new is known about it. Both recorded candidates stay live under *Open
+  candidates*. Worth noting for whoever picks it up: these runs compressed ~210s of aggregated test time into ~18s
+  wall — the same contention shape FM-097's reviewer blamed for the `notifications` timeout — without reproducing it.
+- **Commit:** `9f76043e5`
 
 ## Open candidates
 
@@ -1007,6 +1172,18 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   the handoff — but `gaps` is where a future parity reader looks, and there it is invisible. Add a one-line
   `deliberate - ...` entry at `FEATURES.yaml:436`. Packet rather than fix only because the quickfix gate forbids
   registry edits. Surfaced 2026-08-24 by FM-097's reviewer.
+- **The search-results feature writes raw px values where the theme's scales belong — ~44 sites, ~24 of them in
+  spacing props.** Surfaced 2026-08-27 while measuring the unannotated-magnitude candidate below (its full method and
+  counts are there). `features/search/results/` — `RefineSidebar.tsx`, `SearchResults.tsx`, `filterControls.tsx`,
+  `SelectionMenu.tsx`, `ResultsPopovers.tsx`, `DownloadActions.tsx` — carries px strings in `sx`: `fontSize: "13px"`,
+  `fontSize: "11.5px"`, `letterSpacing: "0.6px"`, plus about two dozen `px: "9px"` / `py: "7px"` / `mb: "9px"` /
+  `gap: "6px"` / `mx: "4px"` shapes. The last group is unambiguously wrong rather than merely unannotated: those
+  props take **theme spacing units**, so a px string bypasses the spacing scale entirely. This is the mock
+  transliteration `AGENTS.md` forbids ("never copy a mock's inline CSS into `sx`"), surviving from the FM-039..FM-046
+  visual-redesign tasks. A packet, not a fix: it spans six modules, changes rendering (so it needs the screenshot
+  strip), and the port is a token question — some of these want new `theme.ts` typography/density entries rather than
+  a mechanical `"13px"` → `1.625` rewrite. Doing it would also unblock the only honest mechanical form of the
+  unannotated-magnitude gate, which is red at base almost entirely on these sites.
 
 ### Single-session fix
 
@@ -1014,11 +1191,11 @@ Styling, markup or UX polish inside existing features; a single-module bugfix sh
 Constraints: no designer, no reviewer, no decision entry, no registry edit, no `data-testid` change. If mid-fix the change turns
 out to cross modules or touch a contract, stop and convert it to a packet.
 
-Ordered by consequence times likelihood. The first is a required gate that is red for *every* implementer, so it costs the most
-per day it stands; the second silently returns wrong search results to a user who thinks they cleared a filter; the third and
-fourth are visible misbehaviour on the config tabs an admin uses most.
+Ordered by consequence times likelihood. The first two are discharged: a required gate red for *every* implementer, which cost
+the most per day it stood, and a search that silently returned results filtered by a constraint the user had cleared. Of what
+remains, the first two are visible misbehaviour on the config tabs an admin uses most.
 
-- **`validate:focus-affordances` has been red since the FM-092/FM-096 indexer-colour work, on five false positives.**
+- ~~**`validate:focus-affordances` has been red since the FM-092/FM-096 indexer-colour work, on five false positives.**
   Merged 2026-08-27 from FM-111's report and FM-097's reviewer's confirmation of one of its five sites.
   This matters beyond one task: the gate sits in several packets' Verification chains, so every future implementer
   will meet a failing required command it did not cause. ADR-0014's colour-literal check
@@ -1035,14 +1212,22 @@ fourth are visible misbehaviour on the config tabs an admin uses most.
   Note that `ColorSetting.tsx:46` *legitimately* needs the literal string `rgb(`, because legacy persists colours in
   that format — so at least one of the five sites cannot be fixed by "remove the literal", only by "teach the matcher
   this is data". That site keeps the gate red for every task touching `features/config/indexers/`. Surfaced
-  2026-08-24 by FM-097's reviewer, confirming FM-111's and FM-112's reports.
-- **A cleared search size constraint is still submitted.** Clearing the Advanced panel's Min/Max size fields, or deleting the
+  2026-08-24 by FM-097's reviewer, confirming FM-111's and FM-112's reports.~~
+  Discharged 2026-08-27 by the ledger entry above, which narrowed check 4 to design-literal positions and left the
+  exemption list at `:112` untouched and empty. The diagnosis held on all five sites; the two line numbers it quotes
+  (`ColorSetting.tsx:46`, `IndexersConfigTab.test.tsx:565`) were themselves an artefact of `stripComments` collapsing
+  each comment to one space, which is fixed alongside — the "offset/block-scan defect" it suspected was that, not a
+  second bug.
+- ~~**A cleared search size constraint is still submitted.** Clearing the Advanced panel's Min/Max size fields, or deleting the
   `search-chip-size` chip, both leave the request carrying the category's preset — the backend logged `minsize=500,
   maxsize=20000` in both attempts against a Movies-category identifier search. Likely `SearchWorkspace.tsx`'s
   `minsize: field("minsize") || (preset?.minSizePreset?.toString() ?? "")` fallback. This is why FM-094 could not carry the
   deleted legacy autocomplete test's "the identifier search really returns the movie" assertion into its React sibling; once
-  fixed, restore it to `search.spec.ts`'s TMDB-identifier test.
-- **Advanced rows inside the Downloading and External Tools dialogs register with the fieldset behind the modal.**
+  fixed, restore it to `search.spec.ts`'s TMDB-identifier test.~~
+  Discharged 2026-08-27 by the ledger entry above. The FM-094 assertion is restored and passing. The suspected fallback was
+  not the leak: the submitted request was already correct, and the preset came back through `AutoSubmitFromRoute`
+  re-resolving the canonical URL that submit had just written, whose second submission cancelled the first.
+- ~~**Advanced rows inside the Downloading and External Tools dialogs register with the fieldset behind the modal.**
   React context crosses portals, so the 3 advanced `SettingRow`s in `DownloaderDialog` and the 11 in
   `ExternalToolDialog` are descendants of `<ConfigFieldset label="Downloaders">` / `<ConfigFieldset label="External
   tools">` (`DownloadersSection.tsx:185`, `ExternalToolsSection.tsx:256`) and count toward them. With the advanced
@@ -1052,7 +1237,10 @@ fourth are visible misbehaviour on the config tabs an admin uses most.
   unaffected holds only for `IndexerDialog`, which is rendered outside its fieldset (`IndexersConfigTab.tsx:328`
   closes before `:354`). Fix: wrap the two dialog bodies in `AdvancedDisclosureContext.Provider
   value={NO_ADVANCED_DISCLOSURE}`. Surfaced 2026-08-26 by FM-098's reviewer, which checked all three dialogs rather
-  than accepting the claim.
+  than accepting the claim.~~
+  Discharged 2026-08-27 by the ledger entry above, exactly as prescribed. The "11" is the upper bound: the External
+  Tools rows are gated by `visibleExternalToolFields`, so a Usenet-only tool shows 4 of them. `IndexerDialog` was
+  confirmed unaffected and left untouched.
 - **A settings-search reveal request is never retired, so a fieldset re-reveals itself on remount.**
   `useSettingsNavigation.tsx:178` bumps the token but nothing clears it once honoured, so a fieldset that unmounts and
   remounts while the last request still names it opens again on its own: search to "Indexer access" on Searching,
@@ -1076,8 +1264,9 @@ fourth are visible misbehaviour on the config tabs an admin uses most.
   (1149/1149). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
   confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
   there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
-- **The unit suite fails once in every ten to thirteen runs for reasons nobody has captured, and the runner cannot
-  name the test.** Merged 2026-08-27 from three entries — the same story reported by three tasks.
+- **The unit suite fails once in every ten to thirteen runs for reasons nobody has captured**, ~~and the runner cannot
+  name the test.~~ **The flake itself stays open; only the identification half is discharged** — see the 2026-08-27
+  reporter entry above. Merged 2026-08-27 from three entries — the same story reported by three tasks.
   *The failures.* FM-097's reviewer saw two failures at `expect(harness.form.formState.isDirty).toBe(false)` in
   `features/config/notifications` in a run that compressed 244s of aggregated test time into 24s wall; the immediate
   re-run was 1175/1175 green and three isolated runs of that directory were 26/26 — reads as a timeout under
@@ -1086,8 +1275,13 @@ fourth are visible misbehaviour on the config tabs an admin uses most.
   without capturing the failing test's name; not attributable to FM-102 on the available evidence (surfaced
   2026-08-26). FM-103 reported `1 failed / 1325 passed` on one of nine runs, green on the other eight.
   *The reason they stay anonymous.* Each lost the failing test's name to a truncated pipe. The honest reporting is
-  right; the mechanical fix is to have `npm run test` emit a JSON or JUnit reporter to a file so the next one is
-  identifiable instead of anecdotal — that is the tractable half of this item and should be done first. FM-103's
+  right; ~~the mechanical fix is to have `npm run test` emit a JSON or JUnit reporter to a file so the next one is
+  identifiable instead of anecdotal — that is the tractable half of this item and should be done first.~~ Done
+  2026-08-27 (entry above): the next occurrence that is a *test* failure will be named in
+  `core/ui-react/test-results/vitest-results.json`. **The occurrence still has to be reported with that file's
+  contents** — nothing collects it automatically, and the `DialogProvider` teardown class above produces `0 failed` in
+  that report, so a run that exits 1 with a green report is itself the signal that it was that class and not this one.
+  *What remains open is the cause.* FM-103's
   reviewer names a plausible candidate in that task's own new tests — a synchronous negative assertion
   (`expect(rowNames()).toEqual([...])` immediately after a `waitFor` that only guarantees an unrelated write landed) is
   the classic shape that goes red under scheduler jitter — but could not prove it. The separately-logged
@@ -1328,9 +1522,40 @@ fourth are visible misbehaviour on the config tabs an admin uses most.
 - **Unannotated magnitudes are now a convention nothing enforces — fix the enforcement, not the four sites.**
   Merged 2026-08-27 from four separate tasks that each independently collected an instance of the same gap. Four
   tasks in one batch finding the same thing means *UI Conventions*' "justify every deviation from stock MUI at the
-  site" has no mechanical backing; the proportionate discharge is a lint rule or a line in the packet template that
-  makes an unexplained numeric `sx` value visible at authoring time, with the four sites below fixed in the same pass
-  as its first cohort.
+  site" has no mechanical backing; the proportionate discharge looked like a lint rule in
+  `validate-focus-affordances.mjs` that makes an unexplained numeric `sx` value visible at authoring time, with the
+  four sites below fixed in the same pass as its first cohort.
+  **Attempted 2026-08-27 as a quickfix and abandoned on measurement: the boundary cannot be drawn mechanically, and
+  the candidate is left open as a review-and-authoring concern rather than a gate.** A prototype reusing
+  `designLiteralRegions`' machinery classified every `key: value` pair inside an `sx`/`style` region in
+  non-test `src`, and counted how many sites each candidate predicate flags against how many are annotated at the
+  site (a `//` comment on the property's own line or the line directly above it — the shape *UI Conventions* asks
+  for). Four predicates, each of which does catch its finding above, and each of which drowns it:
+  *bare numeric dimension* (`width|height|min*|max*|top|right|bottom|left`, value ≥ 2) — **27 sites**, of which
+  FM-097's `minHeight: 44` is one and the rest are ordinary layout caps nobody has ever called a defect
+  (`SystemAboutTab.tsx:44`'s `maxWidth: 800` readable-column cap, `minWidth: 180` on a definition-list term in three
+  config sections, `router.tsx:36`'s `maxWidth: 1700` page shell).
+  *off-integer theme spacing* (`m*`/`p*`/`gap*` at a non-integer step, excluding the idiomatic `0.5`) — **29 sites**,
+  and `mb: 2.5` alone accounts for **9** of them across `config/`. Nine occurrences is a rhythm, not a one-off: it is
+  positive evidence *against* FM-098's premise that the number needs justifying, since what it needs is a token.
+  *border width over 1px* — 3 sites, the only near-clean predicate, and two of the three are one repeated idiom
+  (`SelectionMenu.tsx:49,65`).
+  *raw px string* (`fontSize: "13px"`, `px: "9px"`) — **44 sites**, ~24 of them px values written into `m*`/`p*`
+  props that take theme units, i.e. genuinely wrong. All but two sit in the mock-transliterated
+  `features/search/results/` files. This is real ADR-0014 debt, but it is pre-existing debt of a different size than
+  this candidate; see the new candidate below.
+  Across all 103 flagged sites **6 carry an at-site annotation**. That number is the finding. The convention is not
+  observed anywhere in the tree, so any predicate broad enough to catch the four reported sites is red at base on
+  ~100 more — and the only ways to green it are the `pendingFm054Cleanup` exemption list (refused by every task in
+  this run) or annotating ~100 sites to fit the rule (a behavioural no-op that would make the gate describe the tree
+  instead of the convention). A diff-scoped variant that only inspects changed lines was considered and rejected: it
+  would be green at base by construction, but it fires at the same ~1-in-4 precision on new code, so it relocates the
+  noise onto the next author rather than removing it.
+  What actually distinguishes the four findings from the 99 is semantic and out of reach of a source-shape checker:
+  *a token already exists for this* (44 against `controlHeight = 32`), *this number equals its neighbour's and the
+  equality is the point* (FM-098's pair), and *the stated measurement is wrong* (FM-106, 1.5px off — a checker cannot
+  measure a rendered button). Those stay the reviewer's job. If this is to be mechanised at all, the cheap version is
+  the packet-template line, not a gate.
   *FM-097 — `ConfigNav.tsx:88-93`'s `minHeight: 44` is an unexplained magnitude.* The comment justifies overriding
   MUI's vertical-`Tab` default but not the number, which sits next to the app-wide `controlHeight = 32` token
   (`theme.ts:192`) established by the 2026-08-23 height unification. 44 is defensible on its own terms as a touch

@@ -36,10 +36,22 @@
 //      only; a hand-assembled `InputBase` composite is how the focus and
 //      label affordances were lost the first time).
 //
-//   4. A color literal (`#hex`, `rgba(...)`, `oklch(...)`) in feature code
-//      outside the files already scheduled for the FM-054 cleanup. Design
-//      values live in `theme.ts` (ADR-0014); consume `palette.*` /
-//      `surfaces.*` tokens instead.
+//   4. A color literal (`#hex`, `rgba(...)`, `oklch(...)`) written in a
+//      *design-literal position* in feature code, outside the files already
+//      scheduled for the FM-054 cleanup. Design values live in `theme.ts`
+//      (ADR-0014); consume `palette.*` / `surfaces.*` tokens instead.
+//
+//      "Design-literal position" is the narrowing this check needs to be
+//      useful: the same three characters `rgb(` are a design decision inside
+//      an `sx` block and plain application *data* everywhere else. Legacy
+//      persists an indexer's colour as an `rgb(r,g,b)` string, so feature
+//      code legitimately parses, builds, documents and fixtures that shape
+//      (`ColorSetting.hexToRgb`, `indexerColorsFromSafeConfig`). Matching the
+//      literal anywhere in a file flagged five such spots and zero real
+//      design literals -- a red gate that could only be answered by proving
+//      the noise byte-identical, which is worse than no gate. So check 4
+//      fires only inside `designLiteralRegions()` (see there), and never in
+//      `*.test.*`, whose fixtures and titles are data by construction.
 //
 // This is a source-shape guard, not a substitute for the real-browser gate:
 // `tests/system/tests/focus-indication.spec.ts` is what proves the indicator
@@ -65,11 +77,26 @@ async function collectSources(directory) {
     return files;
 }
 
-/** Strips line and block comments so a comment can never satisfy a check. */
+/** A run of spaces as long as `text`, with its newlines kept. */
+function blankOut(text) {
+    return text.replace(/[^\n]/g, " ");
+}
+
+/**
+ * Strips line and block comments so a comment can never satisfy a check.
+ * Each comment is replaced by an equally long run of spaces that keeps its
+ * newlines, so every index and line number in the stripped source still
+ * refers to the same place in the file the reader will open. (Collapsing a
+ * block comment to a single space instead is what made this script report
+ * `ColorSetting.tsx:46` for a literal that lives on line 51.)
+ */
 function stripComments(source) {
     return source
-        .replace(/\/\*[\s\S]*?\*\//g, " ")
-        .replace(/(^|[^:])\/\/[^\n]*/g, "$1 ");
+        .replace(/\/\*[\s\S]*?\*\//g, blankOut)
+        .replace(
+            /(^|[^:])(\/\/[^\n]*)/g,
+            (_, before, comment) => before + blankOut(comment),
+        );
 }
 
 function lineOf(source, index) {
@@ -107,6 +134,101 @@ function enclosingComponent(source, index) {
         }
     }
     return enclosing;
+}
+
+const CLOSING_DELIMITER = {"{": "}", "(": ")", "[": "]"};
+
+/**
+ * The index just past the delimiter that closes the one opened at
+ * `openIndex`. Nesting-aware, and deliberately naive about a delimiter inside
+ * a string: over-running widens a region, which can only make check 4 flag
+ * more, never less.
+ */
+function delimitedEnd(source, openIndex) {
+    const open = source[openIndex];
+    const close = CLOSING_DELIMITER[open];
+    let depth = 0;
+    for (let cursor = openIndex; cursor < source.length; cursor++) {
+        if (source[cursor] === open) {
+            depth++;
+        } else if (source[cursor] === close) {
+            depth--;
+            if (depth === 0) {
+                return cursor + 1;
+            }
+        }
+    }
+    return source.length;
+}
+
+/** The index just past the backtick closing the template opened at `tick`. */
+function templateEnd(source, tick) {
+    for (let cursor = tick + 1; cursor < source.length; cursor++) {
+        if (source[cursor] === "\\") {
+            cursor++;
+        } else if (source[cursor] === "`") {
+            return cursor + 1;
+        }
+    }
+    return source.length;
+}
+
+const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\(/g;
+
+/**
+ * The `[start, end)` ranges of `source` in which a colour literal is a
+ * *design* value rather than data -- the only places check 4 fires:
+ *
+ *   a. a style object or prop: `sx={...}`, `sx: {...}`, `style={...}`;
+ *   b. an Emotion authoring site: `styled(X)(...)`, `styled.div` + template,
+ *      `` css`...` ``, `` keyframes`...` ``;
+ *   c. a presentational JSX attribute: `fill=`, `stroke=`, `color=`,
+ *      `htmlColor=`, `bgcolor=`, `borderColor=`, `backgroundColor=`;
+ *   d. a binding whose whole value is a colour string (`const RING = "#fff"`)
+ *      -- so hoisting a literal out of an `sx` block does not evade the gate.
+ *
+ * A colour appearing anywhere else -- parsed out of persisted config, built
+ * for the legacy `rgb(r,g,b)` wire shape, compared in an assertion -- is data
+ * and is not a design literal.
+ */
+function designLiteralRegions(source) {
+    const regions = [];
+    const add = (start, end) => {
+        if (end > start) {
+            regions.push([start, end]);
+        }
+    };
+
+    for (const match of source.matchAll(/\b(?:sx|style)\s*[=:]\s*\{/g)) {
+        const open = match.index + match[0].length - 1;
+        add(open, delimitedEnd(source, open));
+    }
+
+    const emotion =
+        /\b(?:styled\s*(?:\([^()]*\)|\.[A-Za-z][A-Za-z0-9]*)|css|keyframes)\s*(?:<[^<>()`]*>\s*)?[(`]/g;
+    for (const match of source.matchAll(emotion)) {
+        const open = match.index + match[0].length - 1;
+        add(
+            open,
+            source[open] === "`"
+                ? templateEnd(source, open)
+                : delimitedEnd(source, open),
+        );
+    }
+
+    const attribute =
+        /\b(?:fill|stroke|color|htmlColor|bgcolor|borderColor|backgroundColor)\s*=\s*(?:"[^"]*"|'[^']*'|\{[^{}]*\})/g;
+    for (const match of source.matchAll(attribute)) {
+        add(match.index, match.index + match[0].length);
+    }
+
+    const colorConstant =
+        /=\s*(["'])(?:#[0-9a-fA-F]{3,8}|(?:rgba?|oklch)\([^"'\n]*\))\1/g;
+    for (const match of source.matchAll(colorConstant)) {
+        add(match.index, match.index + match[0].length);
+    }
+
+    return regions;
 }
 
 // Files that still carry pre-ADR-0014 design literals, exempt from check 4
@@ -213,17 +335,25 @@ for (const file of files) {
         const cleanupPending = pendingFm054Cleanup.has(
             displayPath.replace(/\\/g, "/"),
         );
-        if (!cleanupPending) {
-            const colorLiteral = flattened.match(
-                /(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\()/,
-            );
-            if (colorLiteral) {
-                const index = source.search(
-                    /(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\()/,
+        const isTestFile = /\.test\.tsx?$/.test(displayPath);
+        if (!cleanupPending && !isTestFile) {
+            const regions = designLiteralRegions(source);
+            const reported = new Set();
+            for (const literal of source.matchAll(COLOR_LITERAL)) {
+                const inDesignPosition = regions.some(
+                    ([start, end]) =>
+                        literal.index >= start && literal.index < end,
                 );
+                const line = lineOf(source, literal.index);
+                if (!inDesignPosition || reported.has(line)) {
+                    continue;
+                }
+                reported.add(line);
                 findings.push(
-                    `${displayPath}:${index >= 0 ? lineOf(source, index) : "?"} ` +
-                        `contains a color literal ("${colorLiteral[0]}…"). ` +
+                    `${displayPath}:${line} ` +
+                        `contains a color literal ("${literal[0]}…") in a ` +
+                        `design position (style object, styled/css template, ` +
+                        `presentational attribute, or colour constant). ` +
                         `ADR-0014: design values live in app/theme.ts; ` +
                         `consume palette/surfaces tokens instead.`,
                 );

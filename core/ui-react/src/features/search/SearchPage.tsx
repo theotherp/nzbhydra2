@@ -35,7 +35,6 @@ import {
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
-import type {CategoryCatalog} from "../../domain/categories/catalog";
 import {createCategoryCatalog} from "../../domain/categories/catalog";
 import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
@@ -74,7 +73,39 @@ export function SearchPage({
     const [draggedRecentSearch, setDraggedRecentSearch] =
         useState<RecentSearch>();
     const [recentRefreshKey, setRecentRefreshKey] = useState(0);
-    const initialValues = valuesFromSearch(refillCriteria ?? search, catalog);
+    // The values behind every route this page has submitted, keyed by that
+    // route.
+    //
+    // `canonicalSearch` omits an empty field and `valuesFromSearch` fills an
+    // absent `minsize`/`maxsize` from the category's size preset, so a URL
+    // cannot tell "the user cleared this range" from "the user never touched
+    // it". Re-resolving a URL that a submit just wrote therefore hands the
+    // preset back: the workspace (keyed on the resolved values) remounts with
+    // the size chip restored, and `AutoSubmitFromRoute` re-runs the search
+    // with the constraint the user had removed, cancelling and replacing the
+    // correct request that was already in flight. Distinguishing the two
+    // cases in the URL would change the URL contract, and doing it in the
+    // form model would change the FM-087-frozen `valuesFromSearch`; instead
+    // the submitted values stay authoritative for exactly the route they
+    // produced, which is the only place the ambiguity actually arises.
+    //
+    // Keyed by route rather than kept as "the last submission" so that the
+    // renders between a submit and the router catching up -- and any later
+    // return to an earlier search, by Back or by re-submitting it -- still
+    // resolve the route in front of them, instead of falling back to a
+    // preset-refilled reading of it.
+    const submittedRoutes = useRef(new Map<string, SearchFormValues>());
+    // The route's own values, kept separate from the form's because a refill
+    // prefills the form without touching the route: `AutoSubmitFromRoute`
+    // must go on reading the route alone, or a refill would auto-run the
+    // search it only meant to load into the form.
+    const routeValues =
+        submittedRoutes.current.get(routeKey(search)) ??
+        valuesFromSearch(search, catalog);
+    const initialValues =
+        refillCriteria === undefined
+            ? routeValues
+            : valuesFromSearch(refillCriteria, catalog);
     const requestedEpisode =
         typeof search.episode === "string" ? search.episode : undefined;
     const episodeRequested = requestedEpisode !== undefined;
@@ -148,15 +179,14 @@ export function SearchPage({
         activeSubmission.current = submission;
         const currentEmbyGeneration = ++embyGeneration.current;
         setEmbyAvailability(undefined);
-        await navigate({
-            to: "/",
-            search: {
-                ...canonicalSearch(values, catalog),
-                ...(episodeRequested && !values.episode
-                    ? {episode: requestedEpisode}
-                    : {}),
-            },
-        });
+        const route = {
+            ...canonicalSearch(values, catalog),
+            ...(episodeRequested && !values.episode
+                ? {episode: requestedEpisode}
+                : {}),
+        };
+        rememberSubmittedRoute(submittedRoutes.current, route, values);
+        await navigate({to: "/", search: route});
         if (submission.cancelled) {
             return;
         }
@@ -425,9 +455,9 @@ export function SearchPage({
                 historyTool={recentSearchTool}
             />
             <AutoSubmitFromRoute
-                catalog={catalog}
                 criteria={hasExecutableCriteria(search) ? search : undefined}
                 onSubmit={submit}
+                values={routeValues}
             />
             {embyAvailability === "available" && (
                 <Alert severity="success">Available in Emby.</Alert>
@@ -537,29 +567,63 @@ export function SearchPage({
 // pre-submit URL (no `indexers`, `repeat: "history"`) and the post-submit
 // canonical URL (`indexers` set, no `repeat`) as two distinct criteria and
 // search twice.
+// `values` is the page's own resolution of `criteria` rather than a second,
+// independent one: after a submit it is the values that submit actually used,
+// so a cleared preset-backed range is not silently refilled here.
 function AutoSubmitFromRoute({
-    catalog,
     criteria,
     onSubmit,
+    values,
 }: {
-    catalog: CategoryCatalog;
     criteria: Record<string, unknown> | undefined;
     onSubmit(values: SearchFormValues): Promise<void>;
+    values: SearchFormValues;
 }) {
     const submittedCriteria = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (!criteria) {
             return;
         }
-        const values = valuesFromSearch(criteria, catalog);
         const serialized = JSON.stringify(values);
         if (submittedCriteria.current === serialized) {
             return;
         }
         submittedCriteria.current = serialized;
         void onSubmit(values);
-    }, [catalog, criteria, onSubmit]);
+    }, [criteria, onSubmit, values]);
     return null;
+}
+
+// Identifies a route by its criteria alone: key order does not matter, and an
+// absent, empty, or non-string entry all read the same, so the object handed
+// to `navigate()` keys identically to the route object that comes back out of
+// `useSearch()`.
+function routeKey(search: Record<string, unknown>): string {
+    return JSON.stringify(
+        Object.entries(search)
+            .filter(([, value]) => typeof value === "string" && value !== "")
+            .sort(([left], [right]) => left.localeCompare(right)),
+    );
+}
+
+// Bounded so a long session of searches cannot grow this without limit; the
+// cap is far above the handful of routes any back/forward traversal revisits,
+// and evicting the oldest only costs a preset-refilled reading of a route
+// that old.
+const rememberedRouteLimit = 20;
+
+function rememberSubmittedRoute(
+    remembered: Map<string, SearchFormValues>,
+    route: Record<string, string | undefined>,
+    values: SearchFormValues,
+): void {
+    remembered.set(routeKey(route), values);
+    for (const key of remembered.keys()) {
+        if (remembered.size <= rememberedRouteLimit) {
+            break;
+        }
+        remembered.delete(key);
+    }
 }
 
 // A `search` route object represents a real, executable search — not just a

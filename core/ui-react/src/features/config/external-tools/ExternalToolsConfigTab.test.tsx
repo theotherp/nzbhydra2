@@ -1004,3 +1004,60 @@ describe("External tools tab sync all", () => {
         ).toBeVisible();
     });
 });
+
+/**
+ * The dialog is portalled to the document body, but React context crosses a
+ * portal, so its advanced rows are context-descendants of
+ * `<ConfigFieldset label="External tools">` and used to register with it. The
+ * fieldset's count is read straight off its state on every render, so the only
+ * honest assertion is on the count itself: `hiddenCount === 0` is exactly the
+ * absence of the expander *element*, not an invisible one.
+ */
+function advancedExpanders(): {label: string; text: string}[] {
+    return screen
+        .queryAllByTestId(/^config-advanced-expander-/)
+        .map((node) => ({
+            label: (node.getAttribute("data-testid") ?? "").replace(
+                "config-advanced-expander-",
+                "",
+            ),
+            text: node.textContent ?? "",
+        }));
+}
+
+describe("External tools tab dialog advanced disclosure", () => {
+    it("leaves the External tools fieldset's hidden count at zero while the dialog is open", async () => {
+        renderTab({showAdvanced: false, values: configWith([RADARR])});
+
+        expect(advancedExpanders()).toEqual([]);
+
+        await openEntry(0);
+
+        // The dialog's own advanced rows are hidden, as the toggle says, but
+        // they belong to nobody: the host fieldset counts none of them.
+        expect(
+            screen.queryByTestId(
+                "config-setting-externalTools-externalToolDraft-addDisabledIndexers",
+            ),
+        ).toBeNull();
+        expect(
+            screen.queryByTestId("config-advanced-expander-external tools"),
+        ).toBeNull();
+        expect(advancedExpanders()).toEqual([]);
+    });
+
+    it("still shows the dialog's advanced rows with the toggle on, and offers no expander", async () => {
+        renderTab({showAdvanced: true, values: configWith([RADARR])});
+
+        expect(advancedExpanders()).toEqual([]);
+
+        await openEntry(0);
+
+        expect(
+            screen.getByTestId(
+                "config-setting-externalTools-externalToolDraft-addDisabledIndexers",
+            ),
+        ).toBeVisible();
+        expect(advancedExpanders()).toEqual([]);
+    });
+});

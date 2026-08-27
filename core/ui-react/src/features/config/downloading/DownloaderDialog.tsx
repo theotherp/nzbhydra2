@@ -18,6 +18,10 @@ import {ApiTransport} from "../../../api/transport";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
+    AdvancedDisclosureContext,
+    NO_ADVANCED_DISCLOSURE,
+} from "../components/advancedDisclosure";
+import {
     SecretInput,
     SelectSetting,
     SwitchSetting,
@@ -199,166 +203,181 @@ export function DownloaderDialog({
     };
 
     return (
-        <Dialog
-            data-testid={DOWNLOADER_DIALOG_TEST_ID}
-            // Legacy's `blockUI`: while the check runs there is no way out of
-            // the dialog at all, not by Escape and not by clicking the
-            // backdrop.
-            disableEscapeKeyDown={checking}
-            fullWidth
-            maxWidth="sm"
-            onClose={() => {
-                if (!checking) {
-                    onCancel();
-                }
-            }}
-            open
-        >
-            <DialogTitle>{legend}</DialogTitle>
-            <DialogContent dividers>
-                <FormProvider {...draft}>
-                    {shows("enabled") ? (
-                        <SwitchSetting
-                            label="Enabled"
-                            name={draftFieldPath("enabled")}
-                        />
+        // The dialog is portalled to the document body, but React context is
+        // not: without this provider the advanced rows below would still be
+        // context-descendants of `<ConfigFieldset label="Downloaders">` and
+        // register with it, making that fieldset offer "N advanced settings
+        // hidden" behind the modal backdrop for as long as the dialog is open.
+        // A dialog is not a fieldset and has no expander of its own, so the
+        // right answer is that nobody is counting these rows —
+        // `NO_ADVANCED_DISCLOSURE`, the documented "outside any fieldset"
+        // value. Only the *hidden* state is affected: with the global toggle on
+        // the rows are shown regardless of what any disclosure says.
+        <AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}>
+            <Dialog
+                data-testid={DOWNLOADER_DIALOG_TEST_ID}
+                // Legacy's `blockUI`: while the check runs there is no way out of
+                // the dialog at all, not by Escape and not by clicking the
+                // backdrop.
+                disableEscapeKeyDown={checking}
+                fullWidth
+                maxWidth="sm"
+                onClose={() => {
+                    if (!checking) {
+                        onCancel();
+                    }
+                }}
+                open
+            >
+                <DialogTitle>{legend}</DialogTitle>
+                <DialogContent dividers>
+                    <FormProvider {...draft}>
+                        {shows("enabled") ? (
+                            <SwitchSetting
+                                label="Enabled"
+                                name={draftFieldPath("enabled")}
+                            />
+                        ) : null}
+                        {shows("name") ? (
+                            <TextSetting
+                                label="Name"
+                                name={draftFieldPath("name")}
+                                required
+                                validate={uniqueName}
+                            />
+                        ) : null}
+                        {shows("url") ? (
+                            <TextSetting
+                                help="URL with scheme and full path"
+                                label="URL"
+                                name={draftFieldPath("url")}
+                                required
+                            />
+                        ) : null}
+                        {/*
+                         * The credential fields are `C-SECRET-INPUT` because the
+                         * backend masks them: `DownloaderConfig.apiKey`,
+                         * `username`, and `password` are `@HiddenInUI`, so an
+                         * existing entry arrives holding `***UNCHANGED***` and must
+                         * send it back untouched unless the admin types a new one.
+                         */}
+                        {shows("apiKey") ? (
+                            <SecretInput
+                                label="API Key"
+                                name={draftFieldPath("apiKey")}
+                            />
+                        ) : null}
+                        {shows("username") ? (
+                            <SecretInput
+                                label="Username"
+                                name={draftFieldPath("username")}
+                            />
+                        ) : null}
+                        {shows("password") ? (
+                            <SecretInput
+                                label="Password"
+                                name={draftFieldPath("password")}
+                            />
+                        ) : null}
+                        {shows("defaultCategory") ? (
+                            <TextSetting
+                                help='When adding NZBs this category will be used instead of asking for the category. Write "Use original category", "Use no category" or "Use mapped category" to not be asked.'
+                                label="Default category"
+                                name={draftFieldPath("defaultCategory")}
+                                placeholder="Ask when downloading"
+                            />
+                        ) : null}
+                        {shows("nzbAddingType") ? (
+                            <SelectSetting
+                                advanced
+                                help="How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data."
+                                label="NZB adding type"
+                                name={draftFieldPath("nzbAddingType")}
+                                options={NZB_ADDING_TYPE_OPTIONS}
+                                tooltip="You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way. Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config."
+                            />
+                        ) : null}
+                        {shows("addPaused") ? (
+                            <SwitchSetting
+                                advanced
+                                help="Add NZBs paused"
+                                label="Add paused"
+                                name={draftFieldPath("addPaused")}
+                            />
+                        ) : null}
+                        {shows("iconCssClass") ? (
+                            <TextSetting
+                                advanced
+                                // Legacy's help is a plain sentence containing a
+                                // bare URL, not an anchor (`formly-downloaders.js:265`),
+                                // so it stays text here too.
+                                help='Copy an icon name from https://fontawesome.com/v4.7.0/icons/ (e.g. "film")'
+                                label="Icon CSS class"
+                                name={draftFieldPath("iconCssClass")}
+                                placeholder="Default"
+                                tooltip="If you have multiple downloaders of the same type you can select an icon from the Font Awesome library. This icon will be shown in the search results and the NZB download history instead of the default downloader icon."
+                            />
+                        ) : null}
+                    </FormProvider>
+                    {checking ? (
+                        <Stack
+                            alignItems="center"
+                            data-testid="config-downloader-dialog-checking"
+                            direction="row"
+                            role="status"
+                            spacing={1}
+                        >
+                            <CircularProgress
+                                size={18}
+                                variant="indeterminate"
+                            />
+                            <Typography variant="body2">
+                                Testing connection…
+                            </Typography>
+                        </Stack>
                     ) : null}
-                    {shows("name") ? (
-                        <TextSetting
-                            label="Name"
-                            name={draftFieldPath("name")}
-                            required
-                            validate={uniqueName}
-                        />
-                    ) : null}
-                    {shows("url") ? (
-                        <TextSetting
-                            help="URL with scheme and full path"
-                            label="URL"
-                            name={draftFieldPath("url")}
-                            required
-                        />
-                    ) : null}
-                    {/*
-                     * The credential fields are `C-SECRET-INPUT` because the
-                     * backend masks them: `DownloaderConfig.apiKey`,
-                     * `username`, and `password` are `@HiddenInUI`, so an
-                     * existing entry arrives holding `***UNCHANGED***` and must
-                     * send it back untouched unless the admin types a new one.
-                     */}
-                    {shows("apiKey") ? (
-                        <SecretInput
-                            label="API Key"
-                            name={draftFieldPath("apiKey")}
-                        />
-                    ) : null}
-                    {shows("username") ? (
-                        <SecretInput
-                            label="Username"
-                            name={draftFieldPath("username")}
-                        />
-                    ) : null}
-                    {shows("password") ? (
-                        <SecretInput
-                            label="Password"
-                            name={draftFieldPath("password")}
-                        />
-                    ) : null}
-                    {shows("defaultCategory") ? (
-                        <TextSetting
-                            help='When adding NZBs this category will be used instead of asking for the category. Write "Use original category", "Use no category" or "Use mapped category" to not be asked.'
-                            label="Default category"
-                            name={draftFieldPath("defaultCategory")}
-                            placeholder="Ask when downloading"
-                        />
-                    ) : null}
-                    {shows("nzbAddingType") ? (
-                        <SelectSetting
-                            advanced
-                            help="How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data."
-                            label="NZB adding type"
-                            name={draftFieldPath("nzbAddingType")}
-                            options={NZB_ADDING_TYPE_OPTIONS}
-                            tooltip="You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way. Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config."
-                        />
-                    ) : null}
-                    {shows("addPaused") ? (
-                        <SwitchSetting
-                            advanced
-                            help="Add NZBs paused"
-                            label="Add paused"
-                            name={draftFieldPath("addPaused")}
-                        />
-                    ) : null}
-                    {shows("iconCssClass") ? (
-                        <TextSetting
-                            advanced
-                            // Legacy's help is a plain sentence containing a
-                            // bare URL, not an anchor (`formly-downloaders.js:265`),
-                            // so it stays text here too.
-                            help='Copy an icon name from https://fontawesome.com/v4.7.0/icons/ (e.g. "film")'
-                            label="Icon CSS class"
-                            name={draftFieldPath("iconCssClass")}
-                            placeholder="Default"
-                            tooltip="If you have multiple downloaders of the same type you can select an icon from the Font Awesome library. This icon will be shown in the search results and the NZB download history instead of the default downloader icon."
-                        />
-                    ) : null}
-                </FormProvider>
-                {checking ? (
-                    <Stack
-                        alignItems="center"
-                        data-testid="config-downloader-dialog-checking"
-                        direction="row"
-                        role="status"
-                        spacing={1}
-                    >
-                        <CircularProgress size={18} variant="indeterminate" />
-                        <Typography variant="body2">
-                            Testing connection…
-                        </Typography>
-                    </Stack>
-                ) : null}
-            </DialogContent>
-            <DialogActions>
-                {onDelete === undefined ? null : (
+                </DialogContent>
+                <DialogActions>
+                    {onDelete === undefined ? null : (
+                        <Button
+                            color="error"
+                            data-testid="config-downloader-dialog-delete"
+                            disabled={checking}
+                            onClick={onDelete}
+                            startIcon={<DeleteIcon />}
+                            sx={{mr: "auto"}}
+                            type="button"
+                        >
+                            Delete
+                        </Button>
+                    )}
                     <Button
-                        color="error"
-                        data-testid="config-downloader-dialog-delete"
+                        data-testid="config-downloader-dialog-cancel"
                         disabled={checking}
-                        onClick={onDelete}
-                        startIcon={<DeleteIcon />}
-                        sx={{mr: "auto"}}
+                        onClick={onCancel}
                         type="button"
                     >
-                        Delete
+                        Cancel
                     </Button>
-                )}
-                <Button
-                    data-testid="config-downloader-dialog-cancel"
-                    disabled={checking}
-                    onClick={onCancel}
-                    type="button"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    data-testid="config-downloader-dialog-reset"
-                    disabled={checking}
-                    onClick={() => draft.reset()}
-                    type="button"
-                >
-                    Reset
-                </Button>
-                <Button
-                    data-testid="config-downloader-dialog-submit"
-                    disabled={checking}
-                    onClick={() => void submit()}
-                    type="button"
-                    variant="contained"
-                >
-                    Submit
-                </Button>
-            </DialogActions>
-        </Dialog>
+                    <Button
+                        data-testid="config-downloader-dialog-reset"
+                        disabled={checking}
+                        onClick={() => draft.reset()}
+                        type="button"
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        data-testid="config-downloader-dialog-submit"
+                        disabled={checking}
+                        onClick={() => void submit()}
+                        type="button"
+                        variant="contained"
+                    >
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </AdvancedDisclosureContext.Provider>
     );
 }

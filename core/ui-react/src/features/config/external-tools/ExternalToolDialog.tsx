@@ -21,6 +21,10 @@ import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
+    AdvancedDisclosureContext,
+    NO_ADVANCED_DISCLOSURE,
+} from "../components/advancedDisclosure";
+import {
     NumberSetting,
     SecretInput,
     SelectSetting,
@@ -245,308 +249,325 @@ export function ExternalToolDialog({
     const blocked = busy !== null;
 
     return (
-        <Dialog
-            data-testid={EXTERNAL_TOOL_DIALOG_TEST_ID}
-            // Legacy's `blockUI`: while a request runs there is no way out of
-            // the dialog at all, not by Escape and not by clicking the
-            // backdrop.
-            disableEscapeKeyDown={blocked}
-            fullWidth
-            maxWidth="sm"
-            onClose={() => {
-                if (!blocked) {
-                    onCancel();
-                }
-            }}
-            open
-        >
-            <DialogTitle>{EXTERNAL_TOOL_DIALOG_TITLE}</DialogTitle>
-            <DialogContent dividers>
-                <FormProvider {...draft}>
-                    {shows("enabled") ? (
-                        <SwitchSetting
-                            label="Enabled"
-                            name={draftFieldPath("enabled")}
-                        />
-                    ) : null}
-                    {shows("name") ? (
-                        <TextSetting
-                            help="Unique name for this external tool instance"
-                            label="Name"
-                            name={draftFieldPath("name")}
-                            required
-                            validate={uniqueName}
-                        />
-                    ) : null}
-                    {shows("type") ? (
-                        <SelectSetting
-                            label="Type"
-                            name={draftFieldPath("type")}
-                            options={EXTERNAL_TOOL_TYPE_OPTIONS}
-                            required
-                        />
-                    ) : null}
-                    {shows("host") ? (
-                        <TextSetting
-                            help="URL with scheme and port (e.g., http://localhost:8989)"
-                            label="Host URL"
-                            name={draftFieldPath("host")}
-                            required
-                        />
-                    ) : null}
-                    {/*
-                     * `C-SECRET-INPUT` rather than legacy's plain text input.
-                     * The backend does not mask this value
-                     * (`ExternalToolConfig.apiKey` is `@SensitiveData`, not
-                     * `@HiddenInUI`), so the control simply treats it as opaque
-                     * and round-trips it — but it is a credential for another
-                     * application and does not belong on screen in clear.
-                     */}
-                    {shows("apiKey") ? (
-                        <SecretInput
-                            help="API key for the external tool"
-                            label="API Key"
-                            name={draftFieldPath("apiKey")}
-                        />
-                    ) : null}
-                    {shows("syncType") ? (
-                        <SelectSetting
-                            help="Whether to create one entry for all indexers or separate entries"
-                            label="Sync Type"
-                            name={draftFieldPath("syncType")}
-                            options={SYNC_TYPE_OPTIONS}
-                        />
-                    ) : null}
-                    {shows("nzbhydraName") ? (
-                        <TextSetting
-                            help="Name prefix used in the external tool"
-                            label="NZBHydra Name"
-                            name={draftFieldPath("nzbhydraName")}
-                            required
-                        />
-                    ) : null}
-                    {shows("nzbhydraHost") ? (
-                        <TextSetting
-                            help="NZBHydra URL that the external tool can reach (use host.docker.internal for Docker containers)"
-                            label="NZBHydra Host"
-                            name={draftFieldPath("nzbhydraHost")}
-                            required
-                        />
-                    ) : null}
-                    {shows("configureForUsenet") ? (
-                        <SwitchSetting
-                            help="Sync Usenet indexers"
-                            label="Configure for Usenet"
-                            name={draftFieldPath("configureForUsenet")}
-                        />
-                    ) : null}
-                    {shows("configureForTorrents") ? (
-                        <SwitchSetting
-                            help="Sync torrent indexers"
-                            label="Configure for Torrents"
-                            name={draftFieldPath("configureForTorrents")}
-                        />
-                    ) : null}
-                    {shows("addDisabledIndexers") ? (
-                        <SwitchSetting
-                            advanced
-                            help="Also sync indexers that are disabled in NZBHydra"
-                            label="Add disabled indexers"
-                            name={draftFieldPath("addDisabledIndexers")}
-                        />
-                    ) : null}
-                    {shows("useHydraPriorities") ? (
-                        <SwitchSetting
-                            help="Map NZBHydra indexer priorities to the external tool"
-                            label="Use Hydra priorities"
-                            name={draftFieldPath("useHydraPriorities")}
-                        />
-                    ) : null}
-                    {shows("priority") ? (
-                        <NumberSetting
-                            help="Priority to use when not using Hydra priorities (1-50, lower is better)"
-                            label="Default Priority"
-                            name={draftFieldPath("priority")}
-                            placeholder="25"
-                        />
-                    ) : null}
-                    {shows("enableRss") ? (
-                        <SwitchSetting
-                            help="Enable RSS sync in the external tool"
-                            label="Enable RSS"
-                            name={draftFieldPath("enableRss")}
-                        />
-                    ) : null}
-                    {shows("enableAutomaticSearch") ? (
-                        <SwitchSetting
-                            help="Enable automatic search in the external tool"
-                            label="Enable automatic search"
-                            name={draftFieldPath("enableAutomaticSearch")}
-                        />
-                    ) : null}
-                    {shows("enableInteractiveSearch") ? (
-                        <SwitchSetting
-                            help="Enable interactive (manual) search in the external tool"
-                            label="Enable interactive search"
-                            name={draftFieldPath("enableInteractiveSearch")}
-                        />
-                    ) : null}
-                    {shows("categories") ? (
-                        <TextSetting
-                            advanced
-                            help="Comma-separated newznab category IDs"
-                            label="Categories"
-                            name={draftFieldPath("categories")}
-                            validate={categoriesValidator}
-                        />
-                    ) : null}
-                    {shows("animeCategories") ? (
-                        <TextSetting
-                            advanced
-                            help="Comma-separated newznab category IDs for anime"
-                            label="Anime categories"
-                            name={draftFieldPath("animeCategories")}
-                        />
-                    ) : null}
-                    {shows("removeYearFromSearchString") ? (
-                        <SwitchSetting
-                            advanced
-                            help="Remove year from movie search queries"
-                            label="Remove year from search"
-                            name={draftFieldPath("removeYearFromSearchString")}
-                        />
-                    ) : null}
-                    {shows("earlyDownloadLimit") ? (
-                        <TextSetting
-                            advanced
-                            label="Early download limit"
-                            name={draftFieldPath("earlyDownloadLimit")}
-                        />
-                    ) : null}
-                    {shows("additionalParameters") ? (
-                        <TextSetting
-                            advanced
-                            help="Additional URL parameters to send to the indexer"
-                            label="Additional parameters"
-                            name={draftFieldPath("additionalParameters")}
-                        />
-                    ) : null}
-                    {shows("minimumSeeders") ? (
-                        <TextSetting
-                            advanced
-                            help="Minimum number of seeders"
-                            label="Minimum seeders"
-                            name={draftFieldPath("minimumSeeders")}
-                            validate={minimumSeedersValidator}
-                        />
-                    ) : null}
-                    {shows("seedRatio") ? (
-                        <TextSetting
-                            advanced
-                            label="Seed ratio"
-                            name={draftFieldPath("seedRatio")}
-                        />
-                    ) : null}
-                    {shows("seedTime") ? (
-                        <TextSetting
-                            advanced
-                            label="Seed time"
-                            name={draftFieldPath("seedTime")}
-                        />
-                    ) : null}
-                    {shows("seasonPackSeedTime") ? (
-                        <TextSetting
-                            advanced
-                            label="Season pack seed time"
-                            name={draftFieldPath("seasonPackSeedTime")}
-                        />
-                    ) : null}
-                    {shows("discographySeedTime") ? (
-                        <TextSetting
-                            advanced
-                            label="Discography seed time"
-                            name={draftFieldPath("discographySeedTime")}
-                        />
-                    ) : null}
-                </FormProvider>
-                {busy === null ? null : (
-                    <Stack
-                        alignItems="center"
-                        data-testid="config-external-tool-dialog-busy"
-                        direction="row"
-                        role="status"
-                        spacing={1}
-                    >
-                        <CircularProgress size={18} variant="indeterminate" />
-                        <Typography variant="body2">
-                            {busy === "testing"
-                                ? "Testing connection…"
-                                : `Configuring NZBHydra in ${externalToolTypeLabel(values)}…`}
-                        </Typography>
-                    </Stack>
-                )}
-            </DialogContent>
-            {/*
-             * Five actions do not fit one row at 390px, and `DialogActions`
-             * does not wrap by default, so the leftmost button is clipped off
-             * the dialog. Wrapping is a layout property, not a restyle of the
-             * component (the row gap is theme spacing).
-             */}
-            <DialogActions sx={{flexWrap: "wrap", rowGap: 1}}>
-                {onDelete === undefined ? null : (
+        // The dialog is portalled to the document body, but React context is
+        // not: without this provider the advanced rows below would still be
+        // context-descendants of `<ConfigFieldset label="External tools">` and
+        // register with it, making that fieldset offer "N advanced settings
+        // hidden" behind the modal backdrop for as long as the dialog is open.
+        // A dialog is not a fieldset and has no expander of its own, so the
+        // right answer is that nobody is counting these rows —
+        // `NO_ADVANCED_DISCLOSURE`, the documented "outside any fieldset"
+        // value. Only the *hidden* state is affected: with the global toggle on
+        // the rows are shown regardless of what any disclosure says.
+        <AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}>
+            <Dialog
+                data-testid={EXTERNAL_TOOL_DIALOG_TEST_ID}
+                // Legacy's `blockUI`: while a request runs there is no way out of
+                // the dialog at all, not by Escape and not by clicking the
+                // backdrop.
+                disableEscapeKeyDown={blocked}
+                fullWidth
+                maxWidth="sm"
+                onClose={() => {
+                    if (!blocked) {
+                        onCancel();
+                    }
+                }}
+                open
+            >
+                <DialogTitle>{EXTERNAL_TOOL_DIALOG_TITLE}</DialogTitle>
+                <DialogContent dividers>
+                    <FormProvider {...draft}>
+                        {shows("enabled") ? (
+                            <SwitchSetting
+                                label="Enabled"
+                                name={draftFieldPath("enabled")}
+                            />
+                        ) : null}
+                        {shows("name") ? (
+                            <TextSetting
+                                help="Unique name for this external tool instance"
+                                label="Name"
+                                name={draftFieldPath("name")}
+                                required
+                                validate={uniqueName}
+                            />
+                        ) : null}
+                        {shows("type") ? (
+                            <SelectSetting
+                                label="Type"
+                                name={draftFieldPath("type")}
+                                options={EXTERNAL_TOOL_TYPE_OPTIONS}
+                                required
+                            />
+                        ) : null}
+                        {shows("host") ? (
+                            <TextSetting
+                                help="URL with scheme and port (e.g., http://localhost:8989)"
+                                label="Host URL"
+                                name={draftFieldPath("host")}
+                                required
+                            />
+                        ) : null}
+                        {/*
+                         * `C-SECRET-INPUT` rather than legacy's plain text input.
+                         * The backend does not mask this value
+                         * (`ExternalToolConfig.apiKey` is `@SensitiveData`, not
+                         * `@HiddenInUI`), so the control simply treats it as opaque
+                         * and round-trips it — but it is a credential for another
+                         * application and does not belong on screen in clear.
+                         */}
+                        {shows("apiKey") ? (
+                            <SecretInput
+                                help="API key for the external tool"
+                                label="API Key"
+                                name={draftFieldPath("apiKey")}
+                            />
+                        ) : null}
+                        {shows("syncType") ? (
+                            <SelectSetting
+                                help="Whether to create one entry for all indexers or separate entries"
+                                label="Sync Type"
+                                name={draftFieldPath("syncType")}
+                                options={SYNC_TYPE_OPTIONS}
+                            />
+                        ) : null}
+                        {shows("nzbhydraName") ? (
+                            <TextSetting
+                                help="Name prefix used in the external tool"
+                                label="NZBHydra Name"
+                                name={draftFieldPath("nzbhydraName")}
+                                required
+                            />
+                        ) : null}
+                        {shows("nzbhydraHost") ? (
+                            <TextSetting
+                                help="NZBHydra URL that the external tool can reach (use host.docker.internal for Docker containers)"
+                                label="NZBHydra Host"
+                                name={draftFieldPath("nzbhydraHost")}
+                                required
+                            />
+                        ) : null}
+                        {shows("configureForUsenet") ? (
+                            <SwitchSetting
+                                help="Sync Usenet indexers"
+                                label="Configure for Usenet"
+                                name={draftFieldPath("configureForUsenet")}
+                            />
+                        ) : null}
+                        {shows("configureForTorrents") ? (
+                            <SwitchSetting
+                                help="Sync torrent indexers"
+                                label="Configure for Torrents"
+                                name={draftFieldPath("configureForTorrents")}
+                            />
+                        ) : null}
+                        {shows("addDisabledIndexers") ? (
+                            <SwitchSetting
+                                advanced
+                                help="Also sync indexers that are disabled in NZBHydra"
+                                label="Add disabled indexers"
+                                name={draftFieldPath("addDisabledIndexers")}
+                            />
+                        ) : null}
+                        {shows("useHydraPriorities") ? (
+                            <SwitchSetting
+                                help="Map NZBHydra indexer priorities to the external tool"
+                                label="Use Hydra priorities"
+                                name={draftFieldPath("useHydraPriorities")}
+                            />
+                        ) : null}
+                        {shows("priority") ? (
+                            <NumberSetting
+                                help="Priority to use when not using Hydra priorities (1-50, lower is better)"
+                                label="Default Priority"
+                                name={draftFieldPath("priority")}
+                                placeholder="25"
+                            />
+                        ) : null}
+                        {shows("enableRss") ? (
+                            <SwitchSetting
+                                help="Enable RSS sync in the external tool"
+                                label="Enable RSS"
+                                name={draftFieldPath("enableRss")}
+                            />
+                        ) : null}
+                        {shows("enableAutomaticSearch") ? (
+                            <SwitchSetting
+                                help="Enable automatic search in the external tool"
+                                label="Enable automatic search"
+                                name={draftFieldPath("enableAutomaticSearch")}
+                            />
+                        ) : null}
+                        {shows("enableInteractiveSearch") ? (
+                            <SwitchSetting
+                                help="Enable interactive (manual) search in the external tool"
+                                label="Enable interactive search"
+                                name={draftFieldPath("enableInteractiveSearch")}
+                            />
+                        ) : null}
+                        {shows("categories") ? (
+                            <TextSetting
+                                advanced
+                                help="Comma-separated newznab category IDs"
+                                label="Categories"
+                                name={draftFieldPath("categories")}
+                                validate={categoriesValidator}
+                            />
+                        ) : null}
+                        {shows("animeCategories") ? (
+                            <TextSetting
+                                advanced
+                                help="Comma-separated newznab category IDs for anime"
+                                label="Anime categories"
+                                name={draftFieldPath("animeCategories")}
+                            />
+                        ) : null}
+                        {shows("removeYearFromSearchString") ? (
+                            <SwitchSetting
+                                advanced
+                                help="Remove year from movie search queries"
+                                label="Remove year from search"
+                                name={draftFieldPath(
+                                    "removeYearFromSearchString",
+                                )}
+                            />
+                        ) : null}
+                        {shows("earlyDownloadLimit") ? (
+                            <TextSetting
+                                advanced
+                                label="Early download limit"
+                                name={draftFieldPath("earlyDownloadLimit")}
+                            />
+                        ) : null}
+                        {shows("additionalParameters") ? (
+                            <TextSetting
+                                advanced
+                                help="Additional URL parameters to send to the indexer"
+                                label="Additional parameters"
+                                name={draftFieldPath("additionalParameters")}
+                            />
+                        ) : null}
+                        {shows("minimumSeeders") ? (
+                            <TextSetting
+                                advanced
+                                help="Minimum number of seeders"
+                                label="Minimum seeders"
+                                name={draftFieldPath("minimumSeeders")}
+                                validate={minimumSeedersValidator}
+                            />
+                        ) : null}
+                        {shows("seedRatio") ? (
+                            <TextSetting
+                                advanced
+                                label="Seed ratio"
+                                name={draftFieldPath("seedRatio")}
+                            />
+                        ) : null}
+                        {shows("seedTime") ? (
+                            <TextSetting
+                                advanced
+                                label="Seed time"
+                                name={draftFieldPath("seedTime")}
+                            />
+                        ) : null}
+                        {shows("seasonPackSeedTime") ? (
+                            <TextSetting
+                                advanced
+                                label="Season pack seed time"
+                                name={draftFieldPath("seasonPackSeedTime")}
+                            />
+                        ) : null}
+                        {shows("discographySeedTime") ? (
+                            <TextSetting
+                                advanced
+                                label="Discography seed time"
+                                name={draftFieldPath("discographySeedTime")}
+                            />
+                        ) : null}
+                    </FormProvider>
+                    {busy === null ? null : (
+                        <Stack
+                            alignItems="center"
+                            data-testid="config-external-tool-dialog-busy"
+                            direction="row"
+                            role="status"
+                            spacing={1}
+                        >
+                            <CircularProgress
+                                size={18}
+                                variant="indeterminate"
+                            />
+                            <Typography variant="body2">
+                                {busy === "testing"
+                                    ? "Testing connection…"
+                                    : `Configuring NZBHydra in ${externalToolTypeLabel(values)}…`}
+                            </Typography>
+                        </Stack>
+                    )}
+                </DialogContent>
+                {/*
+                 * Five actions do not fit one row at 390px, and `DialogActions`
+                 * does not wrap by default, so the leftmost button is clipped off
+                 * the dialog. Wrapping is a layout property, not a restyle of the
+                 * component (the row gap is theme spacing).
+                 */}
+                <DialogActions sx={{flexWrap: "wrap", rowGap: 1}}>
+                    {onDelete === undefined ? null : (
+                        <Button
+                            color="error"
+                            data-testid="config-external-tool-dialog-delete"
+                            disabled={blocked}
+                            onClick={onDelete}
+                            startIcon={<DeleteIcon />}
+                            sx={{mr: "auto"}}
+                            type="button"
+                        >
+                            Delete
+                        </Button>
+                    )}
                     <Button
-                        color="error"
-                        data-testid="config-external-tool-dialog-delete"
+                        data-testid="config-external-tool-dialog-cancel"
                         disabled={blocked}
-                        onClick={onDelete}
-                        startIcon={<DeleteIcon />}
-                        sx={{mr: "auto"}}
+                        onClick={onCancel}
                         type="button"
                     >
-                        Delete
+                        Cancel
                     </Button>
-                )}
-                <Button
-                    data-testid="config-external-tool-dialog-cancel"
-                    disabled={blocked}
-                    onClick={onCancel}
-                    type="button"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    data-testid="config-external-tool-dialog-reset"
-                    disabled={blocked}
-                    onClick={() => draft.reset()}
-                    type="button"
-                >
-                    Reset
-                </Button>
-                {/*
-                 * Legacy renders this button only while the entry has both a
-                 * host and an API key (`ng-if="model.host && model.apiKey"`).
-                 * A control that appears and disappears while the admin types
-                 * is worse than one that is visibly unavailable, so it stays
-                 * put and is disabled instead.
-                 */}
-                <Button
-                    data-testid="config-external-tool-dialog-test"
-                    disabled={blocked || !canTest}
-                    onClick={() => void testConnection(draftEntry())}
-                    type="button"
-                >
-                    Test connection
-                </Button>
-                <Button
-                    data-testid="config-external-tool-dialog-submit"
-                    disabled={blocked}
-                    onClick={() => void submit()}
-                    type="button"
-                    variant="contained"
-                >
-                    Submit
-                </Button>
-            </DialogActions>
-        </Dialog>
+                    <Button
+                        data-testid="config-external-tool-dialog-reset"
+                        disabled={blocked}
+                        onClick={() => draft.reset()}
+                        type="button"
+                    >
+                        Reset
+                    </Button>
+                    {/*
+                     * Legacy renders this button only while the entry has both a
+                     * host and an API key (`ng-if="model.host && model.apiKey"`).
+                     * A control that appears and disappears while the admin types
+                     * is worse than one that is visibly unavailable, so it stays
+                     * put and is disabled instead.
+                     */}
+                    <Button
+                        data-testid="config-external-tool-dialog-test"
+                        disabled={blocked || !canTest}
+                        onClick={() => void testConnection(draftEntry())}
+                        type="button"
+                    >
+                        Test connection
+                    </Button>
+                    <Button
+                        data-testid="config-external-tool-dialog-submit"
+                        disabled={blocked}
+                        onClick={() => void submit()}
+                        type="button"
+                        variant="contained"
+                    >
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </AdvancedDisclosureContext.Provider>
     );
 }

@@ -1350,11 +1350,9 @@ test.describe("Search", () => {
     // real-backend MOVIE autocomplete, the same `data-tmdb-id` option, the
     // same `additional-query` reveal and the same `"tmdbId":"424242"` search
     // body, and additionally pins the backend's explicit-null serialization.
-    // Its one assertion the React sibling does not make -- that the identifier
-    // search really renders the movie -- could not be carried over, for a
-    // reason recorded at that test and in the handoff's Follow-Up Work: it
-    // depends on clearing the category's size range, which React submits
-    // anyway.
+    // Its one assertion the React sibling did not make -- that the identifier
+    // search really renders the movie -- is carried over below now that the
+    // size constraint a cleared field expresses actually reaches the request.
 
     test("should select a movie autocomplete result through the React route and search by TMDB identifier", async ({
         page,
@@ -1363,6 +1361,14 @@ test.describe("Search", () => {
         await expect(page).toHaveURL(/\/$/);
         await page.getByTestId("search-category-control").click();
         await page.getByTestId("search-category-option-Movies").click();
+        // The Movies category's 500-20000 MB preset would reject this
+        // deterministic 12 KB result, so the search this test asserts on is
+        // only reachable by clearing the size range first -- exactly what
+        // the deleted legacy test did through `#minsize`/`#maxsize`.
+        await openAdvanced(page);
+        await page.getByLabel("Min size").fill("");
+        await page.getByLabel("Max size").fill("");
+        await expect(page.getByTestId("search-chip-size")).toBeHidden();
 
         const searchQuery = page.getByTestId("search-query");
         const autocompleteResponse = page.waitForResponse(
@@ -1408,19 +1414,19 @@ test.describe("Search", () => {
         await page.getByTestId("search-submit").click();
         const searchRequest = (await searchResponse).request();
         expect(searchRequest.postData()).toContain('"tmdbId":"424242"');
-        // FM-094: the deleted legacy autocomplete test also asserted that this
-        // identifier search really returns "Hydra Downloader Integration
-        // Movie". That step could not be carried over, and the reason is a
-        // finding, not a shortcut: legacy reached it by clearing its
-        // `#minsize`/`#maxsize` inputs first, and React has no working
-        // equivalent -- clearing the Advanced panel's Min/Max size fields, or
-        // deleting the `search-chip-size` constraint chip, both leave the
-        // submitted request carrying the Movies category's 500-20000 MB preset
-        // (`SearchWorkspace.tsx`'s `field("minsize") || preset...` fallback),
-        // which rejects this deterministic 12 KB result. Both attempts were run
-        // against the real backend, which logged
-        // `minsize=500, maxsize=20000` either way. Carried in the handoff's
-        // Follow-Up Work as a single-session-fix candidate.
+        // The cleared range must reach the backend as "no constraint", not as
+        // the category preset -- that is what lets the 12 KB result below
+        // through, and it is the regression this assertion pins.
+        const body = searchRequest.postDataJSON() as Record<string, unknown>;
+        expect(body.minsize).toBeUndefined();
+        expect(body.maxsize).toBeUndefined();
+
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await expect(
+            page
+                .getByTestId("search-result-title")
+                .filter({hasText: "Hydra Downloader Integration Movie"}),
+        ).toBeVisible();
     });
 
     test("should select a TV autocomplete result with the keyboard and search by TVDB identifier", async ({
