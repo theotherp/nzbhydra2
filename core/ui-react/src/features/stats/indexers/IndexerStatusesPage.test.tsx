@@ -171,6 +171,63 @@ describe("IndexerStatusesPage", () => {
         ).toHaveTextContent(/^Jan 6, 2025, 12:00 AM$/);
     });
 
+    it("should render the backend's explicit nulls as empty cells", async () => {
+        // Jackson emits every unset field as null, so the page must never show
+        // "null" or "Invalid Date" for one.
+        renderPage(async () => ({
+            malformedCount: 0,
+            statuses: [
+                {
+                    indexer: "Nulled",
+                    state: "ENABLED" as const,
+                    disabledUntil: null,
+                    lastError: null,
+                    apiResetTime: null,
+                    downloadResetTime: null,
+                    apiHits: 3,
+                    apiHitLimit: null,
+                    downloadHits: null,
+                    downloadHitLimit: null,
+                    vipExpirationDate: null,
+                },
+            ],
+        }));
+        const table = await screen.findByRole("table", {
+            name: "Indexer statuses",
+        });
+        expect(table).not.toHaveTextContent("null");
+        expect(table).not.toHaveTextContent("Invalid Date");
+        const cells = within(statusRow(table, "Nulled")).getAllByRole("cell");
+        expect(cells[2]).toBeEmptyDOMElement();
+        expect(cells[3]).toBeEmptyDOMElement();
+        expect(cells[4]).toHaveTextContent(/^3$/);
+        expect(cells[5]).toBeEmptyDOMElement();
+        expect(cells[6]).toBeEmptyDOMElement();
+        expect(cells[7]).toBeEmptyDOMElement();
+    });
+
+    it("should render a configured zero limit rather than dropping it", async () => {
+        renderPage(async () => ({
+            malformedCount: 0,
+            statuses: [
+                {
+                    indexer: "Zeroed",
+                    state: "ENABLED" as const,
+                    apiHits: 0,
+                    apiHitLimit: 0,
+                    downloadHits: 2,
+                    downloadHitLimit: 0,
+                },
+            ],
+        }));
+        const table = await screen.findByRole("table", {
+            name: "Indexer statuses",
+        });
+        const cells = within(statusRow(table, "Zeroed")).getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent(/^0\/0$/);
+        expect(cells[5]).toHaveTextContent(/^2\/0$/);
+    });
+
     it("should render intentional empty and request failure states", async () => {
         renderPage(async () => ({
             statuses: [],

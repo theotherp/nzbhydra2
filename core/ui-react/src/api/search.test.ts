@@ -61,6 +61,20 @@ describe("search API", () => {
         );
     });
 
+    it("should keep a result whose size the backend serialises as null", () => {
+        // `SearchResultWebTO.size` is a `Long`; an indexer that reports no size
+        // leaves it null and Jackson puts an explicit null on the wire.
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {searchResultId: "sizeless", title: "A result", size: null},
+            ],
+        });
+        expect(response.malformedResultCount).toBe(0);
+        expect(response.searchResults).toHaveLength(1);
+        expect(response.searchResults[0]?.size).toBeUndefined();
+    });
+
     it("should discard titleless entries while preserving valid results", () => {
         const response = parseSearchResponse({
             ...responseEnvelope,

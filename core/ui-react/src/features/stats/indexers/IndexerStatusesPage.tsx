@@ -155,12 +155,16 @@ function stateLabel(state: IndexerStatus["state"]): string {
     }[state];
 }
 
-function limit(hits: number | undefined, maximum: number | undefined): string {
-    return hits === undefined
-        ? ""
-        : maximum === undefined
-          ? String(hits)
-          : `${hits}/${maximum}`;
+// The backend leaves an unknown hit count or an unconfigured limit null, which
+// reaches us as null rather than undefined; both mean "nothing to show" here.
+// A configured limit of 0 is meaningful and must still render as "n/0".
+function limit(
+    hits: number | null | undefined,
+    maximum: number | null | undefined,
+): string {
+    if (hits === null || hits === undefined) return "";
+    if (maximum === null || maximum === undefined) return String(hits);
+    return `${hits}/${maximum}`;
 }
 
 function reset(status: IndexerStatus, timeZone: string | null): string {
@@ -173,7 +177,7 @@ function reset(status: IndexerStatus, timeZone: string | null): string {
 }
 
 function vip(
-    expiry: string | undefined,
+    expiry: string | null | undefined,
     timeZone: string | null,
 ): React.ReactNode {
     if (!expiry) return "";

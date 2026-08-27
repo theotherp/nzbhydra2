@@ -121,6 +121,32 @@ describe("parseStatsResponse", () => {
         expect(malformedFamilies).toEqual([]);
     });
 
+    it("keeps entries whose optional numbers the backend serialises as null", () => {
+        // Jackson's default inclusion is ALWAYS: an indexer with no connection
+        // errors in the window still gets an explicit
+        // `"percentConnectionError": null` on the wire (Stats.java:396-423).
+        const {result, malformedFamilies} = parseStatsResponse({
+            indexerApiAccessStats: [
+                {
+                    indexerName: "NZBgeek",
+                    percentSuccessful: 100,
+                    percentConnectionError: null,
+                    averageAccessesPerDay: null,
+                },
+            ],
+            indexerScores: [
+                {indexerName: "NZBgeek", averageUniquenessScore: null},
+            ],
+        });
+        expect(result.indexerApiAccessStats).toHaveLength(1);
+        expect(result.indexerApiAccessStats?.[0]).toMatchObject({
+            indexerName: "NZBgeek",
+            percentSuccessful: 100,
+        });
+        expect(result.indexerScores).toHaveLength(1);
+        expect(malformedFamilies).toEqual([]);
+    });
+
     it("reports a family whose payload is not the expected shape as malformed, without throwing", () => {
         const {result, malformedFamilies} = parseStatsResponse({
             avgResponseTimes: "not an array",

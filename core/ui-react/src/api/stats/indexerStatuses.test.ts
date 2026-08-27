@@ -20,6 +20,62 @@ describe("indexer statuses API", () => {
         });
     });
 
+    it("should accept the explicit nulls the backend actually serialises", () => {
+        // Jackson's default inclusion is ALWAYS, so every unset field of
+        // IndexerStatusesAndLimits.IndexerStatus arrives as an explicit null.
+        expect(
+            parseIndexerStatuses([
+                {
+                    indexer: "NZBgeek",
+                    state: "ENABLED",
+                    level: 0,
+                    disabledUntil: null,
+                    lastError: null,
+                    apiResetTime: null,
+                    downloadResetTime: null,
+                    apiHits: 3,
+                    apiHitLimit: null,
+                    downloadHits: 1,
+                    downloadHitLimit: null,
+                    vipExpirationDate: null,
+                },
+            ]),
+        ).toEqual({
+            statuses: [
+                {
+                    indexer: "NZBgeek",
+                    state: "ENABLED",
+                    disabledUntil: null,
+                    lastError: null,
+                    apiResetTime: null,
+                    downloadResetTime: null,
+                    apiHits: 3,
+                    apiHitLimit: null,
+                    downloadHits: 1,
+                    downloadHitLimit: null,
+                    vipExpirationDate: null,
+                },
+            ],
+            malformedCount: 0,
+        });
+    });
+
+    it("should accept a configured zero limit and an empty last error", () => {
+        expect(
+            parseIndexerStatuses([
+                {
+                    indexer: "alpha",
+                    state: "DISABLED_SYSTEM",
+                    lastError: "",
+                    apiHits: 0,
+                    apiHitLimit: 0,
+                    downloadHits: 0,
+                    downloadHitLimit: 0,
+                },
+            ]).malformedCount,
+        ).toBe(0);
+    });
+
     it("should use the shared base-aware transport", async () => {
         const fetchImplementation = vi.fn().mockResolvedValue(
             new Response(JSON.stringify([]), {

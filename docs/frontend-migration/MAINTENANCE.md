@@ -1055,6 +1055,53 @@ Format, one entry per fix:
   wall — the same contention shape FM-097's reviewer blamed for the `notifications` timeout — without reproducing it.
 - **Commit:** `9f76043e5`
 
+### 2026-08-27 — Accept the explicit `null`s Jackson puts on the wire
+
+- **Why not a packet:** single-module bugfixes shipping regression tests. No contract, `data-testid`, persisted-data or
+  registry change; the wire format is unchanged and the backend is untouched.
+- **Paths:** `core/ui-react/src/api/stats/indexerStatuses.ts` (+ test),
+  `core/ui-react/src/features/stats/indexers/IndexerStatusesPage.tsx` (+ test), `core/ui-react/src/api/search.ts`
+  (+ test), `core/ui-react/src/api/stats/mainStats.ts` (+ test).
+- **The defect class.** `Jackson.java` configures deserialization features only, so serialization keeps Jackson's
+  default `ALWAYS` inclusion and every unset field of a response DTO reaches the client as an explicit `null`. In
+  zod 4 (`package.json:43`, 4.4.3) a bare `.optional()` accepts `undefined` and **rejects `null`**, so a schema
+  written against the "absent key" shape rejects the shape the server actually sends. Most schemas under `src/api/`
+  already use `.nullish()`; three did not.
+- **The reported symptom.** `/stats/indexers` showed "N malformed indexer status entries were not displayed" for
+  29 of 29 entries and nothing else: a normal enabled indexer has `disabledUntil`, `lastError`, `apiResetTime`,
+  `downloadResetTime` and `vipExpirationDate` all null, so *every* entry failed `safeParse`. Two latent narrowings in
+  the same schema went with it — `.positive()` rejected a legitimately configured limit of `0`, and `.min(1)` rejected
+  an empty `lastError`. `IndexerStatus` now admits `null` and the page renders each absent field as an empty cell; a
+  configured `0` limit renders "n/0" instead of dropping the row. `state` stays a strict `z.enum` — `IndexerConfig.State`
+  has exactly those four values.
+- **Two more found by sweeping every hand-written response schema under `src/api/`, both silent-drop paths.**
+  `search.ts` `size` (`SearchResultWebTO.size` is a `Long`): any result whose indexer reported no size was discarded
+  into `malformedResultCount`, while every neighbouring field in that same schema already used the house
+  `.nullish().transform(...)` idiom. `mainStats.ts` `optionalNumber`/`optionalString`: `Stats.java` leaves an
+  uncomputable statistic null, most notably `percentConnectionError` for an indexer that had *no* connection error —
+  the healthy case — and those entries were dropped with no error and no `malformedFamilies` record. Everything else
+  the sweep turned up is handed back under *Open candidates* rather than fixed here.
+- **Why the suites were green.** `indexerStatuses.test.ts:10-12` built fixtures by omitting the optional fields
+  entirely — exactly and only the case `.optional()` accepts — and `search.test.ts`/`mainStats.test.ts` did the same.
+  A schema rejecting 100% of real responses tested green. Each fix therefore ships a fixture carrying the explicit
+  `null`s, and each was **confirmed red first**: `indexerStatuses` `malformedCount: 1, statuses: []` against the
+  expected entry; the page rendering `3/nullnull/null`; `search` `malformedResultCount` 1 not 0; `mainStats`
+  `indexerApiAccessStats` empty.
+- **One consumer assumption the widening exposed:** `IndexerStatusesPage`'s `limit()` tested `=== undefined` only, so
+  a null limit rendered the string "null". Fixed to treat null and undefined alike while still printing a real `0`.
+  In `mainStats.ts` the null-normalising transform had to keep a trailing `.optional()`: a bare `.transform()` erases
+  zod's optional-**key** flag, which turned 20 fixture objects across four files into type errors demanding every
+  field be spelled out.
+- **Gates** (`core/ui-react`): `typecheck` clean; `lint` 14 warnings / 0 errors, equal to base; `prettier --check` on
+  the eight touched files clean; `vitest run` **119 files / 1470 tests passed** (base 1468 + 6 new − 4 rewritten).
+  No Maven run — nothing server-side changed.
+- **Screenshot strip:** `tests/system/visual-evidence/maintenance-indexer-statuses-nulls/indexer-statuses-{desktop,mobile}.png`
+  (1280x800 / 390x844, git-ignored per `tests/.gitignore:33`). Captured against `vite dev` with the page's own
+  endpoint stubbed with a null-bearing payload — no backend was running, so this is not system-test evidence. Shows
+  the five-row table with the malformed banner gone, an empty cell for every null, and `0/0` for the configured-zero
+  indexer.
+- **Commit:** `58bc87852`
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
@@ -1619,6 +1666,27 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   Surfaced by FM-095's designer. **Checked 2026-08-27:** `core/.bowerrc` and `docker/uiDev/` both still exist;
   `core/core.iml:6-7`, `misc/rsyncToServers.sh:1` and `misc/rsyncAndStartGraalvmDocker.sh:11` all still carry the
   exclusions.
+- **Four more `null`-rejection sites the 2026-08-27 sweep found and deliberately did *not* fix.** Same mechanism as
+  that entry (Jackson `ALWAYS` inclusion vs. zod 4's null-rejecting `.optional()`/`.default()`), but each needs a
+  judgement the fix could not make on its own evidence, so they are handed back rather than swept in. (1)
+  `media.ts:17` `title: z.string().min(1)` is required, but `MediaInfoWeb.java:129` sets it via `orElse(null)`; the
+  array is parsed as a whole, so **one** titleless suggestion throws away the entire autocomplete response. The open
+  question is what a titleless suggestion should render, not whether to accept the null. (2) `search.ts:88`
+  `notPickedIndexersWithReason` is a required non-nullish record, but `SearchResponse.java:24` has no initializer and
+  `DemoDataProvider.generateSearchResponse` (`DemoDataProvider.java:283-293`) never sets it, so **every** demo-mode
+  search raises `MalformedSearchResponseError`; normal searches always set it (`InternalSearchResultProcessor.java:79`).
+  Needs a call on whether demo mode is a supported React path. (3) `search.ts:155`
+  `category: z.string().min(1).default("Unknown")` — `.default()` fires on `undefined` only, so with
+  `useOriginalCategories` on, the nullable `originalCategory` (`InternalSearchResultProcessor.java:153`) drops the
+  result instead of defaulting to "Unknown". (4) `config/schema.ts:32-39` `.optional()` on the eight `BaseConfig`
+  sections: `BaseConfig.java:32-49` eagerly initialises all of them, so this is reachable only via a hand-edited
+  `nzbhydra.yml` binding a section to `null` — and it throws rather than dropping silently. Also recorded, not
+  routable, because they are backend defects rather than schema ones:
+  `Stats.java:569` NPEs on `Comparator.comparingDouble(getPercentSuccessful)` when `countAll == 0` leaves
+  `SuccessfulDownloadsPerIndexer.percentSuccessful` null, and `History.java:205` unboxes nullable `Boolean`/`Integer`
+  columns into primitive constructor params. Latent and not currently firing: `recentSearches.ts:63` and
+  `live/searchState.ts:24` rely on `.default([])`, which likewise would not survive a `null`; both back onto Java
+  collections that happen to carry initializers today. Surfaced 2026-08-27 by the sweep in the ledger entry above.
 
 ### Needs a `DECISIONS.md` entry first
 

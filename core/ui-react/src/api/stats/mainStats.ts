@@ -65,8 +65,22 @@ export function buildStatsRequestBody(query: StatsQuery): StatsRequestBody {
 }
 
 const number_ = z.number().finite();
-const optionalNumber = number_.optional();
-const optionalString = z.string().optional();
+// Jackson serialises with its default ALWAYS inclusion, so a statistic the
+// backend could not compute (`Stats.java` leaves the boxed value null — e.g.
+// `percentConnectionError` for any indexer that had no connection error)
+// arrives as an explicit null, not as an absent key. In zod 4 `.optional()`
+// rejects null, and `parseStatsResponse` drops rejected entries silently, so
+// both helpers accept null and normalise it to undefined for consumers.
+// The trailing `.optional()` is what keeps the *key* optional in the inferred
+// type: a bare transform erases that flag and would force every fixture and
+// call site to spell out each field.
+const nullToUndefined = <T extends z.ZodType>(inner: T) =>
+    inner
+        .nullish()
+        .transform((value) => value ?? undefined)
+        .optional();
+const optionalNumber = nullToUndefined(number_);
+const optionalString = nullToUndefined(z.string());
 
 const indexerApiAccessStatsSchema = z.object({
     indexerName: optionalString,

@@ -153,7 +153,11 @@ const resultSchema = z.object({
     title: z.string().min(1),
     indexer: z.string().min(1).default("Unknown"),
     category: z.string().min(1).default("Unknown"),
-    size: z.number().finite().optional(),
+    size: z
+        .number()
+        .finite()
+        .nullish()
+        .transform((value) => value ?? undefined),
     age: z
         .string()
         .nullish()

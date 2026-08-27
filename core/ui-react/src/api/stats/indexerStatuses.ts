@@ -13,15 +13,15 @@ export type IndexerStatus = {
         | "DISABLED_SYSTEM_TEMPORARY"
         | "DISABLED_SYSTEM"
         | "DISABLED_USER";
-    disabledUntil?: number | string;
-    lastError?: string;
-    apiResetTime?: number | string;
-    downloadResetTime?: number | string;
-    apiHits?: number;
-    apiHitLimit?: number;
-    downloadHits?: number;
-    downloadHitLimit?: number;
-    vipExpirationDate?: string;
+    disabledUntil?: number | string | null;
+    lastError?: string | null;
+    apiResetTime?: number | string | null;
+    downloadResetTime?: number | string | null;
+    apiHits?: number | null;
+    apiHitLimit?: number | null;
+    downloadHits?: number | null;
+    downloadHitLimit?: number | null;
+    vipExpirationDate?: string | null;
 };
 
 export type IndexerStatusList = {
@@ -29,7 +29,12 @@ export type IndexerStatusList = {
     malformedCount: number;
 };
 
-const timestamp = z.union([z.number().finite(), z.string().min(1)]).optional();
+// Jackson serialises with its default ALWAYS inclusion, so every unset field of
+// IndexerStatusesAndLimits.IndexerStatus arrives as an explicit null rather than
+// being omitted. In zod 4 `.optional()` rejects null, so every nullable field
+// uses `.nullish()`. Limits are legitimately configurable as 0 and the backend
+// may report an empty last error, so neither is narrowed further.
+const timestamp = z.union([z.number().finite(), z.string()]).nullish();
 const statusSchema = z.object({
     indexer: z.string().min(1),
     state: z.enum([
@@ -39,14 +44,14 @@ const statusSchema = z.object({
         "DISABLED_USER",
     ]),
     disabledUntil: timestamp,
-    lastError: z.string().min(1).optional(),
+    lastError: z.string().nullish(),
     apiResetTime: timestamp,
     downloadResetTime: timestamp,
-    apiHits: z.number().int().nonnegative().optional(),
-    apiHitLimit: z.number().int().positive().optional(),
-    downloadHits: z.number().int().nonnegative().optional(),
-    downloadHitLimit: z.number().int().positive().optional(),
-    vipExpirationDate: z.string().min(1).optional(),
+    apiHits: z.number().int().nonnegative().nullish(),
+    apiHitLimit: z.number().int().nonnegative().nullish(),
+    downloadHits: z.number().int().nonnegative().nullish(),
+    downloadHitLimit: z.number().int().nonnegative().nullish(),
+    vipExpirationDate: z.string().nullish(),
 });
 
 export async function getIndexerStatuses(
