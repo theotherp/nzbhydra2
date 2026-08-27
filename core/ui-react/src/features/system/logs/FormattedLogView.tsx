@@ -43,6 +43,10 @@ export function FormattedLogView({
     const page = useQuery({
         queryFn: () => getJsonLogs(transport, offset),
         queryKey: ["system-log-json", offset],
+        // As in `RawLogView`: the application-wide 30-second `staleTime`
+        // (FM-121) must not apply to a log tail, whose whole value is that it
+        // is current. Re-opening the Log tab re-reads the newest page.
+        staleTime: 0,
     });
     const entries = page.data?.entries ?? [];
 

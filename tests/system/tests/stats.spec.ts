@@ -351,3 +351,57 @@ test.describe("React aggregate statistics dashboard", () => {
         }
     });
 });
+
+// FM-121: the real-browser counterpart of `App.test.tsx`'s two unit tests. It
+// is deliberately not "a tab strip is visible after a switch" -- that passed
+// against the seven sibling routes too, each of which rendered its own strip.
+// Marking the live node is what distinguishes one surviving shell from a
+// freshly mounted replacement, and the request count is what the remount used
+// to throw away.
+test("should keep one stats shell and its cached tab across a tab switch", async ({
+    page,
+}) => {
+    let indexerStatusRequests = 0;
+    await page.route("**/internalapi/indexerstatuses", async (route) => {
+        indexerStatusRequests += 1;
+        await route.continue();
+    });
+
+    await page.goto("/");
+    await dismissWelcomeDialog(page);
+    await page
+        .getByRole("link", {name: "History & Stats", exact: true})
+        .click();
+
+    const tabStrip = page.getByRole("tablist", {
+        name: "History and statistics",
+    });
+    await expect(
+        page.getByRole("heading", {name: "Indexer statuses"}),
+    ).toBeVisible();
+    await expect.poll(() => indexerStatusRequests).toBe(1);
+    await tabStrip.evaluate((element) =>
+        element.setAttribute("data-fm121-instance", "first"),
+    );
+
+    await page
+        .getByRole("tab", {name: "Notification history", exact: true})
+        .click();
+    await expect(page).toHaveURL(/\/stats\/notifications$/);
+    await page
+        .getByRole("tab", {name: "Indexer statuses", exact: true})
+        .click();
+    await expect(
+        page.getByRole("heading", {name: "Indexer statuses"}),
+    ).toBeVisible();
+
+    // The same DOM node, so the shell (and every tab body's cache entry with
+    // it) was never unmounted...
+    await expect(tabStrip).toHaveAttribute("data-fm121-instance", "first");
+    // ...and the revisited tab came from the cache rather than the network.
+    // A brief settle window, mirroring the unit test's 20ms `settle()`: a
+    // refetch fired just after the heading became visible would otherwise
+    // race this assertion and be missed.
+    await page.waitForTimeout(500);
+    expect(indexerStatusRequests).toBe(1);
+});

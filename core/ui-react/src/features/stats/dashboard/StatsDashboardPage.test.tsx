@@ -8,12 +8,15 @@ import {
     within,
 } from "@testing-library/react";
 import {ThemeProvider} from "@mui/material/styles";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
+import {DEFAULT_QUERY_STALE_TIME_MS} from "../../../App";
 import {createHydraTheme} from "../../../app/theme";
 import type {StatsQuery, StatsParseResult} from "../../../api/stats/mainStats";
 import {ApiTransport} from "../../../api/transport";
 import type {BootstrapData} from "../../../bootstrap";
+import {toDateInputValue} from "./dateRange";
 import {StatsDashboardPage} from "./StatsDashboardPage";
 
 const {getStatsMock} = vi.hoisted(() => ({getStatsMock: vi.fn()}));
@@ -46,16 +49,35 @@ function bootstrap(overrides: Partial<BootstrapData> = {}): BootstrapData {
     };
 }
 
-function renderPage(overrides: Partial<BootstrapData> = {}) {
+function renderPage(
+    overrides: Partial<BootstrapData> = {},
+    // A client carried over from an earlier render stands for the application
+    // cache surviving a tab switch; by default each test starts empty.
+    existingClient?: QueryClient,
+) {
     const transport = new ApiTransport("/hydra/", vi.fn());
+    // FM-121: the dashboard holds its reading in react-query, so it needs a
+    // client. It is configured with the application's own default `staleTime`
+    // rather than react-query's, so what the re-entry test below measures is
+    // the real default and not a number invented here.
+    const queryClient =
+        existingClient ??
+        new QueryClient({
+            defaultOptions: {
+                queries: {staleTime: DEFAULT_QUERY_STALE_TIME_MS},
+            },
+        });
     render(
-        <ThemeProvider theme={createHydraTheme()}>
-            <StatsDashboardPage
-                bootstrap={bootstrap(overrides)}
-                transport={transport}
-            />
-        </ThemeProvider>,
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={createHydraTheme()}>
+                <StatsDashboardPage
+                    bootstrap={bootstrap(overrides)}
+                    transport={transport}
+                />
+            </ThemeProvider>
+        </QueryClientProvider>,
     );
+    return {queryClient};
 }
 
 function resultOf(result: StatsParseResult["result"]): StatsParseResult {
@@ -105,6 +127,7 @@ afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
 });
 
 describe("StatsDashboardPage", () => {
@@ -225,6 +248,62 @@ describe("StatsDashboardPage", () => {
             (query.before.getTime() - query.after.getTime()) /
             (24 * 60 * 60 * 1000);
         expect(Math.round(days)).toBe(8);
+    });
+
+    // FM-121 fix: the query key is day-granular (`statsQueryKey`), but a
+    // preset's range used to carry the mount's time-of-day (`new Date() - N
+    // days`) while a Custom range is always midnight to midnight
+    // (`dateRange.ts`'s `parseDateInput`). Entering Custom right after a
+    // preset prefills from that preset's own days -- the default state a
+    // user lands on -- so a preset and that freshly entered Custom range
+    // hashed to the identical key while actually asking for different
+    // instants: the preset's cached reading would silently stand in for the
+    // wider midnight-to-midnight window Custom claims, under-reporting
+    // whatever happened in the truncated hours. Fixed by truncating every
+    // preset-derived range to day boundaries before it becomes `range`
+    // state, so the key and the actual request always describe the same
+    // window.
+    it("serves a preset's own request for exactly the midnight-to-midnight window its day-granular key implies", async () => {
+        vi.setSystemTime(new Date("2024-06-15T15:30:00"));
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("stats-date-preset-last7"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        const presetQuery = getStatsMock.mock.calls[1][1] as StatsQuery;
+
+        // Entering Custom right after a preset prefills from that preset's
+        // own days -- confirming this is the exact default-state scenario
+        // the finding describes, not a contrived one.
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        const afterInput = within(
+            screen.getByTestId("stats-custom-after"),
+        ).getByLabelText("After") as HTMLInputElement;
+        expect(afterInput.value).toBe(toDateInputValue(presetQuery.after));
+
+        // Switching to Custom on those prefilled days must not refetch (the
+        // day-granular key did not change) -- so what is on screen right
+        // now is the preset's own reading, unchanged.
+        expect(getStatsMock).toHaveBeenCalledTimes(2);
+
+        // For that reuse to be correct rather than a silent under-report,
+        // the preset's own request must already have asked for the full
+        // day -- midnight to midnight -- matching exactly what Custom's
+        // `parseDateInput` would send for the same two days, not a slice
+        // starting or ending partway through a day as a raw
+        // `new Date() +/- N days` does.
+        expect(presetQuery.after.getTime()).toBe(
+            new Date(
+                `${toDateInputValue(presetQuery.after)}T00:00:00`,
+            ).getTime(),
+        );
+        expect(presetQuery.before.getTime()).toBe(
+            new Date(
+                `${toDateInputValue(presetQuery.before)}T00:00:00`,
+            ).getTime(),
+        );
     });
 
     it("flags an incomplete custom range inline and never sends it", async () => {
@@ -373,6 +452,35 @@ describe("StatsDashboardPage", () => {
         expect(
             screen.queryByTestId("stats-tile-total-searches"),
         ).not.toBeInTheDocument();
+    });
+
+    // FM-121: the reading now lives in the application's query cache, which
+    // outlives this component, so re-entering `/stats/stats` within the
+    // default `staleTime` must show the held statistics rather than the
+    // full-page "Calculating stats…" every visit used to start with.
+    it("re-renders a re-entered dashboard from the cache with no refetch", async () => {
+        getStatsMock.mockResolvedValue(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
+            }),
+        );
+        const {queryClient} = renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        // The tab switch away and back: this component unmounts, the cache
+        // does not.
+        cleanup();
+        renderPage({}, queryClient);
+
+        expect(screen.queryByText("Calculating stats\u2026")).toBeNull();
+        expect(
+            screen.getByTestId("stats-chart-response-times"),
+        ).toBeInTheDocument();
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
     });
 
     it("hides user/host share cards the bootstrap config says cannot exist", async () => {

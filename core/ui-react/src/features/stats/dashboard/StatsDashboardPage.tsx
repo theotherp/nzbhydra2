@@ -5,7 +5,12 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {
+    keepPreviousData,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+import {useMemo, useRef, useState} from "react";
 
 import {
     allFamiliesSelected,
@@ -24,6 +29,7 @@ import {Loading} from "../shared/Loading";
 import {ControlsHeader, customDateInputsFor} from "./ControlsHeader";
 import {
     rangeForPreset,
+    toDateInputValue,
     validateCustomRange,
     type DatePresetId,
     type DateRange,
@@ -41,7 +47,82 @@ import {IndexersSection} from "./sections/IndexersSection";
 import {OverviewTiles} from "./sections/OverviewTiles";
 import {SourcesSection} from "./sections/SourcesSection";
 
-type FetchStatus = "idle" | "loading" | "error";
+/**
+ * The dashboard's held state, exactly what `API-STATS-QUERY` describes: one
+ * `StatsResult` merged field-by-field from every response so far (never
+ * replaced wholesale), plus the families the last response could not be parsed
+ * for.
+ */
+type DashboardData = {
+    stats: StatsResult;
+    malformedFamilies: StatFamily[];
+};
+
+/**
+ * The cache identity of a dashboard reading (FM-121).
+ *
+ * The window is keyed at *day* granularity on purpose. Every preset's range is
+ * derived from `new Date()` (`rangeForPreset`, `defaultStatsWindow`), so two
+ * mounts a second apart produce ranges that differ by milliseconds; keying on
+ * the instants would give every remount a fresh cache entry and the full-page
+ * "Calculating stats…" would be back. A day is also the granularity of the
+ * Custom range's two `<input type="date">` values.
+ *
+ * That only holds because `range` itself is truncated to day boundaries
+ * before it ever reaches this key or a request (see `truncateToDayBoundary`
+ * below): a preset and a Custom range that land on the same two days are, by
+ * construction, the same instants -- midnight to midnight -- so sharing one
+ * cache entry is correct, not a collision. Without that truncation, a
+ * preset's `after`/`before` would carry the mount's time-of-day while
+ * Custom's are always midnight (`dateRange.ts`'s `parseDateInput`), so a
+ * Custom range prefilled from a preset's own days (`handlePresetChange`'s
+ * default entry into Custom) would hash to the same key while actually
+ * asking for more hours than the preset's cached reading covered, and would
+ * silently be served the narrower data instead of a refetch.
+ *
+ * `includeDisabled` changes what the backend counts, so it is part of the
+ * identity too.
+ *
+ * `families` is deliberately *not* part of it: toggling one family on requests
+ * only that family and merges the response into this same held state, which is
+ * legacy's `onStatsSwitchToggle` behavior and would be impossible if the
+ * selection identified the entry.
+ *
+ * One consequence worth being explicit about: re-clicking the already-active
+ * preset does not refetch (same days in, same key out, and react-query serves
+ * the cached entry within `staleTime`). That is intended, and the escape
+ * hatch for a reader who wants a forced re-read is the Refresh control, which
+ * calls `query.refetch()` and ignores `staleTime` entirely (see `App.tsx`'s
+ * `DEFAULT_QUERY_STALE_TIME_MS` docblock for the staleTime side of that).
+ */
+function statsQueryKey(range: DateRange, includeDisabled: boolean) {
+    return [
+        "stats-dashboard",
+        toDateInputValue(range.after),
+        toDateInputValue(range.before),
+        includeDisabled,
+    ] as const;
+}
+
+/**
+ * Floors a date to local midnight. Applied to every preset-derived range
+ * before it becomes `range` state, so the key's day granularity and the
+ * actual request always agree -- see `statsQueryKey`'s docblock. Custom
+ * ranges need no such step: `dateRange.ts`'s `parseDateInput` already parses
+ * `<input type="date">` values at midnight.
+ */
+function truncateToDayBoundary(date: Date): Date {
+    const truncated = new Date(date);
+    truncated.setHours(0, 0, 0, 0);
+    return truncated;
+}
+
+function truncateRangeToDayBoundary(range: DateRange): DateRange {
+    return {
+        after: truncateToDayBoundary(range.after),
+        before: truncateToDayBoundary(range.before),
+    };
+}
 
 export function StatsDashboardPage({
     bootstrap,
@@ -57,7 +138,10 @@ export function StatsDashboardPage({
     const showsIp = userInfoType === "IP" || userInfoType === "BOTH";
 
     const [preset, setPreset] = useState<DatePresetId>("last30");
-    const defaultWindow = useMemo(() => defaultStatsWindow(), []);
+    const defaultWindow = useMemo(
+        () => truncateRangeToDayBoundary(defaultStatsWindow()),
+        [],
+    );
     const [customInputs, setCustomInputs] = useState(() =>
         customDateInputsFor(defaultWindow.after, defaultWindow.before),
     );
@@ -75,62 +159,76 @@ export function StatsDashboardPage({
             defaultFamilySelection(showsUsername, showsIp),
     );
 
-    const [stats, setStats] = useState<StatsResult>({});
-    const [status, setStatus] = useState<FetchStatus>("idle");
-    const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-    const [malformedFamilies, setMalformedFamilies] = useState<StatFamily[]>(
-        [],
+    const queryClient = useQueryClient();
+    /**
+     * The family selection the *next* fetch must request, when it is not the
+     * current selection. Only the single-family toggle sets it, and the fetch
+     * that reads it consumes it, so a range change or an explicit Refresh that
+     * happens to supersede that fetch goes back to requesting everything
+     * selected.
+     */
+    const nextRequestRef = useRef<StatFamilySelection | undefined>(undefined);
+
+    const query = useQuery<DashboardData>({
+        queryKey: statsQueryKey(range, includeDisabled),
+        queryFn: async ({queryKey, signal}) => {
+            const requested = nextRequestRef.current ?? families;
+            nextRequestRef.current = undefined;
+            const {result, malformedFamilies} = await getStats(
+                transport,
+                {
+                    after: range.after,
+                    before: range.before,
+                    includeDisabled,
+                    families: requested,
+                },
+                signal,
+            );
+            // `API-STATS-QUERY`: merge field-by-field into whatever is already
+            // held for this window, never replace it. A family the backend
+            // skipped (its boolean sent `false`) comes back null/absent and
+            // must leave the previously held value alone -- that is what makes
+            // a single-family request a partial update rather than a reset of
+            // every other family to "no data".
+            const held = queryClient.getQueryData<DashboardData>(queryKey);
+            return {
+                stats: mergeStats(held?.stats ?? {}, result),
+                malformedFamilies,
+            };
+        },
+        // A window change is a new cache entry; without this the dashboard
+        // would fall back to its full-page first-load spinner on every date
+        // preset click instead of leaving the previous reading on screen
+        // under the inline "Calculating stats…" row.
+        placeholderData: keepPreviousData,
+        // Legacy surfaces a failed calculation immediately, and the existing
+        // Retry affordance is the retry. react-query's default of three silent
+        // retries would delay the error banner by seconds instead.
+        retry: false,
+    });
+
+    const held = query.data;
+    // Deselected families are not authoritative, so they never display --
+    // independently of whether their stale values are still in the cache
+    // entry, which now outlives this component.
+    const stats = useMemo(
+        () => visibleStats(held?.stats ?? {}, families),
+        [held, families],
     );
-    const requestIdRef = useRef(0);
-    const abortRef = useRef<AbortController | undefined>(undefined);
+    const malformedFamilies = held?.malformedFamilies ?? [];
+    const isFetching = query.isFetching;
+    const hasLoadedOnce = held !== undefined;
 
-    const fetchFamilies = (
-        requested: StatFamilySelection,
-        activeRange: DateRange,
-        activeIncludeDisabled: boolean,
-    ) => {
-        abortRef.current?.abort();
-        const controller = new AbortController();
-        abortRef.current = controller;
-        const requestId = ++requestIdRef.current;
-        setStatus("loading");
-        getStats(
-            transport,
-            {
-                after: activeRange.after,
-                before: activeRange.before,
-                includeDisabled: activeIncludeDisabled,
-                families: requested,
-            },
-            controller.signal,
-        )
-            .then(({result, malformedFamilies: malformed}) => {
-                if (requestIdRef.current !== requestId) return;
-                setStats((current) => mergeStats(current, result));
-                setMalformedFamilies(malformed);
-                setStatus("idle");
-                setHasLoadedOnce(true);
-            })
-            .catch(() => {
-                // A superseded request's rejection -- including an abort
-                // triggered by the next `fetchFamilies` call above -- is
-                // already caught by the staleness check: `requestId` was
-                // captured before that call bumped `requestIdRef.current`.
-                if (requestIdRef.current !== requestId) return;
-                setStatus("error");
-                setHasLoadedOnce(true);
-            });
+    /**
+     * Every full-refresh trigger -- the explicit Refresh control and the Retry
+     * affordances: requests every currently selected family for the current
+     * window. A range or include-disabled change does not come through here;
+     * it changes the cache key, and react-query issues the request itself.
+     */
+    const handleRefresh = () => {
+        nextRequestRef.current = undefined;
+        void query.refetch();
     };
-
-    // Initial load and every full-refresh trigger (range or include-disabled
-    // change, explicit Refresh): requests every currently selected family.
-    // `families` and `fetchFamilies` are deliberately excluded: toggling one
-    // family requests only that family (below), not a full refresh, and
-    // `fetchFamilies` closes over no state this effect needs to react to.
-    useEffect(() => {
-        fetchFamilies(families, range, includeDisabled);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [range, includeDisabled]);
 
     const handlePresetChange = (nextPreset: DatePresetId) => {
         setPreset(nextPreset);
@@ -140,7 +238,7 @@ export function StatsDashboardPage({
             return;
         }
         const nextRange = rangeForPreset(nextPreset);
-        if (nextRange) setRange(nextRange);
+        if (nextRange) setRange(truncateRangeToDayBoundary(nextRange));
     };
 
     const handleCustomChange = (field: "after" | "before", value: string) => {
@@ -168,24 +266,34 @@ export function StatsDashboardPage({
         if (enabling) {
             // Legacy's `onStatsSwitchToggle`: re-enabling requests only the
             // newly enabled family and merges it into held state.
-            fetchFamilies(
-                {...allFamiliesSelected(false), [family]: true},
-                range,
-                includeDisabled,
-            );
+            nextRequestRef.current = {
+                ...allFamiliesSelected(false),
+                [family]: true,
+            };
+            void query.refetch();
         } else {
             // Deselecting skips calculation; the family's stale data is no
-            // longer authoritative, so its cards/columns disappear too.
-            setStats((current) => ({...current, ...clearedField(family)}));
+            // longer authoritative, so it is dropped from held state too.
+            queryClient.setQueryData<DashboardData>(
+                statsQueryKey(range, includeDisabled),
+                (current) =>
+                    current === undefined
+                        ? current
+                        : {
+                              ...current,
+                              stats: {
+                                  ...current.stats,
+                                  ...clearedField(family),
+                              },
+                          },
+            );
         }
     };
 
-    const handleRefresh = () => fetchFamilies(families, range, includeDisabled);
-
-    if (!hasLoadedOnce && status === "loading") {
+    if (!hasLoadedOnce && isFetching) {
         return <Loading message="Calculating stats…" />;
     }
-    if (!hasLoadedOnce && status === "error") {
+    if (!hasLoadedOnce && query.isError) {
         return (
             <Stack alignItems="flex-start" component="main" spacing={2}>
                 <Typography component="h1" variant="h4">
@@ -242,13 +350,13 @@ export function StatsDashboardPage({
                     .
                 </Typography>
             )}
-            {status === "loading" && (
+            {isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
                     <Typography>Calculating stats…</Typography>
                 </Stack>
             )}
-            {status === "error" && (
+            {query.isError && (
                 <Alert
                     action={
                         <Button
@@ -307,6 +415,26 @@ function mergeStats(current: StatsResult, incoming: StatsResult): StatsResult {
         }
     }
     return merged;
+}
+
+/**
+ * The held reading as this render may show it: a family the user has
+ * deselected contributes nothing, whatever the cache still holds for it. The
+ * cache entry outlives the component now, so it can be re-read on a later
+ * visit carrying a family that was deselected in the meantime (the selection
+ * lives in `localStorage`, not in the cache key).
+ */
+function visibleStats(
+    stats: StatsResult,
+    families: StatFamilySelection,
+): StatsResult {
+    const visible: StatsResult = {...stats};
+    for (const family of STAT_FAMILIES) {
+        if (!families[family]) {
+            visible[FAMILY_TO_RESULT_FIELD[family]] = undefined;
+        }
+    }
+    return visible;
 }
 
 function clearedField(family: StatFamily): Partial<StatsResult> {

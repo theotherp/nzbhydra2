@@ -988,11 +988,18 @@ features:
       - tests/system/tests/stats.spec.ts
       - tests/system/tests/search-history.spec.ts
       - core/ui-react/src/features/stats/StatsShell.test.tsx
+      - core/ui-react/src/App.test.tsx
+      - core/ui-react/src/router.test.tsx
     selectors: []
     parity: partial
     # 2026-08-23: `remaining history and aggregate-stat content` removed --
     # the four history routes (`F-HISTORY-*`) and the statistics dashboard are
     # migrated, so this entry claimed missing capability that exists.
+    # 2026-08-27 (FM-121): the shell is the component of one `/stats` parent
+    # layout route (`features/stats/routes.tsx`) rendering the matched tab
+    # through `<Outlet/>`, not a wrapper seven sibling routes each mounted, so
+    # it survives a tab switch. Every URL, the bare `/stats` alias, the stats
+    # login guard and the `$tab` fallback are unchanged.
   - id: F-STATS-MAIN
     name: Aggregate statistics, date ranges, switches, and charts
     routes:
@@ -1011,6 +1018,12 @@ features:
       - core/ui-react/src/features/stats/dashboard/persistence.test.ts
       - core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx
       - core/ui-react/src/router.test.tsx
+    # 2026-08-27 (FM-121): the dashboard holds its `StatsResult` in react-query
+    # instead of `useState`, so re-entering `/stats/stats` within the
+    # application's default `staleTime` shows the held reading instead of
+    # recalculating from scratch. `API-STATS-QUERY`'s semantics are unchanged:
+    # the query function merges each response into the held value field by
+    # field, and a single-family toggle still requests only that family.
     selectors:
       # Controls header: stats-dashboard, stats-controls-header,
       # stats-date-preset-<last7|last30|last90|lastYear|allTime|custom>,

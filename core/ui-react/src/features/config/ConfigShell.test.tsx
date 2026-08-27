@@ -221,15 +221,20 @@ function renderConfigArea({
     const rootRoute = createRootRoute({
         component: () => (
             <>
-                {withStatsShell ? (
-                    <StatsShell bootstrap={bootstrap}>
-                        <span />
-                    </StatsShell>
-                ) : null}
                 <Link data-testid="leave-config" to="/elsewhere">
                     Leave config
                 </Link>
-                <Outlet />
+                {/* FM-121 turned `StatsShell` into a layout-route component
+                    that renders the matched tab through its own `<Outlet/>`,
+                    so it stands in for this root's outlet rather than sitting
+                    beside it -- two outlets in one match context would render
+                    the config area twice. The shell is still the same mounted
+                    safe-config consumer this suite is about. */}
+                {withStatsShell ? (
+                    <StatsShell bootstrap={bootstrap} />
+                ) : (
+                    <Outlet />
+                )}
             </>
         ),
     });

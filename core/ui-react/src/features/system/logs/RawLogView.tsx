@@ -38,6 +38,12 @@ export function RawLogView({transport}: {transport: ApiTransport}) {
         queryFn: () => getCurrentLogFile(transport),
         queryKey: ["system-log-current"],
         refetchInterval: autoRefresh ? REFRESH_INTERVAL_MS : false,
+        // FM-121 gave the application a 30-second default `staleTime`. A log
+        // tail is the one thing here that is worth reading precisely because
+        // it changed a second ago, so this view keeps react-query's original
+        // "always refetch on mount" behavior: with auto-refresh switched off
+        // nothing else would bring a re-opened Log tab up to date.
+        staleTime: 0,
     });
     const content = log.data;
 

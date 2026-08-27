@@ -1,5 +1,12 @@
-import {render, screen} from "@testing-library/react";
-import {describe, expect, it} from "vitest";
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
+import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {App} from "./App";
 
@@ -20,6 +27,101 @@ const bootstrap = {
     baseUrl: "/hydra/",
     serverTimeZone: null,
 };
+
+/** A session that may read the history and statistics area, history on. */
+const statsBootstrap = {
+    ...bootstrap,
+    username: "stats",
+    maySeeStats: true,
+    maySeeSearch: true,
+    safeConfig: {keepHistory: true},
+    serverTimeZone: "UTC",
+};
+
+/**
+ * An ambient `fetch` for the stats area that answers every request with a
+ * well-formed empty payload and counts the indexer-statuses reads, which is
+ * what the cache-default test measures. Payloads have to parse: a rejected
+ * query would be retried by react-query and inflate the count for a reason
+ * that has nothing to do with `staleTime`.
+ */
+function statsBackend() {
+    const calls: string[] = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : String(input);
+        calls.push(url);
+        // `true` for `welcomeshown` and empty news lists keep the shell's
+        // startup sequence from opening a modal, which would put the whole
+        // application behind `aria-hidden` and make every role below
+        // unreachable.
+        const body = url.includes("internalapi/welcomeshown")
+            ? "true"
+            : url.includes("internalapi/indexerstatuses") ||
+                url.includes("internalapi/news") ||
+                url.includes("internalapi/usernews")
+              ? "[]"
+              : url.includes("internalapi/history/notifications")
+                ? JSON.stringify({
+                      content: [],
+                      totalPages: 0,
+                      totalElements: 0,
+                  })
+                : "{}";
+        return new Response(body, {
+            status: 200,
+            headers: {"Content-Type": "application/json"},
+        });
+    });
+    return {
+        fetch: fetchMock as unknown as typeof fetch,
+        indexerStatusCalls: () =>
+            calls.filter((url) => url.includes("internalapi/indexerstatuses"))
+                .length,
+    };
+}
+
+/** See `StatsDashboardPage.test.tsx`: this jsdom has no `window.localStorage`. */
+function stubWorkingLocalStorage(): void {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+        get length() {
+            return store.size;
+        },
+        clear: () => store.clear(),
+        getItem: (key: string) =>
+            store.has(key) ? (store.get(key) as string) : null,
+        key: (index: number) => [...store.keys()][index] ?? null,
+        removeItem: (key: string) => store.delete(key),
+        setItem: (key: string, value: string) => {
+            store.set(key, value);
+        },
+    } satisfies Storage);
+}
+
+const STATS_TABLIST = {name: "History and statistics"};
+
+async function switchTab(name: string) {
+    fireEvent.click(screen.getByRole("tab", {name}));
+    await waitFor(() =>
+        expect(screen.getByRole("tab", {name})).toHaveAttribute(
+            "aria-selected",
+            "true",
+        ),
+    );
+}
+
+/** Lets any refetch a navigation may have queued actually be issued. */
+async function settle() {
+    await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+}
+
+afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+});
 
 describe("App", () => {
     it("should render an unknown-route notice with no way out of React", async () => {
@@ -43,6 +145,44 @@ describe("App", () => {
                 anchor.getAttribute("href"),
             ),
         ).not.toContainEqual(expect.stringContaining("ui/legacy"));
+    });
+
+    // FM-121. Both tests below fail against the pre-FM-121 tree, and are
+    // written so that they can: an assertion that *a* stats shell is on screen
+    // after a tab switch passes either way, because the seven sibling routes
+    // each rendered their own. What separates the two topologies is whether it
+    // is the *same* shell -- so this compares the tablist node's identity, and
+    // the next test counts the requests the remount used to throw away.
+    it("should keep one stats shell mounted across a tab switch", async () => {
+        stubWorkingLocalStorage();
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const tablist = await screen.findByRole("tablist", STATS_TABLIST);
+        await switchTab("Notification history");
+
+        expect(screen.getByRole("tablist", STATS_TABLIST)).toBe(tablist);
+    });
+
+    it("should serve a stats tab revisited within staleTime from the cache", async () => {
+        stubWorkingLocalStorage();
+        const backend = statsBackend();
+        vi.stubGlobal("fetch", backend.fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        expect(backend.indexerStatusCalls()).toBe(1);
+
+        await switchTab("Notification history");
+        await switchTab("Indexer statuses");
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        await settle();
+
+        // The second visit rendered from the cache: no second request, and so
+        // no first-load spinner between the click and the content.
+        expect(backend.indexerStatusCalls()).toBe(1);
     });
 
     it("should render the application loading convention", () => {

@@ -1,5 +1,5 @@
 import {Box, Tab, Tabs} from "@mui/material";
-import {Link, useLocation} from "@tanstack/react-router";
+import {Link, Outlet, useLocation} from "@tanstack/react-router";
 
 import {
     useSafeConfig,
@@ -7,9 +7,18 @@ import {
     type SafeConfig,
 } from "../../bootstrap";
 
-type StatsShellProps = {bootstrap: BootstrapData; children: React.ReactNode};
+type StatsShellProps = {bootstrap: BootstrapData};
 
-export function StatsShell({bootstrap, children}: StatsShellProps) {
+/**
+ * `F-STATS-SHELL`: the history and statistics area's tab strip. It is the
+ * component of the one `/stats` *parent* route (`routes.tsx`), so the strip --
+ * and every tab body's react-query cache entry with it -- stays mounted while
+ * the user moves between tabs. Rendering the matched tab through `<Outlet/>`
+ * rather than through `children` is what makes that possible: seven sibling
+ * routes each wrapping their body in their own `StatsShell` unmounted and
+ * remounted the whole subtree on every tab switch (FM-121).
+ */
+export function StatsShell({bootstrap}: StatsShellProps) {
     const pathname = useLocation({select: (location) => location.pathname});
     const tabs = statsTabs(useSafeConfig(bootstrap));
     const active =
@@ -32,7 +41,9 @@ export function StatsShell({bootstrap, children}: StatsShellProps) {
                     />
                 ))}
             </Tabs>
-            <Box sx={{pt: 3}}>{children}</Box>
+            <Box sx={{pt: 3}}>
+                <Outlet />
+            </Box>
         </Box>
     );
 }

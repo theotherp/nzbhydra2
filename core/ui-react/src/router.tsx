@@ -19,13 +19,7 @@ import {
 } from "./features/auth/permissions";
 import {createConfigRoute} from "./features/config/routes";
 import {SearchPage} from "./features/search/SearchPage";
-import {DownloadHistoryPage} from "./features/stats/history/DownloadHistoryPage";
-import {NotificationHistoryPage} from "./features/stats/history/NotificationHistoryPage";
-import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
-import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
-import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
-import {StatsDashboardPage} from "./features/stats/dashboard/StatsDashboardPage";
-import {StatsShell} from "./features/stats/StatsShell";
+import {createStatsRoute} from "./features/stats/routes";
 import {createSystemRoute} from "./features/system/routes";
 
 export function createAppRouter(bootstrap: BootstrapData) {
@@ -58,100 +52,17 @@ export function createAppRouter(bootstrap: BootstrapData) {
             <SearchPage bootstrap={bootstrap} transport={transport} />
         ),
     });
-    const savedSearchesRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/saved-searches",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <SavedSearchesPage
-                    bootstrap={bootstrap}
-                    transport={transport}
-                />
-            </StatsShell>
-        ),
-    });
-    const searchHistoryRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/searches",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <SearchHistoryPage
-                    bootstrap={bootstrap}
-                    transport={transport}
-                />
-            </StatsShell>
-        ),
-    });
-    const downloadHistoryRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/downloads",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <DownloadHistoryPage
-                    bootstrap={bootstrap}
-                    transport={transport}
-                />
-            </StatsShell>
-        ),
-    });
-    const notificationHistoryRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/notifications",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <NotificationHistoryPage
-                    bootstrap={bootstrap}
-                    transport={transport}
-                />
-            </StatsShell>
-        ),
-    });
-    const statsRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsPage bootstrap={bootstrap} transport={transport} />
-        ),
-    });
-    const indexerStatusesRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/indexers",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsPage bootstrap={bootstrap} transport={transport} />
-        ),
-    });
-    // F-STATS-MAIN's canonical route (ADR-0021): the redesigned aggregate
-    // dashboard, distinct from the bare `/stats` alias above (which still
-    // resolves to indexer statuses, matching `StatsShell`'s own default tab).
-    const statsDashboardRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/stats",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <StatsDashboardPage
-                    bootstrap={bootstrap}
-                    transport={transport}
-                />
-            </StatsShell>
-        ),
-    });
-    const statsFallbackRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: "stats/$tab",
-        beforeLoad: loginGuard(bootstrap, "stats"),
-        component: () => (
-            <StatsShell bootstrap={bootstrap}>
-                <MigrationPlaceholder />
-            </StatsShell>
-        ),
-    });
+    // F-STATS-SHELL and its six tab bodies live in one parent layout route
+    // (`features/stats/routes.tsx`) so the shell survives a tab switch; the
+    // `/stats` alias, the `/stats/stats` dashboard and the `/stats/$tab`
+    // fallback are all declared there.
+    const statsRoute = createStatsRoute(
+        rootRoute,
+        transport,
+        bootstrap,
+        loginGuard(bootstrap, "stats"),
+        () => <MigrationPlaceholder />,
+    );
     // A session that may not see the admin area never gets a config route to
     // reach: without it `/config/...` falls through to the migration
     // placeholder, exactly like any unmigrated route.
@@ -186,13 +97,6 @@ export function createAppRouter(bootstrap: BootstrapData) {
         loginRoute,
         searchRoute,
         statsRoute,
-        indexerStatusesRoute,
-        statsDashboardRoute,
-        savedSearchesRoute,
-        searchHistoryRoute,
-        downloadHistoryRoute,
-        notificationHistoryRoute,
-        statsFallbackRoute,
         ...adminRoutes,
     ]);
 
@@ -230,20 +134,6 @@ function createLoginRedirectRoutes<TParent extends AnyRoute>(
                 throw redirect({to: LOGIN_ROUTE});
             },
         }),
-    );
-}
-
-function StatsPage({
-    bootstrap,
-    transport,
-}: {
-    bootstrap: BootstrapData;
-    transport: ApiTransport;
-}) {
-    return (
-        <StatsShell bootstrap={bootstrap}>
-            <IndexerStatusesPage bootstrap={bootstrap} transport={transport} />
-        </StatsShell>
     );
 }
 

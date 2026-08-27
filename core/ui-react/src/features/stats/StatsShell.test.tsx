@@ -1,5 +1,5 @@
-import {render, screen} from "@testing-library/react";
-import {describe, expect, it, vi} from "vitest";
+import {cleanup, render, screen} from "@testing-library/react";
+import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {StatsShell} from "./StatsShell";
 
@@ -16,6 +16,7 @@ vi.mock("@tanstack/react-router", () => ({
             {children}
         </a>
     ),
+    Outlet: () => <div>Tab body</div>,
     useLocation: ({
         select,
     }: {
@@ -23,31 +24,33 @@ vi.mock("@tanstack/react-router", () => ({
     }) => select({pathname: "/stats/indexers"}),
 }));
 
+function bootstrap(safeConfig: {keepHistory: boolean}) {
+    return {
+        baseUrl: "/hydra/",
+        username: "stats",
+        authType: null,
+        showLogout: true,
+        maySeeSearch: true,
+        adminRestricted: true,
+        statsRestricted: true,
+        maySeeStats: true,
+        searchRestricted: true,
+        maySeeDetailsDl: false,
+        maySeeAdmin: false,
+        authConfigured: true,
+        showIndexerSelection: false,
+        safeConfig,
+        serverTimeZone: "UTC",
+    };
+}
+
+// This suite does not run with vitest globals, so RTL's automatic cleanup is
+// not registered and each render would otherwise stack in the same document.
+afterEach(cleanup);
+
 describe("StatsShell", () => {
     it("should hide keep-history tabs when history is disabled", () => {
-        render(
-            <StatsShell
-                bootstrap={{
-                    baseUrl: "/hydra/",
-                    username: "stats",
-                    authType: null,
-                    showLogout: true,
-                    maySeeSearch: true,
-                    adminRestricted: true,
-                    statsRestricted: true,
-                    maySeeStats: true,
-                    searchRestricted: true,
-                    maySeeDetailsDl: false,
-                    maySeeAdmin: false,
-                    authConfigured: true,
-                    showIndexerSelection: false,
-                    safeConfig: {keepHistory: false},
-                    serverTimeZone: "UTC",
-                }}
-            >
-                <div>Indexer content</div>
-            </StatsShell>,
-        );
+        render(<StatsShell bootstrap={bootstrap({keepHistory: false})} />);
 
         expect(
             screen.getByRole("tab", {name: "Indexer statuses"}),
@@ -82,5 +85,15 @@ describe("StatsShell", () => {
         expect(
             screen.queryByRole("tab", {name: "Stats"}),
         ).not.toBeInTheDocument();
+    });
+
+    it("should render the matched tab through the router outlet", () => {
+        // FM-121: the shell is a layout-route component. It renders whichever
+        // child route the router matched, rather than a body handed to it as
+        // `children` by seven sibling routes -- which is what let those seven
+        // routes remount it on every tab switch.
+        render(<StatsShell bootstrap={bootstrap({keepHistory: true})} />);
+
+        expect(screen.getByText("Tab body")).toBeVisible();
     });
 });
