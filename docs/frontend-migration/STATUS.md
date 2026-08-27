@@ -934,6 +934,13 @@ None.
 
 ## Upcoming
 
+- FM-113: Blank Category Save Refusal — `ready`. First of the 2026-08-27 maintenance-ledger batch (FM-113..FM-116),
+  four independent items with no dependencies between them; the other three stay `planned` until promoted. Backend
+  fix: `CategoriesConfig.setCategories` NPEs on a null-named category during request binding, before any validator
+  runs. Refined 2026-08-27 on an implementer `BLOCKED` — the tab's `required` Name blocks the save client-side, so the
+  defect is API-only and the end-to-end criterion now asserts a direct PUT rather than a click-and-save that could
+  never reach the server. FM-116 likewise became a wording correction under ADR-0032, which supersedes ADR-0031.
+
 - The 2026-08-26 batch is complete with FM-107; nothing is queued behind it. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
   promoted. The chain was refined 2026-08-26 on an implementer `BLOCKED`: the batch was designed before FM-097 extracted the sticky

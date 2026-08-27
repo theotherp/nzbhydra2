@@ -892,93 +892,657 @@ Format, one entry per fix:
 
 ## Open candidates
 
-Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
-instead of leaving it to rot.
+Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
+visibility. Discharge a single-session item with `/fm-quickfix`, then move it into the ledger above with its commit SHA. Route a
+packet item to `/fm-orchestrate`. An item under *Needs a decision first* cannot be routed at all until the named question is
+settled in `DECISIONS.md`.
 
-- **`resource-config.json` carries ~30 further include entries naming assets FM-095 deleted** (`static/css/*`, `static/fonts/*`,
-  legacy `static/js/*`). All are inert — line 23's `static/.*` pattern covers the tree regardless — so this is tidiness, not
-  correctness. Sweep them in one pass rather than piecemeal; a half-swept list is worse than an untouched one.
-- **The GraalVM resource-config include list still names deleted templates and never named `react.html`.**
-  `core/src/main/resources/META-INF/native-image/resource-config.json:2612,2621` includes `templates/index.html` and
-  `static/js/templates.js`, both deleted by FM-095, and has never included `templates/react.html`. If that hand-maintained list
-  is load-bearing for the native artifact — its explicit `templates/error.html` entry and commit `c9f27f163` ("Fix native build
-  some more") both suggest it is — a **native build now has no shell template for any route**. Not an FM-095 regression:
-  FM-094 already made `react` the served view, and FM-095 merely removed the last included template. `NativeApplicationContextTest`
-  cannot catch it — it reads the JVM classpath, not the native image. Fix: add a `templates/react.html` include (an extra include
-  costs nothing even if Spring Boot AOT's own hints already cover it) and drop the two dead entries. Surfaced by FM-095's reviewer.
-- **`CapsGenerator.java:124` serves a caps image URL into the deleted `core/ui-src`.**
-  `capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/ui-src/img/banner-bright.png")` stops
-  resolving the moment this branch merges to `master` — the same breakage FM-095 fixed for `/readme.md` by repointing at the
-  retained `core/src/main/resources/static/img/banner-bright.png`. Outside FM-095's allowed files; the same relocation applies.
-  `grep -rn "ui-src" core/src/main/java` returns exactly this line.
-- **`core/ui-react/vite/devBackend.ts:18,71,135` still injects the selector cookie, and does it destructively.**
-  Line 71's `proxyRequest.setHeader("Cookie", UI_SELECTOR_COOKIE)` *replaces* the browser's Cookie header on every proxied API
-  call, discarding `JSESSIONID`. Its own comment calls it "the Cookie value `MainWeb` requires before it renders the React shell";
-  `MainWeb` requires nothing now, so there is no upside left — only dev-mode auth breakage. Fix: delete `UI_SELECTOR_COOKIE` and
-  its two injections. Dev-only, no test covers it.
-- **Toolchain remnants that outlived what they configured**, all inert and deliberately not deleted by FM-095 because its Delete
-  list enumerated four files by name and an unforced deletion in an irreversible packet is the wrong side to err on:
-  `core/.bowerrc` (which is NOT inert in one respect — `docker/uiDev/Dockerfile:16` COPYs it and Docker fails on a missing COPY
-  source, so it must go together with `docker/uiDev/**`), `core/core.iml`'s two `bower_components` `excludeFolder` entries, and
-  `--exclude "bower_components"` in `misc/rsyncToServers.sh`, `misc/rsyncAndStartGraalvmDocker.sh` and both
-  `misc/buildLinuxCore/*/buildLinuxCore.sh`.
-- **`docker/uiDev/**` is broken by FM-095's deletions** — its Dockerfile COPYs `core/ui-src/`, `core/bower_components/`, and
-  gulp/bower globs that no longer exist. It is the legacy-UI dev container; it should be removed in the same sweep as
-  `core/.bowerrc`. Surfaced by FM-095's designer.
-- **Two stale "migration placeholder" wordings** in `core/ui-react/src/router.test.tsx:328` (a test name) and
-  `SystemShell.test.tsx:98` (a stub body), after FM-095 renamed the component's copy to an unknown-route notice. Both pass and
-  neither asserts the renamed text.
-- **`GUI-STATUS.md:3-4` still names "The AngularJS GUI it replaced".** FM-095's acceptance asked that the file no longer mention a
-  legacy GUI; read literally that is unmet, read as intent (nothing implies a legacy GUI is reachable) it is met, and the
-  historical sentence is arguably more useful than silence. Owner's call.
+Triaged and reorganised 2026-08-27 after the sixteen-task batch (FM-097..FM-112) roughly doubled this list. Entries merged during
+that pass name every task that surfaced them; no evidence and no `file:line` citation was dropped. Verification notes marked
+**Checked 2026-08-27** were confirmed by grep against the working tree at that date; nothing else here was re-derived.
+
+### Task packet with independent review
+
+New user capability, API/URL/selector contract change, persisted-data change, cross-module behaviour change, or anything that
+needs a new decision entry. Ordered by consequence-if-left times likelihood-of-being-hit: the first three are reachable by an
+ordinary admin on an ordinary day and fail silently or destructively; the selector-contract pair below them is latent but
+compounds with every tab that copies the convention. **That ranking was partly wrong and is left in place with its
+correction attached rather than silently re-sorted:** the first item is not UI-reachable — see the correction in its own
+entry, 2026-08-27. It stays first because FM-113 is ready and independent, not because the rationale held.
+
+- **Backend defect, outside every FM allowlist — saving a blank category NPEs.**
+  `shared/mapping/src/main/java/org/nzbhydra/config/category/CategoriesConfig.java:35-38`'s `setCategories` runs
+  `categories.sort(Comparator.comparing(Category::getName))` on every deserialization, over entries whose `name` may
+  be `null` — and both the React default entry and legacy's `defaultModel` start with a null name. ~~So adding a
+  category and saving before typing a name throws on the write path rather than being refused with a validation
+  message.~~ Wants its own packet: the fix is server-side (null-safe comparator, or a validator that refuses a nameless
+  category with a field-attributed message), and a client-side guard alone would leave the API defect standing for any
+  other caller. Surfaced 2026-08-26 while investigating FM-107. Routed to **FM-113**.
+  **Correction, 2026-08-27, raised by FM-113's implementer as `BLOCKED` and verified before accepting:** the struck
+  sentence is wrong, and the 2026-08-27 triage ranked this item first on the strength of it ("reachable by an ordinary
+  admin on an ordinary day"). The React tab cannot reach the defect at all. `CategoryEntryFields.tsx:36-42` marks Name
+  `required`, `components/settings.ts:146` turns that into an RHF `{required: "This field is required"}` rule, and
+  `ConfigShell.tsx:205-212` returns `"rejected"` from `form.trigger()` before issuing any PUT; FM-107 already said so
+  at `CategoriesTable.tsx:67-71`. The typed-then-cleared `""` route is closed identically — RHF rejects `""` before
+  `EmptyStringToNullDeserializer` sees it. The Java defect is real and unchanged (`CategoriesConfig.setCategories`,
+  plus two unguarded dereferences at `CategoriesConfigValidator.java:63,69`), but it is reachable only by non-React
+  callers of `PUT /internalapi/config` — scripts, hand-crafted requests, restored or hand-edited configs — so it is API
+  hardening, not an everyday crash. FM-113 was refined to assert the refusal at the API boundary rather than through
+  the tab, and its Outcome carries this framing so a future reader does not re-derive the false urgency.
+  **Why the claim was wrong, which is the reusable part:** the *data shape* was real — `defaultCategoryEntry()` seeds
+  `name: null` — so inspecting the model made the UI route look obviously reachable. What nobody walked was the submit
+  path between that shape and the server. A "the UI can reach this" claim needs the client gate checked, not just the
+  model; the same class of mistake as the `loadLimitInternal` entry below, in the opposite direction.
 - **React's bulk send ignores the downloader's configured default category.** With `category: null` ("Use downloader default")
   the server sends SABnzbd no `cat` parameter at all, so Hydra's configured `defaultCategory` has no effect; legacy sent it
   explicitly from the client. Evidence: the SABnzbd mock recorded `{apikey, mode: "addfile", nzbname, output, priority}` with no
   `cat`. Surfaced by FM-094, which had to drop `downloads.spec.ts`'s `cat: testEnvironment.sabnzbdMockCategory` assertion and
   could name no surviving test that covers it. The fix crosses `DownloadActions.tsx` and the server path that resolves a null
   category, so per README's *Choosing A Mechanism* it is a **packet**, not a quickfix.
+- **No toast or raised report over a MUI modal is both announced and reachable — application-wide, WCAG 4.1.3.**
+  Merged 2026-08-27 from two entries that are the two halves of one fix; recording only one of them gets it half-done.
+  *(a) The announcement half, pre-existing and app-wide.* `@mui/material/Snackbar` contains no `Portal` (verify with
+  `grep -c Portal node_modules/@mui/material/Snackbar/Snackbar.js` → 0), and `ToastProvider` renders it in-tree at
+  `App.tsx:48`, so it is one of the `container.children` that MUI's `ariaHiddenSiblings` marks `aria-hidden` when a modal
+  opens. Every toast raised while a dialog is up is therefore announced to nobody. It hits hardest where a toast is raised
+  *from inside* its own dialog, which is always the broken state: `ExternalToolDialog.tsx:225`, `DownloaderDialog.tsx:190`,
+  `IndexerDialog.tsx:382`. Toasts are already *clickable* today — the `Snackbar` is `position: fixed` at `zIndex.snackbar`
+  1400 against the modal's 1300 — so that defect is announcement-only, which is exactly why it survived visual review.
+  Wrapping the toast layer in a `Portal` fixes the `aria-hidden` half and leaves the second. Surfaced 2026-08-26 by
+  FM-101's fixer, which found it by probing the ancestor chain after its reviewer suggested a toast as the remedy;
+  confirmed and extended by FM-101's re-review.
+  *(b) The focus half, demonstrated on FM-101's own portalled report.* `ConfigShell.tsx:379-438` portals the error report
+  above FM-100's modal panel, which fixes the `aria-hidden` half — but MUI's `FocusTrap` steals focus straight back into the
+  dialog: focusing the raised Alert's Close button leaves `document.activeElement` as `DIV.MuiDialog-container`. Measured by
+  FM-101's re-review, not inferred. Not a regression (the toast it replaced was equally untabbable, and the acknowledge
+  dialog it replaced carried no actionable entry), and a keyboard user can Escape the panel and use the in-place banner. But
+  the comment at `ConfigShell.tsx:384-386` claims the entries "could be neither announced nor clicked" and now can, which
+  overstates what was fixed — the reachability tests assert `aria-hidden` ancestry only, so they are green on a claim they
+  establish half of. The fix is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes
+  focus enforcement). Surfaced 2026-08-26 by FM-101's re-review.
+- **`ConfigFieldset`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
+  space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
+  `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
+  observed breaking anything, but FM-060 (Auth), FM-065 (External Tools), and others plan multi-word fieldset labels.
+  Surfaced by a `migration-task-designer` while documenting `C-CONFIG-FIELDS`'s testid convention, 2026-08-20. Fixing it
+  is a `data-testid` value change on a shipped component (`config-fieldset-<label>` -> presumably a slugified form), so
+  it needs an explicit `/fm-orchestrate` call, not a quickfix — check whether any test already asserts the exact
+  space-containing string before choosing a replacement scheme. **Checked 2026-08-27:** still unslugified; the generator
+  has since moved to `features/config/components/settings.ts:62-64` (`fieldsetTestId`), used at
+  `ConfigFieldset.tsx:148`.
+- **`config-input-<path>` lands on the MUI root element for `SwitchSetting`/`SelectSetting` rather than the actual
+  editable control**, unlike the other seven control kinds where it lands on the native `<input>`. Flagged by FM-059's
+  independent reviewer as harmless today (both component and system tests already reach those two controls by role, not
+  by this testid), but the inconsistency is a convention seven more config tabs will otherwise copy. Left open rather
+  than fixed alongside the aria-describedby entry above: relocating an existing `data-testid` to a different DOM node is
+  arguably a selector-contract change even though the id string itself is unchanged, which the quickfix gate excludes;
+  worth an explicit `/fm-orchestrate` call on whether to move it or declare the root-element placement the intended
+  convention.
+- **React's bulk send leaves the sent rows unmarked.** The row "Downloaded" chip is raised only by the direct NZB/torrent
+  transfer, so legacy's per-row `.sabnzbd-success` feedback has no counterpart after a bulk send
+  (`SearchResults.tsx`'s `onDownloaded` mapping from `addedIds` back to `searchResultId`s).
+- **FM-098's recorded disclosure boundary omits a third case: `CustomMappingsSection`.** `COMPONENTS.yaml`'s
+  `C-CONFIG-FIELDS` note says only an advanced `HelpBlock` and an advanced row outside any fieldset stay hidden. But
+  `searching/CustomMappingsSection.tsx:78-79` self-gates with its own `if (!showAdvanced) return null` and sits
+  outside every fieldset (`SearchingConfigTab.tsx:268`), so a whole *editable section* of Searching — not prose —
+  still vanishes with no expander announcing it. FM-098's allowlist excluded tab files, so this was correctly out of
+  scope; the ledger item is the note's accuracy, and the underlying disclosure gap belongs in a future packet's
+  design. Surfaced 2026-08-26 by FM-098's reviewer. Packet rather than fix: it edits a registry note and changes
+  reveal behaviour on a tab.
+- **FM-105 added a username-uniqueness refusal that no contract records.** The user dialog refuses a username another
+  entry already holds exactly, because `UserAuthConfigValidator.findCorrespondingOldUserConfig` filters on
+  `String.equals` and takes `.findFirst()` — with two identical usernames the *same* stored record is handed to both
+  submitted entries, so one user's `***UNCHANGED***` marker resolves to the other's hash, and
+  `reviewChangesDiff.ts:268-278` independently degrades a duplicate-keyed list to positional comparison so the review
+  panel stops naming the affected rows. The refusal is right and its reviewer endorsed it — but it lives only in the
+  handoff, so a later task could remove it as unexplained. Record it in `F-CONFIG-AUTH`. Two consequences also worth
+  noting: a config already holding two identical usernames (seeded outside the UI, or saved before FM-105) makes each
+  such row unsaveable from the dialog until renamed, with the error attached to a field the admin did not change.
+  Surfaced 2026-08-26 by FM-105's reviewer.
+- **`F-CONFIG-SHELL.gaps` is still `[]` although FM-097 deliberately dropped a legacy signal.** Save's pristine/dirty
+  colour switch (legacy `config.html:21`, old `ConfigShell.tsx:250`) is gone, replaced by the save bar's worded
+  summary and a Discard button that exists only while dirty — a better signal, and one that satisfies ADR-0014's
+  colour-is-never-sole-carrier rule where the hue did not. The deviation is justified at the site in
+  `ConfigSaveBar.tsx` and recorded in `COMPONENTS.yaml`'s `C-CONFIG-FORM`, and FM-097's packet only required it in
+  the handoff — but `gaps` is where a future parity reader looks, and there it is invisible. Add a one-line
+  `deliberate - ...` entry at `FEATURES.yaml:436`. Packet rather than fix only because the quickfix gate forbids
+  registry edits. Surfaced 2026-08-24 by FM-097's reviewer.
+
+### Single-session fix
+
+Styling, markup or UX polish inside existing features; a single-module bugfix shipping a regression test; mechanical repair.
+Constraints: no designer, no reviewer, no decision entry, no registry edit, no `data-testid` change. If mid-fix the change turns
+out to cross modules or touch a contract, stop and convert it to a packet.
+
+Ordered by consequence times likelihood. The first is a required gate that is red for *every* implementer, so it costs the most
+per day it stands; the second silently returns wrong search results to a user who thinks they cleared a filter; the third and
+fourth are visible misbehaviour on the config tabs an admin uses most.
+
+- **`validate:focus-affordances` has been red since the FM-092/FM-096 indexer-colour work, on five false positives.**
+  Merged 2026-08-27 from FM-111's report and FM-097's reviewer's confirmation of one of its five sites.
+  This matters beyond one task: the gate sits in several packets' Verification chains, so every future implementer
+  will meet a failing required command it did not cause. ADR-0014's colour-literal check
+  (`core/ui-react/scripts/validate-focus-affordances.mjs:218`) matches `rgb(`/`rgba(` inside comments, test titles,
+  and runtime colour fixtures. It flags `ColorSetting.tsx:46` (a JSDoc line documenting `hexToRgb`),
+  `ColorSetting.test.tsx:50` and `resultTable.test.ts:431` (test *titles* containing the words), `SearchResults.test.tsx:1611`
+  (the fixture `color: "rgb(200,50,10)"`, an indexer-config value, not a design token), and `IndexersConfigTab.test.tsx:565`
+  (which resolves to `const api = backend();` — an offset/block-scan defect on top of the substring one). None is a
+  design literal in feature code. Repair by narrowing the matcher to exclude comments, string test titles, and
+  `*.test.*` fixture values — **not** by adding entries to the script's pre-ADR-0014 exemption list at `:112`, which
+  would weaken a real gate to hide a matcher bug. FM-111's implementer had exactly that cheap workaround available
+  inside a file it was not allowed to touch, and correctly reported the failure instead. Surfaced 2026-08-24 by
+  FM-111, independently confirmed byte-identical at base by its reviewer via a pristine `git archive` tree.
+  Note that `ColorSetting.tsx:46` *legitimately* needs the literal string `rgb(`, because legacy persists colours in
+  that format — so at least one of the five sites cannot be fixed by "remove the literal", only by "teach the matcher
+  this is data". That site keeps the gate red for every task touching `features/config/indexers/`. Surfaced
+  2026-08-24 by FM-097's reviewer, confirming FM-111's and FM-112's reports.
 - **A cleared search size constraint is still submitted.** Clearing the Advanced panel's Min/Max size fields, or deleting the
   `search-chip-size` chip, both leave the request carrying the category's preset — the backend logged `minsize=500,
   maxsize=20000` in both attempts against a Movies-category identifier search. Likely `SearchWorkspace.tsx`'s
   `minsize: field("minsize") || (preset?.minSizePreset?.toString() ?? "")` fallback. This is why FM-094 could not carry the
   deleted legacy autocomplete test's "the identifier search really returns the movie" assertion into its React sibling; once
   fixed, restore it to `search.spec.ts`'s TMDB-identifier test.
-- **React's bulk send leaves the sent rows unmarked.** The row "Downloaded" chip is raised only by the direct NZB/torrent
-  transfer, so legacy's per-row `.sabnzbd-success` feedback has no counterpart after a bulk send
-  (`SearchResults.tsx`'s `onDownloaded` mapping from `addedIds` back to `searchResultId`s).
-- **`searching.loadLimitInternal` is editable but consumed nowhere.** React's Config > Searching tab edits it; the results view
-  ignores it, where legacy used it as the displayed page size. FM-094 deleted the last test covering it
-  (`results.spec.ts`'s title-group page-size test, which used no legacy-only selectors and failed only for this reason), so
-  nothing now evidences the gap. **Needs an owner ruling** — honour the setting or declare it backend-only — plus a registry
-  line either way, so this is a packet rather than a quickfix.
-- **`system.spec.ts:312` is log-volume fragile.** It failed once during FM-094's verification and passed on an identical rerun:
-  `toContainText("NZBHydra")` against `system-log-view-raw` depends on the current log file not having rotated its startup
-  banner away by the time the test runs, which the suite's own log volume decides. Assert on something the current file always
-  carries instead.
-- **`playwright.config.ts`'s `globalTimeout: 300_000` is below the suite's own runtime** (~4.2 minutes green, and the value
-  bounds the whole run), so any documented full-suite command needs `--global-timeout=1800000` to finish at all; without it the
-  run ends `timedout` with reporters unflushed. Raise it or split the suite. Deferred explicitly by FM-094.
-- **Stale "the default is legacy" comments** in `focus-indication.spec.ts:29-32` and `notched-label-geometry.spec.ts:185-186`.
-  Their `ui/react?redirect=…` navigations remain correct; only the stated reasons are now wrong after FM-094 flipped the
-  default.
-- **Two small unclaimed coverage trims from FM-094's deletions**, both cosmetic: `search-history.spec.ts:67-69` creates
-  `historyResponse` and never awaits it (dangling promise, pre-existing at baseline), and the React autocomplete sibling
-  (`search.spec.ts:1377-1394`) asserts `tmdbId` and the explicit-null shape but not the deleted test's `title`, `year`, or
-  `content-type: application/json`.
+- **Advanced rows inside the Downloading and External Tools dialogs register with the fieldset behind the modal.**
+  React context crosses portals, so the 3 advanced `SettingRow`s in `DownloaderDialog` and the 11 in
+  `ExternalToolDialog` are descendants of `<ConfigFieldset label="Downloaders">` / `<ConfigFieldset label="External
+  tools">` (`DownloadersSection.tsx:185`, `ExternalToolsSection.tsx:256`) and count toward them. With the advanced
+  toggle off, opening either dialog makes a spurious "3 advanced settings hidden" / "11 advanced settings hidden"
+  expander appear *behind* the modal backdrop, vanishing on close. No value or reveal impact — both host fieldsets own
+  zero advanced rows of their own, so the expander is never clickable — but FM-098's claim that dialog bodies are
+  unaffected holds only for `IndexerDialog`, which is rendered outside its fieldset (`IndexersConfigTab.tsx:328`
+  closes before `:354`). Fix: wrap the two dialog bodies in `AdvancedDisclosureContext.Provider
+  value={NO_ADVANCED_DISCLOSURE}`. Surfaced 2026-08-26 by FM-098's reviewer, which checked all three dialogs rather
+  than accepting the claim.
+- **A settings-search reveal request is never retired, so a fieldset re-reveals itself on remount.**
+  `useSettingsNavigation.tsx:178` bumps the token but nothing clears it once honoured, so a fieldset that unmounts and
+  remounts while the last request still names it opens again on its own: search to "Indexer access" on Searching,
+  navigate away by hand, come back, and it is expanded again. Harmless — nothing is lost and no stored preference
+  changes — but not intended, and the same applies to the auth-type-gated fieldsets. Retiring the request once
+  honoured, or matching on a request id the fieldset records, would close it. Surfaced 2026-08-26 by FM-099's
+  re-review.
+- **FM-102's anchor list renders `<button>` as a direct child of `<ul>`.** `ConfigNav.tsx:181-217` uses
+  `ListItemButton component="button"` inside a `List`, so the DOM is `ul > button` with no `li` — an invalid content
+  model that yields a `list` with zero `listitem`s, so assistive tech announces no item count for the "on this page"
+  list. Stock MUI nav anatomy is `List > ListItem disablePadding > ListItemButton`. Verified by DOM probe, not
+  inferred. Surfaced 2026-08-26 by FM-102's re-review.
+- **The config nav's mobile `Drawer` has no visible close affordance.** It dismisses only via Escape, a backdrop tap,
+  or choosing a section, whereas `RefineSidebar.tsx:414` — the idiom FM-097's packet names as its model — ships a
+  `CloseIcon` button in its drawer header. `config-nav-open` also only opens, so it is not literally the "toggleable"
+  control the Acceptance wording describes. The gap is discoverable dismissal on touch, where Escape is unavailable
+  and a backdrop tap is undiscoverable. `ConfigNav.tsx:144-184`. Surfaced 2026-08-24 by FM-097's reviewer.
+- **Teardown race in `core/ui-react/src/components/dialogs/DialogProvider.test.tsx`.** Roughly 1 run in 10 of
+  `npm run test -- --run` exits 1 on two unhandled `ReferenceError: window is not defined` from a react-dom scheduler
+  callback firing after that file's jsdom environment is torn down — while every test still reports passing
+  (1149/1149). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
+  confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
+  there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
+- **The unit suite fails once in every ten to thirteen runs for reasons nobody has captured, and the runner cannot
+  name the test.** Merged 2026-08-27 from three entries — the same story reported by three tasks.
+  *The failures.* FM-097's reviewer saw two failures at `expect(harness.form.formState.isDirty).toBe(false)` in
+  `features/config/notifications` in a run that compressed 244s of aggregated test time into 24s wall; the immediate
+  re-run was 1175/1175 green and three isolated runs of that directory were 26/26 — reads as a timeout under
+  contention rather than a regression, and the file is untouched by FM-097 (surfaced 2026-08-24). FM-102's
+  re-reviewer saw `1 failed | 1307 passed` on a cold-cache first run and green 1308/1308 on the twelve that followed,
+  without capturing the failing test's name; not attributable to FM-102 on the available evidence (surfaced
+  2026-08-26). FM-103 reported `1 failed / 1325 passed` on one of nine runs, green on the other eight.
+  *The reason they stay anonymous.* Each lost the failing test's name to a truncated pipe. The honest reporting is
+  right; the mechanical fix is to have `npm run test` emit a JSON or JUnit reporter to a file so the next one is
+  identifiable instead of anecdotal — that is the tractable half of this item and should be done first. FM-103's
+  reviewer names a plausible candidate in that task's own new tests — a synchronous negative assertion
+  (`expect(rowNames()).toEqual([...])` immediately after a `waitFor` that only guarantees an unrelated write landed) is
+  the classic shape that goes red under scheduler jitter — but could not prove it. The separately-logged
+  `DialogProvider.test.tsx` teardown race above is another plausible source. A suite that fails once in thirteen for
+  unknown reasons is worth identifying before it trains people to re-run. Surfaced 2026-08-24 and 2026-08-26.
 - **`system.spec.ts`'s sensitive-data-logging test poisons the shared instance when it fails.** It enables the setting, asserts, and
   disables it at the end, so any mid-test failure leaves `SensitiveDataRemovingPatternLayoutEncoder` disabled on the running
   instance and the next run fails on its own precondition (`toHaveText("Enable sensitive data in logs")` against a toggle already
   reading "Disable ..."). Observed 2026-08-23; reset by hand via `PUT /internalapi/debuginfos/sensitiveDataLogging?enabled=false`.
   The durable fix is a fixture that restores the setting regardless of outcome, which is the same shape as any other
   server-mutating test in this suite — worth a sweep for others rather than fixing this one alone.
-- **`POST /loggedout` (`core/src/main/java/org/nzbhydra/web/MainWeb.java:92`) is dead server code.** It invalidates the session,
+- **`focus-indication.spec.ts`'s anchor-family test fails on a fresh datafolder because FM-079's startup `NewsDialog`
+  duplicates the mocked news anchor** (`tests/system/tests/focus-indication.spec.ts:1047`, `core/ui-react/src/app/status/NewsDialog.tsx`). The test mocks `/internalapi/news**` with a `forCurrentVersion: true` entry and locates
+  `a[href='https://example.invalid/fm053']` strictly; on a datafolder where that news is unseen, the startup dialog (a portal outside `system-shell`, added by FM-079 after the test was written for FM-053) renders the same
+  server-authored HTML as the news page, so the locator resolves to two elements. Deterministic on `--runtime local` runs (fresh datafolder), invisible against long-lived IntelliJ services (news already marked shown). Surfaced
+  2026-08-23 while gating the visual-language quickfix above, which could not have caused it (theme-only diff). Fix belongs in the test — dismiss or await the dialog before probing, or scope the locator — contained enough for a
+  quickfix.
+- **`playwright.config.ts`'s `globalTimeout: 300_000` is below the suite's own runtime** (~4.2 minutes green, and the value
+  bounds the whole run), so any documented full-suite command needs `--global-timeout=1800000` to finish at all; without it the
+  run ends `timedout` with reporters unflushed. Raise it or split the suite. Deferred explicitly by FM-094.
+  **Checked 2026-08-27:** still `300_000` at `tests/system/playwright.config.ts:12`.
+- **The six sibling specs' drawer-open probe is a bare `await navOpen.isVisible()` with no auto-retry.** If the shell
+  has not painted when the helper runs, the mobile path is silently skipped and the subsequent `setChecked` times
+  out rather than opening the drawer. Fails loudly, so it cannot mask a regression, and each helper's first line
+  already runs after an `openXConfig` wait, which is why it is stable today — but it is a flake surface across six
+  specs (`config-main.spec.ts:26` and the same pattern in `config-categories`, `config-downloading`,
+  `config-searching`, `config-indexers`, `external-tools`). A short retry-until-visible would close it. Surfaced
+  2026-08-24 by FM-097's reviewer.
+- **FM-100's review panel keys a whole list positionally when any single entry is unkeyed.** `reviewChangesDiff.ts`'s
+  `listKeys` returns `null` for the entire list if one entry lacks a `name`/`username` or repeats one, whereas the
+  backend (`SensitiveDataConfigValidator.findCorrespondingOldItem`) keys each entry independently. Removing a named
+  indexer while a freshly added blank row is present therefore makes the panel report N spurious "edited entry K" rows
+  instead of "X removed / entry N added". Display-only — no leak, and the save itself is unaffected — but it
+  misdescribes the change in the one place the admin looks before committing. Surfaced 2026-08-26 by FM-100's reviewer.
+- **`null` and `""` both render as `(empty)` in the review panel, so a row can show no visible change.**
+  `reviewChangesDiff.ts:151` maps both to the same text while `isDeepEqual(null, "")` is false, so the row survives the
+  value-equal filter and displays `(empty)` → `(empty)` on desktop, or a bare `(empty)` on mobile where the prefix is
+  suppressed when both sides match — with nothing saying what changed. Plausible whenever RHF turns an unset optional
+  string default into `""`. Surfaced 2026-08-26 by FM-100's re-review.
+- **"Is there an error report?" is computed twice by different means in FM-101.** The shell uses
+  `errorMessages.length > 0 || refusedBySelf` (`ConfigShell.tsx:167-170`); the banner uses
+  `collectInvalidFields(...).length > 0` (`ConfigFeedbackBanner.tsx:82-93`). The shared-markup extraction unified the
+  rendering but not this predicate, and the reason it was not unified is a `react-refresh/only-export-components`
+  warning whose own message prescribes the remedy: put `hasConfigErrorReport` in a small non-component module and use
+  it in both places. If the two ever disagree the portal renders an error `Alert` with a `null` body — a bare close
+  button floating over the modal. Unreachable today, since fields cannot be edited while the panel is modal. Surfaced
+  2026-08-26 by FM-101's re-review.
+- **Two hardening gaps in the review panel, neither reachable today.** `reviewValueText` falls through to
+  `JSON.stringify` for a dirty leaf whose value is a plain object, and `isHiddenSetting` tests only the path, never the
+  object's keys — so that is the one place a secret could reach the screen without any of the three masking layers
+  firing. No reachable path exists today (RHF recurses into objects, and arrays of records are intercepted earlier by
+  the dispatch on value shape). Separately, no test pins the post-save re-baseline — that a second round of edits diffs
+  against the newly saved config rather than the initial fetch — which is correct by construction via
+  `form.formState.defaultValues` but was flagged as a trap by the packet. Surfaced 2026-08-26 by FM-100's reviewer.
+- **The review panel's entry-row status reads as if it were the old value.** An array entry renders `edited` in a
+  `colSpan={2}` cell that starts under the "Previously" header, so `Indexers: Mock1 · edited` scans as "Mock1 was
+  edited before". `align="right"` or a leading em-dash would disambiguate. Visible in `review-changes-desktop.png`.
+  Surfaced 2026-08-26 by FM-100's reviewer.
+- **FM-100's summary button is the only entrance to the review panel but looks like static text.** No underline, no
+  button chrome, `color: "text.secondary"` — visually unchanged from FM-097's `Typography` by design, at the cost of
+  discoverability for the feature it now gates. That `sx` override also carries no at-site justification comment, which
+  `AGENTS.md` *UI Conventions* requires at every deviation from stock MUI. Surfaced 2026-08-26 by FM-100's reviewer.
+- **"Enable shown" silently skips indexers whose config is incomplete.** Correct behaviour — `IndexerStateSwitch.tsx:54`
+  disables the per-row switch for those, so a bulk enable that flipped them would be the only route in the UI past a
+  gate every per-row path enforces — but nothing on screen says *why* the bulk action passed a row over. The row keeps
+  its `Disabled by system` caption so it is not invisible, just unexplained. A note beside the button, or a count in
+  `config-indexers-shown-count`, would close it. Surfaced 2026-08-26 by FM-103's reviewer.
+- **`STATUS.md` section entries must start exactly `- FM-NNN:` or the validator cannot see them.**
+  `validate-migration.mjs:163` extracts task ids with `/^- (FM-\d{3}):/`, so a perfectly readable entry like
+  `- FM-101 (Save Feedback Banner): in progress` is invisible to it, and the task is reported "absent from STATUS.md
+  Active" while sitting plainly in that section — a confusing error that points at the wrong problem. This has now cost
+  time twice in one batch: once when a coordinator wrote `- FM-112 closes the cleanup batch` in Upcoming, and once when
+  an implementer wrote the parenthetical form above in Active. Both are natural prose. Either loosen the regex to
+  accept `- FM-NNN` followed by any delimiter, or make the error message say what shape it expected — the second is
+  probably worth more than the first, since the current message actively misleads. Surfaced 2026-08-26.
+  Related: the same file also produced a self-contradiction this batch (see the struck-through
+  `EXTERNAL_TOOL_CONFIGURATION` note under *Discharged* below); a status file that disagrees with itself is worse than
+  one that is merely behind.
+- **`SettingRow.tsx:85`'s chip guard carries a dead conjunct.** It reads `advanced === true && hiddenByToggle`, but
+  `hiddenByToggle` is defined as `advanced === true && !showAdvanced`, so the first half can never independently be
+  false. Harmless today; it invites a future reader to believe the two conditions are independent and to "fix" one of
+  them. `hiddenByToggle` alone is the whole condition. Surfaced 2026-08-26 by FM-098's re-review.
+- **`UpdateFooterBanners.tsx:93` measures a different box than its own initial measurement — a latent trap, not a live
+  bug.** The initial read uses `getBoundingClientRect().height` while the `ResizeObserver` callback uses
+  `entry.contentRect.height`, so the two paths measure border box and content box respectively. FM-102's fixer hit
+  exactly this pattern in its own new `useSaveBarHeight` — the padded save bar measured ~24px short and the sticky
+  column painted over the first tab entry — and flagged the sibling occurrence. FM-102's re-review checked before
+  agreeing: the observed `Box` at `:105` sets only `bottom`/`left`/`right`/`position`/`zIndex`, no padding or border,
+  so its two boxes are the same height today and the footer offset is correct. It becomes a real bug the moment anyone
+  adds padding or a border to that container. Fix is one line for uniformity. Surfaced 2026-08-26 by FM-102's fixer,
+  scoped by its re-review.
+- **FM-102 nests two navigation landmarks.** The anchor list is a `Box component="nav"` inside the nav column's own
+  `component="nav"` (`ConfigNav.tsx:162`), so a screen-reader rotor lists "Configuration sections" containing "Main on
+  this page". Valid HTML, but a labelled region inside the outer landmark would read better. Also `useScrollspy`
+  (`:456-465`) listens for `scroll` only, so a viewport resize changes the activation line without recomputing the
+  marker until the next scroll. Surfaced 2026-08-26 by FM-102's reviews.
+- **`SettingHighlight` trips `react-refresh/only-export-components`.** `useSettingsNavigation.tsx:178` exports a
+  component from a module that also exports the `useSettingsNavigation` hook, taking the tree from 13 lint warnings to
+  14. Zero errors, and consistent with several pre-existing peers, so it was left. Splitting the component into its own
+  module would close it. Note FM-099's handoff claimed "none in touched files", which was inaccurate — the warning is
+  in a task-owned file. Surfaced 2026-08-26 by FM-099's reviewer.
+- **`SearchHistoryPage.tsx`'s local `SortHeader` has the same missing-sort-indicator gap** the FM-023-era entry above
+  fixed in the other two history routes (identical copy-pasted `<Button>`-in-`<TableCell>` pattern, not a shared
+  component). Not named by the FM-023 review so left untouched there; discharging it would be the same
+  `TableSortLabel` swap, contained to that one file. **Checked 2026-08-27:** still a bare `<Button>` inside a
+  `<TableCell sortDirection=…>` at `features/stats/history/SearchHistoryPage.tsx:343-367`.
+- **`showsUsername`/`showsIp` are duplicated between `SearchHistoryPage.tsx` and `DownloadHistoryPage.tsx`.** FM-110
+  unified four other copy-pasted shapes in the same files but deliberately left these two alone: its packet enumerates
+  exactly what to unify and does not name them, and opportunistic scope creep in a behavior-preserving batch is worse
+  than a leftover duplicate. Both the implementer and the reviewer independently reached that conclusion, so this is a
+  future consolidation candidate rather than a gap in FM-110. Small and low-risk — two call sites, and
+  `features/stats/shared/` now exists as the obvious home — so it suits a single-session fix rather than a packet.
+  Surfaced 2026-08-24 by FM-110's implementer, endorsed by its reviewer. **Checked 2026-08-27:** the pair is still
+  declared twice, at `api/searchHistory.ts:96-97` and `api/history/downloads.ts:81-82`.
+- **`userFieldPath` in `authSettings.ts:72-82` is production-dead, kept alive by its own test.** FM-105's table binds
+  no control to a row, so nothing in production calls it; `knip` stays silent only because `authSettings.test.ts:168`
+  imports it. It was kept deliberately because `categoriesSettings.ts`'s comment points at it and that file is
+  outside FM-105's allowlist — the right call for that task, since re-pointing the comment there would have been the
+  scope violation. But a test-only export kept alive to hold a comment reference upright should not persist: remove
+  the helper and its test case, and re-point that comment, in one session. Surfaced 2026-08-26, declared by FM-105's
+  implementer and endorsed by its reviewer. **Checked 2026-08-27:** all three sites still stand; the referring
+  comment is now at `categoriesSettings.ts:144`.
+- **`RepeatSection` has no production consumer left, and its `addChoices` mode has none either.** Merged 2026-08-27
+  from two entries whose work is the same deletion; do the whole component in one session rather than the mode first.
+  FM-106 moved notifications to a locally-owned section and FM-107 moved categories to a table, so `knip` now reports
+  the barrel export dead (`features/config/components/index.ts:14`). FM-107 correctly left it: deleting the line would
+  exceed its fence on that file and would immediately make `RepeatSection.tsx` — explicitly out of scope — an unused
+  *file* rather than an unused export. Separately and earlier, FM-106's implementer recorded that the `addChoices`
+  mode alone was already unused in production (Notifications was its only consumer; Categories, then the sole
+  remaining consumer, does not use the mode), and correctly left it — its allowlist permitted `RepeatSection.tsx` only
+  for an accordion opt-in it did not take. The contained follow-up is now the whole thing: delete the component and
+  its test, the barrel line, the `Menu`/`MenuItem` and `config-repeat-add-option-*` selectors, the cases in
+  `RepeatSection.test.tsx`/`configFields.test.tsx`, and trim the `C-CONFIG-FIELDS` paragraph — worth doing only after
+  confirming no planned list wants the vocabulary back. Covering command: `npm run test -- --run` in `core/ui-react`.
+  Surfaced 2026-08-26 by FM-106's implementer and by FM-107, ruling endorsed by both reviewers. **Checked
+  2026-08-27:** `addChoices` still present at `RepeatSection.tsx:46-151`; barrel export still at
+  `features/config/components/index.ts:14`.
+- **One of FM-099's 48 `conditional` index entries is never rendered by any drift-test fixture.**
+  `settingsIndex.ts:897`'s `downloading.primaryDownloader` renders under no fixture, so neither drift direction nor the
+  `advanced`/`fieldset` column checks ever touch it. FM-099's reviewer hand-verified it correct today (not advanced,
+  inside `General`, label and help verbatim against `DownloadingConfigTab.tsx:124-135`), but nothing would catch it
+  drifting. Either a `should render every conditional entry under at least one fixture` guard, or a Downloading
+  alternative fixture with `showDownloaderStatus` and two downloaders, would close it. Surfaced 2026-08-26 by FM-099's
+  reviewer.
+- **FM-102's short-tab scrollspy guard has no test.** The fix for the document-end fallback firing at scroll 0 added a
+  `scrollHeight > clientHeight` check, but no case asserts that on a short tab (Downloading, Notifications, External
+  Tools, Authorization — all of which fit a 1280x800 viewport with advanced off) the *first* anchor rather than the
+  last is current at rest. The guard is correct by inspection; nothing would catch its removal. Surfaced 2026-08-26 by
+  FM-102's re-review.
+- **The cross-tab reveal into a wholly advanced fieldset has no visual capture.** FM-099's strip captures the
+  per-fieldset-expander shape only. The other FM-098 gate shape — a fieldset that was not on the page at all, opened
+  by search, with the highlight painted inside a settling `Collapse` — is now headline behaviour and is asserted in
+  two harnesses but never seen. It is also the shape whose defect (cross-tab reveal silently doing nothing) survived a
+  green suite precisely because no test crossed tabs. One shot at `config.spec.ts:375` would close it. Surfaced
+  2026-08-26 by FM-099's re-review.
+- **FM-104's truncation test asserts a class, not the clipping.** `AddIndexerDialog.test.tsx:99-113` checks that
+  `MuiTypography-noWrap` is present, which still passes if a future refactor breaks the shrink chain — removing
+  `minmax(0, 1fr)` from the grid columns, say — and leaves the label unclipped. No live defect: FM-104's reviewer built
+  a standalone reproduction of the exact grid → button → `Typography noWrap` nesting, served it over local HTTP and
+  drove it with playwright-cli, and measured a long label genuinely clipped (span `scrollWidth` 804px against a
+  rendered 324px) with no page-level horizontal scroll. But the test proves less than the reviewer had to do to
+  establish it. Asserting `scrollWidth > clientWidth` would close the gap. Surfaced 2026-08-26 by FM-104's reviewer.
+- **FM-105's case-sensitivity test does not pin case-sensitivity.** "should keep two usernames that differ only by
+  case apart" (`AuthUsersSection.test.tsx:333-353`) renames index 1 from `alice` to `alice-lower`, which collides with
+  `Alice` under no matcher — so FM-105's reviewer mutated `uniqueUsername` to compare `toLowerCase()` and all 48 tests
+  still passed. The *behaviour* is correct (both Java matchers use `String.equals`, verified against the source), but
+  the handoff's "with a test pinning that" overstates what exists. Renaming index 1 to `ALICE` and asserting Save is
+  **accepted** would bite. Surfaced 2026-08-26 by FM-105's reviewer.
+- **`system.spec.ts:312` is log-volume fragile.** It failed once during FM-094's verification and passed on an identical rerun:
+  `toContainText("NZBHydra")` against `system-log-view-raw` depends on the current log file not having rotated its startup
+  banner away by the time the test runs, which the suite's own log volume decides. Assert on something the current file always
+  carries instead.
+- **`focus-indication.spec.ts`'s "authored ring on the results surfaces" test mislabels its downloader-select focus-ring
+  capture** (`page.getByTestId("results-bulk-actions").locator(".MuiInputBase-root").first()`, named `downloader-select`
+  in its screenshot path and evidence, around line 884): its fixture (`hydra.configureSabnzbdMock()`) configures exactly
+  one downloader, so since `bdae1e73a` (2026-08-23) that select is hidden and `.first()` now actually resolves to the
+  *category* select instead. The test still passes -- `expectFocusedOutlinedInput` only checks generic notched-outline
+  CSS, and `tabTo` walks Tab presses dynamically until the target locator itself gains focus, so nothing is
+  content-sensitive -- but the captured `keyboard-focus-downloader-select-desktop` evidence and the assertion's own
+  name now describe the wrong control. Not a failure, so left as a candidate rather than fixed inline while chasing
+  FM-088; the fix is either pointing the locator at `.last()` (the category select, and renaming accordingly) or
+  switching the fixture to configure two downloaders so the downloader select is actually present again. Surfaced
+  2026-08-23 while investigating the `results.spec.ts` regression above.
+- **FM-097's sticky save bar has broken two kinds of visual evidence.** Merged 2026-08-27 from FM-098's and FM-105's
+  reviewers; both are the capture convention meeting the sticky bar, and both are fixed in the same place.
+  *(a) Occlusion.* `main-validation-error-{desktop,mobile}.png` no longer frame the error they are evidence of:
+  `config-main.spec.ts:365-372` calls `scrollIntoViewIfNeeded()`, which since FM-097 puts the Host field under the
+  sticky save bar, so the red `config-error-main-host` text sits off-frame in both captures. The assertion itself
+  still passes, so the spec is honest — it is the *evidence* that stopped showing the thing. Pre-existing framing
+  rather than an FM-098 change, but FM-098 owns the current bytes. Surfaced 2026-08-26 by FM-098's reviewer.
+  *(b) Duplication.* `fullPage: true` captures duplicate the sticky save bar: `auth-user-dialog-{desktop,mobile}.png`
+  show the bar twice — Playwright's scroll-and-stitch behaviour meeting a `position: sticky` element, not a rendering
+  bug. Confirmed by FM-105's reviewer against two controls: `auth-after-save-desktop.png` (the same convention,
+  inherited from FM-068) shows the identical artifact, while `auth-form-desktop.png`, whose page fits without
+  scrolling, does not. Not worth changing that one file's convention for on its own, but it will recur in any
+  `fullPage` capture of a scrolling config page now that FM-097's bar is sticky. Surfaced 2026-08-26.
+- **The `tests/system` visual-evidence captures are not bit-reproducible run to run.** Across identical trees, 4 of
+  335 PNGs differ, and the differing set changes membership between runs — FM-112 saw
+  `fluid-table-title-collapse-desktop.png` and `fm055-mobile-refine-drawer.png` swap places between two runs of the
+  same tree. The one in-scope shot was chased to ground: 24 differing pixels of 260,592 (0.0092%), all isolated
+  single pixels on rounded-corner antialiasing of TextField outlines, no edge displaced — and a second base run then
+  matched the after-runs byte-for-byte, showing the first base run was the outlier. This is renderer nondeterminism,
+  not a code signal, but it costs every implementer in a code-motion batch an extra base run to disambiguate a
+  "changed" screenshot. Logged here so future reviewers do not re-chase it. A small pixel tolerance, or pinning
+  fonts/antialiasing via a launch flag, would close it; the shared `prepareVisualEvidence` helper behind
+  `tests/system/tests/search.spec.ts` and `results.spec.ts` is the place. Surfaced 2026-08-24 by FM-112, endorsed by
+  its reviewer.
+- **FM-107's mobile scroll comment overstates its own claim.** `CategoriesTable.tsx:218-222` and the matching
+  `config-categories.spec.ts` assertion say "Both of a row's controls … sit in the first two cells, so nothing scrolled
+  out of view is operable" — but the packet's own `categories-scroll-container-mobile.png` shows the expand-toggle
+  column scrolled entirely off the left edge, so an operable control *can* be out of view. The true, narrower claim is
+  that both controls are visible at the container's default scroll position and cost one swipe to reach again.
+  Surfaced 2026-08-26 by FM-107's reviewer.
+- **`SearchResults.test.tsx:38-40` explains jsdom's storage behavior in terms of a symbol FM-109 deleted.** The
+  comment still says "`getStorage()`'s `window.localStorage` access in SearchResults.tsx resolves to `undefined` …
+  so `getStorage()?.setItem(...)` silently no-ops". The mechanism it describes remains correct — the write is simply
+  routed through `writeItem` now — but `getStorage()` no longer exists. FM-109's packet permitted test-file edits
+  only for import lines and stub retargeting, so leaving it was the correct call under contract; it is doc drift, not
+  a behavior gap. Surfaced 2026-08-24 by FM-109's reviewer. Now doubly stale after FM-111: the read side it describes
+  moved out of `SearchResults.tsx` into `storedChoices.ts`. **Checked 2026-08-27:** `getStorage` survives nowhere in
+  `core/ui-react/src` except those two comment lines.
+- **Two comments in FM-101's shipped code describe mechanisms the same change disproves.** Merged 2026-08-27 from two
+  FM-101 re-review entries: adjacent files, same session, same kind of correction.
+  *(a)* `ConfigFeedbackBanner.tsx:39` and `:104-105` state that the `"filled"` surface *is* the toast surface
+  `C-TOAST-SERVICE` renders on, and that the shell "relocates this exact markup onto the toast surface". Both are
+  false, and directly contradicted by `ConfigShell.tsx:390-394` in the same change ("It is a `Portal` and not a toast
+  because `Snackbar` does not portal"). A future reader is told the report rides the toast service; it does not.
+  *(b)* `ConfigShell.tsx:384-386` credits JSX sibling order for something it does not cause, explaining the
+  portal-versus-modal ordering as working "because the panel is the earlier JSX sibling". The re-review read MUI's
+  `Portal.js` and `ModalManager.js` and established the real mechanism: `Portal` inserts on the render pass *after* its
+  layout effect, while `ariaHiddenSiblings` snapshots `container.children` inside `useModal`'s passive effect of the
+  first pass — and MUI's own `Modal` goes through the same two-pass `Portal`, so `add()` always runs while neither
+  subtree is mounted. Order is irrelevant, and the reviewer proved it by moving the whole `Portal` block above
+  `<ReviewChangesPanel>` in a sandbox copy and getting 50/50 green. Harmless today, but the comment invites a future
+  maintainer to preserve an ordering that does nothing — and hides the dependency that is real: a *second* modal
+  opening while the raised layer is already mounted would snapshot it as a body sibling and hide it.
+  Both surfaced 2026-08-26 by FM-101's re-review.
+- **Unannotated magnitudes are now a convention nothing enforces — fix the enforcement, not the four sites.**
+  Merged 2026-08-27 from four separate tasks that each independently collected an instance of the same gap. Four
+  tasks in one batch finding the same thing means *UI Conventions*' "justify every deviation from stock MUI at the
+  site" has no mechanical backing; the proportionate discharge is a lint rule or a line in the packet template that
+  makes an unexplained numeric `sx` value visible at authoring time, with the four sites below fixed in the same pass
+  as its first cohort.
+  *FM-097 — `ConfigNav.tsx:88-93`'s `minHeight: 44` is an unexplained magnitude.* The comment justifies overriding
+  MUI's vertical-`Tab` default but not the number, which sits next to the app-wide `controlHeight = 32` token
+  (`theme.ts:192`) established by the 2026-08-23 height unification. 44 is defensible on its own terms as a touch
+  target, but the ledger entry for that unification is explicit that unstated heights are exactly how the app
+  accumulated ten of them. Either derive it from a token or say at the site why a nav row is not a control. Surfaced
+  2026-08-24 by FM-097's reviewer.
+  *FM-098 — two spacing magnitudes are correct but unannotated.* `ConfigFieldset.tsx`'s `mb: 2.5` on the expander is
+  exactly `SettingRow`'s row rhythm and its `pt: 1` on the collapsed advanced-fieldset wrapper is exactly the
+  fieldset Box's own `pt`, so both keep the layout from shifting on expand — but neither carries the at-site note
+  tying it to its neighbour. Surfaced 2026-08-26 by FM-098's reviewer.
+  *FM-102 — the current-anchor magnitudes and activation fraction are unannotated or half-annotated.*
+  `borderLeft: "3px solid"`, `pl: 1.5` and `py: 0.25` (`ConfigNav.tsx:193-200`) carry no justification comment; and
+  `:418`'s `0.3` viewport fraction justifies *why a fraction* ("keeps the same behaviour across viewport heights") but
+  never why one third. Surfaced 2026-08-26 by FM-102's reviews, which is where the "fourth task, so make it a rule"
+  observation was first made.
+  *FM-106 — a magnitude in a justification comment is 1.5px off.* `NotificationEntryFields.tsx:178` says the adjacent
+  outlined `Button` is "~38px"; measured in Chromium it is 36.5px, against a stock `Alert` at 48.0px and the `py: 0`
+  Alert at 36.0px. The argument — that the actions row would grow ~10px taller the moment a result appears, shifting
+  everything below — is unaffected and correct; only the quoted number drifts. Worth correcting because the comment
+  exists precisely to justify the number. Surfaced 2026-08-26 by FM-106's re-review. (This one is a *wrong* stated
+  magnitude rather than a missing one; it is grouped here because the same enforcement would catch it.)
+- **FM-107's summary chips key on the token value.** `CategoriesTable.tsx:414` uses `key={category}`, so two identical
+  stored newznab tokens in one category collide. `ChipsSetting` is `freeSolo` and does not prevent entering a
+  duplicate. Cosmetic React warning only. Surfaced 2026-08-26 by FM-107's reviewer.
+- **Two small unclaimed coverage trims from FM-094's deletions**, both cosmetic: `search-history.spec.ts:67-69` creates
+  `historyResponse` and never awaits it (dangling promise, pre-existing at baseline), and the React autocomplete sibling
+  (`search.spec.ts:1377-1394`) asserts `tmdbId` and the explicit-null shape but not the deleted test's `title`, `year`, or
+  `content-type: application/json`. **Checked 2026-08-27:** the dangling `historyResponse` is still there at
+  `tests/system/tests/search-history.spec.ts:67-69`.
+- **Stale legacy-era prose in files the legacy removal did not rename.** Merged 2026-08-27 — four wordings, one
+  mechanical sweep, none of them asserted by any test.
+  *(a)* Two "migration placeholder" wordings survive FM-095's rename of the component's copy to an unknown-route
+  notice: `core/ui-react/src/router.test.tsx:328` (a test name) and `features/system/SystemShell.test.tsx:98` (a stub
+  body). Both pass and neither asserts the renamed text.
+  *(b)* Two "the default is legacy" comments survive FM-094 flipping the default: `focus-indication.spec.ts:29-33`
+  and `notched-label-geometry.spec.ts:185-186`. Their `ui/react?redirect=…` navigations remain correct; only the
+  stated reasons are now wrong.
+  **Checked 2026-08-27:** all four sites still read as described (the `SystemShell.test.tsx` stub is now under
+  `features/system/`, not `app/shell/`).
+- **`resource-config.json`'s GraalVM include list still names assets FM-095 deleted.** Merged 2026-08-27 from two
+  entries about the same hand-maintained list; sweep it in one pass, because a half-swept list is worse than an
+  untouched one. Roughly 30 include entries name `static/css/*`, `static/fonts/*` and legacy `static/js/*` that no
+  longer exist. All are inert — line 23's `static/.*` pattern covers the tree regardless — so this is tidiness, not
+  correctness. **Checked 2026-08-27, and the correctness half of the original pair is already closed:** the
+  originally-reported risk was that the list included `templates/index.html` and `static/js/templates.js` while never
+  naming `templates/react.html`, which would have left a native build with no shell template for any route (FM-095's
+  reviewer; not an FM-095 regression, since FM-094 had already made `react` the served view). Today
+  `core/src/main/resources/META-INF/native-image/resource-config.json:2621` **does** include `templates/react.html`
+  and `templates/index.html` is gone; only the dead `static/js/templates.js` entry at `:2612` and the ~30 inert
+  asset entries remain. Note `NativeApplicationContextTest` still cannot catch this class of error — it reads the JVM
+  classpath, not the native image.
+- **Toolchain remnants that outlived what they configured, plus the dev container they belong to.** Merged
+  2026-08-27: the two entries are one deletion, because `core/.bowerrc` cannot go without `docker/uiDev/**` and vice
+  versa. FM-095 deliberately left all of it — its Delete list enumerated four files by name, and an unforced deletion
+  in an irreversible packet is the wrong side to err on. `docker/uiDev/**` is *broken* by FM-095's deletions: its
+  Dockerfile COPYs `core/ui-src/`, `core/bower_components/`, and gulp/bower globs that no longer exist. It is the
+  legacy-UI dev container. `core/.bowerrc` is likewise not inert in one respect — `docker/uiDev/Dockerfile:16` COPYs
+  it and Docker fails on a missing COPY source — so the two must go together. Inert alongside them:
+  `core/core.iml`'s two `bower_components` `excludeFolder` entries, and `--exclude "bower_components"` in
+  `misc/rsyncToServers.sh`, `misc/rsyncAndStartGraalvmDocker.sh` and both `misc/buildLinuxCore/*/buildLinuxCore.sh`.
+  Surfaced by FM-095's designer. **Checked 2026-08-27:** `core/.bowerrc` and `docker/uiDev/` both still exist;
+  `core/core.iml:6-7`, `misc/rsyncToServers.sh:1` and `misc/rsyncAndStartGraalvmDocker.sh:11` all still carry the
+  exclusions.
+
+### Needs a `DECISIONS.md` entry first
+
+Nothing here can be routed until a human settles the named question. Ordered by how much other work each unblocks: the first two
+each gate a defect list that already exists, the rest are single judgement calls.
+
+- ~~**`searching.loadLimitInternal` is editable but consumed nowhere.** React's Config > Searching tab edits it; the results
+  view ignores it, where legacy used it as the displayed page size. FM-094 deleted the last test covering it
+  (`results.spec.ts`'s title-group page-size test, which used no legacy-only selectors and failed only for this reason), so
+  nothing now evidences the gap. **Decision to settle:** honour the setting in the results view, or declare it backend-only.
+  Either answer needs a registry line, and the packet that follows depends on which.~~
+  **Settled 2026-08-27 by ADR-0032, and the entry above was factually wrong.** The setting is consumed:
+  `core/.../searching/searchrequests/SearchRequestFactory.java:26-30` substitutes it as the page size of every internal
+  search that arrives without an explicit `limit`, and `SearchPage.tsx:166-196` never sends one — so it governs the *fetch*
+  size on every install, and `SearchPage.tsx:294-335` / `SearchResults.tsx:490-494` consume the returned `limit` as the
+  load-more cursor. ADR-0031 had already been accepted on the "consumed nowhere" premise and directed removal; the premise
+  was caught during packet design and ADR-0032 supersedes it. The setting stays and stays editable; the real defect is that
+  its label (`"Display..."`) and help describe legacy's *display* page size. Routed to **FM-116** as a text correction.
+  **Why the claim was wrong, which is the reusable part:** the consumer is a default substituted server-side for an
+  *absent* field, so no grep for `loadLimitInternal` in the frontend can see it — the frontend genuinely never mentions it
+  outside the config tab, which is exactly what the entry observed and exactly why the inference failed. Before "nothing
+  consumes this" becomes a decision, check the backend read path for a null-substitution default, not just the callers.
+- **A link inside a persistent toast is unreachable while a modal is open — decide how far to go.** FM-115 closes the
+  *announcement* half of this defect and deliberately leaves the *focus* half, which needs a ruling. Mechanism, verified
+  against the installed MUI 7.3.9 rather than inferred: `Snackbar` contains no `Portal`
+  (`grep -c Portal node_modules/@mui/material/Snackbar/Snackbar.js` → 0), so the toast layer renders in-tree at
+  `App.tsx:48-50` and `ModalManager.add` — which calls `ariaHiddenSiblings(container, modal.mount, modal.modalRef,
+  hiddenSiblings, true)` over `container.children` **at modal-open time**, honouring no opt-out attribute — marks it
+  `aria-hidden`. FM-115 moves the layer out of that subtree, which fixes announcement. It does not fix focus: a modal's
+  `FocusTrap` owns focus regardless of DOM position, measured by FM-101's re-review on its own portalled report
+  (focusing the raised Alert's Close button leaves `document.activeElement` as `DIV.MuiDialog-container`).
+  **This is live, not theoretical.** `Toast` carries no action field, so the general case is announcement-only — but
+  `app/status/NotificationToasts.tsx:82-92` raises `persistent: true` toasts from the live backend channel with a
+  `RouterLink` in their `content`, and a persistent toast stays until dismissed. So a real link, raised over a real
+  dialog, cannot be tabbed to, and neither can the toast's own close button. **Decision to settle:** (i) relax
+  `FocusTrap` app-wide so the toast layer is tabbable from inside a modal, (ii) render toasts inside the open modal when
+  there is one, or (iii) accept it — a keyboard user Escapes the dialog first — and forbid actionable content in toasts,
+  which means `Toast.content` stops taking arbitrary nodes. Each answer is cross-module and changes modal behaviour or a
+  shared type, so none is a quickfix. Related and already recorded: FM-101's `ConfigShell.tsx:404-412` comment overstated
+  what its portal fixed; FM-115 corrects that text as part of the announcement half. Surfaced 2026-08-26 by FM-101's
+  re-review, mechanism and liveness established 2026-08-27 during FM-115's design.
+- **Tables below `sm` scroll their content off-canvas with no affordance — decide the strategy once, for all of them.**
+  Merged 2026-08-27 from three entries in three areas; each was independently deferred for wanting "a real layout
+  decision" rather than a mechanical swap, and answering it once discharges all three. **Decision to settle:** at
+  narrow widths, do tables (i) force container scroll with a `minWidth` plus a scroll-edge affordance, (ii) drop or
+  merge columns below `sm`, or (iii) keep scrolling and add an explicit acknowledgement that content continues?
+  *(a) History routes squeeze instead of scrolling.* Download-history and notification-history tables wrap cell text
+  (e.g. "Syst / em", "Inde / xer") at 390x844 rather than letting `TableContainer` scroll horizontally. Flagged by the
+  FM-023 reviewer; affects `DownloadHistoryPage.tsx` and `NotificationHistoryPage.tsx` identically, likely
+  `SearchHistoryPage.tsx` too (not confirmed). Should be checked and fixed across all three history routes together
+  with a fresh 390x844 screenshot strip for each.
+  *(b) The indexer table's Priority column is invisible between `sm` and ~900px.* Not merely cut off — value, label
+  and header are all off-canvas at 700px, and nothing on screen suggests the content continues
+  (`indexers-list-scroll-container-tablet.png`). FM-103's packet sanctions container scrolling at narrow widths so
+  this is not a contract breach, and its implementer was right to reject a stacked layout at 880px as reading worse.
+  The proportionate remedy is an affordance rather than a layout change: a scroll-edge shadow on the
+  `TableContainer`, or an explicit acknowledgement. Surfaced 2026-08-26 by FM-103's reviewer.
+  *(c) At 390px the categories table's Size column is off-canvas with no affordance.* The shape ADR-0029 refused for
+  FM-100's review panel, in a case where it is non-blocking: FM-107's Acceptance explicitly asked for a "mobile
+  390x844 showing the scroll container", ratifying the scroll, and the row expansion repeats every value as a real
+  editable field, so nothing is unreachable. A below-`sm` column drop or merge would be a design decision rather than
+  a fix. Surfaced 2026-08-26 by FM-107's reviewer.
+- **Settings search offers rows whose render condition is unmet.** `settingsSearchMatching.ts:38` matches the whole index, so
+  with SSL off the results still offer "SSL keystore file" and "SSL keystore password" (visible in
+  `search-results-desktop.png`). Picking one routes to the tab and then silently no-ops until `ANCHOR_DEADLINE_MS`
+  expires, with no feedback. The timeout is deliberate and documented at `useSettingsNavigation.tsx:24-29`, and FM-099's
+  packet neither required nor forbade this. **Decision to settle:** hide such hits, mark them unavailable, or explain the
+  no-op. A packet follows whichever is chosen. Surfaced 2026-08-26 by FM-099's reviewer.
+- **FM-103's search-source select renders for a type the dialog withholds it from.** `IndexerTable.tsx:404-415` shows
+  the `enabledForSearchSource` control on every row, but `visibleIndexerFields` (`indexerSettings.ts:761-763`) hides
+  that field for `TORBOX`, which is an addable preset (`indexerPresets.ts:256`). So the list offers a control the edit
+  dialog deliberately does not. Undeclared — it is not in the `FEATURES.yaml` gaps alongside FM-103's other three
+  deviations. **Decision to settle:** gate the cell on `visibleIndexerFields(entry.searchModuleType)`, or declare the
+  list's wider surface deliberate. Gating is a one-line fix; declaring is a registry edit. Surfaced 2026-08-26 by
+  FM-103's reviewer.
+- **The sticky bar counts dirty leaves while the review panel counts rows.** Editing five fields of one indexer reads
+  "5 settings changed" on the bar and opens a panel with a single row. Both are contract-driven — FM-100's packet
+  fences the summary text verbatim and specifies one row per list entry — so this is a recorded consequence rather than
+  a defect. **Decision to settle:** ratify the mismatch as intended, or re-word one of the two counts (which reopens a
+  fenced string). Surfaced 2026-08-26 by FM-100's reviewer.
+- **The FM-090 notch/label-overlap fix closes the gap by shrinking every input label app-wide** (effective 12px ->
+  10.5px) rather than by widening the notch legend instead. Mechanically correct and owner-approved via a
+  before/after screenshot strip, but the alternative shape (sizing the legend up in `MuiOutlinedInput` rather than
+  the label down in `MuiInputLabel`) was never attempted or compared. Not a defect -- nothing to discharge -- just a
+  design-space note. **Decision to settle:** accept the app-wide 10.5px label, or commission the legend-widening
+  alternative for comparison, now that far more of the app is visible than the two fields FM-090 measured. Surfaced
+  2026-08-23 by FM-090's reviewer.
+- **The preset gallery's "Import" heading stays visible with nothing under it.** Filtering to a term that matches only
+  presets (e.g. "geek") leaves the Import section's heading rendered over zero importer buttons, because importers are
+  filtered independently against their own labels rather than being hidden when the preset groups empty. That follows
+  FM-104's packet text literally ("hide them only when the filter also misses their labels") and is visible in both
+  filtered captures, so it is a packet-sanctioned choice rather than a defect. **Decision to settle:** keep the packet's
+  literal behaviour, or hide the heading when its section is empty (which contradicts the packet text). Surfaced
+  2026-08-26 by FM-104's reviewer.
+- **`GUI-STATUS.md:3-4` still names "The AngularJS GUI it replaced".** FM-095's acceptance asked that the file no longer mention a
+  legacy GUI; read literally that is unmet, read as intent (nothing implies a legacy GUI is reachable) it is met, and the
+  historical sentence is arguably more useful than silence. **Decision to settle:** owner's call, one way or the other.
+  **Checked 2026-08-27:** the sentence still stands at `docs/frontend-migration/GUI-STATUS.md:3-4`.
+- **`POST /loggedout` (`core/src/main/java/org/nzbhydra/web/MainWeb.java`) is dead server code.** It invalidates the session,
   answers 401 with a `WWW-Authenticate: Basic` challenge, and clears the `remember-me`/`JSESSIONID` cookies — the standard trick
   for making a browser drop cached BASIC credentials. Nothing has ever called it: a case-insensitive sweep of `core/ui-src`
   finds only AngularJS `user:loggedOut` *events*, and `core/ui-react` never references it either. Found 2026-08-23 while ruling
   on `F-AUTH-LOGIN`'s BASIC-logout gap, which FM-093 now records as a permanent shared limitation on that evidence. Removing it
   is backend cleanup outside FM governance (ADR-0001 scopes FM to the frontend), and it is only worth doing deliberately: its
   cookie clearing sets `setSecure(true)`, so it would be inert over plain HTTP anyway, and any future attempt to actually end a
-  BASIC session would want to start from this endpoint rather than rediscover it.
+  BASIC session would want to start from this endpoint rather than rediscover it. **Decision to settle:** delete it, or keep it
+  as the starting point for a future BASIC-logout capability. **Checked 2026-08-27:** still present, now at `MainWeb.java:83`
+  (the entry originally cited `:92`).
+
+### Recorded, not routable
+
+Kept because the evidence is worth having, but not actionable as work: each is either a note about an artefact that no longer
+exists, or a finding whose only content is "this is fine, and here is why". Do not route these; do not delete them either.
+
+- **FM-108's handoff cites the wrong precedent lines for its two `eslint-disable-next-line` comments.** The report
+  justifies the disables on `HISTORY_FILTER_KINDS` (`api/history/filters.ts`) and `searchFormSchema`
+  (`features/search/workspace/SearchWorkspace.tsx`) by pointing at `features/stats/dashboard/StatsDashboardPage.tsx:130,312`
+  as existing convention, but those two lines actually carry `react-hooks/exhaustive-deps` and
+  `@typescript-eslint/no-explicit-any` disables — not `no-unused-vars`. The disables themselves are correct and
+  necessary: FM-108's reviewer built an eslint `--stdin` repro and confirmed `@typescript-eslint/no-unused-vars`
+  fires as an *error* on a `const` read only through `typeof`, and the line-scoped `-- <reason>` style does match
+  project convention. Nothing to change in code; the citation is simply wrong in a report that is now only in git
+  history. Surfaced 2026-08-24 by FM-108's reviewer.
+- **A stale count in FM-106's packet, worth knowing if the `RepeatSection` opt-in is ever reconsidered.** Its
+  Verification section prices the opt-in branch as affecting "other four consumers". There is exactly **one**:
+  `features/config/categories/CategoriesConfigTab.tsx:83`. Every other hit in `src` is a prose comment explaining why
+  that file owns its list locally instead — `AuthUsersSection`, `DownloadersSection`, `ExternalToolsSection`,
+  `CustomMappingsSection`, and now `NotificationEntriesSection`. The six-spec verification filter written for that
+  branch was a conservative superset. Moot for FM-106, which took the local branch, but the sentence would misprice the
+  next task that considers opting in. Surfaced 2026-08-26 by FM-106's implementer, confirmed by its reviewer. Not
+  routable: the packet was deleted on completion, so there is no file to correct — and the `RepeatSection` deletion
+  item above would retire the question entirely.
+- **FM-105's stale-transaction token guard is unreachable and untested.** Deleting the guard at
+  `AuthUsersSection.tsx:136-138` leaves all 48 tests green. Unlike `DownloadersSection`, whose equivalent guard is
+  reachable through its async connection check, `UserDialog` has no async step and both dialogs are modal, so no UI
+  path can produce a stale commit. Correct defence-in-depth and honestly documented at the site — logged only so the
+  coverage asymmetry with `DownloadersSection` is not later mistaken for parity. Surfaced 2026-08-26 by FM-105's
+  reviewer.
+- **The `setCategories` sort is also the evidence that nothing in the categories config is order-dependent.**
+  It sorts by name on every write, and `withoutAll()` filters by equality rather than position, so any order an admin
+  arranged is discarded on write-back. That is a stronger justification for FM-107's "do not invent reordering" note
+  than the packet's original "legacy has none", and worth carrying into the packet if reordering is ever reconsidered.
+  (The same sort is the cause of the blank-category NPE packet at the top of this section.) Surfaced 2026-08-26.
+
+### Discharged
+
+Struck-through candidates are kept verbatim as a record of what was closed and how. Collected here 2026-08-27 by the triage pass;
+their text and relative order are unchanged.
+
 - ~~**`shell-selector.spec.ts` has been failing since FM-077 and can no longer be repaired by repointing it.** Its one test deep-links
   to `/system/tasks`, asserts `system-tasks-table` is visible (the *real* Tasks body), and then clicks
   `getByRole("link", {name: "Switch to legacy UI"})` — but that link is rendered only by `MigrationPlaceholder`
@@ -1005,55 +1569,12 @@ instead of leaving it to rot.
   (a font-load ref-staleness race) was wrong: it's a permanent size mismatch between the notch legend and the
   visible label, present even with the web font fully loaded, fixed app-wide in `theme.ts` (task packet deleted on
   completion per convention; see git history and `STATUS.md`).
-- **`ConfigFieldset.tsx`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
-  space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
-  `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
-  observed breaking anything, but FM-060 (Auth), FM-065 (External Tools), and others plan multi-word fieldset labels.
-  Surfaced by a `migration-task-designer` while documenting `C-CONFIG-FIELDS`'s testid convention, 2026-08-20. Fixing it
-  is a `data-testid` value change on a shipped component (`config-fieldset-<label>` -> presumably a slugified form), so
-  it needs an explicit `/fm-orchestrate` call, not a quickfix — check whether any test already asserts the exact
-  space-containing string before choosing a replacement scheme.
-- **`config-input-<path>` lands on the MUI root element for `SwitchSetting`/`SelectSetting` rather than the actual
-  editable control**, unlike the other seven control kinds where it lands on the native `<input>`. Flagged by FM-059's
-  independent reviewer as harmless today (both component and system tests already reach those two controls by role, not
-  by this testid), but the inconsistency is a convention seven more config tabs will otherwise copy. Left open rather
-  than fixed alongside the aria-describedby entry above: relocating an existing `data-testid` to a different DOM node is
-  arguably a selector-contract change even though the id string itself is unchanged, which the quickfix gate excludes;
-  worth an explicit `/fm-orchestrate` call on whether to move it or declare the root-element placement the intended
-  convention.
 - ~~**Persist whether the search workspace's "Advanced" panel is collapsed or expanded** (`core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `advancedOpen` state). Requested alongside the 2026-08-19 UX polish above but
   refused at the qualification gate: this ledger's own header excludes persisted-data changes, and remembering the panel's state across page loads is a new user-observable capability, not styling or a contained bugfix. Needs a task
   packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.~~
   Discharged 2026-08-23 by the FM-087 packet, which shipped exactly this (`nzbhydra.search.advancedOpen` in `localStorage`, guarded reads).
-- **`focus-indication.spec.ts`'s anchor-family test fails on a fresh datafolder because FM-079's startup `NewsDialog`
-  duplicates the mocked news anchor** (`tests/system/tests/focus-indication.spec.ts:1047`, `core/ui-react/src/app/status/NewsDialog.tsx`). The test mocks `/internalapi/news**` with a `forCurrentVersion: true` entry and locates
-  `a[href='https://example.invalid/fm053']` strictly; on a datafolder where that news is unseen, the startup dialog (a portal outside `system-shell`, added by FM-079 after the test was written for FM-053) renders the same
-  server-authored HTML as the news page, so the locator resolves to two elements. Deterministic on `--runtime local` runs (fresh datafolder), invisible against long-lived IntelliJ services (news already marked shown). Surfaced
-  2026-08-23 while gating the visual-language quickfix above, which could not have caused it (theme-only diff). Fix belongs in the test — dismiss or await the dialog before probing, or scope the locator — contained enough for a
-  quickfix.
 - ~~**The refine sidebar's `downloadTypes` selection has the same cross-search staleness as `indexers`/`categories` did.**~~
   Discharged the same day by the 2026-08-19 download-type entry above (`27efd28f5`).
-- **Download-history and notification-history tables squeeze columns instead of scrolling at 390x844**, wrapping cell text
-  (e.g. "Syst / em", "Inde / xer") rather than letting `TableContainer` scroll horizontally. Flagged by the FM-023 reviewer;
-  affects `DownloadHistoryPage.tsx` and `NotificationHistoryPage.tsx` identically, likely `SearchHistoryPage.tsx` too (not
-  confirmed). Left off this session's quickfix because it needs a real layout decision (a `minWidth` on `Table` forcing
-  container scroll vs. a narrower mobile column set) rather than a mechanical swap, and should be checked and fixed across
-  all three history routes together with a fresh 390x844 screenshot strip for each.
-- **`SearchHistoryPage.tsx`'s local `SortHeader` has the same missing-sort-indicator gap** the entry above just fixed in the
-  other two history routes (identical copy-pasted `<Button>`-in-`<TableCell>` pattern, not a shared component). Not named by
-  the FM-023 review so left untouched here; discharging it would be the same `TableSortLabel` swap, contained to that one
-  file.
-- **`focus-indication.spec.ts`'s "authored ring on the results surfaces" test mislabels its downloader-select focus-ring
-  capture** (`page.getByTestId("results-bulk-actions").locator(".MuiInputBase-root").first()`, named `downloader-select`
-  in its screenshot path and evidence, around line 884): its fixture (`hydra.configureSabnzbdMock()`) configures exactly
-  one downloader, so since `bdae1e73a` (2026-08-23) that select is hidden and `.first()` now actually resolves to the
-  *category* select instead. The test still passes -- `expectFocusedOutlinedInput` only checks generic notched-outline
-  CSS, and `tabTo` walks Tab presses dynamically until the target locator itself gains focus, so nothing is
-  content-sensitive -- but the captured `keyboard-focus-downloader-select-desktop` evidence and the assertion's own
-  name now describe the wrong control. Not a failure, so left as a candidate rather than fixed inline while chasing
-  FM-088; the fix is either pointing the locator at `.last()` (the category select, and renaming accordingly) or
-  switching the fixture to configure two downloaders so the downloader select is actually present again. Surfaced
-  2026-08-23 while investigating the `results.spec.ts` regression above.
 - ~~**`tests/system/tests/search.spec.ts:411` asserts the search submit button's height is `>= 36px`**, which is now
   false: `c3bb56318` (2026-08-23, an independent concurrent session's visual-language unification) set every
   `MuiButton` to the app's new `controlHeight = 32`. Confirmed pre-existing and unrelated to FM-090 (reproduces
@@ -1068,22 +1589,6 @@ instead of leaving it to rot.
   authored on `MuiInputBase`, which `OutlinedInput`'s own `input` slot outranks, so every text field's focusable
   element overflowed its visible border). Both the defect and the assertion are fixed; `search.spec.ts` and
   `results.spec.ts` pass in full (48/48) against a freshly built real backend.
-- **The FM-090 notch/label-overlap fix closes the gap by shrinking every input label app-wide** (effective 12px ->
-  10.5px) rather than by widening the notch legend instead. Mechanically correct and owner-approved via a
-  before/after screenshot strip, but the alternative shape (sizing the legend up in `MuiOutlinedInput` rather than
-  the label down in `MuiInputLabel`) was never attempted or compared. Not a defect -- nothing to discharge -- just a
-  design-space note in case the label-size reduction turns out to read too small in practice once seen across more
-  of the app than the two fields FM-090 measured. Surfaced 2026-08-23 by FM-090's reviewer.
-
-- **FM-108's handoff cites the wrong precedent lines for its two `eslint-disable-next-line` comments.** The report
-  justifies the disables on `HISTORY_FILTER_KINDS` (`api/history/filters.ts`) and `searchFormSchema`
-  (`features/search/workspace/SearchWorkspace.tsx`) by pointing at `features/stats/dashboard/StatsDashboardPage.tsx:130,312`
-  as existing convention, but those two lines actually carry `react-hooks/exhaustive-deps` and
-  `@typescript-eslint/no-explicit-any` disables — not `no-unused-vars`. The disables themselves are correct and
-  necessary: FM-108's reviewer built an eslint `--stdin` repro and confirmed `@typescript-eslint/no-unused-vars`
-  fires as an *error* on a `const` read only through `typeof`, and the line-scoped `-- <reason>` style does match
-  project convention. Nothing to change in code; the citation is simply wrong in a report that is now only in git
-  history. Surfaced 2026-08-24 by FM-108's reviewer.
 - ~~**FM-108's handoff was reported to the coordinator rather than written to `templates/handoff.md`**, as that
   packet's Handoff/Review section directs. Worth deciding once whether the template file is genuinely required per
   task or whether a reported handoff satisfies it. Surfaced 2026-08-24 by FM-108's reviewer.~~
@@ -1092,289 +1597,6 @@ instead of leaving it to rot.
   exposed the right reading — "fills `../templates/handoff.md`" means fill out the form it defines, which is what
   FM-108 did. The template was restored and ADR-0026 settles it: handoffs are reported, their substance carried into
   `STATUS.md` and the commit message, and the templates stay blank forms.
-
-- **`SearchResults.test.tsx:38-40` explains jsdom's storage behavior in terms of a symbol FM-109 deleted.** The
-  comment still says "`getStorage()`'s `window.localStorage` access in SearchResults.tsx resolves to `undefined` …
-  so `getStorage()?.setItem(...)` silently no-ops". The mechanism it describes remains correct — the write is simply
-  routed through `writeItem` now — but `getStorage()` no longer exists. FM-109's packet permitted test-file edits
-  only for import lines and stub retargeting, so leaving it was the correct call under contract; it is doc drift, not
-  a behavior gap. Surfaced 2026-08-24 by FM-109's reviewer. Now doubly stale after FM-111: the read side it describes
-  moved out of `SearchResults.tsx` into `storedChoices.ts`. Folding this into either FM-111 candidate below closes it.
-- **`showsUsername`/`showsIp` are duplicated between `SearchHistoryPage.tsx` and `DownloadHistoryPage.tsx`.** FM-110
-  unified four other copy-pasted shapes in the same files but deliberately left these two alone: its packet enumerates
-  exactly what to unify and does not name them, and opportunistic scope creep in a behavior-preserving batch is worse
-  than a leftover duplicate. Both the implementer and the reviewer independently reached that conclusion, so this is a
-  future consolidation candidate rather than a gap in FM-110. Small and low-risk — two call sites, and
-  `features/stats/shared/` now exists as the obvious home — so it suits a single-session fix rather than a packet.
-  Surfaced 2026-08-24 by FM-110's implementer, endorsed by its reviewer.
-- **`validate:focus-affordances` has been red since the FM-092/FM-096 indexer-colour work, on five false positives.**
-  This matters beyond one task: the gate sits in several packets' Verification chains, so every future implementer
-  will meet a failing required command it did not cause. ADR-0014's colour-literal check
-  (`core/ui-react/scripts/validate-focus-affordances.mjs:218`) matches `rgb(`/`rgba(` inside comments, test titles,
-  and runtime colour fixtures. It flags `ColorSetting.tsx:46` (a JSDoc line documenting `hexToRgb`),
-  `ColorSetting.test.tsx:50` and `resultTable.test.ts:431` (test *titles* containing the words), `SearchResults.test.tsx:1611`
-  (the fixture `color: "rgb(200,50,10)"`, an indexer-config value, not a design token), and `IndexersConfigTab.test.tsx:565`
-  (which resolves to `const api = backend();` — an offset/block-scan defect on top of the substring one). None is a
-  design literal in feature code. Repair by narrowing the matcher to exclude comments, string test titles, and
-  `*.test.*` fixture values — **not** by adding entries to the script's pre-ADR-0014 exemption list at `:112`, which
-  would weaken a real gate to hide a matcher bug. FM-111's implementer had exactly that cheap workaround available
-  inside a file it was not allowed to touch, and correctly reported the failure instead. Surfaced 2026-08-24 by
-  FM-111, independently confirmed byte-identical at base by its reviewer via a pristine `git archive` tree.
-- **Teardown race in `core/ui-react/src/components/dialogs/DialogProvider.test.tsx`.** Roughly 1 run in 10 of
-  `npm run test -- --run` exits 1 on two unhandled `ReferenceError: window is not defined` from a react-dom scheduler
-  callback firing after that file's jsdom environment is torn down — while every test still reports passing
-  (1149/1149). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
-  confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
-  there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
-- **The `tests/system` visual-evidence captures are not bit-reproducible run to run.** Across identical trees, 4 of
-  335 PNGs differ, and the differing set changes membership between runs — FM-112 saw
-  `fluid-table-title-collapse-desktop.png` and `fm055-mobile-refine-drawer.png` swap places between two runs of the
-  same tree. The one in-scope shot was chased to ground: 24 differing pixels of 260,592 (0.0092%), all isolated
-  single pixels on rounded-corner antialiasing of TextField outlines, no edge displaced — and a second base run then
-  matched the after-runs byte-for-byte, showing the first base run was the outlier. This is renderer nondeterminism,
-  not a code signal, but it costs every implementer in a code-motion batch an extra base run to disambiguate a
-  "changed" screenshot. Logged here so future reviewers do not re-chase it. A small pixel tolerance, or pinning
-  fonts/antialiasing via a launch flag, would close it; the shared `prepareVisualEvidence` helper behind
-  `tests/system/tests/search.spec.ts` and `results.spec.ts` is the place. Surfaced 2026-08-24 by FM-112, endorsed by
-  its reviewer.
-- **The six sibling specs' drawer-open probe is a bare `await navOpen.isVisible()` with no auto-retry.** If the shell
-  has not painted when the helper runs, the mobile path is silently skipped and the subsequent `setChecked` times
-  out rather than opening the drawer. Fails loudly, so it cannot mask a regression, and each helper's first line
-  already runs after an `openXConfig` wait, which is why it is stable today — but it is a flake surface across six
-  specs (`config-main.spec.ts:26` and the same pattern in `config-categories`, `config-downloading`,
-  `config-searching`, `config-indexers`, `external-tools`). A short retry-until-visible would close it. Surfaced
-  2026-08-24 by FM-097's reviewer.
-- **`ColorSetting.tsx:46` legitimately needs the literal string `rgb(`** because legacy persists colours in that
-  format — so `validate:focus-affordances`'s five-finding false-positive set (tracked above since FM-111) includes
-  at least one site where the fix cannot be "remove the literal", only "teach the matcher this is data". Keeps a
-  required gate red for every task touching `features/config/indexers/`. Surfaced 2026-08-24 by FM-097's reviewer,
-  confirming FM-111's and FM-112's reports.
-- **`F-CONFIG-SHELL.gaps` is still `[]` although FM-097 deliberately dropped a legacy signal.** Save's pristine/dirty
-  colour switch (legacy `config.html:21`, old `ConfigShell.tsx:250`) is gone, replaced by the save bar's worded
-  summary and a Discard button that exists only while dirty — a better signal, and one that satisfies ADR-0014's
-  colour-is-never-sole-carrier rule where the hue did not. The deviation is justified at the site in
-  `ConfigSaveBar.tsx` and recorded in `COMPONENTS.yaml`'s `C-CONFIG-FORM`, and FM-097's packet only required it in
-  the handoff — but `gaps` is where a future parity reader looks, and there it is invisible. Add a one-line
-  `deliberate - ...` entry at `FEATURES.yaml:436`. Surfaced 2026-08-24 by FM-097's reviewer.
-- **The config nav's mobile `Drawer` has no visible close affordance.** It dismisses only via Escape, a backdrop tap,
-  or choosing a section, whereas `RefineSidebar.tsx:414` — the idiom FM-097's packet names as its model — ships a
-  `CloseIcon` button in its drawer header. `config-nav-open` also only opens, so it is not literally the "toggleable"
-  control the Acceptance wording describes. The gap is discoverable dismissal on touch, where Escape is unavailable
-  and a backdrop tap is undiscoverable. `ConfigNav.tsx:144-184`. Surfaced 2026-08-24 by FM-097's reviewer.
-- **`ConfigNav.tsx:88-93`'s `minHeight: 44` is an unexplained magnitude.** The comment justifies overriding MUI's
-  vertical-`Tab` default but not the number, which sits next to the app-wide `controlHeight = 32` token
-  (`theme.ts:192`) established by the 2026-08-23 height unification. 44 is defensible on its own terms as a touch
-  target, but the ledger entry for that unification is explicit that unstated heights are exactly how the app
-  accumulated ten of them. Either derive it from a token or say at the site why a nav row is not a control.
-  Surfaced 2026-08-24 by FM-097's reviewer.
-- **`features/config/notifications` unit tests can fail under parallel load.** FM-097's reviewer saw two failures at
-  `expect(harness.form.formState.isDirty).toBe(false)` in a run that compressed 244s of aggregated test time into 24s
-  wall; the immediate re-run was 1175/1175 green and three isolated runs of that directory were 26/26. Reads as a
-  timeout under contention rather than a regression, and the file is untouched by FM-097. Recorded so the next
-  implementer meets it as a known shape rather than a mystery. Surfaced 2026-08-24.
-- **Advanced rows inside the Downloading and External Tools dialogs register with the fieldset behind the modal.**
-  React context crosses portals, so the 3 advanced `SettingRow`s in `DownloaderDialog` and the 11 in
-  `ExternalToolDialog` are descendants of `<ConfigFieldset label="Downloaders">` / `<ConfigFieldset label="External
-  tools">` (`DownloadersSection.tsx:185`, `ExternalToolsSection.tsx:256`) and count toward them. With the advanced
-  toggle off, opening either dialog makes a spurious "3 advanced settings hidden" / "11 advanced settings hidden"
-  expander appear *behind* the modal backdrop, vanishing on close. No value or reveal impact — both host fieldsets own
-  zero advanced rows of their own, so the expander is never clickable — but FM-098's claim that dialog bodies are
-  unaffected holds only for `IndexerDialog`, which is rendered outside its fieldset (`IndexersConfigTab.tsx:328`
-  closes before `:354`). Fix: wrap the two dialog bodies in `AdvancedDisclosureContext.Provider
-  value={NO_ADVANCED_DISCLOSURE}`. Surfaced 2026-08-26 by FM-098's reviewer, which checked all three dialogs rather
-  than accepting the claim.
-- **FM-098's recorded disclosure boundary omits a third case: `CustomMappingsSection`.** `COMPONENTS.yaml`'s
-  `C-CONFIG-FIELDS` note says only an advanced `HelpBlock` and an advanced row outside any fieldset stay hidden. But
-  `searching/CustomMappingsSection.tsx:78-79` self-gates with its own `if (!showAdvanced) return null` and sits
-  outside every fieldset (`SearchingConfigTab.tsx:268`), so a whole *editable section* of Searching — not prose —
-  still vanishes with no expander announcing it. FM-098's allowlist excluded tab files, so this was correctly out of
-  scope; the ledger item is the note's accuracy, and the underlying disclosure gap belongs in a future packet's
-  design. Surfaced 2026-08-26 by FM-098's reviewer.
-- **Two FM-098 spacing magnitudes are correct but unannotated.** `ConfigFieldset.tsx`'s `mb: 2.5` on the expander is
-  exactly `SettingRow`'s row rhythm and its `pt: 1` on the collapsed advanced-fieldset wrapper is exactly the
-  fieldset Box's own `pt`, so both keep the layout from shifting on expand — but neither carries the at-site note
-  tying it to its neighbour. Same treatment as FM-097's `minHeight: 44` above, logged for consistency. Surfaced
-  2026-08-26 by FM-098's reviewer.
-- **`SettingRow.tsx:85`'s chip guard carries a dead conjunct.** It reads `advanced === true && hiddenByToggle`, but
-  `hiddenByToggle` is defined as `advanced === true && !showAdvanced`, so the first half can never independently be
-  false. Harmless today; it invites a future reader to believe the two conditions are independent and to "fix" one of
-  them. `hiddenByToggle` alone is the whole condition. Surfaced 2026-08-26 by FM-098's re-review.
-- **`main-validation-error-{desktop,mobile}.png` no longer frame the error they are evidence of.**
-  `config-main.spec.ts:365-372` calls `scrollIntoViewIfNeeded()`, which since FM-097 puts the Host field under the
-  sticky save bar, so the red `config-error-main-host` text sits off-frame in both captures. The assertion itself
-  still passes, so the spec is honest — it is the *evidence* that stopped showing the thing. Pre-existing framing
-  rather than an FM-098 change, but FM-098 owns the current bytes. Surfaced 2026-08-26 by FM-098's reviewer.
-- **A settings-search reveal request is never retired, so a fieldset re-reveals itself on remount.**
-  `useSettingsNavigation.tsx:178` bumps the token but nothing clears it once honoured, so a fieldset that unmounts and
-  remounts while the last request still names it opens again on its own: search to "Indexer access" on Searching,
-  navigate away by hand, come back, and it is expanded again. Harmless — nothing is lost and no stored preference
-  changes — but not intended, and the same applies to the auth-type-gated fieldsets. Retiring the request once
-  honoured, or matching on a request id the fieldset records, would close it. Surfaced 2026-08-26 by FM-099's
-  re-review.
-- **The cross-tab reveal into a wholly advanced fieldset has no visual capture.** FM-099's strip captures the
-  per-fieldset-expander shape only. The other FM-098 gate shape — a fieldset that was not on the page at all, opened
-  by search, with the highlight painted inside a settling `Collapse` — is now headline behaviour and is asserted in
-  two harnesses but never seen. It is also the shape whose defect (cross-tab reveal silently doing nothing) survived a
-  green suite precisely because no test crossed tabs. One shot at `config.spec.ts:375` would close it. Surfaced
-  2026-08-26 by FM-099's re-review.
-- **`SettingHighlight` trips `react-refresh/only-export-components`.** `useSettingsNavigation.tsx:178` exports a
-  component from a module that also exports the `useSettingsNavigation` hook, taking the tree from 13 lint warnings to
-  14. Zero errors, and consistent with several pre-existing peers, so it was left. Splitting the component into its own
-  module would close it. Note FM-099's handoff claimed "none in touched files", which was inaccurate — the warning is
-  in a task-owned file. Surfaced 2026-08-26 by FM-099's reviewer.
-- **One of FM-099's 48 `conditional` index entries is never rendered by any drift-test fixture.**
-  `settingsIndex.ts:897`'s `downloading.primaryDownloader` renders under no fixture, so neither drift direction nor the
-  `advanced`/`fieldset` column checks ever touch it. FM-099's reviewer hand-verified it correct today (not advanced,
-  inside `General`, label and help verbatim against `DownloadingConfigTab.tsx:124-135`), but nothing would catch it
-  drifting. Either a `should render every conditional entry under at least one fixture` guard, or a Downloading
-  alternative fixture with `showDownloaderStatus` and two downloaders, would close it. Surfaced 2026-08-26 by FM-099's
-  reviewer.
-- **Proposed packet, not a quickfix — settings search offers rows whose render condition is unmet.**
-  `settingsSearchMatching.ts:38` matches the whole index, so with SSL off the results still offer "SSL keystore file"
-  and "SSL keystore password" (visible in `search-results-desktop.png`). Picking one routes to the tab and then
-  silently no-ops until `ANCHOR_DEADLINE_MS` expires, with no feedback. The timeout is deliberate and documented at
-  `useSettingsNavigation.tsx:24-29`, and FM-099's packet neither required nor forbade this. Choosing between hiding
-  such hits, marking them as unavailable, or explaining the no-op is a product decision rather than a mechanical fix,
-  so it wants a packet and an owner ruling. Surfaced 2026-08-26 by FM-099's reviewer.
-- **FM-100's review panel keys a whole list positionally when any single entry is unkeyed.** `reviewChangesDiff.ts`'s
-  `listKeys` returns `null` for the entire list if one entry lacks a `name`/`username` or repeats one, whereas the
-  backend (`SensitiveDataConfigValidator.findCorrespondingOldItem`) keys each entry independently. Removing a named
-  indexer while a freshly added blank row is present therefore makes the panel report N spurious "edited entry K" rows
-  instead of "X removed / entry N added". Display-only — no leak, and the save itself is unaffected — but it
-  misdescribes the change in the one place the admin looks before committing. Surfaced 2026-08-26 by FM-100's reviewer.
-- **`null` and `""` both render as `(empty)` in the review panel, so a row can show no visible change.**
-  `reviewChangesDiff.ts:151` maps both to the same text while `isDeepEqual(null, "")` is false, so the row survives the
-  value-equal filter and displays `(empty)` → `(empty)` on desktop, or a bare `(empty)` on mobile where the prefix is
-  suppressed when both sides match — with nothing saying what changed. Plausible whenever RHF turns an unset optional
-  string default into `""`. Surfaced 2026-08-26 by FM-100's re-review.
-- **FM-100's summary button is the only entrance to the review panel but looks like static text.** No underline, no
-  button chrome, `color: "text.secondary"` — visually unchanged from FM-097's `Typography` by design, at the cost of
-  discoverability for the feature it now gates. That `sx` override also carries no at-site justification comment, which
-  `AGENTS.md` *UI Conventions* requires at every deviation from stock MUI. Surfaced 2026-08-26 by FM-100's reviewer.
-- **The review panel's entry-row status reads as if it were the old value.** An array entry renders `edited` in a
-  `colSpan={2}` cell that starts under the "Previously" header, so `Indexers: Mock1 · edited` scans as "Mock1 was
-  edited before". `align="right"` or a leading em-dash would disambiguate. Visible in `review-changes-desktop.png`.
-  Surfaced 2026-08-26 by FM-100's reviewer.
-- **The sticky bar counts dirty leaves while the review panel counts rows.** Editing five fields of one indexer reads
-  "5 settings changed" on the bar and opens a panel with a single row. Both are contract-driven — FM-100's packet
-  fences the summary text verbatim and specifies one row per list entry — so this is a recorded consequence rather than
-  a defect, logged so it is a decision someone made rather than a surprise someone finds. Surfaced 2026-08-26 by
-  FM-100's reviewer.
-- **Two hardening gaps in the review panel, neither reachable today.** `reviewValueText` falls through to
-  `JSON.stringify` for a dirty leaf whose value is a plain object, and `isHiddenSetting` tests only the path, never the
-  object's keys — so that is the one place a secret could reach the screen without any of the three masking layers
-  firing. No reachable path exists today (RHF recurses into objects, and arrays of records are intercepted earlier by
-  the dispatch on value shape). Separately, no test pins the post-save re-baseline — that a second round of edits diffs
-  against the newly saved config rather than the initial fetch — which is correct by construction via
-  `form.formState.defaultValues` but was flagged as a trap by the packet. Surfaced 2026-08-26 by FM-100's reviewer.
-- **`STATUS.md` section entries must start exactly `- FM-NNN:` or the validator cannot see them.**
-  `validate-migration.mjs:163` extracts task ids with `/^- (FM-\d{3}):/`, so a perfectly readable entry like
-  `- FM-101 (Save Feedback Banner): in progress` is invisible to it, and the task is reported "absent from STATUS.md
-  Active" while sitting plainly in that section — a confusing error that points at the wrong problem. This has now cost
-  time twice in one batch: once when a coordinator wrote `- FM-112 closes the cleanup batch` in Upcoming, and once when
-  an implementer wrote the parenthetical form above in Active. Both are natural prose. Either loosen the regex to
-  accept `- FM-NNN` followed by any delimiter, or make the error message say what shape it expected — the second is
-  probably worth more than the first, since the current message actively misleads. Surfaced 2026-08-26.
-- **No toast is in the accessibility tree while any MUI modal is open — application-wide, pre-existing, WCAG 4.1.3.**
-  `@mui/material/Snackbar` contains no `Portal` (verify with `grep -c Portal node_modules/@mui/material/Snackbar/Snackbar.js`
-  → 0), and `ToastProvider` renders it in-tree at `App.tsx:48`, so it is one of the `container.children` that MUI's
-  `ariaHiddenSiblings` marks `aria-hidden` when a modal opens. Every toast raised while a dialog is up is therefore
-  announced to nobody. It hits hardest where a toast is raised *from inside* its own dialog, which is always the broken
-  state: `ExternalToolDialog.tsx:225`, `DownloaderDialog.tsx:190`, `IndexerDialog.tsx:382`.
-  **Record both halves of this or the fix will be half-done.** Toasts are already *clickable* today — the `Snackbar` is
-  `position: fixed` at `zIndex.snackbar` 1400 against the modal's 1300 — so the current defect is announcement-only,
-  which is exactly why it survived visual review. Wrapping the toast layer in a `Portal` fixes the `aria-hidden` half
-  and leaves the second: a modal's `FocusTrap` owns focus regardless of DOM position, so a portalled toast is announced
-  but still untabbable. A complete fix needs the focus story too. Surfaced 2026-08-26 by FM-101's fixer, which found it
-  by probing the ancestor chain after its reviewer suggested a toast as the remedy; confirmed and extended by FM-101's
-  re-review.
-- **FM-101's raised error report is announced and clickable over the review panel, but not keyboard-focusable.**
-  `ConfigShell.tsx:379-438` portals the report above FM-100's modal panel, which fixes the `aria-hidden` half — but
-  MUI's `FocusTrap` steals focus straight back into the dialog: focusing the raised Alert's Close button leaves
-  `document.activeElement` as `DIV.MuiDialog-container`. Measured by FM-101's re-review, not inferred. Not a regression
-  (the toast it replaced was equally untabbable, and the acknowledge dialog it replaced carried no actionable entry),
-  and a keyboard user can Escape the panel and use the in-place banner. But the comment at `ConfigShell.tsx:384-386`
-  claims the entries "could be neither announced nor clicked" and now can, which overstates what was fixed — the
-  reachability tests assert `aria-hidden` ancestry only, so they are green on a claim they establish half of. The fix
-  is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes focus enforcement), so
-  this is packet-shaped rather than a quickfix. Surfaced 2026-08-26 by FM-101's re-review.
-- **Two comments in `ConfigFeedbackBanner.tsx` describe a mechanism the same diff disproves.** `:39` and `:104-105`
-  state that the `"filled"` surface *is* the toast surface `C-TOAST-SERVICE` renders on, and that the shell "relocates
-  this exact markup onto the toast surface". Both are false, and directly contradicted by `ConfigShell.tsx:390-394` in
-  the same change ("It is a `Portal` and not a toast because `Snackbar` does not portal"). A future reader is told the
-  report rides the toast service; it does not. Surfaced 2026-08-26 by FM-101's re-review.
-- **"Is there an error report?" is computed twice by different means in FM-101.** The shell uses
-  `errorMessages.length > 0 || refusedBySelf` (`ConfigShell.tsx:167-170`); the banner uses
-  `collectInvalidFields(...).length > 0` (`ConfigFeedbackBanner.tsx:82-93`). The shared-markup extraction unified the
-  rendering but not this predicate, and the reason it was not unified is a `react-refresh/only-export-components`
-  warning whose own message prescribes the remedy: put `hasConfigErrorReport` in a small non-component module and use
-  it in both places. If the two ever disagree the portal renders an error `Alert` with a `null` body — a bare close
-  button floating over the modal. Unreachable today, since fields cannot be edited while the panel is modal. Surfaced
-  2026-08-26 by FM-101's re-review.
-- **FM-101's `ConfigShell.tsx:384-386` comment credits JSX sibling order for something it does not cause.** It explains
-  the portal-versus-modal ordering as working "because the panel is the earlier JSX sibling". The re-review read MUI's
-  `Portal.js` and `ModalManager.js` and established the real mechanism: `Portal` inserts on the render pass *after* its
-  layout effect, while `ariaHiddenSiblings` snapshots `container.children` inside `useModal`'s passive effect of the
-  first pass — and MUI's own `Modal` goes through the same two-pass `Portal`, so `add()` always runs while neither
-  subtree is mounted. Order is irrelevant, and the reviewer proved it by moving the whole `Portal` block above
-  `<ReviewChangesPanel>` in a sandbox copy and getting 50/50 green. Harmless today, but the comment invites a future
-  maintainer to preserve an ordering that does nothing — and hides the dependency that is real: a *second* modal
-  opening while the raised layer is already mounted would snapshot it as a body sibling and hide it. Surfaced
-  2026-08-26 by FM-101's re-review.
-- **FM-102's anchor list renders `<button>` as a direct child of `<ul>`.** `ConfigNav.tsx:181-217` uses
-  `ListItemButton component="button"` inside a `List`, so the DOM is `ul > button` with no `li` — an invalid content
-  model that yields a `list` with zero `listitem`s, so assistive tech announces no item count for the "on this page"
-  list. Stock MUI nav anatomy is `List > ListItem disablePadding > ListItemButton`. Verified by DOM probe, not
-  inferred. Surfaced 2026-08-26 by FM-102's re-review.
-- **FM-102's short-tab scrollspy guard has no test.** The fix for the document-end fallback firing at scroll 0 added a
-  `scrollHeight > clientHeight` check, but no case asserts that on a short tab (Downloading, Notifications, External
-  Tools, Authorization — all of which fit a 1280x800 viewport with advanced off) the *first* anchor rather than the
-  last is current at rest. The guard is correct by inspection; nothing would catch its removal. Surfaced 2026-08-26 by
-  FM-102's re-review.
-- **`ConfigNav.tsx`'s current-anchor magnitudes and activation fraction are unannotated or half-annotated.**
-  `borderLeft: "3px solid"`, `pl: 1.5` and `py: 0.25` (`:193-200`) carry no justification comment, which *UI
-  Conventions* requires at every deviation from stock MUI; and `:418`'s `0.3` viewport fraction justifies *why a
-  fraction* ("keeps the same behaviour across viewport heights") but never why one third. Same class as FM-097's
-  `minHeight: 44` and FM-098's spacing values above — this is now the fourth task to collect it, which suggests the
-  convention wants a lint rule or a template line rather than another ledger entry. Surfaced 2026-08-26 by FM-102's
-  reviews.
-- **FM-102 nests two navigation landmarks.** The anchor list is a `Box component="nav"` inside the nav column's own
-  `component="nav"` (`ConfigNav.tsx:162`), so a screen-reader rotor lists "Configuration sections" containing "Main on
-  this page". Valid HTML, but a labelled region inside the outer landmark would read better. Also `useScrollspy`
-  (`:456-465`) listens for `scroll` only, so a viewport resize changes the activation line without recomputing the
-  marker until the next scroll. Surfaced 2026-08-26 by FM-102's reviews.
-- **The unit suite failed once in thirteen consecutive runs, unidentified.** FM-102's re-reviewer saw
-  `1 failed | 1307 passed` on a cold-cache first run and green 1308/1308 on the twelve that followed, without
-  capturing the failing test's name. Not attributable to FM-102 on the available evidence. Note the separately-logged
-  `DialogProvider.test.tsx` teardown race (roughly 1 run in 10) and the `features/config/notifications` timeout under
-  parallel load are both plausible candidates — a suite that fails once in thirteen for unknown reasons is worth
-  identifying before it trains people to re-run. Surfaced 2026-08-26.
-- **`UpdateFooterBanners.tsx:93` measures a different box than its own initial measurement — a latent trap, not a live
-  bug.** The initial read uses `getBoundingClientRect().height` while the `ResizeObserver` callback uses
-  `entry.contentRect.height`, so the two paths measure border box and content box respectively. FM-102's fixer hit
-  exactly this pattern in its own new `useSaveBarHeight` — the padded save bar measured ~24px short and the sticky
-  column painted over the first tab entry — and flagged the sibling occurrence. FM-102's re-review checked before
-  agreeing: the observed `Box` at `:105` sets only `bottom`/`left`/`right`/`position`/`zIndex`, no padding or border,
-  so its two boxes are the same height today and the footer offset is correct. It becomes a real bug the moment anyone
-  adds padding or a border to that container. Fix is one line for uniformity. Surfaced 2026-08-26 by FM-102's fixer,
-  scoped by its re-review.
-- **FM-103's search-source select renders for a type the dialog withholds it from.** `IndexerTable.tsx:404-415` shows
-  the `enabledForSearchSource` control on every row, but `visibleIndexerFields` (`indexerSettings.ts:761-763`) hides
-  that field for `TORBOX`, which is an addable preset (`indexerPresets.ts:256`). So the list offers a control the edit
-  dialog deliberately does not. Undeclared — it is not in the `FEATURES.yaml` gaps alongside FM-103's other three
-  deviations. Gate the cell on `visibleIndexerFields(entry.searchModuleType)`, or declare it. Surfaced 2026-08-26 by
-  FM-103's reviewer.
-- **Between `sm` and ~900px the indexer table's Priority column is invisible with no scroll affordance.** Not merely
-  cut off — value, label and header are all off-canvas at 700px, and nothing on screen suggests the content continues
-  (`indexers-list-scroll-container-tablet.png`). FM-103's packet sanctions container scrolling at narrow widths so this
-  is not a contract breach, and its implementer was right to reject a stacked layout at 880px as reading worse. The
-  proportionate remedy is an affordance rather than a layout change: a scroll-edge shadow on the `TableContainer`, or
-  an explicit acknowledgement that content continues. Surfaced 2026-08-26 by FM-103's reviewer.
-- **"Enable shown" silently skips indexers whose config is incomplete.** Correct behaviour — `IndexerStateSwitch.tsx:54`
-  disables the per-row switch for those, so a bulk enable that flipped them would be the only route in the UI past a
-  gate every per-row path enforces — but nothing on screen says *why* the bulk action passed a row over. The row keeps
-  its `Disabled by system` caption so it is not invisible, just unexplained. A note beside the button, or a count in
-  `config-indexers-shown-count`, would close it. Surfaced 2026-08-26 by FM-103's reviewer.
 - ~~**FM-103's grid-wrapper comment states a mechanism its own workaround disproves.** `IndexerTable.tsx:164-172` says the
   fieldset's min-content floor "cannot be overridden by anything a child does" — but the `minmax(0, 1fr)` wrapper it
   justifies *is* a child, and does work. The real mechanism, established by the reviewer's probe: `min-content` is not a
@@ -1383,116 +1605,28 @@ instead of leaving it to rot.
   the comment and the wrapper should go when the central `ConfigFieldset` fix lands. Surfaced 2026-08-26 by FM-103's
   reviewer.~~ Discharged 2026-08-26 by the ledger entry above, which landed the central `ConfigFieldset` `min-width: 0`
   fix and removed both the wrapper and the comment.
-- **The unit runner should write a machine-readable report so an unexplained failure has a name.** Two consecutive
-  tasks (FM-102, FM-103) each reported a single unreproducible unit failure and each lost the failing test's name to a
-  truncated pipe — FM-103's was `1 failed / 1325 passed` on one of nine runs, green on the other eight. The honest
-  reporting is right; the mechanical fix is to have `npm run test` emit a JSON or JUnit reporter to a file so the next
-  one is identifiable instead of anecdotal. FM-103's reviewer names a plausible candidate in that task's own new tests
-  — a synchronous negative assertion (`expect(rowNames()).toEqual([...])` immediately after a `waitFor` that only
-  guarantees an unrelated write landed) is the classic shape that goes red under scheduler jitter — but could not prove
-  it. Surfaced 2026-08-26.
-- **FM-104's truncation test asserts a class, not the clipping.** `AddIndexerDialog.test.tsx:99-113` checks that
-  `MuiTypography-noWrap` is present, which still passes if a future refactor breaks the shrink chain — removing
-  `minmax(0, 1fr)` from the grid columns, say — and leaves the label unclipped. No live defect: FM-104's reviewer built
-  a standalone reproduction of the exact grid → button → `Typography noWrap` nesting, served it over local HTTP and
-  drove it with playwright-cli, and measured a long label genuinely clipped (span `scrollWidth` 804px against a
-  rendered 324px) with no page-level horizontal scroll. But the test proves less than the reviewer had to do to
-  establish it. Asserting `scrollWidth > clientWidth` would close the gap. Surfaced 2026-08-26 by FM-104's reviewer.
-- **The preset gallery's "Import" heading stays visible with nothing under it.** Filtering to a term that matches only
-  presets (e.g. "geek") leaves the Import section's heading rendered over zero importer buttons, because importers are
-  filtered independently against their own labels rather than being hidden when the preset groups empty. That follows
-  FM-104's packet text literally ("hide them only when the filter also misses their labels") and is visible in both
-  filtered captures, so it is a packet-sanctioned choice rather than a defect — but a bare heading over nothing is
-  worth the owner's eye in practice. Surfaced 2026-08-26 by FM-104's reviewer.
-- **FM-105's case-sensitivity test does not pin case-sensitivity.** "should keep two usernames that differ only by
-  case apart" (`AuthUsersSection.test.tsx:333-353`) renames index 1 from `alice` to `alice-lower`, which collides with
-  `Alice` under no matcher — so FM-105's reviewer mutated `uniqueUsername` to compare `toLowerCase()` and all 48 tests
-  still passed. The *behaviour* is correct (both Java matchers use `String.equals`, verified against the source), but
-  the handoff's "with a test pinning that" overstates what exists. Renaming index 1 to `ALICE` and asserting Save is
-  **accepted** would bite. Surfaced 2026-08-26 by FM-105's reviewer.
-- **FM-105's stale-transaction token guard is unreachable and untested.** Deleting the guard at
-  `AuthUsersSection.tsx:136-138` leaves all 48 tests green. Unlike `DownloadersSection`, whose equivalent guard is
-  reachable through its async connection check, `UserDialog` has no async step and both dialogs are modal, so no UI
-  path can produce a stale commit. Correct defence-in-depth and honestly documented at the site — logged only so the
-  coverage asymmetry with `DownloadersSection` is not later mistaken for parity. Surfaced 2026-08-26 by FM-105's
-  reviewer.
-- **FM-105 added a username-uniqueness refusal that no contract records.** The user dialog refuses a username another
-  entry already holds exactly, because `UserAuthConfigValidator.findCorrespondingOldUserConfig` filters on
-  `String.equals` and takes `.findFirst()` — with two identical usernames the *same* stored record is handed to both
-  submitted entries, so one user's `***UNCHANGED***` marker resolves to the other's hash, and
-  `reviewChangesDiff.ts:268-278` independently degrades a duplicate-keyed list to positional comparison so the review
-  panel stops naming the affected rows. The refusal is right and its reviewer endorsed it — but it lives only in the
-  handoff, so a later task could remove it as unexplained. Record it in `F-CONFIG-AUTH`. Two consequences also worth
-  noting: a config already holding two identical usernames (seeded outside the UI, or saved before FM-105) makes each
-  such row unsaveable from the dialog until renamed, with the error attached to a field the admin did not change.
-  Surfaced 2026-08-26 by FM-105's reviewer.
-- **`userFieldPath` in `authSettings.ts:72-82` is production-dead, kept alive by its own test.** FM-105's table binds
-  no control to a row, so nothing in production calls it; `knip` stays silent only because `authSettings.test.ts:168`
-  imports it. It was kept deliberately because `categoriesSettings.ts:140`'s comment points at it and that file is
-  outside FM-105's allowlist — the right call for that task, since re-pointing the comment there would have been the
-  scope violation. But a test-only export kept alive to hold a comment reference upright should not persist: remove
-  the helper and its test case, and re-point that comment, in one session. Surfaced 2026-08-26, declared by FM-105's
-  implementer and endorsed by its reviewer.
-- **`fullPage: true` captures duplicate the sticky save bar.** `auth-user-dialog-{desktop,mobile}.png` show the bar
-  twice — Playwright's scroll-and-stitch behaviour meeting a `position: sticky` element, not a rendering bug.
-  Confirmed by FM-105's reviewer against two controls: `auth-after-save-desktop.png` (the same convention, inherited
-  from FM-068) shows the identical artifact, while `auth-form-desktop.png`, whose page fits without scrolling, does
-  not. Not worth changing that file's convention for, but it will recur in any `fullPage` capture of a scrolling
-  config page now that FM-097's bar is sticky. Surfaced 2026-08-26.
-- **A stale count in FM-106's packet, worth knowing if the `RepeatSection` opt-in is ever reconsidered.** Its
-  Verification section prices the opt-in branch as affecting "other four consumers". There is exactly **one**:
-  `features/config/categories/CategoriesConfigTab.tsx:83`. Every other hit in `src` is a prose comment explaining why
-  that file owns its list locally instead — `AuthUsersSection`, `DownloadersSection`, `ExternalToolsSection`,
-  `CustomMappingsSection`, and now `NotificationEntriesSection`. The six-spec verification filter written for that
-  branch was a conservative superset. Moot for FM-106, which took the local branch, but the sentence would misprice the
-  next task that considers opting in. Surfaced 2026-08-26 by FM-106's implementer, confirmed by its reviewer.
-- **`RepeatSection`'s `addChoices` mode is now unused in production.** Notifications was its only consumer, and
-  FM-106 moved that list into a locally-owned section; Categories, the sole remaining consumer, does not use the mode.
-  Removing the prop, its `Menu`/`MenuItem` and the `config-repeat-add-option-*` selectors from `RepeatSection.tsx`,
-  plus the cases in `RepeatSection.test.tsx`/`configFields.test.tsx` and the `C-CONFIG-FIELDS` note, is mechanical.
-  Covering command: `npm run test -- --run` in `core/ui-react`. Surfaced 2026-08-26 by FM-106's implementer, which
-  correctly left it alone — its allowlist permitted `RepeatSection.tsx` only for an accordion opt-in it did not take.
-- **A magnitude in an FM-106 justification comment is 1.5px off.** `NotificationEntryFields.tsx:178` says the adjacent
-  outlined `Button` is "~38px"; measured in Chromium it is 36.5px, against a stock `Alert` at 48.0px and the
-  `py: 0` Alert at 36.0px. The argument — that the actions row would grow ~10px taller the moment a result appears,
-  shifting everything below — is unaffected and correct; only the quoted number drifts. Worth correcting because the
-  comment exists precisely to justify the number. Surfaced 2026-08-26 by FM-106's re-review.
-- **Two `STATUS.md` passages contradicted a third about `EXTERNAL_TOOL_CONFIGURATION`** — the FM-062 entry and an
+
+- ~~**`CapsGenerator.java:124` serves a caps image URL into the deleted `core/ui-src`.**
+  `capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/ui-src/img/banner-bright.png")` stops
+  resolving the moment this branch merges to `master` — the same breakage FM-095 fixed for `/readme.md` by repointing at the
+  retained `core/src/main/resources/static/img/banner-bright.png`. Outside FM-095's allowed files; the same relocation applies.
+  `grep -rn "ui-src" core/src/main/java` returns exactly this line.~~
+  Discharged before 2026-08-27 (not by this ledger): `CapsGenerator.java:124` now serves
+  `core/src/main/resources/static/img/banner-bright.png`, and `grep -rn "ui-src" core/src/main/java` returns nothing.
+  Confirmed by the 2026-08-27 triage pass.
+- ~~**`core/ui-react/vite/devBackend.ts:18,71,135` still injects the selector cookie, and does it destructively.**
+  Line 71's `proxyRequest.setHeader("Cookie", UI_SELECTOR_COOKIE)` *replaces* the browser's Cookie header on every proxied API
+  call, discarding `JSESSIONID`. Its own comment calls it "the Cookie value `MainWeb` requires before it renders the React shell";
+  `MainWeb` requires nothing now, so there is no upside left — only dev-mode auth breakage. Fix: delete `UI_SELECTOR_COOKIE` and
+  its two injections. Dev-only, no test covers it.~~
+  Discharged before 2026-08-27 (not by this ledger): `core/ui-react/vite/devBackend.ts:68-71` now carries a comment
+  recording that FM-095 removed the injection, and `grep -rn UI_SELECTOR_COOKIE core/ui-react/vite` returns nothing.
+  Confirmed by the 2026-08-27 triage pass.
+- ~~**Two `STATUS.md` passages contradicted a third about `EXTERNAL_TOOL_CONFIGURATION`** — the FM-062 entry and an
   Upcoming line both still described the `NotificationsWeb.NOTIFICATION_EVENTS` gap as open and "not yet packaged",
   while the FM-086 entry a few hundred lines above recorded it closed. Corrected in bookkeeping 2026-08-26; recorded
   here because it is the second stale-cross-reference this batch has produced in that file (see the `- FM-NNN:` entry
-  shape above), and a status file that disagrees with itself is worse than one that is merely behind.
-- **Backend defect, outside every FM allowlist — saving a blank category NPEs.**
-  `shared/mapping/src/main/java/org/nzbhydra/config/category/CategoriesConfig.java:35-38`'s `setCategories` runs
-  `categories.sort(Comparator.comparing(Category::getName))` on every deserialization, over entries whose `name` may
-  be `null` — and both the React default entry and legacy's `defaultModel` start with a null name. So adding a
-  category and saving before typing a name throws on the write path rather than being refused with a validation
-  message. Wants its own packet: the fix is server-side (null-safe comparator, or a validator that refuses a nameless
-  category with a field-attributed message), and a client-side guard alone would leave the API defect standing for any
-  other caller. Surfaced 2026-08-26 while investigating FM-107.
-- **The same `setCategories` sort is also the evidence that nothing in the categories config is order-dependent.**
-  It sorts by name on every write, and `withoutAll()` filters by equality rather than position, so any order an admin
-  arranged is discarded on write-back. That is a stronger justification for FM-107's "do not invent reordering" note
-  than the packet's original "legacy has none", and worth carrying into the packet if reordering is ever reconsidered.
-  Surfaced 2026-08-26.
-- **FM-107's mobile scroll comment overstates its own claim.** `CategoriesTable.tsx:218-222` and the matching
-  `config-categories.spec.ts` assertion say "Both of a row's controls … sit in the first two cells, so nothing scrolled
-  out of view is operable" — but the packet's own `categories-scroll-container-mobile.png` shows the expand-toggle
-  column scrolled entirely off the left edge, so an operable control *can* be out of view. The true, narrower claim is
-  that both controls are visible at the container's default scroll position and cost one swipe to reach again.
-  Surfaced 2026-08-26 by FM-107's reviewer.
-- **At 390px the categories table's Size column is off-canvas with no affordance.** The shape ADR-0029 refused for
-  FM-100's review panel, in a case where it is non-blocking: FM-107's Acceptance explicitly asked for a "mobile
-  390x844 showing the scroll container", ratifying the scroll, and the row expansion repeats every value as a real
-  editable field, so nothing is unreachable. A below-`sm` column drop or merge would be a design decision rather than
-  a fix. Surfaced 2026-08-26 by FM-107's reviewer.
-- **`RepeatSection` has no production consumer left.** FM-106 moved notifications to a locally-owned section and
-  FM-107 moved categories to a table, so `knip` now reports its barrel export dead
-  (`components/index.ts:14:9`). FM-107 correctly left it: deleting the line would exceed its fence on that file and
-  would immediately make `RepeatSection.tsx` — explicitly out of scope — an unused *file* rather than an unused
-  export. The contained follow-up is deleting the component, its test, the barrel line, and trimming the
-  `C-CONFIG-FIELDS` paragraph — worth doing only after confirming no planned list wants the vocabulary back. Surfaced
-  2026-08-26 by FM-107, ruling endorsed by its reviewer.
-- **FM-107's summary chips key on the token value.** `CategoriesTable.tsx:414` uses `key={category}`, so two identical
-  stored newznab tokens in one category collide. `ChipsSetting` is `freeSolo` and does not prevent entering a
-  duplicate. Cosmetic React warning only. Surfaced 2026-08-26 by FM-107's reviewer.
+  shape above), and a status file that disagrees with itself is worse than one that is merely behind.~~
+  Struck 2026-08-27 by the triage pass: its own text records the correction as already made in bookkeeping
+  2026-08-26, so there is nothing left to route. The durable lesson it carries — the `- FM-NNN:` validator regex — is
+  kept as a live single-session item above.

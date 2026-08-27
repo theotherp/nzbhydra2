@@ -437,3 +437,63 @@ Binding constraints:
   are unchanged, and the anchor list remains a sibling, never a `Tabs` child.
 - This authorises FM-102 to modify `ConfigNav.tsx`'s docked-column container beyond the "additive sibling list" fence,
   for this purpose only. The visual capture is re-taken as evidence.
+
+## ADR-0031 — Remove `searching.loadLimitInternal` rather than honour it (accepted 2026-08-27)
+
+Question: React's Config > Searching tab edits `searching.loadLimitInternal`, but nothing consumes it — legacy used it as
+the results view's displayed page size, and the React results view ignores it. FM-094 deleted the last test that covered
+it, so nothing evidences the gap either. The ledger recorded the open question as "honour the setting in the results
+view, or declare it backend-only".
+
+Decided, by the owner: **neither — remove it**, from the frontend and, where the evidence supports it, from the backend
+too. An admin should not be offered a control that does nothing.
+
+Binding constraints:
+
+- The Searching tab stops offering the setting, and it leaves `C-CONFIG-SETTINGS-INDEX` so settings search cannot
+  surface a control that no longer exists.
+- Whether the backend field itself is removed is a question of evidence, not preference, and the packet must settle it
+  before writing: `SearchingConfig.java` declares it, `SafeSearchingConfig.java` projects it to the frontend, and
+  `baseConfig.yml` ships a default. If any Java path reads it for behaviour, that path governs and only the UI goes.
+- **The migration hazard is the deciding factor for the backend half and must be established first**: existing
+  installations' `nzbhydra.yml` files contain `loadLimitInternal`. If the config reader rejects unknown properties,
+  deleting the field breaks every existing install on upgrade, and the field must instead be retained and deprecated
+  rather than removed. Do not remove it on the assumption that unknown keys are tolerated — prove it.
+- `reachability-metadata.json` names the field; a native build must still work after whatever is removed.
+- This is a persisted-data change, so it takes a task packet with independent review, not a single-session fix.
+
+## ADR-0032 — Supersedes ADR-0031: `searching.loadLimitInternal` stays; its description is the defect (accepted 2026-08-27)
+
+Question: ADR-0031 directed removing `searching.loadLimitInternal` on the recorded ground that nothing consumes it. While
+designing the packet, that premise was found false.
+
+Evidence: `core/src/main/java/org/nzbhydra/searching/searchrequests/SearchRequestFactory.java:26-30` substitutes the
+setting as the server-side page size whenever an internal search arrives without an explicit `limit` —
+
+```java
+if (limit == null) {
+    limit = source == SearchSource.INTERNAL ? searchingConfig.getLoadLimitInternal() : 100;
+}
+```
+
+— and `SearchPage.tsx:166-196` builds every internal search request without a `limit` key, then consumes the returned
+`limit` as its load-more cursor (`SearchPage.tsx:294-335`, `SearchResults.tsx:490-494`). So the setting governs the fetch
+size of every internal search on every install.
+
+Decided, by the owner on that evidence: **ADR-0031 is superseded. The setting stays and stays editable.** The real defect
+is that its label and help text describe a *display* page size, which is what legacy used it for, while it now controls a
+*fetch* page size. FM-116 becomes a text correction rather than a removal.
+
+Binding constraints:
+
+- `SearchingConfig.java`, `SafeSearchingConfig.java`, `baseConfig.yml` and both native-image metadata files are
+  untouched. No persisted data changes and no search behaviour changes.
+- The Searching tab keeps the control and its entry in `C-CONFIG-SETTINGS-INDEX`; only the wording changes.
+- The wording must say what the setting does — how many results are fetched per request — without implying it caps what
+  is displayed, since the results view pages through what it fetches.
+- ADR-0031 is retained above rather than deleted: the record of a decision made on a false premise, and of how it was
+  caught, is worth more than a clean history. It has no force.
+
+Lesson recorded: the ledger entry asserting the setting was "consumed nowhere" was wrong, and it was wrong because the
+consumer is a *default substituted server-side for an absent field*, which greps for the setting name in the frontend
+cannot see. A "nothing consumes this" claim needs a check on the backend read path before it becomes a decision.
