@@ -668,6 +668,21 @@ features:
       # `config-input-categoriesConfig-categories-<index>-newznabCategories-chip-<token>`,
       # and the refusal message reuses `C-CONFIG-FIELDS`'s existing
       # `config-error-<path>` row id.
+      #
+      # FM-113: a nameless category is refused server-side. `PUT
+      # /internalapi/config` answers `ok: false` with `Category number <n> does
+      # not have a name` (the row named by position, counting from one, since it
+      # has no name to quote) through `ConfigValidationResult.errorMessages`,
+      # which `ConfigFeedbackBanner` already renders -- no selector, no field
+      # attribution, no client change. `CategoriesConfig.setCategories` sorts
+      # nameless entries last instead of throwing on them, which is what let the
+      # validator get a turn at all: before FM-113 the sort threw inside
+      # Jackson's request-body binding and the endpoint answered 500. The tab
+      # itself cannot reach either path -- Name is `required`, so
+      # `C-CONFIG-FORM` refuses the save first -- so this is API hardening for
+      # every *other* caller (scripts, hand-crafted requests, restored or
+      # hand-edited `nzbhydra.yml`), and its system-test case works at the API
+      # boundary by design.
       - config-categories
       - config-categories-help
       - config-fieldset-categories

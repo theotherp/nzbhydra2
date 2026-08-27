@@ -100,12 +100,16 @@ test.describe("Downloads", () => {
             category?: unknown;
         };
         expect(addNzbRequest.searchResults).toHaveLength(1);
-        // Legacy sent the downloader's default category as an explicit value
-        // here; React sends `null`, which the server resolves to that same
-        // default. The recording assertion below is what proves the category
-        // really reached SABnzbd, so nothing about the outcome is weakened by
-        // asserting React's own request shape.
-        expect(addNzbRequest.category).toBeNull();
+        // The category is resolved client-side, exactly as legacy did: an
+        // unset choice in the bulk bar sends the downloader's configured
+        // `defaultCategory` as an explicit value. The server resolves nothing
+        // -- `Downloader.addBySearchResultIds` interprets only the three
+        // sentinel strings and forwards everything else, `null` included,
+        // unchanged -- so a `null` here would reach SABnzbd as no `cat` at
+        // all. FM-114 restored this assertion, which FM-094 had dropped.
+        expect(addNzbRequest.category).toBe(
+            testEnvironment.sabnzbdMockCategory,
+        );
         const addBody = (await addResponse.json()) as {
             successful?: boolean;
             addedIds?: unknown[];
@@ -132,21 +136,18 @@ test.describe("Downloads", () => {
         expect(recording.multipartContent).toBe(
             testEnvironment.downloaderIntegrationNzbContent,
         );
-        // The legacy version of this assertion also required
-        // `cat: testEnvironment.sabnzbdMockCategory`. It is deliberately not
-        // carried over, and the omission is a finding rather than a tidy-up:
-        // legacy's client sent the downloader's configured `defaultCategory`
-        // as an explicit value, React sends `category: null` ("Use downloader
-        // default", asserted on the request body above), and the server then
-        // sends SABnzbd no `cat` parameter at all -- so Hydra's configured
-        // default category has no effect from a React bulk send. Asserting
-        // `cat` here would fail; asserting its absence would pin a defect as
-        // intended behaviour. The handoff's Follow-Up Work carries it as a
-        // single-session-fix candidate instead.
+        // `cat` is the end of the chain the request assertion above starts:
+        // the client resolves the unset choice to the downloader's configured
+        // `defaultCategory`, and `Sabnzbd.addContent` passes a non-empty
+        // category on as `cat`. It only reaches SABnzbd because the client
+        // sent it -- FM-094 dropped this assertion together with the legacy
+        // suite, and while it was gone the React bulk send silently sent no
+        // category at all (FM-114).
         expect(recording.queryParameters).toEqual(
             expect.objectContaining({
                 mode: "addfile",
                 apikey: testEnvironment.sabnzbdMockApiKey,
+                cat: testEnvironment.sabnzbdMockCategory,
                 nzbname: `${testEnvironment.downloaderIntegrationNzbTitle}.nzb`,
             }),
         );

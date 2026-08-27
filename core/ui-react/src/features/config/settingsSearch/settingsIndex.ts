@@ -731,14 +731,14 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
     fieldset("Result display", {}, [
         {
             advanced: true,
-            help: "Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.",
+            help: "Load all results already retrieved from indexers. Might make sorting / filtering a bit slower.",
             label: "Display all retrieved results",
             path: "searching.loadAllCachedOnInternal",
         },
         {
             advanced: true,
-            help: "Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.",
-            label: "Display...",
+            help: "Determines the number of results fetched from indexers per search request. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.",
+            label: "Results fetched per request",
             path: "searching.loadLimitInternal",
         },
         {

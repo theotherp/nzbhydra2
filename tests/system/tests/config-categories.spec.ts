@@ -1,6 +1,6 @@
 import type {Locator, Page} from "@playwright/test";
 
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
 
 type Json = Record<string, unknown>;
@@ -248,6 +248,56 @@ test.describe("Config categories tab round trip", () => {
             );
             expect(stillThere).toEqual(original);
         }
+    });
+});
+
+/**
+ * FM-113. Deliberately at the API boundary rather than through the tab: `name` is `required`
+ * (`CategoryEntryFields.tsx:36-42`), so `ConfigShell.tsx:209`'s `form.trigger()` refuses a blank one
+ * before any PUT is issued. A click-and-save case can therefore never exercise the server, and one
+ * asserting "This field is required" would be green before *and* after this fix while appearing to
+ * prove it. Every other caller of the endpoint -- scripts, hand-crafted requests, restored or
+ * hand-edited `nzbhydra.yml` files -- does reach it, and used to get a 500 out of
+ * `CategoriesConfig.setCategories` sorting on the missing name inside Jackson's request-body
+ * binding, before any validator could speak.
+ */
+test.describe("Config categories API refusal", () => {
+    test("should refuse a nameless category with a validation message instead of throwing", async ({
+        hydra,
+        request,
+    }) => {
+        const config = (await hydra.getConfig()) as Json;
+        const categories = categoriesOf(config);
+        categories.push({
+            // Everything a category needs except a name, so the refusal asserted below is
+            // unambiguously about the missing name and not about an empty newznab list.
+            applySizeLimitsToApi: false,
+            mayBeSelected: true,
+            name: null,
+            newznabCategories: ["9999"],
+            preselect: false,
+            searchType: "SEARCH",
+            subtype: "NONE",
+        });
+        // Nameless entries sort last, so the row the message names is the last position, counting
+        // from one.
+        const expectedPosition = categories.length;
+
+        const response = await request.put("/internalapi/config", {
+            data: config,
+            params: {internalApiKey: testEnvironment.hydraInternalApiKey},
+        });
+
+        // The point of the case: a refusal, not a crash.
+        expect(response.status()).toBe(200);
+        const result = (await response.json()) as {
+            errorMessages?: string[];
+            ok?: boolean;
+        };
+        expect(result.ok).toBe(false);
+        expect(result.errorMessages ?? []).toContain(
+            `Category number ${String(expectedPosition)} does not have a name`,
+        );
     });
 });
 

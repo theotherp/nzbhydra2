@@ -1171,6 +1171,121 @@ describe("SearchResults", () => {
         expect(fetchImplementation.mock.calls[2][0]).toMatch(/addNzbs$/);
     });
 
+    // FM-114: the bulk send resolves an unset category choice to the
+    // downloader's configured `defaultCategory`, exactly as legacy's
+    // `NzbDownloadService.download` did (`var category =
+    // downloader.defaultCategory;`, consulting no fetched list). The fetched
+    // list is a convenience for picking, never the authority for what is sent.
+    it("should send the configured default category when it is in the fetched list", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "movies",
+            fetchedCategories: ["*", "movies", "series"],
+        });
+        expect(request.category).toBe("movies");
+    });
+
+    // The regression this case exists for: the mock downloader's `get_cats`
+    // deliberately does not contain the configured default, so a default that
+    // *is* in the list passes against the defect. Only this shape is red
+    // before the fix.
+    it("should send the configured default category when it is absent from the fetched list", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "Deterministic Category",
+            fetchedCategories: ["*", "movies", "series", "tv"],
+        });
+        expect(request.category).toBe("Deterministic Category");
+    });
+
+    it("should send no category when the downloader has no configured default", async () => {
+        const request = await bulkSendCategoryRequest({
+            fetchedCategories: ["*", "movies"],
+        });
+        expect(request.category).toBeNull();
+    });
+
+    // The three sentinels are interpreted by the server
+    // (`Downloader.addBySearchResultIds`), so the client must forward them
+    // verbatim rather than translating or dropping them; none of them appears
+    // in a downloader's own category list.
+    it("should send a sentinel default category verbatim", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "Use no category",
+            fetchedCategories: ["*", "movies"],
+        });
+        expect(request.category).toBe("Use no category");
+    });
+
+    it("should send an explicitly chosen category instead of the configured default", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "movies",
+            fetchedCategories: ["*", "movies", "series"],
+            chooseCategory: "series",
+        });
+        expect(request.category).toBe("series");
+    });
+
+    // Choosing "Use downloader default" explicitly and never touching the
+    // select must send the same value -- the empty option means the
+    // downloader's configured default, not "no category".
+    it("should send the configured default when 'Use downloader default' is chosen explicitly", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "Deterministic Category",
+            fetchedCategories: ["*", "movies"],
+            chooseCategory: "Use downloader default",
+        });
+        expect(request.category).toBe("Deterministic Category");
+    });
+
+    // The duplicate probe deliberately carries `null` (legacy built its own
+    // request with an explicit null category, and the server's
+    // `checkDuplicateMovieDownload` expects that); only the add request
+    // carries the resolved category.
+    it("should keep the duplicate-download probe free of the resolved category", async () => {
+        const request = await bulkSendCategoryRequest({
+            defaultCategory: "Deterministic Category",
+            fetchedCategories: ["*", "movies"],
+        });
+        expect(request.duplicateCheckCategory).toBeNull();
+        expect(request.category).toBe("Deterministic Category");
+    });
+
+    // A category-load failure must not lose the configured default: the list
+    // was never the authority, so the select keeps showing what a send would
+    // transmit rather than reading as "Use downloader default".
+    it("should keep showing the configured default when the category list fails to load", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {
+                            name: "SAB",
+                            enabled: true,
+                            defaultCategory: "Deterministic Category",
+                        },
+                    ],
+                },
+            },
+        };
+        vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("nope")));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(
+            await screen.findByText(
+                "Unable to load downloader categories. Choose another downloader or try again.",
+            ),
+        ).toBeVisible();
+        expect(categorySelect()).toHaveTextContent("Deterministic Category");
+    });
+
+    it("should show a configured default that the fetched list does not contain", async () => {
+        const select = await renderCategorySelect({
+            defaultCategory: "Deterministic Category",
+            fetchedCategories: ["*", "movies", "series", "tv"],
+        });
+        expect(select).toHaveTextContent("Deterministic Category");
+        expect(select).not.toHaveTextContent("Use downloader default");
+    });
+
     it("should render one base-aware direct torrent action using the preferred download ID and fallback", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/hydra/"};
         renderResults(
@@ -3370,6 +3485,110 @@ function refineOption(testId: string, value: string): HTMLElement {
         throw new Error(`No ${testId} row for ${value}`);
     }
     return row;
+}
+
+// FM-114: renders the bulk-actions bar for one downloader with a given
+// configured default and a given fetched category list, and returns the
+// category select once that list has loaded.
+async function renderCategorySelect({
+    defaultCategory,
+    fetchedCategories,
+    fetchImplementation = vi
+        .fn()
+        .mockResolvedValue(jsonResponse(fetchedCategories)),
+}: {
+    defaultCategory?: string;
+    fetchedCategories: string[];
+    fetchImplementation?: typeof fetch;
+}): Promise<HTMLElement> {
+    vi.stubGlobal("fetch", fetchImplementation);
+    window.__NZBHYDRA_BOOTSTRAP__ = {
+        baseUrl: "/",
+        safeConfig: {
+            downloading: {
+                downloaders: [{name: "SAB", enabled: true, defaultCategory}],
+            },
+        },
+    };
+    renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+    const select = categorySelect();
+    // The list arrives asynchronously and its entries exist in the DOM only
+    // while the menu is open, so opening it and waiting for the first fetched
+    // entry is what proves the load has been applied. Escape closes it again.
+    fireEvent.mouseDown(select);
+    const listbox = screen.getByRole("listbox");
+    await within(listbox).findByRole("option", {name: fetchedCategories[0]});
+    fireEvent.keyDown(listbox, {key: "Escape"});
+    return select;
+}
+
+// FM-114: drives one complete bulk send and returns the categories of the two
+// requests it makes -- the duplicate probe and the add request. The fetch
+// stub answers, in order, the category list, the duplicate probe, and the add.
+async function bulkSendCategoryRequest({
+    defaultCategory,
+    fetchedCategories,
+    chooseCategory,
+}: {
+    defaultCategory?: string;
+    fetchedCategories: string[];
+    chooseCategory?: string;
+}): Promise<{category: unknown; duplicateCheckCategory: unknown}> {
+    const fetchImplementation = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(fetchedCategories))
+        .mockResolvedValueOnce(jsonResponse({reasonRequired: false}))
+        .mockResolvedValueOnce(jsonResponse({successful: true, addedIds: [1]}));
+    const select = await renderCategorySelect({
+        defaultCategory,
+        fetchedCategories,
+        fetchImplementation: fetchImplementation as unknown as typeof fetch,
+    });
+    if (chooseCategory !== undefined) {
+        fireEvent.mouseDown(select);
+        fireEvent.click(screen.getByRole("option", {name: chooseCategory}));
+    }
+    fireEvent.click(screen.getByRole("checkbox", {name: "Select NZB result"}));
+    fireEvent.click(
+        screen.getByRole("button", {name: "Send selected to downloader"}),
+    );
+    await vi.waitFor(() =>
+        expect(fetchImplementation).toHaveBeenCalledTimes(3),
+    );
+    expect(fetchImplementation.mock.calls[1][0]).toMatch(
+        /checkDuplicateMovieDownload$/,
+    );
+    expect(fetchImplementation.mock.calls[2][0]).toMatch(/addNzbs$/);
+    return {
+        category: requestCategory(fetchImplementation.mock.calls[2][1]),
+        duplicateCheckCategory: requestCategory(
+            fetchImplementation.mock.calls[1][1],
+        ),
+    };
+}
+
+// The bare `Select`'s `aria-label` sits on its `MuiInputBase-root` wrapper
+// rather than on the `role="combobox"` element MUI renders inside it, so the
+// rest of this file addresses the select by that wrapper too; the combobox
+// child is what carries the displayed value and takes the open/close events.
+function categorySelect(): HTMLElement {
+    const wrapper = screen
+        .getByTestId("results-bulk-actions")
+        .querySelector('[aria-label="Downloader category"] [role="combobox"]');
+    if (!wrapper) {
+        throw new Error("No downloader category select");
+    }
+    return wrapper as HTMLElement;
+}
+
+function requestCategory(init: RequestInit): unknown {
+    return (JSON.parse(String(init.body)) as {category: unknown}).category;
+}
+
+function jsonResponse(body: unknown): Response {
+    return new Response(JSON.stringify(body), {
+        headers: {"Content-Type": "application/json"},
+    });
 }
 
 function downloadActionResponse(

@@ -35,8 +35,16 @@ public class CategoriesConfig {
     private String defaultCategory = "All";
     private boolean overwriteNaWithSearchCategory;
 
+    /**
+     * FM-113: nameless categories sort last, keeping the order they arrived in, instead of throwing.
+     * The sort runs on every deserialization -- including the write path, where
+     * {@code ConfigReaderWriter.save}'s {@code convertValue} re-enters here -- so a name-less entry
+     * used to throw inside Jackson's binding, before any validator could refuse it.
+     * {@code List.sort} is stable, so repeated round trips leave the file unchanged; the refusal
+     * itself lives in {@code CategoriesConfigValidator}.
+     */
     public void setCategories(List<Category> categories) {
-        categories.sort(Comparator.comparing(Category::getName));
+        categories.sort(Comparator.comparing(Category::getName, Comparator.nullsLast(Comparator.naturalOrder())));
         this.categories = categories;
     }
 

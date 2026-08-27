@@ -1630,3 +1630,74 @@ their text and relative order are unchanged.
   Struck 2026-08-27 by the triage pass: its own text records the correction as already made in bookkeeping
   2026-08-26, so there is nothing left to route. The durable lesson it carries — the `- FM-NNN:` validator regex — is
   kept as a live single-session item above.
+- **FM-113's refusal message names the position *after* sorting, not the position the caller sent.** Because
+  `setCategories` sorts before the validator runs, an API caller who puts the nameless entry first is told
+  `Category number <last>`. That is correct relative to what the server stores and what the tab renders, and
+  `config-categories.spec.ts:280-281` comments on it — but the validator comment and the `FEATURES.yaml` paragraph
+  (`:673-676`) both say only "counting from one", which reads as the payload position. One clarifying clause in the
+  registry comment closes it. Surfaced 2026-08-27 by FM-113's reviewer.
+- **A nameless category still emits `Category "null" does not have any newznab categories configured`.** FM-113 added
+  a refusal for the missing name but could not suppress the other messages that entry accumulates, because the packet
+  froze their wording and suppressing one would have been a silent scope breach. Its implementer flagged rather than
+  worked around it, which was right; the literal `"null"` in user-facing output is still poor. Fix alongside whatever
+  eventually attributes messages to fields. `CategoriesConfigValidator.java:45`. Surfaced 2027-08-27 by FM-113.
+- **Proposed packet — `Category` identity semantics now have more reachable surface.** `Category.java:104-118`'s
+  `equals`/`hashCode` collapse all nameless entries to one, and `CategoryProvider.java:80`'s
+  `Collectors.toMap(Category::getName, …)` has a duplicate-key path. FM-113 made nameless entries survive
+  deserialization instead of throwing, so both are now reachable from a hand-edited or restored `nzbhydra.yml` — no
+  validation runs on the config-load path, only on `PUT`. FM-113's reviewer ruled shipping acceptable and the
+  reasoning is worth keeping: pre-FM-113 that route was an NPE during config load, i.e. an unbootable instance; now
+  one nameless entry boots with a benign `null` key, and two produce `IllegalStateException: Duplicate key` at
+  initialization — a *relocated* failure with a clearer diagnosis, not a new one. No scenario got worse. It wants a
+  packet rather than a fix because it needs a ruling on `Category` identity that is wider than one module. Surfaced
+  2026-08-27 by FM-113's reviewer.
+- **`.trim().isEmpty()` where `String.isBlank()` is idiomatic.** `CategoriesConfigValidator.java:41`. Semantically
+  identical for the code points that matter. Surfaced 2026-08-27 by FM-113's reviewer.
+- **Neither bulk-actions `Select` has an accessible name.** `DownloadActions.tsx:303,324` put `aria-label` on the MUI
+  `InputBase` wrapper rather than the `role="combobox"` element MUI renders inside it, so a screen reader announces an
+  unnamed combobox and `getByRole("combobox", {name})` cannot address either control — which is why
+  `SearchResults.test.tsx`'s helper reaches them via `querySelector('[aria-label="…"] [role="combobox"]')`. FM-114's
+  reviewer ruled it a single-session fix that only looks larger than it is because the workaround is visible in a test
+  helper: move the label to `inputProps`/`SelectDisplayProps`, then simplify the helper. Touches no contract, registry
+  or decision. Surfaced 2026-08-27 by FM-114, confirmed by both its reviewers.
+- **FM-114's category-load-failure criterion is only half-reachable.** The packet asks that a failed category fetch
+  leave the send falling back to `defaultCategory` rather than `null`, but the pre-existing
+  `if (categoryError) return;` at `DownloadActions.tsx:183-185` blocks the send outright, so only the *display* half
+  is observable and the new test correctly asserts only that. Not a regression, and the resolution genuinely never
+  consults the fetched list — but the criterion reads as though a send occurs, and nothing in the code records that it
+  cannot. Worth deciding whether a load failure should block the send at all, given the list is explicitly not the
+  authority for what is sent. Surfaced 2026-08-27 by FM-114's reviewers.
+- **`categorySelect()` names its local `wrapper` but returns the inner combobox.** `SearchResults.test.tsx:3567-3575`,
+  contradicting its own comment. Cosmetic, and it disappears if the `aria-label` placement above is fixed. Surfaced
+  2026-08-27 by FM-114's re-review.
+- **The 2026-08-20 ledger entry calls the toast layer "a sibling portal under `document.body`" (`:464`).** That was
+  factually wrong when written — `Snackbar` contained no `Portal` at all, which is the defect FM-115 exists to fix —
+  and is now half-true for an entirely different reason. It reads as prior art for a mechanism that did not exist,
+  which is the same class of claim FM-115's own `ConfigShell` comment rewrite was raised to correct. Surfaced
+  2026-08-27 by FM-115's reviewer.
+- **FM-115's toast layer carries `aria-hidden` for a sub-millisecond window before the observer strips it.**
+  `ToastProvider.tsx:158-165`'s `MutationObserver` callback is a microtask, so MUI's `ariaHiddenSiblings` sweep does
+  briefly land on the layer. Harmless in every scenario its reviewer could construct — including two-modal cycles and
+  StrictMode — and there is no synchronous hook into MUI's sweep to close it. But the docblock asserts the layer "is
+  kept in the accessibility tree" without noting the removal is after-the-fact. One clause would make that comment as
+  honest as the rest of them. Surfaced 2026-08-27 by FM-115's reviewer.
+- **Proposed packet — the `loadLimitInternal` field still renders "results per page" beside its corrected label.**
+  FM-116 fixed three surfaces that misdescribed the setting as a display page size, but a fourth survived:
+  `SearchingConfigTab.tsx:283`'s `NumberSetting` carries `unit="results per page"`, which renders as an end adornment
+  immediately next to the new "Results fetched per request" label — visible in
+  `searching-advanced-shown-desktop.png`. That directly contradicts ADR-0032's binding constraint that the wording
+  must not imply the value caps what is displayed. FM-116 could not fix it: its allowlist explicitly freezes every
+  prop other than the strings it names, `unit` among them, so touching it is a scope change rather than a
+  single-session fix. The task designer did not name it as one of the three surfaces. Surfaced 2026-08-27 by FM-116's
+  reviewer.
+- **`settingsIndexDrift.test.tsx` does not guard label or help text between a tab and the index.** It compares
+  `anchorTestId`/`path` presence, the `advanced` boolean, and fieldset placement — but `entry.label` and
+  `entry.helpText` are never compared against anything rendered, which the module's own doc comment states outright
+  ("there is nothing to read the labels and help text off at runtime"). So the two copies of a setting's wording can
+  drift apart silently. Demonstrated rather than reasoned: FM-116's implementer edited only the index's label, left
+  the tab correct, and the suite stayed 46/46 green; its reviewer reproduced that independently and confirmed the
+  mechanism by reading the file. This is a **pre-existing gap in the guarantee FM-099 built**, not something FM-116
+  introduced, and it was out of FM-116's reach — the allowlist licenses editing the drift test only if a fixture
+  quotes the changed strings, and none do. A fix would compare `SettingRow`'s rendered label and help text against
+  `entry.label`/`entry.helpText` in at least one per-tab block. Note it means FM-116's own two copies were synced by
+  hand and verified by hand, not by any gate. Surfaced 2026-08-27 by FM-116.

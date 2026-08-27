@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,15 @@ public class CategoriesConfigValidator implements ConfigValidator<CategoriesConf
     public ConfigValidationResult validateConfig(BaseConfig oldBaseConfig, BaseConfig newBaseConfig, CategoriesConfig newConfig) {
         ArrayList<String> errors = new ArrayList<>();
         ArrayList<String> warnings = new ArrayList<>();
-        for (Category category : newConfig.getCategories()) {
+        for (int index = 0; index < newConfig.getCategories().size(); index++) {
+            Category category = newConfig.getCategories().get(index);
+            // FM-113: a nameless category has nothing to quote, so it is named by its position in
+            // the catalog, counting from one. Until FM-113 this could not be reported at all --
+            // CategoriesConfig.setCategories threw while sorting, inside Jackson's request-body
+            // binding, before this validator was ever called.
+            if (category.getName() == null || category.getName().trim().isEmpty()) {
+                errors.add("Category number " + (index + 1) + " does not have a name");
+            }
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
                 errors.add("Category \"" + category.getName() + "\" does not have any newznab categories configured");
             } else {
@@ -60,13 +69,19 @@ public class CategoriesConfigValidator implements ConfigValidator<CategoriesConf
                 }
             }
         }
-        List<Integer> allNewznabCategories = newConfig.getCategories().stream().flatMap(x -> x.getNewznabCategories().stream().flatMap(Collection::stream)).toList();
+        // The null guard matches the one the loop above already applies to the same field; without
+        // it the nameless-category path reported above would itself throw here (FM-113).
+        List<Integer> allNewznabCategories = newConfig.getCategories().stream()
+            .filter(x -> x.getNewznabCategories() != null)
+            .flatMap(x -> x.getNewznabCategories().stream().flatMap(Collection::stream)).toList();
         List<Integer> duplicateNewznabCategories = allNewznabCategories.stream().filter(x -> Collections.frequency(allNewznabCategories, 1) > 1).collect(Collectors.toList());
         if (!duplicateNewznabCategories.isEmpty()) {
             errors.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
         }
 
-        if (!"All".equals(newConfig.getDefaultCategory()) && newConfig.getCategories().stream().noneMatch(x -> x.getName().equals(newConfig.getDefaultCategory()))) {
+        // Objects.equals rather than x.getName().equals(...): a nameless category in the catalog
+        // must not throw here on the way to being reported above (FM-113).
+        if (!"All".equals(newConfig.getDefaultCategory()) && newConfig.getCategories().stream().noneMatch(x -> Objects.equals(x.getName(), newConfig.getDefaultCategory()))) {
             errors.add("Category \"" + newConfig.getDefaultCategory() + "\" set as default category but no such category exists");
         }
 

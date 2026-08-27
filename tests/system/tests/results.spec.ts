@@ -268,15 +268,19 @@ test.describe("Search results", () => {
     // legacy's own display page size: `search-results-controller.js:9` reads
     // `searching.loadLimitInternal` into `$scope.limitTo` and paginates the
     // rendered title groups by it. React has no such client-side page size --
-    // `loadLimitInternal` appears in its Config > Searching tab and nowhere in
-    // the results view -- so retargeting the test would assert a surface that
-    // deliberately does not exist here; verified by running it against React,
-    // which renders all 10 rows the search returned rather than 1. React's own
-    // result paging is covered by "should load more and all React results from
-    // advancing cache offsets" and "should stop React load-more after a
-    // non-advancing terminal cursor". The handoff's Follow-Up Work records the
-    // one question this leaves open: whether `loadLimitInternal` still being
-    // editable while React ignores it is intended.
+    // retargeting the test would assert a surface that deliberately does not
+    // exist here; verified by running it against React, which renders all 10
+    // rows the search returned rather than 1. React's own result paging is
+    // covered by "should load more and all React results from advancing cache
+    // offsets" and "should stop React load-more after a non-advancing
+    // terminal cursor". `loadLimitInternal` still governs internal searches:
+    // `SearchPage.tsx` sends every internal request without a `limit`, and
+    // `SearchRequestFactory.java:26-30` substitutes this setting server-side
+    // as the fetch size, so the results view pages through whatever that
+    // fetch returned. ADR-0032 answers the question this comment used to
+    // leave open: the setting is not ignored, it governs fetch size rather
+    // than display page size, and FM-116 corrected its label and help to say
+    // so.
 
     test("should sort and filter deterministic results in the React shell", async ({
         page,

@@ -401,15 +401,23 @@ function ConfigForm({
                         renders nothing while the panel is open and this layer
                         carries the same markup, the same
                         `config-validation-errors` testid and the same entries.
-                        It is a `Portal` and not a toast because `Snackbar`
-                        does not portal — the toast surface sits inside the
-                        very subtree the panel hides, so a toast here would be
-                        just as unreachable (measured, not assumed). Being its
-                        own body child mounted after the panel, this layer is
-                        outside what `ModalManager` hid; `ConfigShell.test.tsx`
-                        asserts that from the ancestor chain, including for a
-                        report that predates the panel, rather than from the
-                        element merely existing.
+                        It is a `Portal` and not a toast because when FM-101
+                        was written `Snackbar` did not portal at all, so the
+                        toast surface sat inside the very subtree the panel
+                        hides (measured, not assumed); FM-115 has since moved
+                        the toast layer out of it, so what remains is a choice
+                        of shape — a persistent report carrying FM-101's own
+                        `config-validation-errors` markup — and not of
+                        reachability. Being its own body child mounted after
+                        the panel, this layer is outside what `ModalManager`
+                        hid, so the report is announced and present in the
+                        accessibility tree; `ConfigShell.test.tsx` asserts that
+                        from the ancestor chain, including for a report that
+                        predates the panel, rather than from the element merely
+                        existing. Focus is a separate matter and is not claimed
+                        here: the panel's `FocusTrap` owns focus wherever this
+                        layer sits, an open cross-module question recorded in
+                        `MAINTENANCE.md`.
 
                         Warnings need no such layer: a warnings-only save *is*
                         a save, so the panel has already closed. */}

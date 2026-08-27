@@ -109,14 +109,19 @@ export function DownloadActions({
             return;
         }
         setCategoryError(undefined);
+        // FM-114: the selection starts on the downloader's configured
+        // `defaultCategory`, set here rather than inside the `.then` because
+        // the fetched list is not what decides it. Legacy's
+        // `NzbDownloadService.download` opened with
+        // `var category = downloader.defaultCategory;` and consulted no list
+        // at all; the membership test that used to live in the `.then` turned
+        // every default the downloader does not also *advertise* -- SABnzbd's
+        // `get_cats` is a different set from Hydra's configured default -- into
+        // a silent `null`, which reaches SABnzbd as no `cat` parameter.
+        setCategory(configuredDefaultCategory(downloader));
         void categories(transport, downloader)
             .then((values) => {
                 setDownloaderCategories(values);
-                setCategory(
-                    values.includes(downloader.defaultCategory ?? "")
-                        ? (downloader.defaultCategory ?? null)
-                        : null,
-                );
             })
             .catch(() => {
                 setDownloaderCategories([]);
@@ -125,6 +130,15 @@ export function DownloadActions({
                 );
             });
     }, [downloader, transport]);
+    // The configured default when the fetched list does not offer it; the
+    // extra option the select renders for it (see below).
+    const downloaderDefault = downloader
+        ? configuredDefaultCategory(downloader)
+        : null;
+    const outOfListDefault =
+        downloaderDefault && !downloaderCategories.includes(downloaderDefault)
+            ? downloaderDefault
+            : null;
     const execute = async (
         operation: () => Promise<{
             successful?: boolean;
@@ -186,7 +200,10 @@ export function DownloadActions({
             null,
         );
         try {
-            request.category = category;
+            // The duplicate probe deliberately carries `category: null`, as
+            // legacy's `checkIfDuplicateMovieDownloadRequiresReason` did: it
+            // asks only whether this movie was downloaded before. The resolved
+            // category is attached below, for the add request alone.
             if (await requiresDuplicateReason(transport, request)) {
                 const decision = await dialogs.confirm({
                     title: "Duplicate movie download",
@@ -198,6 +215,15 @@ export function DownloadActions({
                     return;
                 }
             }
+            // An unset selection (`null`, the "Use downloader default" option)
+            // resolves here, client-side, to the downloader's configured
+            // default -- never on the server, which special-cases only the
+            // three sentinel strings and forwards anything else, `null`
+            // included, unchanged. A downloader with no configured default
+            // still sends `null`, and the sentinels ride through verbatim so
+            // the server can keep interpreting them.
+            request.category =
+                category ?? configuredDefaultCategory(downloader);
             await execute(
                 () => sendToDownloader(transport, request),
                 "Successfully added selected results.",
@@ -310,6 +336,21 @@ export function DownloadActions({
                             {value}
                         </MenuItem>
                     ))}
+                    {/*
+                     * FM-114: the configured default is preselected whether or
+                     * not the downloader advertises it, so when the fetched
+                     * list does not contain it the select needs an option to
+                     * display -- without one MUI renders the box blank and
+                     * warns about an out-of-range value, and the send would
+                     * read as "Use downloader default" while transmitting
+                     * something else. Appended after the fetched entries so
+                     * the existing option order is untouched.
+                     */}
+                    {outOfListDefault && (
+                        <MenuItem value={outOfListDefault}>
+                            {outOfListDefault}
+                        </MenuItem>
+                    )}
                 </Select>
             )}
             {downloaders.length > 0 && (
@@ -434,6 +475,16 @@ export function bootstrapBase(): string {
         typeof value.baseUrl === "string"
         ? value.baseUrl
         : "/";
+}
+
+/**
+ * The downloader's configured default category, or `null` when it has none.
+ * An unconfigured `defaultCategory` reaches the UI as `undefined` (the Java
+ * field has no initializer) or as `""`; both mean "no default", and both must
+ * send `null` rather than an empty category. FM-114.
+ */
+function configuredDefaultCategory(downloader: Downloader): string | null {
+    return downloader.defaultCategory ? downloader.defaultCategory : null;
 }
 
 function isCompatibleWithDownloader(

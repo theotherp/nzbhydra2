@@ -105,7 +105,7 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-TOAST-SERVICE
-    responsibility: Consistent transient notifications and severity mapping; concurrent toasts stack in arrival order, each with its own lifetime, optional persistence, and optional rich content, over an overlay that stays transparent to pointer input
+    responsibility: Consistent transient notifications and severity mapping; concurrent toasts stack in arrival order, each with its own lifetime, optional persistence, and optional rich content, over an overlay that stays transparent to pointer input. The toast layer is announced independently of any open modal - it renders under document.body and stays out of every subtree MUI's ModalManager marks aria-hidden, in both orderings (toast raised over an open dialog, and toast still on screen when a dialog opens). Known gap - a toast's own controls, and any actionable content inside it, remain untabbable while a modal is open, because the modal's FocusTrap owns focus regardless of DOM position; fixing that means relaxing FocusTrap app-wide, rendering toasts inside the open modal, or forbidding actionable toast content, each of which changes modal behaviour or a shared type across modules, so it is carried as an open decision in MAINTENANCE.md rather than fixed here
     legacy:
       - core/ui-src/js/nzbhydra.js
     target: core/ui-react/src/components/toasts
@@ -199,7 +199,10 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-DOWNLOAD-ACTIONS
-    responsibility: Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations
+    responsibility: >-
+      Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations; an unset
+      category selection resolves client-side to the downloader's configured defaultCategory (the fetched category
+      list is a convenience for picking, never the authority for what is sent, and the server resolves nothing)
     legacy:
       - core/ui-src/js/nzb-download-service.js
       - core/ui-src/js/downloader-categories-service.js

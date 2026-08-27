@@ -920,6 +920,106 @@ closed by the maintenance entry *Restore the Auth Users search anchor, and close
 loss*: the anchor is back and derived from `settingTestId` so it cannot drift again, and the drift test gained a third
 direction asserting every section anchor renders. The remaining seven all did.
 
+FM-113 (Blank Category Save Refusal) opens the 2026-08-27 maintenance-ledger batch. `CategoriesConfig.setCategories`
+sorts nameless categories last with `Comparator.nullsLast` — stable, so repeated round trips are byte-identical, which
+matters because `ConfigReaderWriter.save`'s `convertValue` re-enters the setter on the write path — instead of throwing
+inside Jackson's request-body binding, and `CategoriesConfigValidator` refuses them with a positional message, its two
+previously unguarded dereferences null-guarded so the new path cannot itself throw. **The packet had to be retargeted
+mid-task**: its end-to-end criterion drove the defect through the UI, but the Name field is `required` and `ConfigShell`
+refuses on `form.trigger()` before any PUT, so a blank category cannot reach the server that way at all — FM-107's own
+comment says so. The criterion moved to the API boundary, and the Outcome was reframed as API hardening, reachable by
+every non-React caller but not by the UI. The ledger entry that had ranked this first on "reachable by an ordinary
+admin on an ordinary day" is struck through with the correction. **The implementer caught two vacuous tests in its own
+work**, both during red-first runs and both of which would have certified nothing: a deserialization case whose payload
+held only the nameless entry passed against the bug, because TimSort never invokes the comparator on a one-element
+list; and a validator fixture went green with the guard reverted, because `noneMatch` short-circuited on a matching
+first category and never reached the nameless one. It rebuilt both. Its reviewer reproduced both claims independently
+in a standalone harness rather than mutating the tree, and confirmed each of the two validator guards bites on its own.
+One test is green before and after by construction — the all-named ordering pin — and was flagged as the deliberate
+exception rather than dressed up; the reviewer checked it is a real pin (removing, reversing or re-keying the sort all
+turn it red). Two packet claims were corrected on evidence: the pre-fix request answers **400**, not 500, because
+`ErrorHandler` maps the binding failure to `HttpMessageNotReadableException`, which carries `@ResponseStatus(BAD_REQUEST)`;
+and an Acceptance line cites a `F-CONFIG-AUTH` paragraph that does not exist. Verified with `mvn test -pl shared/mapping`
+(14) and `-pl core` (481, 33 pre-existing skips), both re-run by the reviewer with the `-DskipTests=false` override the
+environment's `~/.mvn/maven.config` requires, plus real-backend `config-categories` with unedited `config-main` and
+`config-searching` at 14 passed. The other `core/ui-react` gates are recorded as skipped, not passed — no file under
+`core/ui-react/` is touched. Passed with six minor findings, none corrected (optional), carried into `MAINTENANCE.md`.
+
+FM-114 (Bulk Send Default Category Parity) restores a parity regression: a bulk send with no explicit category choice
+again transmits the downloader's configured `defaultCategory` verbatim, resolved entirely client-side as legacy's
+`NzbDownloadService.download` did. No Java file is touched, because the design pass established there is no server-side
+resolution path at all — `Downloader.java` special-cases three sentinels and lets `null` through, `Sabnzbd.java` then
+omits `cat` entirely — and `downloads.spec.ts`'s comment claiming the server resolves it was simply false. **The ledger
+recorded one cause; there were two.** The second, found during design, is why this defect was testable-looking but not
+tested: `DownloadActions.tsx` preselected the default only if it appeared verbatim in the fetched `get_cats` list, and
+the mock returns `["*","movies","series","tv"]` while the configured default is `"Deterministic Category"` — so a test
+seeding a default that *is* in the list passes against the bug. Both causes are closed. One non-obvious ordering
+consequence: `request.category` is assigned *after* the duplicate probe, so the probe keeps the explicit `null` legacy
+built it with, and a mutation moving it fails exactly one test. One deviation, ruled acceptable by two reviewers
+independently: a `MenuItem` for an out-of-list default is appended after the fetched entries, because MUI otherwise
+renders the select empty on an out-of-range value and the bar would read "Use downloader default" while sending
+something else — verified by deleting the option and watching it happen. Existing options, order and labels are
+untouched. Six cases red before the fix and 74 passing after, with three more green on both sides recorded as
+non-regression pins rather than counted as proof — including the present-in-list shape the packet warned about.
+**This task was also destroyed and restored.** An external `git fast-import` rewrote the branch history and hard-reset
+the working tree at 17:17, discarding the implementation while it sat uncommitted in review; content survived in every
+commit but every sha changed. It was rebuilt from scratchpad copies, one of them the *reviewer's* rather than the
+implementer's own, and restoration fidelity was established rather than asserted: matching diffstats digit-for-digit,
+hunk headers internally consistent with them, the focus-affordance line drift equal to the same insertion count, and
+the identical red/green split reproduced. It was then committed *before* its re-review — recorded in the commit message
+as a deliberate inversion, since leaving it uncommitted a second time was the larger risk. Verified on baseline
+`a40e74de7` with the full gate chain (1456 tests) and a re-run real-backend `downloads` plus unedited `results` at 34
+passed. Passed with three minor findings, none corrected (optional), carried into `MAINTENANCE.md`.
+
+FM-115 (Toast Announcement Over Modals) closes the announcement half of an app-wide WCAG 4.1.3 defect: `Snackbar`
+contains no `Portal`, so `ToastProvider` rendered in-tree and every toast sat inside the subtree MUI marks
+`aria-hidden` when a modal opens — worst where a toast is raised from inside its own dialog, which is always the broken
+state. **A portal alone does not fix it**, and that is the packet's central point: `ModalManager.add` →
+`ariaHiddenSiblings` iterates `container.children` at modal-open time with no opt-out attribute, so a layer that
+already exists when a dialog opens is swept regardless of where it sits. The fix is a `Portal` plus a
+`MutationObserver` scoped to the single layer element, stripping `aria-hidden` whenever the sweep sets it. The
+implementer considered and rejected a cleaner-looking alternative — MUI skips elements whose tagName is in an
+ARIA-conformance blacklist, so a `<slot>` container would never be swept — on the grounds that its correctness would
+depend on a module-private, unexported list transcribed from a W3C table that MUI may re-sync at any minor version.
+Its reviewer confirmed the list exists and the trick would work today, and agreed the rejection was right. **The
+reviewer attacked the mechanism rather than trusting it**: it read `ModalManager.js` to confirm the premise verbatim,
+proved the converse by appending a bystander element and asserting it *stays* hidden, drove a two-dialog harness
+through three open/close cycles, checked StrictMode double-invocation leaves exactly one layer, and verified the
+implementer's claim that creating the element in an effect is a lint *error* rather than a preference by rewriting the
+hook that way and running ESLint on it. **The implementer identified which of its own tests carries the contract**:
+case (a) is green against a portal-without-observer half-fix, so only case (b) pins the requirement — and the reviewer
+added the sharper observation that case (a)'s ordering is artificial, since `ToastProvider` mounts at boot, making
+every production scenario case (b). The `ConfigShell` comment FM-101 left overstating in one direction was corrected
+without overstating in the other: it now claims announcement and accessibility-tree presence, which the ancestor-chain
+tests establish, and explicitly declines to claim focus, because the panel's `FocusTrap` owns focus wherever the layer
+sits. The focus half remains open and recorded, `C-TOAST-SERVICE.state` still `partial`. Verified with the full unit
+suite as the filter (1458 across 119 files, exactly +2 for the two new cases) plus the 13 named blast-radius files at
+358/358 unedited, and a re-run real-backend set at 65 passed across four unedited specs. Passed clean with two minor
+findings, neither corrected (optional), carried into `MAINTENANCE.md`.
+
+FM-116 (Result Fetch Size Wording) closes the 2026-08-27 maintenance-ledger batch, and it exists in this shape because
+its own premise collapsed. It was designed as a *removal*: the ledger recorded `searching.loadLimitInternal` as
+"consumed nowhere", the owner decided to delete it, and that became ADR-0031. Designing the packet found
+`SearchRequestFactory.java:26-30` substituting the setting as the **server-side page size** for every internal search
+that arrives without an explicit `limit` — and `SearchPage.tsx` never sends one, then consumes the returned `limit` as
+its load-more cursor. The setting governs fetch size on every install. ADR-0032 supersedes ADR-0031 on that evidence:
+the setting stays and stays editable, and the defect is that its label and help describe a *display* page size, which
+is what legacy used it for. The reusable lesson is recorded with it — the consumer is a default substituted
+server-side for an *absent* field, so no grep for the setting name in the frontend can see it. Three surfaces
+misdescribed one setting and all three are corrected: the label and help themselves, the adjacent
+`loadAllCachedOnInternal` help pointing "above" at a field that sits below it, and FM-094's comment in
+`results.spec.ts` asserting "React ignores it" — the durable record that seeded the false ledger claim. **The
+implementer disproved a second premise, this one in the packet.** The packet asserted `settingsIndexDrift.test.tsx`
+would catch a one-sided label edit and asked for a demonstration; the demonstration showed the opposite. Editing only
+the index's label left the suite 46/46 green, because the drift test compares `anchorTestId`, `path`, the `advanced`
+flag and fieldset placement, but never `label` or `helpText` — as the module's own doc comment says. Its reviewer
+reproduced that independently. So the guarantee FM-099 built is narrower than believed, the two copies of this
+setting's wording were synced and verified **by hand**, and the gap is now logged as pre-existing rather than
+attributed here. Verified with the full gate chain (1458 tests, and the three affected specs run identically at base
+and after) plus real-backend `config-searching` and `config` at 33/33. Passed with two findings carried into
+`MAINTENANCE.md`, one of them the residual this task could not reach: the field still renders `unit="results per
+page"` beside its corrected label, a fourth surface the design pass did not name and the allowlist explicitly froze.
+
 ## Active
 
 None.
@@ -934,12 +1034,7 @@ None.
 
 ## Upcoming
 
-- FM-113: Blank Category Save Refusal — `ready`. First of the 2026-08-27 maintenance-ledger batch (FM-113..FM-116),
-  four independent items with no dependencies between them; the other three stay `planned` until promoted. Backend
-  fix: `CategoriesConfig.setCategories` NPEs on a null-named category during request binding, before any validator
-  runs. Refined 2026-08-27 on an implementer `BLOCKED` — the tab's `required` Name blocks the save client-side, so the
-  defect is API-only and the end-to-end criterion now asserts a direct PUT rather than a click-and-save that could
-  never reach the server. FM-116 likewise became a wording correction under ADR-0032, which supersedes ADR-0031.
+- Nothing is queued. The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.
 
 - The 2026-08-26 batch is complete with FM-107; nothing is queued behind it. Unlike the cleanup
   batch, these change the UI deliberately, so each carries its own visual evidence. Later members stay `planned` until
