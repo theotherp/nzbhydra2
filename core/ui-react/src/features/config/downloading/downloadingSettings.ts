@@ -158,6 +158,54 @@ export function downloaderLegend(entry: DownloaderValues): string {
 }
 
 /**
+ * `DownloaderConfig.downloaderType` as a reader sees it, mirroring
+ * `indexerSettings.ts`'s `INDEXER_TYPE_LABELS`: the table showed the raw enum
+ * constant (`NZBGET`) before FM-118, which is exactly the inconsistency the
+ * table was written to remove (ADR-0033).
+ */
+const DOWNLOADER_TYPE_LABELS: Readonly<Record<string, string>> = {
+    NZBGET: "NZBGet",
+    SABNZBD: "SABnzbd",
+    TORBOX: "Torbox",
+};
+
+/** Shown when an entry carries no type at all; nothing else would be true. */
+const UNKNOWN_DOWNLOADER_TYPE = "Unknown";
+
+export function downloaderTypeLabel(downloaderType: unknown): string {
+    const type = downloaderText(downloaderType);
+    if (type === "") {
+        return UNKNOWN_DOWNLOADER_TYPE;
+    }
+    return (
+        DOWNLOADER_TYPE_LABELS[type] ??
+        type
+            .split("_")
+            .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+            .join(" ")
+    );
+}
+
+/** The table's URL cell has no value to show for it. */
+const NO_URL = "Not applicable";
+
+/**
+ * The table's URL column. Torbox carries no `url` at all
+ * (`visibleDownloaderFields` never offers the field, and its preset seeds no
+ * key for it), so `downloaderText(entry.url)` alone would render an empty
+ * cell indistinguishable from a bug — a reader cannot tell "not applicable"
+ * from "not typed in yet". Every other type always has the field, even when
+ * blank, so an empty string there is a genuinely unset URL and is shown as
+ * one.
+ */
+export function downloaderUrlDisplay(entry: DownloaderValues): string {
+    if (downloaderText(entry.downloaderType) === "TORBOX") {
+        return NO_URL;
+    }
+    return downloaderText(entry.url);
+}
+
+/**
  * The editable fields of a downloader, in legacy's order
  * (`getDownloaderBoxFields`). `enabled` and `iconCssClass` apply to every type;
  * the rest are filtered by `showFor`/`hideFor`

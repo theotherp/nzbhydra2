@@ -1,24 +1,13 @@
-import EditIcon from "@mui/icons-material/Edit";
-import {
-    Box,
-    Button,
-    Divider,
-    Menu,
-    MenuItem,
-    Stack,
-    Typography,
-} from "@mui/material";
+import {Box, Button, Menu, MenuItem} from "@mui/material";
 import {useRef, useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
-import {SwitchSetting} from "../components";
 import {DownloaderDialog} from "./DownloaderDialog";
+import {DownloaderTable} from "./DownloaderTable";
 import {
     asDownloader,
-    downloaderFieldPath,
-    downloaderLegend,
     downloaderText,
     downloadersOf,
     DOWNLOADERS_PATH,
@@ -135,26 +124,17 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
 
     return (
         <Box data-testid={`config-repeat-${DOWNLOADERS_TEST_ID}`}>
-            <Stack divider={<Divider />} spacing={2} sx={{mb: 2}}>
-                {entries.map((entry, index) => (
-                    // The index is the key on purpose, as in `RepeatSection`:
-                    // a downloader's name is editable and not guaranteed
-                    // unique, and row N always shows and edits whatever is
-                    // currently at index N.
-                    <DownloaderEntryRow
-                        entry={entry}
-                        index={index}
-                        key={index}
-                        onEdit={() =>
-                            openTransaction(index, asDownloader(entry))
-                        }
-                    />
-                ))}
-            </Stack>
+            <DownloaderTable
+                entries={entries}
+                onEdit={(index) =>
+                    openTransaction(index, asDownloader(entries[index]))
+                }
+            />
             <Button
                 aria-haspopup="menu"
                 data-testid={`config-repeat-add-${DOWNLOADERS_TEST_ID}`}
                 onClick={(event) => setAddMenuAnchor(event.currentTarget)}
+                sx={{mt: 2}}
                 type="button"
                 variant="outlined"
             >
@@ -212,77 +192,4 @@ function otherNames(
             entryIndex === index ? "" : downloaderText(entry.name),
         )
         .filter((name) => name !== "");
-}
-
-function DownloaderEntryRow({
-    entry,
-    index,
-    onEdit,
-}: {
-    entry: DownloaderValues;
-    index: number;
-    onEdit: () => void;
-}) {
-    const legend = downloaderLegend(entry);
-    const rows: {field: string; label: string; value: string}[] = [
-        {
-            field: "downloaderType",
-            label: "Type",
-            value: downloaderText(entry.downloaderType),
-        },
-        {field: "url", label: "URL", value: downloaderText(entry.url)},
-    ];
-
-    return (
-        <Box
-            data-testid={`config-repeat-entry-${DOWNLOADERS_TEST_ID}-${index}`}
-        >
-            <Typography component="h3" sx={{mb: 1}} variant="subtitle1">
-                {legend}
-            </Typography>
-            <Box component="dl" sx={{m: 0, mb: 1}}>
-                {rows.map((row) => (
-                    <Stack
-                        direction={{xs: "column", sm: "row"}}
-                        key={row.field}
-                        spacing={{sm: 1}}
-                    >
-                        <Typography
-                            component="dt"
-                            sx={{minWidth: 180}}
-                            variant="body2"
-                        >
-                            {row.label}
-                        </Typography>
-                        <Typography
-                            component="dd"
-                            data-testid={`config-downloader-value-${index}-${row.field}`}
-                            sx={{m: 0}}
-                            variant="body2"
-                        >
-                            {row.value}
-                        </Typography>
-                    </Stack>
-                ))}
-            </Box>
-            {/*
-             * Legacy puts an enable/disable switch next to every downloader in
-             * the list, editing the configuration directly rather than through
-             * the modal (`downloader-config.html:29`). It stays that way: it is
-             * a one-click toggle, not an edit that needs verifying.
-             */}
-            <SwitchSetting
-                label="Enabled"
-                name={downloaderFieldPath(index, "enabled")}
-            />
-            <Button
-                data-testid={`config-repeat-edit-${DOWNLOADERS_TEST_ID}-${index}`}
-                onClick={onEdit}
-                startIcon={<EditIcon />}
-                type="button"
-            >
-                Edit {legend}
-            </Button>
-        </Box>
-    );
 }

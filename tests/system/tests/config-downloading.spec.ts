@@ -294,8 +294,12 @@ test.describe("Config downloading tab visual evidence", () => {
             });
             await page.keyboard.press("Escape");
 
-            // Two saved downloaders, so the strip shows a populated list and
-            // the primary-downloader select the footer switch reveals.
+            // Three saved downloaders, so the strip shows a populated table,
+            // the primary-downloader select the footer switch reveals, and
+            // — FM-118 — a Torbox row, whose URL column has no value to show
+            // (`visibleDownloaderFields`/its preset seed carry no `url` key at
+            // all) and must read as an explicit empty state rather than a
+            // blank cell or the string "undefined".
             await hydra.saveConfig({
                 ...before,
                 downloading: {
@@ -320,6 +324,15 @@ test.describe("Config downloading tab visual evidence", () => {
                             nzbAddingType: "SEND_LINK",
                             url: "http://localhost:6789",
                         },
+                        {
+                            addPaused: false,
+                            defaultCategory: "Use no category",
+                            downloadType: "NZB",
+                            downloaderType: "TORBOX",
+                            enabled: true,
+                            name: "System Test Torbox",
+                            nzbAddingType: "UPLOAD",
+                        },
                     ],
                     showDownloaderStatus: true,
                 },
@@ -332,13 +345,16 @@ test.describe("Config downloading tab visual evidence", () => {
                 ).toBeVisible();
                 await showAdvanced(page);
                 await expect(
-                    page.getByTestId(`config-repeat-entry-${LIST}-1`),
+                    page.getByTestId(`config-repeat-entry-${LIST}-2`),
                 ).toBeVisible();
             });
+            await expect(
+                page.getByTestId("config-downloader-value-2-url"),
+            ).not.toHaveText(/undefined/);
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-DOWNLOADING",
-                    `downloading-two-downloaders-${viewport}`,
+                    `downloading-three-downloaders-${viewport}`,
                 ),
                 fullPage: true,
             });

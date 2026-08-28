@@ -722,7 +722,11 @@ features:
       # `config-repeat-add-option-<path>-<NZBGET|SABNZBD|TORBOX>`,
       # `config-repeat-entry-<path>-<index>`, `config-repeat-edit-<path>-<index>`,
       # and `config-downloader-value-<index>-<field>` for a row's summary values.
-      # The dialog's own controls bind to the draft path
+      # FM-118 reshaped the list into a table (`DownloaderTable.tsx`, ADR-0033,
+      # bespoke rather than shared with `IndexerTable`): the edit action is now
+      # the row's Name cell button and the summary values are its Type and URL
+      # cells, but every one of the ids above is unchanged. The dialog's own
+      # controls bind to the draft path
       # `downloading.downloaderDraft`, so they read
       # `config-input-downloading-downloaderDraft-<field>` and never collide
       # with the list row behind them.

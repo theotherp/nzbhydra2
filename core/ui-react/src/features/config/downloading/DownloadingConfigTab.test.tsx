@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import {useEffect} from "react";
 import {FormProvider, useForm, type UseFormReturn} from "react-hook-form";
@@ -50,6 +51,18 @@ const NZBGET: DownloaderValues = {
     password: UNCHANGED_SECRET_MARKER,
     url: "http://localhost:6789",
     username: UNCHANGED_SECRET_MARKER,
+};
+
+/** Torbox has no `url` at all (`visibleDownloaderFields`/its preset seed). */
+const TORBOX: DownloaderValues = {
+    addPaused: false,
+    defaultCategory: "Use no category",
+    downloadType: "NZB",
+    downloaderType: "TORBOX",
+    enabled: true,
+    iconCssClass: "",
+    name: "Torbox",
+    nzbAddingType: "UPLOAD",
 };
 
 const baseDownloading: Record<string, unknown> = {
@@ -161,8 +174,28 @@ function submitDialog(): void {
     fireEvent.click(screen.getByTestId("config-downloader-dialog-submit"));
 }
 
+/**
+ * Below `sm` the downloader table drops its Type/URL/Enabled columns and
+ * folds them into the name cell, mirroring `IndexerTable.tsx`'s own
+ * `useMediaQuery` branch. jsdom's own `matchMedia` never matches anything, so
+ * a phone viewport has to be stated explicitly.
+ */
+function stubMobileViewport(): void {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+        addEventListener: () => {},
+        addListener: () => {},
+        dispatchEvent: () => false,
+        matches: query.includes("max-width"),
+        media: query,
+        onchange: null,
+        removeEventListener: () => {},
+        removeListener: () => {},
+    }));
+}
+
 afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
 });
 
 describe("Downloading config tab general fieldset", () => {
@@ -629,6 +662,73 @@ describe("Downloading config tab downloader transaction", () => {
             expect(downloadersOf(harness)[0].enabled).toBe(false),
         );
         expect(screen.queryByTestId("config-downloader-dialog")).toBeNull();
+    });
+
+    it("renders the type through a label map and gives a Torbox row's URL an explicit empty state", () => {
+        renderDownloading({
+            values: configWith({downloaders: [NZBGET, SABNZBD, TORBOX]}),
+        });
+
+        // The raw enum constant never reaches the screen.
+        expect(
+            screen.getByTestId(`config-downloader-value-0-downloaderType`),
+        ).toHaveTextContent("NZBGet");
+        expect(screen.queryByText("NZBGET")).toBeNull();
+        expect(
+            screen.getByTestId(`config-downloader-value-1-downloaderType`),
+        ).toHaveTextContent("SABnzbd");
+        expect(screen.queryByText("SABNZBD")).toBeNull();
+        expect(
+            screen.getByTestId(`config-downloader-value-2-downloaderType`),
+        ).toHaveTextContent("Torbox");
+
+        // Torbox has no `url` field at all; the cell says so in words rather
+        // than rendering blank or the literal string "undefined".
+        const torboxUrl = screen.getByTestId("config-downloader-value-2-url");
+        expect(torboxUrl).toHaveTextContent("Not applicable");
+        expect(torboxUrl).not.toHaveTextContent("undefined");
+
+        // The other two rows still show their real URL.
+        expect(
+            screen.getByTestId("config-downloader-value-0-url"),
+        ).toHaveTextContent(String(NZBGET.url));
+        expect(
+            screen.getByTestId("config-downloader-value-1-url"),
+        ).toHaveTextContent(String(SABNZBD.url));
+    });
+
+    it("stacks every column of an entry into one cell on a phone, dropping nothing", () => {
+        stubMobileViewport();
+        renderDownloading({
+            values: configWith({downloaders: [SABNZBD]}),
+        });
+
+        expect(
+            screen.getAllByRole("columnheader").map((cell) => cell.textContent),
+        ).toEqual(["Downloader"]);
+
+        // Every piece is still there, still once, and still in this entry's
+        // own row — a stacked cell, not a dropped column.
+        const row = screen.getByTestId(`config-repeat-entry-${LIST}-0`);
+        expect(
+            within(row).getByTestId(
+                "config-repeat-edit-downloading-downloaders-0",
+            ),
+        ).toHaveTextContent("Sab");
+        expect(
+            within(row).getByTestId("config-downloader-value-0-downloaderType"),
+        ).toHaveTextContent("SABnzbd");
+        expect(
+            within(row).getByTestId("config-downloader-value-0-url"),
+        ).toHaveTextContent(String(SABNZBD.url));
+        expect(within(row).getByRole("switch")).toBeChecked();
+        // Exactly one control per configuration path: the two layouts are
+        // branches, never two rendered variants sharing a binding.
+        expect(
+            screen.getAllByTestId(
+                "config-input-downloading-downloaders-0-enabled",
+            ),
+        ).toHaveLength(1);
     });
 });
 

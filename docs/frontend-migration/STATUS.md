@@ -1045,10 +1045,26 @@ None.
   not 6). That is logged in `MAINTENANCE.md`; the commit message is history and stands as written. **FM-120 is
   unblocked.**
 
-- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-118/FM-119/FM-120 stay `planned` until
-  promoted. FM-120's dependency on FM-117 is satisfied.
+- FM-118 (Downloaders Table) is **done** — `b3b3b0300`, accepted 2026-08-28 on a fresh independent review returning
+  PASS with no required and no minor findings, the batch's first clean first pass. Downloaders now present as a table
+  matching the indexers one: name button as the edit control, Type, URL, Enabled switch left on the row. All five
+  ADR-0033 testid families survived, so `settingsIndex.ts` and `settingsIndexDrift.test.tsx` needed no edit and were
+  confirmed byte-identical and still exercised. The reviewer rebuilt the tree in a scratch copy — necessary, since
+  `DownloaderTable.tsx` was untracked and `git archive HEAD` would have missed it — re-ran every gate, reproduced both
+  mutations, and independently checked the Torbox *name button*, which the handoff had not discussed. Packet archived
+  at `e40804c61`.
 
-- **FM-118 and FM-119 must not run concurrently.** They edit disjoint sources, but
+- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-119/FM-120 stay `planned` until promoted.
+  FM-120's dependency on FM-117 is satisfied.
+
+- FM-118 (Downloaders As A Table) is **in `review`** — implemented against ADR-0033: a bespoke `DownloaderTable.tsx`
+  replaces `DownloadersSection.tsx`'s list markup, `settingsIndexDrift.test.tsx` and `settingsIndex.ts` are untouched
+  (`git diff --stat` shows no line for either), and every ADR-0033 testid was confirmed still resolving, including a
+  rendered Torbox row whose URL cell reads "Not applicable" rather than "undefined". Per the FM-118/FM-119 sequencing
+  note below, FM-119 must not start until this is out of `review`.
+
+- **FM-118 and FM-119 were sequenced deliberately, and FM-119 is now clear to start** (FM-118 committed at
+  `b3b3b0300`). The reason they could not overlap: They edit disjoint sources, but
   `config/settingsSearch/settingsIndexDrift.test.tsx` renders *every* config tab in one file, so it mounts both the
   downloading and categories tabs — run in parallel, each implementer's suite would contain the other's uncommitted
   work, which is exactly the contamination that cost FM-117/FM-121 their per-task verification runs. Sequence them;
