@@ -4,8 +4,12 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-SHELL
 Component IDs: C-CONFIG-FIELDS (the `ConfigFieldset` registration half)
 API IDs: None
-Depends on: FM-117
+Depends on: None
 Blocks: None
+
+> Dependency discharged, not dropped: this task was written `Depends on: FM-117`, and FM-117 was accepted
+> 2026-08-28 at `0c6af3e32` (packet archived at `cac90200e`). The field reads `None` only because the
+> registry validator requires dependencies to name a live packet. FM-117's theme work is in the baseline.
 
 ## Outcome
 

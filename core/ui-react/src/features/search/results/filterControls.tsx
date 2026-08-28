@@ -150,22 +150,18 @@ export function ToggleRowFilter({
     );
 }
 
-// The mock's own recessed numeric field styling (background/border/radius)
-// is now the `MuiOutlinedInput` theme default (`app/theme.ts`), so these
-// fields carry no local background/border override at all -- only the
-// monospace numeral font and the native spinner-arrow removal, neither of
-// which the theme's own `OutlinedInput` override expresses.
+// The mock's own recessed numeric field styling (background/border/radius) is
+// the `MuiOutlinedInput` theme default (`app/theme.ts`), and FM-117 moved the
+// native spinner-arrow removal there too -- it was the same two rules every
+// other `type="number"` field in the application needed and none of them had.
+// What is left here is only this surface's own denser numeral treatment: the
+// mock's 13px monospace figures, which no other field wants.
 const numericFieldSx = {
     flex: 1,
     minWidth: 0,
     "& input": {
         fontFamily: monoFontFamily,
         fontSize: "13px",
-        MozAppearance: "textfield",
-    },
-    "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button": {
-        WebkitAppearance: "none",
-        margin: 0,
     },
 } as const;
 

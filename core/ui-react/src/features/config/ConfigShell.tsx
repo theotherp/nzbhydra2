@@ -2,6 +2,7 @@ import {
     Alert,
     Box,
     CircularProgress,
+    Paper,
     Portal,
     Stack,
     Typography,
@@ -372,13 +373,35 @@ function ConfigForm({
                                 onToggleAdvanced={toggleAdvanced}
                                 showAdvanced={showAdvanced}
                             />
-                            <Box sx={{flexGrow: 1, minWidth: 0}}>
+                            {/* ADR-0036's ground resolution, in the one
+                                direction the ADR allows: the tab body gains
+                                the `Paper` the dialogs already have, rather
+                                than the input background being taught to
+                                follow whatever it is sitting on. A config
+                                field and the identical field in the indexer or
+                                downloader dialog now render the same recessed
+                                well against the same `background.paper`
+                                ground, which is what makes one border value
+                                readable in both places; the alternative would
+                                have made the field's own fill a function of
+                                its container and left two treatments to keep
+                                in step forever. The sidebar beside this
+                                deliberately stays transparent on the page
+                                ground -- it holds no fields. */}
+                            <Paper
+                                data-testid="config-tab-body"
+                                sx={{
+                                    flexGrow: 1,
+                                    minWidth: 0,
+                                    p: {xs: 2, md: 3},
+                                }}
+                            >
                                 <FieldsetNavContext.Provider
                                     value={fieldsetNav.registry}
                                 >
                                     <Outlet />
                                 </FieldsetNavContext.Provider>
-                            </Box>
+                            </Paper>
                         </Stack>
                     </Box>
                     <ReviewChangesPanel

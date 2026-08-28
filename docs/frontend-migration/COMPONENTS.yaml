@@ -374,7 +374,16 @@ components:
       because `useWatch`-gated advanced rows mount and unmount while the tab is open. An advanced `HelpBlock`, and an advanced row outside any fieldset, are the documented boundary -- both stay hidden outright. FM-102 has every
       `ConfigFieldset` self-register its own `<fieldset>` element -- while that element is actually mounted, so a whole advanced fieldset collapsed behind its expander contributes no entry until revealed -- with `F-CONFIG-SHELL`'s
       registry (`core/ui-react/src/features/config/fieldsetNav.ts`), which `ConfigNav.tsx` renders as ADR-0028's "on this page" list; order is derived from live DOM position on every change rather than trusted from registration
-      sequence, since a conditionally mounted fieldset's effect commits after ones already on screen while sitting earlier in the tab's JSX.
+      sequence, since a conditionally mounted fieldset's effect commits after ones already on screen while sitting earlier in the tab's JSX. FM-117 changed how every one of these controls is *painted*, and did it entirely in
+      `core/ui-react/src/app/theme.ts` -- no control in this vocabulary gained a style of its own. A chips control is now a growing box rather than a single-line one, so a value whose chips wrap onto several rows shows all of
+      them (ADR-0036); a number control renders without the native spinner arrows in both Firefox and Chromium while keeping Up/Down stepping; the outlined field's notch border is a dedicated token strong enough to be visible
+      (ADR-0036), with the disabled state stepped down to the old hairline so it stays distinguishable from rest; and `palette.error.main` was raised to clear 4.5:1 as a foreground (ADR-0035), which is what the `color="error"`
+      controls these tabs render take their colour from. ADR-0036's two-grounds problem is resolved in the "config tab bodies gain the `Paper` the dialogs already have" direction, so a control renders identically in a tab and in
+      a dialog. That last step also flattened `MuiPaper` app-wide (it stops painting MUI's dark-mode elevation wash, without which a tab-body `Paper` would have been a *third* ground), and the review of FM-117 found the two
+      surfaces that flattening left co-planar with their container -- both borderless raised `Paper`s -- namely the notification list's `Accordion` entries and MUI's `AutocompletePaper` behind every chips field and the settings search.
+      Both were 1.000:1 against what they sat on. They now take the raised treatment `MuiMenu` and `MuiPopover` already had -- a `surfaces.control` fill at 1.070:1 with a `surfaces.hairline` edge at 1.465:1, above the 1.294:1
+      the pre-FM-117 elevation wash gave them -- so "a raised surface in this application looks like this" has one answer. An option-less suggestion paper is hidden while empty, because a filled, bordered one painted a 2px strip
+      under the field where the borderless one had shown nothing.
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

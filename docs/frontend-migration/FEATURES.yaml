@@ -398,6 +398,7 @@ features:
     target: core/ui-react/src/features/config
     tests:
       - tests/system/tests/config.spec.ts
+      - tests/system/tests/config-control-treatment.spec.ts
       - tests/system/tests/external-tools.spec.ts
       - core/ui-react/src/features/config/ConfigShell.test.tsx
       - core/ui-react/src/features/config/ConfigFeedbackBanner.test.tsx
@@ -413,6 +414,9 @@ features:
       # `config-nav-invalid-<tab>` (validation errors in it), one pair per
       # `config-tab-<tab>` below. The fixed selectors are listed here.
       - config-shell
+      # FM-117 (ADR-0036): the tab body, which is the `Paper` the config
+      # fields now sit on -- the same ground the dialogs already used.
+      - config-tab-body
       - config-nav
       - config-nav-open
       - config-save-bar

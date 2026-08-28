@@ -328,6 +328,29 @@ afterEach(() => {
 });
 
 describe("ConfigShell", () => {
+    // ADR-0036 resolves "the same field renders two ways on two grounds" in
+    // exactly one direction, and this is the direction taken: the tab body
+    // gains the `Paper` the dialogs already have, rather than the input
+    // background being taught to follow its container. Asserted structurally
+    // -- the tab body is a `Paper` and the fields render inside it -- because
+    // jsdom computes no colour for a themed class and would let a colour
+    // assertion here pass whatever the theme said. The ground the `Paper`
+    // actually paints is pinned in `theme.test.ts` (every `Paper` flat, so
+    // `background.paper` is not a function of elevation) and shown in the
+    // screenshot strip.
+    it("should render the tab body on the same paper ground the dialogs use", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        const body = screen.getByTestId("config-tab-body");
+
+        expect(body).toHaveClass("MuiPaper-root");
+        // The sidebar is deliberately *not* inside it: it holds no fields, and
+        // ADR-0036 is about the ground a field sits on.
+        expect(body).not.toContainElement(screen.getByTestId("config-nav"));
+        expect(body).toContainElement(screen.getByLabelText("Host"));
+    });
+
     it("should offer every canonical tab", async () => {
         renderConfigArea({backend: createBackend()});
         await waitForShell();

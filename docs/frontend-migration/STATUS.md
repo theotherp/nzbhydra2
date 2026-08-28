@@ -1022,10 +1022,7 @@ page"` beside its corrected label, a fourth surface the design pass did not name
 
 ## Active
 
-- FM-117: Config Control Treatment — in_progress. Theme-level fixes for clipped chips fields, native number spinners,
-  the outline/ground treatment (ADR-0036) and `error.main` contrast (ADR-0035).
-- FM-121: Stats Shell Layout Route And Caching — in_progress. Run concurrently with FM-117: the two are file-disjoint
-  (`app/theme.ts` vs `router.tsx`/`features/stats`), and FM-121 depends on nothing.
+None.
 
 ## Review
 
@@ -1037,8 +1034,30 @@ None.
 
 ## Upcoming
 
-- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-118/FM-119 stay `planned` until promoted,
-  and FM-120 stays `planned` behind FM-117.
+- FM-121 (Stats Shell Layout Route And Caching) is **done** — `e438c1cd3`, accepted after one correction cycle and a
+  fresh re-review.
+
+- FM-117 (Config Control Treatment) is **done** — `0c6af3e32`, accepted 2026-08-28. Its correction cycle carried an
+  explicit "not re-reviewed, do not treat as accepted" warning here and in its commit message; that warning is now
+  discharged by a fresh independent re-review returning PASS with no required findings. The re-review recomputed every
+  contrast ratio from raw values instead of quoting the handoff, re-ran every gate itself, and reproduced the mutation
+  evidence in an isolated `git archive` copy — where it found the evidence real but the count off by one (7 failed,
+  not 6). That is logged in `MAINTENANCE.md`; the commit message is history and stands as written. **FM-120 is
+  unblocked.**
+
+- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-118/FM-119/FM-120 stay `planned` until
+  promoted. FM-120's dependency on FM-117 is satisfied.
+
+- **FM-118 and FM-119 must not run concurrently.** They edit disjoint sources, but
+  `config/settingsSearch/settingsIndexDrift.test.tsx` renders *every* config tab in one file, so it mounts both the
+  downloading and categories tabs — run in parallel, each implementer's suite would contain the other's uncommitted
+  work, which is exactly the contamination that cost FM-117/FM-121 their per-task verification runs. Sequence them;
+  the cost is wall-clock only. Related: neither task needs to touch `settingsSearch/settingsIndex.ts`. Per-entry list
+  fields and dialog-internal fields are deliberately outside the index's vocabulary (`settingsIndex.ts:17-20`), and
+  both lists already contribute exactly one section entry (`:837` categories, `:905` downloaders). FM-119 moving ~208
+  category inputs into modals therefore follows the shape indexers already set rather than inventing one. The single
+  index-side contract for both is that the section's `anchorTestId` keeps rendering — which ADR-0033 already requires
+  for downloaders and direction (c) of the drift test enforces for both.
 
 - The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.
 

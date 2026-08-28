@@ -1115,6 +1115,14 @@ that pass name every task that surfaced them; no evidence and no `file:line` cit
 
 ### Task packet with independent review
 
+- **The system-test runner installs Chromium only, so FM-117's Firefox coverage silently stops existing.**
+  `misc/run_gui_systemtest.py` runs `npx playwright install chromium`. `tests/system/tests/config-control-treatment.spec.ts`
+  guards its Firefox case with `test.skip` naming the missing executable — honest, not a false green — but the number
+  spinners were fixed *because the owner dislikes them in Firefox specifically*, and on any machine without a local
+  `playwright install firefox` that acceptance criterion covers nothing. Adding `firefox` to the install step makes it
+  run everywhere; sizing it as a packet rather than a quick fix because it changes what every system run downloads and
+  how long CI takes.
+
 New user capability, API/URL/selector contract change, persisted-data change, cross-module behaviour change, or anything that
 needs a new decision entry. Ordered by consequence-if-left times likelihood-of-being-hit: the first three are reachable by an
 ordinary admin on an ordinary day and fail silently or destructively; the selector-contract pair below them is latent but
@@ -1233,6 +1241,43 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   unannotated-magnitude gate, which is red at base almost entirely on these sites.
 
 ### Single-session fix
+
+- **The stats day-boundary invariant lives at two call sites, not in the helper.** FM-121's correction truncates preset
+  ranges to day boundaries inside `StatsDashboardPage.tsx` (the `defaultWindow` memo and `handlePresetChange`), because
+  `rangeForPreset` (`features/stats/dashboard/dateRange.ts`) and `defaultStatsWindow` (`api/stats/mainStats.ts`) were
+  outside FM-121's allowlist. Those helpers still return hour-bearing ranges, so nothing — test, type, or lint — stops a
+  future third caller re-introducing the exact cache-key collision the correction fixed. It is airtight today only by
+  coincidence of arity: the dashboard is their sole non-test caller. Move the truncation into the helpers and update
+  `dateRange.test.ts`. Raised by FM-121's re-review.
+
+- **FM-121 changed what a preset window means, and only a source docblock says so.** Preset windows now start at local
+  midnight instead of the mount's time-of-day, so "last 7 days" spans seven whole days plus today. No data is lost (the
+  `before` end floors to tomorrow 00:00, still future), but it is a real semantic change recorded only in
+  `statsQueryKey`'s comment — not in `F-STATS-MAIN`'s parity notes in `FEATURES.yaml`, where a reader comparing against
+  legacy would look. Add the parity note.
+
+- **`STATUS.md`'s FM-121 entry overstated its verification basis at the moment it was written.** It cited a real-backend
+  run at 17/17 that predated the correction cycle: `stats.spec.ts` and `StatsDashboardPage.tsx` both changed afterwards,
+  and the fixer could not re-execute Playwright. The durable record was ahead of its evidence by one unexecuted line.
+  Recorded as a process note rather than a code defect: when a correction cycle follows an accepted review, the recorded
+  basis needs re-stating, not inheriting.
+
+- **A test reads one number by importing the application root.** `StatsDashboardPage.test.tsx` imports
+  `DEFAULT_QUERY_STALE_TIME_MS` from `../../../App`, pulling the router and shell into a leaf feature test's module
+  graph. The intent is right — measure the real default rather than an invented one — but the constant belongs in a
+  small shared module. Raised by FM-121's first review.
+
+- **FM-117's both-grounds outline loop never measures the dialog's own outline against the dialog ground.**
+  `tests/system/tests/config-control-treatment.spec.ts` composites `tabOutline` over each ground including the dialog's,
+  and the `dialogOutline === tabOutline` equality guarding that substitution is `expect.soft`, so a divergence would not
+  stop the loop. Harmless while they are equal; the case is weaker than it reads. Raised by FM-117's review.
+
+- **A fabricated causal explanation reached a handoff.** FM-117's first handoff explained a knip count as "2 findings ->
+  1 because FM-121 consumed the second". The base has always been 1. The gate outcome was correct; only the cause was
+  invented, and it would have entered the permanent record as a fact about FM-121. Corrected in the FM-117 commit
+  message and in the packet. Logged here because it is a distinct failure mode from this batch's other nine, which were
+  all tests that could not see a defect: this was a correct number given a confident, unmeasured reason. Worth a line in
+  the implementer/fixer agent definitions: if you do not know why a number moved, say you do not know.
 
 Styling, markup or UX polish inside existing features; a single-module bugfix shipping a regression test; mechanical repair.
 Constraints: no designer, no reviewer, no decision entry, no registry edit, no `data-testid` change. If mid-fix the change turns
@@ -1994,3 +2039,19 @@ their text and relative order are unchanged.
   quotes the changed strings, and none do. A fix would compare `SettingRow`'s rendered label and help text against
   `entry.label`/`entry.helpText` in at least one per-tab block. Note it means FM-116's own two copies were synced by
   hand and verified by hand, not by any gate. Surfaced 2026-08-27 by FM-116.
+
+- **FM-117's commit message under-counts its own mutation evidence by one.** `0c6af3e32` states that deleting the two
+  raised-surface rules (`MuiAccordion.styleOverrides.root` and `MuiAutocomplete.styleOverrides.paper`) gives
+  **6 failed / 35 passed**. FM-117's fresh re-review reproduced the mutation in an isolated `git archive` copy, twice,
+  under both plausible readings of "delete the two rules" — full block removal, and stripping only the
+  `backgroundColor` / `border` lines — and got **7 failed / 35 passed** each time. The extra failure is the
+  `"&:empty"` case's second assertion (`expect(style.border).toContain(...)`), which the same deletion also breaks.
+  The substance is sound and this is the good outcome: the rules are load-bearing and a regression flips real
+  assertions rather than leaving a vacuously green suite. Only the number is wrong. Left uncorrected deliberately —
+  the claim lives in a commit message, and rewriting local history to fix an off-by-one costs more than it buys. The
+  packet's acceptance record (archived at `cac90200e`) and this entry carry the true count. Surfaced 2026-08-28 by
+  FM-117's re-review.
+
+  Worth noting *why* this was caught: the reviewer re-ran the mutation instead of reading the claim. Nine tasks in
+  this batch shipped something a green suite could not see, and one fabricated a causal explanation outright, so
+  re-deriving a self-reported number is now the cheapest defence available. It cost one scratch copy.

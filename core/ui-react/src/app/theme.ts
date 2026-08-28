@@ -274,11 +274,29 @@ const mockPalette = {
     success: "oklch(0.75 0.11 150)",
     // The mock's amber accent.
     warning: "oklch(0.76 0.1 70)",
-    // No mock evidence: the mock never renders an `info` or `error` role, so
-    // ADR-0007's legacy-grey values are deliberately kept rather than inventing
-    // unreviewed `oklch` ones (see the FM-043 packet's Out Of Scope).
+    // No mock evidence: the mock never renders an `info` role, so ADR-0007's
+    // legacy-grey value is deliberately kept rather than inventing an
+    // unreviewed `oklch` one (see the FM-043 packet's Out Of Scope).
     info: "#398da5",
-    error: "#a33938",
+    // ADR-0035. The carried-over legacy `#a33938` was the one role never
+    // re-authored with the rest of the palette, and it is used as a
+    // *foreground* -- the text-variant `Button color="error"` Delete in the
+    // indexer, downloader and external-tool dialogs, `RepeatSection`'s remove
+    // button, and every other `color="error"` control listed in the FM-117
+    // handoff. Measured against the two grounds those controls render on:
+    // 2.16:1 on `background.paper` `#262c2e` and 2.39:1 on
+    // `background.default` `#1f2426`, both far below WCAG 1.4.3's 4.5:1.
+    //
+    // ADR-0035 decides the fix is the token, not a per-button override, and
+    // that the correction is *lightness only*: `#a33938` decomposes to
+    // `oklch(0.496 0.141 24.283)`, so chroma and hue are carried across
+    // unchanged (0.14 / 24.3) and only L moves, 0.496 -> 0.70. That lands on
+    // `#e97872`, measured 4.99:1 on `background.paper` and 5.52:1 on
+    // `background.default`. L was not pushed further towards the rest of the
+    // palette's 0.74-0.78 band because this token is also a *background* in
+    // two families (filled `Chip color="error"`, filled error `Alert`), and
+    // every step of lightness spends contrast there to buy it here.
+    error: "oklch(0.7 0.14 24.3)",
     // The mock's `::-webkit-scrollbar` thumb colors; it has no theme-token
     // equivalent, so the two literals stay here next to the palette they belong
     // to. The track and thumb border reuse `background.default` instead.
@@ -297,6 +315,31 @@ const mockSurfaces = {
     hairlineFaint: "rgba(255, 255, 255, 0.06)",
     mutedText: "#6b7472",
 } as const;
+
+/**
+ * ADR-0036: the outlined-input notch border, as its own token rather than as
+ * `surfaces.hairline`.
+ *
+ * The defect was that an outlined field did not read as outlined. Measured, the
+ * resting `surfaces.hairline` `rgba(255, 255, 255, 0.1)` edge is **1.37:1**
+ * against `background.paper` `#262c2e` and **1.36:1** against
+ * `background.default` `#1f2426` -- below the 3:1 WCAG 1.4.11 asks of the
+ * visual boundary that identifies a control, and so faint that MUI's permanently
+ * shrunk label had nothing to sit in and read as floating over a filled box
+ * instead of notched into a border.
+ *
+ * `0.35` is the lowest round alpha that clears 3:1 on **both** grounds:
+ * **3.08:1** on `background.paper`, **3.17:1** on `background.default`, and
+ * **3.19:1** against the field's own `surfaces.recessed` fill, so the edge is
+ * legible from the inside too. (0.30 reaches only 2.64 / 2.69; MUI's own stock
+ * dark outline, 0.23, only 2.11 / 2.13.)
+ *
+ * Authored here instead of by raising `surfaces.hairline` -- ADR-0036 allows
+ * either -- because that token also paints the menu, popover and constraint-chip
+ * borders, none of which were reported and none of which were measured. A
+ * dedicated token keeps the change to the family the ADR is about.
+ */
+const inputOutline = "rgba(255, 255, 255, 0.35)";
 
 // FM-024's chart categorical sequence (see the `ChartTokens` doc comment
 // above): six oklch hues at the mock's own lightness/chroma band (L 0.72-0.82,
@@ -455,7 +498,15 @@ export function createHydraTheme(
                 contrastText: darkContrastText,
             },
             info: {main: mockPalette.info, contrastText: lightContrastText},
-            error: {main: mockPalette.error, contrastText: lightContrastText},
+            // ADR-0035's required re-check of the sites that use this token as
+            // a *background* rather than a foreground. `error.main` is now
+            // light, so the previous `#fff` fails on it (2.84:1) where it
+            // passed on `#a33938` (6.56:1); the dark contrast text MUI itself
+            // derives for a light role restores the pairing at 6.51:1. This is
+            // the same move the dyschromatopsia variant below already makes for
+            // its own lighter `error`, and it stays a token change -- no call
+            // site gains a colour of its own.
+            error: {main: mockPalette.error, contrastText: darkContrastText},
             // The dark-dyschromatopsia accessibility variant's own overrides are
             // spread last so they continue to take precedence over the base
             // palette above, unchanged in value from ADR-0007. Their
@@ -879,14 +930,35 @@ export function createHydraTheme(
             },
             MuiPaper: {
                 styleOverrides: {
-                    // The mock's results card is `border-radius:12px`. Raised,
-                    // non-square surfaces (cards, menus, dialogs, drawers) adopt
-                    // it; `AppBar` renders its `Paper` with `square`, so the
-                    // shell header keeps its full-bleed square corners.
-                    root: ({ownerState}) =>
-                        ownerState.square || (ownerState.elevation ?? 0) === 0
+                    root: ({ownerState}) => ({
+                        // ADR-0036's ground resolution, the half that has to
+                        // be true before the other half means anything.
+                        // `Paper` in dark mode paints an elevation overlay --
+                        // `--Paper-overlay`, a flat white wash whose alpha
+                        // comes from `getOverlayAlpha(elevation)` -- *over*
+                        // `background.paper`. At the `elevation={24}` MUI's
+                        // `Dialog` uses that is white at 0.165, so a dialog's
+                        // real ground is not `#262c2e` but roughly `#4a4f50`,
+                        // and a config tab body given a `Paper` of its own
+                        // would have landed on a third ground rather than the
+                        // dialogs'. The mock has no such wash -- its surfaces
+                        // are flat colours -- and this application had already
+                        // turned the overlay off twice by hand, on `MuiMenu`
+                        // and `MuiPopover` below. Stating it once here makes
+                        // `background.paper` mean `background.paper` on every
+                        // raised surface, which is what lets one field render
+                        // one way.
+                        backgroundImage: "none",
+                        // The mock's results card is `border-radius:12px`.
+                        // Raised, non-square surfaces (cards, menus, dialogs,
+                        // drawers) adopt it; `AppBar` renders its `Paper` with
+                        // `square`, so the shell header keeps its full-bleed
+                        // square corners.
+                        ...(ownerState.square ||
+                        (ownerState.elevation ?? 0) === 0
                             ? {}
-                            : {borderRadius: 12},
+                            : {borderRadius: 12}),
+                    }),
                 },
             },
             MuiOutlinedInput: {
@@ -910,6 +982,24 @@ export function createHydraTheme(
                         borderRadius: 8,
                         backgroundColor: theme.palette.surfaces.recessed,
                         "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: inputOutline,
+                        },
+                        // ADR-0036's "hover, focus, disabled and error stay
+                        // mutually distinguishable" clause, and the one state
+                        // the stronger resting border actually collided with.
+                        // MUI paints a disabled outline in `action.disabled`,
+                        // `rgba(255, 255, 255, 0.3)` in dark mode -- 1.17:1
+                        // against the new 0.35 resting edge, i.e. the same
+                        // border. Stepping *down* to the hairline instead
+                        // reads as the weaker thing a disabled control should
+                        // be and measures 2.25:1 against rest. The other three
+                        // states need no rule here and are unchanged: hover
+                        // repaints the outline `text.primary` (3.26:1 against
+                        // rest), focus doubles it to 2px `primary.main`
+                        // (ADR-0015's indicator for this family), and error
+                        // repaints it `error.main`, now a light red rather
+                        // than a near-black one.
+                        "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
                             borderColor: theme.palette.surfaces.hairline,
                         },
                     }),
@@ -942,7 +1032,188 @@ export function createHydraTheme(
                             alignItems: "center",
                             display: "flex",
                         },
+                        // The native number spinner, suppressed once for the
+                        // whole application. Seven `type="number"` fields
+                        // render across four files and exactly one of them --
+                        // `filterControls.tsx`'s `numericFieldSx` -- carried
+                        // these two rules locally, its own comment noting that
+                        // the theme did not express them; that copy is deleted
+                        // with this entry rather than duplicated.
+                        //
+                        // Both halves are needed and neither is redundant:
+                        // Firefox draws the spinner as part of the input's own
+                        // widget and only `appearance: textfield` takes it
+                        // away (spelled with the `-moz-` prefix as well, which
+                        // is what Firefox honoured before the property was
+                        // unprefixed and what the acceptance names), while
+                        // Chromium draws it as the `::-webkit-*-spin-button`
+                        // pseudo-elements, which `appearance` does not touch.
+                        // Keyboard Up/Down stepping is a property of
+                        // `type="number"` itself, not of the arrows, and is
+                        // unaffected by either rule.
+                        "&[type=number]": {
+                            MozAppearance: "textfield",
+                            appearance: "textfield",
+                        },
+                        "&[type=number]::-webkit-outer-spin-button, &[type=number]::-webkit-inner-spin-button":
+                            {
+                                WebkitAppearance: "none",
+                                margin: 0,
+                            },
                     },
+                },
+            },
+            // FM-117 (a). The application had no `MuiAutocomplete` entry at
+            // all, so a chips field inherited the input family's single-line
+            // geometry: `MuiInputBase`'s `&:not(.MuiInputBase-multiline)`
+            // clamp pinned the root at `controlHeight`, and
+            // `MuiOutlinedInput.input`'s `height: 100%` pinned the inner
+            // editor to it. A `multiple` `Autocomplete` wraps its tags onto
+            // as many rows as they need (MUI's own `flexWrap: "wrap"`
+            // variant), so every row past the first was drawn outside a 32px
+            // box and clipped -- with 21 `ChipsSetting` call sites behind it.
+            //
+            // The clamp is not deleted; `controlHeight`'s own comment says it
+            // exists for inputs "whose single-line box should not grow", and
+            // that is still true of every text field and select in the
+            // application. What this entry does is say that a multi-value
+            // Autocomplete is not one of those, on exactly the pattern
+            // `MuiButton` already uses for a wrapping label: `minHeight`
+            // instead of `height`, so a chips field that fits on one row is
+            // still the same 32px-tall control as its neighbours and one that
+            // does not grows instead of clipping. Keyed on MUI's own
+            // `multiple` prop through a theme variant, so a single-value
+            // Autocomplete -- which really is a single-line control -- keeps
+            // the clamp.
+            //
+            // The compound `.MuiAutocomplete-inputRoot.MuiInputBase-root`
+            // selector is deliberate rather than incidental: the clamp it has
+            // to beat is a two-class rule of its own
+            // (`&:not(.MuiInputBase-multiline)`), so an equal-specificity
+            // override would be decided by emotion's insertion order, which
+            // depends on which component happens to render first.
+            MuiAutocomplete: {
+                styleOverrides: {
+                    // FM-117 correction. `MuiPaper.root`'s
+                    // `backgroundImage: "none"` above is what makes one ground
+                    // possible, but it also removes the only thing that
+                    // separated a *borderless* raised `Paper` from whatever it
+                    // is drawn over. MUI's `AutocompletePaper`
+                    // (`Autocomplete.js:306`) is exactly that: a plain `Paper`
+                    // with no background and no border of its own. And
+                    // `.MuiAutocomplete-paper` is a slot of its own, matched by
+                    // neither the `MuiMenu` nor the `MuiPopover` rule below --
+                    // the same class-is-not-inherited trap FM-054 recorded when
+                    // a bare `Popover` needed `Menu`'s treatment authored a
+                    // second time.
+                    //
+                    // So the suggestion list behind all 21 `ChipsSetting` call
+                    // sites and `SettingsSearchField` opened at exactly
+                    // `background.paper` `#262c2e` over config surfaces that
+                    // are now also `#262c2e`: **1.000:1**, a floating list with
+                    // nothing but a near-black elevation shadow between it and
+                    // the page. At base it was the elevation-1 wash `#313739`,
+                    // **1.294:1** over the then-`background.default` tab body
+                    // and 1.169:1 over `background.paper`.
+                    //
+                    // Restored with the treatment this theme already gives its
+                    // other two floating lists rather than inventing a third:
+                    // the raised `surfaces.control` fill plus a
+                    // `surfaces.hairline` edge. Measured, the fill reads
+                    // **1.070:1** against a config tab body and **1.185:1**
+                    // against `background.default`, and the edge -- which is
+                    // what actually delimits the list -- **1.465:1** and
+                    // **1.622:1**, both above the 1.294:1 boundary the base
+                    // build had. `backgroundImage` is deliberately not
+                    // restated: `MuiPaper.root` now says it once for every
+                    // surface, which is the point of that rule.
+                    paper: ({theme}) => ({
+                        backgroundColor: theme.palette.surfaces.control,
+                        border: `1px solid ${theme.palette.surfaces.hairline}`,
+                        // Measured collateral of the two lines above, not a
+                        // precaution. Every `ChipsSetting` call site except
+                        // the indexer dialog's "Indexer groups" is passed no
+                        // suggestions, and a `freeSolo` Autocomplete with no
+                        // options still mounts this `Paper` with nothing
+                        // inside it: borderless and unfilled it painted
+                        // nothing, but a fill and a 1px edge turned it into a
+                        // 560x2 strip under the focused field. `:empty` is
+                        // exactly the condition -- a paper holding a listbox,
+                        // a loading row or a "no options" node has children.
+                        "&:empty": {display: "none"},
+                    }),
+                },
+                variants: [
+                    {
+                        props: {multiple: true},
+                        style: {
+                            "& .MuiAutocomplete-inputRoot.MuiInputBase-root": {
+                                height: "auto",
+                                minHeight: controlHeight,
+                            },
+                            // The free-text editor is a flex item beside the
+                            // tags, so it must not stretch to the wrapped
+                            // height the way `MuiOutlinedInput.input`'s
+                            // `height: 100%` asks it to in a fixed-height box.
+                            "& .MuiAutocomplete-inputRoot .MuiAutocomplete-input":
+                                {
+                                    height: "auto",
+                                },
+                        },
+                    },
+                ],
+            },
+            // FM-117 correction, and the second surface `MuiPaper.root`'s
+            // `backgroundImage: "none"` left co-planar with its container. The
+            // notification entry list
+            // (`NotificationEntriesSection.tsx:142`) renders one
+            // default-elevation `Accordion` -- a borderless `Paper` -- per
+            // entry directly inside the new `config-tab-body` `Paper`. Both
+            // are now exactly `background.paper` `#262c2e`, so the card
+            // boundary that measured **1.294:1** at base (the elevation-1 wash
+            // `#313739` over the then-`background.default` `#1f2426` tab body)
+            // measured **1.000:1** afterwards: the entries stopped reading as
+            // raised cards and became flat rows separated only by MUI's
+            // `divider` hairline.
+            //
+            // Given the same raised treatment as the floating lists below --
+            // `surfaces.control` fill plus a `surfaces.hairline` edge -- so
+            // that "a raised surface in this application looks like this" has
+            // one answer. Measured against the tab body it now sits on: the
+            // fill lifts the card to **1.070:1** and the edge reads
+            // **1.465:1**, i.e. a stronger boundary than the base build's
+            // 1.294:1. The fields inside keep their outline: ADR-0036's
+            // `inputOutline` measures **3.01:1** against `surfaces.control`,
+            // still clearing WCAG 1.4.11's 3:1, and the recessed field fill
+            // separates from the card at 1.216:1 rather than the 1.169:1 it
+            // had against `background.paper`.
+            //
+            // The geometry has to move with the colour. MUI stacks accordions
+            // flush and separates them with a 1px `::before` divider precisely
+            // because the stock card has no border of its own; with a border
+            // that divider doubles the seam, and flush cards whose inner
+            // corners are squared (MUI's `!square` variant zeroes the radius
+            // for all but the group's outer corners) do not read as cards at
+            // all. So the divider goes, the 12px radius `MuiPaper` already
+            // gives every raised surface is restated at the selectors MUI
+            // squares, and consecutive entries gain a gap. `Mui-expanded`'s
+            // own `margin: 16px 0` is neutralised so the gap between two
+            // entries does not depend on whether one of them happens to be
+            // open.
+            MuiAccordion: {
+                styleOverrides: {
+                    root: ({theme}) => ({
+                        backgroundColor: theme.palette.surfaces.control,
+                        border: `1px solid ${theme.palette.surfaces.hairline}`,
+                        borderRadius: 12,
+                        "&:first-of-type, &:last-of-type": {borderRadius: 12},
+                        "&::before": {display: "none"},
+                        "&:not(:first-of-type)": {marginTop: theme.spacing(1)},
+                        "&.Mui-expanded": {margin: 0},
+                        "&.Mui-expanded:not(:first-of-type)": {
+                            marginTop: theme.spacing(1),
+                        },
+                    }),
                 },
             },
             // Menus and select popovers render on the mock's raised control

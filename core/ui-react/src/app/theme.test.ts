@@ -9,6 +9,166 @@ import {
     selectAllRadius,
 } from "./theme";
 
+/*
+ * ---------------------------------------------------------------------------
+ * Measured colour, not described colour.
+ * ---------------------------------------------------------------------------
+ *
+ * ADR-0035 ("clears 4.5:1 against both grounds") and ADR-0036 ("visible on
+ * both `background.default` and `background.paper`") both state their
+ * acceptance as a ratio. Asserting the resulting hex string alone would pin
+ * the answer without pinning the property that made it the answer -- a later
+ * palette change could move a ground and leave every colour assertion green
+ * while the contrast that justified it was gone. So the ratios below are
+ * computed from the theme's own tokens.
+ *
+ * The conversions are the published ones and are deliberately duplicated here
+ * rather than taken from a dependency: WCAG 2.x relative luminance
+ * (sRGB -> linear, 0.2126/0.7152/0.0722), and Björn Ottosson's OKLab matrices
+ * for the `oklch()` tokens `@mui/system`'s own sRGB-only `decomposeColor`
+ * cannot read (which is the whole reason this theme sets `colorSpace`).
+ */
+function hexToRgb(hex: string): [number, number, number] {
+    const raw = hex.replace("#", "");
+    // Both notations this palette actually writes: `#262c2e` and MUI's `#fff`.
+    const digits =
+        raw.length === 3
+            ? raw
+                  .split("")
+                  .map((digit) => digit + digit)
+                  .join("")
+            : raw;
+    return [0, 2, 4].map(
+        (offset) => parseInt(digits.slice(offset, offset + 2), 16) / 255,
+    ) as [number, number, number];
+}
+
+/** `rgba(r, g, b, a)` -> its channels, for the translucent border tokens. */
+function parseRgba(value: string): {
+    alpha: number;
+    rgb: [number, number, number];
+} {
+    const parts = value
+        .replace(/^rgba?\(|\)$/g, "")
+        .split(",")
+        .map((part) => Number(part.trim()));
+    return {
+        alpha: parts[3] ?? 1,
+        rgb: [parts[0] / 255, parts[1] / 255, parts[2] / 255],
+    };
+}
+
+function parseOklch(value: string): [number, number, number] {
+    const parts = value
+        .replace(/^oklch\(|\)$/g, "")
+        .split(/\s+/)
+        .map(Number);
+    return [parts[0], parts[1], parts[2]];
+}
+
+/**
+ * A palette token in whichever of this theme's two notations it is written in.
+ * Deliberately not `oklch`-only: a token that regressed to the legacy hex must
+ * come back through here as a *measurement* that fails the ratio, not as a
+ * parse failure that fails for the wrong reason.
+ */
+function resolveColor(value: string): [number, number, number] {
+    return value.startsWith("oklch(")
+        ? oklchToRgb(parseOklch(value))
+        : hexToRgb(value);
+}
+
+function oklchToRgb([l, c, h]: [number, number, number]): [
+    number,
+    number,
+    number,
+] {
+    const radians = (h * Math.PI) / 180;
+    const a = c * Math.cos(radians);
+    const b = c * Math.sin(radians);
+    const long = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+    const medium = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+    const short = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
+    const toSrgb = (linear: number) =>
+        linear <= 0.0031308
+            ? 12.92 * linear
+            : 1.055 * linear ** (1 / 2.4) - 0.055;
+    return [
+        toSrgb(
+            4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short,
+        ),
+        toSrgb(
+            -1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short,
+        ),
+        toSrgb(
+            -0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short,
+        ),
+    ];
+}
+
+function rgbToOklch([r, g, b]: [number, number, number]): [
+    number,
+    number,
+    number,
+] {
+    const toLinear = (channel: number) =>
+        channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4;
+    const [lr, lg, lb] = [r, g, b].map(toLinear);
+    const long = Math.cbrt(
+        0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb,
+    );
+    const medium = Math.cbrt(
+        0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb,
+    );
+    const short = Math.cbrt(
+        0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb,
+    );
+    const l = 0.2104542553 * long + 0.793617785 * medium - 0.0040720468 * short;
+    const a = 1.9779984951 * long - 2.428592205 * medium + 0.4505937099 * short;
+    const b2 =
+        0.0259040371 * long + 0.7827717662 * medium - 0.808675766 * short;
+    const hue = (Math.atan2(b2, a) * 180) / Math.PI;
+    return [l, Math.hypot(a, b2), hue < 0 ? hue + 360 : hue];
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+    const toLinear = (channel: number) =>
+        channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4;
+    return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function contrastRatio(
+    a: [number, number, number],
+    b: [number, number, number],
+): number {
+    const [high, low] = [relativeLuminance(a), relativeLuminance(b)].sort(
+        (x, y) => y - x,
+    );
+    return (high + 0.05) / (low + 0.05);
+}
+
+/**
+ * A colour resolved against the opaque surface behind it. An opaque token
+ * composites to itself, so a token that regressed from `rgba()` to a hex still
+ * arrives at the ratio assertions as a measurement rather than as `NaN`.
+ */
+function compositeOver(
+    value: string,
+    ground: [number, number, number],
+): [number, number, number] {
+    const {alpha, rgb} = value.startsWith("rgb")
+        ? parseRgba(value)
+        : {alpha: 1, rgb: resolveColor(value)};
+    return rgb.map((channel, index) => {
+        const behind = ground[index];
+        return alpha * channel + (1 - alpha) * behind;
+    }) as [number, number, number];
+}
+
 describe("resolveThemeMode", () => {
     it("should follow the system preference for automatic mode", () => {
         expect(resolveThemeMode("auto", true)).toBe("dark");
@@ -78,11 +238,29 @@ describe("createHydraTheme base palette", () => {
         expect(theme.palette.warning.main).toBe("oklch(0.76 0.1 70)");
     });
 
-    it("should keep info and error at their prior values, which the mock never renders", () => {
+    it("should keep info at its prior value, which the mock never renders", () => {
         const theme = createHydraTheme("dark", false);
 
         expect(theme.palette.info.main).toBe("#398da5");
-        expect(theme.palette.error.main).toBe("#a33938");
+    });
+
+    // ADR-0035. `error.main` is a foreground at every `color="error"` control
+    // in the application, and the carried-over legacy `#a33938` measured
+    // 2.16:1 / 2.39:1 against the two grounds those controls render on. The
+    // correction is lightness only, so the assertion is on the three oklch
+    // channels rather than on a hex string: a future retune that moved hue or
+    // chroma would still be a different decision than the one ADR-0035 took.
+    it("should raise error.main's lightness while carrying the legacy hue and chroma across", () => {
+        const theme = createHydraTheme("dark", false);
+
+        expect(theme.palette.error.main).toBe("oklch(0.7 0.14 24.3)");
+
+        const legacy = rgbToOklch(hexToRgb("#a33938"));
+        const [lightness, chroma, hue] = parseOklch(theme.palette.error.main);
+
+        expect(chroma).toBeCloseTo(legacy[1], 2);
+        expect(hue).toBeCloseTo(legacy[2], 1);
+        expect(lightness).toBeGreaterThan(legacy[0]);
     });
 
     it("should apply the base palette regardless of light/dark mode", () => {
@@ -226,7 +404,15 @@ describe("createHydraTheme typography and density", () => {
         ).toEqual({
             borderRadius: 8,
             backgroundColor: "#1c2224",
+            // ADR-0036: the notch border is its own token, stronger than the
+            // `surfaces.hairline` it used to share with menus and popovers,
+            // and the disabled state steps *down* to that hairline so the two
+            // stay distinguishable now that rest is heavier than MUI's own
+            // `action.disabled`. Both ratios are measured below.
             "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255, 255, 255, 0.35)",
+            },
+            "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
                 borderColor: "rgba(255, 255, 255, 0.1)",
             },
         });
@@ -264,6 +450,24 @@ describe("createHydraTheme typography and density", () => {
                 alignItems: "center",
                 display: "flex",
             },
+            // FM-117 (b). Both halves are load-bearing and neither substitutes
+            // for the other: Firefox draws the spinner inside the input's own
+            // widget and drops it only for `appearance: textfield` (asserted
+            // with the `-moz-` prefix as well, which is the spelling the
+            // acceptance names), Chromium draws it as two pseudo-elements
+            // `appearance` does not reach. Asserted here rather than at the
+            // one call site that used to carry it, because seven
+            // `type="number"` fields across four files needed it and one had
+            // it.
+            "&[type=number]": {
+                MozAppearance: "textfield",
+                appearance: "textfield",
+            },
+            "&[type=number]::-webkit-outer-spin-button, &[type=number]::-webkit-inner-spin-button":
+                {
+                    WebkitAppearance: "none",
+                    margin: 0,
+                },
         });
         expect(theme.components?.MuiTextField?.defaultProps).toEqual({
             size: "small",
@@ -386,13 +590,83 @@ describe("createHydraTheme typography and density", () => {
             )({ownerState});
 
         expect(resolve({square: false, elevation: 1})).toEqual({
+            backgroundImage: "none",
             borderRadius: 12,
         });
         // `AppBar` renders its own `Paper` with `square`, so the shell header
         // keeps square corners while cards, menus, and dialogs get the mock's
         // 12px results-card radius.
-        expect(resolve({square: true, elevation: 4})).toEqual({});
-        expect(resolve({square: false, elevation: 0})).toEqual({});
+        expect(resolve({square: true, elevation: 4})).toEqual({
+            backgroundImage: "none",
+        });
+        expect(resolve({square: false, elevation: 0})).toEqual({
+            backgroundImage: "none",
+        });
+    });
+
+    // ADR-0036's ground resolution, at the layer that makes it true. MUI's
+    // dark-mode `Paper` paints `--Paper-overlay`, a white wash whose alpha is
+    // `getOverlayAlpha(elevation)`, over `background.paper`; at `Dialog`'s
+    // `elevation={24}` that is 0.165, so a dialog's real ground was
+    // ~`#4a4f50` rather than `#262c2e` and the config tab body's new `Paper`
+    // would have been a third ground rather than the dialogs'. Asserted at
+    // every elevation, including the `square`/zero-elevation shapes the radius
+    // rule deliberately skips, because "one ground" is exactly the claim that
+    // no `Paper` in the application is exempt.
+    it("should paint every paper surface flat, so background.paper means background.paper", () => {
+        const theme = createHydraTheme("dark", false);
+        const paperRoot = theme.components?.MuiPaper?.styleOverrides
+            ?.root as (props: {
+            ownerState: {square?: boolean; elevation?: number};
+        }) => Record<string, unknown>;
+
+        for (const ownerState of [
+            {square: false, elevation: 0},
+            {square: false, elevation: 1},
+            {square: false, elevation: 24},
+            {square: true, elevation: 4},
+        ]) {
+            expect(paperRoot({ownerState}).backgroundImage).toBe("none");
+        }
+    });
+
+    // FM-117 (a). The clamp that clipped a wrapped chips field is not
+    // deleted -- `controlHeight` still means "this single-line box does not
+    // grow" for every text field and select -- so the assertion is a pair: the
+    // clamp survives on `MuiInputBase`, and a *multi-value* Autocomplete is
+    // excused from it. A single-value Autocomplete is genuinely a single-line
+    // control and keeps it, which is why the rule is keyed on MUI's own
+    // `multiple` prop and not on the Autocomplete class alone.
+    it("should let a multi-value autocomplete grow with its chip rows while single-line inputs keep the clamp", () => {
+        const theme = createHydraTheme("dark", false);
+        const variants = theme.components?.MuiAutocomplete?.variants ?? [];
+        const growing = variants.filter(
+            (variant) =>
+                (variant.props as {multiple?: boolean}).multiple === true,
+        );
+
+        expect(growing).toHaveLength(1);
+        expect(growing[0]?.style).toEqual({
+            // The compound selector is asserted, not just its declarations:
+            // the clamp it overrides is itself a two-class rule, so an
+            // equal-specificity override would be settled by emotion's
+            // insertion order rather than by this file.
+            "& .MuiAutocomplete-inputRoot.MuiInputBase-root": {
+                height: "auto",
+                minHeight: controlHeight,
+            },
+            "& .MuiAutocomplete-inputRoot .MuiAutocomplete-input": {
+                height: "auto",
+            },
+        });
+        // No variant claims the single-value case, so it still meets
+        // `MuiInputBase`'s clamp.
+        expect(variants).toHaveLength(1);
+        expect(
+            theme.components?.MuiInputBase?.styleOverrides?.root,
+        ).toMatchObject({
+            "&:not(.MuiInputBase-multiline)": {height: controlHeight},
+        });
     });
 
     it("should style the scrollbar from the mock while sourcing its track from the page background", () => {
@@ -423,5 +697,294 @@ describe("createHydraTheme typography and density", () => {
         expect(styles["*::-webkit-scrollbar-thumb:hover"]).toEqual({
             background: "#495456",
         });
+    });
+});
+
+/*
+ * ADR-0035 and ADR-0036's acceptance, as arithmetic rather than as adjectives.
+ * Every ratio below is computed from the theme's own tokens, so a later change
+ * to a ground, to `error.main`, or to the notch border has to come back through
+ * this block. The two grounds are named once and reused, because "proven on one
+ * surface" is the failure ADR-0036 exists to correct.
+ */
+describe("createHydraTheme measured contrast (ADR-0035, ADR-0036)", () => {
+    const theme = createHydraTheme("dark", false);
+    const grounds = {
+        "background.default": hexToRgb(theme.palette.background.default),
+        "background.paper": hexToRgb(theme.palette.background.paper),
+    } as const;
+
+    describe("error.main as a foreground (ADR-0035)", () => {
+        const errorRgb = resolveColor(theme.palette.error.main);
+
+        for (const [name, ground] of Object.entries(grounds)) {
+            it(`should clear WCAG 1.4.3's 4.5:1 against ${name}`, () => {
+                // Measured: 4.99:1 on paper, 5.52:1 on default.
+                expect(contrastRatio(errorRgb, ground)).toBeGreaterThanOrEqual(
+                    4.5,
+                );
+            });
+
+            it(`should be a real correction rather than a restatement of the legacy value on ${name}`, () => {
+                // The value ADR-0035 replaced, measured on the same ground:
+                // 2.16:1 on paper and 2.39:1 on default. Asserted so this
+                // block cannot go green by accident on a token that never
+                // moved -- if `error.main` were reverted, the case above and
+                // this one would swap results.
+                expect(contrastRatio(hexToRgb("#a33938"), ground)).toBeLessThan(
+                    4.5,
+                );
+            });
+        }
+    });
+
+    it("should keep error legible where the token is a background, not a foreground", () => {
+        // ADR-0035's required re-check. Two families paint `error.main` as a
+        // surface -- filled `Chip color="error"` (`ChipsSetting`'s refusal
+        // chips and `IndexerTable`'s disabled marker) and MUI's own filled
+        // `Alert` -- and both take their text from `error.contrastText`.
+        // Lightening the token broke the previous `#fff` pairing (2.84:1),
+        // which is why the contrast text moved with it.
+        const errorRgb = resolveColor(theme.palette.error.main);
+        const contrastText = compositeOver(
+            theme.palette.error.contrastText,
+            errorRgb,
+        );
+
+        expect(contrastRatio(errorRgb, contrastText)).toBeGreaterThanOrEqual(
+            4.5,
+        );
+        expect(contrastRatio(errorRgb, [1, 1, 1])).toBeLessThan(4.5);
+        expect(theme.palette.error.contrastText).toBe("rgba(0, 0, 0, 0.87)");
+    });
+
+    describe("the outlined field's border (ADR-0036)", () => {
+        const outlinedRoot = theme.components?.MuiOutlinedInput?.styleOverrides
+            ?.root as (props: {
+            theme: typeof theme;
+        }) => Record<string, Record<string, string>>;
+        const resolved = outlinedRoot({theme});
+        const resting =
+            resolved["& .MuiOutlinedInput-notchedOutline"].borderColor;
+        const disabled =
+            resolved["&.Mui-disabled .MuiOutlinedInput-notchedOutline"]
+                .borderColor;
+
+        for (const [name, ground] of Object.entries(grounds)) {
+            it(`should reach WCAG 1.4.11's 3:1 boundary contrast on ${name}`, () => {
+                // Measured: 3.08:1 on paper, 3.17:1 on default. The
+                // `surfaces.hairline` this replaced managed 1.37 and 1.36 --
+                // asserted alongside, so the case cannot pass on a token that
+                // was never strengthened.
+                expect(
+                    contrastRatio(compositeOver(resting, ground), ground),
+                ).toBeGreaterThanOrEqual(3);
+                expect(
+                    contrastRatio(
+                        compositeOver(theme.palette.surfaces.hairline, ground),
+                        ground,
+                    ),
+                ).toBeLessThan(3);
+            });
+        }
+
+        it("should stay visible against the field's own recessed fill", () => {
+            const fill = hexToRgb(theme.palette.surfaces.recessed);
+
+            // 3.19:1 -- the border reads as an edge from the inside as well,
+            // which is what a notch a label sits in has to do.
+            expect(
+                contrastRatio(compositeOver(resting, fill), fill),
+            ).toBeGreaterThanOrEqual(3);
+        });
+
+        it("should keep the disabled outline distinguishable from the resting one", () => {
+            const paper = grounds["background.paper"];
+
+            // 2.25:1 between rest and disabled. MUI's own
+            // `action.disabled` (`rgba(255, 255, 255, 0.3)` in dark mode)
+            // would have been 1.17:1 against the new resting border -- the
+            // same border to the eye, which is the collision the explicit
+            // rule exists to avoid.
+            expect(
+                contrastRatio(
+                    compositeOver(resting, paper),
+                    compositeOver(disabled, paper),
+                ),
+            ).toBeGreaterThan(2);
+            expect(
+                contrastRatio(
+                    compositeOver(resting, paper),
+                    compositeOver("rgba(255, 255, 255, 0.3)", paper),
+                ),
+            ).toBeLessThan(1.5);
+        });
+
+        it("should keep the hover outline distinguishable from the resting one", () => {
+            const paper = grounds["background.paper"];
+
+            // MUI repaints the outline `text.primary` on hover (its own
+            // `&:hover .notchedOutline` rule outranks the resting recolour),
+            // measured 3.26:1 against the new rest.
+            expect(
+                contrastRatio(
+                    hexToRgb(theme.palette.text.primary),
+                    compositeOver(resting, paper),
+                ),
+            ).toBeGreaterThan(3);
+        });
+    });
+});
+
+/*
+ * The FM-117 correction: `MuiPaper.root`'s `backgroundImage: "none"` is what
+ * makes ADR-0036's one ground true, but it also removes the only separation a
+ * *borderless* raised `Paper` had from the surface under it. Two such surfaces
+ * exist in this application -- the notification list's `Accordion` entries and
+ * MUI's `AutocompletePaper` behind every chips field -- and both sat directly
+ * on `background.paper` afterwards, i.e. at 1.000:1.
+ *
+ * Every case below is paired with its own inverse, on the pattern the ADR-0035
+ * and ADR-0036 blocks above use: the ratio the treatment achieves is asserted
+ * *and* the ratio a bare `background.paper` surface would have is asserted to
+ * fall short. A future flattening that deleted these rules would flip both
+ * halves rather than leaving a green test behind.
+ */
+describe("borderless raised surfaces after the paper flattening (FM-117)", () => {
+    const theme = createHydraTheme("dark", false);
+    const paper = hexToRgb(theme.palette.background.paper);
+    const pageGround = hexToRgb(theme.palette.background.default);
+    /**
+     * The boundary the base build had: an elevation-1 `Paper` (MUI's
+     * `getOverlayAlpha(1)`, white at ~0.0512, giving `#313739`) over the
+     * pre-FM-117 `background.default` config tab body measured 1.294:1. A
+     * replacement separation has to be at least that, so that is the floor --
+     * not a number chosen to fit the answer.
+     */
+    const baseBoundary = 1.294;
+
+    /**
+     * The rule's own declarations, or what MUI paints without it.
+     *
+     * The fallbacks are the point rather than defensive noise: a `Paper` with
+     * no theme rule of its own *is* `background.paper` with no border, so a
+     * build that deleted either rule has to arrive at the assertions below as
+     * the 1.000:1 measurement it really renders -- not as an exception thrown
+     * off a missing key, which would fail for the wrong reason and teach a
+     * future reader nothing. The same reasoning `resolveColor` above is
+     * written for.
+     */
+    function raisedSurface(override: unknown): {edge: string; fill: string} {
+        const style =
+            typeof override === "function"
+                ? (override({theme}) as Record<string, string | undefined>)
+                : undefined;
+        const fill = style?.backgroundColor ?? theme.palette.background.paper;
+        // `1px solid rgba(...)`, as this rule and `MuiMenu`/`MuiPopover`
+        // before it write it. No border means the surface's own edge is its
+        // fill, which is exactly the flattened case.
+        return {
+            edge: style?.border?.replace(/^\d+px solid /, "") ?? fill,
+            fill,
+        };
+    }
+
+    const raised = [
+        {
+            name: "the notification entry Accordion",
+            override: theme.components?.MuiAccordion?.styleOverrides?.root,
+        },
+        {
+            name: "the Autocomplete suggestion list",
+            override: theme.components?.MuiAutocomplete?.styleOverrides?.paper,
+        },
+    ] as const;
+
+    for (const {name, override} of raised) {
+        describe(name, () => {
+            const surface = raisedSurface(override);
+            const fill = resolveColor(surface.fill);
+            const edgeToken = surface.edge;
+
+            it("should sit on the raised control surface rather than on background.paper itself", () => {
+                expect(surface.fill).toBe(theme.palette.surfaces.control);
+                // 1.070:1 against a config tab body -- a lift, not the
+                // boundary. The edge below is what does the work; this half is
+                // asserted so a later change cannot quietly drop the fill and
+                // leave the surface co-planar again.
+                expect(contrastRatio(fill, paper)).toBeGreaterThan(1);
+                // The inverse. Without the rule this surface is
+                // `background.paper` on `background.paper`, which is the
+                // 1.000:1 the correction exists to remove.
+                expect(contrastRatio(paper, paper)).toBe(1);
+            });
+
+            for (const [ground, groundName] of [
+                [paper, "a config surface"],
+                [pageGround, "background.default"],
+            ] as const) {
+                it(`should draw an edge at least as strong as the boundary the base build had, over ${groundName}`, () => {
+                    // Measured: 1.465:1 over `background.paper` and 1.622:1
+                    // over `background.default`.
+                    expect(
+                        contrastRatio(compositeOver(edgeToken, fill), ground),
+                    ).toBeGreaterThanOrEqual(baseBoundary);
+                    // The inverse, and the reason the number above is not
+                    // self-fulfilling: a borderless surface has no edge at
+                    // all, so the strongest thing the flattened build could
+                    // offer over the same ground was the surface itself.
+                    expect(contrastRatio(paper, ground)).toBeLessThan(
+                        baseBoundary,
+                    );
+                });
+            }
+        });
+    }
+
+    it("should hide the suggestion paper while it is empty, which is what giving it a border cost", () => {
+        // The measured consequence of the rule above rather than a
+        // precaution: every `ChipsSetting` call site but one passes no
+        // suggestions, and a `freeSolo` Autocomplete with none still mounts
+        // its `Paper` empty. Measured in Chromium, the fill and 1px edge
+        // turned that into a visible 560x2 strip under the focused field.
+        const style = (
+            theme.components?.MuiAutocomplete?.styleOverrides
+                ?.paper as (props: {
+                theme: typeof theme;
+            }) => Record<string, unknown>
+        )({theme});
+
+        expect(style["&:empty"]).toEqual({display: "none"});
+        // The inverse: the rule is only needed because the paper now paints
+        // something of its own. A build that dropped the fill and the border
+        // would not need it -- and would be back at 1.000:1, which the cases
+        // above catch.
+        expect(style.border).toContain(theme.palette.surfaces.hairline);
+    });
+
+    it("should keep the ADR-0036 notch border legible for fields raised onto the control surface", () => {
+        // The collateral check the correction is itself a lesson about: moving
+        // the notification entries onto `surfaces.control` moves every field
+        // inside them onto a third ground, and ADR-0036's border has to clear
+        // 3:1 there too. Measured 3.01:1 -- it does, but only just, so this is
+        // pinned rather than assumed.
+        const control = hexToRgb(theme.palette.surfaces.control);
+        const outlinedRoot = theme.components?.MuiOutlinedInput?.styleOverrides
+            ?.root as (props: {
+            theme: typeof theme;
+        }) => Record<string, Record<string, string>>;
+        const resting = outlinedRoot({theme})[
+            "& .MuiOutlinedInput-notchedOutline"
+        ].borderColor;
+
+        expect(
+            contrastRatio(compositeOver(resting, control), control),
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+            contrastRatio(
+                compositeOver(theme.palette.surfaces.hairline, control),
+                control,
+            ),
+        ).toBeLessThan(3);
     });
 });

@@ -614,6 +614,22 @@ label nothing to sit on. The grounds then differ: config tab bodies render on `b
 `Paper` wrapper, while dialogs take `background.paper` `#262c2e`. The same field is a ~3-unit-invisible edge on one
 surface and a visibly darker well on the other.
 
+**Correction, recorded 2026-08-27 after FM-117 measured it in a real browser.** The sentence above is wrong about the
+dialog's ground, and the error mattered. MUI paints its dark-mode elevation overlay as a `linear-gradient`
+*background-image* over `background.paper`, not as a background colour, so the surfaces measured at base were: config
+tab body `linear-gradient(rgba(255,255,255,0.05), …)` and indexer dialog `linear-gradient(rgba(255,255,255,0.165), …)`
+— an effective dialog ground of ≈`#4a4f50`, not `#262c2e`. Wrapping the tab body in a plain `Paper` would therefore
+have produced a *third* ground rather than unifying two, which is the opposite of what this ADR asked for. FM-117's
+implementation consequently also sets `MuiPaper.root` `backgroundImage: "none"`, matching what the app had already done
+by hand for `MuiMenu` and `MuiPopover` and what the flat-surface mock implies. That addition is forced by this ADR's
+own goal, but it is app-wide — every raised surface in the application is now exactly `background.paper` — and it was
+not contemplated when this decision was written.
+
+The decision itself is unaffected: one readable border, one ground, resolved in one direction. Only the stated evidence
+was inaccurate. Recorded rather than silently edited because the mistake is instructive: the colour was read out of the
+theme source, where it is literally `#262c2e`, instead of off a rendered pixel, where the overlay had changed it. A
+ground colour is a rendered property, and a claim about one needs a measurement, not a token lookup.
+
 Decided: **strengthen the outline so the notch reads as a notch, and stop the same control reading two ways.** This is
 front-end-only and reversible, decided by the coordinator under the owner's standing delegation.
 
