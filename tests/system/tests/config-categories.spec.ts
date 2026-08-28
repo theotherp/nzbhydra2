@@ -90,9 +90,7 @@ async function submitCategoryDialog(page: Page): Promise<void> {
  * this read them without opening anything.
  */
 async function categoryIndexByName(page: Page, name: string): Promise<number> {
-    const names = page.locator(
-        '[data-testid^="config-category-name-"]',
-    );
+    const names = page.locator('[data-testid^="config-category-name-"]');
     const count = await names.count();
     for (let index = 0; index < count; index += 1) {
         const cell = names.nth(index);

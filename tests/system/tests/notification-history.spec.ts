@@ -268,8 +268,7 @@ test.describe("Notification history", () => {
                 await page
                     .locator("html")
                     .evaluate(
-                        (element) =>
-                            element.scrollWidth <= element.clientWidth,
+                        (element) => element.scrollWidth <= element.clientWidth,
                     ),
             ).toBe(true);
         }

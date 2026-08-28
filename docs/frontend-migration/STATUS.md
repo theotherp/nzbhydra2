@@ -1034,6 +1034,12 @@ None.
 
 ## Upcoming
 
+- FM-124 (System Suite Server-State Restoration) is **done** — `ddc0dff58`, accepted 2026-08-28 on a fresh
+  independent review with no required findings. A `sensitiveDataLogging` fixture restores the setting in teardown
+  regardless of outcome, so a mid-test failure can no longer poison the shared instance and make the *next* run fail
+  on its own precondition. The sweep the ledger asked for was done and independently re-derived: ~15 mutation sites,
+  no gaps. Packet archived at `db140559d`.
+
 - FM-122 (Unit Suite Teardown Race Elimination) is **done** — `c264c296e`, accepted 2026-08-28 on a fresh independent
   review with no findings. A global `afterEach(cleanup)` in `vitest.setup.ts` closes the exit-1-with-0-failed class.
   Primary evidence is deterministic (10/10 red without the guard, 10/10 green with it), not statistical: the packet's

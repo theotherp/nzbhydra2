@@ -794,7 +794,11 @@ test.describe("Raised surfaces after the paper flattening (FM-117)", () => {
             ...config,
             indexers: [
                 {...indexer, name: "Outline Probe"},
-                {...indexer, groupNames: ["Alpha", "Beta"], name: "Group Source"},
+                {
+                    ...indexer,
+                    groupNames: ["Alpha", "Beta"],
+                    name: "Group Source",
+                },
             ],
         });
 

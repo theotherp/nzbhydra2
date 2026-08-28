@@ -1410,6 +1410,13 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   reading "Disable ..."). Observed 2026-08-23; reset by hand via `PUT /internalapi/debuginfos/sensitiveDataLogging?enabled=false`.
   The durable fix is a fixture that restores the setting regardless of outcome, which is the same shape as any other
   server-mutating test in this suite — worth a sweep for others rather than fixing this one alone.
+  **Fixed 2026-08-28 by FM-124 (`ddc0dff58`).** A `sensitiveDataLogging` fixture captures the value before the test and
+  PUTs it back in teardown whatever the outcome. The sweep this entry asked for was done and independently re-derived
+  by the reviewer across all 20 spec files: ~15 mutation sites, no further gaps of this shape. Worth keeping from it —
+  `sensitiveDataLogging` needed its own fixture because it toggles a static encoder field outside `BaseConfig`
+  (`DebugInfosWeb.java:155-169`), while `savedSearches` needed nothing because it sits inside it
+  (`SearchingConfig.java:74`) and the config PUT replaces `BaseConfig` wholesale. Both verified in the Java, not
+  assumed — the distinction is what decides whether a mutation is already covered.
 - **`focus-indication.spec.ts`'s anchor-family test fails on a fresh datafolder because FM-079's startup `NewsDialog`
   duplicates the mocked news anchor** (`tests/system/tests/focus-indication.spec.ts:1047`, `core/ui-react/src/app/status/NewsDialog.tsx`). The test mocks `/internalapi/news**` with a `forCurrentVersion: true` entry and locates
   `a[href='https://example.invalid/fm053']` strictly; on a datafolder where that news is unseen, the startup dialog (a portal outside `system-shell`, added by FM-079 after the test was written for FM-053) renders the same
@@ -2112,3 +2119,19 @@ their text and relative order are unchanged.
   dedicated context or selector would be a scoped React-state-shape change with no external contract, but it must keep
   the registration and the nav's re-render inside the same commit or it silently reopens FM-120's flicker. Testable
   with a render-count assertion. Surfaced 2026-08-28 by FM-120.
+
+- **`npx prettier --check .` fails in `tests/system` on five spec files, and has for some time.**
+  `tests/config-categories.spec.ts`, `tests/config-control-treatment.spec.ts`, `tests/downloads.spec.ts`,
+  `tests/notification-history.spec.ts`, `tests/results.spec.ts`. Confirmed failing at HEAD with all uncommitted work
+  stashed, so it predates the tasks that surfaced it. FM-124's packet requires this gate clean in its Verification
+  section, which means recent tasks touching that directory either did not run it or did not report it — the gate has
+  been decorative. FM-124's implementer reported it and correctly refused to reformat files outside its allowlist.
+  Mechanically `npx prettier --write` on those five files; the reason to log it rather than silently fix it is that a
+  formatting gate nobody runs is the same failure mode as a test nobody can see fail. Surfaced 2026-08-28 by FM-124.
+  **Fixed 2026-08-28 (`0d1591172`).** `prettier --write` output only, verified semantically rather than assumed:
+  stripping all whitespace leaves four of the five files still differing, because collapsing a wrapped call also
+  drops its trailing comma; stripping whitespace *and* commas leaves all five byte-identical to the previous HEAD.
+  Gates: `tsc --noEmit` clean, `prettier --check .` clean, `git diff --check` clean. The full system suite was
+  deliberately not re-run — formatting-only, already parsed by tsc, and FM-123 was concurrently reproducing a
+  contention-dependent flake that a five-minute Playwright run would have perturbed. Named here rather than
+  omitted; the suite was green at 197 passed twice earlier the same day.

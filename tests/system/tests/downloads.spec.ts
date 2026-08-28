@@ -247,8 +247,7 @@ test.describe("Downloads", () => {
             filterModel: {
                 title: {
                     filterType: "freetext",
-                    filterValue:
-                        testEnvironment.downloaderIntegrationNzbTitle,
+                    filterValue: testEnvironment.downloaderIntegrationNzbTitle,
                 },
             },
         });
@@ -293,7 +292,9 @@ test.describe("Downloads", () => {
         expect(
             await page
                 .locator("html")
-                .evaluate((element) => element.scrollWidth <= element.clientWidth),
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
         ).toBe(true);
     });
 
@@ -343,8 +344,7 @@ test.describe("Downloads", () => {
                 await page
                     .locator("html")
                     .evaluate(
-                        (element) =>
-                            element.scrollWidth <= element.clientWidth,
+                        (element) => element.scrollWidth <= element.clientWidth,
                     ),
             ).toBe(true);
         }

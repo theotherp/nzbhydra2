@@ -32,6 +32,7 @@ type HydraApi = {
 type HydraFixtures = {
     hydra: HydraApi;
     diagnostics: void;
+    sensitiveDataLogging: void;
 };
 
 export const test = base.extend<HydraFixtures>({
@@ -52,6 +53,50 @@ export const test = base.extend<HydraFixtures>({
         } catch (error) {
             throw new Error(
                 `Failed to restore Hydra configuration after the test: ${formatError(error)}`,
+            );
+        }
+    },
+
+    /**
+     * `sensitiveDataLogging` is a `debuginfos` endpoint that toggles a static
+     * logging encoder flag, not a `BaseConfig` setting -- `restoreConfig`'s
+     * `GET`/`PUT /internalapi/config` round trip never touches it. Mirrors the
+     * `hydra` fixture's restore-in-teardown-with-loud-failure shape (the
+     * snapshot is taken before the test runs and put back after, regardless
+     * of how the test ended) rather than inventing a new mechanism, and
+     * restores to the captured value -- not a hardcoded `false` -- so a test
+     * that starts with the setting already enabled is not masked. Opt-in per
+     * test rather than `auto: true`: only the sensitive-data-logging round
+     * trip in `system.spec.ts` mutates this flag.
+     */
+    sensitiveDataLogging: async ({request, baseURL}, use) => {
+        const resolvedBaseURL = baseURL || testEnvironment.playwrightBaseUrl;
+        const endpoint = new URL(
+            "/internalapi/debuginfos/sensitiveDataLogging",
+            resolvedBaseURL,
+        ).toString();
+        const params = {internalApiKey: testEnvironment.hydraInternalApiKey};
+
+        const original = await request.get(endpoint, {params});
+        await expectSuccessfulResponse(
+            original,
+            "GET /internalapi/debuginfos/sensitiveDataLogging",
+        );
+        const originallyEnabled = (await original.text()).trim() === "true";
+
+        await use();
+
+        try {
+            const response = await request.put(endpoint, {
+                params: {...params, enabled: originallyEnabled},
+            });
+            await expectSuccessfulResponse(
+                response,
+                "PUT /internalapi/debuginfos/sensitiveDataLogging",
+            );
+        } catch (error) {
+            throw new Error(
+                `Failed to restore sensitive data logging after the test: ${formatError(error)}`,
             );
         }
     },

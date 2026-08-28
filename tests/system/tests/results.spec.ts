@@ -3476,9 +3476,7 @@ test.describe("Search results", () => {
         await searchForUiTestResults(page);
 
         const colouredRow = resultRow(page, "indexer1-result1");
-        const swatch = colouredRow.getByTestId(
-            "search-result-indexer-swatch",
-        );
+        const swatch = colouredRow.getByTestId("search-result-indexer-swatch");
         await expect(swatch).toBeVisible();
         await expect(swatch).toHaveAttribute("aria-hidden");
         expect(
@@ -3609,10 +3607,7 @@ test.describe("Search results", () => {
         await toggleDisplayOption(page, "Highlight recent");
 
         const darkRow = resultRow(page, "Indexer Colour Dark Result");
-        const saturatedRow = resultRow(
-            page,
-            "Indexer Colour Saturated Result",
-        );
+        const saturatedRow = resultRow(page, "Indexer Colour Saturated Result");
         const uncolouredRow = resultRow(
             page,
             "Indexer Colour Uncoloured Result",

@@ -589,6 +589,7 @@ test.describe("System shell", () => {
 
     test("should run the real debug diagnostics without sharing anything or changing the database", async ({
         page,
+        sensitiveDataLogging,
     }) => {
         const attemptedUploads = await blockDebugInfosUpload(page);
         const sqlStatements = await recordSqlStatements(page);
