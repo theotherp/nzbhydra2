@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react";
 import {configDefaults, defineConfig} from "vitest/config";
 
 import {devBackendPlugin} from "./vite/devBackend";
+import {FailureArtifactReporter} from "./vite/failureArtifactReporter";
 
 export default defineConfig({
     base: process.env.VITE_BASE_PATH ?? "./",
@@ -45,7 +46,17 @@ export default defineConfig({
         // intermittently -- roughly once in ten to thirteen full runs -- and
         // three separate tasks lost the failing test's name to a truncated
         // pipe before it could be investigated. A file survives scrollback.
-        reporters: ["default", "json"],
+        //
+        // Both `json`'s `outputFile` and this instance of the custom
+        // `FailureArtifactReporter` share the fixed-path problem's fix and
+        // its non-fix: `json` still overwrites `test-results/vitest-results.json`
+        // every run (unchanged shape -- gate chains that parse it are not
+        // touched), but `FailureArtifactReporter` additionally writes a
+        // uniquely-named `test-results/vitest-failures-<timestamp>-<suffix>.json`
+        // whenever a run has at least one failure, and never deletes an
+        // older one -- so a reflexive green re-run can no longer destroy the
+        // evidence of the run before it (FM-123).
+        reporters: ["default", "json", new FailureArtifactReporter()],
         outputFile: {
             // Git-ignored via `.gitignore`, mirroring how `tests/system`'s
             // Playwright `test-results/` output is ignored rather than

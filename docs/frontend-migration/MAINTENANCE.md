@@ -2135,3 +2135,19 @@ their text and relative order are unchanged.
   deliberately not re-run — formatting-only, already parsed by tsc, and FM-123 was concurrently reproducing a
   contention-dependent flake that a five-minute Playwright run would have perturbed. Named here rather than
   omitted; the suite was green at 197 passed twice earlier the same day.
+
+- **The `SearchWorkspace` autocomplete flake reproduces on demand, and only one way.** Confirmed 2026-08-28 by a
+  controlled A/B on an idle, load-gated machine, 50 full-suite runs per arm at ~22.5s mean: **5/50 on pristine
+  `b20ee2b53`** and **6/50 with FM-123's changes applied**, always
+  `SearchWorkspace.test.tsx › "should close the autocomplete dropdown when the user clicks anywhere else, but not when
+  clicking a suggestion"` failing `expect(queryByTestId("autocomplete-popup")).not.toBeInTheDocument()`. Pooled with
+  FM-122's 12/100 that is 23/200, p ≈ 0.11. Routed to **FM-125**.
+  **The recipe is the finding.** It reproduces only under a bare full-suite `npx vitest run` loop on an otherwise-idle
+  machine — verify by wall time, since a contended run inflates to 60s+ and makes everything flaky. It does **not**
+  reproduce under single-file amplification (sequential or parallel), `-t`-filtered runs, `taskset` CPU pinning, or
+  `--maxWorkers` oversubscription; FM-123 spent 110 runs across those six shapes, saw zero, and correctly concluded
+  premise-stale on that evidence. Anyone re-deriving that costs themselves another 110 runs.
+  Two explanations were checked and refuted, and neither should be revived: that the flake needs *contention* (an
+  explicitly idle machine reproduces it), and that FM-123's "full-suite" loops were secretly filtered (the handoff
+  shows bare `npx vitest run` for 74 of them). No campaign artifacts survived to audit, so the actual defect in that
+  measurement is unidentified — a silent pass/fail bug in its loop harness is a hypothesis, not a finding.

@@ -1,5 +1,6 @@
 import {ThemeProvider} from "@mui/material";
 import {
+    act,
     cleanup,
     fireEvent,
     render,
@@ -604,6 +605,15 @@ describe("The indexer table", () => {
         fireEvent.change(alphaScore, {target: {value: "99"}});
 
         await waitFor(() => expect(indexersOf(harness)[0].score).toBe(99));
+        // FM-123: `indexersOf` reads `form.getValues()` directly, which
+        // updates synchronously in the change handler -- it does not
+        // guarantee `IndexerTable`'s watch-driven re-render (the thing
+        // `rowNames()` actually reads) has committed. Flushing here, rather
+        // than wrapping the read below in its own `waitFor`, is deliberate:
+        // this is a stability assertion ("has not moved"), and a `waitFor`
+        // around a claim that is already true on its first synchronous
+        // check would pass vacuously without ever exercising the freeze.
+        await act(async () => {});
         // Alpha now sorts last, but the row the cursor is in has not moved.
         expect(rowNames()).toEqual(["Alpha", "Beta", "Gamma"]);
 
