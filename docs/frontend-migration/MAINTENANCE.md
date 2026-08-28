@@ -1242,6 +1242,12 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
 
 ### Single-session fix
 
+- **`CategoriesTable`'s Add button is not `disabled` while a category dialog is open.** `CategoriesTable.tsx`'s
+  `<Button data-testid="config-categories-add" onClick={add} ...>` has no `disabled={editing !== null}` guard, unlike
+  the pattern `DownloaderTable`/`AuthUsersSection` follow. In a real browser MUI's modal backdrop and focus trap make
+  the button unreachable while `CategoryDialog` is open, so this has no reachable effect today, but it is a one-line
+  defensive gap rather than a deliberate omission. Raised by FM-119's review (Minor Finding 1).
+
 - **The stats day-boundary invariant lives at two call sites, not in the helper.** FM-121's correction truncates preset
   ranges to day boundaries inside `StatsDashboardPage.tsx` (the `defaultWindow` memo and `handlePresetChange`), because
   `rangeForPreset` (`features/stats/dashboard/dateRange.ts`) and `defaultStatsWindow` (`api/stats/mainStats.ts`) were
@@ -2055,3 +2061,11 @@ their text and relative order are unchanged.
   Worth noting *why* this was caught: the reviewer re-ran the mutation instead of reading the claim. Nine tasks in
   this batch shipped something a green suite could not see, and one fabricated a causal explanation outright, so
   re-deriving a self-reported number is now the cheapest defence available. It cost one scratch copy.
+
+- **`SearchWorkspace.test.tsx` fails intermittently in the full suite and passes in isolation.** Observed once by
+  FM-119's re-review (1504 passed / 1 failed in its full run), and not reproduced by the coordinator's own full run
+  immediately afterwards, which was **119 files / 1505 tests all green**. The file is untouched by FM-119 and by every
+  task in this batch, so it is not attributable to any of them. Recorded because an intermittent failure in a suite
+  this batch leans on for its evidence is worth knowing about before it is mistaken for a real regression — and
+  because a flake that only appears under full-suite concurrency usually means shared state or a timer, not chance.
+  Nobody has diagnosed it. Surfaced 2026-08-28 by FM-119's re-review.

@@ -1,8 +1,10 @@
 import {describe, expect, it} from "vitest";
 
 import {
+    categoryDraftFieldPath,
     categorySearchTypeLabel,
     categorySizeSummary,
+    CATEGORY_DRAFT_PATH,
     defaultCategoryEntry,
     newznabCategoryValidator,
     type CategoryValues,
@@ -51,6 +53,18 @@ describe("F-CONFIG-CATEGORIES newznab category shape", () => {
     it("should name the offending token and the accepted shape", () => {
         expect(newznabCategoryValidator("2010,3000")).toBe(
             '"2010,3000" is not a newznab category. Use a number, or several joined with "&" (for example 2010&11000).',
+        );
+    });
+});
+
+describe("F-CONFIG-CATEGORIES dialog draft path", () => {
+    it("should build a draft field's path from the shared draft path", () => {
+        expect(CATEGORY_DRAFT_PATH).toBe("categoriesConfig.categoryDraft");
+        expect(categoryDraftFieldPath("name")).toBe(
+            "categoriesConfig.categoryDraft.name",
+        );
+        expect(categoryDraftFieldPath("minSizePreset")).toBe(
+            "categoriesConfig.categoryDraft.minSizePreset",
         );
     });
 });

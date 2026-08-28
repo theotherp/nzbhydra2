@@ -1054,6 +1054,20 @@ None.
   mutations, and independently checked the Torbox *name button*, which the handoff had not discussed. Packet archived
   at `e40804c61`.
 
+- FM-119 (Categories Edit Modals) is **done** — `d1a7dfbec`, accepted 2026-08-28 after one FAIL, a correction, and a
+  fresh independent re-review returning PASS with no required and no minor findings. Categories now present as a
+  summary table plus `CategoryDialog`, matching indexers and downloaders. This closed two owner observations with one
+  change: the always-mounted accordions were also the reason the tab felt slow. Measured, per the packet's binding
+  "measured, not asserted" acceptance — `container.querySelectorAll("input, select").length` over
+  `CategoriesConfigTab` with 16 categories returns **3** (the tab's own scalar controls, zero from the summary rows)
+  against ~208 before; reproduced independently by the fixer and the re-reviewer.
+
+  The FAIL is the one worth remembering. ADR-0034 justified the modal on a *strictly better* required-name guarantee
+  than the always-mounted accordions gave, and as first delivered it was weaker: `add()` pushes a `name: null`
+  placeholder, Cancel/Escape/backdrop undid it, but unmounting the tab did not — so switching config tabs mid-add
+  leaked a nameless category that surfaced only at Save. The reviewer reproduced it with a harness that unmounts the
+  tab the way the router does. Closed with a transaction-token-gated cleanup effect. Packet archived at `31ce72a35`.
+
 - The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-119/FM-120 stay `planned` until promoted.
   FM-120's dependency on FM-117 is satisfied.
 
@@ -1074,6 +1088,50 @@ None.
   category inputs into modals therefore follows the shape indexers already set rather than inventing one. The single
   index-side contract for both is that the section's `anchorTestId` keeps rendering — which ADR-0033 already requires
   for downloaders and direction (c) of the drift test enforces for both.
+
+- FM-119 (Categories Edit Modals) is **in `review`** — implemented against ADR-0034: `CategoriesTable.tsx`'s
+  accordion (two `TableRow`s per entry, kept mounted while collapsed) is replaced by `CategoryDialog.tsx`, a
+  throwaway `useForm` over a `structuredClone`d entry bound to a new `categoriesConfig.categoryDraft` path, the same
+  shape `UserDialog`/`DownloaderDialog` established. `CategoryEntryFields`/`SizePresetRow` gained a path-builder prop
+  (`categoryFieldPath(index, field)` retired; `categoryDraftFieldPath(field)` added) with an unchanged field list and
+  order. The dialog's own `trigger()` refuses to commit a blank name, the client-side successor to the
+  always-mounted-fields guarantee FM-107 relied on; Add still pushes a placeholder into the shared form the instant
+  its dialog opens (so `C-CONFIG-REVIEW`'s change summary has something to report immediately, preserving
+  `ConfigShell.test.tsx`'s pre-existing "added list entry" case unedited), but Cancel/Escape/backdrop on that specific
+  transaction undoes the push, so a category the admin never finished naming cannot outlive the dialog. `settingsIndex.ts`
+  and `settingsIndexDrift.test.tsx` were not touched; the container anchor `config-repeat-categoriesConfig-categories`
+  is confirmed unchanged. Verified 119 files / 1504 tests (+5 vs the 119/1499 baseline), typecheck clean, lint 14
+  warnings / 0 errors (unchanged), knip 1 pre-existing finding, build/check:api/validate:migration/
+  validate:focus-affordances green, and 5/5 category-spec (plus all 29 `config.spec.ts`, unedited) against the real
+  backend. Both required red-first mutations reproduced independently: the blank-name refusal against a `trigger()`-
+  removed dialog, and the dialog-flow test against the pre-FM-119 accordion markup restored from git.
+
+  **Correction cycle (independent review, 2026-08-28):** two required findings. (1) `add`'s placeholder had no
+  rollback on unmount — only Cancel/Escape/backdrop routed through `cancelTransaction` undid it, so switching tabs
+  after clicking Add without cancelling left a `name: null` entry in the shared form for FM-113's server-side
+  validator to catch later with no dialog open to explain why. Fixed with a `useEffect` in `CategoriesTable.tsx`
+  keyed on `editing` whose cleanup rolls back the placeholder only if `transactionRef.current` still equals the
+  transaction's own token at unmount time — Cancel/Escape/backdrop/Submit all bump `transactionRef` first, so the
+  cleanup is a no-op for all four and a committed entry can never be rolled back. Proven red first: with the effect
+  removed, `should undo an add abandoned by unmounting the tab, leaving no placeholder behind` failed with
+  `expected [...] to have a length of 2 but got 3`; restored, all 26 tests in `CategoriesConfigTab.test.tsx` pass,
+  including the pre-existing "keep the categories array... across an unmount and remount" case, which still proves a
+  *committed* Add survives unmount. Reproduced independently against the real backend too:
+  `config-categories.spec.ts`'s "should refuse to commit a category with no name, and undo an abandoned add" passes.
+  (2) The performance claim (~208 inputs before, summary-rows-only after) had no measurement recorded anywhere.
+  Measured directly: rendering `CategoriesConfigTab` with 16 categories (the base config's count) and counting
+  `input, select` elements inside the rendered container via
+  `container.querySelectorAll("input, select").length` returns **3** — the tab's own three scalar controls
+  (`defaultCategory`, `enableCategorySizes`, `overwriteNaWithSearchCategory`), zero contributed by any of the 16
+  summary rows. Also logged Minor Finding 2 (the rewritten remount case only proved a *submitted* Add survives —
+  narrower than the pre-FM-119 case, which is exactly the gap Finding 1 exploited) by adding the abandoned-add case
+  above, and Minor Finding 1 (Add not `disabled` while `editing !== null`; unreachable in a real browser behind
+  MUI's backdrop) to `MAINTENANCE.md`'s Single-session-fix list rather than fixing it here. Re-verified full suite:
+  119 files / 1505 tests, typecheck clean, lint 14 warnings / 0 errors, format:check clean, knip 1 pre-existing
+  finding, build/check:api/validate:migration/validate:focus-affordances green, `git diff --check` clean,
+  `settingsIndex.ts` and `tests/system/tests/config.spec.ts` confirmed byte-identical to base
+  (`git diff --stat 793da96bc --`, empty), and 34/34 real-backend `config-categories.spec.ts` +
+  `config.spec.ts` (unedited). Still `review`, awaiting a fresh independent re-review.
 
 - The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.
 

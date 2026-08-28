@@ -15,10 +15,11 @@ import {afterEach, describe, expect, it} from "vitest";
 import type {ConfigValues} from "../../../api/config/schema";
 import {createHydraTheme} from "../../../app/theme";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
+import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {ShowAdvancedContext} from "../advancedFields";
 import {settingsIndexForTab} from "../settingsSearch/settingsIndex";
 import {CategoriesConfigTab} from "./CategoriesConfigTab";
-import type {CategoryValues} from "./categoriesSettings";
+import {defaultCategoryEntry, type CategoryValues} from "./categoriesSettings";
 
 function category(overrides: Partial<CategoryValues>): CategoryValues {
     return {
@@ -95,11 +96,15 @@ function renderCategories({
             <ThemeProvider theme={createHydraTheme("dark")}>
                 <QueryClientProvider client={queryClient}>
                     <DialogProvider>
-                        <FormProvider {...form}>
-                            <ShowAdvancedContext.Provider value={showAdvanced}>
-                                <CategoriesConfigTab />
-                            </ShowAdvancedContext.Provider>
-                        </FormProvider>
+                        <ToastProvider>
+                            <FormProvider {...form}>
+                                <ShowAdvancedContext.Provider
+                                    value={showAdvanced}
+                                >
+                                    <CategoriesConfigTab />
+                                </ShowAdvancedContext.Provider>
+                            </FormProvider>
+                        </ToastProvider>
                     </DialogProvider>
                 </QueryClientProvider>
             </ThemeProvider>
@@ -120,18 +125,36 @@ function categoriesOf(harness: Harness): Record<string, unknown>[] {
     >[];
 }
 
-function nameInput(index: number): HTMLElement {
+/** The dialog's own draft input for one `CategoryValues` field. */
+function draftInput(field: string): HTMLElement {
     return screen.getByTestId(
-        `config-input-categoriesConfig-categories-${index}-name`,
+        `config-input-categoriesConfig-categoryDraft-${field}`,
     );
 }
 
-function expandRow(index: number): void {
-    fireEvent.click(screen.getByTestId(`config-category-expand-${index}`));
+async function openEdit(index: number): Promise<void> {
+    fireEvent.click(screen.getByTestId(`config-category-edit-${index}`));
+    await screen.findByTestId("config-category-dialog");
 }
 
-async function confirmDelete(index: number): Promise<void> {
-    fireEvent.click(screen.getByTestId(`config-category-remove-${index}`));
+async function openAdd(): Promise<void> {
+    fireEvent.click(screen.getByTestId("config-categories-add"));
+    await screen.findByTestId("config-category-dialog");
+}
+
+function submitDialog(): void {
+    fireEvent.click(screen.getByTestId("config-category-dialog-submit"));
+}
+
+async function waitForDialogClosed(): Promise<void> {
+    await waitFor(() =>
+        expect(screen.queryByTestId("config-category-dialog")).toBeNull(),
+    );
+}
+
+/** Clicks the dialog's own Delete, then confirms the shared confirmation. */
+async function deleteFromDialogAndConfirm(): Promise<void> {
+    fireEvent.click(screen.getByTestId("config-category-dialog-delete"));
     const confirmation = await screen.findByTestId(
         "config-category-delete-confirm",
     );
@@ -200,11 +223,12 @@ describe("F-CONFIG-CATEGORIES field inventory", () => {
     /**
      * The one selector this section cannot lose. `settingsIndex.ts` derives
      * this section's search anchor from the config path through its own
-     * `repeatAnchor` helper, and that file is out of FM-107's write scope, so
-     * the table has to keep emitting the id the repeat section emitted. The
-     * drift test cannot catch its loss -- it compares only `kind: "row"`
-     * entries, and a list contributes a `kind: "section"` one -- so the check
-     * lives here, read off the index rather than typed out again.
+     * `repeatAnchor` helper, and that file is out of this packet's write
+     * scope, so the table has to keep emitting the id the repeat section
+     * emitted. The drift test cannot catch its loss -- it compares only
+     * `kind: "row"` entries, and a list contributes a `kind: "section"` one --
+     * so the check lives here, read off the index rather than typed out
+     * again.
      */
     it("should keep the search anchor settingsIndex.ts derives for this section", () => {
         const anchors = settingsIndexForTab("categories")
@@ -288,8 +312,8 @@ describe("F-CONFIG-CATEGORIES catalog table", () => {
     });
 });
 
-describe("F-CONFIG-CATEGORIES row expansion", () => {
-    it("should bind an expanded row's fields to that row's own entry", () => {
+describe("F-CONFIG-CATEGORIES category dialog", () => {
+    it("should open the dialog with the entry's own field values and commit only that row", async () => {
         const harness = renderCategories({
             values: configWith([
                 MOVIES,
@@ -298,15 +322,14 @@ describe("F-CONFIG-CATEGORIES row expansion", () => {
             ]),
         });
 
-        // The middle one, deliberately: an expansion bound to "the first row"
-        // or to "the only open row" would pass with an edge one.
-        expandRow(1);
-        expect(screen.getByTestId("config-category-expand-1")).toHaveAttribute(
-            "aria-expanded",
-            "true",
-        );
+        // The middle one, deliberately: a commit bound to "row 0" or "the
+        // last opened dialog" would pass with an edge index.
+        await openEdit(1);
+        expect(draftInput("name")).toHaveValue("TV");
 
-        fireEvent.change(nameInput(1), {target: {value: "Series"}});
+        fireEvent.change(draftInput("name"), {target: {value: "Series"}});
+        submitDialog();
+        await waitForDialogClosed();
 
         expect(categoriesOf(harness).map((entry) => entry.name)).toEqual([
             "Movies",
@@ -319,65 +342,89 @@ describe("F-CONFIG-CATEGORIES row expansion", () => {
     });
 
     /**
-     * The reason `Collapse` here carries no `unmountOnExit`. `name` is
-     * `required`, so a blank one blocks the save; if collapsing unmounted the
-     * row, the save would be refused with nothing on screen saying why.
+     * The successor to the old accordion's always-mounted-fields guarantee
+     * (`CategoriesTable.tsx`'s former module doc): `CategoryDialog.trigger()`
+     * refuses to commit a blank name at all, rather than letting one through
+     * for `C-CONFIG-FORM` to catch later from a control the admin has to find.
      */
-    it("should keep a collapsed row's required name registered and its error rendered", async () => {
-        const harness = renderCategories({
-            values: configWith([MOVIES, category({name: ""})]),
-        });
+    it("should refuse to commit a blank name, showing the error on the field and leaving the catalog untouched", async () => {
+        const harness = renderCategories();
 
-        // Nothing was expanded, so this input is in the DOM only because a
-        // collapsed row keeps its fields mounted.
-        expect(nameInput(1)).toBeInTheDocument();
-        expect(await harness.form.trigger()).toBe(false);
+        await openEdit(0);
+        fireEvent.change(draftInput("name"), {target: {value: ""}});
+        submitDialog();
+
         expect(
             await screen.findByTestId(
-                "config-error-categoriesConfig-categories-1-name",
+                "config-error-categoriesConfig-categoryDraft-name",
             ),
-        ).toBeInTheDocument();
+        ).toHaveTextContent("This field is required");
+        // Never closed, and nothing reached the shared form.
+        expect(screen.getByTestId("config-category-dialog")).toBeVisible();
+        expect(categoriesOf(harness)[0]).toMatchObject({name: "Movies"});
+        expect(harness.form.formState.isDirty).toBe(false);
     });
 
-    it("should edit an expanded row's min/max size preset pair as one row", () => {
+    /** Same refusal, reached through Add rather than Edit. */
+    it("should refuse to commit a brand new category with no name", async () => {
         const harness = renderCategories();
-        expandRow(0);
 
-        fireEvent.change(
-            screen.getByTestId(
-                "config-input-categoriesConfig-categories-0-minSizePreset",
+        await openAdd();
+        expect(draftInput("name")).toHaveValue("");
+        submitDialog();
+
+        expect(
+            await screen.findByTestId(
+                "config-error-categoriesConfig-categoryDraft-name",
             ),
-            {target: {value: "5"}},
-        );
-        fireEvent.change(
-            screen.getByTestId(
-                "config-input-categoriesConfig-categories-0-maxSizePreset",
+        ).toHaveTextContent("This field is required");
+        expect(screen.getByTestId("config-category-dialog")).toBeVisible();
+        // The placeholder Add pushed is still there -- the refusal keeps the
+        // dialog open rather than dropping it -- but it still carries no
+        // name, so it never actually committed anything of its own.
+        expect(categoriesOf(harness)).toHaveLength(3);
+        expect(categoriesOf(harness)[2]).toEqual(defaultCategoryEntry());
+    });
+
+    it("should edit the min/max size preset pair as one row in the dialog", async () => {
+        const harness = renderCategories();
+        await openEdit(0);
+
+        fireEvent.change(draftInput("minSizePreset"), {
+            target: {value: "5"},
+        });
+        fireEvent.change(draftInput("maxSizePreset"), {
+            target: {value: "500"},
+        });
+        // One row: a single `config-setting-*-minSizePreset` wrapper carries
+        // both inputs, not two separate rows. Checked before Submit, while
+        // the dialog (and this wrapper) is still mounted.
+        expect(
+            screen.getAllByTestId(
+                "config-setting-categoriesConfig-categoryDraft-minSizePreset",
             ),
-            {target: {value: "500"}},
-        );
+        ).toHaveLength(1);
+
+        submitDialog();
+        await waitForDialogClosed();
 
         expect(categoriesOf(harness)[0]).toMatchObject({
             minSizePreset: 5,
             maxSizePreset: 500,
         });
-        // One row: a single `config-setting-*-minSizePreset` wrapper carries
-        // both inputs, not two separate rows.
-        expect(
-            screen.getAllByTestId(
-                "config-setting-categoriesConfig-categories-0-minSizePreset",
-            ),
-        ).toHaveLength(1);
         // And the summary column follows immediately.
         expect(screen.getByTestId("config-category-size-0")).toHaveTextContent(
             "5–500 MB",
         );
     });
 
-    it("should keep the categories array in the shared form across an unmount and remount of the tab", () => {
+    it("should keep the categories array in the shared form across an unmount and remount of the tab", async () => {
         const harness = renderCategories();
 
-        fireEvent.click(screen.getByTestId("config-categories-add"));
-        fireEvent.change(nameInput(2), {target: {value: "Sports"}});
+        await openAdd();
+        fireEvent.change(draftInput("name"), {target: {value: "Sports"}});
+        submitDialog();
+        await waitForDialogClosed();
         expect(categoriesOf(harness)).toHaveLength(3);
 
         cleanup();
@@ -385,35 +432,38 @@ describe("F-CONFIG-CATEGORIES row expansion", () => {
             return (
                 <ThemeProvider theme={createHydraTheme("dark")}>
                     <DialogProvider>
-                        <FormProvider {...harness.form}>
-                            <ShowAdvancedContext.Provider value={true}>
-                                <CategoriesConfigTab />
-                            </ShowAdvancedContext.Provider>
-                        </FormProvider>
+                        <ToastProvider>
+                            <FormProvider {...harness.form}>
+                                <ShowAdvancedContext.Provider value={true}>
+                                    <CategoriesConfigTab />
+                                </ShowAdvancedContext.Provider>
+                            </FormProvider>
+                        </ToastProvider>
                     </DialogProvider>
                 </ThemeProvider>
             );
         }
         render(<Remount />);
 
-        expect(nameInput(2)).toHaveValue("Sports");
+        expect(screen.getByTestId("config-category-name-2")).toHaveTextContent(
+            "Sports",
+        );
     });
 
-    it("should follow the category, not the row slot, when an earlier one is deleted", async () => {
+    it("should delete the correct category from the dialog, leaving remaining rows correctly labelled", async () => {
         const harness = renderCategories();
 
-        expandRow(1);
-        await confirmDelete(0);
+        await openEdit(0);
+        await deleteFromDialogAndConfirm();
 
         expect(categoriesOf(harness).map((entry) => entry.name)).toEqual([
             "TV",
         ]);
-        // TV moved from index 1 to index 0 and is still the open row.
-        expect(screen.getByTestId("config-category-expand-0")).toHaveAttribute(
-            "aria-expanded",
-            "true",
+        expect(screen.queryByTestId("config-category-dialog")).toBeNull();
+        // TV moved from index 1 to index 0.
+        expect(screen.getByTestId("config-category-name-0")).toHaveTextContent(
+            "TV",
         );
-        expect(nameInput(0)).toHaveValue("TV");
     });
 });
 
@@ -428,11 +478,13 @@ describe("F-CONFIG-CATEGORIES default category select", () => {
         expect(screen.getByRole("option", {name: "TV"})).toBeVisible();
     });
 
-    it("should track a category renamed in an expanded row without a reload", () => {
+    it("should track a category renamed through the dialog without a reload", async () => {
         renderCategories();
 
-        expandRow(0);
-        fireEvent.change(nameInput(0), {target: {value: "Films"}});
+        await openEdit(0);
+        fireEvent.change(draftInput("name"), {target: {value: "Films"}});
+        submitDialog();
+        await waitForDialogClosed();
 
         fireEvent.mouseDown(
             screen.getByRole("combobox", {name: "Default category"}),
@@ -444,7 +496,8 @@ describe("F-CONFIG-CATEGORIES default category select", () => {
     it("should stop offering a removed category", async () => {
         renderCategories();
 
-        await confirmDelete(0);
+        await openEdit(0);
+        await deleteFromDialogAndConfirm();
 
         fireEvent.mouseDown(
             screen.getByRole("combobox", {name: "Default category"}),
@@ -456,46 +509,103 @@ describe("F-CONFIG-CATEGORIES default category select", () => {
 });
 
 describe("F-CONFIG-CATEGORIES add and remove", () => {
-    it("should add a new category with legacy's defaults, expanded, and mark the form dirty", () => {
+    it("should add a new category with legacy's defaults, opened immediately, and mark the form dirty", async () => {
         const harness = renderCategories();
         expect(harness.form.formState.isDirty).toBe(false);
 
-        fireEvent.click(screen.getByTestId("config-categories-add"));
-
-        const categories = categoriesOf(harness);
-        expect(categories).toHaveLength(3);
-        expect(categories[2]).toEqual({
-            applyRestrictionsType: "NONE",
-            applySizeLimitsToApi: false,
-            forbiddenRegex: null,
-            forbiddenWords: [],
-            ignoreResultsFrom: "NONE",
-            mayBeSelected: true,
-            maxSizePreset: null,
-            minSizePreset: null,
-            name: null,
-            newznabCategories: [],
-            preselect: true,
-            requiredRegex: null,
-            requiredWords: [],
-            searchType: "SEARCH",
-            subtype: "NONE",
-        });
+        await openAdd();
+        expect(screen.getByTestId("config-category-dialog")).toHaveTextContent(
+            "Add new category",
+        );
+        // Add pushes its placeholder straight into the shared form -- the
+        // successor to the old expand-on-add (`CategoriesTable.tsx`'s former
+        // `:155-162`) -- so `C-CONFIG-REVIEW`'s change summary has something
+        // to report the moment Add is clicked, not only once a dialog is
+        // confirmed.
+        expect(categoriesOf(harness)).toHaveLength(3);
+        expect(categoriesOf(harness)[2]).toEqual(defaultCategoryEntry());
         expect(harness.form.formState.isDirty).toBe(true);
         expect(screen.getByTestId("config-category-name-2")).toHaveTextContent(
             "New category",
         );
-        // Opened for editing: its `name` is blank and required.
-        expect(screen.getByTestId("config-category-expand-2")).toHaveAttribute(
-            "aria-expanded",
-            "true",
+
+        fireEvent.change(draftInput("name"), {target: {value: "Sports"}});
+        submitDialog();
+        await waitForDialogClosed();
+
+        const categories = categoriesOf(harness);
+        expect(categories).toHaveLength(3);
+        expect(categories[2]).toEqual({
+            ...defaultCategoryEntry(),
+            name: "Sports",
+        });
+        expect(harness.form.formState.isDirty).toBe(true);
+        expect(screen.getByTestId("config-category-name-2")).toHaveTextContent(
+            "Sports",
         );
+    });
+
+    /**
+     * The guarantee the old always-mounted accordion carried, in its new
+     * form: a category the admin never finished naming does not survive past
+     * this transaction closing. Cancelling `add`'s placeholder removes it
+     * from the shared form rather than leaving a nameless entry with no
+     * mounted field anywhere to explain why a later save would be refused.
+     */
+    it("should undo a cancelled add, leaving the form exactly as it was", async () => {
+        const harness = renderCategories();
+
+        await openAdd();
+        expect(categoriesOf(harness)).toHaveLength(3);
+        fireEvent.change(draftInput("name"), {target: {value: "Typed"}});
+        fireEvent.click(screen.getByTestId("config-category-dialog-cancel"));
+        await waitForDialogClosed();
+
+        expect(categoriesOf(harness)).toHaveLength(2);
+        expect(categoriesOf(harness)).toEqual([MOVIES, TV]);
+        expect(harness.form.formState.isDirty).toBe(false);
+    });
+
+    /**
+     * The same guarantee against the failure mode Cancel/Escape/backdrop
+     * cannot reach: `ConfigShell.tsx` mounts only one tab body at a time
+     * while the shared form above `<Outlet />` persists, so switching tabs
+     * without cancelling unmounts `CategoriesConfigTab` while an `add`
+     * transaction is still open. The placeholder must not survive that any
+     * more than it survives an explicit Cancel.
+     */
+    it("should undo an add abandoned by unmounting the tab, leaving no placeholder behind", async () => {
+        const harness = renderCategories();
+
+        await openAdd();
+        expect(categoriesOf(harness)).toHaveLength(3);
+        fireEvent.change(draftInput("name"), {target: {value: "Typed"}});
+
+        cleanup();
+
+        expect(categoriesOf(harness)).toHaveLength(2);
+        expect(categoriesOf(harness)).toEqual([MOVIES, TV]);
+        expect(harness.form.formState.isDirty).toBe(false);
+    });
+
+    it("should undo an added placeholder dismissed with Escape too", async () => {
+        const harness = renderCategories();
+
+        await openAdd();
+        fireEvent.keyDown(screen.getByTestId("config-category-dialog"), {
+            key: "Escape",
+        });
+        await waitForDialogClosed();
+
+        expect(categoriesOf(harness)).toHaveLength(2);
+        expect(harness.form.formState.isDirty).toBe(false);
     });
 
     it("should name the category in the delete confirmation and keep it when cancelled", async () => {
         const harness = renderCategories();
 
-        fireEvent.click(screen.getByTestId("config-category-remove-0"));
+        await openEdit(0);
+        fireEvent.click(screen.getByTestId("config-category-dialog-delete"));
         const confirmation = await screen.findByTestId(
             "config-category-delete-confirm",
         );
@@ -509,6 +619,9 @@ describe("F-CONFIG-CATEGORIES add and remove", () => {
                 screen.queryByTestId("config-category-delete-confirm"),
             ).toBeNull(),
         );
+        // Backing out of the confirmation returns to the still-open dialog
+        // rather than discarding the whole edit.
+        expect(screen.getByTestId("config-category-dialog")).toBeVisible();
 
         expect(categoriesOf(harness)).toHaveLength(2);
         expect(harness.form.formState.isDirty).toBe(false);
@@ -518,60 +631,72 @@ describe("F-CONFIG-CATEGORIES add and remove", () => {
         const harness = renderCategories();
         expect(harness.form.formState.isDirty).toBe(false);
 
-        await confirmDelete(1);
+        await openEdit(1);
+        await deleteFromDialogAndConfirm();
 
         expect(categoriesOf(harness)).toHaveLength(1);
         expect(categoriesOf(harness)[0]).toMatchObject({name: "Movies"});
         expect(harness.form.formState.isDirty).toBe(true);
         expect(screen.queryByTestId("config-category-entry-1")).toBeNull();
     });
+
+    it("should offer no Delete for a brand new category", async () => {
+        renderCategories();
+        await openAdd();
+        expect(
+            screen.queryByTestId("config-category-dialog-delete"),
+        ).toBeNull();
+    });
 });
 
 describe("F-CONFIG-CATEGORIES newznab category validation", () => {
-    it("should keep an &-joined tuple as one string entry", () => {
+    it("should keep an &-joined tuple as one string entry", async () => {
         const harness = renderCategories();
-        expandRow(0);
-        const input = screen.getByTestId(
-            "config-input-categoriesConfig-categories-0-newznabCategories",
-        );
+        await openEdit(0);
+        const input = draftInput("newznabCategories");
 
         fireEvent.change(input, {target: {value: "2010&11000"}});
         fireEvent.keyDown(input, {key: "Enter"});
+        submitDialog();
+        await waitForDialogClosed();
 
         expect(categoriesOf(harness)[0]).toMatchObject({
             newznabCategories: ["2000", "2010&11000"],
         });
     });
 
-    it("should refuse a malformed token, naming it and the accepted shape", () => {
+    it("should refuse a malformed token in the dialog, naming it and the accepted shape, without adding it", async () => {
         const harness = renderCategories();
-        expandRow(0);
-        const input = screen.getByTestId(
-            "config-input-categoriesConfig-categories-0-newznabCategories",
-        );
+        await openEdit(0);
+        const input = draftInput("newznabCategories");
 
         fireEvent.change(input, {target: {value: "2010,3000"}});
         fireEvent.keyDown(input, {key: "Enter"});
 
         const error = screen.getByTestId(
-            "config-error-categoriesConfig-categories-0-newznabCategories",
+            "config-error-categoriesConfig-categoryDraft-newznabCategories",
         );
         expect(error).toHaveTextContent('"2010,3000"');
         expect(error).toHaveTextContent('several joined with "&"');
-        // Refused means not written: the stored value is untouched and the
-        // form is not dirty.
+
+        submitDialog();
+        await waitForDialogClosed();
+
+        // Refused means not written: only the entry's original token
+        // survived to the commit.
         expect(categoriesOf(harness)[0]).toMatchObject({
             newznabCategories: ["2000"],
         });
-        expect(harness.form.formState.isDirty).toBe(false);
     });
 
     /**
      * The narrowing to digits is deliberate (`Integer.valueOf` would take
      * `-5`), and it must never become data loss: a stored token this UI would
-     * refuse today still round-trips, flagged where the admin can see it.
+     * refuse today still round-trips, flagged where the admin can see it --
+     * on the summary row without opening anything, and again inside the
+     * dialog as one of its chips.
      */
-    it("should flag a stored token it would refuse rather than dropping it", () => {
+    it("should flag a stored token it would refuse rather than dropping it", async () => {
         const harness = renderCategories({
             values: configWith([
                 category({name: "Odd", newznabCategories: ["-5", "2000"]}),
@@ -585,39 +710,39 @@ describe("F-CONFIG-CATEGORIES newznab category validation", () => {
         expect(
             within(summary).getByLabelText(/^-5 — "-5" is not a newznab/),
         ).toBeInTheDocument();
-        // Untouched in the form, and not merely on screen: the next save writes
-        // it back exactly as it was read.
+        // Untouched in the form, and not merely on screen: the next save
+        // writes it back exactly as it was read.
         expect(categoriesOf(harness)[0]).toMatchObject({
             newznabCategories: ["-5", "2000"],
         });
 
-        expandRow(0);
-        const chips = screen.getByTestId(
-            "config-input-categoriesConfig-categories-0-newznabCategories-chip--5",
-        );
-        expect(chips).toBeInTheDocument();
+        await openEdit(0);
+        expect(
+            screen.getByTestId(
+                "config-input-categoriesConfig-categoryDraft-newznabCategories-chip--5",
+            ),
+        ).toBeInTheDocument();
 
         // Adding a valid token alongside it leaves the flagged one in place.
-        const input = screen.getByTestId(
-            "config-input-categoriesConfig-categories-0-newznabCategories",
-        );
+        const input = draftInput("newznabCategories");
         fireEvent.change(input, {target: {value: "3000"}});
         fireEvent.keyDown(input, {key: "Enter"});
-        expect(categoriesOf(harness)[0]).toMatchObject({
-            newznabCategories: ["-5", "2000", "3000"],
-        });
 
-        // And so does *refusing* one: the write that rejects the new token must
-        // not take the stored violation down with it. This is the path where a
-        // narrowing turns into data loss if the refusal filters the whole
-        // value instead of only what was just added.
+        // And so does *refusing* one: the write that rejects the new token
+        // must not take the stored violation down with it. This is the path
+        // where the narrowing turns into data loss if the refusal filters the
+        // whole value instead of only what was just added.
         fireEvent.change(input, {target: {value: "abc"}});
         fireEvent.keyDown(input, {key: "Enter"});
         expect(
             screen.getByTestId(
-                "config-error-categoriesConfig-categories-0-newznabCategories",
+                "config-error-categoriesConfig-categoryDraft-newznabCategories",
             ),
         ).toHaveTextContent('"abc"');
+
+        submitDialog();
+        await waitForDialogClosed();
+
         expect(categoriesOf(harness)[0]).toMatchObject({
             newznabCategories: ["-5", "2000", "3000"],
         });

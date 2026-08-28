@@ -1,13 +1,9 @@
-import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
     Box,
     Button,
     Chip,
-    Collapse,
-    IconButton,
     Stack,
     Table,
     TableBody,
@@ -23,7 +19,7 @@ import {useFormContext, useWatch} from "react-hook-form";
 import type {ConfigValues} from "../../../api/config/schema";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {settingTestId, type ConfigFieldPath} from "../components";
-import {CategoryEntryFields} from "./CategoryEntryFields";
+import {CategoryDialog} from "./CategoryDialog";
 import {
     categoryEntryLegend,
     categorySearchTypeLabel,
@@ -52,25 +48,50 @@ function categoriesOf(value: unknown): CategoryValues[] {
     return Array.isArray(value) ? (value as CategoryValues[]) : [];
 }
 
+type Editing = {
+    index: number;
+    /**
+     * Whether this transaction was opened by Add rather than Edit. Drives the
+     * dialog's title and whether it offers Delete, and -- unlike the
+     * `DownloaderDialog`/`UserDialog` precedent, where a new entry has no
+     * array slot until Submit -- also drives what Cancel does: see `add` and
+     * `cancelTransaction`.
+     */
+    isNew: boolean;
+    /**
+     * The transaction's identity, compared against `transactionRef` before a
+     * commit is applied. See `openTransaction`.
+     */
+    token: number;
+    value: CategoryValues;
+};
+
 /**
- * `F-CONFIG-CATEGORIES`'s catalog (FM-107): legacy's stack of per-category
- * fieldsets (`config-fields-service.js:1604-1836`, rendered through
- * `RepeatSection` until now) as one table whose rows expand in place.
+ * `F-CONFIG-CATEGORIES`'s catalog (FM-119, following FM-107): legacy's stack
+ * of per-category fieldsets (`config-fields-service.js:1604-1836`) as one
+ * table whose rows are edited through `CategoryDialog`'s modal transaction --
+ * the same shape `F-CONFIG-AUTH`'s `AuthUsersSection`/`UserDialog` and
+ * `F-CONFIG-DOWNLOADING`'s `DownloaderTable`/`DownloaderDialog` already use
+ * (ADR-0034).
  *
  * **Why a table at all.** A category is edited rarely and audited often: the
  * question an admin actually arrives with is "which category claims newznab
  * 5030" or "which ones have a size preset", and answering it meant scrolling
  * fourteen stacked fieldsets per category. The summary columns answer it
- * without opening anything; the full field set is one toggle away and is the
- * same `CategoryEntryFields` as before.
+ * without opening anything; the full field set is one Edit away, in a dialog,
+ * and is the same `CategoryEntryFields` as before.
  *
- * **Why the fields stay mounted while a row is collapsed.** `name` is
- * `required`, so a blank one blocks the save. If collapsing unmounted the row's
- * controls, `C-CONFIG-FORM` would refuse to submit while the message explaining
- * why was in a part of the DOM that does not exist -- the admin would see a
- * blocked save and nothing else. `Collapse` without `unmountOnExit` hides the
- * fields without unmounting them, so the row's error renders inside a row the
- * admin can then open.
+ * **Why this replaced the always-mounted accordion (FM-107).** `name` is
+ * `required`, so before this change a collapsed row's fields stayed mounted --
+ * `Collapse` without `unmountOnExit` -- purely so a blank name still blocked
+ * the save with an error rendered somewhere in the DOM. That mounted all 16
+ * base categories' 13 controllers each -- 208 registered inputs, 48
+ * `Autocomplete`s and 64 `Select`s -- whether or not any row was open
+ * (ADR-0034's evidence, and the owner's "categories subsection is slow"
+ * report). `CategoryDialog` replaces the guarantee rather than dropping it:
+ * its own `trigger()` refuses to commit a blank name, so the invalid state
+ * cannot be created in the first place, and only one entry's fields are ever
+ * registered at a time.
  *
  * **Why no reordering.** `CategoriesConfig.setCategories` re-sorts by name on
  * every deserialization (`CategoriesConfig.java:38-39`), so any order arranged
@@ -88,60 +109,34 @@ export function CategoriesTable() {
         useWatch<ConfigValues>({
             name: "categoriesConfig.enableCategorySizes",
         }) === true;
-    const [expanded, setExpanded] = useState<readonly number[]>([]);
+    const [editing, setEditing] = useState<Editing | null>(null);
+    /**
+     * The identity of the transaction that is currently allowed to commit.
+     * Every open and every close bumps it, so a commit from a dialog that was
+     * already cancelled, deleted, or replaced is dropped instead of applied.
+     * `CategoryDialog` has no asynchronous step of its own, but `onSubmit` is
+     * still a closure captured by a render a later one may have replaced.
+     */
+    const transactionRef = useRef(0);
     const tableRef = useRef<HTMLTableElement | null>(null);
     /**
-     * Bumped to ask for focus on the table. Adding and removing both destroy
-     * the control that was focused (the add button keeps existing, but the
-     * removed row's Delete does not), so without this a keyboard user is
-     * dropped on `document.body` and restarts at the top of the page.
+     * Bumped to ask for focus on the table. Adding, editing, and removing all
+     * destroy the control that was focused (the dialog's Submit or Delete),
+     * so without this a keyboard user is dropped on `document.body` and
+     * restarts at the top of the page.
      */
     const [focusRequest, setFocusRequest] = useState(0);
-    const scrollerRef = useRef<HTMLDivElement | null>(null);
-    /**
-     * The width an expanded row's fields are given, in pixels, or `null` before
-     * it has been measured.
-     *
-     * An expansion is a cell of this table, so it is as wide as the table --
-     * and below about 600px the table is wider than its own scroll container.
-     * Left alone, that puts the right edge of every text field the expansion
-     * renders behind the container's horizontal scroll, which is the rendering
-     * ADR-0029 refuses: summary text scrolled out of view is fine, an input is
-     * not. Pinning the expansion to the container's *visible* width instead
-     * (with `position: sticky` below, so it stays put while the summary columns
-     * scroll under it) keeps every field wholly on screen at any viewport.
-     *
-     * Measured rather than assumed, because there is no fixed number to write
-     * down: the container is as wide as the config shell leaves it, which
-     * depends on the settings nav being a sidebar or a drawer.
-     */
-    const [fieldsWidth, setFieldsWidth] = useState<number | null>(null);
-
-    useEffect(() => {
-        const scroller = scrollerRef.current;
-        if (scroller === null || typeof ResizeObserver === "undefined") {
-            // No observer (jsdom): the expansion falls back to the cell's own
-            // width, which is what it had before this measurement existed.
-            return undefined;
-        }
-        const observer = new ResizeObserver(() =>
-            setFieldsWidth(scroller.clientWidth),
-        );
-        observer.observe(scroller);
-        setFieldsWidth(scroller.clientWidth);
-        return () => observer.disconnect();
-    }, []);
 
     useEffect(() => {
         if (focusRequest === 0) {
             return undefined;
         }
-        // Deferred by one macrotask for the same reason `AuthUsersSection` does
-        // it: MUI's focus trap in the ancestor `DialogProvider` restores focus
-        // to whatever opened the confirm dialog in its own effect cleanup,
-        // which runs after this effect, and the node it restores to has just
-        // been unmounted. Zero delay -- this only has to fall behind the same
-        // commit's remaining work.
+        // Deferred by one macrotask for the same reason `AuthUsersSection`
+        // does it: MUI's focus trap in the ancestor `DialogProvider` restores
+        // focus to whatever opened the confirm/edit dialog in its own effect
+        // cleanup, which runs after this effect, and the node it restores to
+        // has just been unmounted. Zero delay -- this only has to fall behind
+        // the same commit's remaining work.
         const handle = setTimeout(() => tableRef.current?.focus(), 0);
         return () => clearTimeout(handle);
     }, [focusRequest]);
@@ -152,12 +147,129 @@ export function CategoriesTable() {
     const write = (next: CategoryValues[]) =>
         setValue(CATEGORIES_PATH, next as never, {shouldDirty: true});
 
+    const closeTransaction = () => {
+        transactionRef.current += 1;
+        setEditing(null);
+    };
+
+    /**
+     * Unmount cleanup for an `add` transaction that is still open when the
+     * component itself unmounts -- ordinary tab navigation, since
+     * `ConfigShell.tsx` mounts only one tab body at a time while the shared
+     * form above `<Outlet />` persists. Cancel, Escape, and the backdrop all
+     * already undo `add`'s placeholder through `cancelTransaction`, and each
+     * of those bumps `transactionRef` before this effect's cleanup can run,
+     * so this is a no-op for all three -- and for a successful Submit, whose
+     * `commit` also bumps `transactionRef` before writing the final entry.
+     * Only a transaction still holding the live token when the component
+     * unmounts is rolled back here, so a committed entry can never be
+     * mistaken for an abandoned one.
+     */
+    useEffect(() => {
+        if (editing === null || !editing.isNew) {
+            return undefined;
+        }
+        const token = editing.token;
+        const index = editing.index;
+        return () => {
+            if (transactionRef.current !== token) {
+                return;
+            }
+            write(
+                categoriesOf(getValues(CATEGORIES_PATH)).filter(
+                    (_entry, entryIndex) => entryIndex !== index,
+                ),
+            );
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editing]);
+
+    /**
+     * Pushes a default entry and opens its dialog immediately, in the same
+     * spirit as the accordion's old expand-on-add (`CategoriesTable.tsx`'s
+     * former `:155-162`) -- and, independently, so `C-CONFIG-REVIEW`'s
+     * change summary has an entry to report the moment Add is clicked, not
+     * only once a dialog is confirmed. Unlike the `DownloaderDialog`/
+     * `UserDialog` precedent -- where a brand new entry has no array slot
+     * until Submit -- the placeholder pushed here is undone by
+     * `cancelTransaction` if the admin backs out without ever passing the
+     * dialog's own name guard, so a blank category can never survive past
+     * this transaction closing.
+     */
     const add = () => {
-        const next = currentEntries();
-        write([...next, defaultCategoryEntry()]);
-        // Opened straight away: a new category's `name` is blank and required,
-        // so a collapsed new row would block the save behind a closed door.
-        setExpanded((open) => [...open, next.length]);
+        const index = currentEntries().length;
+        write([...currentEntries(), defaultCategoryEntry()]);
+        transactionRef.current += 1;
+        setEditing({
+            index,
+            isNew: true,
+            token: transactionRef.current,
+            value: defaultCategoryEntry(),
+        });
+    };
+
+    const edit = (index: number) => {
+        transactionRef.current += 1;
+        setEditing({
+            index,
+            isNew: false,
+            token: transactionRef.current,
+            value: structuredClone(currentEntries()[index]),
+        });
+    };
+
+    /**
+     * Cancel (including Escape and a backdrop click, both routed through
+     * `CategoryDialog`'s `onClose`). For an edit of an existing entry this is
+     * a pure discard -- the dialog never touched the shared form. For a
+     * transaction `add` opened, the placeholder it pushed is removed here:
+     * that is what keeps a category the admin never finished naming from
+     * surviving to a save with no mounted field left anywhere to explain why
+     * it was refused (`CategoryDialog`'s module doc).
+     */
+    const cancelTransaction = () => {
+        if (editing !== null && editing.isNew) {
+            const index = editing.index;
+            write(
+                currentEntries().filter(
+                    (_entry, entryIndex) => entryIndex !== index,
+                ),
+            );
+        }
+        closeTransaction();
+    };
+
+    /**
+     * Synchronous, and deliberately so: `CategoriesConfig.setCategories`
+     * re-sorts the catalog by name on every save, so a config index is never
+     * stable across an async gap. There is none here to be stable across --
+     * `CategoryDialog` has no connection check or other await between its
+     * `trigger()` and `onSubmit` -- but the token guard below still protects
+     * against a stale closure if a later render replaced this transaction.
+     */
+    const commit = (token: number, index: number, entry: CategoryValues) => {
+        if (token !== transactionRef.current) {
+            return;
+        }
+        const current = currentEntries();
+        if (index >= current.length) {
+            // The row this transaction was opened over is gone (deleted from
+            // elsewhere while the dialog was open). Committing would either
+            // overwrite whoever shifted into its index or silently drop the
+            // edit; both are worse than discarding it.
+            closeTransaction();
+            return;
+        }
+        write(
+            current.map((existing, entryIndex) =>
+                // Spread over the stored entry rather than replacing it
+                // outright: `ConfigWeb.setConfig` writes the whole file back,
+                // so a key this dialog has no control for must survive an
+                // edit (ADR-0003).
+                entryIndex === index ? {...existing, ...entry} : existing,
+            ),
+        );
+        closeTransaction();
         setFocusRequest((request) => request + 1);
     };
 
@@ -176,50 +288,31 @@ export function CategoriesTable() {
         if (answer !== "confirmed") {
             return;
         }
+        // A removal shifts every following index, so no transaction opened
+        // before it may still commit by the index it captured.
+        transactionRef.current += 1;
         write(
             currentEntries().filter(
                 (_entry, entryIndex) => entryIndex !== index,
             ),
         );
-        // Expansion is keyed by configuration index, so a removal shifts it:
-        // every row after the removed one moves down by one, and the removed
-        // one's own state is dropped. Left alone, a different category would
-        // silently appear expanded.
-        setExpanded((open) =>
-            open
-                .filter((entryIndex) => entryIndex !== index)
-                .map((entryIndex) =>
-                    entryIndex > index ? entryIndex - 1 : entryIndex,
-                ),
-        );
+        setEditing(null);
         setFocusRequest((request) => request + 1);
     };
 
-    const toggle = (index: number) =>
-        setExpanded((open) =>
-            open.includes(index)
-                ? open.filter((entryIndex) => entryIndex !== index)
-                : [...open, index],
-        );
-
-    // Expand toggle, Category, Search type, Newznab categories, and the size
-    // column only while the catalog-wide switch is on.
-    const columnCount = showSizes ? 5 : 4;
+    // Category, Search type, Newznab categories, and the size column only
+    // while the catalog-wide switch is on.
+    const columnCount = showSizes ? 4 : 3;
 
     return (
         <Box data-testid={CATEGORIES_ANCHOR_TEST_ID}>
             <TableContainer
-                // Named so a test can address the element that actually
-                // scrolls, rather than reaching for the table's parent.
-                data-testid="config-categories-scroller"
-                ref={scrollerRef}
-                // Five columns of an admin's own free text do not fit 390px, so
-                // whatever cannot fit scrolls here rather than pushing the page
-                // sideways (ADR-0029). Both of a row's controls -- its expand
-                // toggle and its Delete -- sit in the first two cells, so
-                // nothing scrolled out of view is operable; what goes off the
-                // right edge is summary text that the expanded row repeats as
-                // real fields.
+                // Five columns of an admin's own free text do not fit 390px,
+                // so whatever cannot fit scrolls here rather than pushing the
+                // page sideways (ADR-0029). The row's only control -- its Edit
+                // button -- sits in the first cell, so nothing scrolled out of
+                // view is operable; what goes off the right edge is summary
+                // text the dialog repeats as real fields.
                 sx={{overflowX: "auto"}}
             >
                 <Table
@@ -228,14 +321,12 @@ export function CategoriesTable() {
                     ref={tableRef}
                     size="small"
                     // Focusable only programmatically: it is where focus is put
-                    // after an add or a delete, and it is not in the tab order.
+                    // after an add, edit, or delete, and it is not in the tab
+                    // order.
                     tabIndex={-1}
                 >
                     <TableHead>
                         <TableRow>
-                            {/* The toggle column's header is empty by design; each
-                                toggle carries its own accessible name. */}
-                            <TableCell />
                             <TableCell>Category</TableCell>
                             <TableCell>Search type</TableCell>
                             <TableCell>Newznab categories</TableCell>
@@ -257,17 +348,13 @@ export function CategoriesTable() {
                         ) : null}
                         {entries.map((entry, index) => (
                             <CategoryTableRow
-                                columnCount={columnCount}
                                 entry={entry}
-                                expanded={expanded.includes(index)}
-                                fieldsWidth={fieldsWidth}
-                                index={index}
                                 // The index is the key on purpose, as it was in
                                 // `RepeatSection`: a name is editable and row N
                                 // always shows whatever is at index N.
                                 key={index}
-                                onRemove={() => void remove(index)}
-                                onToggle={() => toggle(index)}
+                                index={index}
+                                onEdit={() => edit(index)}
                                 showSizes={showSizes}
                             />
                         ))}
@@ -283,33 +370,35 @@ export function CategoriesTable() {
             >
                 {ADD_LABEL}
             </Button>
+            {editing === null ? null : (
+                <CategoryDialog
+                    initialValue={editing.value}
+                    isNew={editing.isNew}
+                    onCancel={cancelTransaction}
+                    onDelete={
+                        editing.isNew
+                            ? undefined
+                            : () => void remove(editing.index)
+                    }
+                    onSubmit={(entry) =>
+                        commit(editing.token, editing.index, entry)
+                    }
+                />
+            )}
         </Box>
     );
 }
 
-/**
- * One category: a summary row and the expansion row underneath it that holds
- * the entry's real fields. Two `TableRow`s rather than one, because a table
- * cell cannot contain another row and the expansion has to span the full width.
- */
+/** One category's summary row. `CategoryDialog` renders and edits its fields. */
 function CategoryTableRow({
-    columnCount,
     entry,
-    expanded,
-    fieldsWidth,
     index,
-    onRemove,
-    onToggle,
+    onEdit,
     showSizes,
 }: {
-    columnCount: number;
     entry: CategoryValues;
-    expanded: boolean;
-    /** See `fieldsWidth` in `CategoriesTable`; `null` until measured. */
-    fieldsWidth: number | null;
     index: number;
-    onRemove: () => void;
-    onToggle: () => void;
+    onEdit: () => void;
     showSizes: boolean;
 }) {
     const legend = categoryEntryLegend(entry);
@@ -319,163 +408,97 @@ function CategoryTableRow({
         : [];
 
     return (
-        <>
-            <TableRow data-testid={`config-category-entry-${index}`}>
-                <TableCell>
-                    <IconButton
-                        aria-controls={`config-category-fields-${index}`}
-                        aria-expanded={expanded}
-                        aria-label={
-                            expanded ? `Collapse ${legend}` : `Expand ${legend}`
-                        }
-                        data-testid={`config-category-expand-${index}`}
-                        onClick={onToggle}
+        <TableRow data-testid={`config-category-entry-${index}`}>
+            <TableCell>
+                <Stack alignItems="flex-start" spacing={0.5}>
+                    <Typography
+                        data-testid={`config-category-name-${index}`}
+                        // A category name is free text and can be long; it
+                        // wraps inside the cell rather than widening the
+                        // column.
+                        sx={{overflowWrap: "anywhere"}}
+                        variant="body2"
+                    >
+                        {legend}
+                    </Typography>
+                    {/*
+                     * The button keeps a visible word and names the category
+                     * only in its accessible name: "Edit some-long-name" on
+                     * every row would set this column's width from the
+                     * longest name twice over, and the name is directly
+                     * above it anyway. The visible text is the first word of
+                     * the accessible name, so the two agree (WCAG 2.5.3).
+                     */}
+                    <Button
+                        aria-label={`Edit ${legend}`}
+                        data-testid={`config-category-edit-${index}`}
+                        onClick={onEdit}
                         size="small"
+                        startIcon={<EditIcon />}
+                        type="button"
                     >
-                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
-                </TableCell>
-                <TableCell>
-                    <Stack alignItems="flex-start" spacing={0.5}>
-                        <Typography
-                            data-testid={`config-category-name-${index}`}
-                            // A category name is free text and can be long; it
-                            // wraps inside the cell rather than widening the
-                            // column.
-                            sx={{overflowWrap: "anywhere"}}
-                            variant="body2"
-                        >
-                            {legend}
-                        </Typography>
-                        {/*
-                         * The button keeps a visible word and names the category
-                         * only in its accessible name: "Delete some-long-name"
-                         * on every row would set this column's width from the
-                         * longest name twice over, and the name is directly
-                         * above it anyway. The visible text is the first word
-                         * of the accessible name, so the two agree (WCAG 2.5.3).
-                         */}
-                        <Button
-                            aria-label={`Delete ${legend}`}
-                            color="error"
-                            data-testid={`config-category-remove-${index}`}
-                            onClick={onRemove}
-                            size="small"
-                            startIcon={<DeleteIcon />}
-                            type="button"
-                        >
-                            Delete
-                        </Button>
+                        Edit
+                    </Button>
+                </Stack>
+            </TableCell>
+            <TableCell data-testid={`config-category-searchType-${index}`}>
+                {categorySearchTypeLabel(entry)}
+            </TableCell>
+            <TableCell
+                data-testid={`config-category-newznabCategories-${index}`}
+            >
+                {newznabCategories.length === 0 ? (
+                    <Typography variant="body2">None</Typography>
+                ) : (
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{flexWrap: "wrap"}}
+                        useFlexGap
+                    >
+                        {newznabCategories.map((category) => {
+                            const verdict = newznabCategoryValidator(category);
+                            return (
+                                <Chip
+                                    // Flagged here too, not only inside the
+                                    // dialog: a stored token the UI would
+                                    // refuse today is exactly what an admin
+                                    // scanning the catalog needs to find, and
+                                    // it would otherwise be visible only after
+                                    // opening the entry it sits in. Icon plus
+                                    // accessible name, never the colour alone
+                                    // (ADR-0029).
+                                    aria-label={
+                                        verdict === true
+                                            ? undefined
+                                            : `${category} — ${verdict}`
+                                    }
+                                    color={
+                                        verdict === true ? "default" : "error"
+                                    }
+                                    icon={
+                                        verdict === true ? undefined : (
+                                            <ErrorOutlineIcon />
+                                        )
+                                    }
+                                    key={category}
+                                    label={category}
+                                    size="small"
+                                    title={
+                                        verdict === true ? undefined : verdict
+                                    }
+                                    variant="outlined"
+                                />
+                            );
+                        })}
                     </Stack>
+                )}
+            </TableCell>
+            {showSizes ? (
+                <TableCell data-testid={`config-category-size-${index}`}>
+                    {sizeSummary ?? "None"}
                 </TableCell>
-                <TableCell data-testid={`config-category-searchType-${index}`}>
-                    {categorySearchTypeLabel(entry)}
-                </TableCell>
-                <TableCell
-                    data-testid={`config-category-newznabCategories-${index}`}
-                >
-                    {newznabCategories.length === 0 ? (
-                        <Typography variant="body2">None</Typography>
-                    ) : (
-                        <Stack
-                            direction="row"
-                            spacing={0.5}
-                            sx={{flexWrap: "wrap"}}
-                            useFlexGap
-                        >
-                            {newznabCategories.map((category) => {
-                                const verdict =
-                                    newznabCategoryValidator(category);
-                                return (
-                                    <Chip
-                                        // Flagged here too, not only inside the
-                                        // expanded row: a stored token the UI
-                                        // would refuse today is exactly what an
-                                        // admin scanning the catalog needs to
-                                        // find, and it would otherwise be
-                                        // visible only after opening the row it
-                                        // sits in. Icon plus accessible name,
-                                        // never the colour alone (ADR-0029).
-                                        aria-label={
-                                            verdict === true
-                                                ? undefined
-                                                : `${category} — ${verdict}`
-                                        }
-                                        color={
-                                            verdict === true
-                                                ? "default"
-                                                : "error"
-                                        }
-                                        icon={
-                                            verdict === true ? undefined : (
-                                                <ErrorOutlineIcon />
-                                            )
-                                        }
-                                        key={category}
-                                        label={category}
-                                        size="small"
-                                        title={
-                                            verdict === true
-                                                ? undefined
-                                                : verdict
-                                        }
-                                        variant="outlined"
-                                    />
-                                );
-                            })}
-                        </Stack>
-                    )}
-                </TableCell>
-                {showSizes ? (
-                    <TableCell data-testid={`config-category-size-${index}`}>
-                        {sizeSummary ?? "None"}
-                    </TableCell>
-                ) : null}
-            </TableRow>
-            <TableRow>
-                <TableCell
-                    colSpan={columnCount}
-                    // The expansion is a container, not a cell of data: its own
-                    // padding and bottom rule would draw a second frame around
-                    // the fields the `Collapse` already sets apart, and a
-                    // collapsed row would still show that rule with nothing
-                    // under it. No padding of its own either -- the measured
-                    // width below is the container's, and `box-sizing:
-                    // border-box` (CssBaseline) makes it exact only if the
-                    // padding is inside the measured box.
-                    sx={{borderBottom: "none", p: 0}}
-                >
-                    <Collapse
-                        // No `unmountOnExit`: see this module's doc comment.
-                        // A collapsed row's fields stay registered with
-                        // `C-CONFIG-FORM`, so a blank required name still
-                        // blocks the save *and* still renders its message.
-                        id={`config-category-fields-${index}`}
-                        in={expanded}
-                    >
-                        <Box
-                            data-testid={`config-category-fields-box-${index}`}
-                            sx={{
-                                // Pinned to the container's visible width and
-                                // held at its left edge while the summary
-                                // columns scroll under it -- see `fieldsWidth`
-                                // in `CategoriesTable` for why a cell of this
-                                // table would otherwise put the right-hand edge
-                                // of every input off-canvas at 390px.
-                                left: 0,
-                                position: "sticky",
-                                px: 2,
-                                py: 2,
-                                ...(fieldsWidth === null
-                                    ? {}
-                                    : {width: fieldsWidth}),
-                            }}
-                        >
-                            <CategoryEntryFields index={index} />
-                        </Box>
-                    </Collapse>
-                </TableCell>
-            </TableRow>
-        </>
+            ) : null}
+        </TableRow>
     );
 }

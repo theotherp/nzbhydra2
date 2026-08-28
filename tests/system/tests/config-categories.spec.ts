@@ -60,44 +60,45 @@ async function saveAndExpectSuccess(page: Page): Promise<void> {
     await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
+/** A dialog field's own input, e.g. `draftField(page, "name")`. */
+function draftField(page: Page, field: string): Locator {
+    return page.getByTestId(
+        `config-input-categoriesConfig-categoryDraft-${field}`,
+    );
+}
+
 /**
- * FM-107: a row's fields are behind its expand toggle, and they stay mounted
- * while it is collapsed, so `fill()` needs the row opened first. Idempotent --
- * a row already open is left open.
+ * FM-119 (ADR-0034): a category's fields live behind its own Edit button, in
+ * a modal transaction, rather than an expanded row.
  */
-async function expandCategory(page: Page, index: number): Promise<void> {
-    const toggle = page.getByTestId(`config-category-expand-${index}`);
-    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
-        await toggle.click();
-    }
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(
-        page.getByTestId(
-            `config-input-categoriesConfig-categories-${index}-name`,
-        ),
-    ).toBeVisible();
+async function openCategoryDialog(page: Page, index: number): Promise<void> {
+    await page.getByTestId(`config-category-edit-${index}`).click();
+    await expect(page.getByTestId("config-category-dialog")).toBeVisible();
+}
+
+async function submitCategoryDialog(page: Page): Promise<void> {
+    await page.getByTestId("config-category-dialog-submit").click();
+    await expect(page.getByTestId("config-category-dialog")).toBeHidden();
 }
 
 /**
  * The Categories catalog re-sorts by name on every save
  * (`CategoriesConfig.setCategories`), so a newly added category's row index
  * is never stable across a save+reload -- it has to be located by its own
- * `name` input's current value instead. The inputs of collapsed rows are still
- * in the DOM (FM-107 keeps them mounted), which is what lets this read them
- * without opening every row.
+ * summary cell's text instead. Summary cells are always in the DOM (FM-119
+ * unmounts only the dialog's own fields, not the row), which is what lets
+ * this read them without opening anything.
  */
 async function categoryIndexByName(page: Page, name: string): Promise<number> {
-    const inputs = page.locator(
-        '[data-testid^="config-input-categoriesConfig-categories-"][data-testid$="-name"]',
+    const names = page.locator(
+        '[data-testid^="config-category-name-"]',
     );
-    const count = await inputs.count();
+    const count = await names.count();
     for (let index = 0; index < count; index += 1) {
-        const input = inputs.nth(index);
-        if ((await input.inputValue()) === name) {
-            const testId = await input.getAttribute("data-testid");
-            const match = testId?.match(
-                /^config-input-categoriesConfig-categories-(\d+)-name$/,
-            );
+        const cell = names.nth(index);
+        if ((await cell.textContent())?.trim() === name) {
+            const testId = await cell.getAttribute("data-testid");
+            const match = testId?.match(/^config-category-name-(\d+)$/);
             if (match) {
                 return Number(match[1]);
             }
@@ -135,59 +136,50 @@ test.describe("Config categories tab round trip", () => {
         await openCategoriesConfig(page);
         await setAdvanced(page, true);
 
+        // Add pushes a placeholder straight into the catalog and opens its
+        // dialog immediately -- the successor to FM-107's expand-on-add.
         await page.getByTestId("config-categories-add").click();
         const addedIndex = categoriesBefore.length;
-        const entry = page.getByTestId(`config-category-entry-${addedIndex}`);
-        await expect(entry).toBeVisible();
-        // A new row opens itself: its `name` is blank and required.
-        await expandCategory(page, addedIndex);
+        await expect(
+            page.getByTestId(`config-category-entry-${addedIndex}`),
+        ).toBeVisible();
+        await expect(page.getByTestId("config-category-dialog")).toBeVisible();
 
-        await page
-            .getByTestId(
-                `config-input-categoriesConfig-categories-${addedIndex}-name`,
-            )
-            .fill(categoryName);
+        await draftField(page, "name").fill(categoryName);
 
         // A plain newznab category and an `&`-joined tuple requiring two
         // numbers to be present in one result
         // (`config-fields-service.js:1789-1795`).
-        const newznabInput = page.getByTestId(
-            `config-input-categoriesConfig-categories-${addedIndex}-newznabCategories`,
-        );
+        const newznabInput = draftField(page, "newznabCategories");
         await newznabInput.fill("9999");
         await newznabInput.press("Enter");
         await newznabInput.fill("9998&9997");
         await newznabInput.press("Enter");
 
-        // FM-107: a token the backend's `NewznabCategoriesDeserializer` could
-        // not parse is refused at entry, naming itself, and never becomes a
-        // chip -- so it also never reaches the save below.
+        // A token the backend's `NewznabCategoriesDeserializer` could not
+        // parse is refused at entry, naming itself, and never becomes a chip
+        // -- so it also never reaches the save below.
         const refusal = page.getByTestId(
-            `config-error-categoriesConfig-categories-${addedIndex}-newznabCategories`,
+            "config-error-categoriesConfig-categoryDraft-newznabCategories",
         );
         await newznabInput.fill("9996,9995");
         await newznabInput.press("Enter");
         await expect(refusal).toContainText('"9996,9995"');
         await expect(page.getByText("9996,9995", {exact: true})).toHaveCount(0);
 
-        // The two accepted ones are chips, and the row's summary cell shows
-        // them without the row having to be open.
+        await draftField(page, "minSizePreset").fill("10");
+        await draftField(page, "maxSizePreset").fill("250");
+
+        await submitCategoryDialog(page);
+
+        // The two accepted tokens are chips, and the row's summary cell shows
+        // them without the row having to be opened.
         const summary = page.getByTestId(
             `config-category-newznabCategories-${addedIndex}`,
         );
         await expect(summary).toContainText("9999");
         await expect(summary).toContainText("9998&9997");
 
-        await page
-            .getByTestId(
-                `config-input-categoriesConfig-categories-${addedIndex}-minSizePreset`,
-            )
-            .fill("10");
-        await page
-            .getByTestId(
-                `config-input-categoriesConfig-categories-${addedIndex}-maxSizePreset`,
-            )
-            .fill("250");
         // The size column is there only while the catalog-wide switch is on,
         // and this test does not change that switch: it asserts the summary
         // cell exactly when the instance's own configuration renders one.
@@ -215,17 +207,10 @@ test.describe("Config categories tab round trip", () => {
         await expect(reloadedSummary).toContainText("9999");
         await expect(reloadedSummary).toContainText("9998&9997");
 
-        await expandCategory(page, savedIndex);
-        await expect(
-            page.getByTestId(
-                `config-input-categoriesConfig-categories-${savedIndex}-minSizePreset`,
-            ),
-        ).toHaveValue("10");
-        await expect(
-            page.getByTestId(
-                `config-input-categoriesConfig-categories-${savedIndex}-maxSizePreset`,
-            ),
-        ).toHaveValue("250");
+        await openCategoryDialog(page, savedIndex);
+        await expect(draftField(page, "minSizePreset")).toHaveValue("10");
+        await expect(draftField(page, "maxSizePreset")).toHaveValue("250");
+        await page.getByTestId("config-category-dialog-cancel").click();
 
         const after = (await hydra.getConfig()) as Json;
         const categoriesAfter = categoriesOf(after);
@@ -249,11 +234,53 @@ test.describe("Config categories tab round trip", () => {
             expect(stillThere).toEqual(original);
         }
     });
+
+    /**
+     * FM-119 (ADR-0034): the dialog's own `trigger()` refuses to commit a
+     * blank name, the client-side successor to FM-107's always-mounted-fields
+     * guarantee. Reached through the dialog rather than the outer save button
+     * -- the blank-name save refusal itself is `C-CONFIG-FORM`'s, not this
+     * feature's, and stays covered by `config.spec.ts`.
+     */
+    test("should refuse to commit a category with no name, and undo an abandoned add", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        const categoriesBefore = categoriesOf(before);
+
+        await openCategoriesConfig(page);
+        await setAdvanced(page, true);
+
+        await page.getByTestId("config-categories-add").click();
+        await expect(page.getByTestId("config-category-dialog")).toBeVisible();
+
+        await page.getByTestId("config-category-dialog-submit").click();
+        const refusal = page.getByTestId(
+            "config-error-categoriesConfig-categoryDraft-name",
+        );
+        await expect(refusal).toContainText("This field is required");
+        await expect(page.getByTestId("config-category-dialog")).toBeVisible();
+
+        // Backing out without ever naming it undoes the placeholder Add
+        // pushed -- a category that was never named cannot survive to a save.
+        await page.getByTestId("config-category-dialog-cancel").click();
+        await expect(page.getByTestId("config-category-dialog")).toBeHidden();
+        await expect(
+            page.getByTestId(
+                `config-category-entry-${categoriesBefore.length}`,
+            ),
+        ).toBeHidden();
+
+        expect(categoriesOf((await hydra.getConfig()) as Json)).toEqual(
+            categoriesBefore,
+        );
+    });
 });
 
 /**
  * FM-113. Deliberately at the API boundary rather than through the tab: `name` is `required`
- * (`CategoryEntryFields.tsx:36-42`), so `ConfigShell.tsx:209`'s `form.trigger()` refuses a blank one
+ * (`CategoryEntryFields.tsx`), so `CategoryDialog`'s own `trigger()` refuses to commit a blank one
  * before any PUT is issued. A click-and-save case can therefore never exercise the server, and one
  * asserting "This field is required" would be green before *and* after this fix while appearing to
  * prove it. Every other caller of the endpoint -- scripts, hand-crafted requests, restored or
@@ -307,7 +334,37 @@ test.describe("Config categories tab visual evidence", () => {
             page,
             hydra,
         }) => {
-            await hydra.getConfig();
+            const before = (await hydra.getConfig()) as Json;
+            // A stored token the client would refuse today, flagged on its
+            // summary row without opening anything (`newznabCategoryValidator`
+            // narrows to digits only; `Integer.valueOf` -- and so the stored
+            // config -- still accepts a negative one).
+            await hydra.saveConfig({
+                ...before,
+                categoriesConfig: {
+                    ...categoriesConfig(before),
+                    categories: [
+                        ...categoriesOf(before),
+                        {
+                            applyRestrictionsType: "NONE",
+                            applySizeLimitsToApi: false,
+                            forbiddenRegex: null,
+                            forbiddenWords: [],
+                            ignoreResultsFrom: "NONE",
+                            mayBeSelected: true,
+                            maxSizePreset: null,
+                            minSizePreset: null,
+                            name: "System Test Flagged Category",
+                            newznabCategories: ["-5", "2000"],
+                            preselect: true,
+                            requiredRegex: null,
+                            requiredWords: [],
+                            searchType: "SEARCH",
+                            subtype: "NONE",
+                        },
+                    ],
+                },
+            });
 
             await prepareVisualEvidence(page, viewport, async () => {
                 await openCategoriesConfig(page);
@@ -321,99 +378,54 @@ test.describe("Config categories tab visual evidence", () => {
             // unreliable on these tabs once the content exceeds the viewport
             // with the sticky save bar in play, and each state here has to be
             // legible in the frame to be evidence of anything.
-            // `scrollIntoView({block: "start"})`, not
-            // `scrollIntoViewIfNeeded`: the catalog is far taller than the
-            // viewport, and the minimal scroll the latter performs leaves the
-            // column headers off the top of the frame. The extra scroll back is
-            // the sticky save bar's own measured height -- it overlays the top
-            // of the page, so `block: "start"` alone parks the header row
-            // underneath it. Measured rather than guessed, since the bar's
-            // height depends on whether it is showing a dirty summary.
             await scrollToTopOf(page, table);
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-CATEGORIES",
-                    `categories-table-collapsed-${viewport}`,
+                    `categories-table-${viewport}`,
                 ),
             });
 
-            // One row expanded in place, with a refused newznab token visible
-            // underneath its own field.
-            await expandCategory(page, 0);
-            const newznabInput = page.getByTestId(
-                "config-input-categoriesConfig-categories-0-newznabCategories",
+            // The flagged row, auditable without opening anything.
+            const flaggedIndex = await categoryIndexByName(
+                page,
+                "System Test Flagged Category",
             );
-            await newznabInput.scrollIntoViewIfNeeded();
-            await newznabInput.fill("2010,3000");
-            await newznabInput.press("Enter");
+            const flaggedRow = page.getByTestId(
+                `config-category-entry-${flaggedIndex}`,
+            );
+            await flaggedRow.scrollIntoViewIfNeeded();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-CATEGORIES",
+                    `categories-flagged-token-${viewport}`,
+                ),
+            });
+
+            // The dialog, with a submitted blank name refused.
+            await openCategoryDialog(page, 0);
+            await draftField(page, "name").fill("");
+            await page.getByTestId("config-category-dialog-submit").click();
             const refusal = page.getByTestId(
-                "config-error-categoriesConfig-categories-0-newznabCategories",
+                "config-error-categoriesConfig-categoryDraft-name",
             );
             await expect(refusal).toBeVisible();
             await refusal.scrollIntoViewIfNeeded();
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-CATEGORIES",
-                    `categories-row-expanded-refused-${viewport}`,
+                    `categories-dialog-blank-name-refused-${viewport}`,
                 ),
             });
-
-            if (viewport === "mobile") {
-                // The expansion is a cell of a table that is wider than its
-                // scroll container at this width, so without the pinning in
-                // `CategoriesTable` the right-hand edge of every field in it
-                // would sit behind that horizontal scroll. Summary text may
-                // scroll out of view; an input may not (ADR-0029).
-                const fields = await page
-                    .getByTestId("config-category-fields-box-0")
-                    .boundingBox();
-                expect(
-                    fields,
-                    "the expanded fields must have a box",
-                ).not.toBeNull();
-                const viewportSize = page.viewportSize();
-                expect(
-                    (fields?.x ?? 0) + (fields?.width ?? 0),
-                    "an expanded row's fields must fit the viewport",
-                ).toBeLessThanOrEqual(viewportSize?.width ?? 0);
-
-                // ADR-0029, asserted rather than eyeballed: the table's own
-                // container is what scrolls sideways at 390px, the document
-                // does not, and both of a row's controls stay reachable without
-                // any horizontal scrolling at all.
-                await page.getByTestId("config-category-expand-0").click();
-                const container = page.getByTestId(
-                    "config-categories-scroller",
-                );
-                await scrollToTopOf(page, container);
-                expect(
-                    await container.evaluate(
-                        (element) => element.scrollWidth > element.clientWidth,
-                    ),
-                    "the table container is what overflows at 390px",
-                ).toBe(true);
-                expect(
-                    await page
-                        .locator("html")
-                        .evaluate(
-                            (element) =>
-                                element.scrollWidth <= element.clientWidth,
-                        ),
-                    "the page itself must never scroll horizontally",
-                ).toBe(true);
-                // Scrolled to its right edge, so the capture shows the columns
-                // the 390px frame cannot hold *and* that reaching them costs
-                // nothing but a swipe inside the table.
-                await container.evaluate((element) => {
-                    element.scrollLeft = element.scrollWidth;
-                });
-                await page.screenshot({
-                    path: visualEvidencePath(
-                        "F-CONFIG-CATEGORIES",
-                        `categories-scroll-container-${viewport}`,
-                    ),
-                });
-            }
+            // Left exactly as it was found: restore the name and cancel
+            // rather than leaving the tab mid-edit for whatever runs next.
+            await draftField(page, "name").fill(
+                String((categoriesOf(before)[0] as Json).name ?? ""),
+            );
+            await page.getByTestId("config-category-dialog-cancel").click();
+            await expect(
+                page.getByTestId("config-category-dialog"),
+            ).toBeHidden();
         });
     }
 });

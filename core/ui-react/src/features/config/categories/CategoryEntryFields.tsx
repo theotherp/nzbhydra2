@@ -2,6 +2,7 @@ import {InputAdornment, Stack, TextField, Typography} from "@mui/material";
 import {useController} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
+import type {ConfigFieldPath} from "../components";
 import {
     ChipsSetting,
     SelectSetting,
@@ -15,85 +16,96 @@ import {
     APPLY_RESTRICTIONS_OPTIONS,
     CATEGORY_SEARCH_TYPE_OPTIONS,
     CATEGORY_SUBTYPE_OPTIONS,
-    categoryFieldPath,
     IGNORE_RESULTS_FROM_OPTIONS,
     IGNORE_RESULTS_FROM_TOOLTIP,
     NEWZNAB_CATEGORIES_TOOLTIP,
     newznabCategoryValidator,
+    type CategoryValues,
 } from "./categoriesSettings";
+
+/** Builds one category entry's field path from a `CategoryValues` key. */
+export type CategoryFieldPathBuilder = (
+    field: keyof CategoryValues,
+) => ConfigFieldPath;
 
 /**
  * `F-CONFIG-CATEGORIES`'s per-category fields, in legacy's order
- * (`config-fields-service.js:1663-1832`), bound to one entry of
- * `categoriesConfig.categories`. Since FM-107 they are what an expanded row of
- * `CategoriesTable` renders, in place, rather than the body of a repeat-section
- * fieldset; they are unchanged apart from the newznab field's new per-chip
- * validator.
+ * (`config-fields-service.js:1663-1832`), bound to one entry through
+ * `pathFor` rather than a fixed array index (FM-119, ADR-0034): since the
+ * accordion `CategoriesTable` used to render this in place is gone, the one
+ * caller left is `CategoryDialog`, bound to its own draft path
+ * (`CATEGORY_DRAFT_PATH`). The field list and its order are unchanged from
+ * before FM-119, apart from the newznab field's per-chip validator added by
+ * FM-107.
  */
-export function CategoryEntryFields({index}: {index: number}) {
+export function CategoryEntryFields({
+    pathFor,
+}: {
+    pathFor: CategoryFieldPathBuilder;
+}) {
     return (
         <>
             <TextSetting
                 help="Renaming categories might cause problems with repeating searches from the history."
                 label="Name"
-                name={categoryFieldPath(index, "name")}
+                name={pathFor("name")}
                 required
             />
             <SelectSetting
                 help="Determines how indexers will be searched and if autocompletion is available in the GUI"
                 label="Search type"
-                name={categoryFieldPath(index, "searchType")}
+                name={pathFor("searchType")}
                 options={CATEGORY_SEARCH_TYPE_OPTIONS}
             />
             <SelectSetting
                 help="Special search type. Used for indexer specific mappings between categories and newznab IDs"
                 label="Sub type"
-                name={categoryFieldPath(index, "subtype")}
+                name={pathFor("subtype")}
                 options={CATEGORY_SUBTYPE_OPTIONS}
             />
             <SelectSetting
                 help="For which type of search word restrictions will be applied"
                 label="Apply restrictions"
-                name={categoryFieldPath(index, "applyRestrictionsType")}
+                name={pathFor("applyRestrictionsType")}
                 options={APPLY_RESTRICTIONS_OPTIONS}
             />
             <ChipsSetting
                 help="Must *all* be present in a title which is converted to lowercase before. Apply words with return key."
                 label="Required words"
-                name={categoryFieldPath(index, "requiredWords")}
+                name={pathFor("requiredWords")}
             />
             <TextSetting
                 help="Must be present in a title (case is ignored)."
                 label="Required regex"
-                name={categoryFieldPath(index, "requiredRegex")}
+                name={pathFor("requiredRegex")}
             />
             <ChipsSetting
                 help="None may be present in a title which is converted to lowercase before. Apply words with return key."
                 label="Forbidden words"
-                name={categoryFieldPath(index, "forbiddenWords")}
+                name={pathFor("forbiddenWords")}
             />
             <TextSetting
                 help="Must not be present in a title (case is ignored)."
                 label="Forbidden regex"
-                name={categoryFieldPath(index, "forbiddenRegex")}
+                name={pathFor("forbiddenRegex")}
             />
-            <SizePresetRow index={index} />
+            <SizePresetRow pathFor={pathFor} />
             <SwitchSetting
                 help="Enable to apply the size preset to API results from this category"
                 label="Limit API results size"
-                name={categoryFieldPath(index, "applySizeLimitsToApi")}
+                name={pathFor("applySizeLimitsToApi")}
             />
             <ChipsSetting
                 help="Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply categories with return key."
                 label="Newznab categories"
-                name={categoryFieldPath(index, "newznabCategories")}
+                name={pathFor("newznabCategories")}
                 tooltip={NEWZNAB_CATEGORIES_TOOLTIP}
                 validateChip={newznabCategoryValidator}
             />
             <SelectSetting
                 help="Ignore results from this category"
                 label="Ignore results"
-                name={categoryFieldPath(index, "ignoreResultsFrom")}
+                name={pathFor("ignoreResultsFrom")}
                 options={IGNORE_RESULTS_FROM_OPTIONS}
                 tooltip={IGNORE_RESULTS_FROM_TOOLTIP}
             />
@@ -108,9 +120,9 @@ export function CategoryEntryFields({index}: {index: number}) {
  * getting its own. The row's `data-testid` is derived from the `minSizePreset`
  * path -- there is no single config path naming the pair as a whole.
  */
-function SizePresetRow({index}: {index: number}) {
-    const minName = categoryFieldPath(index, "minSizePreset");
-    const maxName = categoryFieldPath(index, "maxSizePreset");
+function SizePresetRow({pathFor}: {pathFor: CategoryFieldPathBuilder}) {
+    const minName = pathFor("minSizePreset");
+    const maxName = pathFor("maxSizePreset");
     const {field: minField} = useController<ConfigValues>({name: minName});
     const {field: maxField} = useController<ConfigValues>({name: maxName});
     return (

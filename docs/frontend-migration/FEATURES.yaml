@@ -640,38 +640,52 @@ features:
       - core/ui-react/src/features/config/categories/CategoriesConfigTab.test.tsx
       - core/ui-react/src/features/config/categories/categoriesSettings.test.ts
     selectors:
-      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
-      # (`config-setting-categoriesConfig-defaultCategory`,
-      # `config-input-categoriesConfig-categories-<index>-name`, etc). The
-      # min/max size preset pair shares one row and one `data-testid`, derived
-      # from its `minSizePreset` path -- there is no single config path for
-      # the pair as a whole.
-      #
-      # FM-107 replaced the shared repeat section with this feature's own
-      # catalog table, so three of its four repeat-section ids are gone:
-      # `config-repeat-entry-categoriesConfig-categories-<index>` is now
-      # `config-category-entry-<index>` (a table row, not a fieldset),
-      # `config-repeat-add-categoriesConfig-categories` is
-      # `config-categories-add`, and
-      # `config-repeat-remove-categoriesConfig-categories-<index>` is
-      # `config-category-remove-<index>` -- the same shape `F-CONFIG-AUTH`'s
-      # users table uses. The fourth, `config-repeat-categoriesConfig-categories`,
-      # is deliberately kept on the table's container: `settingsIndex.ts`
-      # derives this section's search anchor from the config path through its
-      # own `repeatAnchor` helper, so FM-099's settings search and FM-102's
-      # "on this page" list would break silently without it.
-      #
-      # A row additionally carries `config-category-expand-<index>` (the
-      # disclosure toggle, `aria-expanded` on it being the open/closed state),
+      # FM-119 (ADR-0034) moved category editing from an in-place accordion
+      # (FM-107's two-`TableRow`s-per-entry expansion, kept mounted while
+      # collapsed) to a modal transaction, the same shape `F-CONFIG-AUTH`'s
+      # `AuthUsersSection`/`UserDialog` and `F-CONFIG-DOWNLOADING`'s
+      # `DownloaderTable`/`DownloaderDialog` already use. The catalog table now
+      # renders summary cells only: `config-category-entry-<index>` (the row),
       # `config-category-name-<index>`, `config-category-searchType-<index>`,
       # `config-category-newznabCategories-<index>`, and
       # `config-category-size-<index>` (present only while
-      # `enableCategorySizes` is on) for its summary cells;
-      # `config-category-delete-confirm` is the shared confirmation dialog.
+      # `enableCategorySizes` is on). `config-category-edit-<index>` is a
+      # row's only control, opening `config-category-dialog` for that entry
+      # (`config-repeat-add-categoriesConfig-categories` is
+      # `config-categories-add`, unchanged since FM-107). The fourth
+      # repeat-section id, `config-repeat-categoriesConfig-categories`, is
+      # deliberately kept on the table's container: `settingsIndex.ts` derives
+      # this section's search anchor from the config path through its own
+      # `repeatAnchor` helper, so FM-099's settings search and FM-102's "on
+      # this page" list would break silently without it.
+      #
+      # The dialog's fields bind to `categoriesConfig.categoryDraft.<field>`
+      # (`CATEGORY_DRAFT_PATH`/`categoryDraftFieldPath`, `categoriesSettings.ts`)
+      # rather than to a configuration index -- a throwaway `useForm` over a
+      # `structuredClone`d entry, discarded on Cancel/Escape/backdrop and
+      # committed synchronously on Submit, exactly as `DownloaderDialog`'s and
+      # `UserDialog`'s own drafts do. Its own controls are
+      # `config-category-dialog`, `-delete` (absent for a brand-new entry),
+      # `-cancel`, `-reset`, and `-submit`. `config-category-delete-confirm` is
+      # the shared confirmation dialog, invoked from the dialog's Delete.
+      # `name` being `required` is enforced by the draft form's own
+      # `trigger()` refusing to commit a blank one (`DownloaderDialog.tsx`'s
+      # precedent) -- the successor to FM-107's always-mounted-fields
+      # guarantee, which a modal cannot carry forward, since a blank name
+      # unmounted from the DOM would otherwise block the save with nothing on
+      # screen saying why. Add still pushes a default entry into the shared
+      # form immediately, the same instant its dialog opens (so
+      # `C-CONFIG-REVIEW`'s change summary has something to report right
+      # away), but a Cancel/Escape/backdrop close on that specific transaction
+      # undoes the push -- so a category the admin never finished naming can
+      # never outlive the dialog that was supposed to name it.
+      #
       # A refused or stored-invalid newznab token is a chip at
-      # `config-input-categoriesConfig-categories-<index>-newznabCategories-chip-<token>`,
-      # and the refusal message reuses `C-CONFIG-FIELDS`'s existing
-      # `config-error-<path>` row id.
+      # `config-input-categoriesConfig-categoryDraft-newznabCategories-chip-<token>`
+      # inside the dialog, and a plain (non-interactive) one at
+      # `config-category-newznabCategories-<index>` on the summary row; the
+      # refusal message reuses `C-CONFIG-FIELDS`'s existing `config-error-<path>`
+      # row id, rooted at the draft path while the dialog is open.
       #
       # FM-113: a nameless category is refused server-side. `PUT
       # /internalapi/config` answers `ok: false` with `Category number <n> does
@@ -683,8 +697,9 @@ features:
       # validator get a turn at all: before FM-113 the sort threw inside
       # Jackson's request-body binding and the endpoint answered 500. The tab
       # itself cannot reach either path -- Name is `required`, so
-      # `C-CONFIG-FORM` refuses the save first -- so this is API hardening for
-      # every *other* caller (scripts, hand-crafted requests, restored or
+      # `CategoryDialog`'s own `trigger()` refuses to commit a blank one (see
+      # above) -- so this is API hardening for every *other* caller (scripts,
+      # hand-crafted requests, restored or
       # hand-edited `nzbhydra.yml`), and its system-test case works at the API
       # boundary by design.
       - config-categories

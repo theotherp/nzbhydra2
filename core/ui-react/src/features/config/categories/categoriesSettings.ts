@@ -136,16 +136,34 @@ export function defaultCategoryEntry(): CategoryValues {
     };
 }
 
-/** A Categories row's field path, e.g. `categoriesConfig.categories.0.name`. */
-export function categoryFieldPath(
-    index: number,
+/**
+ * The path `CategoryDialog`'s draft form binds to. It is deliberately not
+ * `categoriesConfig.categories.<index>`: the draft lives in its own throwaway
+ * form (see `CategoryDialog`), the same shape `DOWNLOADER_DRAFT_PATH`
+ * (`downloading/downloadingSettings.ts`) and `USER_DRAFT_PATH`
+ * (`auth/authSettings.ts`) already establish, and reusing an index path would
+ * give the dialog's controls the same `data-testid`s as the summary row
+ * behind it.
+ */
+export const CATEGORY_DRAFT_PATH =
+    "categoriesConfig.categoryDraft" as ConfigFieldPath;
+
+/**
+ * A category dialog field's path, e.g.
+ * `categoriesConfig.categoryDraft.name`. `CategoryEntryFields` and
+ * `SizePresetRow` take a path-builder of this shape (rather than a fixed
+ * array index, as before FM-119) so they can bind to either a draft or -- in
+ * principle -- any other single entry's fields.
+ */
+export function categoryDraftFieldPath(
     field: keyof CategoryValues,
 ): ConfigFieldPath {
-    // As `userFieldPath` in `auth/authSettings.ts`: `categoriesConfig` is an
-    // unmodeled loose object (ADR-0003), so react-hook-form's `FieldPath`
-    // cannot enumerate a dynamic array index as a literal type. The cast is
-    // narrow: `field` is still constrained to a real `CategoryValues` key.
-    return `categoriesConfig.categories.${index}.${field}` as ConfigFieldPath;
+    // As `draftFieldPath` in `downloading/downloadingSettings.ts`:
+    // `categoriesConfig` is an unmodeled loose object (ADR-0003), so
+    // react-hook-form's `FieldPath` cannot enumerate this dynamically. The
+    // cast is narrow: `field` is still constrained to a real `CategoryValues`
+    // key.
+    return `${CATEGORY_DRAFT_PATH}.${field}` as ConfigFieldPath;
 }
 
 /** A Categories row's legend (legacy's `element.name`, blank for an unfilled new row). */
