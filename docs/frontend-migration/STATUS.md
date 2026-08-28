@@ -1068,8 +1068,24 @@ None.
   leaked a nameless category that surfaced only at Save. The reviewer reproduced it with a harness that unmounts the
   tab the way the router does. Closed with a transaction-token-gated cleanup effect. Packet archived at `31ce72a35`.
 
-- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-119/FM-120 stay `planned` until promoted.
-  FM-120's dependency on FM-117 is satisfied.
+- FM-120 (Config Nav Subsection Flicker) is **done** — `789a89e16`, accepted 2026-08-28 on a fresh independent review
+  returning PASS with no findings. One line: the fieldset-registering effect moved from `useEffect` to
+  `useLayoutEffect`, so registration finishes inside the tab-switch commit instead of after a paint opportunity.
+  `ConfigNav.tsx`, `fieldsetNav.ts` and `ConfigShell.tsx` have zero diff, so ADR-0028's frozen shape and the
+  deliberate null render for a fieldset-less tab both stand. The proof had to escape React's `act()` contract to
+  exist, and was checked for stability at 25 runs rather than trusted; what it cannot reach — a real compositor frame,
+  and the router's own two-phase commit — is recorded in the packet's acceptance rather than implied covered. Packet
+  archived at `7c5cd53e8`.
+
+- **The 2026-08-27 owner-observation batch FM-117..FM-121 is complete.** All five are done: FM-117 (control
+  treatment), FM-118 (downloaders table), FM-119 (categories modals), FM-120 (nav flicker), FM-121 (stats shell).
+  Nine of the owner's ten observations are resolved. The tenth was never actionable — the reported sentence ("When
+  switching between history / stats subsections the content blinks because") was cut off mid-word and the cause was
+  never given; FM-121 fixed the stats/history blink on its own analysis, so it may already be covered, but nobody has
+  confirmed that against what the owner actually meant. Ask before treating it as closed.
+
+- The 2026-08-27 owner-observation batch FM-117..FM-121 is in flight; FM-120 is promoted and now `in review` (see the
+  `## Review` section above). FM-120's dependency on FM-117 is satisfied.
 
 - FM-118 (Downloaders As A Table) is **in `review`** — implemented against ADR-0033: a bespoke `DownloaderTable.tsx`
   replaces `DownloadersSection.tsx`'s list markup, `settingsIndexDrift.test.tsx` and `settingsIndex.ts` are untouched

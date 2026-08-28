@@ -383,7 +383,11 @@ components:
       surfaces that flattening left co-planar with their container -- both borderless raised `Paper`s -- namely the notification list's `Accordion` entries and MUI's `AutocompletePaper` behind every chips field and the settings search.
       Both were 1.000:1 against what they sat on. They now take the raised treatment `MuiMenu` and `MuiPopover` already had -- a `surfaces.control` fill at 1.070:1 with a `surfaces.hairline` edge at 1.465:1, above the 1.294:1
       the pre-FM-117 elevation wash gave them -- so "a raised surface in this application looks like this" has one answer. An option-less suggestion paper is hidden while empty, because a filled, bordered one painted a 2px strip
-      under the field where the borderless one had shown nothing.
+      under the field where the borderless one had shown nothing. FM-120 changed the registering effect in `ConfigFieldset.tsx` from `useEffect` to `useLayoutEffect`, a timing fix rather than a contract change -- what gets registered, and
+      under what conditions (`fieldsetNode` non-null and not `collapsed`), is untouched, and the callback-ref-into-state mechanism the comment above it documents (guarding against `Collapse`'s `unmountOnExit` outliving a stale ref) still
+      applies unchanged. A passive effect's cleanup and setup are both deferred to the same macrotask, scheduled after the browser has already had a chance to paint the commit that swapped tabs, which is exactly the frame in which the
+      outgoing tab's fieldsets had unregistered (or the route had already swapped) while the incoming tab's had not yet registered -- `ConfigNav.tsx`'s "on this page" list would flicker empty, or briefly show the outgoing tab's entries under
+      the incoming tab's heading. `useLayoutEffect`'s cleanup and setup run synchronously within the commit itself, before paint, which closes that window.
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

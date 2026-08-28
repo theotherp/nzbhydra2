@@ -278,6 +278,25 @@ async function waitForShell() {
     return screen.findByTestId("config-shell");
 }
 
+/**
+ * React sets this on `globalThis` itself (untyped -- there is no public
+ * `@types/react` declaration for it) to decide whether `act()` does its
+ * extra, test-only synchronous flushing. FM-120's timing proof turns it off
+ * around one navigation to observe the same scheduling gap a real, unwrapped
+ * browser session has, so the flush that hides the bug in every other test
+ * here does not also hide it in this one.
+ */
+function getActEnvironment(): boolean | undefined {
+    return (globalThis as {IS_REACT_ACT_ENVIRONMENT?: boolean})
+        .IS_REACT_ACT_ENVIRONMENT;
+}
+
+function setActEnvironment(value: boolean | undefined): void {
+    (
+        globalThis as {IS_REACT_ACT_ENVIRONMENT?: boolean}
+    ).IS_REACT_ACT_ENVIRONMENT = value;
+}
+
 function setHost(value: string) {
     fireEvent.change(screen.getByLabelText("Host"), {target: {value}});
 }
@@ -843,6 +862,99 @@ describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
         expect(
             screen.queryByTestId("config-nav-anchor-list-heading"),
         ).toBeNull();
+    });
+
+    it("should never commit a frame where the anchor list or its heading is absent, or shows the outgoing tab's entries under the incoming tab's name, while switching between two tabs that both mount fieldsets (FM-120)", async () => {
+        renderConfigArea({backend: createValidBackend(), realTabBodies: true});
+        await waitForShell();
+        expect(
+            await screen.findByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Main");
+
+        const nav = screen.getByTestId("config-nav");
+
+        // RTL's `fireEvent` wraps every dispatch in `act()`, which -- by
+        // design -- flushes pending passive effects synchronously so a test
+        // never has to think about scheduling. That is exactly the gap this
+        // bug lives in: real React commits the route swap (the new pathname,
+        // the new tab body's DOM) synchronously, but defers each
+        // `ConfigFieldset`'s registering *effect* to a passive-effects
+        // macrotask the browser gets a chance to paint before running --
+        // while the outgoing fieldsets' *unregistering* effect cleanup runs
+        // in that very same deferred macrotask. `act()` folds that macrotask
+        // back into the same synchronous flush and hides the very frame
+        // under test; disabling the act environment around the click
+        // restores real scheduling so the commit can be inspected before the
+        // passive flush has had a chance to run.
+        const priorActEnvironment = getActEnvironment();
+        setActEnvironment(false);
+        try {
+            fireEvent.click(screen.getByTestId("config-tab-auth"));
+            // The router resolves the navigation through its own promise
+            // chain even for an eager, loader-less route, which a real
+            // browser drains as microtasks within the very same task -- no
+            // paint can land in the middle of that. Only *after* the route
+            // body has actually swapped does the interesting boundary start:
+            // the deferred passive-effects flush is a real macrotask a
+            // browser does get to paint before. Draining microtasks (and
+            // nothing more) here reaches the commit that boundary sits after,
+            // without also crossing it.
+            for (
+                let drained = 0;
+                drained < 20 &&
+                document.querySelector('[data-testid="config-auth"]') === null;
+                drained += 1
+            ) {
+                await Promise.resolve();
+            }
+        } finally {
+            setActEnvironment(priorActEnvironment);
+        }
+
+        // The route body has swapped (the new tab is mounted and selected),
+        // but nothing passive has run yet. This is the exact frame a real
+        // browser could paint.
+        expect(
+            document.querySelector('[data-testid="config-auth"]'),
+        ).not.toBeNull();
+        expect(screen.getByTestId("config-tab-auth")).toHaveAttribute(
+            "aria-selected",
+            "true",
+        );
+        const heading = nav.querySelector(
+            '[data-testid="config-nav-anchor-list-heading"]',
+        );
+        const entryLabels = [
+            ...nav.querySelectorAll<HTMLElement>(
+                '[data-testid^="config-nav-anchor-"]',
+            ),
+        ]
+            .filter(
+                (el) => el.dataset.testid !== "config-nav-anchor-list-heading",
+            )
+            .map((el) => el.textContent);
+        // Never absent (ConfigNav.tsx:160-162's `fieldsets.length === 0`
+        // null-render firing for a tab that plainly mounts fieldsets), and
+        // never the outgoing tab's entries sitting under the incoming tab's
+        // own heading.
+        expect(heading).not.toBeNull();
+        expect(heading).toHaveTextContent("Authorization");
+        expect(entryLabels).not.toEqual(
+            expect.arrayContaining(["Hosting", "UI", "Updates"]),
+        );
+
+        // Let the deferred passive effects run and the app settle, inside
+        // `act()` so cleanup and later assertions are on solid ground.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(
+            screen.getByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Authorization");
+        for (const label of ["Hosting", "UI", "Updates"]) {
+            expect(screen.queryByText(label)).toBeNull();
+        }
     });
 
     it("should head the list with the active tab's name and list only the mounted fieldsets, growing as advanced is turned on", async () => {

@@ -10,7 +10,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {useCallback, useEffect, useId, useMemo, useState} from "react";
+import {useCallback, useId, useLayoutEffect, useMemo, useState} from "react";
 
 import {useShowAdvanced} from "../advancedFields";
 import {useFieldsetNavRegistry} from "../fieldsetNav";
@@ -81,7 +81,20 @@ export function ConfigFieldset({
     const navId = useId();
     const [fieldsetNode, setFieldsetNode] = useState<HTMLElement | null>(null);
     const collapsed = advanced === true && !showAdvanced && !revealed;
-    useEffect(() => {
+    // FM-120: `useLayoutEffect`, not `useEffect`. A tab switch unmounts the
+    // outgoing tab's `ConfigFieldset`s and mounts the incoming tab's in the
+    // same commit; a *passive* effect's cleanup and setup are both deferred
+    // to the same macrotask, scheduled after the browser has already had a
+    // chance to paint that commit -- which is exactly the frame
+    // `ConfigShell`'s registry, and so `ConfigNav`'s list, went stale or
+    // empty for. `useLayoutEffect`'s cleanup and setup run synchronously
+    // during the commit itself, before paint, so registering (and
+    // unregistering) is finished by the time anything is shown. This changes
+    // nothing about *what* gets registered or *when* relative to
+    // `fieldsetNode`/`collapsed` -- the callback-ref-into-state mechanism
+    // right above, and the detached-node guarantee it exists for, are
+    // untouched; only the effect timing primitive moved.
+    useLayoutEffect(() => {
         if (fieldsetNode === null || collapsed) {
             return undefined;
         }

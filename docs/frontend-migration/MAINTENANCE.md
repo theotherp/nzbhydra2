@@ -2069,3 +2069,12 @@ their text and relative order are unchanged.
   this batch leans on for its evidence is worth knowing about before it is mistaken for a real regression — and
   because a flake that only appears under full-suite concurrency usually means shared state or a timer, not chance.
   Nobody has diagnosed it. Surfaced 2026-08-28 by FM-119's re-review.
+
+- **A fieldset registration re-renders the whole `ConfigShell`, not just `ConfigNav`.** The registry lives in
+  `ConfigShell` (`fieldsetNav.ts:82-113`, consumed via `useFieldsetNav()`), so every register/unregister re-renders
+  the entire shell. FM-120 left this alone deliberately and said why: it is an aggravating factor, not the defect, and
+  FM-120's own fix *depends* on that re-render — `ConfigNav`'s `fieldsets` prop can only reflect a registration if the
+  shell re-renders. That dependency is the reason to log it rather than forget it: narrowing the registry to a
+  dedicated context or selector would be a scoped React-state-shape change with no external contract, but it must keep
+  the registration and the nav's re-render inside the same commit or it silently reopens FM-120's flicker. Testable
+  with a render-count assertion. Surfaced 2026-08-28 by FM-120.
