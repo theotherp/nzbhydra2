@@ -1034,6 +1034,12 @@ None.
 
 ## Upcoming
 
+- FM-122: Unit Suite Teardown Race Elimination is planned and dependency-ready — first of the 2026-08-28
+  test-determinism batch FM-122..FM-124. FM-123 (vitest failure-evidence preservation and racing-assertion audit) is
+  sequenced strictly after FM-122 because both alter the substrate every vitest run executes in; FM-124 (Playwright
+  server-state restoration) is a different runtime boundary and may run alongside either. Later members stay planned
+  packets in `tasks/`.
+
 - FM-121 (Stats Shell Layout Route And Caching) is **done** — `e438c1cd3`, accepted after one correction cycle and a
   fresh re-review.
 

@@ -1359,7 +1359,7 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
 - **Teardown race in `core/ui-react/src/components/dialogs/DialogProvider.test.tsx`.** Roughly 1 run in 10 of
   `npm run test -- --run` exits 1 on two unhandled `ReferenceError: window is not defined` from a react-dom scheduler
   callback firing after that file's jsdom environment is torn down — while every test still reports passing
-  (1149/1149). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
+  (1149/1149 when characterised; the suite is 1506 as of 2026-08-28 — the count drifted, the mechanism did not). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
   confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
   there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
 - **The unit suite fails once in every ten to thirteen runs for reasons nobody has captured**, ~~and the runner cannot
@@ -1397,10 +1397,25 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   server-authored HTML as the news page, so the locator resolves to two elements. Deterministic on `--runtime local` runs (fresh datafolder), invisible against long-lived IntelliJ services (news already marked shown). Surfaced
   2026-08-23 while gating the visual-language quickfix above, which could not have caused it (theme-only diff). Fix belongs in the test — dismiss or await the dialog before probing, or scope the locator — contained enough for a
   quickfix.
+  **Closed 2026-08-28, and it was already closed when this was logged.** `focus-indication.spec.ts:1095-1100`
+  awaits `news-dialog`, dismisses it, and awaits it hidden before probing — landed in `d53c903cf` on
+  2026-08-23, the same day this candidate was written. Verified in-tree by the coordinator rather than
+  taken from the batch designer's report. The lesson is about the ledger, not the test: a candidate logged
+  the same day it is fixed goes stale immediately and then reads as live work for five days. Check the tree
+  before routing a candidate, and strike it here the moment it is fixed.
 - **`playwright.config.ts`'s `globalTimeout: 300_000` is below the suite's own runtime** (~4.2 minutes green, and the value
   bounds the whole run), so any documented full-suite command needs `--global-timeout=1800000` to finish at all; without it the
   run ends `timedout` with reporters unflushed. Raise it or split the suite. Deferred explicitly by FM-094.
   **Checked 2026-08-27:** still `300_000` at `tests/system/playwright.config.ts:12`.
+  **Fixed 2026-08-28 (`ed356d56b`), and this candidate was wrong about its own scope.** Raising
+  `globalTimeout` alone would have changed nothing observable: `misc/run_gui_systemtest.py`'s `--test-timeout`
+  defaults to 300 seconds around the whole `npx playwright test` subprocess and fires first, killing Playwright
+  before it can flush. Both are now 1800s. The suite was measured at **197 tests, 5.1 minutes** green — the
+  "~4.2 minutes" recorded above was stale, which is how a 300s ceiling kept looking survivable. Before the fix
+  a full `--runtime local` run exited 124 with no junit and no html report for either of its two attempts;
+  after, exit 0 with `tests="197" failures="0"`.
+  The reusable part: a candidate that names one file for a symptom two files cause sends the next person to fix
+  the half that changes nothing. Both ceilings now carry comments pointing at each other.
 - **The six sibling specs' drawer-open probe is a bare `await navOpen.isVisible()` with no auto-retry.** If the shell
   has not painted when the helper runs, the mobile path is silently skipped and the subsequent `setChecked` times
   out rather than opening the drawer. Fails loudly, so it cannot mask a regression, and each helper's first line

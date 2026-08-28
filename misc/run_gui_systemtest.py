@@ -71,8 +71,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--test-timeout",
         type=float,
-        default=300,
-        help="maximum seconds for the complete Playwright invocation (default: 300)",
+        # Bounds the whole Playwright invocation. 300 was below the suite's
+        # own green runtime -- measured 2026-08-28 at 197 tests in 5.1 minutes
+        # -- so a full run was killed mid-suite and retried once, producing no
+        # junit or html output for either attempt. Kept in step with
+        # `globalTimeout` in tests/system/playwright.config.ts; raising one
+        # without the other just moves which ceiling fires first.
+        default=1800,
+        help="maximum seconds for the complete Playwright invocation (default: 1800)",
     )
     parser.add_argument(
         "--skip-install",
