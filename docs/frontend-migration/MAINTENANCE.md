@@ -1362,6 +1362,13 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   (1149/1149 when characterised; the suite is 1506 as of 2026-08-28 — the count drifted, the mechanism did not). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
   confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
   there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
+  **Fixed 2026-08-28 by FM-122 (`c264c296e`), and this entry's rate was wrong.** Measured across 50 full-suite runs on
+  a true `3263ea69a` baseline: **1 occurrence, p≈0.02** — not the ~1-in-10 recorded above. FM-111's characterisation
+  saw it more often; both observations can be true at different times, but the number here sent FM-122 into a campaign
+  whose stated confidence its own data could not support. Mechanism, now observed rather than inferred: MUI
+  `FocusTrap` polls focus every 50ms and clears the interval only on unmount (`FocusTrap.js:241-249`), so an abandoned
+  dialog leaves it running until it resolves `window` through `ownerWindow`'s `doc.defaultView || window` after jsdom
+  has removed the binding. Fixed class-wide with a global `afterEach(cleanup)` in `vitest.setup.ts`.
 - **The unit suite fails once in every ten to thirteen runs for reasons nobody has captured**, ~~and the runner cannot
   name the test.~~ **The flake itself stays open; only the identification half is discharged** — see the 2026-08-27
   reporter entry above. Merged 2026-08-27 from three entries — the same story reported by three tasks.
@@ -1385,6 +1392,18 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   the classic shape that goes red under scheduler jitter — but could not prove it. The separately-logged
   `DialogProvider.test.tsx` teardown race above is another plausible source. A suite that fails once in thirteen for
   unknown reasons is worth identifying before it trains people to re-run. Surfaced 2026-08-24 and 2026-08-26.
+  **Identified 2026-08-28 by FM-122's campaign, and the aggregate above was two problems counted as one.** Across 100
+  full-suite runs it appeared **12 times (~12%)**, and it was never actually anonymous — it is the same test and the
+  same assertion every time:
+  `SearchWorkspace.test.tsx › should close the autocomplete dropdown when the user clicks anywhere else, but not when
+  clicking a suggestion`, failing `expect(queryByTestId("autocomplete-popup")).not.toBeInTheDocument()` with the popup
+  still present. That is exactly the shape FM-103's reviewer predicted and could not prove: a synchronous negative
+  assertion that only holds if the close has already landed. 13 `vitest-results.json` captures preserved.
+  The reusable lesson is in the arithmetic. This ledger recorded one flake at "1 in 10 to 13"; there were two, at
+  ~2% and ~12%, and adding them produced a plausible single rate that matched neither. A blended rate for two causes
+  is worse than no rate — it made the frequent one look rare enough to tolerate and the rare one look common enough to
+  reproduce on demand. Routed to **FM-123**. The unattributed `SearchWorkspace.test.tsx` sighting logged earlier today
+  from FM-119's re-review is this, and is no longer unattributed.
 - **`system.spec.ts`'s sensitive-data-logging test poisons the shared instance when it fails.** It enables the setting, asserts, and
   disables it at the end, so any mid-test failure leaves `SensitiveDataRemovingPatternLayoutEncoder` disabled on the running
   instance and the next run fails on its own precondition (`toHaveText("Enable sensitive data in logs")` against a toggle already

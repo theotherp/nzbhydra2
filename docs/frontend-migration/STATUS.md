@@ -1034,11 +1034,26 @@ None.
 
 ## Upcoming
 
-- FM-122: Unit Suite Teardown Race Elimination is planned and dependency-ready — first of the 2026-08-28
-  test-determinism batch FM-122..FM-124. FM-123 (vitest failure-evidence preservation and racing-assertion audit) is
-  sequenced strictly after FM-122 because both alter the substrate every vitest run executes in; FM-124 (Playwright
-  server-state restoration) is a different runtime boundary and may run alongside either. Later members stay planned
-  packets in `tasks/`.
+- FM-122 (Unit Suite Teardown Race Elimination) is **done** — `c264c296e`, accepted 2026-08-28 on a fresh independent
+  review with no findings. A global `afterEach(cleanup)` in `vitest.setup.ts` closes the exit-1-with-0-failed class.
+  Primary evidence is deterministic (10/10 red without the guard, 10/10 green with it), not statistical: the packet's
+  confidence arithmetic assumed p≈0.1 and the measured rate was p≈0.02, which the implementer caught and corrected
+  against its own result. Packet archived at `339136a4f`.
+
+- **FM-123 is now much better specified than when it was designed, and its packet should be refined before it starts.**
+  It was written against an *anonymous* flake, so its honest scope was evidence-preservation plus a racing-assertion
+  audit. FM-122's campaign named it: `SearchWorkspace.test.tsx › should close the autocomplete dropdown when the user
+  clicks anywhere else, but not when clicking a suggestion`, 12/100 runs (~12%), always the same assertion, with 13
+  preserved captures and a confirmed failure mode. It can now be scoped to a deterministic fix rather than better
+  odds of catching it next time. **Refined 2026-08-28**: the packet now requires red-on-demand reproduction and a fix
+  proven by the same route, forbids suppression (blanket `waitFor`, timeouts, retries, weakening the assertion), and
+  keeps the evidence-preservation and audit halves — one packet, since the confirmed flake is the audit's exemplar in
+  the file the audit is fenced to.
+
+- FM-122 moved to Review, above (implemented 2026-08-28). FM-123 (vitest failure-evidence preservation and
+  racing-assertion audit) remains sequenced strictly after FM-122 because both alter the substrate every vitest run
+  executes in; FM-124 (Playwright server-state restoration) is a different runtime boundary and may run alongside
+  either. Later members stay planned packets in `tasks/`.
 
 - FM-121 (Stats Shell Layout Route And Caching) is **done** — `e438c1cd3`, accepted after one correction cycle and a
   fresh re-review.
