@@ -2151,3 +2151,17 @@ their text and relative order are unchanged.
   explicitly idle machine reproduces it), and that FM-123's "full-suite" loops were secretly filtered (the handoff
   shows bare `npx vitest run` for 74 of them). No campaign artifacts survived to audit, so the actual defect in that
   measurement is unidentified — a silent pass/fail bug in its loop harness is a hypothesis, not a finding.
+
+- **The `SearchWorkspace` autocomplete flake is fixed** — 2026-08-28 by FM-125 (`2b1930517`). Mechanism: `waitFor`
+  resolves on the popup's DOM mutation at commit time, while `closeIfOutside` is attached by a *passive* effect
+  flushed afterwards, so the test's outside `mousedown` could fire before the listener existed. Closed test-side with
+  `await act(async () => {})`; `SearchWorkspace.tsx` is unchanged, because no real pointer click can land inside a
+  sub-millisecond gap and real browsers flush pending passive effects before the next discrete event anyway.
+  Red loop 6/70 instrumented (against 5/50 and 6/50 uninstrumented — probes checked, not assumed, to be non-
+  suppressing); green loop 50/50 at p≈0.11, i.e. 0.89^50 ≈ 0.3% by luck.
+  **Two process notes worth more than the fix.** The loop harness was proved able to *detect* a failure before its
+  green result was trusted — one no-op mutation, `rc=1`, correct test named. That check costs a single run and is the
+  most likely thing the earlier 0-in-110 report lacked. And the handoff's "all 6 failures show this ordering" was
+  really 5 of 6: instrumentation gained markers mid-loop, which the reviewer caught by reading raw captures and file
+  mtimes rather than the traces quoted at it. The conclusion held, but "all" that is "most" is the recurring
+  overstatement in this batch.

@@ -1,4 +1,5 @@
 import {
+    act,
     cleanup,
     fireEvent,
     render,
@@ -722,6 +723,23 @@ describe("SearchWorkspace", () => {
         await waitFor(() =>
             expect(screen.getByTestId("autocomplete-popup")).toBeVisible(),
         );
+        // `waitFor` resolves as soon as the popup's DOM mutation is
+        // observed, which happens at commit time -- strictly before React
+        // flushes the *passive* effect that attaches this dropdown's own
+        // outside-mousedown listener (`SearchWorkspace.tsx`'s
+        // `closeIfOutside`, installed by a `useEffect` keyed on
+        // `suggestions.length`). Under real contention that gap is briefly
+        // observable: a mousedown fired immediately after `waitFor`
+        // resolves can land before the listener exists, so the "close on
+        // outside click" half of this test would then pass or fail on
+        // nothing but scheduler luck. A real pointer click can never be
+        // fast enough to land inside that gap -- passive effects always
+        // flush well before human reaction time -- so this is a test
+        // synchronization gap, not a product race. `act`'s async form
+        // forces React to flush any pending passive effects synchronously,
+        // making "the listener is attached" a guarantee instead of a race,
+        // without touching either assertion below.
+        await act(async () => {});
         // A mousedown on the option itself must not close the dropdown out
         // from under the option's own click handler.
         fireEvent.mouseDown(screen.getByTestId("autocomplete-option"));

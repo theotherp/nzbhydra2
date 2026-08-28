@@ -1034,6 +1034,20 @@ None.
 
 ## Upcoming
 
+- FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
+  with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect
+  flushed later; under whole-suite scheduling the test's outside `mousedown` could land in that gap. Closed with
+  `await act(async () => {})` as a precondition — both behavioural halves independently re-mutated by the reviewer and
+  still red when broken. Test-side only; `SearchWorkspace.tsx` byte-identical. Red loop 6/70 instrumented, green loop
+  50/50. Packet archived at `e58bcac22`.
+
+- **The suite-determinism batch (FM-122..FM-125) is complete**, and with it every known flake in the unit suite. What
+  the batch actually found is worth keeping: `MAINTENANCE.md` recorded *one* flake at "1 in 10 to 13 runs" that nobody
+  could name or fix. It was two defects at ~2% and ~12%; the blended rate described neither, which is why no single
+  fix ever matched it. Alongside them, the system suite could not complete a run at all (two 300s ceilings), the JSON
+  reporter deleted its own evidence on the next green run, and `tests/system`'s Prettier gate had been failing at HEAD
+  unnoticed. Four separate reasons a green suite meant less than it appeared to.
+
 - FM-123 (Failure-Evidence Preservation And Racing-Assertion Audit) is **done for two of its three concerns** —
   `23bc19aec`, accepted 2026-08-28. The `FailureArtifactReporter` and one genuine racing-assertion fix in
   `IndexersConfigTab.test.tsx` landed and were independently verified; the first review FAILED the reporter for
