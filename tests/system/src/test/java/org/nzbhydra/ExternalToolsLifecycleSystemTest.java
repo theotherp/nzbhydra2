@@ -57,7 +57,10 @@ public class ExternalToolsLifecycleSystemTest {
     @Value("${nzbhydra.host.external}")
     private String nzbhydraHostExternal;
 
-    private BaseConfig originalConfig;
+    @Autowired
+    // Fully qualified: this file imports JUnit's @BeforeAll, and a single-type import wins over
+    // the same-named class in this package.
+    private org.nzbhydra.BeforeAll beforeAll;
     private String testName;
 
     @BeforeAll
@@ -68,7 +71,8 @@ public class ExternalToolsLifecycleSystemTest {
 
     @BeforeEach
     public void setUp() {
-        originalConfig = getConfig();
+        // Establish the baseline this test needs instead of inheriting whatever ran before it.
+        beforeAll.applyBaseline();
         testName = TEST_PREFIX + UUID.randomUUID();
         removeOwnedIndexers(sonarrHostExternal);
         removeOwnedIndexers(radarrHostExternal);
@@ -77,9 +81,10 @@ public class ExternalToolsLifecycleSystemTest {
     @AfterEach
     public void tearDown() {
         try {
-            if (originalConfig != null) {
-                saveConfig(originalConfig);
-            }
+            // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
+            // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
+            // matched to a stored record - exactly the case once this test replaced those records.
+            beforeAll.applyBaseline();
         } finally {
             removeOwnedIndexers(sonarrHostExternal);
             removeOwnedIndexers(radarrHostExternal);

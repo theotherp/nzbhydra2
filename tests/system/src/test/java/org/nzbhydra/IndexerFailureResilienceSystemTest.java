@@ -32,7 +32,6 @@ public class IndexerFailureResilienceSystemTest {
 
     private static final String FAILED_INDEXER = "Mock1";
     private static final String FAILED_INDEXER_API_KEY = "resilience-failure-indexer";
-    private static final String BASELINE_FAILED_INDEXER_API_KEY = "1";
     private static final String TIMEOUT_QUERY = "resilience-timeout-results";
     private static final String MALFORMED_XML_RESULTS_QUERY = "resilience-malformed-xml-results";
     private static final String MALFORMED_XML_HISTORY_QUERY = "resilience-malformed-xml-history";
@@ -43,18 +42,22 @@ public class IndexerFailureResilienceSystemTest {
     @Autowired
     private ConfigManager configManager;
 
-    private BaseConfig originalConfig;
+    @Autowired
+    private BeforeAll beforeAll;
 
     @BeforeEach
     public void setUp() {
-        originalConfig = configManager.getCurrentConfig();
+        // Establish the baseline this test needs instead of inheriting whatever ran before it.
+        beforeAll.applyBaseline();
         configureFailedIndexer(1);
     }
 
     @AfterEach
     public void restoreConfiguration() {
-        getFailedIndexer(originalConfig).setApiKey(BASELINE_FAILED_INDEXER_API_KEY);
-        configManager.setConfig(originalConfig);
+        // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
+        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
+        // matched to a stored record - exactly the case once this test replaced those records.
+        beforeAll.applyBaseline();
     }
 
     @Test

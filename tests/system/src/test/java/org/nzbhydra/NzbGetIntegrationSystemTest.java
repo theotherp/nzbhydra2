@@ -60,21 +60,27 @@ public class NzbGetIntegrationSystemTest {
     @Value("${nzbhydra.mockUrl.external:http://127.0.0.1:5080}")
     private String mockUrlExternal;
 
-    private BaseConfig originalConfig;
+    @Autowired
+    private BeforeAll beforeAll;
 
     @BeforeEach
     public void setUp() {
-        originalConfig = getConfig();
+        // Establish the baseline this test needs rather than inheriting whatever the previous test left behind, then
+        // layer this test's own downloader and indexer on top.
+        beforeAll.applyBaseline();
         resetMockserver();
         configureNzbGetAndIndexer();
     }
 
     @AfterEach
     public void restoreConfiguration() {
+        // Re-apply the baseline instead of putting back a snapshot captured with GET. That snapshot carries
+        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be matched to a
+        // stored record - which is precisely the case here, because this test replaced the records those markers came
+        // from. The refused restore is what used to leave a single mock indexer behind and cascade into every later
+        // test that assumed the baseline.
         try {
-            if (originalConfig != null) {
-                assertSuccessfulSave(originalConfig);
-            }
+            beforeAll.applyBaseline();
         } finally {
             resetMockserver();
         }

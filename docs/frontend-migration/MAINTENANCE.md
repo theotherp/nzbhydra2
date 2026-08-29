@@ -1102,6 +1102,52 @@ Format, one entry per fix:
   indexer.
 - **Commit:** `58bc87852`
 
+### 2026-08-29 — Stop a config restore manufacturing duplicate indexers, and give the system-test jobs room to finish
+
+- **Why not a packet:** a single-module defect in one test fixture, with a deterministic red/green reproduction against
+  the real backend, plus a CI-config repair. No product code, no contract, no `data-testid`, no user-observable change.
+  Reviewed by a fresh `migration-reviewer` anyway, because it changes teardown for all twenty spec files.
+- **Paths:** `tests/system/tests/fixtures.ts`, `.github/workflows/system-test.yml`
+- **Gates:** `tests/system` `npx tsc --noEmit` clean, `npx prettier --check tests/fixtures.ts` clean. Real backend via
+  `python3 misc/run_gui_systemtest.py`: A/B on `config-control-treatment.spec.ts` + `config-downloading.spec.ts` with
+  CI's precondition (three same-host mock indexers) restored between arms — **2 failed / 10 passed before, 12 passed
+  after**, the same two tests and the same assertion as CI. Full suite after the fix: **197 passed, 0 failed**.
+  Independent review: PASS, no required and no minor findings.
+- **Commit:** `d7ba69fb8`
+
+**The defect.** The `hydra` fixture snapshots the config before each test and puts it back after. Secrets in that
+snapshot are the server's `***UNCHANGED***` markers, so once a test has replaced a whole list the server can no longer
+resolve them (FM-068, ADR-0020). FM-124's fallback dropped exactly those secrets from the body and restored the rest of
+the record — which writes back three mock indexers on one host with *no API key at all*.
+`BaseConfigValidator.java:127-141` compares indexers by host **and** API key via `IndexerConfig.isIndexerEquals`, so
+records differing only by key collapse into duplicates. The message lands in `warningMessages`, not `errorMessages`, so
+`ok` stays true and the save succeeds — but `useConfigSave.ts` renders the warnings alert instead of the
+"Configuration saved." toast, and every later save on that instance does the same.
+
+**The blast radius was the whole suite, from one teardown.** Run 33237457043 had 14 failing Playwright tests across
+seven spec files. Ten failed directly on the missing toast; the other four (`smoke`'s downloader footer,
+`focus-indication`'s news dialog, `notification-history`, the system log view) each passed in isolation and were
+downstream of the same poisoned instance. All fourteen went green on the one fix. A shared mutable instance means the
+cost of a bad teardown is not bounded by the test that wrote it.
+
+**Why it surfaced only now.** The Java system tests had been failing on this branch, so the Playwright phase never ran.
+`f89dc7bc1` fixed those, and in doing so left three mock indexers on the shared instance where one had been there
+before — enough same-host records for the stripped keys to collide. The defect shipped in `ddc0dff58` on 2026-08-28
+and was invisible for a day behind an unrelated red.
+
+**The fix, and the principle behind it.** The fallback now keeps the list *as the test left it*, splicing the server's
+current value for that list into the restore body in place of the snapshot's. A list the test itself saved is
+internally consistent by construction, so it cannot manufacture the duplicate state. This is the same steer the owner
+gave for the Java suite the day before — *it should be the job of a test to ensure the test's requirements, not to
+restore the previous state* — applied to the Playwright side. The reviewer verified empirically, against all twenty
+spec files, that every spec mutating indexers, downloaders, or auth users configures that list as its own
+precondition, so handing it forward starves nothing.
+
+**The job timeout was hiding the evidence, not just the result.** Both `system-test.yml` jobs ran with
+`timeout-minutes: 30` while the Playwright suite alone takes ~26 minutes on the runner. The run was cancelled
+mid-suite, which discards the reporter's summary — the failure list had to be reconstructed from the interleaved log
+and the uploaded artifacts. Raised to 75. A timeout that fires *during* the run costs more than the run.
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by

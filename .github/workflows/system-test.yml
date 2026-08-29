@@ -42,7 +42,11 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
+    # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
+    # cancelled mid-suite, which discards the reporter's summary and leaves the
+    # failures to be reconstructed from the interleaved log.
+    timeout-minutes: 75
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076
@@ -249,7 +253,11 @@ jobs:
   runSystemTestsJvmCoverage:
     needs: buildMockserver
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
+    # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
+    # cancelled mid-suite, which discards the reporter's summary and leaves the
+    # failures to be reconstructed from the interleaved log.
+    timeout-minutes: 75
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076

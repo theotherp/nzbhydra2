@@ -23,18 +23,21 @@ public class ConfigurationPersistenceSystemTest {
     @Autowired
     private HydraClient hydraClient;
 
-    private BaseConfig originalConfig;
+    @Autowired
+    private BeforeAll beforeAll;
 
     @BeforeEach
     public void setUp() {
-        originalConfig = getConfig();
+        // Establish the baseline this test needs instead of inheriting whatever ran before it.
+        beforeAll.applyBaseline();
     }
 
     @AfterEach
     public void restoreConfiguration() {
-        if (originalConfig != null) {
-            assertSuccessfulSave(originalConfig);
-        }
+        // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
+        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
+        // matched to a stored record - exactly the case once this test replaced those records.
+        beforeAll.applyBaseline();
     }
 
     @Test

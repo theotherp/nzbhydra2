@@ -71,8 +71,13 @@ public class TorrentHandlingSystemTest {
 
     private BaseConfig originalConfig;
 
+    @Autowired
+    private BeforeAll beforeAll;
+
     @BeforeEach
     public void setUp() throws IOException {
+        // Establish the baseline this test needs instead of inheriting whatever ran before it.
+        beforeAll.applyBaseline();
         originalConfig = configManager.getCurrentConfig();
         deleteBlackholeArtifacts();
         configureTorznabIndexer();
@@ -81,9 +86,10 @@ public class TorrentHandlingSystemTest {
     @AfterEach
     public void restoreConfigurationAndBlackhole() throws IOException {
         try {
-            if (originalConfig != null) {
-                assertSuccessfulSave(originalConfig);
-            }
+            // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
+            // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
+            // matched to a stored record - exactly the case once this test replaced those records.
+            beforeAll.applyBaseline();
         } finally {
             deleteBlackholeArtifacts();
         }

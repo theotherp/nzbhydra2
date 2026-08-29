@@ -257,13 +257,25 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      * FM-068 the restore only appeared to work because the positional
      * fallback happened to hand over a neighbour's credential.
      *
-     * So the restore is attempted as-is first — which is the byte-for-byte
-     * restore every test that did not change a list's identity still gets —
-     * and only if the server refuses it purely over markers it could not
-     * resolve are exactly those settings dropped from the body and the save
-     * retried, with a warning naming them. The server's own error messages say
-     * which settings those are, so this never has to second-guess its matching
-     * rule, and a rejection for any other reason is still an error.
+     * So the restore is attempted as-is first — the byte-for-byte restore
+     * every test that did not change a list's identity still gets. If the
+     * server refuses it purely over markers it could not resolve, the list
+     * that owns each such secret is left as the test left it, by splicing the
+     * server's *current* value for that list into the body in place of the
+     * snapshot's, and the save is retried with a warning naming what was kept.
+     *
+     * Keeping the list is the only sound fallback. Stripping the secret and
+     * restoring the rest of the record — what this did before — writes back
+     * indexers with no API key at all, and `BaseConfigValidator` compares
+     * indexers by host *and* API key, so three mock indexers on one host that
+     * differed only by key collapse into duplicates. The save still succeeds,
+     * but every later save on that instance answers with a "Found multiple
+     * indexers with same host and API key" warning, and the UI shows the
+     * warning dialog where the spec is waiting for "Configuration saved." One
+     * teardown thereby failed ten tests in five later spec files. A list the
+     * test itself saved is internally consistent by construction, so handing
+     * it forward cannot manufacture that state; the next test that needs
+     * particular indexers configures them, per its own preconditions.
      */
     const restoreConfig = async (config: HydraConfig): Promise<void> => {
         const first = await putConfig(config);
@@ -282,20 +294,28 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             );
         }
 
-        const withoutUnresolvableSecrets = structuredClone(config);
-        const dropped = unresolved.filter((setting) =>
-            dropSetting(withoutUnresolvableSecrets, setting),
+        const owners = [...new Set(unresolved.map(collectionOwning))];
+        if (owners.includes(undefined)) {
+            throw new Error(
+                `Configuration validation errors: ${errorMessages.join(", ")}`,
+            );
+        }
+
+        const current = await getConfig();
+        const withCurrentCollections = structuredClone(config);
+        const kept = (owners as string[]).filter((owner) =>
+            spliceCollection(withCurrentCollections, current, owner),
         );
-        if (dropped.length !== unresolved.length) {
+        if (kept.length !== owners.length) {
             throw new Error(
                 `Configuration validation errors: ${errorMessages.join(", ")}`,
             );
         }
         console.warn(
-            `Restoring the configuration without ${dropped.join(", ")}: the test replaced the records these secrets belonged to, and a masked snapshot cannot restore a credential the server no longer holds.`,
+            `Restoring the configuration but keeping ${kept.join(", ")} as the test left them: the test replaced the records whose secrets ${unresolved.join(", ")} belonged to, and a masked snapshot cannot restore a credential the server no longer holds.`,
         );
 
-        const second = await putConfig(withoutUnresolvableSecrets);
+        const second = await putConfig(withCurrentCollections);
         if (!second.ok || (second.errorMessages ?? []).length > 0) {
             throw new Error(
                 `Configuration validation errors: ${(second.errorMessages ?? []).join(", ")}`,
@@ -383,9 +403,6 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
     };
 }
 
-/** The marker `GET /internalapi/config` substitutes for a secret it will not disclose. */
-const UNCHANGED_MARKER = "***UNCHANGED***";
-
 /**
  * The settings named by `BaseConfigValidator`'s unresolvable-marker errors, e.g.
  * `indexers[0].apiKey`. Any message that is not one of those yields nothing, so
@@ -401,35 +418,62 @@ function unresolvedMarkerSettings(errorMessages: string[]): string[] {
 }
 
 /**
- * Removes one `main.proxyPassword`/`indexers[0].apiKey`-style setting from a
- * config body, but only while it really holds the marker.
+ * Names the list that owns an `indexers[0].apiKey`-style setting: the path up to
+ * its *outermost* index, so `indexers[0].apiKey` yields `indexers` and
+ * `downloading.downloaders[2].apiKey` yields `downloading.downloaders`. For a
+ * setting nested inside two lists the outer one is named, which hands the whole
+ * consistent subtree forward rather than half of it.
  *
- * @return whether the setting was found and removed
+ * @return the dotted path of that list, or `undefined` when the setting is not
+ * inside one — a singleton like `main.proxyPassword` is always identifiable, so
+ * its marker resolves and it never reaches this path; if one ever does, the
+ * caller must fail loudly rather than guess.
  */
-function dropSetting(config: HydraConfig, setting: string): boolean {
-    const steps = setting.match(/[^.[\]]+/g);
-    if (steps === null || steps.length < 2) {
-        return false;
-    }
-    let current: unknown = config;
+function collectionOwning(setting: string): string | undefined {
+    const owner = /^(.*?)\[\d+\]/.exec(setting)?.[1];
+    return owner === undefined || owner === "" ? undefined : owner;
+}
+
+/**
+ * Replaces one dotted collection path in `target` with `source`'s value for the
+ * same path.
+ *
+ * @return whether both configs held an array at that path and it was replaced
+ */
+function spliceCollection(
+    target: HydraConfig,
+    source: HydraConfig,
+    path: string,
+): boolean {
+    const steps = path.split(".");
+    let intoTarget: unknown = target;
+    let fromSource: unknown = source;
     for (const step of steps.slice(0, -1)) {
-        if (current === null || typeof current !== "object") {
+        if (
+            intoTarget === null ||
+            typeof intoTarget !== "object" ||
+            fromSource === null ||
+            typeof fromSource !== "object"
+        ) {
             return false;
         }
-        current = Array.isArray(current)
-            ? current[Number(step)]
-            : (current as HydraConfig)[step];
+        intoTarget = (intoTarget as HydraConfig)[step];
+        fromSource = (fromSource as HydraConfig)[step];
     }
     const leaf = steps[steps.length - 1];
     if (
-        current === null ||
-        typeof current !== "object" ||
-        Array.isArray(current) ||
-        (current as HydraConfig)[leaf] !== UNCHANGED_MARKER
+        intoTarget === null ||
+        typeof intoTarget !== "object" ||
+        fromSource === null ||
+        typeof fromSource !== "object" ||
+        !Array.isArray((intoTarget as HydraConfig)[leaf]) ||
+        !Array.isArray((fromSource as HydraConfig)[leaf])
     ) {
         return false;
     }
-    delete (current as HydraConfig)[leaf];
+    (intoTarget as HydraConfig)[leaf] = structuredClone(
+        (fromSource as HydraConfig)[leaf],
+    );
     return true;
 }
 
