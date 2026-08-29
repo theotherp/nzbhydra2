@@ -33,7 +33,49 @@ jobs:
                 shell: bash
                 run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
+            # Replaces a tj-actions/changed-files-based version disabled for a supply-chain
+            # compromise (https://github.com/tj-actions/changed-files/issues/2463). dorny/paths-filter
+            # is a different, actively maintained action from the same author as dorny/test-reporter,
+            # already trusted elsewhere in this repo.
+            -   name: "Detect changes affecting the native build/tests"
+                id: changed
+                if: >-
+                    github.event_name == 'push' &&
+                    github.event.before != '0000000000000000000000000000000000000000'
+                uses: dorny/paths-filter@v3
+                with:
+                    base: ${{ github.event.before }}
+                    filters: |
+                        native:
+                          - 'core/src/**'
+                          - 'core/ui-react/**'
+                          # React test files alone don't affect the native build/binary --
+                          # only Playwright needs to run for those.
+                          - '!core/ui-react/src/**/*.test.ts'
+                          - '!core/ui-react/src/**/*.test.tsx'
+                          - '!core/ui-react/src/**/*.spec.ts'
+                          - '!core/ui-react/src/**/*.spec.tsx'
+                          - 'core/pom.xml'
+                          - 'shared/**'
+                          - 'other/**'
+                          - 'releases/**'
+                          - 'docker/nativeTest/**'
+                          - 'pom.xml'
+                          - '.github/workflows/buildNative.yml'
+
+            -   name: "Decide whether the native build and its tests are needed"
+                id: build-decision
+                shell: bash
+                run: |
+                    if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${{ steps.changed.outputs.native }}" = "false" ]; then
+                      echo "should-build=false" >> "$GITHUB_OUTPUT"
+                      echo "::notice::No changes under watched paths since the previous commit -- reusing the last native build and skipping the unit/native tests."
+                    else
+                      echo "should-build=true" >> "$GITHUB_OUTPUT"
+                    fi
+
             -   name: Set up JDK 21
+                if: steps.build-decision.outputs.should-build == 'true'
                 uses: actions/setup-java@v4
                 with:
                     java-version: '21'
@@ -41,36 +83,16 @@ jobs:
                     cache: 'maven'
 
             -   name: Set up Node 26
+                if: steps.build-decision.outputs.should-build == 'true'
                 uses: actions/setup-node@v4
                 with:
                     node-version: 26
                     cache: npm
                     cache-dependency-path: core/ui-react/package-lock.json
 
-## Disabled for now because of compromised security: https://github.com/tj-actions/changed-files/issues/2463
-
-#            -   name: "Get changed files in core module"
-#                id: changed-files-specific
-#                uses: tj-actions/changed-files@v45
-#                with:
-#                    since_last_remote_commit: true
-#                    files: |
-#                        core/**
-#                        docker/nativeTest/**
-#                        .github/workflows/buildNative.yml
-#
-#            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                run: |
-#                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
-#                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
-
-#            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
-#                run: |
-#                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
-
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.build-decision.outputs.should-build == 'true'
                 with:
                     version: '25.1'
                     distribution: 'graalvm-community'
@@ -78,23 +100,24 @@ jobs:
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Install all with Maven"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.build-decision.outputs.should-build == 'true'
                 run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
             -   name: "Run unit tests"
+                if: steps.build-decision.outputs.should-build == 'true'
                 run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
             -   name: "Convert unit test results to CTRF"
-                if: always()
+                if: always() && steps.build-decision.outputs.should-build == 'true'
                 shell: bash
                 run: npx --yes junit-to-ctrf "**/target/surefire-reports/*.xml" -o ctrf/unit-tests.json -t "JVM Unit Tests (${{ matrix.os }})"
 
             -   name: "Generate unit test coverage"
-                if: always()
+                if: always() && steps.build-decision.outputs.should-build == 'true'
                 run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:report -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system
 
             -   name: "Upload unit test coverage"
-                if: always()
+                if: always() && steps.build-decision.outputs.should-build == 'true'
                 uses: actions/upload-artifact@v4
                 with:
                     name: native-build--${{ matrix.os }}--unit-test-coverage--${{ env.ARTIFACT_TIMESTAMP }}
@@ -103,7 +126,7 @@ jobs:
 
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1
-                if: always()
+                if: always() && steps.build-decision.outputs.should-build == 'true'
                 continue-on-error: true
                 with:
                     name: Unit test report
@@ -111,12 +134,12 @@ jobs:
                     reporter: java-junit
 
             -   name: "Run focused native tests"
-                if: startsWith(matrix.os,'ubuntu')
+                if: startsWith(matrix.os,'ubuntu') && steps.build-decision.outputs.should-build == 'true'
                 working-directory: ./core
                 run: mvn --batch-mode "-Pnative,nativeTest,strictReflection" clean test
 
             -   name: "Convert native test results to CTRF"
-                if: always() && startsWith(matrix.os,'ubuntu')
+                if: always() && startsWith(matrix.os,'ubuntu') && steps.build-decision.outputs.should-build == 'true'
                 shell: bash
                 working-directory: ./core
                 # The nativeTest profile reuses surefire's default reports dir, so this
@@ -124,10 +147,25 @@ jobs:
                 run: npx --yes junit-to-ctrf "target/surefire-reports/*.xml" -o ../ctrf/native-tests.json -t "Native Image Tests (${{ matrix.os }})"
 
             -   name: "Build native image"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.build-decision.outputs.should-build == 'true'
                 working-directory: ./core
                 run: |
                     mvn --batch-mode "-Pnative,strictReflection" clean native:compile -DskipTests
+
+            -   name: "Reuse last native build (no relevant changes)"
+                if: steps.build-decision.outputs.should-build == 'false'
+                continue-on-error: true
+                uses: dawidd6/action-download-artifact@v6
+                with:
+                    name: ^native-build--${{ matrix.os }}--release-executable--.*$
+                    name_is_regexp: true
+                    search_artifacts: true
+                    workflow_conclusion: 'completed'
+                    path: core/target
+
+            -   name: "Make reused Linux executable runnable"
+                if: steps.build-decision.outputs.should-build == 'false' && startsWith(matrix.os,'ubuntu')
+                run: chmod +x core/target/core
 
             -   name: "Check native startup on Linux"
                 if: startsWith(matrix.os,'ubuntu')
@@ -210,7 +248,7 @@ jobs:
                     "Native image size: $size bytes" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
             -   name: "Publish test report"
-                if: always()
+                if: always() && steps.build-decision.outputs.should-build == 'true'
                 uses: ctrf-io/github-test-reporter@v1
                 with:
                     report-path: 'ctrf/*.json'
@@ -238,7 +276,6 @@ jobs:
                         core/native-startup*.log
 
             -   name: "Upload linux artifact"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')
                 uses: actions/upload-artifact@v4
                 with:
@@ -246,7 +283,6 @@ jobs:
                     path: core/target/core
 
             -   name: "Upload windows artifact"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
                 if: startsWith(matrix.os,'windows')
                 uses: actions/upload-artifact@v4
                 with:
@@ -254,19 +290,16 @@ jobs:
                     path: core/target/core.exe
 
             -   name: Store if windows exe was built
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
                 if: startsWith(matrix.os,'windows')
                 run: echo "WINDOWS_BUILT=true" >> $GITHUB_ENV
 
             -   name: "Copy artifact to include folder"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')
                 run: |
                     mv core/target/core ./docker/nativeTest/
                     chmod +x ./docker/nativeTest/core
 
             -   name: "Login to GitHub Container Registry"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')
                 uses: docker/login-action@v2
                 with:
@@ -275,7 +308,6 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Build and push core container"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')
                 run: |
                      cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/

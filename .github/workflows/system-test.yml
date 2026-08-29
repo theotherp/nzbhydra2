@@ -320,9 +320,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: "Check out source"
+        with:
+          fetch-depth: 15
 
       - name: Set artifact timestamp
         run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
+      - name: "Detect changes affecting the JVM system tests"
+        id: changed
+        if: >-
+          github.event_name == 'push' &&
+          github.event.before != '0000000000000000000000000000000000000000'
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            jvm-system-tests:
+              - 'core/src/**'
+              - 'core/ui-react/**'
+              # React test files alone don't affect the JVM core -- only Playwright
+              # needs to run for those.
+              - '!core/ui-react/src/**/*.test.ts'
+              - '!core/ui-react/src/**/*.test.tsx'
+              - '!core/ui-react/src/**/*.spec.ts'
+              - '!core/ui-react/src/**/*.spec.tsx'
+              - 'core/pom.xml'
+              - 'shared/**'
+              - 'other/**'
+              - 'releases/**'
+              - 'tests/system/src/**'
+              - 'tests/pom.xml'
+              - 'tests/system/pom.xml'
+              - 'pom.xml'
+              - '.github/workflows/system-test.yml'
+
+      - name: "Decide whether the JVM system tests are needed"
+        id: build-decision
+        shell: bash
+        run: |
+          if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${{ steps.changed.outputs.jvm-system-tests }}" = "false" ]; then
+            echo "should-run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No changes under watched paths since the previous commit -- skipping the JVM system tests before Playwright."
+          else
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -388,10 +429,11 @@ jobs:
       - name: "Build"
         run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
       - name: "Run system tests against JVM core"
+        if: steps.build-decision.outputs.should-run == 'true'
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
       - name: "Convert JVM system test results to CTRF"
-        if: always()
+        if: always() && steps.build-decision.outputs.should-run == 'true'
         run: npx --yes junit-to-ctrf "**/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Linux JVM core)"
 
       - name: "Run Playwright system tests against JVM core"
