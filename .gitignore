@@ -56,3 +56,6 @@ org.eclipse.jdt.apt.core.prefs
 .mnemosyne/
 .playwright-cli
 uimock/
+
+# CTRF test reports generated in CI for ctrf-io/github-test-reporter (see .github/workflows/)
+ctrf/

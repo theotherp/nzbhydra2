@@ -8,6 +8,10 @@ jobs:
   react-quality:
     name: React quality checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     defaults:
       run:
         working-directory: core/ui-react
@@ -33,6 +37,27 @@ jobs:
 
       - name: Run unit tests
         run: npm run test -- --run
+
+      - name: Convert unit test results to CTRF
+        if: always()
+        run: npx --yes junit-to-ctrf test-results/vitest-junit.xml -o ctrf/vitest-report.json -t "React Unit Tests (Vitest)"
+
+      - name: Publish test report
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'core/ui-react/ctrf/*.json'
+          title: 'React Unit Tests'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-react-unit'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build production assets
         run: npm run build

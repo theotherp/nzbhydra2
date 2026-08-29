@@ -56,12 +56,15 @@ export default defineConfig({
         // whenever a run has at least one failure, and never deletes an
         // older one -- so a reflexive green re-run can no longer destroy the
         // evidence of the run before it (FM-123).
-        reporters: ["default", "json", new FailureArtifactReporter()],
+        reporters: ["default", "json", "junit", new FailureArtifactReporter()],
         outputFile: {
             // Git-ignored via `.gitignore`, mirroring how `tests/system`'s
             // Playwright `test-results/` output is ignored rather than
             // committed.
             json: "test-results/vitest-results.json",
+            // Consumed in CI by junit-to-ctrf to feed the ctrf-io/github-test-reporter
+            // insights/flaky-rate/slowest/fail-rate report (see frontend-ci.yml).
+            junit: "test-results/vitest-junit.xml",
         },
     },
 });

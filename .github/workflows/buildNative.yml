@@ -15,6 +15,11 @@ jobs:
         env:
             HYDRA_NATIVE_BUILD: true
         runs-on: ${{ matrix.os }}
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+            actions: read
         steps:
             -   if: startsWith(matrix.os,'ubuntu')
                 name: Log free memory
@@ -79,6 +84,11 @@ jobs:
             -   name: "Run unit tests"
                 run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
+            -   name: "Convert unit test results to CTRF"
+                if: always()
+                shell: bash
+                run: npx --yes junit-to-ctrf "**/target/surefire-reports/*.xml" -o ctrf/unit-tests.json -t "JVM Unit Tests (${{ matrix.os }})"
+
             -   name: "Generate unit test coverage"
                 if: always()
                 run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:report -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system
@@ -104,6 +114,14 @@ jobs:
                 if: startsWith(matrix.os,'ubuntu')
                 working-directory: ./core
                 run: mvn --batch-mode "-Pnative,nativeTest,strictReflection" clean test
+
+            -   name: "Convert native test results to CTRF"
+                if: always() && startsWith(matrix.os,'ubuntu')
+                shell: bash
+                working-directory: ./core
+                # The nativeTest profile reuses surefire's default reports dir, so this
+                # must run before "Build native image" (which does `clean`) discards it.
+                run: npx --yes junit-to-ctrf "target/surefire-reports/*.xml" -o ../ctrf/native-tests.json -t "Native Image Tests (${{ matrix.os }})"
 
             -   name: "Build native image"
 #                if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -190,6 +208,23 @@ jobs:
                     $executable = if ($IsWindows) { 'target/core.exe' } else { 'target/core' }
                     $size = (Get-Item $executable).Length
                     "Native image size: $size bytes" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+            -   name: "Publish test report"
+                if: always()
+                uses: ctrf-io/github-test-reporter@v1
+                with:
+                    report-path: 'ctrf/*.json'
+                    title: 'Native Build Tests (${{ matrix.os }})'
+                    summary-report: true
+                    insights-report: true
+                    flaky-rate-report: true
+                    slowest-report: true
+                    fail-rate-report: true
+                    upload-artifact: true
+                    artifact-name: 'ctrf-report-native-build-${{ matrix.os }}'
+                    fetch-previous-results: true
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Upload native build diagnostics"
                 if: always()

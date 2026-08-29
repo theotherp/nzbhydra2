@@ -10,6 +10,11 @@ concurrency:
 
 jobs:
   waitForNative:
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+      actions: read
     uses: ./.github/workflows/buildNative.yml
   buildMockserver:
     runs-on: ubuntu-latest
@@ -42,6 +47,10 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
     # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
     # cancelled mid-suite, which discards the reporter's summary and leaves the
@@ -141,9 +150,35 @@ jobs:
       - name: "Run tests"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
+      - name: "Convert JVM system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf "**/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Linux native core)"
+
       - name: "Run Playwright system tests"
         working-directory: tests/system
         run: npm run test:full
+
+      - name: "Convert Playwright system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf tests/system/test-results/junit.xml -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Linux native core)"
+
+      - name: "Publish CTRF test report"
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Linux Native Core'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-linux-native'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Test GUI runner safety"
         run: python3 -m unittest misc/test_run_gui_systemtest.py
@@ -253,6 +288,10 @@ jobs:
   runSystemTestsJvmCoverage:
     needs: buildMockserver
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
     # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
     # cancelled mid-suite, which discards the reporter's summary and leaves the
@@ -351,9 +390,35 @@ jobs:
       - name: "Run system tests against JVM core"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
+      - name: "Convert JVM system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf "**/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Linux JVM core)"
+
       - name: "Run Playwright system tests against JVM core"
         working-directory: tests/system
         run: npm run test:full
+
+      - name: "Convert Playwright system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf tests/system/test-results/junit.xml -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Linux JVM core)"
+
+      - name: "Publish CTRF test report"
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Linux JVM Core (coverage)'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-linux-jvm-coverage'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Upload Playwright artifacts"
         if: always()
@@ -406,6 +471,10 @@ jobs:
   runSystemTestsWindows:
     needs: [ waitForNative, buildMockserver ]
     runs-on: windows-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     env:
       spring_profiles_active: build,systemtest,core,testwindows
       nzbhydra_port: 5076
@@ -466,6 +535,31 @@ jobs:
 
       - name: "Run native system tests with restore supervision"
         run: py misc\run_systemtest.py --skip-build --core-executable core.exe
+
+      - name: "Convert system test results to CTRF"
+        if: always()
+        shell: bash
+        run: |
+          npx --yes junit-to-ctrf "tests/system/target/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Windows native core)"
+          npx --yes junit-to-ctrf "tests/system/test-results/junit.xml" -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Windows native core)"
+
+      - name: "Publish CTRF test report"
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Windows Native Core'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-windows-native'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Check logs for unwanted strings"
         if: always()
