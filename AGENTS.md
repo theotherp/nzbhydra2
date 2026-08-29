@@ -186,3 +186,17 @@ Do not guess Maven coordinates or versions when they can be verified with
 - **Logging**: Slf4j + Logback. Use `logger.debug` for high-volume tracing, `logger.info` for significant events.
 - **Caching**: Caffeine.
 - **Resilience**: Failsafe.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as local markdown files under `.scratch/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), unchanged. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
