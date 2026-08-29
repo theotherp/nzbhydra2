@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import {ExternalTextLink} from "./ExternalTextLink";
-import type {FailedBackupDetails, StartupWarning} from "./startupChecks";
+import type {FailedBackupDetails, StartupWarning} from "./startupCheckRunner";
 
 const JAVA_DOWNLOAD_URL = "https://adoptium.net/";
 const RELEASES_URL = "https://github.com/theotherp/nzbhydra2/releases/latest";

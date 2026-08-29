@@ -2165,3 +2165,19 @@ their text and relative order are unchanged.
   really 5 of 6: instrumentation gained markers mid-loop, which the reviewer caught by reading raw captures and file
   mtimes rather than the traces quoted at it. The conclusion held, but "all" that is "most" is the recurring
   overstatement in this batch.
+
+- **A filename case collision broke the native Windows build, invisibly, on every run.** Fixed 2026-08-28 (`e8978601d`)
+  by renaming `src/app/status/startupChecks.ts` to `startupCheckRunner.ts` (and its test alongside).
+  `StartupChecks.tsx` and `startupChecks.ts` differed only in one letter's case, so `./status/StartupChecks` resolved
+  to the component on Linux and could resolve to the module on Windows, where it exports no `StartupChecks` and rollup
+  stops with *"is not exported by"*. Their test files collided identically.
+  **The class, not the instance:** collapsing every module basename under `src/` to lowercase and looking for
+  duplicates found exactly this pair and its test twin, and now returns empty. That one-liner is the whole check —
+  `find src -name '*.ts*' | sed 's/\.[tj]sx\?$//' | tr 'A-Z' 'a-z' | sort | uniq -d`.
+  **Worth a guard, not built here:** nothing prevents the next such pair, and the repo's naming convention
+  (PascalCase component, camelCase module) actively invites it whenever a component and its logic share a name. A
+  `validate:*` script running that one-liner would catch it in seconds on the machine where it is invisible. Logged as
+  a candidate rather than bundled into a quickfix that was supposed to be one mechanical rename.
+  **How it stayed hidden:** the failing job is `waitForNative / build (windows-latest)`, so it is not reachable from a
+  Linux dev machine or from the frontend CI, and the branch's system-test workflow had been red for other reasons
+  since 2026-08-16 — a pipeline already failing tells you nothing new when it fails again.

@@ -8,7 +8,7 @@ import {
     parseFailedBackup,
     runStartupChecks,
     type StartupAnnouncement,
-} from "./startupChecks";
+} from "./startupCheckRunner";
 
 type Route = {
     body?: unknown;

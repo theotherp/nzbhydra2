@@ -6,7 +6,7 @@ import {useToasts} from "../../components/toasts/toasts";
 import {createServerPreferences} from "../../services/preferences/serverPreferences";
 import {NewsDialog} from "./NewsDialog";
 import {StartupCheckDialog} from "./StartupCheckDialog";
-import {runStartupChecks, type StartupAnnouncement} from "./startupChecks";
+import {runStartupChecks, type StartupAnnouncement} from "./startupCheckRunner";
 import {UserNewsDialog} from "./UserNewsDialog";
 import {WelcomeDialog} from "./WelcomeDialog";
 

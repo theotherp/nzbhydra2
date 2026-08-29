@@ -1518,7 +1518,7 @@ features:
     target: core/ui-react/src/app/status
     tests:
       - core/ui-react/src/app/status/StartupChecks.test.tsx
-      - core/ui-react/src/app/status/startupChecks.test.ts
+      - core/ui-react/src/app/status/startupCheckRunner.test.ts
       - core/ui-react/src/app/status/vipExpiry.test.ts
       - core/ui-react/src/services/preferences/serverPreferences.test.ts
       - core/ui-react/src/api/preferences.test.ts
