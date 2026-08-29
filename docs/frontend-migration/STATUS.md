@@ -1034,6 +1034,12 @@ None.
 
 ## Upcoming
 
+- FM-126: Narrow-Table Scroll Affordance. `ready`, dependency-free, next — opens the 2026-08-29 open-candidate batch
+  (FM-126..FM-132, seven packets discharging ten `MAINTENANCE.md` items, two of them settled that morning by
+  ADR-0037/ADR-0038). One new shared scroll-edge component applied uniformly to the three history tables (search history
+  confirmed to lack even a scroll container), the indexer list, and the categories table. In-batch sequencing:
+  FM-129 depends on FM-128 (same results files), FM-131 on FM-130 (same registry sentences); the rest are independent.
+
 - FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect
   flushed later; under whole-suite scheduling the test's outside `mousedown` could land in that gap. Closed with

@@ -1181,7 +1181,7 @@ that pass name every task that surfaced them; no evidence and no `file:line` cit
   spinners were fixed *because the owner dislikes them in Firefox specifically*, and on any machine without a local
   `playwright install firefox` that acceptance criterion covers nothing. Adding `firefox` to the install step makes it
   run everywhere; sizing it as a packet rather than a quick fix because it changes what every system run downloads and
-  how long CI takes.
+  how long CI takes. Routed to **FM-132** (2026-08-29).
 
 New user capability, API/URL/selector contract change, persisted-data change, cross-module behaviour change, or anything that
 needs a new decision entry. Ordered by consequence-if-left times likelihood-of-being-hit: the first three are reachable by an
@@ -1213,12 +1213,15 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   `name: null` — so inspecting the model made the UI route look obviously reachable. What nobody walked was the submit
   path between that shape and the server. A "the UI can reach this" claim needs the client gate checked, not just the
   model; the same class of mistake as the `loadLimitInternal` entry below, in the opposite direction.
+  FM-113 is **done** 2026-08-28 (see `STATUS.md`); marked 2026-08-29.
 - **React's bulk send ignores the downloader's configured default category.** With `category: null` ("Use downloader default")
   the server sends SABnzbd no `cat` parameter at all, so Hydra's configured `defaultCategory` has no effect; legacy sent it
   explicitly from the client. Evidence: the SABnzbd mock recorded `{apikey, mode: "addfile", nzbname, output, priority}` with no
   `cat`. Surfaced by FM-094, which had to drop `downloads.spec.ts`'s `cat: testEnvironment.sabnzbdMockCategory` assertion and
   could name no surviving test that covers it. The fix crosses `DownloadActions.tsx` and the server path that resolves a null
-  category, so per README's *Choosing A Mechanism* it is a **packet**, not a quickfix.
+  category, so per README's *Choosing A Mechanism* it is a **packet**, not a quickfix. Routed to **FM-114** by the
+  2026-08-27 maintenance-ledger batch and **done** 2026-08-28 (see `STATUS.md`); this entry was not annotated at routing
+  time — marked 2026-08-29 rather than silently removed.
 - **No toast or raised report over a MUI modal is both announced and reachable — application-wide, WCAG 4.1.3.**
   Merged 2026-08-27 from two entries that are the two halves of one fix; recording only one of them gets it half-done.
   *(a) The announcement half, pre-existing and app-wide.* `@mui/material/Snackbar` contains no `Portal` (verify with
@@ -1239,7 +1242,9 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   the comment at `ConfigShell.tsx:384-386` claims the entries "could be neither announced nor clicked" and now can, which
   overstates what was fixed — the reachability tests assert `aria-hidden` ancestry only, so they are green on a claim they
   establish half of. The fix is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes
-  focus enforcement). Surfaced 2026-08-26 by FM-101's re-review.
+  focus enforcement). Surfaced 2026-08-26 by FM-101's re-review. Half (a) was routed to **FM-115** by the 2026-08-27
+  batch and is **done** 2026-08-28; half (b) was settled 2026-08-29 by ADR-0037 (accept the focus limitation, forbid
+  actionable toast content) and is routed to **FM-127**.
 - **`ConfigFieldset`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
   space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
   `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
@@ -1249,7 +1254,10 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   it needs an explicit `/fm-orchestrate` call, not a quickfix — check whether any test already asserts the exact
   space-containing string before choosing a replacement scheme. **Checked 2026-08-27:** still unslugified; the generator
   has since moved to `features/config/components/settings.ts:62-64` (`fieldsetTestId`), used at
-  `ConfigFieldset.tsx:148`.
+  `ConfigFieldset.tsx:148`. Routed to **FM-130** (2026-08-29), whose design pass ran the check this entry asked for and
+  found the premise inverted: twelve multi-word labels have shipped, unit and system tests assert the space-containing
+  ids literally, and `FEATURES.yaml` records them as selectors — so FM-130 declares the lowercased-verbatim form the
+  convention rather than renaming a working contract across four selector families.
 - **`config-input-<path>` lands on the MUI root element for `SwitchSetting`/`SelectSetting` rather than the actual
   editable control**, unlike the other seven control kinds where it lands on the native `<input>`. Flagged by FM-059's
   independent reviewer as harmless today (both component and system tests already reach those two controls by role, not
@@ -1257,10 +1265,18 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   than fixed alongside the aria-describedby entry above: relocating an existing `data-testid` to a different DOM node is
   arguably a selector-contract change even though the id string itself is unchanged, which the quickfix gate excludes;
   worth an explicit `/fm-orchestrate` call on whether to move it or declare the root-element placement the intended
-  convention.
+  convention. Routed to **FM-130** (2026-08-29): declared, not moved — shipped tests exploit the root placement
+  (`IndexersConfigTab.test.tsx:421`'s `toHaveTextContent`, the `within(...).getByRole("combobox")` drills,
+  `config-indexers.spec.ts:457`'s bounding boxes), so relocation would break working assertions to fix an inconsistency
+  no further tab will copy now that the config migration is concluded.
 - **React's bulk send leaves the sent rows unmarked.** The row "Downloaded" chip is raised only by the direct NZB/torrent
   transfer, so legacy's per-row `.sabnzbd-success` feedback has no counterpart after a bulk send
-  (`SearchResults.tsx`'s `onDownloaded` mapping from `addedIds` back to `searchResultId`s).
+  (`SearchResults.tsx`'s `onDownloaded` mapping from `addedIds` back to `searchResultId`s). Routed to **FM-128**
+  (2026-08-29), whose design pass found the repository asserting both truths at once: the `addedIds`→chip mapping *is*
+  implemented (`SearchResults.tsx:936-969`, FM-040) while `downloads.spec.ts:124-129` documents the opposite, and no
+  test at any level covers post-bulk-send row state — also, legacy's own bulk path never marked rows
+  (`search-results-controller.js:986-999` only deselects; `.sabnzbd-success` belonged to the per-row button React does
+  not have). The packet establishes the truth empirically first, then pins and records it.
 - **FM-098's recorded disclosure boundary omits a third case: `CustomMappingsSection`.** `COMPONENTS.yaml`'s
   `C-CONFIG-FIELDS` note says only an advanced `HelpBlock` and an advanced row outside any fieldset stay hidden. But
   `searching/CustomMappingsSection.tsx:78-79` self-gates with its own `if (!showAdvanced) return null` and sits
@@ -1268,7 +1284,8 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   still vanishes with no expander announcing it. FM-098's allowlist excluded tab files, so this was correctly out of
   scope; the ledger item is the note's accuracy, and the underlying disclosure gap belongs in a future packet's
   design. Surfaced 2026-08-26 by FM-098's reviewer. Packet rather than fix: it edits a registry note and changes
-  reveal behaviour on a tab.
+  reveal behaviour on a tab. Routed to **FM-131** (2026-08-29), sequenced after FM-130's registry-truth pass since both
+  edit `C-CONFIG-FIELDS`'s convention sentences.
 - **FM-105 added a username-uniqueness refusal that no contract records.** The user dialog refuses a username another
   entry already holds exactly, because `UserAuthConfigValidator.findCorrespondingOldUserConfig` filters on
   `String.equals` and takes `.findFirst()` — with two identical usernames the *same* stored record is handed to both
@@ -1278,7 +1295,8 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   handoff, so a later task could remove it as unexplained. Record it in `F-CONFIG-AUTH`. Two consequences also worth
   noting: a config already holding two identical usernames (seeded outside the UI, or saved before FM-105) makes each
   such row unsaveable from the dialog until renamed, with the error attached to a field the admin did not change.
-  Surfaced 2026-08-26 by FM-105's reviewer.
+  Surfaced 2026-08-26 by FM-105's reviewer. Routed to **FM-130** (2026-08-29), merged with the `F-CONFIG-SHELL.gaps`
+  entry below and the two testid-convention declarations — four registry-truth edits, one packet, one reviewer pass.
 - **`F-CONFIG-SHELL.gaps` is still `[]` although FM-097 deliberately dropped a legacy signal.** Save's pristine/dirty
   colour switch (legacy `config.html:21`, old `ConfigShell.tsx:250`) is gone, replaced by the save bar's worded
   summary and a Discard button that exists only while dirty — a better signal, and one that satisfies ADR-0014's
@@ -1286,7 +1304,8 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   `ConfigSaveBar.tsx` and recorded in `COMPONENTS.yaml`'s `C-CONFIG-FORM`, and FM-097's packet only required it in
   the handoff — but `gaps` is where a future parity reader looks, and there it is invisible. Add a one-line
   `deliberate - ...` entry at `FEATURES.yaml:436`. Packet rather than fix only because the quickfix gate forbids
-  registry edits. Surfaced 2026-08-24 by FM-097's reviewer.
+  registry edits. Surfaced 2026-08-24 by FM-097's reviewer. Routed to **FM-130** (2026-08-29), merged per the entry
+  above.
 - **The search-results feature writes raw px values where the theme's scales belong — ~44 sites, ~24 of them in
   spacing props.** Surfaced 2026-08-27 while measuring the unannotated-magnitude candidate below (its full method and
   counts are there). `features/search/results/` — `RefineSidebar.tsx`, `SearchResults.tsx`, `filterControls.tsx`,
@@ -1298,7 +1317,8 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   visual-redesign tasks. A packet, not a fix: it spans six modules, changes rendering (so it needs the screenshot
   strip), and the port is a token question — some of these want new `theme.ts` typography/density entries rather than
   a mechanical `"13px"` → `1.625` rewrite. Doing it would also unblock the only honest mechanical form of the
-  unannotated-magnitude gate, which is red at base almost entirely on these sites.
+  unannotated-magnitude gate, which is red at base almost entirely on these sites. Routed to **FM-129** (2026-08-29),
+  sequenced after FM-128, which touches the same results files.
 
 ### Single-session fix
 
@@ -1882,7 +1902,7 @@ each gate a defect list that already exists, the rest are single judgement calls
   re-review, mechanism and liveness established 2026-08-27 during FM-115's design.~~
   **Settled 2026-08-29 by ADR-0037.** Accept the limitation; `Toast.content` stops taking interactive nodes and
   `NotificationToasts.tsx` drops its `RouterLink`. Task packet (cross-module: shared `Toast` type plus the live
-  notification consumer).
+  notification consumer). Routed to **FM-127** (2026-08-29).
 - ~~**Tables below `sm` scroll their content off-canvas with no affordance — decide the strategy once, for all of them.**
   Merged 2026-08-27 from three entries in three areas; each was independently deferred for wanting "a real layout
   decision" rather than a mechanical swap, and answering it once discharges all three. **Decision to settle:** at
@@ -1906,6 +1926,9 @@ each gate a defect list that already exists, the rest are single judgement calls
   a fix. Surfaced 2026-08-26 by FM-107's reviewer.~~
   **Settled 2026-08-29 by ADR-0038.** Container scroll plus a scroll-edge affordance, applied uniformly across all
   five surfaces ((a)'s three history routes, (b), (c)). Task packet (new shared affordance mechanism/component).
+  Routed to **FM-126** (2026-08-29); its design pass confirmed (a)'s "likely `SearchHistoryPage.tsx` too" structurally —
+  that page has no `TableContainer` at all, a bare `Table` under the page `Stack` — and found `FEATURES.yaml:709`'s
+  `config-categories-scroller` selector exists nowhere in `src`, which FM-126 also reconciles.
 - ~~**Settings search offers rows whose render condition is unmet.** `settingsSearchMatching.ts:38` matches the whole index, so
   with SSL off the results still offer "SSL keystore file" and "SSL keystore password" (visible in
   `search-results-desktop.png`). Picking one routes to the tab and then silently no-ops until `ANCHOR_DEADLINE_MS`
