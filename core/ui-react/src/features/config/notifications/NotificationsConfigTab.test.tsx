@@ -337,52 +337,62 @@ describe("F-CONFIG-NOTIFICATIONS entries", () => {
         ).toHaveLength(NOTIFICATION_EVENTS.length);
     });
 
-    it("should seed an added entry from its own event type, for every event type", async () => {
-        // One tab per event rather than eight entries in one tab: the claim is
-        // per event, and an accordion carrying a template editor and a preview
-        // is expensive enough that the accumulated tree, not the assertions,
-        // dominated this test's runtime.
-        for (const event of NOTIFICATION_EVENTS) {
-            const harness = renderNotifications();
-            expect(harness.form.formState.isDirty).toBe(false);
+    // 3568ms under a full-suite run on an idle machine, the second-slowest test
+    // in the suite behind SearchWorkspace's selection round trip and the only
+    // other one within 2x of vitest's 5000ms default. Not yet observed failing;
+    // given the same budget pre-emptively, on the same measurement.
+    it(
+        "should seed an added entry from its own event type, for every event type",
+        {timeout: 30_000},
+        async () => {
+            // One tab per event rather than eight entries in one tab: the claim is
+            // per event, and an accordion carrying a template editor and a preview
+            // is expensive enough that the accumulated tree, not the assertions,
+            // dominated this test's runtime.
+            for (const event of NOTIFICATION_EVENTS) {
+                const harness = renderNotifications();
+                expect(harness.form.formState.isDirty).toBe(false);
 
-            await addEntry(event.eventType);
+                await addEntry(event.eventType);
 
-            expect(entriesOf(harness), event.eventType).toEqual([
-                {
-                    eventType: event.eventType,
-                    appriseUrls: null,
-                    titleTemplate: event.titleTemplate,
-                    bodyTemplate: event.bodyTemplate,
-                    messageType: event.messageType,
-                },
-            ]);
-            const entry = screen.getByTestId(
-                `config-repeat-entry-${ENTRIES}-0`,
-            );
-            expect(
-                within(entry).getByTestId(
-                    `config-input-${ENTRIES}-0-bodyTemplate`,
-                ),
-                event.eventType,
-            ).toHaveValue(event.bodyTemplate);
-            // The heading is MUI's own `<h3>` around the summary button, so its
-            // name is the whole summary (legend + message type), not the legend
-            // alone. jsdom is not the proof this is exposed -- it does not
-            // implement presentational children, so it would pass just as
-            // happily on a heading nested *inside* the button, which no browser
-            // exposes; `config-notifications.spec.ts` pins it in Chromium.
-            expect(
-                screen.getByRole("heading", {
-                    level: 3,
-                    name: (name: string) => name.startsWith(event.label),
-                }),
-                event.eventType,
-            ).toBeVisible();
-            expect(harness.form.formState.isDirty, event.eventType).toBe(true);
-            cleanup();
-        }
-    });
+                expect(entriesOf(harness), event.eventType).toEqual([
+                    {
+                        eventType: event.eventType,
+                        appriseUrls: null,
+                        titleTemplate: event.titleTemplate,
+                        bodyTemplate: event.bodyTemplate,
+                        messageType: event.messageType,
+                    },
+                ]);
+                const entry = screen.getByTestId(
+                    `config-repeat-entry-${ENTRIES}-0`,
+                );
+                expect(
+                    within(entry).getByTestId(
+                        `config-input-${ENTRIES}-0-bodyTemplate`,
+                    ),
+                    event.eventType,
+                ).toHaveValue(event.bodyTemplate);
+                // The heading is MUI's own `<h3>` around the summary button, so its
+                // name is the whole summary (legend + message type), not the legend
+                // alone. jsdom is not the proof this is exposed -- it does not
+                // implement presentational children, so it would pass just as
+                // happily on a heading nested *inside* the button, which no browser
+                // exposes; `config-notifications.spec.ts` pins it in Chromium.
+                expect(
+                    screen.getByRole("heading", {
+                        level: 3,
+                        name: (name: string) => name.startsWith(event.label),
+                    }),
+                    event.eventType,
+                ).toBeVisible();
+                expect(harness.form.formState.isDirty, event.eventType).toBe(
+                    true,
+                );
+                cleanup();
+            }
+        },
+    );
 
     it("should append each added entry rather than replacing the last", async () => {
         const harness = renderNotifications();

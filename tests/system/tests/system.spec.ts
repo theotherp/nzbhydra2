@@ -156,6 +156,30 @@ async function openSystem(page: Page, path = "control"): Promise<void> {
     await expect(page.getByTestId("system-shell")).toBeVisible();
 }
 
+/**
+ * How long the Raw log view is given to produce its `<pre>`.
+ *
+ * `RawLogView` fetches the entire current log file and renders it into one
+ * unbounded `<pre>`, so what this waits for is proportional to how much the
+ * suite has logged before it. Auto-refresh is not a factor -- it defaults off
+ * (`persistence.ts:33`) and the `page` fixture clears `localStorage` -- so it is
+ * a single fetch and a single render, just a large one. On the JaCoCo
+ * instrumented job, which runs the Java suite and this one against the same
+ * instance and logs more while running slower, run 4fe040e16 was still showing
+ * "Loading the log file" after 30s; the uninstrumented Linux and Windows jobs
+ * pass comfortably.
+ *
+ * This is a stopgap and should be read as one. The quantity being waited on
+ * grows with the suite, so any fixed number here is a race against the suite's
+ * own growth, and this is the second time it has been raised. The stable fix is
+ * to bound what the raw view fetches, which is a product decision rather than a
+ * test one and is logged as a candidate in MAINTENANCE.md. There is no
+ * test-side alternative: `DebugInfosWeb` exposes no endpoint to clear or rotate
+ * the log, so unlike every other precondition in this suite, a test cannot
+ * establish this one for itself.
+ */
+const LOG_VIEW_BUDGET_MS = 120_000;
+
 test.describe("System shell", () => {
     test("should reach every tab and keep News inside the shell", async ({
         page,
@@ -315,6 +339,8 @@ test.describe("System shell", () => {
     test("should show the log's three real views, an entry's details, and the log files", async ({
         page,
     }) => {
+        // See LOG_VIEW_BUDGET_MS.
+        test.setTimeout(LOG_VIEW_BUDGET_MS * 2);
         await openSystem(page, "log");
         await expect(page.getByTestId("system-log")).toBeVisible();
 
@@ -342,7 +368,7 @@ test.describe("System shell", () => {
         const rawView = page.getByTestId("system-log-view-raw");
         await expect(rawView).toBeVisible();
         await expect(rawView.locator("pre")).toContainText("NZBHydra", {
-            timeout: 30_000,
+            timeout: LOG_VIEW_BUDGET_MS,
         });
         // A log line's markup-like text stays text: the panel holds no
         // elements a log message could have introduced.
@@ -371,14 +397,12 @@ test.describe("System shell", () => {
     test("should render the log's three views for the visual gate", async ({
         page,
     }) => {
-        // Two viewports, eight screenshots, and a raw view that fetches and
-        // renders the whole current log file -- which, on a shared instance
-        // this late in the suite, is megabytes. Run 33243657990's
-        // JaCoCo-instrumented job needed longer than the 30s default for that
-        // one render, and Playwright closed the session mid-assertion. The
-        // budget has to exceed the raw view's own wait below or the test dies
-        // before the assertion it is waiting on can ever pass.
-        test.setTimeout(120_000);
+        // Two viewports and eight screenshots on top of the raw view's own
+        // wait, so twice the budget the wait itself gets. It has to exceed that
+        // wait, or the test is torn down before the assertion it is waiting on
+        // could ever pass -- which is how run 33243657990 failed, at 40s, with
+        // Playwright closing the session mid-assertion.
+        test.setTimeout(LOG_VIEW_BUDGET_MS * 2);
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
                 await openSystem(page, "log");
@@ -414,19 +438,10 @@ test.describe("System shell", () => {
             await page.getByRole("button", {name: "Close"}).click();
 
             await page.getByRole("tab", {name: "Raw"}).click();
-            // The raw view fetches the whole log file, and on the shared CI
-            // instance this test runs late enough that the file is megabytes:
-            // run 33240679544 caught it still showing "Loading the log file"
-            // when the default 5s expiry ran out. Auto-refresh is not a factor
-            // -- it defaults off and the `page` fixture clears localStorage --
-            // so this is one fetch and one render, just a slow one. The
-            // assertion is that the raw view renders, not that it renders
-            // inside five seconds, so the wait is sized for the file rather
-            // than the assertion weakened: a view that never renders still
-            // fails.
+            // See LOG_VIEW_BUDGET_MS.
             await expect(
                 page.getByTestId("system-log-view-raw").locator("pre"),
-            ).toBeVisible({timeout: 30_000});
+            ).toBeVisible({timeout: LOG_VIEW_BUDGET_MS});
             await page.screenshot({
                 path: visualEvidencePath("F-SYSTEM-LOG", `log-raw-${viewport}`),
             });
