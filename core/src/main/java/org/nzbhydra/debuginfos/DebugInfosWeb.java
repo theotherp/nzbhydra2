@@ -79,6 +79,49 @@ public class DebugInfosWeb {
         return new FileSystemResource(file);
     }
 
+    /**
+     * Rolls the log files over: the current contents are archived under the
+     * rolling policy's own name pattern and logging continues into a new, empty
+     * file. No UI offers this; it exists for callers that need the current log
+     * to start from a known point without discarding what came before -- the
+     * system tests, whose log-view assertions otherwise read a file that has
+     * grown with everything the suite did before them.
+     */
+    @Secured({"ROLE_ADMIN"})
+    @PutMapping("/internalapi/debuginfos/rotatelog")
+    public GenericResponse rotateLog() {
+        try {
+            final List<String> rotated = logContentProvider.rotate();
+        //Logged after the rollover so the new file is never empty, and so the
+        //rollover itself is accounted for in the log it produced.
+            logger.info("NZBHydra2 rolled over {} log file(s) on request", rotated.size());
+            return GenericResponse.ok(String.join(", ", rotated));
+        } catch (IOException e) {
+            logger.error("Error while rolling the log files over", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
+    /**
+     * Truncates the log files, discarding their contents. Files archived by
+     * earlier rollovers are left alone. As with {@link #rotateLog()} there is
+     * deliberately no UI for this.
+     */
+    @Secured({"ROLE_ADMIN"})
+    @PutMapping("/internalapi/debuginfos/clearlog")
+    public GenericResponse clearLog() {
+        try {
+            final List<String> cleared = logContentProvider.clear();
+            //Logged after the truncation, for the same two reasons as above:
+            //an emptied log still says who emptied it and when.
+            logger.info("NZBHydra2 cleared {} log file(s) on request", cleared.size());
+            return GenericResponse.ok(String.join(", ", cleared));
+        } catch (IOException e) {
+            logger.error("Error while clearing the log files", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
     @Secured({"ROLE_ADMIN"})
     @GetMapping("/internalapi/debuginfos/logfilenames")
     public List<String> getLogFilenames() {

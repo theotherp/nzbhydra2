@@ -338,9 +338,11 @@ test.describe("System shell", () => {
 
     test("should show the log's three real views, an entry's details, and the log files", async ({
         page,
+        hydra,
     }) => {
         // See LOG_VIEW_BUDGET_MS.
         test.setTimeout(LOG_VIEW_BUDGET_MS * 2);
+        await hydra.rotateLogs();
         await openSystem(page, "log");
         await expect(page.getByTestId("system-log")).toBeVisible();
 
@@ -396,7 +398,9 @@ test.describe("System shell", () => {
 
     test("should render the log's three views for the visual gate", async ({
         page,
+        hydra,
     }) => {
+        await hydra.rotateLogs();
         // Two viewports and eight screenshots on top of the raw view's own
         // wait, so twice the budget the wait itself gets. It has to exceed that
         // wait, or the test is torn down before the assertion it is waiting on

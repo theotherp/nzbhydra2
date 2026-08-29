@@ -1205,6 +1205,46 @@ so the dev compose files do not keep a second, flakier source for the same image
 checked against the ghcr.io registry API first (all 200, including the pinned `radarr:5.0.2-nightly`) and
 `docker compose pull` was run locally against the rewritten file. Same images and tags, different registry host.
 
+### 2026-08-29 — Endpoints to rotate and clear the log, so the log tests stop racing the suite
+
+- **Why not a packet:** a single new backend capability with no UI and no contract surface, plus the two test call
+  sites that consume it. Requested directly by the owner.
+- **Paths:** `core/src/main/java/org/nzbhydra/logging/LogContentProvider.java`,
+  `core/src/main/java/org/nzbhydra/debuginfos/DebugInfosWeb.java`, `tests/system/tests/{fixtures.ts,system.spec.ts}`
+- **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; `check:api` reports generated OpenAPI
+  types still current; `tests/system.spec.ts` **14 passed**; full suite **197 passed, 0 failed**.
+- **Commit:** `18c5ed445`
+
+`PUT /internalapi/debuginfos/rotatelog` archives each active log file to a timestamped neighbour and truncates the
+original; `PUT /internalapi/debuginfos/clearlog` truncates without archiving. Both `ROLE_ADMIN`, neither exposed in
+the UI. `system.spec.ts`'s two log tests call rotate first, so they read a log that starts at the test rather than one
+carrying everything the suite logged before them.
+
+**Two wrong implementations, both caught by running it rather than trusting the status code.**
+`RollingFileAppender.rollover()` cannot be called outside a rollover its policy actually triggered —
+`TimeBasedRollingPolicy` asks for the elapsed period's file name, gets `null`, and throws from `FileFilterUtil`; the
+first version answered HTTP 500. Worse, the first `clear()` stopped and restarted the appender, which leaves its
+triggering policy stopped: logback then refuses to bring it back (*"TriggeringPolicy has not started"*) and the
+instance **silently stops logging altogether**, while the call still answers 200. Both operations now truncate in
+place, which is correct because logback opens its files in append mode. Verified on a live instance that logging
+survives both.
+
+### 2026-08-29 — Reverted: bumping the deprecated GitHub Actions broke the pipeline at startup
+
+- **Commits:** `238d88e1e`, reverted by `400f0a5f1`
+
+Every run annotates three deprecations (Node 20 runtime, `setup-java` v4, the `adopt` distribution). Bumping the eight
+actions and `adopt`→`temurin` made `system-test` and `Native Build` stop with *"This run likely failed because of a
+workflow file issue"* before any job started, on a pipeline that was **fully green at `5b94bf9bf`**.
+
+Established before reverting: `workflow_dispatch` on both workflows reproduces it, so it is the file and not a
+transient; Frontend CI passes at the same commit using `actions/checkout@v7` and `actions/setup-node@v7`, clearing
+those two; every bumped ref resolves to a real tag; all five remaining actions have a parseable `action.yml` declaring
+`using: node24`; the YAML parses; and the diff contains nothing but `uses:` and `distribution:` lines. **The cause is
+real and still unidentified.** Reverted whole rather than bisected, because each bisection step costs a push and a CI
+run and the thing being fixed is an annotation on a green run, not a failure. The next attempt should bump one action
+at a time. Logged below.
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
@@ -1226,11 +1266,22 @@ visibility.
   system-test phase running against the same instance; an attempt at local environment parity failed (58 errors) and
   was abandoned rather than pursued. Routed to a **task packet**. Surfaced 2026-08-29.
 
+- **Bump the deprecated GitHub Actions, one at a time.** The three deprecation annotations on every run are still
+  there; `238d88e1e` addressed them all at once and broke workflow startup, and was reverted in `400f0a5f1` — see the
+  entry above for everything already ruled out. `actions/checkout@v7` and `actions/setup-node@v7` are known good
+  (Frontend CI ran on them). The remaining suspects are `setup-java@v6` — which is also the release that removes the
+  `adopt` distribution, so those two must move together — `upload-artifact@v7`, `download-artifact@v8`,
+  `docker/login-action@v4` and `dorny/test-reporter@v3`. One per push, since only CI can tell you. Routed to
+  **`/fm-quickfix`**, repeatedly. Surfaced 2026-08-29.
+
 - **`RawLogView` renders the entire log file into one unbounded `<pre>`.** Legacy's behaviour and not a regression,
   but it is why `system.spec.ts`'s log visual gate is the suite's most timing-sensitive test: on a shared instance
   late in the run the file is megabytes, and that test needed a 120s budget where every other test uses 30s. A real
   instance with a large log pays the same cost. Routed to a **task packet** if it is worth bounding at all — it is a
   product decision, not a test fix. Surfaced 2026-08-29.
+  **Partly overtaken 2026-08-29 (`18c5ed445`):** the log tests now rotate the log first, so they no longer depend on
+  suite position and `LOG_VIEW_BUDGET_MS` is no longer a race against the suite's growth. The unbounded render itself
+  is untouched, so the product-side question stands on its own merits rather than as a test problem.
  Discharge a single-session item with `/fm-quickfix`, then move it into the ledger above with its commit SHA. Route a
 packet item to `/fm-orchestrate`. An item under *Needs a decision first* cannot be routed at all until the named question is
 settled in `DECISIONS.md`.

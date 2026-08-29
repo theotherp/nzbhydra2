@@ -24,6 +24,7 @@ type HydraApi = {
     restoreConfig(config: HydraConfig): Promise<void>;
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
     assertUniqueIndexerCredentials(): Promise<void>;
+    rotateLogs(): Promise<void>;
     configureSabnzbdMock(): Promise<void>;
     resetSabnzbdRecording(): Promise<void>;
     getSabnzbdRecording(): Promise<Record<string, unknown>>;
@@ -415,6 +416,30 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                 "Every configured indexer must have unique host/API-key credentials",
             ).toBe(configuredMockCredentials.length);
         },
+        /**
+         * Rolls the instance's log files over, so a test that reads the log
+         * reads one that starts here.
+         *
+         * `RawLogView` fetches the whole current log file, so what the log
+         * views cost is proportional to everything the suite logged before
+         * them -- on the JaCoCo-instrumented CI job that had grown past a 30
+         * second wait. This is the only precondition in the suite a test could
+         * not establish for itself until `PUT /internalapi/debuginfos/rotatelog`
+         * existed. Rolling over rather than clearing keeps the history: the
+         * archived file stays in the logs folder and in CI's uploaded log
+         * artifacts, and the Files tab still has something to list.
+         */
+        async rotateLogs(): Promise<void> {
+            const response = await request.put(
+                "/internalapi/debuginfos/rotatelog",
+                {params: {internalApiKey: testEnvironment.hydraInternalApiKey}},
+            );
+            await expectSuccessfulResponse(
+                response,
+                "PUT /internalapi/debuginfos/rotatelog",
+            );
+        },
+
         async configureSabnzbdMock(): Promise<void> {
             const config = await getConfig();
             const downloading = config.downloading as HydraConfig;
