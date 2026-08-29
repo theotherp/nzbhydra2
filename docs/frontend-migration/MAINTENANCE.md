@@ -1148,6 +1148,20 @@ precondition, so handing it forward starves nothing.
 mid-suite, which discards the reporter's summary — the failure list had to be reconstructed from the interleaved log
 and the uploaded artifacts. Raised to 75. A timeout that fires *during* the run costs more than the run.
 
+### 2026-08-29 — Reword README.md/CONTEXT.md's migration framing from ongoing to concluded
+
+- **Why not a packet:** documentation and provenance text only; no code, contract, registry, or behavior touched.
+- **Paths:** `docs/frontend-migration/README.md` (opening paragraph), `docs/frontend-migration/CONTEXT.md` (Rollout section).
+- **Gates:** `npm run validate:migration` in `core/ui-react` passes. No code changed, so no build, test, or Playwright run applies.
+- **Commit:** `ab9742071`
+- **Note:** both files still described the AngularJS-to-React replacement as a future plan (README's opening line, CONTEXT.md's
+  Rollout section), even though `ADR-0023` accepted the migration on 2026-08-23 and FM-094/FM-095 executed the flip and removal
+  that same week. `ADR-0023` already is the binding closing decision — this entry does not add a new one, it brings the
+  surrounding prose in line with the decision that already exists, so a new reader sees "done" instead of inferring it from
+  `STATUS.md` archaeology. README's opening now points at `ADR-0001`/`ADR-0023`/`FM-095` and states the directory's current
+  role (ongoing frontend work under the same risk-routed process); CONTEXT.md's Rollout section is rewritten past-tense as
+  what actually happened, ending on the durable constraint that React is now the only shell with no legacy fallback.
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
@@ -1847,7 +1861,7 @@ each gate a defect list that already exists, the rest are single judgement calls
   *absent* field, so no grep for `loadLimitInternal` in the frontend can see it — the frontend genuinely never mentions it
   outside the config tab, which is exactly what the entry observed and exactly why the inference failed. Before "nothing
   consumes this" becomes a decision, check the backend read path for a null-substitution default, not just the callers.
-- **A link inside a persistent toast is unreachable while a modal is open — decide how far to go.** FM-115 closes the
+- ~~**A link inside a persistent toast is unreachable while a modal is open — decide how far to go.**~~ FM-115 closes the
   *announcement* half of this defect and deliberately leaves the *focus* half, which needs a ruling. Mechanism, verified
   against the installed MUI 7.3.9 rather than inferred: `Snackbar` contains no `Portal`
   (`grep -c Portal node_modules/@mui/material/Snackbar/Snackbar.js` → 0), so the toast layer renders in-tree at
@@ -1865,8 +1879,11 @@ each gate a defect list that already exists, the rest are single judgement calls
   which means `Toast.content` stops taking arbitrary nodes. Each answer is cross-module and changes modal behaviour or a
   shared type, so none is a quickfix. Related and already recorded: FM-101's `ConfigShell.tsx:404-412` comment overstated
   what its portal fixed; FM-115 corrects that text as part of the announcement half. Surfaced 2026-08-26 by FM-101's
-  re-review, mechanism and liveness established 2026-08-27 during FM-115's design.
-- **Tables below `sm` scroll their content off-canvas with no affordance — decide the strategy once, for all of them.**
+  re-review, mechanism and liveness established 2026-08-27 during FM-115's design.~~
+  **Settled 2026-08-29 by ADR-0037.** Accept the limitation; `Toast.content` stops taking interactive nodes and
+  `NotificationToasts.tsx` drops its `RouterLink`. Task packet (cross-module: shared `Toast` type plus the live
+  notification consumer).
+- ~~**Tables below `sm` scroll their content off-canvas with no affordance — decide the strategy once, for all of them.**
   Merged 2026-08-27 from three entries in three areas; each was independently deferred for wanting "a real layout
   decision" rather than a mechanical swap, and answering it once discharges all three. **Decision to settle:** at
   narrow widths, do tables (i) force container scroll with a `minWidth` plus a scroll-edge affordance, (ii) drop or
@@ -1886,44 +1903,57 @@ each gate a defect list that already exists, the rest are single judgement calls
   FM-100's review panel, in a case where it is non-blocking: FM-107's Acceptance explicitly asked for a "mobile
   390x844 showing the scroll container", ratifying the scroll, and the row expansion repeats every value as a real
   editable field, so nothing is unreachable. A below-`sm` column drop or merge would be a design decision rather than
-  a fix. Surfaced 2026-08-26 by FM-107's reviewer.
-- **Settings search offers rows whose render condition is unmet.** `settingsSearchMatching.ts:38` matches the whole index, so
+  a fix. Surfaced 2026-08-26 by FM-107's reviewer.~~
+  **Settled 2026-08-29 by ADR-0038.** Container scroll plus a scroll-edge affordance, applied uniformly across all
+  five surfaces ((a)'s three history routes, (b), (c)). Task packet (new shared affordance mechanism/component).
+- ~~**Settings search offers rows whose render condition is unmet.** `settingsSearchMatching.ts:38` matches the whole index, so
   with SSL off the results still offer "SSL keystore file" and "SSL keystore password" (visible in
   `search-results-desktop.png`). Picking one routes to the tab and then silently no-ops until `ANCHOR_DEADLINE_MS`
   expires, with no feedback. The timeout is deliberate and documented at `useSettingsNavigation.tsx:24-29`, and FM-099's
   packet neither required nor forbade this. **Decision to settle:** hide such hits, mark them unavailable, or explain the
-  no-op. A packet follows whichever is chosen. Surfaced 2026-08-26 by FM-099's reviewer.
-- **FM-103's search-source select renders for a type the dialog withholds it from.** `IndexerTable.tsx:404-415` shows
+  no-op. A packet follows whichever is chosen. Surfaced 2026-08-26 by FM-099's reviewer.~~
+  **Settled 2026-08-29 by ADR-0039.** Hide hits whose render condition is currently unmet. Single-session fix
+  candidate (`settingsSearchMatching.ts` only, no contract/testid change).
+- ~~**FM-103's search-source select renders for a type the dialog withholds it from.** `IndexerTable.tsx:404-415` shows
   the `enabledForSearchSource` control on every row, but `visibleIndexerFields` (`indexerSettings.ts:761-763`) hides
   that field for `TORBOX`, which is an addable preset (`indexerPresets.ts:256`). So the list offers a control the edit
   dialog deliberately does not. Undeclared — it is not in the `FEATURES.yaml` gaps alongside FM-103's other three
   deviations. **Decision to settle:** gate the cell on `visibleIndexerFields(entry.searchModuleType)`, or declare the
   list's wider surface deliberate. Gating is a one-line fix; declaring is a registry edit. Surfaced 2026-08-26 by
-  FM-103's reviewer.
-- **The sticky bar counts dirty leaves while the review panel counts rows.** Editing five fields of one indexer reads
+  FM-103's reviewer.~~
+  **Settled 2026-08-29 by ADR-0040.** Gate the cell on `visibleIndexerFields(entry.searchModuleType)`. Single-session
+  fix candidate (`IndexerTable.tsx` only).
+- ~~**The sticky bar counts dirty leaves while the review panel counts rows.** Editing five fields of one indexer reads
   "5 settings changed" on the bar and opens a panel with a single row. Both are contract-driven — FM-100's packet
   fences the summary text verbatim and specifies one row per list entry — so this is a recorded consequence rather than
   a defect. **Decision to settle:** ratify the mismatch as intended, or re-word one of the two counts (which reopens a
-  fenced string). Surfaced 2026-08-26 by FM-100's reviewer.
-- **The FM-090 notch/label-overlap fix closes the gap by shrinking every input label app-wide** (effective 12px ->
+  fenced string). Surfaced 2026-08-26 by FM-100's reviewer.~~
+  **Settled 2026-08-29 by ADR-0041.** Ratified as intended — the two counts answer different questions. No code
+  change; discharged by this decision alone.
+- ~~**The FM-090 notch/label-overlap fix closes the gap by shrinking every input label app-wide** (effective 12px ->
   10.5px) rather than by widening the notch legend instead. Mechanically correct and owner-approved via a
   before/after screenshot strip, but the alternative shape (sizing the legend up in `MuiOutlinedInput` rather than
   the label down in `MuiInputLabel`) was never attempted or compared. Not a defect -- nothing to discharge -- just a
   design-space note. **Decision to settle:** accept the app-wide 10.5px label, or commission the legend-widening
   alternative for comparison, now that far more of the app is visible than the two fields FM-090 measured. Surfaced
-  2026-08-23 by FM-090's reviewer.
-- **The preset gallery's "Import" heading stays visible with nothing under it.** Filtering to a term that matches only
+  2026-08-23 by FM-090's reviewer.~~
+  **Settled 2026-08-29 by ADR-0042.** Accept as shipped; no alternative commissioned. No code change; discharged by
+  this decision alone.
+- ~~**The preset gallery's "Import" heading stays visible with nothing under it.** Filtering to a term that matches only
   presets (e.g. "geek") leaves the Import section's heading rendered over zero importer buttons, because importers are
   filtered independently against their own labels rather than being hidden when the preset groups empty. That follows
   FM-104's packet text literally ("hide them only when the filter also misses their labels") and is visible in both
   filtered captures, so it is a packet-sanctioned choice rather than a defect. **Decision to settle:** keep the packet's
   literal behaviour, or hide the heading when its section is empty (which contradicts the packet text). Surfaced
-  2026-08-26 by FM-104's reviewer.
-- **`GUI-STATUS.md:3-4` still names "The AngularJS GUI it replaced".** FM-095's acceptance asked that the file no longer mention a
+  2026-08-26 by FM-104's reviewer.~~
+  **Settled 2026-08-29 by ADR-0043.** Hide the "Import" heading when its section is empty. Single-session fix
+  candidate (one component, one condition added).
+- ~~**`GUI-STATUS.md:3-4` still names "The AngularJS GUI it replaced".** FM-095's acceptance asked that the file no longer mention a
   legacy GUI; read literally that is unmet, read as intent (nothing implies a legacy GUI is reachable) it is met, and the
   historical sentence is arguably more useful than silence. **Decision to settle:** owner's call, one way or the other.
-  **Checked 2026-08-27:** the sentence still stands at `docs/frontend-migration/GUI-STATUS.md:3-4`.
-- **`POST /loggedout` (`core/src/main/java/org/nzbhydra/web/MainWeb.java`) is dead server code.** It invalidates the session,
+  **Checked 2026-08-27:** the sentence still stands at `docs/frontend-migration/GUI-STATUS.md:3-4`.~~
+  **Settled 2026-08-29 by ADR-0044.** Remove the sentence. Single-session fix candidate (documentation-only).
+- ~~**`POST /loggedout` (`core/src/main/java/org/nzbhydra/web/MainWeb.java`) is dead server code.** It invalidates the session,
   answers 401 with a `WWW-Authenticate: Basic` challenge, and clears the `remember-me`/`JSESSIONID` cookies — the standard trick
   for making a browser drop cached BASIC credentials. Nothing has ever called it: a case-insensitive sweep of `core/ui-src`
   finds only AngularJS `user:loggedOut` *events*, and `core/ui-react` never references it either. Found 2026-08-23 while ruling
@@ -1932,7 +1962,8 @@ each gate a defect list that already exists, the rest are single judgement calls
   cookie clearing sets `setSecure(true)`, so it would be inert over plain HTTP anyway, and any future attempt to actually end a
   BASIC session would want to start from this endpoint rather than rediscover it. **Decision to settle:** delete it, or keep it
   as the starting point for a future BASIC-logout capability. **Checked 2026-08-27:** still present, now at `MainWeb.java:83`
-  (the entry originally cited `:92`).
+  (the entry originally cited `:92`).~~
+  **Settled 2026-08-29 by ADR-0045.** Keep it. No code change; discharged by this decision alone.
 
 ### Recorded, not routable
 

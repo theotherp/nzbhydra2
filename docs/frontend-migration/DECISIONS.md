@@ -643,3 +643,135 @@ Binding constraints:
 - Verify against a dialog *and* a config tab in the same pass. A fix proven on one surface is exactly the failure mode
   being corrected.
 - Hover, focus, disabled and error states must all still be distinguishable from rest after the border weight changes.
+
+## ADR-0037 — Actionable toast content forbidden; no `FocusTrap` relaxation (accepted 2026-08-29)
+
+Question: a persistent toast raised over an open modal (`NotificationToasts.tsx`'s `RouterLink` content) cannot be
+tabbed to, because MUI's `FocusTrap` marks the toast layer `aria-hidden` for the modal's duration regardless of DOM
+position. Relax `FocusTrap` app-wide, render toasts inside the open modal, or accept the limitation and forbid
+actionable toast content?
+
+Decided: accept it. A keyboard user closes the dialog (Escape) to reach the toast. `Toast.content` stops accepting
+arbitrary interactive nodes (links, buttons); toasts stay informational while any modal can be open.
+
+Binding constraints:
+
+- `NotificationToasts.tsx`'s persistent live-notification toasts drop their `RouterLink` content; the notification
+  text may still name the destination, but following it requires opening the toast/notification surface directly
+  (e.g. notification history), not clicking through the toast itself.
+- Do not relax `FocusTrap` or change modal focus-trapping behavior anywhere else to work around this.
+- Recorded as a deliberate capability reduction, not a bug fix — note it in `FEATURES.yaml`/`STATUS.md` wherever the
+  live-notification toast link was previously claimed as working.
+
+## ADR-0038 — Narrow-viewport tables: container scroll plus a scroll-edge affordance (accepted 2026-08-29)
+
+Question: at `<sm`, several tables (download/notification/search history, indexer Priority column, config Categories
+Size column) scroll their content off-canvas with no visual hint that more exists. Force container-scroll with an
+affordance, drop/merge columns, or accept silent scrolling?
+
+Decided: container scroll (already the sanctioned pattern per FM-103/FM-107) plus a scroll-edge affordance — a
+shadow or gradient hint at the clipped edge, cleared once scrolled to the end.
+
+Binding constraints:
+
+- Apply uniformly to `DownloadHistoryPage.tsx`, `NotificationHistoryPage.tsx`, `SearchHistoryPage.tsx` (confirm the
+  same defect there before fixing), the indexer list's `TableContainer`, and the config Categories table.
+- No column dropping or merging below `sm` for any of these tables.
+- One shared affordance mechanism/component, not four bespoke implementations.
+- Fresh 390x844 screenshot strips per affected route.
+
+## ADR-0039 — Settings search hides matches whose render condition is unmet (accepted 2026-08-29)
+
+Question: `settingsSearchMatching.ts` matches the whole index regardless of current form state, so searching can
+offer a setting (e.g. "SSL keystore file" with SSL off) that silently no-ops on selection until
+`ANCHOR_DEADLINE_MS` expires. Hide such hits, mark them unavailable, or explain the no-op?
+
+Decided: hide them. A hit is only offered when its render condition is currently satisfied.
+
+Binding constraints:
+
+- Filter at match time against the same condition `ConfigFieldset`/the field vocabulary already uses to decide
+  whether to render, not a duplicated heuristic.
+- No change to `useSettingsNavigation.tsx`'s anchor/timeout mechanism for hits that remain reachable.
+
+## ADR-0040 — Gate the indexer list's search-source cell on `visibleIndexerFields` (accepted 2026-08-29)
+
+Question: `IndexerTable.tsx` renders the `enabledForSearchSource` control for every row, but the edit dialog
+withholds that field for `TORBOX` via `visibleIndexerFields`. Gate the list cell to match, or declare the wider
+list surface deliberate?
+
+Decided: gate it. `IndexerTable.tsx`'s cell renders only when `visibleIndexerFields(entry.searchModuleType)`
+includes the field, matching the edit dialog.
+
+Binding constraints:
+
+- No `FEATURES.yaml` gap entry is needed once gated — this closes an inconsistency, it does not retire a capability.
+
+## ADR-0041 — Config sticky-bar and review-panel counts stay semantically distinct (accepted 2026-08-29)
+
+Question: the sticky bar's "N settings changed" counts dirty leaf fields while the review panel counts changed
+list-entry rows, so editing five fields of one indexer reads "5 settings changed" over a one-row panel. Ratify, or
+reword one (reopening a fenced contract string)?
+
+Decided: ratify. The two numbers answer different questions — fields touched vs. entries touched — and both are
+individually correct for what they label.
+
+Binding constraints:
+
+- No wording change to either fenced string on this basis alone. Revisit only if a future packet needs to touch
+  either string for an unrelated reason.
+
+## ADR-0042 — FM-090's app-wide label-shrink fix stays as shipped (accepted 2026-08-29)
+
+Question: FM-090 closed the notch/label overlap by shrinking every input label app-wide (12px → 10.5px) rather than
+widening the notch legend instead; the alternative was never attempted or compared. Accept as shipped, or
+commission the alternative for comparison?
+
+Decided: accept as shipped. It is already owner-approved via a before/after screenshot strip; no concrete complaint
+has been raised against the current sizing.
+
+Binding constraints:
+
+- No work is commissioned by this entry. Re-open only against a specific, named complaint about the current label
+  size, not merely because the alternative was never tried.
+
+## ADR-0043 — Hide the preset gallery's "Import" heading when its section is empty (accepted 2026-08-29)
+
+Question: filtering the indexer preset gallery to a term that matches only presets (e.g. "geek") leaves the
+"Import" heading rendered over zero importer buttons, per FM-104's packet text taken literally. Keep the literal
+behavior, or hide the heading when empty?
+
+Decided: hide it. `IndexerPresetGallery`'s Import section heading renders only when at least one importer survives
+the current filter.
+
+Binding constraints:
+
+- The preset groups' own empty-section handling is unchanged; this only adds the same treatment to the Import
+  heading.
+
+## ADR-0044 — Remove `GUI-STATUS.md`'s "AngularJS GUI it replaced" sentence (accepted 2026-08-29)
+
+Question: `GUI-STATUS.md` still names "The AngularJS GUI it replaced", which FM-095's acceptance asked the file to
+no longer mention (read literally, unmet; read as intent, arguably met and arguably more useful as history). Keep
+it, or remove it?
+
+Decided: remove it, satisfying FM-095's acceptance criterion by its letter.
+
+Binding constraints:
+
+- `GUI-STATUS.md` states current availability only; historical framing of what it replaced belongs in
+  `README.md`/`CONTEXT.md` (already updated 2026-08-29), not here.
+
+## ADR-0045 — Keep `POST /loggedout` as a future BASIC-logout starting point (accepted 2026-08-29)
+
+Question: `MainWeb.java`'s `POST /loggedout` is dead server code nothing calls — a BASIC-session-drop trick left
+over, inert over plain HTTP (`setSecure(true)`). Delete it, or keep it as the starting point for a future
+BASIC-logout capability?
+
+Decided: keep it. It costs nothing to leave and deleting forecloses a capability (`F-AUTH-LOGIN`'s recorded
+permanent BASIC-logout limitation) that may still be wanted.
+
+Binding constraints:
+
+- Backend deletion of `POST /loggedout` stays out of FM governance scope (ADR-0001) either way; this entry only
+  settles the "should it be removed opportunistically" question raised in `MAINTENANCE.md` as no.

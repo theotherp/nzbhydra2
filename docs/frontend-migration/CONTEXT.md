@@ -23,10 +23,10 @@ Do not add Bootstrap, Tailwind, another general component suite, another router,
 
 ## Rollout
 
-AngularJS remains the default while React is built. A temporary cookie-based selector will let the same canonical URL render the legacy or React Thymeleaf shell. React must use canonical route semantics from the start. Unimplemented React
-routes show a migration placeholder that can switch back to legacy.
-
-The final cutover makes React the default, retains the legacy selector briefly for verification, then removes AngularJS and the selector. See `ADR-0001`.
+React replaced AngularJS as planned under `ADR-0001`: it was built to canonical route semantics from the start, behind a
+temporary cookie-based shell selector, with a migration placeholder for routes not yet implemented. `ADR-0023` accepted the
+migration on 2026-08-23; `FM-094` then flipped React to the default shell and `FM-095` removed AngularJS, the legacy `static/`
+assets, and the selector entirely. React is now the only shell for every canonical route; there is no legacy fallback.
 
 ## Runtime Contracts
 

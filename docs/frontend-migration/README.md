@@ -1,8 +1,9 @@
 # Frontend Migration
 
-This directory is the durable coordination point for replacing the AngularJS UI with React. Conversation history is not part of
-the migration's authoritative context. Completed task packets and the original long-form ADRs were deliberately removed from the
-tree on 2026-08-19; git history (`git log -- docs/frontend-migration`) is the archive.
+AngularJS was fully replaced by React; see `ADR-0001`/`ADR-0023` and `FM-095` in `DECISIONS.md`/`STATUS.md`. This directory now
+coordinates ongoing frontend work under the same risk-routed process. Conversation history is not part of its authoritative
+context. Completed task packets and the original long-form ADRs were deliberately removed from the tree on 2026-08-19; git
+history (`git log -- docs/frontend-migration`) is the archive.
 
 ## Reading Order
 
