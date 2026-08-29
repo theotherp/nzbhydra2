@@ -12,7 +12,11 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
-import {CustomMappingsSection} from "./CustomMappingsSection";
+import {
+    CUSTOM_MAPPINGS_HEADLINE,
+    CUSTOM_MAPPINGS_TOOLTIP,
+    CustomMappingsSection,
+} from "./CustomMappingsSection";
 import {languageOptions} from "./languages";
 import {
     APPLY_RESTRICTIONS_OPTIONS,
@@ -28,7 +32,11 @@ import {
  * `C-CONFIG-FORM`'s whole-config form through the `C-CONFIG-FIELDS`
  * vocabulary. The custom-mapping list between "Result processing" and "Result
  * display" is legacy's position for it; it is the one section edited through a
- * modal transaction (`CustomMappingsSection`).
+ * modal transaction (`CustomMappingsSection`), wrapped here in an advanced
+ * `ConfigFieldset` so the wholly-advanced section joins FM-098's disclosure
+ * convention (FM-131) rather than vanishing outright while the global toggle
+ * is off; `CustomMappingsSection` renders no heading of its own, so this is
+ * the fieldset's `label`/`tooltip`, not a duplicate of one it already draws.
  *
  * Legacy's `hideExpression`s become plain conditional rendering driven by
  * `useWatch`. A hidden field keeps its value: the shell's form is created with
@@ -265,7 +273,13 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                     tooltip="Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results."
                 />
             </ConfigFieldset>
-            <CustomMappingsSection transport={transport} />
+            <ConfigFieldset
+                advanced
+                label={CUSTOM_MAPPINGS_HEADLINE}
+                tooltip={CUSTOM_MAPPINGS_TOOLTIP}
+            >
+                <CustomMappingsSection transport={transport} />
+            </ConfigFieldset>
             <ConfigFieldset label="Result display">
                 <SwitchSetting
                     advanced

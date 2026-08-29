@@ -169,14 +169,17 @@ async function openSystem(page: Page, path = "control"): Promise<void> {
  * "Loading the log file" after 30s; the uninstrumented Linux and Windows jobs
  * pass comfortably.
  *
- * This is a stopgap and should be read as one. The quantity being waited on
- * grows with the suite, so any fixed number here is a race against the suite's
- * own growth, and this is the second time it has been raised. The stable fix is
- * to bound what the raw view fetches, which is a product decision rather than a
- * test one and is logged as a candidate in MAINTENANCE.md. There is no
- * test-side alternative: `DebugInfosWeb` exposes no endpoint to clear or rotate
- * the log, so unlike every other precondition in this suite, a test cannot
- * establish this one for itself.
+ * This budget is pinned to the render ADR-0047 (accepted 2026-08-29) ruled to
+ * keep: FM-135 put a server-side tail parameter and a client-side last-N bound
+ * to the owner and the ruling was to leave the raw view's fetch and render
+ * unbounded, matching legacy's `hydra-log.js`. This is not a workaround for a
+ * defect. The log tests now rotate the log first (`18c5ed445`), so the number
+ * is no longer a race against the suite's own growth the way it was when it
+ * was last raised; what it still pays for is the unbounded render itself,
+ * which a future task reopening ADR-0047 would need to re-measure. There is
+ * no test-side alternative: `DebugInfosWeb` exposes no endpoint to clear or
+ * rotate the log, so unlike every other precondition in this suite, a test
+ * cannot establish this one for itself.
  */
 const LOG_VIEW_BUDGET_MS = 120_000;
 

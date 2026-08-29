@@ -793,3 +793,27 @@ Binding constraints:
 - The results page consumes the shell at strict parity — no visible change, no test-id change.
 - The history views' docked collapsed state persists under one shared key, `hydra.history.refine`; drawer open
   state is never persisted (same rationale as the results sidebar).
+
+## ADR-0047 — The raw log view stays unbounded (accepted 2026-08-29)
+
+**Question.** `RawLogView` fetches the entire current log file through `API-SYSTEM-LOG-CURRENT` (text/plain, no range
+or size parameter) and renders it into one unbounded `<pre>`, re-fetching every 5 seconds while auto-refresh is on.
+Should that be bounded — server-side tail, client-side last-N with a load-everything affordance — or left as is?
+
+**Decision.** Left as is. No product change.
+
+**Constraints this binds.**
+
+- `RawLogView` keeps fetching and rendering the whole file; `API-SYSTEM-LOG-CURRENT` gains no range or size parameter.
+  A future task proposing either reopens this decision rather than assuming it.
+- `F-SYSTEM-LOG` and `API-SYSTEM-LOG-CURRENT` record the unbounded fetch as accepted, referencing this entry, so a
+  later reader does not mistake it for an oversight.
+- `system.spec.ts`'s `LOG_VIEW_BUDGET_MS` stays, and keeps a comment pointing here. It is sized for the render this
+  decision accepts, not a workaround for a defect.
+- FM-135's measurement phase is discharged unrun. The owner ruled without it, which is theirs to do; the consequence
+  is that no measured cost for a large-log instance exists in the record, and any future reopening starts by
+  producing one.
+
+**Why it is defensible.** This is legacy's behaviour (`hydra-log.js`), so it is not a regression. The test pressure
+that surfaced it is gone: `18c5ed445` added `rotatelog`, and the log tests rotate first. What remains is a real
+instance with a very large log, which is a cost its operator already pays for other reasons.

@@ -26,10 +26,16 @@ public class ConfigurationPersistenceSystemTest {
     @Autowired
     private BeforeAll beforeAll;
 
+    private boolean showNewsBeforeTest;
+    private boolean disableTourBeforeTest;
+
     @BeforeEach
     public void setUp() {
         // Establish the baseline this test needs instead of inheriting whatever ran before it.
         beforeAll.applyBaseline();
+        BaseConfig config = getConfig();
+        showNewsBeforeTest = config.getMain().isShowNews();
+        disableTourBeforeTest = config.getMain().isDisableTour();
     }
 
     @AfterEach
@@ -38,6 +44,20 @@ public class ConfigurationPersistenceSystemTest {
         // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
         // matched to a stored record - exactly the case once this test replaced those records.
         beforeAll.applyBaseline();
+
+        // applyBaseline only covers what it writes: the API key, the logging flags, the mock indexers and
+        // the mock downloader. The plain `main` flags these tests toggle are not among them, so without
+        // this they survive the class and reach whatever runs next on the same instance - which in CI is
+        // the Playwright suite, one Maven phase later (.github/workflows/system-test.yml). A `showNews`
+        // left false there silently disables the startup news dialog focus-indication.spec.ts asserts on.
+        // Restoring here rather than in a test-local finally keeps a failed restore from masking the
+        // failure that caused it: JUnit reports an @AfterEach error alongside the test's own.
+        BaseConfig config = getConfig();
+        if (config.getMain().isShowNews() != showNewsBeforeTest || config.getMain().isDisableTour() != disableTourBeforeTest) {
+            config.getMain().setShowNews(showNewsBeforeTest);
+            config.getMain().setDisableTour(disableTourBeforeTest);
+            assertSuccessfulSave(config);
+        }
     }
 
     @Test

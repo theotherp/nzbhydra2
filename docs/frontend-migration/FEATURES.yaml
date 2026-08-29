@@ -638,9 +638,8 @@ features:
       # transaction, so it is not `RepeatSection`; it reuses that component's
       # naming with an `edit` verb added -- new in FM-063:
       # `config-repeat-searching-customMappings` (the list),
-      # `config-repeat-tooltip-searching-customMappings` (its headline
-      # tooltip), `config-repeat-entry-searching-customMappings-<index>` (one
-      # mapping's summary), `config-repeat-add-searching-customMappings`,
+      # `config-repeat-entry-searching-customMappings-<index>` (one mapping's
+      # summary), `config-repeat-add-searching-customMappings`,
       # `config-repeat-edit-searching-customMappings-<index>`,
       # `config-repeat-remove-searching-customMappings-<index>`, and
       # `config-custom-mapping-value-<index>-<field>` for one summarized value
@@ -648,6 +647,23 @@ features:
       # The dialog's own controls are `config-custom-mapping-dialog`,
       # `-help`, `-affectedValue`, `-searchType`, `-matchAll`, `-from`, `-to`,
       # `-exampleInput`, `-test`, `-result`, `-cancel`, and `-submit`.
+      # FM-131: the list is a wholly-advanced section, so it no longer renders
+      # its own heading (dropping `config-repeat-tooltip-
+      # searching-customMappings`, its old headline tooltip) and is instead
+      # wrapped in an advanced `ConfigFieldset` (`SearchingConfigTab.tsx`)
+      # whose `label` is the section's headline, "Custom mappings of queries,
+      # search titles and result titles". That fieldset's own ids follow
+      # C-CONFIG-FIELDS's label-derived convention: `config-advanced-expander-
+      # custom mappings of queries, search titles and result titles` is the
+      # toggle-off affordance ("<label> — advanced, hidden", revealing the
+      # section in place); once revealed (or with the toggle on), the section
+      # sits inside `config-fieldset-custom mappings of queries, search titles
+      # and result titles`, alongside a `config-fieldset-tooltip-custom
+      # mappings of queries, search titles and result titles` icon carrying
+      # the headline's old tooltip text. While the global toggle is off and
+      # the section is not individually revealed, none of the ids above this
+      # paragraph (`config-repeat-*`, `config-custom-mapping-value-*`) are on
+      # the page.
       - config-searching
     parity: done
     gaps: []
@@ -1444,6 +1460,7 @@ features:
       - deliberate - a refresh only scrolls to the end while tailing is on; legacy scrolled to the end on every raw-view load and refresh, which made its tail toggle almost inconsequential
       - deliberate - the entry dialog also shows the whole log record as text, in addition to legacy's message, accessing IP address, accessing username, and stacktrace sections
       - deliberate - the level is a labelled chip; legacy showed an unlabelled icon for INFO, WARN, and ERROR only, and nothing at all for any other level
+      - deliberate - the raw view fetches and renders the entire current log file, unbounded, on every load and every 5s auto-refresh; ADR-0047 (accepted 2026-08-29) considered a server-side tail parameter and a client-side last-N bound and ruled to leave it as is, matching legacy's `hydra-log.js`
   - id: F-SYSTEM-TASKS
     name: Scheduled task list and manual execution
     routes:

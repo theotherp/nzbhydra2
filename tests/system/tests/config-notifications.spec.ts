@@ -93,16 +93,6 @@ async function entryIndexByTitle(page: Page, title: string): Promise<number> {
     throw new Error(`No notification entry titled "${title}" found`);
 }
 
-/**
- * These specs assert against the configuration, so they establish the one they
- * assert against rather than inheriting whatever the previous test left on the
- * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
- * why it is deliberately narrow.
- */
-test.beforeEach(async ({hydra}) => {
-    await hydra.applyBaseline();
-});
-
 test.describe("Config notifications tab round trip", () => {
     test("should add an entry seeded from its event type, save, reload, and keep its templates", async ({
         page,

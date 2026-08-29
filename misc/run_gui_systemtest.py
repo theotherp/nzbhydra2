@@ -83,7 +83,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-install",
         action="store_true",
-        help="do not check npm dependencies or install Chromium",
+        help="do not check npm dependencies or install Chromium and Firefox",
     )
     parser.add_argument(
         "--keep-services",
@@ -601,8 +601,10 @@ def ensure_playwright_installed() -> None:
     if installed_version != expected_version or not playwright_shim.is_file():
         if run_command([npm, "ci"], cwd=SYSTEM_TEST_DIR) != 0:
             raise RuntimeError("npm ci failed")
-    if run_command([find_command("npx"), "playwright", "install", "chromium"], cwd=SYSTEM_TEST_DIR) != 0:
-        raise RuntimeError("Unable to install Playwright Chromium")
+    if run_command(
+            [find_command("npx"), "playwright", "install", "chromium", "firefox"], cwd=SYSTEM_TEST_DIR
+    ) != 0:
+        raise RuntimeError("Unable to install Playwright Chromium/Firefox")
 
 
 def run_playwright(

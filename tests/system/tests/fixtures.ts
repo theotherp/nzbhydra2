@@ -21,7 +21,6 @@ type HydraApi = {
     getConfig(): Promise<HydraConfig>;
     saveConfig(config: HydraConfig): Promise<HydraConfig>;
     applyBaseline(): Promise<void>;
-    restoreConfig(config: HydraConfig): Promise<void>;
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
     assertUniqueIndexerCredentials(): Promise<void>;
     rotateLogs(): Promise<void>;
@@ -33,6 +32,7 @@ type HydraApi = {
 
 type HydraFixtures = {
     hydra: HydraApi;
+    baseline: void;
     diagnostics: void;
     sensitiveDataLogging: void;
 };
@@ -47,27 +47,46 @@ export const test = base.extend<HydraFixtures>({
         const resolvedBaseURL = baseURL || testEnvironment.playwrightBaseUrl;
         await waitForHydra(request, resolvedBaseURL);
 
-        const hydra = createHydraApi(request, resolvedBaseURL);
-        const originalConfig = await hydra.getConfig();
-        await use(hydra);
-        try {
-            await hydra.restoreConfig(originalConfig);
-        } catch (error) {
-            throw new Error(
-                `Failed to restore Hydra configuration after the test: ${formatError(error)}`,
-            );
-        }
+        await use(createHydraApi(request, resolvedBaseURL));
     },
 
     /**
+     * Establishes `applyBaseline()`'s configuration before every test, which
+     * is what replaced the snapshot-and-restore teardown this fixture used to
+     * carry (FM-133).
+     *
+     * Restoring afterwards only ever put back what the *previous* test had
+     * left, so a test still started from a state it had not established; and
+     * it could not put back a secret the server no longer holds, so a test
+     * that replaced a whole list left the next one a config the restore had
+     * to patch up. Establishing the state beforehand needs neither: it is the
+     * same state for every test, and it is applied whether or not the
+     * previous test ended cleanly.
+     *
+     * `auto` rather than a `beforeEach` per spec, because the claim being
+     * made is that *every* test is independent of what a predecessor left --
+     * one that a spec file could silently opt out of by forgetting to call
+     * it. A spec that needs something other than the baseline still overrides
+     * it in its own `beforeEach`, which runs afterwards.
+     */
+    baseline: [
+        async ({hydra}, use) => {
+            await hydra.applyBaseline();
+            await use();
+        },
+        {auto: true},
+    ],
+
+    /**
      * `sensitiveDataLogging` is a `debuginfos` endpoint that toggles a static
-     * logging encoder flag, not a `BaseConfig` setting -- `restoreConfig`'s
-     * `GET`/`PUT /internalapi/config` round trip never touches it. Mirrors the
-     * `hydra` fixture's restore-in-teardown-with-loud-failure shape (the
-     * snapshot is taken before the test runs and put back after, regardless
-     * of how the test ended) rather than inventing a new mechanism, and
-     * restores to the captured value -- not a hardcoded `false` -- so a test
-     * that starts with the setting already enabled is not masked. Opt-in per
+     * logging encoder flag, not a `BaseConfig` setting -- neither
+     * `applyBaseline()`'s `GET`/`PUT /internalapi/config` round trip nor the
+     * snapshot-and-restore teardown it replaced ever touched it, so this is
+     * the one piece of instance state still put back rather than established:
+     * there is no endpoint that sets it to a known value without first being
+     * told what that value is. It restores the value captured before the test
+     * -- not a hardcoded `false` -- so a test that starts with the setting
+     * already enabled is not masked. Opt-in per
      * test rather than `auto: true`: only the sensitive-data-logging round
      * trip in `system.spec.ts` mutates this flag.
      */
@@ -233,98 +252,6 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         return result.newConfig as HydraConfig;
     };
 
-    /** The bare save, without `saveConfig`'s assertions, for `restoreConfig`. */
-    const putConfig = async (
-        config: HydraConfig,
-    ): Promise<ConfigValidationResult> => {
-        const response = await request.put(
-            "/internalapi/config",
-            internalRequest(config),
-        );
-        await expectSuccessfulResponse(response, "PUT /internalapi/config");
-        return (await response.json()) as ConfigValidationResult;
-    };
-
-    /**
-     * Puts the configuration captured before the test back, for teardown only.
-     *
-     * The snapshot came from `GET /internalapi/config`, so every secret in it
-     * is the server's `***UNCHANGED***` marker rather than a value — the
-     * fixture is never given the real credentials. Since FM-068 the server
-     * resolves such a marker only against the record it can still identify and
-     * refuses the save otherwise (ADR-0020), so a test that replaced a whole
-     * list (`configureMockIndexers`, or a spec that saves its own indexers or
-     * downloaders) leaves the snapshot asking for a secret the server no
-     * longer holds. That secret is genuinely unrecoverable here: before
-     * FM-068 the restore only appeared to work because the positional
-     * fallback happened to hand over a neighbour's credential.
-     *
-     * So the restore is attempted as-is first — the byte-for-byte restore
-     * every test that did not change a list's identity still gets. If the
-     * server refuses it purely over markers it could not resolve, the list
-     * that owns each such secret is left as the test left it, by splicing the
-     * server's *current* value for that list into the body in place of the
-     * snapshot's, and the save is retried with a warning naming what was kept.
-     *
-     * Keeping the list is the only sound fallback. Stripping the secret and
-     * restoring the rest of the record — what this did before — writes back
-     * indexers with no API key at all, and `BaseConfigValidator` compares
-     * indexers by host *and* API key, so three mock indexers on one host that
-     * differed only by key collapse into duplicates. The save still succeeds,
-     * but every later save on that instance answers with a "Found multiple
-     * indexers with same host and API key" warning, and the UI shows the
-     * warning dialog where the spec is waiting for "Configuration saved." One
-     * teardown thereby failed ten tests in five later spec files. A list the
-     * test itself saved is internally consistent by construction, so handing
-     * it forward cannot manufacture that state; the next test that needs
-     * particular indexers configures them, per its own preconditions.
-     */
-    const restoreConfig = async (config: HydraConfig): Promise<void> => {
-        const first = await putConfig(config);
-        if (first.ok && (first.errorMessages ?? []).length === 0) {
-            return;
-        }
-
-        const errorMessages = first.errorMessages ?? [];
-        const unresolved = unresolvedMarkerSettings(errorMessages);
-        if (
-            unresolved.length === 0 ||
-            unresolved.length !== errorMessages.length
-        ) {
-            throw new Error(
-                `Configuration validation errors: ${errorMessages.join(", ")}`,
-            );
-        }
-
-        const owners = [...new Set(unresolved.map(collectionOwning))];
-        if (owners.includes(undefined)) {
-            throw new Error(
-                `Configuration validation errors: ${errorMessages.join(", ")}`,
-            );
-        }
-
-        const current = await getConfig();
-        const withCurrentCollections = structuredClone(config);
-        const kept = (owners as string[]).filter((owner) =>
-            spliceCollection(withCurrentCollections, current, owner),
-        );
-        if (kept.length !== owners.length) {
-            throw new Error(
-                `Configuration validation errors: ${errorMessages.join(", ")}`,
-            );
-        }
-        console.warn(
-            `Restoring the configuration but keeping ${kept.join(", ")} as the test left them: the test replaced the records whose secrets ${unresolved.join(", ")} belonged to, and a masked snapshot cannot restore a credential the server no longer holds.`,
-        );
-
-        const second = await putConfig(withCurrentCollections);
-        if (!second.ok || (second.errorMessages ?? []).length > 0) {
-            throw new Error(
-                `Configuration validation errors: ${(second.errorMessages ?? []).join(", ")}`,
-            );
-        }
-    };
-
     const mockIndexers = (apiKeys: string[]): HydraConfig[] =>
         apiKeys.map((apiKey) => ({
             name: `Mock${apiKey}`,
@@ -338,16 +265,16 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         }));
 
     /**
-     * Puts the instance into a known configuration, for a spec that would
-     * otherwise start from whatever the previous test left.
+     * Puts the instance into a known configuration. Applied before every test
+     * by the `baseline` fixture, so no test starts from whatever the previous
+     * one left.
      *
-     * The suite runs against one shared, long-lived instance. The nine
-     * `config-*` specs establish nothing of their own -- they had no
-     * `beforeEach` at all -- and every Playwright failure in runs 33237457043
-     * and 33240679544 was one of them asserting against inherited state: an
-     * indexer list whose API keys a teardown had stripped, and a `main.showNews`
-     * the Java suite had left false. Restoring state afterwards cannot fix that
-     * and is not the point; establishing it beforehand is.
+     * The suite runs against one shared, long-lived instance. Every Playwright
+     * failure in runs 33237457043 and 33240679544 was a `config-*` spec
+     * asserting against inherited state: an indexer list whose API keys a
+     * teardown had stripped, and a `main.showNews` the Java suite had left
+     * false. Restoring state afterwards cannot fix that and is not the point;
+     * establishing it beforehand is.
      *
      * Overrides only the fields whose wrong value the suite has actually been
      * caught inheriting, on top of the config as it stands:
@@ -355,33 +282,107 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      * - `indexers`: three mocks on one host with distinct API keys. Not empty
      *   and not indistinguishable: `BaseConfigValidator` warns "No indexers
      *   configured" for the first and "same host and API key" for the second,
-     *   and either warning replaces the "Configuration saved." toast these
-     *   specs wait for.
+     *   and either warning replaces the "Configuration saved." toast the
+     *   `config-*` specs wait for. Written only when the list is not *already*
+     *   such a set (`mockApiKeysOf`), because a `PUT /internalapi/config` that
+     *   changes the indexer list costs about four seconds per changed indexer
+     *   -- measured against this instance: 8.04s to go from two mocks to
+     *   three, 4.03s back to two, 0.01s for a PUT that changes no indexer.
+     *   Rewriting the list unconditionally therefore fought
+     *   `configureMockIndexers` in every spec that wants a different number of
+     *   them, and cost `results.spec.ts` alone 7.3 minutes against 1.2 before
+     *   this fixture existed. A list a spec left as `Mock<key>` mocks on the
+     *   mockserver host is already what this asserts about it, so it is left
+     *   alone and its keys are what `assertUniqueIndexerCredentials` then
+     *   checks.
      * - `main.showNews`: on, per `baseConfig.yml`'s default.
-     * - `auth`: `NONE` with no users, also that default. The two move together
-     *   because either alone is refused. A leaked non-`NONE` `authType`
-     *   switches on `@Secured` enforcement for `/config/**`, `/system/**` and
-     *   `/stats/**` live, while the anonymous filter that would grant those
-     *   roles is wired in only when `authType` was non-`NONE` at boot, so every
-     *   later test 403s with no way back short of a restart
-     *   (`config-auth.spec.ts:29-50`).
+     * - `main.indexerSelectionAsCheckboxes`: off, also that default.
+     *   `config-main.spec.ts:153` turns it on, and with it on the search
+     *   form's indexer control is a checkbox group rather than the `Select`
+     *   `focus-indication.spec.ts:705` waits for -- a 30 second timeout, not
+     *   a wrong value.
+     * - `auth`: the whole block back to `AuthConfig`'s defaults, not just
+     *   `authType`. `authType` and `users` move together because either alone
+     *   is refused, and the `restrict*` flags move with them because they
+     *   outlive `authType`: `config-auth.spec.ts` leaves `restrictAdmin` true,
+     *   and with it set the anonymous session is not an admin even under
+     *   `authType: NONE`, so the React shell answers `/config` with "Page not
+     *   found" and shows a Login button. That is what failed 86 of 201 tests
+     *   when the restore teardown was first removed -- everything from
+     *   `config-auth.spec.ts:202` to the end of the run (FM-133).
+     * - `searching`, the fields below, all back to `baseConfig.yml`:
+     *   - the quick-filter four. `SearchResults.tsx:204-212,567-570` seeds the
+     *     refine sidebar's quick-filter selection from
+     *     `preselectQuickFilterButtons` and `customQuickFilterButtons`, so a
+     *     preselection left behind by `results.spec.ts:133-229` filters away
+     *     every result of every later search -- "0 of 28 loaded ... 28
+     *     filtered". This, not any per-user preference, is the state that
+     *     broke 26 of `results.spec.ts` when a fuller baseline was first tried
+     *     (`563f5b293`, whose message names the wrong carrier).
+     *     `showQuickFilterButtons` off (left by `config-searching.spec.ts`)
+     *     removes the sidebar's whole quick-filter section instead.
+     *   - the word and regex restrictions. `config-searching.spec.ts` leaves
+     *     `requiredWords: ["proper"]` and `forbiddenWords: ["cam",
+     *     "screener"]`, which the *backend* applies to every later search, so
+     *     `results.spec.ts`, `downloads.spec.ts` and `search.spec.ts` search
+     *     the mock indexers and get nothing back at all.
+     *   - `customMappings` and `savedSearches`, which are lists the specs
+     *     append to (`config-searching.spec.ts:207`,
+     *     `search.spec.ts:114`) and then index into positionally.
+     * - `notificationConfig.entries`: emptied. `config-notifications.spec.ts`
+     *   adds an entry at `entriesBefore.length` and reads it back by that
+     *   index, so entries a predecessor left move the one it just added.
      *
-     * Deliberately narrow. An earlier attempt applied a fuller baseline to all
-     * 197 tests automatically and broke 26 of `results.spec.ts`: the refine
-     * sidebar's selections live in *server-side* user preferences that survive
-     * the `page` fixture's `localStorage` clear, so changing the indexer list
-     * between tests left a stale selection filtering every result away. Specs
-     * that already establish their own preconditions are left alone.
+     * Deliberately narrow: every field here is one the suite has been
+     * *observed* to inherit wrongly, with the failure it caused named above. A
+     * spec that needs something else says so in its own `beforeEach`, which
+     * runs after this -- `config-categories.spec.ts` establishes that its own
+     * categories do not exist yet that way, rather than the baseline carrying
+     * a copy of the default category list.
      */
     const applyBaseline = async (): Promise<void> => {
         const config = await getConfig();
-        config.indexers = mockIndexers(["1", "2", "3"]);
-        (config.main as HydraConfig).showNews = true;
-        const auth = config.auth as HydraConfig;
-        auth.authType = "NONE";
-        auth.users = [];
+        const inheritedMockKeys = mockApiKeysOf(config.indexers);
+        const apiKeys = inheritedMockKeys ?? ["1", "2", "3"];
+        if (inheritedMockKeys === undefined) {
+            config.indexers = mockIndexers(apiKeys);
+        }
+        config.main = {
+            ...(config.main as HydraConfig),
+            showNews: true,
+            indexerSelectionAsCheckboxes: false,
+        };
+        config.auth = {
+            ...(config.auth as HydraConfig),
+            authType: "NONE",
+            users: [],
+            restrictAdmin: false,
+            restrictDetailsDl: false,
+            restrictIndexerSelection: false,
+            restrictSearch: false,
+            restrictStats: false,
+        };
+        config.searching = {
+            ...(config.searching as HydraConfig),
+            alwaysShowQuickFilterButtons: false,
+            customMappings: [],
+            customQuickFilterButtons: [],
+            forbiddenGroups: [],
+            forbiddenPosters: [],
+            forbiddenRegex: null,
+            forbiddenWords: [],
+            preselectQuickFilterButtons: [],
+            requiredRegex: null,
+            requiredWords: [],
+            savedSearches: [],
+            showQuickFilterButtons: true,
+        };
+        config.notificationConfig = {
+            ...(config.notificationConfig as HydraConfig),
+            entries: [],
+        };
         await saveConfig(config);
-        configuredMockCredentials = ["1", "2", "3"].map(
+        configuredMockCredentials = apiKeys.map(
             (apiKey) => `${testEnvironment.mockserverInternalUrl}/${apiKey}`,
         );
     };
@@ -391,7 +392,6 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         getConfig,
         saveConfig,
         applyBaseline,
-        restoreConfig,
         async configureMockIndexers(apiKeys = ["1", "2", "3"]): Promise<void> {
             const config = await getConfig();
             config.indexers = mockIndexers(apiKeys);
@@ -483,77 +483,33 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
 }
 
 /**
- * The settings named by `BaseConfigValidator`'s unresolvable-marker errors, e.g.
- * `indexers[0].apiKey`. Any message that is not one of those yields nothing, so
- * a save refused for another reason can never be mistaken for this case.
- */
-function unresolvedMarkerSettings(errorMessages: string[]): string[] {
-    const unresolvedMarker =
-        /^The setting (\S+) was submitted as "\*\*\*UNCHANGED\*\*\*"/;
-    return errorMessages.flatMap((message) => {
-        const setting = unresolvedMarker.exec(message)?.[1];
-        return setting === undefined ? [] : [setting];
-    });
-}
-
-/**
- * Names the list that owns an `indexers[0].apiKey`-style setting: the path up to
- * its *outermost* index, so `indexers[0].apiKey` yields `indexers` and
- * `downloading.downloaders[2].apiKey` yields `downloading.downloaders`. For a
- * setting nested inside two lists the outer one is named, which hands the whole
- * consistent subtree forward rather than half of it.
+ * The API keys of an indexer list that is already a usable mock set: every
+ * entry a `Mock<key>` on the mockserver host, with distinct names and at least
+ * one of them. `configureMockIndexers` and `applyBaseline` are the only writers
+ * of such a list and both derive the name from the key, so the keys are
+ * recoverable from the names -- `GET /internalapi/config` redacts the keys
+ * themselves.
  *
- * @return the dotted path of that list, or `undefined` when the setting is not
- * inside one — a singleton like `main.proxyPassword` is always identifiable, so
- * its marker resolves and it never reaches this path; if one ever does, the
- * caller must fail loudly rather than guess.
+ * @return those keys in list order, or `undefined` when the list is anything
+ * else and the baseline has to write its own.
  */
-function collectionOwning(setting: string): string | undefined {
-    const owner = /^(.*?)\[\d+\]/.exec(setting)?.[1];
-    return owner === undefined || owner === "" ? undefined : owner;
-}
-
-/**
- * Replaces one dotted collection path in `target` with `source`'s value for the
- * same path.
- *
- * @return whether both configs held an array at that path and it was replaced
- */
-function spliceCollection(
-    target: HydraConfig,
-    source: HydraConfig,
-    path: string,
-): boolean {
-    const steps = path.split(".");
-    let intoTarget: unknown = target;
-    let fromSource: unknown = source;
-    for (const step of steps.slice(0, -1)) {
+function mockApiKeysOf(indexers: unknown): string[] | undefined {
+    if (!Array.isArray(indexers) || indexers.length === 0) {
+        return undefined;
+    }
+    const keys: string[] = [];
+    for (const indexer of indexers as HydraConfig[]) {
+        const key = /^Mock(\d+)$/.exec(String(indexer.name))?.[1];
         if (
-            intoTarget === null ||
-            typeof intoTarget !== "object" ||
-            fromSource === null ||
-            typeof fromSource !== "object"
+            key === undefined ||
+            indexer.host !== testEnvironment.mockserverInternalUrl ||
+            keys.includes(key)
         ) {
-            return false;
+            return undefined;
         }
-        intoTarget = (intoTarget as HydraConfig)[step];
-        fromSource = (fromSource as HydraConfig)[step];
+        keys.push(key);
     }
-    const leaf = steps[steps.length - 1];
-    if (
-        intoTarget === null ||
-        typeof intoTarget !== "object" ||
-        fromSource === null ||
-        typeof fromSource !== "object" ||
-        !Array.isArray((intoTarget as HydraConfig)[leaf]) ||
-        !Array.isArray((fromSource as HydraConfig)[leaf])
-    ) {
-        return false;
-    }
-    (intoTarget as HydraConfig)[leaf] = structuredClone(
-        (fromSource as HydraConfig)[leaf],
-    );
-    return true;
+    return keys;
 }
 
 async function expectSuccessfulResponse(

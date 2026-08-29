@@ -250,16 +250,6 @@ async function boxOf(locator: Locator) {
     return box;
 }
 
-/**
- * These specs assert against the configuration, so they establish the one they
- * assert against rather than inheriting whatever the previous test left on the
- * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
- * why it is deliberately narrow.
- */
-test.beforeEach(async ({hydra}) => {
-    await hydra.applyBaseline();
-});
-
 test.describe("Config control treatment (FM-117)", () => {
     test("should grow a chips field to show every wrapped row while single-line inputs keep the 32px box", async ({
         page,
@@ -372,9 +362,11 @@ test.describe("Config control treatment (FM-117)", () => {
         // Launched here rather than added as a Playwright project: this is the
         // one assertion in the suite whose *browser* is the subject, and the
         // remaining specs have no reason to run twice.
-        // Playwright's own bundled build; `misc/run_gui_systemtest.py`
-        // installs only Chromium, so this states plainly when the browser it
-        // needs is absent rather than passing without having run.
+        // Playwright's own bundled build; `misc/run_gui_systemtest.py` and
+        // `.github/workflows/system-test.yml` install it alongside Chromium,
+        // so this only fires on a bare `npx playwright test` invocation where
+        // it states plainly when the browser it needs is absent rather than
+        // passing without having run.
         test.skip(
             !existsSync(firefox.executablePath()),
             `Firefox is not installed for this Playwright version (expected ${firefox.executablePath()}); run "npx playwright install firefox"`,

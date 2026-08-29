@@ -1183,15 +1183,26 @@ now sets the three things whose wrong value the suite has actually been caught i
 neither empty nor indistinguishable (`BaseConfigValidator` warns for *both* extremes, and either warning replaces the
 "Configuration saved." toast these specs wait for), `main.showNews`, and `auth` at `NONE` with no users.
 
-**The auth reset matters more than it looks.** A leaked non-`NONE` `authType` 403s every later test with no way back
-short of a restart, and the reviewer confirmed the mechanism from the Java rather than from the in-repo comment:
+**The auth reset matters more than it looks.** *(Corrected 2026-08-29 by FM-133: the "no way back short of a restart"
+half of this was **wrong**. `HydraGlobalMethodSecurityConfiguration.securedMethodInterceptor` reads `authType` per
+invocation and returns `AuthorizationDecision(true)` outright when it is `NONE`, so setting it back restores access
+with no restart — verified empirically and from the Java. What actually outlives a reset is `auth.restrictAdmin`:
+`HydraAnonymousAuthenticationFilter.updateAuthorities` drops `ROLE_ADMIN` while it is true, and it does re-run on
+`ConfigChangedEvent`, so what breaks is the UI's admin determination rather than the API. It cost 86 of 201 tests on
+the first teardown-free run.)* A leaked non-`NONE` `authType` 403s every later test, and the reviewer confirmed the
+mechanism from the Java rather than from the in-repo comment:
 `HydraGlobalMethodSecurityConfiguration` re-reads `authType` **live on every `@Secured` call**, while
 `SecurityConfig.filterChain` wires in the only filter that can grant `ROLE_ADMIN`/`ROLE_USER` to an anonymous request
 **once, at boot**, and never rebuilds it on `ConfigChangedEvent`. The instance this was written on had been left on
 `BASIC` by exactly that leak — the snapshot teardown had not prevented it either.
 
-**Deliberately narrow, and the narrowness is a finding.** A first attempt applied a fuller baseline to all 197 tests
-automatically and broke **26 of `results.spec.ts`**. The refine sidebar's selections live in *server-side user
+**Deliberately narrow, and the narrowness is a finding.** *(Corrected 2026-08-29 by FM-133: the mechanism below is
+**wrong**, and was wrong twice over — the carrier is not a per-user preference, and not a preference at all. It is
+ordinary `BaseConfig`: `searching.preselectQuickFilterButtons`, seeded into the refine sidebar by
+`preselectedQuickFilters`. Removing the teardown fails 22 of `results.spec.ts`'s 30 tests starting at test 5,
+immediately after the two that write that field and never clear it. See the FM-133 entry above.)* A first attempt
+applied a fuller baseline to all 197 tests automatically and broke **26 of `results.spec.ts`**. The refine sidebar's
+selections live in *server-side user
 preferences*, which survive the `page` fixture's `localStorage` clear, so changing the indexer list between tests left
 a stale selection filtering every result away — "0 of 3 loaded · 3 filtered". That is a second category of shared
 state that neither the teardown nor a config baseline touches. It is why the snapshot restore is **kept** rather than
@@ -1275,6 +1286,29 @@ intact. The rotate-not-clear choice made for the log endpoints earlier the same 
 **What a green retry is worth:** nothing, on its own. This defect answered HTTP 500 to a real user's first folder
 browse on every native-image start for as long as it has shipped, and the suite's verdict on it was "flaky".
 
+### 2026-08-29 — FM-126..FM-132 batch note: what the reviews kept catching
+
+Not a fix; a pattern worth recording while it is still cheap to act on. Across the seven-packet 2026-08-29 batch, the
+code was consistently sound and **the describing was not**. Two of the batch's three FAIL verdicts, and a majority of
+its minor findings, were the same defect in different files:
+
+- FM-127 asserted in `COMPONENTS.yaml` that no toast could carry an untabbable control, when every toast still carries
+  the Alert's own close button and ADR-0037 *accepted* that residual.
+- FM-130 generalised one control's test coverage to three, in a task whose entire product is trustworthy prose — and
+  its own correction then added eight `file:line` citations to a registry that had none, one already stale.
+- FM-129's handoff described its evidence more confidently than the evidence supported (two lint warnings *were* in
+  touched files; "every dialog is byte-identical" was false for two).
+- FM-126, FM-129, FM-131: three handoffs faulted for describing evidence they did not record, each time forcing a
+  reviewer to re-establish a true claim from scratch.
+
+**No gate can catch this.** `validate:migration` checks structure, not truth; `typecheck` and the test suites never
+read a sentence. Every one of these was caught by a human-shaped reading of the diff against head, which is the
+argument for keeping the fresh-reviewer invariant expensive rather than trimming it.
+
+**The cheapest lever** looks like the handoff template: three of the findings would not exist if `Verification
+Evidence` required *pasted output* rather than a description of output, and if registry prose were required to cite by
+symbol — a rule the repository already states in packet prompts and does not enforce anywhere.
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
@@ -1291,7 +1325,13 @@ visibility.
   (2026-08-29), whose design pass found the stated mechanism uncorroborated — `storedChoices.ts:13-33` makes refine
   selections search-scoped and unpersisted — so the packet reproduces the breakage before designing the reset.
 
-- **A Java system test leaves `main.showNews` false on the shared CI instance.** *(Headline corrected 2026-08-29:
+- ~~**A Java system test leaves `main.showNews` false on the shared CI instance.**~~ **Fixed 2026-08-29 (`f7e4d127a`,
+  FM-134).** Reproduced live: the test takes `showNews` true→false, and false→true on a second run, proving a toggle.
+  **The product-bug hypothesis is discharged** by direct probe — GET, PUT back, disk reload all leave it true, so no
+  defect faces real users. The candidate concluded otherwise because it searched for a literal `showNews: false`; the
+  value is computed as `!isShowNews()`, which no such search can find. That is the correction worth carrying: a
+  grep for a literal cannot refute a computed value. Original entry retained below.
+  **Original entry:** A Java system test leaves `main.showNews` false on the shared CI instance. *(Headline corrected 2026-08-29:
   this first read "and nothing in the repository does". That was wrong, and wrong because the search behind it looked
   for `showNews: false` in configuration files rather than for code that toggles the field.)* The default is
   `true` in `baseConfig.yml:335`, yet run 33240679544's trace shows the
@@ -1303,6 +1343,64 @@ visibility.
   (2026-08-29), whose design pass found the premise wrong: `ConfigurationPersistenceSystemTest.java:99-113`
   (`shouldReloadConfigurationFromDisk`) flips `showNews` via a real save and never restores it — the repository does
   set it false; the packet proves that live and closes the leak at the test.
+
+- **`F-CONFIG-SEARCHING`'s fieldset count is off by one, and its id list by one.** `FEATURES.yaml` says "the nine
+  fieldsets"; `SearchingConfigTab.tsx` now renders ten, the tenth being FM-131's Custom Mappings wrap. The FM-131
+  paragraph below it explains the tenth so a reader can reconcile it, but the count is stale. Separately that paragraph
+  enumerates three of FM-130's four label-derived ids and omits `config-nav-anchor-<label>`, which the section now
+  emits via FM-102's per-fieldset registration. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-131's review.
+
+- **FM-134's residual table misstates two defaults, and its mitigation paragraph is stale.** It cites the bare Java
+  field defaults for `downloading.nzbAccessType`/`updateStatuses` (`REDIRECT`/`false`) where the effective shipped
+  defaults are `baseConfig.yml`'s `PROXY`/`true` — the same source it treats as authoritative for `showNews` — so the
+  blast radius claimed for those two fields is overstated; the fields already match the real baseline. Separately it
+  describes `563f5b293`'s baseline as covering "nine config specs", which FM-133 (`bf3a0e98c`) superseded by making it
+  an `auto` fixture for the whole suite. Neither affects the fix or the discharge. Routed to **`/fm-quickfix`**.
+  Surfaced 2026-08-29 by FM-134's review.
+
+- **The Java system-test suite cannot run in full against a locally-started instance, and the reason is structural.**
+  `AuthorizationSystemTest.restartAndWait` calls `/internalapi/control/restart` and waits 90s. CI survives that
+  because the compose `core` service carries `restart: unless-stopped` over a `while true` entrypoint, so the JVM
+  comes back. `misc/run_gui_systemtest.py` starts a plain unsupervised JVM, so the restart kills the instance
+  permanently and every later test errors — 51 errors of 74, and the same cascade that defeated an earlier attempt at
+  74 errors. Running a *single* class works (FM-134 did it). Making the full phase runnable locally means giving the
+  runner restart supervision, the way `misc/run_systemtest.py`'s native path already has it. **Task packet.**
+  Surfaced 2026-08-29 while trying to encode the recipe.
+
+- **`mockApiKeysOf`'s doc claims two writers of the mock indexer list; there are seven.** `fixtures.ts:487-488` says
+  `configureMockIndexers` and `applyBaseline` are the only writers. By grep, `search.spec.ts:775-779,1313-1316`,
+  `results.spec.ts:3461-3466`, `config.spec.ts:495-536` and `config-indexers.spec.ts:272-284` all rewrite a
+  `Mock<key>`-named list in place. Key recovery still holds — none of them changes the name/key pairing — but the
+  guard checks only name and host, so per-indexer fields are never normalised. Concretely: a spec leaves `Mock1`
+  `DISABLED_USER` (already exercised at `config-indexers.spec.ts:284`), `mockApiKeysOf` accepts the list, the baseline
+  leaves it, and the next search-running spec that does not configure its own indexers gets zero results — the same
+  "0 of N loaded" class FM-133 removed. Latent only because every search-running spec configures its own indexers
+  today. Fix the claim, or widen the guard to `state`/`enabled`. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by
+  FM-133's review.
+
+- **A real reset to a known configuration needs an endpoint the tests can address.** FM-133's `applyBaseline` is a
+  denylist of fields the suite has been caught inheriting, not a reset — and it cannot become one through
+  `GET`/`PUT /internalapi/config` alone, because nothing there exposes the defaults. The residual risk is stated in
+  FM-133's own handoff in the sharpest available terms: a spec that starts mutating a config field no listed spec
+  mutates today will break a later spec, and the failure will look like a bug in the later spec. **Task packet** — it
+  needs a backend addition and an owner decision on shape. Surfaced 2026-08-29 by FM-133.
+
+- **A config PUT that changes an indexer costs ~4 seconds per changed indexer.** Measured during FM-133 at 8.04s /
+  4.03s / 0.01s for two / one / zero changed indexers; an early revision of its baseline cost `results.spec.ts` 7.3
+  minutes instead of 1.4 purely by rewriting the indexer list every test. That is a backend characteristic, not a test
+  one, and worth knowing before any future work makes indexer writes routine. **Task packet** if it is worth
+  investigating at all. Surfaced 2026-08-29 by FM-133.
+
+- **FM-131's new section-level drift check has no anti-vacuity guard.** `settingsIndexDrift.test.tsx:411-427` passes
+  on an empty list, unlike the neighbouring direction (b) which explicitly defends against exactly that. Harmless
+  today — the searching case is real and non-vacuous — but it is the trap the surrounding file was written to avoid,
+  reintroduced. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-131's review.
+
+- **FM-131's handoff never recorded the red observation its packet required.** The packet asks for the new affordance
+  test to be "observed red against the unfixed code"; the handoff omits it. The reviewer established it by
+  construction instead — before the wrap no `ConfigFieldset` existed for the section, so the expander lookup could only
+  throw — so the criterion holds in substance and only the evidence line is missing. Third handoff in this batch
+  faulted for describing evidence it did not record. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29.
 
 - **FM-130's correction traded a false sentence for rot-prone citations.** `COMPONENTS.yaml:379-382` gained eight
   `file:line` references to a registry file that had **zero** before it, which is the exact trap FM-130's own packet
@@ -1409,7 +1507,13 @@ visibility.
   `docker/login-action@v4` and `dorny/test-reporter@v3`. One per push, since only CI can tell you. Routed to
   **`/fm-quickfix`**, repeatedly. Surfaced 2026-08-29.
 
-- **`RawLogView` renders the entire log file into one unbounded `<pre>`.** Legacy's behaviour and not a regression,
+- ~~**`RawLogView` renders the entire log file into one unbounded `<pre>`.**~~ **Settled 2026-08-29 by ADR-0047: the
+  owner ruled it stays unbounded.** Recorded by FM-135 (`5991b313f`) on `F-SYSTEM-LOG` and `API-SYSTEM-LOG-CURRENT`,
+  with `LOG_VIEW_BUDGET_MS` repointed from "stopgap" to the decision that accepts the render it is sized for. One
+  consequence is worth carrying: the ruling was made without the measurement phase the packet asked for, so the record
+  holds **no measured cost** for a large-log instance and any reopening starts by producing one. Kept below rather
+  than deleted, since the original entry is what the decision answers.
+  **Original entry:** `RawLogView` renders the entire log file into one unbounded `<pre>`. Legacy's behaviour and not a regression,
   but it is why `system.spec.ts`'s log visual gate is the suite's most timing-sensitive test: on a shared instance
   late in the run the file is megabytes, and that test needed a 120s budget where every other test uses 30s. A real
   instance with a large log pays the same cost. Routed to a **task packet** if it is worth bounding at all — it is a

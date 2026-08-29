@@ -1,22 +1,12 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import {
-    Box,
-    Button,
-    Divider,
-    IconButton,
-    Stack,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import {Box, Button, Divider, Stack, Typography} from "@mui/material";
 import {useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {CustomMappingValues} from "../../../api/config/customMappingTest";
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
-import {useShowAdvanced} from "../advancedFields";
 import {CustomMappingDialog} from "./CustomMappingDialog";
 import {
     AFFECTED_VALUE_OPTIONS,
@@ -28,11 +18,19 @@ import {
     optionLabel,
 } from "./searchingSettings";
 
-/** `config-fields-service.js:1317`. */
-const HEADLINE = "Custom mappings of queries, search titles and result titles";
+/**
+ * `config-fields-service.js:1317`. FM-131 hands this to the wrapping
+ * `ConfigFieldset` as its `label`, rather than rendering it here itself --
+ * see that component's doc comment for why.
+ */
+export const CUSTOM_MAPPINGS_HEADLINE =
+    "Custom mappings of queries, search titles and result titles";
 
-/** `config-fields-service.js:1314`. */
-const TOOLTIP =
+/**
+ * `config-fields-service.js:1314`. FM-131 hands this to the wrapping
+ * `ConfigFieldset` as its `tooltip`, for the same reason as the headline.
+ */
+export const CUSTOM_MAPPINGS_TOOLTIP =
     "Here you can define mappings to modify either queries or titles for search requests or to dynamically change the titles of found results. The former allows you, for example,  to change requests made by external tools, the latter to clean up results by indexers in a more advanced way.";
 
 /** `config-fields-service.js:1316`, the legend of an entry with no name. */
@@ -64,9 +62,17 @@ type Editing = {
  * survives switching config tabs; a replaced entry keeps any key this UI has no
  * vocabulary for, because `ConfigWeb.setConfig` writes the whole file back
  * (ADR-0003).
+ *
+ * FM-131: the whole section is advanced (legacy's
+ * `templateOptions.advanced` on the group), so it no longer self-gates on
+ * `useShowAdvanced` and no longer renders its own headline. Its caller,
+ * `SearchingConfigTab`, wraps it in a `ConfigFieldset advanced` instead,
+ * which owns both the toggle-off hidden-affordance/reveal behaviour
+ * (`C-CONFIG-FIELDS`) and the headline itself (as that fieldset's `label`
+ * and `tooltip`, `CUSTOM_MAPPINGS_HEADLINE`/`CUSTOM_MAPPINGS_TOOLTIP` above)
+ * -- rendering it here too would double the heading.
  */
 export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
-    const showAdvanced = useShowAdvanced();
     const {setValue} = useFormContext<ConfigValues>();
     const entries =
         (useWatch<ConfigValues>({name: CUSTOM_MAPPINGS_PATH}) as
@@ -74,10 +80,6 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             | null
             | undefined) ?? [];
     const [editing, setEditing] = useState<Editing | null>(null);
-
-    if (!showAdvanced) {
-        return null;
-    }
 
     const write = (next: unknown[]) =>
         setValue(CUSTOM_MAPPINGS_PATH, next as never, {shouldDirty: true});
@@ -104,25 +106,6 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
 
     return (
         <Box data-testid={`config-repeat-${CUSTOM_MAPPINGS_TEST_ID}`}>
-            <Stack
-                alignItems="center"
-                direction="row"
-                spacing={0.5}
-                sx={{pb: 1}}
-            >
-                <Typography component="h2" variant="h6">
-                    {HEADLINE}
-                </Typography>
-                <Tooltip title={TOOLTIP}>
-                    <IconButton
-                        aria-label={`About ${HEADLINE}`}
-                        data-testid={`config-repeat-tooltip-${CUSTOM_MAPPINGS_TEST_ID}`}
-                        size="small"
-                    >
-                        <HelpOutlineIcon fontSize="small" />
-                    </IconButton>
-                </Tooltip>
-            </Stack>
             <Stack divider={<Divider />} spacing={2} sx={{mb: 2}}>
                 {entries.map((entry, index) => (
                     // The index is the key on purpose, as in `RepeatSection`:

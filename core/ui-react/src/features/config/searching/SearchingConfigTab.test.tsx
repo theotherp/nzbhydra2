@@ -15,8 +15,12 @@ import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {ShowAdvancedContext} from "../advancedFields";
+import {CUSTOM_MAPPINGS_HEADLINE} from "./CustomMappingsSection";
 import {LEGACY_LANGUAGE_OPTIONS} from "./languages";
 import {SearchingConfigTab} from "./SearchingConfigTab";
+
+const CUSTOM_MAPPINGS_FIELDSET = `config-fieldset-${CUSTOM_MAPPINGS_HEADLINE.toLowerCase()}`;
+const CUSTOM_MAPPINGS_EXPANDER = `config-advanced-expander-${CUSTOM_MAPPINGS_HEADLINE.toLowerCase()}`;
 
 const MAPPINGS = "searching-customMappings";
 
@@ -178,6 +182,10 @@ describe("F-CONFIG-SEARCHING fieldsets", () => {
             ).toBeVisible();
         }
         expect(screen.getByTestId(`config-repeat-${MAPPINGS}`)).toBeVisible();
+        // FM-131: the section is wrapped in an advanced `ConfigFieldset`, so
+        // with the toggle on it renders that fieldset's own test id too, in
+        // addition to (not instead of) its pre-existing selectors.
+        expect(screen.getByTestId(CUSTOM_MAPPINGS_FIELDSET)).toBeVisible();
     });
 
     it("should render every setting of the tab", () => {
@@ -224,10 +232,46 @@ describe("F-CONFIG-SEARCHING fieldsets", () => {
             ).toBeNull();
         }
         expect(screen.queryByTestId(`config-repeat-${MAPPINGS}`)).toBeNull();
+        // FM-131: the section does not simply vanish -- it offers the same
+        // named, operable affordance any other wholly-advanced fieldset does.
+        expect(screen.getByTestId(CUSTOM_MAPPINGS_EXPANDER)).toHaveTextContent(
+            `${CUSTOM_MAPPINGS_HEADLINE} — advanced, hidden`,
+        );
+        expect(screen.queryByTestId(CUSTOM_MAPPINGS_FIELDSET)).toBeNull();
         // A plain row is still there.
         expect(
             screen.getByTestId("config-setting-searching-generateQueries"),
         ).toBeVisible();
+    });
+
+    it("should reveal the custom-mapping section in place when its advanced expander is clicked", async () => {
+        renderSearching({showAdvanced: false});
+
+        expect(screen.queryByTestId(`config-repeat-${MAPPINGS}`)).toBeNull();
+
+        fireEvent.click(screen.getByTestId(CUSTOM_MAPPINGS_EXPANDER));
+
+        expect(screen.getByTestId(`config-repeat-${MAPPINGS}`)).toBeVisible();
+        expect(screen.getByTestId(CUSTOM_MAPPINGS_FIELDSET)).toBeVisible();
+        expect(
+            screen.getByTestId(`config-repeat-add-${MAPPINGS}`),
+        ).toBeVisible();
+        expect(screen.getByTestId(CUSTOM_MAPPINGS_EXPANDER)).toHaveTextContent(
+            `Hide ${CUSTOM_MAPPINGS_HEADLINE}`,
+        );
+
+        // Escape/collapse semantics match `AdvancedExpander`: clicking again
+        // collapses it back in place. The `Collapse` exit transition removes
+        // the section from the DOM when it finishes rather than in the
+        // click's own tick (`configFields.test.tsx` establishes the same
+        // idiom for a whole-advanced fieldset).
+        fireEvent.click(screen.getByTestId(CUSTOM_MAPPINGS_EXPANDER));
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId(`config-repeat-${MAPPINGS}`),
+            ).toBeNull(),
+        );
     });
 });
 

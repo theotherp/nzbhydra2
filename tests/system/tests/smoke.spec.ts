@@ -81,8 +81,20 @@ test("should still answer the logout flow with the React shell document", async 
 // way. The sequence itself is proven by component tests with the transport
 // mocked.
 test("should open with no startup dialog once the welcome was shown", async ({
+    hydra,
     page,
 }) => {
+    // FM-133: the assertion at the end of this test is that the downloader
+    // status footer does not render, and legacy's gate for it is "at least one
+    // enabled downloader". That used to hold because the `hydra` fixture put
+    // the configuration back after every test; with that teardown gone,
+    // `downloads.spec.ts` and `config-downloading.spec.ts` leave their
+    // `Deterministic SABnzbd` behind and this test would be asserting the
+    // showing case. It needs no downloader, so it says so.
+    const config = await hydra.getConfig();
+    (config.downloading as Record<string, unknown>).downloaders = [];
+    await hydra.saveConfig(config);
+
     const welcomeShown = await page.request.get("internalapi/welcomeshown");
     expect(welcomeShown.ok()).toBe(true);
     test.skip(

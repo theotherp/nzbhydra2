@@ -720,10 +720,17 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
         },
     ]);
     section({
-        // `CustomMappingsSection` renders its own heading rather than a
-        // `ConfigFieldset`, so it has no fieldset label and nothing can gate it
-        // behind an advanced expander.
+        // FM-131: the whole section is wrapped in an advanced `ConfigFieldset`
+        // (`SearchingConfigTab.tsx`) whose `label` is
+        // `CustomMappingsSection.tsx`'s `CUSTOM_MAPPINGS_HEADLINE` -- kept as a
+        // literal here, like every other path/label in this file, rather than
+        // imported, so it must be kept in sync by hand if that headline ever
+        // changes. With the global toggle off the section is hidden behind
+        // that fieldset's own expander, the same as any other wholly-advanced
+        // fieldset, and a search hit reveals it the same way.
+        advanced: true,
         anchorTestId: repeatAnchor("searching.customMappings"),
+        fieldset: "Custom mappings of queries, search titles and result titles",
         help: "Rewrite result titles before they are processed, matching on a regex and building a new title from its groups.",
         label: "Custom mappings",
         path: "searching.customMappings",

@@ -103,7 +103,7 @@ jobs:
         working-directory: tests/system
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox
 
       - name: "Install maven"
         run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser
@@ -383,7 +383,7 @@ jobs:
         working-directory: tests/system
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox
 
       - name: "Build JVM core and test dependencies"
         run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:core -am

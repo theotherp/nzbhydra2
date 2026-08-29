@@ -123,13 +123,26 @@ async function scrollToTopOf(page: Page, target: Locator): Promise<void> {
 }
 
 /**
- * These specs assert against the configuration, so they establish the one they
- * assert against rather than inheriting whatever the previous test left on the
- * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
- * why it is deliberately narrow.
+ * Both halves of this file put a category named "System Test ..." into the
+ * catalog -- one through the UI, one through the API -- and neither can do so
+ * twice: `BaseConfig`'s category map is keyed by name, so a second copy makes
+ * the save answer 500 with `IllegalStateException: Duplicate key System Test
+ * Category`. FM-133 removed the teardown that used to take them out again, so
+ * the precondition each test actually needs -- "no category of mine exists
+ * yet" -- is established here instead. `applyBaseline()` deliberately does not
+ * do this for every test: it would have to carry a copy of the whole default
+ * category list, and this file is the only one that adds a category.
  */
 test.beforeEach(async ({hydra}) => {
-    await hydra.applyBaseline();
+    const config = (await hydra.getConfig()) as Json;
+    const categories = categoriesOf(config);
+    const kept = categories.filter(
+        (category) => !String(category.name).startsWith("System Test "),
+    );
+    if (kept.length !== categories.length) {
+        categoriesConfig(config).categories = kept;
+        await hydra.saveConfig(config);
+    }
 });
 
 test.describe("Config categories tab round trip", () => {

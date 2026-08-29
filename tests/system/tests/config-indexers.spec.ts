@@ -100,16 +100,6 @@ async function save(page: Page): Promise<void> {
     await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
-/**
- * These specs assert against the configuration, so they establish the one they
- * assert against rather than inheriting whatever the previous test left on the
- * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
- * why it is deliberately narrow.
- */
-test.beforeEach(async ({hydra}) => {
-    await hydra.applyBaseline();
-});
-
 test.describe("Config indexers round trip", () => {
     // The capability check issues eight throttled requests to the indexer, so
     // the real-backend path here is minutes-scale slower than a stubbed one.

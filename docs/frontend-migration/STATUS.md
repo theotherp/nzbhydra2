@@ -1039,12 +1039,6 @@ None.
   refine chrome from `RefineSidebar.tsx` into a shared `C-REFINE-SURFACE` shell under `components/refine/`, with the
   results page re-based on it at proven byte parity. FM-137 (history adoption) stays `planned` until FM-136 is done.
 
-- FM-133: System-Test Server-Preference Reset. `ready`, dependency-free — earliest of the second 2026-08-29 batch
-  (FM-133..FM-135, three packets for the three same-day open candidates; all independent, FM-134 and FM-135 stay
-  `planned`). Reproduce what state actually broke 26 of `results.spec.ts` under a full baseline (the candidate's
-  `forUser`-genericstorage mechanism is uncorroborated by `storedChoices.ts:13-33`), enumerate the server-preference
-  surface, reset it per test, then delete the `hydra` fixture's snapshot/restore teardown.
-
 - FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect
   flushed later; under whole-suite scheduling the test's outside `mousedown` could land in that gap. Closed with

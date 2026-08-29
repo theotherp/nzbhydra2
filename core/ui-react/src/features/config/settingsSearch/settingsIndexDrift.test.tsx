@@ -399,6 +399,36 @@ describe("C-CONFIG-SETTINGS-INDEX drift", () => {
         });
 
         /**
+         * The section-level counterpart of the row `advanced` check below.
+         * Direction (b)'s row-only exclusions (`isListEntryField`) and the
+         * `advanced` check right after this one both filter to `kind ===
+         * "row"`, so a *section* wrongly marked (or left unmarked) advanced
+         * escaped every existing direction — which is exactly how
+         * `searching.customMappings` stayed undocumented as one (FM-131).
+         * With the global toggle off, a section behind a wholly-advanced
+         * `ConfigFieldset` renders no anchor at all until its own expander is
+         * used (`C-CONFIG-FIELDS`), so *not* rendering is what an
+         * `advanced: true` section claims for itself.
+         */
+        it(`should mark exactly the advanced list sections of the ${tabCase.label} tab`, () => {
+            renderTab(tabCase, tabCase.values, false);
+
+            const wrong = indexSections(tabCase.tab)
+                .filter((entry) => !entry.conditional)
+                .filter((entry) => {
+                    const rendered =
+                        screen.queryByTestId(entry.anchorTestId) !== null;
+                    return entry.advanced === rendered;
+                })
+                .map(
+                    (entry) =>
+                        `${entry.path} is indexed as ${entry.advanced ? "advanced" : "not advanced"} but the toggle-off tab ${screen.queryByTestId(entry.anchorTestId) !== null ? "shows" : "hides"} it`,
+                );
+
+            expect(wrong).toEqual([]);
+        });
+
+        /**
          * The `advanced` column, checked against the thing it claims to
          * describe rather than against itself. It is what decides whether a
          * hit has to be revealed before it can be scrolled to, so a row
