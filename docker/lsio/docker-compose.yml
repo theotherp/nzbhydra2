@@ -1,7 +1,7 @@
 ---
 services:
     nzbhydra2:
-        image: lscr.io/linuxserver/nzbhydra2:latest
+        image: ghcr.io/linuxserver/nzbhydra2:latest
         container_name: nzbhydra2
         environment:
             - PUID=1000
@@ -25,7 +25,7 @@ services:
             - 5078:5076
         restart: unless-stopped
     jackett:
-        image: lscr.io/linuxserver/jackett:latest
+        image: ghcr.io/linuxserver/jackett:latest
         container_name: jackett
         environment:
             - PUID=1000

@@ -791,7 +791,11 @@ async function saveConfiguration(
         result.newConfig,
         "Configuration save did not return the saved configuration",
     ).toBeTruthy();
-    await expect(page.getByText("Configuration saved.")).toBeVisible();
+    // `.last()`, as the other nine assertions of this toast in the suite do:
+    // toasts stack, so a save that follows a recent one leaves two in the DOM
+    // and an unscoped locator is a strict-mode violation rather than a failure
+    // of the thing being tested.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
     if (expectedName) {
         const persisted = await hydra.getConfig();
         const tools = externalToolsOf(persisted as Json);

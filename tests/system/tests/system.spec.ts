@@ -371,6 +371,14 @@ test.describe("System shell", () => {
     test("should render the log's three views for the visual gate", async ({
         page,
     }) => {
+        // Two viewports, eight screenshots, and a raw view that fetches and
+        // renders the whole current log file -- which, on a shared instance
+        // this late in the suite, is megabytes. Run 33243657990's
+        // JaCoCo-instrumented job needed longer than the 30s default for that
+        // one render, and Playwright closed the session mid-assertion. The
+        // budget has to exceed the raw view's own wait below or the test dies
+        // before the assertion it is waiting on can ever pass.
+        test.setTimeout(120_000);
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
                 await openSystem(page, "log");
@@ -406,9 +414,19 @@ test.describe("System shell", () => {
             await page.getByRole("button", {name: "Close"}).click();
 
             await page.getByRole("tab", {name: "Raw"}).click();
+            // The raw view fetches the whole log file, and on the shared CI
+            // instance this test runs late enough that the file is megabytes:
+            // run 33240679544 caught it still showing "Loading the log file"
+            // when the default 5s expiry ran out. Auto-refresh is not a factor
+            // -- it defaults off and the `page` fixture clears localStorage --
+            // so this is one fetch and one render, just a slow one. The
+            // assertion is that the raw view renders, not that it renders
+            // inside five seconds, so the wait is sized for the file rather
+            // than the assertion weakened: a view that never renders still
+            // fails.
             await expect(
                 page.getByTestId("system-log-view-raw").locator("pre"),
-            ).toBeVisible();
+            ).toBeVisible({timeout: 30_000});
             await page.screenshot({
                 path: visualEvidencePath("F-SYSTEM-LOG", `log-raw-${viewport}`),
             });

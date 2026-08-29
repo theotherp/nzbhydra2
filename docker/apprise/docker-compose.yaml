@@ -1,7 +1,7 @@
 ---
 services:
     apprise-api:
-        image: lscr.io/linuxserver/apprise-api:latest
+        image: ghcr.io/linuxserver/apprise-api:latest
         container_name: apprise-api
         environment:
             - PUID=1000

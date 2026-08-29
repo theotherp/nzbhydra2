@@ -1060,6 +1060,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
 
     test("should render the authored ring on the anchor family, including the sanitized third-party anchor the app does not classify", async ({
         page,
+        hydra,
     }) => {
         // FM-052 measured this bare `<a href>` at 1.29:1, failing only because
         // the global rule's `currentColor` there is the UA default link blue.
@@ -1078,6 +1079,18 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 ]),
             });
         });
+        // The startup sequence only offers news to a session whose safe
+        // configuration has `main.showNews` (startupCheckRunner.ts:130-137), and
+        // that is a `BaseConfig` setting on a shared instance rather than
+        // anything this test controls. Run 33240679544 found it `false` and the
+        // dialog never appeared, so the assertion below failed on a
+        // precondition instead of on the ring it exists to measure. Established
+        // here rather than inherited; the `hydra` fixture restores it in
+        // teardown.
+        const config = await hydra.getConfig();
+        (config.main as Record<string, unknown>).showNews = true;
+        await hydra.saveConfig(config);
+
         await page.setViewportSize(visualViewports.desktop);
         await page.goto("/system/news");
         // FM-079's startup `NewsDialog` renders the same server-authored HTML

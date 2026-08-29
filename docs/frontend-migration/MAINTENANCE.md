@@ -1162,10 +1162,76 @@ and the uploaded artifacts. Raised to 75. A timeout that fires *during* the run 
   role (ongoing frontend work under the same risk-routed process); CONTEXT.md's Rollout section is rewritten past-tense as
   what actually happened, ending on the durable constraint that React is now the only shell with no legacy fallback.
 
+### 2026-08-29 — Let the config specs establish the config they assert on, and stop pulling images from Docker Hub
+
+- **Why not a packet:** two contained repairs to test infrastructure and CI config, each with a deterministic
+  reproduction. No product code, no contract, no `data-testid`, no user-observable change. Reviewed by a fresh
+  `migration-reviewer` regardless, because the first touches teardown for every config spec.
+- **Paths:** `tests/system/tests/fixtures.ts`, the nine `tests/system/tests/config-*.spec.ts`, all eight
+  `docker/**/docker-compose*.y*ml`
+- **Gates:** `tests/system` `npx tsc --noEmit` clean, `prettier --check` clean on all ten changed test files, root
+  `git diff --check` clean. Real backend: the nine config specs on a fresh instance **82 passed**; on an instance
+  contaminated as CI's was, `config-downloading` + `config-main` **4 failed without the baseline, 10/10 with it**;
+  full suite from that contaminated instance **197 passed, 0 failed**. Independent review: PASS, no required and no
+  minor findings.
+- **Commits:** `563f5b293` (baseline), `8cb0d0c22` (ghcr.io)
+
+**All nine `config-*` specs had no `beforeEach` between them.** They asserted against the configuration while
+establishing none of it, so their starting state was whatever the previous test left on the shared instance. Every
+Playwright failure in runs 33237457043 and 33240679544 was one of them inheriting something wrong. `applyBaseline()`
+now sets the three things whose wrong value the suite has actually been caught inheriting: an indexer list that is
+neither empty nor indistinguishable (`BaseConfigValidator` warns for *both* extremes, and either warning replaces the
+"Configuration saved." toast these specs wait for), `main.showNews`, and `auth` at `NONE` with no users.
+
+**The auth reset matters more than it looks.** A leaked non-`NONE` `authType` 403s every later test with no way back
+short of a restart, and the reviewer confirmed the mechanism from the Java rather than from the in-repo comment:
+`HydraGlobalMethodSecurityConfiguration` re-reads `authType` **live on every `@Secured` call**, while
+`SecurityConfig.filterChain` wires in the only filter that can grant `ROLE_ADMIN`/`ROLE_USER` to an anonymous request
+**once, at boot**, and never rebuilds it on `ConfigChangedEvent`. The instance this was written on had been left on
+`BASIC` by exactly that leak — the snapshot teardown had not prevented it either.
+
+**Deliberately narrow, and the narrowness is a finding.** A first attempt applied a fuller baseline to all 197 tests
+automatically and broke **26 of `results.spec.ts`**. The refine sidebar's selections live in *server-side user
+preferences*, which survive the `page` fixture's `localStorage` clear, so changing the indexer list between tests left
+a stale selection filtering every result away — "0 of 3 loaded · 3 filtered". That is a second category of shared
+state that neither the teardown nor a config baseline touches. It is why the snapshot restore is **kept** rather than
+removed: removing it needs that state enumerated first. Logged below.
+
+**Docker Hub was failing the pipeline for reasons unrelated to this repository.** Run 33245767586's
+`runSystemTestsLinux` died before executing a single test on `toomanyrequests` pulling `sonarr`. `lscr.io` is
+linuxserver.io's redirect front-end onto Docker Hub, whose anonymous limits are shared across a runner's egress IP.
+Every `lscr.io/linuxserver/` reference in the repository moved to `ghcr.io/linuxserver/` — not only the two CI pulls,
+so the dev compose files do not keep a second, flakier source for the same images. All eight image:tag pairs were
+checked against the ghcr.io registry API first (all 200, including the pinned `radarr:5.0.2-nightly`) and
+`docker compose pull` was run locally against the rewritten file. Same images and tags, different registry host.
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
-visibility. Discharge a single-session item with `/fm-quickfix`, then move it into the ledger above with its commit SHA. Route a
+visibility.
+
+- **Server-side user preferences leak between tests, and nothing resets them.** The refine sidebar's selections (and
+  the other `forUser` genericstorage preferences) survive the `page` fixture's `localStorage` clear because they live
+  on the server. Applying a config baseline to all 197 tests exposed this by breaking 26 of `results.spec.ts`: a
+  stale indexer selection filtered every result away. **This is the blocker on removing the snapshot teardown**, which
+  is otherwise unnecessary once each spec establishes its own preconditions. Needs the preference surface enumerated
+  (which keys, which specs write them, which are `forUser`) before a reset can be written. Routed to a **task
+  packet** — it spans the fixture, several specs, and a server API. Surfaced 2026-08-29.
+
+- **Something sets `main.showNews` false on the CI instance, and nothing in the repository does.** The default is
+  `true` in `baseConfig.yml:335` and no file, spec, or Java test sets it false, yet run 33240679544's trace shows the
+  bootstrap payload carrying `showNews: false`, which silently disabled the startup news dialog a spec was asserting
+  on. A runtime save flipped it. If a config save can silently reset an advanced boolean, that is a **product bug**,
+  and the baseline added on 2026-08-29 hides it from that test without fixing it. Reproducing it needs the Java
+  system-test phase running against the same instance; an attempt at local environment parity failed (58 errors) and
+  was abandoned rather than pursued. Routed to a **task packet**. Surfaced 2026-08-29.
+
+- **`RawLogView` renders the entire log file into one unbounded `<pre>`.** Legacy's behaviour and not a regression,
+  but it is why `system.spec.ts`'s log visual gate is the suite's most timing-sensitive test: on a shared instance
+  late in the run the file is megabytes, and that test needed a 120s budget where every other test uses 30s. A real
+  instance with a large log pays the same cost. Routed to a **task packet** if it is worth bounding at all — it is a
+  product decision, not a test fix. Surfaced 2026-08-29.
+ Discharge a single-session item with `/fm-quickfix`, then move it into the ledger above with its commit SHA. Route a
 packet item to `/fm-orchestrate`. An item under *Needs a decision first* cannot be routed at all until the named question is
 settled in `DECISIONS.md`.
 

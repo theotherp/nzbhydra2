@@ -99,6 +99,16 @@ async function save(page: Page): Promise<void> {
     await expect(page.getByText("Configuration saved.").last()).toBeVisible();
 }
 
+/**
+ * These specs assert against the configuration, so they establish the one they
+ * assert against rather than inheriting whatever the previous test left on the
+ * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
+ * why it is deliberately narrow.
+ */
+test.beforeEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config downloading tab round trip", () => {
     test("should add a checked downloader, save it, and keep its credentials masked across a reload", async ({
         page,

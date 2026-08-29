@@ -97,6 +97,16 @@ async function fillMappingDialog(page: Page): Promise<void> {
     await page.getByTestId("config-custom-mapping-to").fill(MAPPING.to);
 }
 
+/**
+ * These specs assert against the configuration, so they establish the one they
+ * assert against rather than inheriting whatever the previous test left on the
+ * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
+ * why it is deliberately narrow.
+ */
+test.beforeEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config searching tab round trip", () => {
     test("should edit a plain and an advanced field, add a tested custom mapping, save, and persist them", async ({
         page,

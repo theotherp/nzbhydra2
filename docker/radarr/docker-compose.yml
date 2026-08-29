@@ -1,7 +1,7 @@
 ---
 services:
     radarr:
-        image: lscr.io/linuxserver/radarr:5.0.2-nightly
+        image: ghcr.io/linuxserver/radarr:5.0.2-nightly
         container_name: radarr
         environment:
             - PUID=1000

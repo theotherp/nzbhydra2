@@ -122,6 +122,16 @@ async function scrollToTopOf(page: Page, target: Locator): Promise<void> {
     }
 }
 
+/**
+ * These specs assert against the configuration, so they establish the one they
+ * assert against rather than inheriting whatever the previous test left on the
+ * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
+ * why it is deliberately narrow.
+ */
+test.beforeEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config categories tab round trip", () => {
     test("should add a category with a newznab tuple and a size preset, save, reload, and leave other categories unchanged", async ({
         page,

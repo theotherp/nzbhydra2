@@ -250,6 +250,16 @@ async function boxOf(locator: Locator) {
     return box;
 }
 
+/**
+ * These specs assert against the configuration, so they establish the one they
+ * assert against rather than inheriting whatever the previous test left on the
+ * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
+ * why it is deliberately narrow.
+ */
+test.beforeEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config control treatment (FM-117)", () => {
     test("should grow a chips field to show every wrapped row while single-line inputs keep the 32px box", async ({
         page,

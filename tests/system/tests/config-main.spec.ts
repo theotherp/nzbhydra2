@@ -76,6 +76,16 @@ function loggingSection(config: Json): Json {
     return mainSection(config).logging as Json;
 }
 
+/**
+ * These specs assert against the configuration, so they establish the one they
+ * assert against rather than inheriting whatever the previous test left on the
+ * shared instance. See `applyBaseline` in `fixtures.ts` for what it fixes and
+ * why it is deliberately narrow.
+ */
+test.beforeEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config main tab round trip", () => {
     test("should save an edited plain and advanced field and change nothing else", async ({
         page,

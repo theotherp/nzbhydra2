@@ -20,6 +20,7 @@ type HydraApi = {
     baseURL: string;
     getConfig(): Promise<HydraConfig>;
     saveConfig(config: HydraConfig): Promise<HydraConfig>;
+    applyBaseline(): Promise<void>;
     restoreConfig(config: HydraConfig): Promise<void>;
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
     assertUniqueIndexerCredentials(): Promise<void>;
@@ -323,23 +324,76 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         }
     };
 
+    const mockIndexers = (apiKeys: string[]): HydraConfig[] =>
+        apiKeys.map((apiKey) => ({
+            name: `Mock${apiKey}`,
+            host: testEnvironment.mockserverInternalUrl,
+            apiPath: "/api",
+            apiKey,
+            backend: "NEWZNAB",
+            allCapsChecked: true,
+            supportedSearchTypes: ["SEARCH", "TVSEARCH", "MOVIE", "BOOK"],
+            supportedSearchIds: ["IMDB", "TVMAZE", "TMDB"],
+        }));
+
+    /**
+     * Puts the instance into a known configuration, for a spec that would
+     * otherwise start from whatever the previous test left.
+     *
+     * The suite runs against one shared, long-lived instance. The nine
+     * `config-*` specs establish nothing of their own -- they had no
+     * `beforeEach` at all -- and every Playwright failure in runs 33237457043
+     * and 33240679544 was one of them asserting against inherited state: an
+     * indexer list whose API keys a teardown had stripped, and a `main.showNews`
+     * the Java suite had left false. Restoring state afterwards cannot fix that
+     * and is not the point; establishing it beforehand is.
+     *
+     * Overrides only the fields whose wrong value the suite has actually been
+     * caught inheriting, on top of the config as it stands:
+     *
+     * - `indexers`: three mocks on one host with distinct API keys. Not empty
+     *   and not indistinguishable: `BaseConfigValidator` warns "No indexers
+     *   configured" for the first and "same host and API key" for the second,
+     *   and either warning replaces the "Configuration saved." toast these
+     *   specs wait for.
+     * - `main.showNews`: on, per `baseConfig.yml`'s default.
+     * - `auth`: `NONE` with no users, also that default. The two move together
+     *   because either alone is refused. A leaked non-`NONE` `authType`
+     *   switches on `@Secured` enforcement for `/config/**`, `/system/**` and
+     *   `/stats/**` live, while the anonymous filter that would grant those
+     *   roles is wired in only when `authType` was non-`NONE` at boot, so every
+     *   later test 403s with no way back short of a restart
+     *   (`config-auth.spec.ts:29-50`).
+     *
+     * Deliberately narrow. An earlier attempt applied a fuller baseline to all
+     * 197 tests automatically and broke 26 of `results.spec.ts`: the refine
+     * sidebar's selections live in *server-side* user preferences that survive
+     * the `page` fixture's `localStorage` clear, so changing the indexer list
+     * between tests left a stale selection filtering every result away. Specs
+     * that already establish their own preconditions are left alone.
+     */
+    const applyBaseline = async (): Promise<void> => {
+        const config = await getConfig();
+        config.indexers = mockIndexers(["1", "2", "3"]);
+        (config.main as HydraConfig).showNews = true;
+        const auth = config.auth as HydraConfig;
+        auth.authType = "NONE";
+        auth.users = [];
+        await saveConfig(config);
+        configuredMockCredentials = ["1", "2", "3"].map(
+            (apiKey) => `${testEnvironment.mockserverInternalUrl}/${apiKey}`,
+        );
+    };
+
     return {
         baseURL,
         getConfig,
         saveConfig,
+        applyBaseline,
         restoreConfig,
         async configureMockIndexers(apiKeys = ["1", "2", "3"]): Promise<void> {
             const config = await getConfig();
-            config.indexers = apiKeys.map((apiKey) => ({
-                name: `Mock${apiKey}`,
-                host: testEnvironment.mockserverInternalUrl,
-                apiPath: "/api",
-                apiKey,
-                backend: "NEWZNAB",
-                allCapsChecked: true,
-                supportedSearchTypes: ["SEARCH", "TVSEARCH", "MOVIE", "BOOK"],
-                supportedSearchIds: ["IMDB", "TVMAZE", "TMDB"],
-            }));
+            config.indexers = mockIndexers(apiKeys);
             await saveConfig(config);
             configuredMockCredentials = apiKeys.map(
                 (apiKey) =>
