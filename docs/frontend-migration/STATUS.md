@@ -1034,6 +1034,11 @@ None.
 
 ## Upcoming
 
+- FM-136: Refine Surface Shell Extraction. `ready`, dependency-free — first of the 2026-08-29 ADR-0046 batch
+  (FM-136..FM-137, the history-refine redesign per `history-refine-redesign.md`). Extracts the docked/rail/drawer
+  refine chrome from `RefineSidebar.tsx` into a shared `C-REFINE-SURFACE` shell under `components/refine/`, with the
+  results page re-based on it at proven byte parity. FM-137 (history adoption) stays `planned` until FM-136 is done.
+
 - FM-133: System-Test Server-Preference Reset. `ready`, dependency-free — earliest of the second 2026-08-29 batch
   (FM-133..FM-135, three packets for the three same-day open candidates; all independent, FM-134 and FM-135 stay
   `planned`). Reproduce what state actually broke 26 of `results.spec.ts` under a full baseline (the candidate's

@@ -327,6 +327,17 @@ components:
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
     state: partial
+  - id: C-REFINE-SURFACE
+    responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px drawer switching, header row (label, clear-all, collapse/close toggle), widths, paddings, transitions, and
+      stickiness, taken from RefineSidebar.tsx; it takes sections, clear-all wiring, an optional sticky offset, an optional header summary, and per-consumer test ids as props and owns no filter state -- ResultFilters stays with the
+      results feature and HistoryFilterValues with the history features
+    legacy: []
+    target: core/ui-react/src/components/refine
+    consumers:
+      - F-SEARCH-SORT-FILTER
+    classification: shared_hydra
+    state: planned
+    note: Registered ahead of implementation per README Registries; FM-136 extracts it and re-bases the results sidebar at strict parity, FM-137 adopts it for the three history views (which join consumers then).
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach

@@ -775,3 +775,21 @@ Binding constraints:
 
 - Backend deletion of `POST /loggedout` stays out of FM governance scope (ADR-0001) either way; this entry only
   settles the "should it be removed opportunistically" question raised in `MAINTENANCE.md` as no.
+
+## ADR-0046 — One refine-surface concept: history views adopt the search results' docked sidebar (accepted 2026-08-29)
+
+Question: the search results filter through a docked, collapsible left refine column while the three history views
+filter through a horizontal bar above the table — two interaction concepts for the same job. Keep both, or unify?
+
+Decided (owner, in conversation): unify on the sidebar concept. The chrome (docked column / 48px rail / sub-768px
+drawer, header with label + clear-all + toggle) is extracted into one shared shell component that both
+`RefineSidebar.tsx` and the history views consume; filter state and section content stay domain-owned. Full design:
+`history-refine-redesign.md`.
+
+Binding constraints:
+
+- This supersedes `C-HISTORY-REFINE-BAR`'s "shares no code with `RefineSidebar`" stance for chrome only; its
+  server-side dimension model, `history-refine-*` test ids, and ADR-0016 checkbox semantics are unchanged.
+- The results page consumes the shell at strict parity — no visible change, no test-id change.
+- The history views' docked collapsed state persists under one shared key, `hydra.history.refine`; drawer open
+  state is never persisted (same rationale as the results sidebar).
