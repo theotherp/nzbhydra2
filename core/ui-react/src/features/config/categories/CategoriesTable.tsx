@@ -8,7 +8,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
@@ -18,6 +17,7 @@ import {useFormContext, useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {useDialogs} from "../../../components/dialogs/dialogs";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {settingTestId, type ConfigFieldPath} from "../components";
 import {CategoryDialog} from "./CategoryDialog";
 import {
@@ -306,20 +306,29 @@ export function CategoriesTable() {
 
     return (
         <Box data-testid={CATEGORIES_ANCHOR_TEST_ID}>
-            <TableContainer
-                // Five columns of an admin's own free text do not fit 390px,
-                // so whatever cannot fit scrolls here rather than pushing the
-                // page sideways (ADR-0029). The row's only control -- its Edit
-                // button -- sits in the first cell, so nothing scrolled out of
-                // view is operable; what goes off the right edge is summary
-                // text the dialog repeats as real fields.
-                sx={{overflowX: "auto"}}
-            >
+            {/* Columns of an admin's own free text do not fit 390px, so
+                whatever cannot fit scrolls here rather than pushing the page
+                sideways (ADR-0029), and ADR-0038's affordance marks the edge
+                it is clipping. The row's only control -- its Edit button --
+                sits in the first cell, so nothing scrolled out of view is
+                operable; what goes off the right edge is summary text the
+                dialog repeats as real fields. */}
+            <TableScrollAffordance scrollerTestId="config-categories-scroller">
                 <Table
                     aria-label="Configured categories"
                     data-testid="config-categories-table"
                     ref={tableRef}
                     size="small"
+                    // ADR-0038's width floor. Without one the table was
+                    // squeezed *below* its own content: measured at 390x844 it
+                    // rendered 350px wide where laying it out so no cell has to
+                    // break a word needs 438px (Category 96, Search type 107,
+                    // Newznab categories 163, Size 72), so category names and
+                    // newznab token lists broke mid-word. 440 keeps every
+                    // column at that intrinsic width, and with the size column
+                    // switched off the three remaining ones simply share the
+                    // floor.
+                    sx={{minWidth: 440}}
                     // Focusable only programmatically: it is where focus is put
                     // after an add, edit, or delete, and it is not in the tab
                     // order.
@@ -360,7 +369,7 @@ export function CategoriesTable() {
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableScrollAffordance>
             <Button
                 data-testid="config-categories-add"
                 onClick={add}
@@ -413,10 +422,20 @@ function CategoryTableRow({
                 <Stack alignItems="flex-start" spacing={0.5}>
                     <Typography
                         data-testid={`config-category-name-${index}`}
-                        // A category name is free text and can be long; it
-                        // wraps inside the cell rather than widening the
-                        // column.
-                        sx={{overflowWrap: "anywhere"}}
+                        // A category name is free text and can be long, so it
+                        // still wraps inside the cell. `break-word` rather
+                        // than `anywhere` (FM-126/ADR-0038): the two wrap the
+                        // same way, but only `anywhere` also *shrinks* the
+                        // column's intrinsic minimum to a single character, so
+                        // the column reserved no room for the name at all --
+                        // measured at 390x844, "Audiobook" needed 68px in a
+                        // 65px cell and broke as "Audiobo / ok", at every
+                        // table width from 440 to 560, because the column
+                        // stayed ~98px however wide the table got. With
+                        // `break-word` the column reserves its longest word
+                        // and a genuinely long name still wraps rather than
+                        // overflowing.
+                        sx={{overflowWrap: "break-word"}}
                         variant="body2"
                     >
                         {legend}

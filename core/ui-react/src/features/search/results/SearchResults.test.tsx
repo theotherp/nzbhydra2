@@ -1108,6 +1108,112 @@ describe("SearchResults", () => {
         ).toBeChecked();
     });
 
+    // FM-128: the bulk send's row feedback, pinned at the id forms the real
+    // backend actually uses. `searchResultId` is a 64-bit hash
+    // (`InternalSearchResultProcessor`), the request carries `downloadId`'s
+    // `guid.searchId` form, and the response's `addedIds` are bare guids --
+    // so both the `.split(".")[0]` bridge in `SearchResults.tsx` and the
+    // response schema's tolerance of ids outside JavaScript's safe-integer
+    // range are load-bearing. Two of three selected rows are added; exactly
+    // those two must raise the chip and lose their selection.
+    it("should mark exactly the added rows as downloaded after a bulk send", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [{name: "SAB", enabled: true}],
+                },
+            },
+        };
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify(["movies"]), {
+                    headers: {"Content-Type": "application/json"},
+                }),
+            )
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({reasonRequired: false}), {
+                    headers: {"Content-Type": "application/json"},
+                }),
+            )
+            .mockResolvedValueOnce(
+                // Wire text rather than numeric literals: these ids exceed
+                // `Number.MAX_SAFE_INTEGER`, so a literal would be rounded by
+                // the source itself and hide the `JSON.parse` step whose
+                // rounding `SearchResults.tsx:942` has to match.
+                new Response(
+                    '{"successful":true,"addedIds":[-4934754469460477069,8654321098765432101],"missedIds":[],"invalidIds":[]}',
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "-4934754469460477069",
+                            downloadId: "-4934754469460477069.-64770922",
+                            title: "Added first",
+                            indexer: "Mock",
+                            category: "Movies HD",
+                        },
+                        {
+                            searchResultId: "8654321098765432101",
+                            downloadId: "8654321098765432101.12345678",
+                            title: "Added second",
+                            indexer: "Mock",
+                            category: "Movies HD",
+                        },
+                        {
+                            searchResultId: "-1122334455667788990",
+                            downloadId: "-1122334455667788990.-98765432",
+                            title: "Not added",
+                            indexer: "Mock",
+                            category: "Movies HD",
+                        },
+                    ],
+                }}
+            />,
+        );
+        for (const title of ["Added first", "Added second", "Not added"]) {
+            fireEvent.click(
+                screen.getByRole("checkbox", {name: `Select ${title}`}),
+            );
+        }
+        fireEvent.click(
+            screen.getByRole("button", {name: "Send selected to downloader"}),
+        );
+        await vi.waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
+        );
+        const rowFor = (title: string) =>
+            screen.getByText(title).closest("tr") as HTMLElement;
+        await vi.waitFor(() => {
+            expect(
+                within(rowFor("Added first")).getByText("Downloaded"),
+            ).toBeVisible();
+        });
+        expect(
+            within(rowFor("Added second")).getByText("Downloaded"),
+        ).toBeVisible();
+        expect(
+            within(rowFor("Not added")).queryByText("Downloaded"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("checkbox", {name: "Select Added first"}),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole("checkbox", {name: "Select Added second"}),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole("checkbox", {name: "Select Not added"}),
+        ).toBeChecked();
+    });
+
     it("should confirm duplicate downloader sends before causing the send side effect", async () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",

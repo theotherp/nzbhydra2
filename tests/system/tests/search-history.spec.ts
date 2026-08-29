@@ -215,6 +215,107 @@ test.describe("Search history", () => {
         await expect(historyRow).toHaveCount(1);
     });
 
+    /**
+     * FM-126 (ADR-0038). This table is the one the decision asked to confirm
+     * first, and the before-state is worth recording: it had no scrolling
+     * ancestor at all, so at 390x844 the *document* measured 687px against a
+     * 390px viewport -- a page that scrolled sideways, which ADR-0029 forbids.
+     * It now scrolls inside its own container, and says so at whichever edge
+     * it is clipping.
+     */
+    test("should scroll the table inside its container with a scroll-edge affordance at 390px", async ({
+        page,
+    }) => {
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/searches");
+            await dismissWelcomeDialog(page);
+            await expect(
+                page.getByTestId("search-history-table"),
+            ).toBeVisible();
+        });
+
+        // ADR-0029: the page never scrolls sideways, at any point below.
+        const pageFits = () =>
+            page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                );
+        expect(await pageFits()).toBe(true);
+
+        // The table keeps its measured floor and the container scrolls.
+        const scroller = page.getByTestId("search-history-scroller");
+        const geometry = await scroller.evaluate((element) => ({
+            client: element.clientWidth,
+            scrollable: element.scrollWidth,
+            table: (element.firstElementChild as HTMLElement).clientWidth,
+        }));
+        expect(geometry.table).toBeGreaterThanOrEqual(700);
+        expect(geometry.scrollable).toBeGreaterThan(geometry.client);
+
+        // Clipped on the right only, so only that edge is marked.
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "table-scroll-affordance-mobile",
+            ),
+        });
+
+        // Scrolled to the end: that edge clips nothing any more, so its
+        // affordance clears and the opposite edge takes it over.
+        await scroller.evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toBeVisible();
+        expect(await pageFits()).toBe(true);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "table-scroll-affordance-scrolled-mobile",
+            ),
+        });
+
+        // Desktop: nothing is clipped, so there is no affordance to show.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/stats/searches");
+            await expect(
+                page.getByTestId("search-history-table"),
+            ).toBeVisible();
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "table-scroll-affordance-desktop",
+            ),
+        });
+    });
+
     test("should capture the search history refine bar visual evidence", async ({
         page,
     }) => {

@@ -1250,21 +1250,126 @@ at a time. Logged below.
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
-- **Server-side user preferences leak between tests, and nothing resets them.** The refine sidebar's selections (and
-  the other `forUser` genericstorage preferences) survive the `page` fixture's `localStorage` clear because they live
-  on the server. Applying a config baseline to all 197 tests exposed this by breaking 26 of `results.spec.ts`: a
-  stale indexer selection filtered every result away. **This is the blocker on removing the snapshot teardown**, which
+- **Something outside the config makes tests depend on each other, and it is not yet identified.** *(Headline
+  corrected 2026-08-29: this first read "Server-side user preferences leak between tests". The breakage is real but
+  that mechanism was a guess, and `storedChoices.ts:13-33` contradicts it — refine selections are search-scoped and
+  never persisted.)* Applying a config baseline to all 197 tests broke 26 of `results.spec.ts`, the page showing
+  "0 of 3 loaded · 3 filtered", so something the config baseline does not cover was carrying state between them. **This is the blocker on removing the snapshot teardown**, which
   is otherwise unnecessary once each spec establishes its own preconditions. Needs the preference surface enumerated
   (which keys, which specs write them, which are `forUser`) before a reset can be written. Routed to a **task
-  packet** — it spans the fixture, several specs, and a server API. Surfaced 2026-08-29.
+  packet** — it spans the fixture, several specs, and a server API. Surfaced 2026-08-29. Routed to **FM-133**
+  (2026-08-29), whose design pass found the stated mechanism uncorroborated — `storedChoices.ts:13-33` makes refine
+  selections search-scoped and unpersisted — so the packet reproduces the breakage before designing the reset.
 
-- **Something sets `main.showNews` false on the CI instance, and nothing in the repository does.** The default is
-  `true` in `baseConfig.yml:335` and no file, spec, or Java test sets it false, yet run 33240679544's trace shows the
+- **A Java system test leaves `main.showNews` false on the shared CI instance.** *(Headline corrected 2026-08-29:
+  this first read "and nothing in the repository does". That was wrong, and wrong because the search behind it looked
+  for `showNews: false` in configuration files rather than for code that toggles the field.)* The default is
+  `true` in `baseConfig.yml:335`, yet run 33240679544's trace shows the
   bootstrap payload carrying `showNews: false`, which silently disabled the startup news dialog a spec was asserting
   on. A runtime save flipped it. If a config save can silently reset an advanced boolean, that is a **product bug**,
   and the baseline added on 2026-08-29 hides it from that test without fixing it. Reproducing it needs the Java
   system-test phase running against the same instance; an attempt at local environment parity failed (58 errors) and
-  was abandoned rather than pursued. Routed to a **task packet**. Surfaced 2026-08-29.
+  was abandoned rather than pursued. Routed to a **task packet**. Surfaced 2026-08-29. Routed to **FM-134**
+  (2026-08-29), whose design pass found the premise wrong: `ConfigurationPersistenceSystemTest.java:99-113`
+  (`shouldReloadConfigurationFromDisk`) flips `showNews` via a real save and never restores it — the repository does
+  set it false; the packet proves that live and closes the leak at the test.
+
+- **FM-130's correction traded a false sentence for rot-prone citations.** `COMPONENTS.yaml:379-382` gained eight
+  `file:line` references to a registry file that had **zero** before it, which is the exact trap FM-130's own packet
+  named ("record rules and IDs, cite code by symbol"). All eight are true today and none will stay true; one is
+  already off by a few lines (`IndexersConfigTab.test.tsx:434-442` — the drill it names is at 437-442, 434-436 is
+  setup). Citing the `it(...)` titles would be equally specific and rot-proof. Not failed on, because the citation-form
+  rule lives in the packet's `Agent Routing` block, which declares itself non-contractual, and `FEATURES.yaml` already
+  carries 17 such citations. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-130's re-review.
+
+- **`settings.ts`'s new doc comment repeats, weakly, the generalisation FM-130 removed from the registry.** It ends
+  "shipped tests drill into the root-placed *ones* directly"; only the Select is drilled into, the Switch's root is
+  clicked, and no test reaches the MultiSelect by that id. If someone moves `MultiSelectSetting`'s id to
+  `slotProps.htmlInput` for uniformity the suite stays green, silently breaking the consistency the registry records —
+  while this comment implies a test would have caught it. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by
+  FM-130's re-review.
+
+- **`ConfigSaveBar.tsx:10` and the registry now disagree about legacy's Save button.** The doc comment says legacy was
+  "success while pristine, primary while unsaved"; it was `btn-success`/`btn-info` plus a `pulse2` infinite 1s
+  animation, which `FEATURES.yaml`'s `F-CONFIG-SHELL` gap entry now states correctly. The comment is where the
+  registry's original error came from, and the corrected entry cites this very comment as its site justification, so a
+  parity reader may trust the closer artifact and reintroduce a `primary` hue with no pulse. Pre-existing and outside
+  FM-130's allowlist, so the fixer correctly left it. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-130's
+  re-review.
+
+- **FM-129's handoff overstates its own evidence in five small ways.** All verified by its reviewer as wording gaps,
+  not defects: the lint row says the 15 warnings are in untouched files, but two are in touched ones (pre-existing on
+  `DownloadActions.tsx:472` and `RefineSidebar.tsx:86`); "every dialog is byte-identical" is false for two dialog
+  captures whose diff is the sidebar behind the scrim, not the dialog; the NFO GUID example quotes the mobile pair's
+  values while labelling them desktop; `sticky-header-mobile.png` differs by an undisclosed hover/ripple fill on the
+  Display trigger (a capture-state artifact, identical geometry); and the Verification Basis says "no implementation
+  or test file changed after the commands below" one sentence before correctly disclosing later comment-only edits.
+  Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-129's review.
+
+- **FM-129's selection-menu font-size delta has no visual evidence.** `SelectionMenu.tsx:184` moved 12.5px to 13px,
+  but no spec opens `header-selection-menu`/`toolbar-selection-menu` for a capture, so of the two disclosed 12.5px
+  sites only `Clear all` is judgeable from the strip. Acceptance is met literally — the packet's strip requirement
+  enumerates four states and the selection menu is not one — but the owner may want the capture before signing off the
+  delta. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-129's review.
+
+- **`execute`'s catch-all reports a schema failure in the same words as a network failure.**
+  `DownloadActions.tsx:167-172`. This is *why* FM-128's defect survived into a shipped build: every successful bulk
+  action was rejected by response validation and the user was told "Unable to complete the download action.", which is
+  indistinguishable from the downloader being unreachable. A validation failure is a client bug and a transport failure
+  is an environment problem; reporting them identically hides the first behind the second. Routed to
+  **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-128.
+
+- **No system-level success-path coverage for black-hole, torrent, or ZIP sends.** FM-128 fixed all four bulk actions
+  and could only prove three of them at unit level; `downloads.spec.ts` exercises the downloader path alone. That is
+  exactly the gap that let a schema defect affecting four actions ship. Needs mockserver fixtures the suite does not
+  currently stand up, so it is a **task packet**, not a quickfix. Surfaced 2026-08-29 by FM-128.
+
+- **`.int()` may be wrong elsewhere in `src/`.** FM-128 fixed `addedIds`/`missedIds`, whose backend type is
+  `Collection<Long>`. Any other schema validating a server-side `Long` with Zod's `.int()` has the same latent defect,
+  since `.int()` bounds by the safe-integer range. Deliberately **not** swept there: a blind find-and-replace would
+  weaken validation everywhere the safe range is genuinely correct, so this needs per-endpoint evidence against the
+  Java types. **Task packet.** Surfaced 2026-08-29 by FM-128.
+
+- **FM-128's screenshot bullet overstates what its before-capture shows.** The packet describes it as showing "row
+  checked, no chip, error toast"; the PNG shows the checked chip-less row but no toast, which had auto-dismissed by
+  capture time. The toast evidence is real and correctly cited from the Playwright DOM snapshot elsewhere in the same
+  handoff — only the image caption overstates. Routed to **`/fm-quickfix`**, or absorbable by the next packet touching
+  it. Surfaced 2026-08-29 by FM-128's review.
+
+- **FM-127's handoff never recorded the `tests/system` confirmation its packet asked for.** The packet's Verification
+  section requires confirming *and recording* both that no `tests/system` file was touched and that no spec exercises
+  the toast link. The handoff records `git diff --check` and the allowlist check but never states that confirmation.
+  Both reviewers verified it independently and it is true — `git diff <baseline> -- tests/` is empty and no spec clicks
+  the link — so the record is incomplete rather than wrong. Routed to **`/fm-quickfix`**, or simply absorbed by the
+  next packet that touches the file. Surfaced 2026-08-29 by FM-127's re-review.
+
+- **The shared table scroller is not keyboard-reachable.** `TableScrollAffordance.tsx:110-118` gives the scrolling
+  container no `tabIndex={0}` / `role="region"`, so a keyboard-only user cannot scroll it horizontally except by
+  tabbing to a focusable descendant — and a `NotificationHistoryPage` row with no URL holds nothing focusable, leaving
+  its right-hand columns unreachable at 390px (axe `scrollable-region-focusable`). Predates FM-126: `IndexerTable` and
+  `CategoriesTable` already shipped the pattern this way, so it is not a regression that packet introduced. It is
+  listed here because the shared component is now the single place to fix it for all five surfaces at once. Routed to
+  **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-126's review.
+
+- **Two of FM-126's four width floors have no sufficiency guard.** `config-categories.spec.ts` and
+  `notification-history.spec.ts` measure the widest word per cell against that cell's width; `downloads.spec.ts` and
+  `search-history.spec.ts` only assert `geometry.table >= N`, which re-asserts the constant rather than proving it is
+  enough. The strips corroborate both today, so the acceptance criterion was met — the *regression guard* is what is
+  thin: if a column's content grows, the floor silently stops being sufficient and only a human looking at a strip
+  would notice. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29 by FM-126's review.
+
+- **`overflow-wrap: anywhere` collapses a table column's intrinsic width, at three more sites.**
+  `AuthUsersSection.tsx:346`, `ExternalToolsSection.tsx:335`, `ConfigShell.tsx:463`. FM-126 fixed this for the
+  categories Category column, where it broke "Audiobook" as "Audiobo / ok": `anywhere` is defined to affect
+  min-content sizing, so the column reserves no width for its own longest word and no table `minWidth` can give it
+  any. None of the three is known broken today. Reported by FM-126's implementer rather than silently widened into its
+  scope. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29.
+
+- **Two toasts obscure the table header in the notification-history strips.**
+  `visual-evidence/F-HISTORY-NOTIFICATIONS/table-scroll-affordance-{mobile,scrolled-mobile}.png` were captured with
+  live toasts covering the header row. The body rows and both fades are legible so the strips still carry their claim,
+  but a dismissal before the capture would make the evidence clean. Routed to **`/fm-quickfix`**. Surfaced 2026-08-29
+  by FM-126's review.
 
 - **Bump the deprecated GitHub Actions, one at a time.** The three deprecation annotations on every run are still
   there; `238d88e1e` addressed them all at once and broke workflow startup, and was reverted in `400f0a5f1` — see the
@@ -1282,6 +1387,8 @@ visibility.
   **Partly overtaken 2026-08-29 (`18c5ed445`):** the log tests now rotate the log first, so they no longer depend on
   suite position and `LOG_VIEW_BUDGET_MS` is no longer a race against the suite's growth. The unbounded render itself
   is untouched, so the product-side question stands on its own merits rather than as a test problem.
+  Routed to **FM-135** (2026-08-29), written so that "leave it as is, and record why" is an acceptable outcome — the
+  owner rules on measured fetch/render costs and the ruling lands in `DECISIONS.md` either way.
  Discharge a single-session item with `/fm-quickfix`, then move it into the ledger above with its commit SHA. Route a
 packet item to `/fm-orchestrate`. An item under *Needs a decision first* cannot be routed at all until the named question is
 settled in `DECISIONS.md`.
@@ -1361,7 +1468,14 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   establish half of. The fix is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes
   focus enforcement). Surfaced 2026-08-26 by FM-101's re-review. Half (a) was routed to **FM-115** by the 2026-08-27
   batch and is **done** 2026-08-28; half (b) was settled 2026-08-29 by ADR-0037 (accept the focus limitation, forbid
-  actionable toast content) and is routed to **FM-127**.
+  actionable toast content) and was discharged by **FM-127**, done 2026-08-29 (`4b8f46962`).
+  **Both halves are closed, but half (b) was closed by acceptance, not by repair.** FM-127 removed the actionable
+  content — the toast type admits no React element at all now, so the compiler enforces it — and a toast's *own close
+  button* remains untabbable while a modal is open, which ADR-0037 accepts with Escape as the keyboard route. That
+  residual is recorded on `C-TOAST-SERVICE` in `COMPONENTS.yaml`. FM-127's first review caught the registry asserting
+  the residual away ("no toast can ever carry a control that a `FocusTrap` would leave untabbable", which the Alert's
+  own close button falsifies) — the same "green on a claim they establish half of" failure this entry was written
+  about, reappearing in the entry's own fix.
 - **`ConfigFieldset`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
   space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
   `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
@@ -1394,6 +1508,13 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   test at any level covers post-bulk-send row state — also, legacy's own bulk path never marked rows
   (`search-results-controller.js:986-999` only deselects; `.sabnzbd-success` belonged to the per-row button React does
   not have). The packet establishes the truth empirically first, then pins and records it.
+  **Discharged 2026-08-29 (`44fa0d3f4`), and the stated cause was wrong.** The chip mapping was neither missing nor
+  contradicted — it was *unreachable*. `actions.ts` validated `addedIds`/`missedIds` with Zod's `.int()`, which bounds
+  by the safe-integer range, while the backend sends `Collection<Long>` hashes, so every successful bulk response was
+  rejected and reported to the user as "Unable to complete the download action." The chip was one symptom of a defect
+  affecting all four bulk actions. `SearchResults.tsx` needed no change at all and is byte-identical across the fix.
+  The lesson for this ledger: "feature X does not work" entries should not carry a mechanism unless the mechanism was
+  observed, because this one sent a packet looking one layer too high.
 - **FM-098's recorded disclosure boundary omits a third case: `CustomMappingsSection`.** `COMPONENTS.yaml`'s
   `C-CONFIG-FIELDS` note says only an advanced `HelpBlock` and an advanced row outside any fieldset stay hidden. But
   `searching/CustomMappingsSection.tsx:78-79` self-gates with its own `if (!showAdvanced) return null` and sits

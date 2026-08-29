@@ -19,6 +19,7 @@ import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo} from "react";
 
 import type {SearchResult} from "../../../api/search";
+import {denseControlFontSize, refineSectionGap} from "../../../app/theme";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, quickFilterKey} from "./resultTable";
@@ -38,13 +39,18 @@ function canonicalFilters(value: ResultFilters): string {
 }
 
 // FM-054 (ADR-0014): the mock's `<aside style="flex:0 0 248px;...;
-// padding:18px 16px 40px;">` panel padding and its `rowStyle(active)` /
-// `chip(active)` section gap, kept as local layout constants (not exported
-// design tokens -- ADR-0014 forbids a per-feature `*Styles.ts` token file,
-// not an in-component spacing constant) since neither is a color, font, or
-// radius value.
-const SIDEBAR_PADDING = "18px 16px 40px";
-const SECTION_GAP = "22px";
+// padding:18px 16px 40px;">` panel padding, kept as a local layout constant
+// (not an exported design token -- ADR-0014 forbids a per-feature
+// `*Styles.ts` token file, not an in-component spacing constant) since it is
+// neither a color, a font, nor a radius value.
+//
+// FM-129: it is stated in theme spacing units now (18/16/40/8 are all exact
+// steps of the sx spacing scale, so nothing moves). The section rhythm that
+// used to be declared beside it is `theme.ts`'s exported `refineSectionGap`
+// instead of a second declaration of the same 22px -- the value
+// `C-HISTORY-REFINE-BAR` already reproduces from there.
+const SIDEBAR_PADDING = {pb: 5, pt: 2.25, px: 2} as const;
+const COLLAPSED_SIDEBAR_PADDING = {pb: 2.25, pt: 2.25, px: 1} as const;
 
 // Exported so `SearchResults.tsx` can compute how much horizontal room the
 // sidebar currently claims (e.g. to size the results table's minimum width
@@ -204,14 +210,14 @@ export function RefineSidebar({
         }));
     };
     const sections = (
-        <Stack sx={{gap: SECTION_GAP}}>
+        <Stack sx={{gap: refineSectionGap}}>
             {quickFilters.length > 0 && (
                 <RefineSection label="Quality">
                     <Stack
                         data-testid="refine-quality-filters"
                         direction="row"
                         flexWrap="wrap"
-                        sx={{gap: "6px"}}
+                        sx={{gap: 0.75}}
                     >
                         {quickFilters.map((filter) => (
                             <RefineChip
@@ -249,7 +255,7 @@ export function RefineSidebar({
                             "data-testid": "refine-filter-title",
                         },
                     }}
-                    sx={{"& input": {fontSize: "13px"}}}
+                    sx={{"& input": {fontSize: denseControlFontSize}}}
                     value={filters.title}
                 />
             </RefineSection>
@@ -321,7 +327,7 @@ export function RefineSidebar({
                         data-testid="refine-type-chips"
                         direction="row"
                         flexWrap="wrap"
-                        sx={{gap: "6px"}}
+                        sx={{gap: 0.75}}
                     >
                         {downloadTypeOptions.map((type) => (
                             <RefineChip
@@ -344,10 +350,10 @@ export function RefineSidebar({
             size="small"
             sx={{
                 color: "primary.main",
-                fontSize: "12.5px",
+                fontSize: denseControlFontSize,
                 minWidth: 0,
-                px: "4px",
-                py: "2px",
+                px: 0.5,
+                py: 0.25,
             }}
         >
             Clear all
@@ -387,7 +393,7 @@ export function RefineSidebar({
                             sx: {
                                 backgroundImage: "none",
                                 maxWidth: "100%",
-                                p: SIDEBAR_PADDING,
+                                ...SIDEBAR_PADDING,
                                 width: `min(${EXPANDED_WIDTH + 32}px, 88vw)`,
                             },
                         },
@@ -409,7 +415,7 @@ export function RefineSidebar({
                                             onDrawerOpenChange(false)
                                         }
                                         size="small"
-                                        sx={{minWidth: 0, px: "6px"}}
+                                        sx={{minWidth: 0, px: 0.75}}
                                     >
                                         <CloseIcon fontSize="small" />
                                     </Button>
@@ -452,7 +458,7 @@ export function RefineSidebar({
                 // never produces a horizontal scrollbar mid-animation.
                 overflowX: "hidden",
                 overflowY: "auto",
-                p: collapsed ? "18px 8px 18px" : SIDEBAR_PADDING,
+                ...(collapsed ? COLLAPSED_SIDEBAR_PADDING : SIDEBAR_PADDING),
                 position: "sticky",
                 top: `${toolbarHeight}px`,
                 transition:
@@ -477,7 +483,7 @@ export function RefineSidebar({
                             sx={{
                                 color: "surfaces.mutedText",
                                 minWidth: 0,
-                                px: "6px",
+                                px: 0.75,
                             }}
                         >
                             {collapsed ? (
@@ -509,23 +515,14 @@ function RefineHeader({
             alignItems="center"
             direction="row"
             justifyContent="space-between"
-            sx={{mb: "16px"}}
+            sx={{mb: 2}}
         >
             {label !== undefined && (
-                <Typography
-                    component="span"
-                    sx={{
-                        color: "text.secondary",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        letterSpacing: "0.7px",
-                        textTransform: "uppercase",
-                    }}
-                >
+                <Typography component="span" variant="refineSurfaceLabel">
                     {label}
                 </Typography>
             )}
-            <Stack alignItems="center" direction="row" sx={{gap: "2px"}}>
+            <Stack alignItems="center" direction="row" sx={{gap: 0.25}}>
                 {actions}
             </Stack>
         </Stack>
@@ -572,14 +569,8 @@ function RefineSection({
         <Box>
             <Typography
                 component="div"
-                sx={{
-                    color: "surfaces.mutedText",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.6px",
-                    mb: "9px",
-                    textTransform: "uppercase",
-                }}
+                sx={{mb: 1}}
+                variant="refineSectionLabel"
             >
                 {label}
             </Typography>
@@ -616,19 +607,21 @@ function RefineCollapsibleList({
                 data-testid={toggleTestId}
                 onClick={onToggleOpen}
                 size="small"
-                sx={{
-                    color: "surfaces.mutedText",
-                    fontSize: "11px",
-                    fontWeight: 600,
+                // The section caption's own typography role, spread from
+                // the theme rather than restated: this caption is a `Button`
+                // (the section is collapsible), so it cannot take
+                // `Typography`'s `variant` prop the way `RefineSection`'s
+                // static caption above does, and consuming the variant here
+                // is what keeps the two captions identical.
+                sx={(theme) => ({
+                    ...theme.typography.refineSectionLabel,
                     justifyContent: "space-between",
-                    letterSpacing: "0.6px",
-                    mb: "9px",
+                    mb: 1,
                     minWidth: 0,
                     px: 0,
                     py: 0,
-                    textTransform: "uppercase",
                     width: "100%",
-                }}
+                })}
             >
                 {label}
                 {open ? (

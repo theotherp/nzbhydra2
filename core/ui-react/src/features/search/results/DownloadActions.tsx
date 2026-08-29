@@ -4,6 +4,7 @@ import {useEffect, useMemo, useState} from "react";
 
 import type {SearchResult} from "../../../api/search";
 import {ApiTransport} from "../../../api/transport";
+import {denseControlFontSize} from "../../../app/theme";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
@@ -35,10 +36,11 @@ import type {Downloader} from "../../../domain/downloads/actions";
 // rendered 64px -- a stadium -- rather than the intended 8px. `MuiButton`'s
 // own theme default already paints the 8px this wanted.
 const primaryActionSx = {
-    fontSize: "13px",
+    fontSize: denseControlFontSize,
     fontWeight: 600,
     // Horizontal only -- the height is the theme's shared `controlHeight`.
-    padding: "0 14px",
+    px: 1.75,
+    py: 0,
     "&.Mui-disabled": {
         backgroundColor: "surfaces.control",
         color: "surfaces.mutedText",
@@ -302,7 +304,7 @@ export function DownloadActions({
                 <Select
                     aria-label="Downloader"
                     size="small"
-                    sx={{fontSize: "13px"}}
+                    sx={{fontSize: denseControlFontSize}}
                     value={downloader?.name ?? ""}
                     onChange={(event) =>
                         setDownloader(
@@ -324,7 +326,7 @@ export function DownloadActions({
                     aria-label="Downloader category"
                     displayEmpty
                     size="small"
-                    sx={{fontSize: "13px"}}
+                    sx={{fontSize: denseControlFontSize}}
                     value={category ?? ""}
                     onChange={(event) =>
                         setCategory(event.target.value || null)

@@ -105,7 +105,7 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-TOAST-SERVICE
-    responsibility: Consistent transient notifications and severity mapping; concurrent toasts stack in arrival order, each with its own lifetime, optional persistence, and optional rich content, over an overlay that stays transparent to pointer input. The toast layer is announced independently of any open modal - it renders under document.body and stays out of every subtree MUI's ModalManager marks aria-hidden, in both orderings (toast raised over an open dialog, and toast still on screen when a dialog opens). Known gap - a toast's own controls, and any actionable content inside it, remain untabbable while a modal is open, because the modal's FocusTrap owns focus regardless of DOM position; fixing that means relaxing FocusTrap app-wide, rendering toasts inside the open modal, or forbidding actionable toast content, each of which changes modal behaviour or a shared type across modules, so it is carried as an open decision in MAINTENANCE.md rather than fixed here
+    responsibility: Consistent transient notifications and severity mapping; concurrent toasts stack in arrival order, each with its own lifetime and optional persistence, over an overlay that stays transparent to pointer input. The toast layer is announced independently of any open modal - it renders under document.body and stays out of every subtree MUI's ModalManager marks aria-hidden, in both orderings (toast raised over an open dialog, and toast still on screen when a dialog opens). Per ADR-0037, a toast accepts no React element anywhere - content is always plain text (newlines become line breaks, never HTML), so no toast can carry actionable content that a modal's FocusTrap would leave untabbable; a toast's own close button is unaffected by this and stays untabbable while a modal is open, accepted by ADR-0037 - a keyboard user presses Escape to reach the toast
     legacy:
       - core/ui-src/js/nzbhydra.js
     target: core/ui-react/src/components/toasts
@@ -121,7 +121,7 @@ components:
       - F-SYSTEM-BACKUP
       - F-SYSTEM-BUGREPORT
     classification: shared_hydra
-    state: partial
+    state: done
   - id: C-DATE-TIME
     responsibility: Server-timezone-aware date parsing, formatting, and relative-time display
     legacy:
@@ -250,6 +250,20 @@ components:
       - F-SYSTEM-UPDATES
     classification: shared_hydra
     state: partial
+  - id: C-TABLE-SCROLL-AFFORDANCE
+    responsibility: ADR-0038's single scroll-edge affordance for horizontally scrollable tables -- one `TableContainer` wrapper that reads its own scroll metrics (`scrollLeft`/`scrollWidth`/`clientWidth`, re-read on `scroll` and on a
+      guarded `ResizeObserver` over both the scroller and its content) and paints a fade at each edge that currently clips content, clearing that edge's fade once it is scrolled to its limit. It owns the affordance only; each consuming table
+      still declares its own measured `minWidth` floor, because the width at which a table's columns stop being squeezed is a property of that table's columns, not of the scroller
+    legacy: []
+    target: core/ui-react/src/components/table/TableScrollAffordance.tsx
+    consumers:
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-NOTIFICATIONS
+      - F-CONFIG-INDEXERS
+      - F-CONFIG-CATEGORIES
+    classification: shared_hydra
+    state: done
   - id: C-EXTERNAL-LINKS
     responsibility: Safe-configuration-aware external-link dereferer transformation for URLs and embedded help text
     legacy:
@@ -356,7 +370,16 @@ components:
       which `notificationRepeatSection.html` renders as a dropdown), all bound through `C-CONFIG-FORM`. Every control kind emits its `data-testid` from the setting's config path with the dots replaced by
       dashes (`main.logging.logGc` -> `config-input-main-logging-logGc`; a repeat section's entries add `config-repeat-<path>`, `config-repeat-entry-<path>-<index>`, `config-repeat-add-<path>`, `config-repeat-remove-<path>-<index>`, and
       `config-repeat-add-option-<path>-<choice>` for a menu choice), so a consuming tab predicts its selectors without a lookup table; `F-CONFIG-MAIN`'s `selectors` in `FEATURES.yaml` names the seven scalar-control prefixes in full,
-      `F-CONFIG-AUTH`'s names the repeat-section ones, `F-CONFIG-CATEGORIES`'s names the help-block one, and `F-CONFIG-NOTIFICATIONS`'s names the add-choice one. The number control also carries legacy's `max` and a decimal `step`
+      `F-CONFIG-AUTH`'s names the repeat-section ones, `F-CONFIG-CATEGORIES`'s names the help-block one, and `F-CONFIG-NOTIFICATIONS`'s names the add-choice one. A fieldset's own label, not its config path, drives four more of these ids,
+      sharing one suffix -- `config-fieldset-<label>` itself, `config-advanced-expander-<label>`, and `config-fieldset-tooltip-<label>` (and, under its own distinct prefix so a role/text locator cannot match both a legend and its anchor,
+      `config-nav-anchor-<label>`). All four lowercase the label verbatim and keep every space and punctuation mark rather than slugifying it (so `config-fieldset-openid connect` and `config-fieldset-media ids / query generation / query
+      processing` are the real, shipped ids); this is deliberate, not a rename candidate, entrenched in both component and system-test literals across `F-CONFIG-AUTH` and `F-CONFIG-SEARCHING`. `settingInputTestId`'s placement is not
+      uniform either -- the text-like control kinds (text, multiline text, number, API key, secret, file browser, chips) put it on the native input via
+      `slotProps.htmlInput`, while the select, multiselect, and switch kinds put it on the MUI root element instead -- also deliberate, though each is exploited differently. Shipped tests drill into the select's root directly, with
+      `within(...).getByRole("combobox")` and asserting `toHaveTextContent`/a bounding box on the root itself (`IndexersConfigTab.test.tsx:419-423,434-442`, `config-indexers.spec.ts:501`). The switch's root id is instead exploited by
+      `fireEvent.click`ing it directly (`IndexersConfigTab.test.tsx:352`, `SearchingConfigTab.test.tsx:268-270`, `DownloadingConfigTab.test.tsx:655-659`, `CategoriesConfigTab.test.tsx:302-306`); `config-indexers.spec.ts:502-504` deliberately
+      measures the row's own id instead, since the switch's root is not a meaningful bounding box. The multiselect's root placement is consistency with the select rather than a separately exploited contract -- no shipped test reaches it by
+      that id at all, going instead through `getByRole("combobox", {name})` (`configFields.test.tsx:192-197`). The number control also carries legacy's `max` and a decimal `step`
       (`formly-config.js` `percentInput`), each with a message legacy never declared -- added by FM-063 for `loadLimitInternal` and `duplicateSizeThresholdInPercent`. The repeat/list section stays the in-place editor, so a list whose entries
       are edited through a modal transaction is not this component (see `F-CONFIG-SEARCHING`'s custom mappings and `F-CONFIG-DOWNLOADING`'s downloader list, each of which owns its own section). The control kinds themselves are reusable
       inside such a transaction -- they bind through whichever React Hook Form is nearest in context, so FM-064's edit dialog renders them over its own throwaway draft form without any of them reaching `C-CONFIG-FORM`. FM-066 added three

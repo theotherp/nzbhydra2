@@ -29,6 +29,7 @@ import {
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {ApiTransport} from "../../../api/transport";
+import {denseControlFontSize} from "../../../app/theme";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
@@ -81,7 +82,7 @@ import {
 // `scrollWidth` fits its `clientWidth` at the evidenced viewports is), and
 // the re-proportioned `<colgroup>` plus the label typography below already
 // satisfy that without also re-tuning row height.
-const HEADER_CELL_PADDING_Y = "6px";
+const HEADER_CELL_PADDING_Y = 0.75;
 
 // FM-042 (ADR-0011): the mock's own header-row label typography
 // (`uimock/NZBHydra Search.dc.html:258`), which ADR-0009 already makes
@@ -102,8 +103,19 @@ const HEADER_LABEL_COLOR = "text.secondary";
 // treatments. Kept as local constants in this file (not a per-feature
 // `*Styles.ts` token module, which ADR-0014 forbids) since neither is a
 // color, font, or radius value.
-const ROW_PADDING_Y = "6px";
-const COMPACT_ROW_PADDING_Y = "4px";
+const ROW_PADDING_Y = 0.75;
+const COMPACT_ROW_PADDING_Y = 0.5;
+
+// FM-129: the compact table's own type ladder, one step under the default
+// row treatment at each of the three places compact mode tightens. These stay
+// local named constants rather than shared tokens: each is a value *relative*
+// to the row density this one table switches between, meaningless outside it,
+// and no other surface in the application has a compact mode to share them
+// with. The title cell is the exception -- it renders the shared
+// `denseControlFontSize` role, so it reads that instead.
+const TABLE_CELL_FONT_SIZE = "12px";
+const COMPACT_ACTION_FONT_SIZE = "11.5px";
+const COMPACT_CHIP_FONT_SIZE = "10.5px";
 
 // FM-042: the mock's own sticky toolbar/header stacking relationship
 // (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
@@ -1092,25 +1104,29 @@ export function SearchResults({
                                     ...(compactRows
                                         ? {
                                               "& tbody .MuiCheckbox-root": {
-                                                  padding: "2px",
+                                                  padding: 0.25,
                                               },
                                               "& tbody .MuiButton-root": {
-                                                  fontSize: "11.5px",
+                                                  fontSize:
+                                                      COMPACT_ACTION_FONT_SIZE,
                                                   minHeight: 0,
                                                   paddingBottom: 0,
                                                   paddingTop: 0,
                                               },
                                               "& tbody .MuiChip-root": {
-                                                  fontSize: "10.5px",
+                                                  fontSize:
+                                                      COMPACT_CHIP_FONT_SIZE,
                                                   height: "18px",
                                               },
                                               '& tbody td[data-label="Actions"] .MuiStack-root':
-                                                  {gap: "2px"},
+                                                  {gap: 0.25},
                                           }
                                         : {}),
-                                    "& td, & th": {fontSize: "12px"},
+                                    "& td, & th": {
+                                        fontSize: TABLE_CELL_FONT_SIZE,
+                                    },
                                     '& [data-label="Title"]': {
-                                        fontSize: "13px",
+                                        fontSize: denseControlFontSize,
                                     },
                                     // FM-042 (ADR-0011, Option E): the
                                     // table never scrolls horizontally
@@ -1406,8 +1422,8 @@ export function SearchResults({
                                                                             // (`uimock/NZBHydra
                                                                             // Search.dc.html:270-277`).
                                                                             px: isTitle
-                                                                                ? "6px"
-                                                                                : "4px",
+                                                                                ? 0.75
+                                                                                : 0.5,
                                                                             textOverflow:
                                                                                 "ellipsis",
                                                                             textTransform:

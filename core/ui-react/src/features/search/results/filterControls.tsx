@@ -1,7 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import {Box, Button, IconButton, Stack, TextField} from "@mui/material";
 
-import {monoFontFamily} from "../../../app/theme";
+import {denseControlFontSize, monoFontFamily} from "../../../app/theme";
 import type {NumericRange} from "./resultTable";
 
 // Presentation-only filter controls for the `refine-sidebar`, which is the
@@ -14,6 +14,14 @@ import type {NumericRange} from "./resultTable";
 // repository-wide search for `MultiFilter` and for a `stacked`-less
 // `NumericFilter` call site confirmed no remaining caller. The sidebar's
 // Category/Indexer sections now use `ToggleRowFilter` instead.
+
+// FM-129: the loaded-result count beside a toggle row's label, one step under
+// the row's own `denseControlFontSize` text so the count reads as an
+// annotation of the label rather than as a second column of equal weight.
+// It stays a local named constant rather than joining a shared token: this is
+// the only count-beside-a-label site in the application, and the size only
+// has to hold its relationship to the row label next to it.
+const ROW_COUNT_FONT_SIZE = "11.5px";
 
 /**
  * The mock's flat, full-width Category/Indexer toggle rows: no visible
@@ -60,7 +68,7 @@ export function ToggleRowFilter({
         first.localeCompare(second),
     );
     return (
-        <Stack data-testid={testId} sx={{gap: "1px"}}>
+        <Stack data-testid={testId} sx={{gap: 0.25}}>
             {uniqueEntries.map((entry) => {
                 const active = selected.includes(entry);
                 return (
@@ -101,14 +109,14 @@ export function ToggleRowFilter({
                                 : "transparent",
                             borderRadius: 1,
                             color: active ? "text.primary" : "text.secondary",
-                            fontSize: "13px",
+                            fontSize: denseControlFontSize,
                             fontWeight: 400,
-                            gap: "8px",
+                            gap: 1,
                             justifyContent: "space-between",
                             lineHeight: 1.35,
                             minWidth: 0,
-                            px: "9px",
-                            py: "7px",
+                            px: 1,
+                            py: 0.75,
                             textAlign: "left",
                             width: "100%",
                             "&:hover": {
@@ -138,7 +146,7 @@ export function ToggleRowFilter({
                                 color: "surfaces.mutedText",
                                 flexShrink: 0,
                                 fontFamily: monoFontFamily,
-                                fontSize: "11.5px",
+                                fontSize: ROW_COUNT_FONT_SIZE,
                             }}
                         >
                             {counts.get(entry)}
@@ -161,7 +169,7 @@ const numericFieldSx = {
     minWidth: 0,
     "& input": {
         fontFamily: monoFontFamily,
-        fontSize: "13px",
+        fontSize: denseControlFontSize,
     },
 } as const;
 
@@ -188,7 +196,7 @@ export function NumericFilter({
         <Stack
             data-testid={`filter-toggle-${testIdPrefix}`}
             direction="row"
-            sx={{gap: "6px"}}
+            sx={{gap: 0.75}}
         >
             <TextField
                 onChange={(event) => onChange(name, "min", event.target.value)}

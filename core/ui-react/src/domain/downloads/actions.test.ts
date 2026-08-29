@@ -138,4 +138,112 @@ describe("download actions", () => {
             saveOrSendTorrents(transport, [result]),
         ).resolves.toMatchObject({successful: false});
     });
+
+    // FM-128: the ids in `addedIds`/`missedIds` are the backend's 64-bit
+    // `Long` search-result hashes, well outside JavaScript's safe-integer
+    // range. `-4934754469460477069` is one the live system test's own indexer
+    // produces. Every action below shares `actionResponseSchema`, so a
+    // safe-range bound on it failed all four on success at once -- each needs
+    // its own proof, not just the one the search results' chip depends on.
+    describe("64-bit result ids", () => {
+        // Deliberately kept as wire text and parsed by `Response.json()`
+        // rather than written as numeric literals: a literal would be rounded
+        // by the TypeScript source itself (and `no-loss-of-precision` rightly
+        // refuses one), which would hide the very step under test. `Number()`
+        // here rounds exactly as `JSON.parse` does below -- the same symmetry
+        // `SearchResults.tsx:942` relies on to match an id back to its row.
+        const liveIdText = "-4934754469460477069";
+        const missedIdText = "8654321098765432101";
+        const liveId = Number(liveIdText);
+        const missedId = Number(missedIdText);
+
+        function transportReturning(body: string): ApiTransport {
+            return new ApiTransport(
+                "/",
+                vi.fn().mockResolvedValue(
+                    new Response(body, {
+                        headers: {"Content-Type": "application/json"},
+                    }),
+                ),
+            );
+        }
+
+        const addedBody = `{"successful":true,"addedIds":[${liveIdText}],"missedIds":[],"invalidIds":[]}`;
+
+        it("should accept a 64-bit added ID when sending to the downloader", async () => {
+            const transport = transportReturning(addedBody);
+            const request = addFilesRequest(
+                {name: "SAB"},
+                [result],
+                null,
+                null,
+            );
+            await expect(
+                sendToDownloader(transport, request),
+            ).resolves.toMatchObject({successful: true, addedIds: [liveId]});
+        });
+
+        it("should accept a 64-bit added ID when saving NZBs to the black hole", async () => {
+            const transport = transportReturning(addedBody);
+            await expect(saveNzbs(transport, [result])).resolves.toMatchObject({
+                successful: true,
+                addedIds: [liveId],
+            });
+        });
+
+        it("should accept a 64-bit added ID when saving or sending torrents", async () => {
+            const transport = transportReturning(addedBody);
+            await expect(
+                saveOrSendTorrents(transport, [result]),
+            ).resolves.toMatchObject({successful: true, addedIds: [liveId]});
+        });
+
+        it("should accept a 64-bit added ID when preparing a ZIP", async () => {
+            const transport = transportReturning(
+                `{"successful":true,"zipFilepath":"/tmp/results.zip","addedIds":[${liveIdText}],"missedIds":[],"invalidIds":[]}`,
+            );
+            await expect(
+                prepareZip(transport, [result]),
+            ).resolves.toMatchObject({
+                successful: true,
+                zipFilepath: "/tmp/results.zip",
+            });
+        });
+
+        // `missedIds` carries the same server-side `Collection<Long>`, so
+        // relaxing only `addedIds` would still fail a partially successful
+        // send -- the case a user is most likely to hit.
+        it("should accept a 64-bit missed ID alongside an added one", async () => {
+            const transport = transportReturning(
+                `{"successful":true,"addedIds":[${liveIdText}],"missedIds":[${missedIdText}],"invalidIds":[]}`,
+            );
+            const request = addFilesRequest(
+                {name: "SAB"},
+                [result],
+                null,
+                null,
+            );
+            await expect(
+                sendToDownloader(transport, request),
+            ).resolves.toMatchObject({missedIds: [missedId]});
+        });
+
+        // The bound was dropped for range only. Integrality is still the
+        // contract: a fractional id means the response is not what this
+        // client models, and must still be refused rather than waved through.
+        it("should still reject a non-integer result ID", async () => {
+            const transport = transportReturning(
+                '{"successful":true,"addedIds":[1.5],"missedIds":[],"invalidIds":[]}',
+            );
+            const request = addFilesRequest(
+                {name: "SAB"},
+                [result],
+                null,
+                null,
+            );
+            await expect(
+                sendToDownloader(transport, request),
+            ).rejects.toBeInstanceOf(MalformedDownloadResponseError);
+        });
+    });
 });

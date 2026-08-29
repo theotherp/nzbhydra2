@@ -223,6 +223,29 @@ export const controlHeight = 32;
 const controlFontSize = "14px";
 
 /**
+ * One step under `controlFontSize`: the text size the search-results surfaces
+ * use for the controls packed *inside* the results area rather than around it
+ * -- the refine sidebar's filter rows and numeric fields, the display-options
+ * and selection menus' rows, the bulk-action bar's buttons and downloader
+ * selects, and the results table's own title cells.
+ *
+ * FM-129 (ADR-0014): before this, the same `fontSize: "13px"` was written out
+ * at eight sites across five files, with a `12.5px` near-duplicate at two
+ * more; it is one type role, so it is stated once. Exported as a constant
+ * rather than added as a typography variant or a `styleOverrides` entry
+ * deliberately: every consumer is an `sx` prop on a component family
+ * (`MuiButton`, `MuiSelect`, `MuiFormControlLabel`, `MuiInputBase`, `td`)
+ * whose theme-level default is shared with the rest of the application, so a
+ * variant or override here would change the density of surfaces this task
+ * never looked at. A constant can only reach the files that import it.
+ *
+ * A CSS string, not a number: these are `sx` `fontSize` values, where a bare
+ * `13` would resolve against the theme's own typography scale rather than to
+ * pixels.
+ */
+export const denseControlFontSize = "13px";
+
+/**
  * The mock's `toggleAll` select-all square's own corner radius
  * (`border-radius:5px`), copied from the mock's select-all control. FM-054:
  * `SearchResults.tsx` renders this one control's 17x17 square through two

@@ -329,14 +329,29 @@ features:
       - tests/system/tests/downloads.spec.ts
       - tests/system/tests/results.spec.ts
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/domain/downloads/actions.test.ts
     selectors:
+      # 2026-08-29 (FM-128): `send-to-downloader` does ship, but it is not
+      # legacy's per-row `addable-nzb` control of the same name -- it is the
+      # single bulk-bar button in `DownloadActions.tsx:358`, which acts on the
+      # current selection. `download-torrent` was rendered all along
+      # (`DownloadActions.tsx:450`) and simply went unlisted.
       - send-to-downloader
       - download-nzb
+      - download-torrent
       - results-bulk-actions
     parity: partial
+    gaps:
+      - deliberate - no per-row send-to-downloader control; legacy's `addable-nzb.js` put one on every row, React sends only from the bulk bar against the current selection. Retiring or reproducing it is an open question no packet has taken (FM-128 was explicitly barred from deciding it).
     # 2026-08-23: `download-history route migration` removed -- that route is
     # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
     # claimed missing capability that exists.
+    # 2026-08-29 (FM-128): `parity: partial` is substantiated rather than
+    # promoted. Until FM-128 the bulk actions were not merely partial but
+    # broken on success -- a safe-integer bound in the shared response schema
+    # rejected every live response (see the four API-DOWNLOAD-* notes). That
+    # is fixed and now covered at both levels; the per-row gap above is what
+    # keeps this record short of full parity.
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:
@@ -483,7 +498,10 @@ features:
       - config-nav-anchor-hosting
       - config-nav-anchor-logging
     parity: done
-    gaps: []
+    gaps:
+      - deliberate - FM-097 dropped legacy's pristine/dirty colour switch on the Save button (success while clean, `btn-info` once dirty -- `config.html`'s `ng-class`) and, with it, the `pulse2` infinite 1s pulse animation legacy applied
+        to the button whenever dirty (`icons.less`'s `pulse2`/`@keyframes pulse2`); `ConfigSaveBar`'s worded dirty-count summary and its dirty-only Discard button carry that signal in words instead of a hue or motion, per that component's
+        own doc comment and `C-CONFIG-FORM`'s dirty-state derivation, so the state is still communicated -- never dropped outright
   - id: F-CONFIG-MAIN
     name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
     routes:
@@ -591,7 +609,12 @@ features:
       - config-fieldset-restrictions
       - config-fieldset-users
     parity: done
-    gaps: []
+    gaps:
+      - deliberate - a config seeded with duplicate `auth.users[].username` values outside the UI cannot be saved from the Users dialog until the duplicate is renamed unique. `UserDialog.tsx`'s `uniqueUsername` validator refuses to submit
+        a username matching any of `otherUsernames`, so editing (or merely resaving) either duplicate row trips it. The refusal exists because the backend resolves a user by plain `String.equals` identity --
+        `findCorrespondingOldUserConfig` (`filter`+`findFirst`) hands a submitted `***UNCHANGED***` password marker to whichever stored record its stream reaches first when two rows share a username, so the wrong user's hash could
+        otherwise apply; `reviewChangesDiff.ts`'s `listKeys` independently refuses to key such a list at all and falls back to positional comparison the moment two `username`s collide. Refusing the save is deliberate -- FM-105's
+        alternative was silent misassignment of credentials, not a friendlier one
   - id: F-CONFIG-SEARCHING
     name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
     routes:
@@ -706,7 +729,17 @@ features:
       - config-categories-help
       - config-fieldset-categories
       - config-categories-table
+      # FM-126 (ADR-0038) reconciles this record: `config-categories-scroller`
+      # was recorded here but existed nowhere in `src` -- the scrolling
+      # `TableContainer` carried no test id at all. It now names
+      # `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element on this table, so the
+      # recorded selector and the shipped one are the same thing.
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge currently clipping content; they are shared with the
+      # other four surfaces ADR-0038 names.
       - config-categories-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
       - config-categories-add
       - config-categories-empty
       - config-repeat-categoriesConfig-categories
@@ -926,6 +959,15 @@ features:
       - config-indexers-enable-shown
       - config-indexers-disable-shown
       - config-indexers-sort
+      # FM-126 (ADR-0038): the table scrolls inside `config-indexers-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - config-indexers-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
     parity: done
     gaps:
       - deliberate - the colour field's swatch shows the committed colour but not legacy's field-background tint at 0.5 alpha (color-control.html); ADR-0014 does not reproduce a mock's per-field styling literal
@@ -1128,6 +1170,15 @@ features:
       - search-history-category
       - search-history-source
       - search-history-details
+      # FM-126 (ADR-0038): the table scrolls inside `search-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - search-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
       - history-refine-bar
       - history-refine-toggle
       - history-refine-clear-all
@@ -1185,6 +1236,15 @@ features:
       - download-history-row
       - download-history-indexer
       - download-history-status
+      # FM-126 (ADR-0038): the table scrolls inside `download-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - download-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
       - download-nzb
       - download-torrent
       - history-refine-bar
@@ -1236,6 +1296,15 @@ features:
       - notification-history-body
       - notification-history-urls
       - notification-history-page-status
+      # FM-126 (ADR-0038): the table scrolls inside `notification-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - notification-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
       - history-refine-bar
       - history-refine-toggle
       - history-refine-clear-all
@@ -1572,6 +1641,7 @@ features:
         `footer.js` pixel bookkeeping (`updateFooterBottom`/`updatePaddingBottom`), per ADR-0014
       - deliberate - FM-080's "Ignore this update" only hides the banner for the current app load (no refetch); the ignored version is still recorded server-side through API-UPDATES-IGNORE, matching legacy's own scope
       - deliberate - FM-081 turns every newline in a notification body into a line break and renders it as text; legacy's body.replace("\n", "<br>") replaced only the first newline and injected the result as growl HTML
+      - deliberate - ADR-0037/FM-127 - the pile-up toast's "Go to the notification history" link is dropped; the toast names the notification history as the place to view the piled-up notifications but no longer links to it, because a persistent toast's own interactive content would be untabbable behind any open modal's FocusTrap (the record never claimed the link was reachable while a modal was open - this drops it in every case, not only that one)
       - deliberate - FM-081's rate graph really stops self-advancing once the window holds nothing but the last known rate; legacy's _.every compared its {x, y} point objects to a number, so that stop condition could never fire
         and the interval ran until new data arrived
       - deliberate - FM-081's rate graph is a themed @mui/x-charts sparkline hidden from assistive technology (ADR-0021), without legacy's nvd3 hover tooltip; the rate, remaining time, and queue text beside it are the accessible

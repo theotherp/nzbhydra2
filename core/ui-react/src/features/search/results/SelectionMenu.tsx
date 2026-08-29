@@ -2,8 +2,15 @@ import {Box, Button, Checkbox, Menu, MenuItem, Stack} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useState} from "react";
 
-import {selectAllRadius} from "../../../app/theme";
+import {denseControlFontSize, selectAllRadius} from "../../../app/theme";
 import type {SelectionStatus} from "./resultTable";
+
+// FM-129: the size of the glyph *inside* the 17x17 square (the check mark and
+// the indeterminate dash), not a text role -- it is a metric of this one
+// control's box, chosen so both glyphs sit inside the square without touching
+// its 1.5px border, and it moves only if that box does. A named local
+// constant for that reason rather than a shared density token.
+const SELECT_ALL_GLYPH_FONT_SIZE = "11px";
 
 // The tri-state select-all checkbox's small square control (F-SEARCH-GROUP-
 // SELECTION, FM-046), matching the mock's own `toggleAll` button: 17x17px, a
@@ -22,7 +29,7 @@ const selectAllSquareSx = {
     alignItems: "center",
     borderRadius: selectAllRadius,
     display: "flex",
-    fontSize: "11px",
+    fontSize: SELECT_ALL_GLYPH_FONT_SIZE,
     height: 17,
     justifyContent: "center",
     lineHeight: 1,
@@ -174,9 +181,9 @@ export function SelectionMenu({
                                 // 56px (see `app/theme.ts`) and rounded these
                                 // dense menu rows into lozenges.
                                 borderRadius: 1,
-                                fontSize: "12.5px",
-                                mx: "4px",
-                                py: "8px",
+                                fontSize: denseControlFontSize,
+                                mx: 0.5,
+                                py: 1,
                             },
                         },
                     },

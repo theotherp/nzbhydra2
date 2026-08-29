@@ -207,6 +207,133 @@ test.describe("Notification history", () => {
     // asserted against React by "should page, refine, and render notification
     // history safely in React" above, on `notification-history-type`.
 
+    /**
+     * FM-126 (ADR-0038): the table scrolls inside its own container at 390px
+     * and marks the edge it is clipping, so nothing continues off-canvas
+     * silently. The affordance's full semantics are pinned on
+     * `search-history.spec.ts`; this is the same shared component on this
+     * route's own table, at its own measured width floor.
+     */
+    test("should scroll the table inside its container with a scroll-edge affordance at 390px", async ({
+        page,
+    }) => {
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/notifications");
+            await dismissWelcomeDialog(page);
+            await expect(
+                page.getByTestId("notification-history-table"),
+            ).toBeVisible();
+        });
+
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+
+        const scroller = page.getByTestId("notification-history-scroller");
+        const geometry = await scroller.evaluate((element) => ({
+            client: element.clientWidth,
+            scrollable: element.scrollWidth,
+            table: (element.firstElementChild as HTMLElement).clientWidth,
+        }));
+        expect(geometry.table).toBeGreaterThanOrEqual(800);
+        expect(geometry.scrollable).toBeGreaterThan(geometry.client);
+
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("notification-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-NOTIFICATIONS",
+                "table-scroll-affordance-mobile",
+            ),
+        });
+
+        // ADR-0038's other half: at this width no cell may have to break a
+        // word. Measured rather than eyeballed -- the longest word each
+        // event-type cell holds must fit the width its column was given.
+        expect(
+            await page
+                .getByTestId("notification-history-table")
+                .evaluate((element) => {
+                    const broken: string[] = [];
+                    const cells = element.querySelectorAll<HTMLElement>(
+                        '[data-testid="notification-history-type"]',
+                    );
+                    for (const cell of cells) {
+                        for (const word of (cell.textContent ?? "")
+                            .trim()
+                            .split(/\s+/)) {
+                            const probe = document.createElement("span");
+                            probe.style.cssText =
+                                "position:absolute;visibility:hidden;white-space:pre";
+                            probe.textContent = word;
+                            cell.append(probe);
+                            const needed = probe.getBoundingClientRect().width;
+                            probe.remove();
+                            if (needed > cell.clientWidth + 0.5) {
+                                broken.push(word);
+                            }
+                        }
+                    }
+                    return broken;
+                }),
+        ).toEqual([]);
+
+        await scroller.evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toBeVisible();
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("notification-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-NOTIFICATIONS",
+                "table-scroll-affordance-scrolled-mobile",
+            ),
+        });
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/stats/notifications");
+            await expect(
+                page.getByTestId("notification-history-table"),
+            ).toBeVisible();
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("notification-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-NOTIFICATIONS",
+                "table-scroll-affordance-desktop",
+            ),
+        });
+    });
+
     test("should capture the notification history visual evidence", async ({
         page,
     }) => {

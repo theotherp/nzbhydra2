@@ -19,6 +19,19 @@ export type AddFilesRequest = {
     category: string | null;
     reason: string | null;
 };
+// FM-128: every download action's `addedIds`/`missedIds` is a
+// `Collection<Long>` of search-result ids server-side
+// (`AddNzbsResponse.java:23`, `SaveOrSendResultsResponse.java:22`,
+// `FileZipResponse.java:22`), and those ids are 64-bit hashes -- a live one is
+// `-4934754469460477069`. Zod 4's `.int()` bounds integers by
+// `Number.MAX_SAFE_INTEGER`, so it rejected every real response and turned
+// each successful bulk action into a `MalformedDownloadResponseError` the UI
+// reported as "Unable to complete the download action.". Integrality is still
+// checked here, without the safe-range bound `.int()` adds; a non-integer
+// (and a non-number) is still rejected.
+const resultIdSchema = z
+    .number()
+    .refine(Number.isInteger, {message: "Expected an integer result id"});
 const actionResponseSchema = z.object({
     successful: z.boolean(),
     message: z
@@ -26,11 +39,11 @@ const actionResponseSchema = z.object({
         .nullish()
         .transform((value) => value ?? undefined),
     addedIds: z
-        .array(z.number().int())
+        .array(resultIdSchema)
         .nullish()
         .transform((value) => value ?? []),
     missedIds: z
-        .array(z.number().int())
+        .array(resultIdSchema)
         .nullish()
         .transform((value) => value ?? []),
     invalidIds: z

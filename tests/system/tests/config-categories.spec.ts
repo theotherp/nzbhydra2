@@ -436,4 +436,116 @@ test.describe("Config categories tab visual evidence", () => {
             ).toBeHidden();
         });
     }
+
+    /**
+     * FM-126 (ADR-0038). Before this, the catalog table had `overflowX: auto`
+     * but no width floor, so at 390x844 it was squeezed to 350px against the
+     * 438px it needs to lay out without breaking a word, and category names
+     * and newznab token lists broke mid-word. It now holds its floor and
+     * scrolls, marking the edge it clips.
+     */
+    test("should scroll the catalog inside its container with a scroll-edge affordance at 390px", async ({
+        page,
+    }) => {
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await openCategoriesConfig(page);
+            await setAdvanced(page, true);
+        });
+        const table = page.getByTestId("config-categories-table");
+        await expect(table).toBeVisible();
+
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+
+        const scroller = page.getByTestId("config-categories-scroller");
+        const geometry = await scroller.evaluate((element) => ({
+            client: element.clientWidth,
+            scrollable: element.scrollWidth,
+            table: (element.firstElementChild as HTMLElement).clientWidth,
+        }));
+        expect(geometry.table).toBeGreaterThanOrEqual(440);
+        expect(geometry.scrollable).toBeGreaterThan(geometry.client);
+
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        await scrollToTopOf(page, table);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-CATEGORIES",
+                "table-scroll-affordance-mobile",
+            ),
+        });
+
+        // ADR-0038's other half: at this width no cell may have to break a
+        // word. Measured rather than eyeballed -- the longest word each
+        // category name cell holds must fit the width its column was given.
+        expect(
+            await page
+                .getByTestId("config-categories-table")
+                .evaluate((element) => {
+                    const broken: string[] = [];
+                    const cells = element.querySelectorAll<HTMLElement>(
+                        '[data-testid^="config-category-name-"]',
+                    );
+                    for (const cell of cells) {
+                        for (const word of (cell.textContent ?? "")
+                            .trim()
+                            .split(/\s+/)) {
+                            const probe = document.createElement("span");
+                            probe.style.cssText =
+                                "position:absolute;visibility:hidden;white-space:pre";
+                            probe.textContent = word;
+                            cell.append(probe);
+                            const needed = probe.getBoundingClientRect().width;
+                            probe.remove();
+                            if (needed > cell.clientWidth + 0.5) {
+                                broken.push(word);
+                            }
+                        }
+                    }
+                    return broken;
+                }),
+        ).toEqual([]);
+
+        await scroller.evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toBeVisible();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-CATEGORIES",
+                "table-scroll-affordance-scrolled-mobile",
+            ),
+        });
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await openCategoriesConfig(page);
+            await setAdvanced(page, true);
+        });
+        await expect(table).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await scrollToTopOf(page, table);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-CATEGORIES",
+                "table-scroll-affordance-desktop",
+            ),
+        });
+    });
 });

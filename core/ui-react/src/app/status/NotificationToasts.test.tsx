@@ -9,21 +9,6 @@ import {SafeConfigContext, type BootstrapData} from "../../bootstrap";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {NotificationToasts} from "./NotificationToasts";
 
-vi.mock("@tanstack/react-router", () => ({
-    Link: ({
-        to,
-        children,
-        ...rest
-    }: {
-        to: string;
-        children?: React.ReactNode;
-    }) => (
-        <a {...rest} href={to}>
-            {children}
-        </a>
-    ),
-}));
-
 const enabledConfig = {
     notificationConfig: {
         displayNotifications: true,
@@ -215,7 +200,7 @@ describe("NotificationToasts", () => {
         expect(alert).toHaveTextContent("Second <b>line</b>");
     });
 
-    it("should replace an oversized batch with one pile-up toast linking the history", async () => {
+    it("should replace an oversized batch with one plain-text pile-up toast naming the history", async () => {
         const fake = fakeLiveTransport();
         renderToasts(fake);
         await waitForSubscription(fake);
@@ -228,12 +213,13 @@ describe("NotificationToasts", () => {
 
         const alerts = screen.getAllByRole("alert");
         expect(alerts).toHaveLength(1);
-        expect(alerts[0]).toHaveTextContent("3 notifications have piled up.");
-        expect(
-            screen.getByRole("link", {
-                name: "Go to the notification history to view them.",
-            }),
-        ).toHaveAttribute("href", "/stats/notifications");
+        expect(alerts[0]).toHaveTextContent(
+            "3 notifications have piled up. View them in the notification history.",
+        );
+        // ADR-0037: informational only. Nothing inside the toast is
+        // interactive besides the Alert's own close control.
+        expect(alerts[0].querySelector("a")).toBeNull();
+        expect(alerts[0].querySelectorAll("button")).toHaveLength(1);
         expect(fake.acknowledge.mock.calls.flat()).toEqual([1, 2, 3]);
     });
 

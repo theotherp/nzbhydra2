@@ -10,7 +10,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     TableSortLabel,
@@ -22,6 +21,7 @@ import {
 import {useMemo, useState} from "react";
 
 import type {IndexerValues} from "../../../api/config/indexers";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {NumberSetting, SelectSetting} from "../components";
 import {IndexerStateSwitch} from "./IndexerStateSwitch";
 import {
@@ -164,7 +164,8 @@ export function IndexerTable({
         // the enclosing `<fieldset>`'s `min-inline-size: min-content` carrying
         // this table's `minWidth` out to the document; that is fixed at the
         // source in `ConfigFieldset`, whose `min-width: 0` clamps the fieldset
-        // itself. The `TableContainer` below owns the horizontal scroll.
+        // itself. The `TableScrollAffordance` below owns the horizontal
+        // scroll and marks whichever edge it is currently clipping.
         <>
             <Stack
                 alignItems={{sm: "center"}}
@@ -247,16 +248,17 @@ export function IndexerTable({
                         : `${shown.length} of ${rows.length} indexers shown`}
                 </Typography>
             </Stack>
-            <TableContainer
-                // The five-column table is wider than a tablet, so between
-                // `sm` and the width it needs it scrolls *inside this
-                // container* rather than pushing the page into a horizontal
-                // scroll. Every column stays reachable and none is dropped:
-                // each one either identifies the indexer or is an editable
-                // setting with no other home on this tab. Below `sm` the
-                // compact table has no width floor and nothing to scroll.
-                sx={{overflowX: "auto"}}
-            >
+            {/* The five-column table is wider than a tablet, so between `sm`
+                and the width it needs it scrolls *inside this container*
+                rather than pushing the page into a horizontal scroll. Every
+                column stays reachable and none is dropped: each one either
+                identifies the indexer or is an editable setting with no other
+                home on this tab. Below `sm` the compact table has no width
+                floor and nothing to scroll -- measured at 390x844 it needs
+                266px against a 326px container -- so `C-TABLE-SCROLL-AFFORDANCE`
+                correctly shows no affordance there and only marks the clipped
+                edge in the scrolling range above `sm` (ADR-0038). */}
+            <TableScrollAffordance scrollerTestId="config-indexers-scroller">
                 <Table
                     aria-label="Configured indexers"
                     data-testid="config-indexers-table"
@@ -343,7 +345,7 @@ export function IndexerTable({
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableScrollAffordance>
             {shown.length === 0 ? (
                 <Typography
                     data-testid="config-indexers-no-matches"

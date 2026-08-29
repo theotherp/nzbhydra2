@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-CONFIG-SEARCHING
 Component IDs: C-CONFIG-FIELDS
 API IDs: None
-Depends on: FM-130
+Depends on: None
 Blocks: None
 
 ## Outcome

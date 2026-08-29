@@ -139,9 +139,11 @@ export function ToastProvider({children}: {children: React.ReactNode}) {
  * everything else MUI hides stays hidden.
  *
  * This fixes announcement only. A modal's `FocusTrap` owns focus regardless of
- * DOM position, so an actionable persistent toast raised over a dialog is
- * announced but its controls stay untabbable — a cross-module question carried
- * in `MAINTENANCE.md`'s *Needs a `DECISIONS.md` entry first*, not fixed here.
+ * DOM position, so a toast raised over a dialog is announced but its own
+ * controls (its close button) stay untabbable until the dialog closes.
+ * ADR-0037 settles the corresponding content question by forbidding
+ * interactive toast content outright, rather than relaxing `FocusTrap` or
+ * rendering toasts inside the open modal.
  */
 function useToastLayer(): HTMLElement {
     // Created in the initialiser and not in the effect below: it stays a
@@ -208,11 +210,7 @@ function ToastAlert({
             sx={{overflowWrap: "anywhere", pointerEvents: "auto"}}
             variant="filled"
         >
-            {toast.content === undefined ? (
-                <ToastText message={toast.message ?? ""} />
-            ) : (
-                toast.content
-            )}
+            <ToastText message={toast.message} />
         </Alert>
     );
 }

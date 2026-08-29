@@ -7,7 +7,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
@@ -27,6 +26,7 @@ import {
 } from "../../../api/history/notifications";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
 import {Loading} from "../shared/Loading";
@@ -135,10 +135,24 @@ export function NotificationHistoryPage({
                     No notification history entries match the current filters.
                 </Alert>
             ) : (
-                <TableContainer>
+                <TableScrollAffordance scrollerTestId="notification-history-scroller">
                     <Table
                         aria-label="Notification history"
                         data-testid="notification-history-table"
+                        // ADR-0038's width floor, and the one that fixes the
+                        // mid-word wrapping this table was reported for:
+                        // Title, Body, and URLs render through `SafeText`,
+                        // whose `overflow-wrap: anywhere` breaks *inside* a
+                        // word as soon as its column is narrower than the
+                        // word. Measured at 390x844 the table collapsed to
+                        // 374px, leaving those three columns at their header
+                        // labels' width (61/64/65px) -- which is what turned
+                        // "System" into "Syst / em". Time and Type need a
+                        // measured 90 and 94; 800 gives each of the three
+                        // free-text columns roughly 205px, enough for real
+                        // notification prose to break at spaces, and the
+                        // container scrolls for the rest.
+                        sx={{minWidth: 800}}
                     >
                         <TableHead>
                             <TableRow>
@@ -200,7 +214,7 @@ export function NotificationHistoryPage({
                             ))}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </TableScrollAffordance>
             )}
             <Stack alignItems="center" direction="row" spacing={1}>
                 <Button disabled={page === 1} onClick={() => setPage(page - 1)}>

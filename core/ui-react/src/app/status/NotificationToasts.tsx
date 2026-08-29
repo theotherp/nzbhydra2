@@ -1,5 +1,3 @@
-import {Link} from "@mui/material";
-import {Link as RouterLink} from "@tanstack/react-router";
 import {useCallback, useEffect, useRef} from "react";
 
 import {
@@ -25,9 +23,12 @@ const DEFAULT_DISPLAY_NOTIFICATIONS_MAX = 5;
  * handled so the server stops redelivering it.
  *
  * Delivered notifications are raised on `C-TOAST-SERVICE`, which stacks them,
- * gives the pile-up notice its persistence and its router link, and renders
- * every body as text — newlines become real line breaks, never HTML. Legacy
- * injected the body into growl's HTML.
+ * gives the pile-up notice its persistence, and renders every body as text —
+ * newlines become real line breaks, never HTML. Legacy injected the body into
+ * growl's HTML. The pile-up notice names the notification history as the
+ * place to view the piled-up notifications rather than linking to it, because
+ * ADR-0037 forbids interactive toast content (a link inside a persistent toast
+ * would be untabbable behind any open modal's `FocusTrap`).
  */
 export function NotificationToasts({
     bootstrap,
@@ -76,18 +77,9 @@ export function NotificationToasts({
             const plan = planNotificationBatch(notifications, maxRef.current);
             if (plan.overflow) {
                 raise({
-                    content: (
-                        <>
-                            {plan.count} notifications have piled up.{" "}
-                            <Link
-                                color="inherit"
-                                component={RouterLink}
-                                to="/stats/notifications"
-                            >
-                                Go to the notification history to view them.
-                            </Link>
-                        </>
-                    ),
+                    message:
+                        `${plan.count} notifications have piled up. ` +
+                        "View them in the notification history.",
                     // Legacy's `disableCountDown` for the pile-up notice.
                     persistent: true,
                     severity: "info",

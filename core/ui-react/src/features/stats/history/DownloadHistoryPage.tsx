@@ -12,7 +12,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
@@ -35,6 +34,7 @@ import {
 } from "../../../api/history/downloads";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
 import {externalLink} from "../../../domain/links/externalLinks";
@@ -154,10 +154,19 @@ export function DownloadHistoryPage({
                     No download history entries match the current filters.
                 </Alert>
             ) : (
-                <TableContainer>
+                <TableScrollAffordance scrollerTestId="download-history-scroller">
                     <Table
                         aria-label="Download history"
                         data-testid="download-history-table"
+                        // ADR-0038's width floor, measured at 390x844 against
+                        // the six always-on columns: laid out so no cell has
+                        // to break a word, this table needs 625px (Time 90,
+                        // Indexer 108, Title 108, Result 134, Source 102, Age
+                        // 83). Below that the browser starts squeezing
+                        // columns past their own content; 640 keeps them at
+                        // their intrinsic width and lets the container
+                        // scroll instead (ADR-0029: the page never does).
+                        sx={{minWidth: 640}}
                     >
                         <TableHead>
                             <TableRow>
@@ -259,7 +268,7 @@ export function DownloadHistoryPage({
                             ))}
                         </TableBody>
                     </Table>
-                </TableContainer>
+                </TableScrollAffordance>
             )}
             <Stack direction="row" alignItems="center" spacing={1}>
                 <Button disabled={page === 1} onClick={() => setPage(page - 1)}>

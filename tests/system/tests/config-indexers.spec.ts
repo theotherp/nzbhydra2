@@ -440,12 +440,46 @@ test.describe("Config indexers round trip", () => {
                 };
             });
         expect(scroll.scrollable).toBeGreaterThan(scroll.client);
+
+        // FM-126 (ADR-0038): the container that scrolls now says so. At this
+        // width the table is clipped on the right only, so only that edge is
+        // marked; scrolled to its limit that edge clears and the left one
+        // takes over. Same shared component as the four other surfaces
+        // ADR-0038 names, whose full semantics are pinned in
+        // `search-history.spec.ts`.
+        const scroller = page.getByTestId("config-indexers-scroller");
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
         await page.screenshot({
             path: visualEvidencePath(
                 "F-CONFIG-INDEXERS",
                 "indexers-list-scroll-container-tablet",
             ),
             fullPage: true,
+        });
+
+        await scroller.evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toBeVisible();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-INDEXERS",
+                "indexers-list-scroll-affordance-scrolled-tablet",
+            ),
+            fullPage: true,
+        });
+        await scroller.evaluate((element) => {
+            element.scrollLeft = 0;
         });
 
         // Phone width: ADR-0029's remedy. The table keeps one column and each
@@ -479,6 +513,31 @@ test.describe("Config indexers round trip", () => {
         await expect(
             page.getByTestId("config-input-indexers-0-enabledForSearchSource"),
         ).toHaveCount(1);
+
+        // ADR-0038, below `sm`: the compact table is one column and fits its
+        // container (measured 266px of content in a 326px scroller), so there
+        // is nothing clipped and correspondingly no affordance. The decision
+        // asks for a hint at a clipped edge, not for a permanent ornament.
+        expect(
+            await page
+                .getByTestId("config-indexers-scroller")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-CONFIG-INDEXERS",
+                "indexers-list-scroll-affordance-mobile",
+            ),
+            fullPage: true,
+        });
 
         const priority = page.getByTestId("config-input-indexers-0-score");
         await priority.fill("7");

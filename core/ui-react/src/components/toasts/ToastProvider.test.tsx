@@ -1,10 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    Link,
-} from "@mui/material";
+import {Button, Dialog, DialogActions, DialogContent} from "@mui/material";
 import {
     act,
     cleanup,
@@ -169,24 +163,14 @@ describe("ToastProvider", () => {
         expect(onSubmit).toHaveBeenCalledOnce();
     });
 
-    it("should render rich content with an internal link and report its close", () => {
+    it("should render a persistent toast under a custom testId and report its close", () => {
         const onClose = vi.fn();
         render(
             <ToastProvider>
                 <ToastTrigger
                     label="Pile up"
                     toast={{
-                        content: (
-                            <>
-                                3 notifications have piled up.{" "}
-                                <Link
-                                    color="inherit"
-                                    href="/stats/notifications"
-                                >
-                                    Go to the notification history to view them.
-                                </Link>
-                            </>
-                        ),
+                        message: "3 notifications have piled up.",
                         onClose,
                         persistent: true,
                         severity: "info",
@@ -200,11 +184,10 @@ describe("ToastProvider", () => {
 
         const alert = screen.getByTestId("notification-toast");
         expect(alert).toHaveTextContent("3 notifications have piled up.");
-        expect(
-            screen.getByRole("link", {
-                name: "Go to the notification history to view them.",
-            }),
-        ).toHaveAttribute("href", "/stats/notifications");
+        // ADR-0037: informational only — nothing inside the toast is
+        // interactive besides the Alert's own close control.
+        expect(alert.querySelector("a")).toBeNull();
+        expect(alert.querySelectorAll("button")).toHaveLength(1);
 
         fireEvent.click(screen.getByRole("button", {name: /close/i}));
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();

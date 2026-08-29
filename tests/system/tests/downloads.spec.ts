@@ -120,12 +120,48 @@ test.describe("Downloads", () => {
         expect(addBody.addedIds).toHaveLength(1);
         expect(addBody.invalidIds).toEqual([]);
         expect(addBody.missedIds).toEqual([]);
-        // Legacy's per-row send marked the row with `.sabnzbd-success`. React's
-        // bulk send has no row-level counterpart -- the row's "Downloaded" chip
-        // is raised only by the direct NZB/torrent transfer -- so that one
-        // assertion has no honest React equivalent and is not carried over; the
-        // send's success is established by the response body above and the
-        // downloader recording below. See the handoff's Follow-Up Work.
+        // FM-128: legacy's per-row send marked the row with
+        // `.sabnzbd-success`, and until FM-128 nothing in this file claimed a
+        // React equivalent -- the comment that stood here asserted there was
+        // none. There is: the bulk send raises the row's "Downloaded" chip and
+        // drops the row from the selection. It never fired, because the shared
+        // download-action response schema bounded `addedIds` by
+        // `Number.MAX_SAFE_INTEGER` while the backend sends 64-bit ids, so
+        // every successful send was reported to the user as
+        // "Unable to complete the download action.". Asserting the row's own
+        // state here -- not just the response body and the SABnzbd recording
+        // below -- is what makes that class of failure visible: both are
+        // server-side facts that stayed green throughout.
+        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(
+            resultRow.getByRole("checkbox", {
+                name: `Select ${testEnvironment.downloaderIntegrationNzbTitle}`,
+            }),
+        ).not.toBeChecked();
+        // Visual Gate (FM-128): the post-send row, to be read beside the
+        // pre-fix capture at
+        // `visual-evidence/F-SEARCH-DOWNLOADS/fm128-bulk-send-observed-failure.png`,
+        // where the same row sits checked and chip-less after an identical,
+        // server-side-successful send.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "bulk-send-downloaded-row-desktop",
+            ),
+        });
+
+        // The chip belongs to the row, not to the selection that produced it,
+        // so re-grouping the table must not drop it: grouped and ungrouped
+        // display modes render through the same `ResultRow`.
+        await page.getByTestId("display-options-toggle").click();
+        await page
+            .getByRole("checkbox", {name: "Group torrent and Usenet results"})
+            .check();
+        await page.keyboard.press("Escape");
+        await expect(resultRow.getByText("Downloaded")).toBeVisible();
 
         const recording = await hydra.getSabnzbdRecording();
         expect(recording.method).toBe("POST");
@@ -296,6 +332,102 @@ test.describe("Downloads", () => {
                     (element) => element.scrollWidth <= element.clientWidth,
                 ),
         ).toBe(true);
+    });
+
+    /**
+     * FM-126 (ADR-0038): the table scrolls inside its own container at 390px
+     * and marks the edge it is clipping, so nothing continues off-canvas
+     * silently. The affordance's full semantics are pinned on
+     * `search-history.spec.ts`; this is the same shared component on this
+     * route's own table, at its own measured width floor.
+     */
+    test("should scroll the table inside its container with a scroll-edge affordance at 390px", async ({
+        page,
+    }) => {
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/downloads");
+            await dismissWelcomeDialog(page);
+            await expect(
+                page.getByTestId("download-history-table"),
+            ).toBeVisible();
+        });
+
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+
+        const scroller = page.getByTestId("download-history-scroller");
+        const geometry = await scroller.evaluate((element) => ({
+            client: element.clientWidth,
+            scrollable: element.scrollWidth,
+            table: (element.firstElementChild as HTMLElement).clientWidth,
+        }));
+        expect(geometry.table).toBeGreaterThanOrEqual(640);
+        expect(geometry.scrollable).toBeGreaterThan(geometry.client);
+
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toBeVisible();
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("download-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "table-scroll-affordance-mobile",
+            ),
+        });
+
+        await scroller.evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        await expect(
+            page.getByTestId("table-scroll-affordance-start"),
+        ).toBeVisible();
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("download-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "table-scroll-affordance-scrolled-mobile",
+            ),
+        });
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/stats/downloads");
+            await expect(
+                page.getByTestId("download-history-table"),
+            ).toBeVisible();
+        });
+        await expect(
+            page.getByTestId("table-scroll-affordance-end"),
+        ).toHaveCount(0);
+        // The table sits below the refine bar, so bring it into the
+        // frame: a strip of the page header is not evidence of a table.
+        await page
+            .getByTestId("download-history-table")
+            .scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "table-scroll-affordance-desktop",
+            ),
+        });
     });
 
     test("should capture the download history refine bar visual evidence", async ({

@@ -2,16 +2,15 @@ import {createContext, useContext} from "react";
 
 type ToastSeverity = "success" | "info" | "warning" | "error";
 
-/**
- * A toast body is either plain text or rich content, never both. Text bodies
- * are rendered as text — newlines become line breaks — and are never treated
- * as HTML, whoever authored them.
- */
-type ToastBody =
-    | {content?: undefined; message: string}
-    | {content: React.ReactNode; message?: undefined};
-
-export type Toast = ToastBody & {
+export type Toast = {
+    /**
+     * The toast's body. Always plain text, rendered as text — newlines become
+     * line breaks — and never treated as HTML, whoever authored it. ADR-0037:
+     * a toast accepts no React element anywhere, so its content can never be
+     * interactive (a `FocusTrap` inside an open modal owns focus regardless of
+     * DOM position, which would make any such control untabbable).
+     */
+    message: string;
     /** Called once when the toast leaves the screen, however it was closed. */
     onClose?: () => void;
     /** No auto-hide; the toast stays until it is dismissed or withdrawn. */

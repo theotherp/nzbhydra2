@@ -81,7 +81,13 @@ export function advancedChipTestId(name: string): string {
     return `config-advanced-chip-${settingTestId(name)}`;
 }
 
-/** The editable control's test id (`config-input-main-host`). */
+/**
+ * The editable control's test id (`config-input-main-host`). Placement is not
+ * uniform: the text-like control kinds carry it on the native input via
+ * `slotProps.htmlInput`, while Select/MultiSelect/Switch carry it on the MUI
+ * root element instead -- both deliberate, since shipped tests drill into the
+ * root-placed ones directly rather than expecting a native-input target.
+ */
 export function settingInputTestId(name: string): string {
     return `config-input-${settingTestId(name)}`;
 }

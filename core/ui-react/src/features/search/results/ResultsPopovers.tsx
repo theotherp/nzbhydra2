@@ -19,32 +19,43 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TuneIcon from "@mui/icons-material/Tune";
 import {useMemo, useState} from "react";
 
+import {denseControlFontSize} from "../../../app/theme";
+
 // FM-041/FM-054: the Display popover's own density constants -- again local,
-// not exported tokens, since none is a color or font value. The popover's
+// not exported tokens, since none of them is a color value. The popover's
 // surface color, border, and outer radius come entirely from the theme's
 // `MuiPopover` default (`app/theme.ts`); no local override remains. Its rows'
 // hover-highlight corner is the plain 8px action radius (`borderRadius: 1` in
 // `sx`), shared with every other list row and menu row in these surfaces --
 // stadium corners are reserved for state pills, which these rows are not.
+// FM-129: the density values are theme spacing units now (the sx spacing
+// scale's 8px step and its quarter steps), not px strings, so these popovers
+// sit on the same grid as every other surface in the feature. Their row text
+// is the shared `denseControlFontSize` role rather than a constant here.
 const DISPLAY_MENU_MIN_WIDTH = 220;
-const DISPLAY_MENU_PADDING = "8px";
-const DISPLAY_MENU_ITEM_PADDING_X = "8px";
-const DISPLAY_MENU_ITEM_PADDING_Y = "7px";
-const DISPLAY_MENU_ITEM_FONT_SIZE = "13px";
-const DISPLAY_MENU_ITEM_GAP = "9px";
+const DISPLAY_MENU_PADDING = 1;
+const DISPLAY_MENU_ITEM_PADDING_X = 1;
+const DISPLAY_MENU_ITEM_PADDING_Y = 0.75;
+const DISPLAY_MENU_ITEM_GAP = 1;
+
+// FM-129: the checkbox glyph in a display-options row. Not a text role: it
+// sizes the `SvgIcon` box of a checkbox that has to stay visually balanced
+// against a single line of row text, so it is this one consumer's own metric
+// and stays a named local constant. `size="small"` alone leaves it a step
+// too large for this deliberately dense row.
+const DISPLAY_MENU_ITEM_ICON_SIZE = "18px";
 
 // FM-041/FM-055: the shared section-heading treatment for this file's two
 // small popovers (display options and, since FM-055, rejection reasons), so
 // the second one inherits the first's density instead of restating it. Only
 // the muted text *role* is named here; its color comes from the theme.
-const POPOVER_HEADING_SX = {
-    color: "surfaces.mutedText",
-    fontSize: "10.5px",
-    fontWeight: 600,
-    letterSpacing: "0.6px",
-    padding: "4px 8px 8px",
-    textTransform: "uppercase",
-} as const;
+// FM-129: the heading is the theme's `refineSectionLabel` variant now,
+// consumed through the `variant` prop at both sites below -- it is the same
+// muted, uppercase, tracked caption role the refine sidebar's section labels
+// render, and it was restating that variant's color, weight, tracking and
+// transform verbatim at a font size half a pixel under it. Only this
+// surface's own box padding is left here.
+const POPOVER_HEADING_SX = {pb: 1, pt: 0.5, px: 1} as const;
 
 // FM-055: the `{n} rejected` fragment of `search-results-summary` is a
 // control that opens the per-reason breakdown. This restores parity with
@@ -106,14 +117,18 @@ export function RejectedResultsTrigger({
                         p: DISPLAY_MENU_PADDING,
                     }}
                 >
-                    <Typography component="div" sx={POPOVER_HEADING_SX}>
+                    <Typography
+                        component="div"
+                        sx={POPOVER_HEADING_SX}
+                        variant="refineSectionLabel"
+                    >
                         Rejection reasons
                     </Typography>
                     {entries.length === 0 ? (
                         <Typography
                             component="div"
                             sx={{
-                                fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
+                                fontSize: denseControlFontSize,
                                 px: DISPLAY_MENU_ITEM_PADDING_X,
                                 py: DISPLAY_MENU_ITEM_PADDING_Y,
                             }}
@@ -131,7 +146,7 @@ export function RejectedResultsTrigger({
                                     direction="row"
                                     key={reason}
                                     sx={{
-                                        fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
+                                        fontSize: denseControlFontSize,
                                         gap: DISPLAY_MENU_ITEM_GAP,
                                         px: DISPLAY_MENU_ITEM_PADDING_X,
                                         py: DISPLAY_MENU_ITEM_PADDING_Y,
@@ -262,7 +277,11 @@ export function DisplayOptionsMenu({
                         p: DISPLAY_MENU_PADDING,
                     }}
                 >
-                    <Typography component="div" sx={POPOVER_HEADING_SX}>
+                    <Typography
+                        component="div"
+                        sx={POPOVER_HEADING_SX}
+                        variant="refineSectionLabel"
+                    >
                         Display options
                     </Typography>
                     <FormGroup>
@@ -281,8 +300,8 @@ export function DisplayOptionsMenu({
                             sx={{
                                 backgroundColor: "surfaces.hairlineFaint",
                                 height: "1px",
-                                mx: "4px",
-                                my: "6px",
+                                mx: 0.5,
+                                my: 0.75,
                             }}
                         />
                         {/* The only entry that closes the popover: below `sm`
@@ -338,10 +357,10 @@ function DisplayOption({
                 // override (the mock's `#d6dad9` item text is the theme's
                 // `text.primary` exactly).
                 "& .MuiFormControlLabel-label": {
-                    fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
+                    fontSize: denseControlFontSize,
                 },
                 "& .MuiCheckbox-root": {p: 0},
-                "& .MuiSvgIcon-root": {fontSize: "18px"},
+                "& .MuiSvgIcon-root": {fontSize: DISPLAY_MENU_ITEM_ICON_SIZE},
             }}
         />
     );

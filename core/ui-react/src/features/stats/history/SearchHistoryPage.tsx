@@ -39,6 +39,7 @@ import {
 import {redirectRidUrl} from "../../../api/savedSearches";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
@@ -198,125 +199,142 @@ export function SearchHistoryPage({
                     No search history entries match the current filters.
                 </Alert>
             ) : (
-                <Table
-                    aria-label="Search history"
-                    data-testid="search-history-table"
-                >
-                    <TableHead>
-                        <TableRow>
-                            <SortHeader
-                                label="Time"
-                                column="time"
-                                sort={sort}
-                                onSort={updateSort}
-                            />
-                            <SortHeader
-                                label="Query"
-                                column="query"
-                                sort={sort}
-                                onSort={updateSort}
-                            />
-                            {showUserAgent && (
+                <TableScrollAffordance scrollerTestId="search-history-scroller">
+                    <Table
+                        aria-label="Search history"
+                        data-testid="search-history-table"
+                        // Until FM-126 this table had no scrolling ancestor at
+                        // all, so at 390x844 it pushed the *document* to 687px
+                        // against a 390px viewport -- the ADR-0029 violation
+                        // ADR-0038 asked to confirm here first. The container
+                        // above owns the scroll now, and this is its floor:
+                        // measured at 390x844, laid out so no cell has to
+                        // break a word, the six always-on columns need 691px
+                        // (Time 96, Query 122, Category 106, Additional
+                        // parameters 175, Source 96, Details 96). 700 keeps
+                        // them at that intrinsic width; the three optional
+                        // columns (user agent, username, IP) simply make the
+                        // table wider than the floor and scroll with it.
+                        sx={{minWidth: 700}}
+                    >
+                        <TableHead>
+                            <TableRow>
                                 <SortHeader
-                                    label="User agent"
-                                    column="user_agent"
+                                    label="Time"
+                                    column="time"
                                     sort={sort}
                                     onSort={updateSort}
                                 />
-                            )}
-                            <SortHeader
-                                label="Category"
-                                column="category_name"
-                                sort={sort}
-                                onSort={updateSort}
-                            />
-                            <TableCell>Additional parameters</TableCell>
-                            <SortHeader
-                                label="Source"
-                                column="source"
-                                sort={sort}
-                                onSort={updateSort}
-                            />
-                            {showsUsername(userInfoType) && (
                                 <SortHeader
-                                    label="Username"
-                                    column="username"
+                                    label="Query"
+                                    column="query"
                                     sort={sort}
                                     onSort={updateSort}
                                 />
-                            )}
-                            {showsIp(userInfoType) && (
-                                <SortHeader
-                                    label="IP address"
-                                    column="ip"
-                                    sort={sort}
-                                    onSort={updateSort}
-                                />
-                            )}
-                            <TableCell>Details</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {searches.map((entry) => (
-                            <TableRow
-                                data-testid="search-history-row"
-                                key={entry.id}
-                            >
-                                <TableCell>
-                                    {formatServerDateTime(
-                                        entry.time,
-                                        bootstrap.serverTimeZone,
-                                    )}
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        data-testid="search-history-repeat"
-                                        onClick={() => repeat(entry)}
-                                    >
-                                        Repeat
-                                    </Button>
-                                    {queryLabel(entry)}
-                                </TableCell>
                                 {showUserAgent && (
-                                    <TableCell>
-                                        {entry.userAgent ?? ""}
-                                    </TableCell>
-                                )}
-                                <TableCell data-testid="search-history-category">
-                                    {entry.categoryName}
-                                </TableCell>
-                                <TableCell>
-                                    <Criteria
-                                        entry={entry}
-                                        bootstrap={bootstrap}
-                                        transport={transport}
+                                    <SortHeader
+                                        label="User agent"
+                                        column="user_agent"
+                                        sort={sort}
+                                        onSort={updateSort}
                                     />
-                                </TableCell>
-                                <TableCell data-testid="search-history-source">
-                                    {entry.source === "API"
-                                        ? "API"
-                                        : "Internal"}
-                                </TableCell>
+                                )}
+                                <SortHeader
+                                    label="Category"
+                                    column="category_name"
+                                    sort={sort}
+                                    onSort={updateSort}
+                                />
+                                <TableCell>Additional parameters</TableCell>
+                                <SortHeader
+                                    label="Source"
+                                    column="source"
+                                    sort={sort}
+                                    onSort={updateSort}
+                                />
                                 {showsUsername(userInfoType) && (
-                                    <TableCell>
-                                        {entry.username ?? ""}
-                                    </TableCell>
+                                    <SortHeader
+                                        label="Username"
+                                        column="username"
+                                        sort={sort}
+                                        onSort={updateSort}
+                                    />
                                 )}
                                 {showsIp(userInfoType) && (
-                                    <TableCell>{entry.ip ?? ""}</TableCell>
+                                    <SortHeader
+                                        label="IP address"
+                                        column="ip"
+                                        sort={sort}
+                                        onSort={updateSort}
+                                    />
                                 )}
-                                <TableCell>
-                                    <Button
-                                        data-testid="search-history-details"
-                                        onClick={() => setDetailsId(entry.id)}
-                                    >
-                                        Details
-                                    </Button>
-                                </TableCell>
+                                <TableCell>Details</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHead>
+                        <TableBody>
+                            {searches.map((entry) => (
+                                <TableRow
+                                    data-testid="search-history-row"
+                                    key={entry.id}
+                                >
+                                    <TableCell>
+                                        {formatServerDateTime(
+                                            entry.time,
+                                            bootstrap.serverTimeZone,
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            data-testid="search-history-repeat"
+                                            onClick={() => repeat(entry)}
+                                        >
+                                            Repeat
+                                        </Button>
+                                        {queryLabel(entry)}
+                                    </TableCell>
+                                    {showUserAgent && (
+                                        <TableCell>
+                                            {entry.userAgent ?? ""}
+                                        </TableCell>
+                                    )}
+                                    <TableCell data-testid="search-history-category">
+                                        {entry.categoryName}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Criteria
+                                            entry={entry}
+                                            bootstrap={bootstrap}
+                                            transport={transport}
+                                        />
+                                    </TableCell>
+                                    <TableCell data-testid="search-history-source">
+                                        {entry.source === "API"
+                                            ? "API"
+                                            : "Internal"}
+                                    </TableCell>
+                                    {showsUsername(userInfoType) && (
+                                        <TableCell>
+                                            {entry.username ?? ""}
+                                        </TableCell>
+                                    )}
+                                    {showsIp(userInfoType) && (
+                                        <TableCell>{entry.ip ?? ""}</TableCell>
+                                    )}
+                                    <TableCell>
+                                        <Button
+                                            data-testid="search-history-details"
+                                            onClick={() =>
+                                                setDetailsId(entry.id)
+                                            }
+                                        >
+                                            Details
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableScrollAffordance>
             )}
             <Stack direction="row" alignItems="center" spacing={1}>
                 <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
