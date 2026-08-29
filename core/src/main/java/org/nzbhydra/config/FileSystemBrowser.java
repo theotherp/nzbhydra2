@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,22 +88,43 @@ public class FileSystemBrowser {
         }
 
         protected Predicate<File> getFileFilterPredicate() {
-            return file -> {
-                boolean isUsable = file.isDirectory();
-                try {
-                    isUsable &= FileSystemView.getFileSystemView().isTraversable(file);
-                } catch (NoClassDefFoundError e) {
-                    //Unable to call isTraversable because of missing classes. This might happen on unix systems
-                }
-                return isUsable;
-            };
+            return file -> file.isDirectory() && isTraversable(file);
         }
 
         public static FileSystemEntry getRoots() {
             FileSystemEntry entry = new FileSystemEntry();
-            entry.folders = Stream.of(File.listRoots()).filter(x -> FileSystemView.getFileSystemView().isTraversable(x)).map(x -> new FileSystemSubEntry(x.getPath(), x.getPath())).collect(Collectors.toList());
+            entry.folders = Stream.of(File.listRoots()).filter(FileSystemEntry::isTraversable).map(x -> new FileSystemSubEntry(x.getPath(), x.getPath())).collect(Collectors.toList());
             entry.hasParent = false;
             return entry;
+        }
+
+        static boolean isTraversable(File file) {
+            return isTraversable(file, FileSystemView::getFileSystemView);
+        }
+
+        /**
+         * {@link FileSystemView#isTraversable(File)}, or {@code true} where the platform cannot answer.
+         *
+         * <p>The call reaches AWT, which a server does not necessarily have. The native-image container this ships in
+         * carries no {@code libawt} at all, so the *first* call throws {@link UnsatisfiedLinkError} out of
+         * {@code Toolkit}'s static initializer ("Can't load library: awt"). Every later call throws
+         * {@link NoClassDefFoundError} instead, because a failed initializer leaves {@code Toolkit} permanently
+         * erroneous.
+         *
+         * <p>That difference is the whole bug this guards. The previous version caught only {@code NoClassDefFoundError}
+         * -- a sibling of {@code UnsatisfiedLinkError}, not a supertype -- so exactly one folder listing per start, the
+         * first, answered HTTP 500, and every retry passed because by then the error had changed to the caught kind.
+         * It read as a flaky test rather than as a defect. Both are {@link LinkageError}, so both are caught here.
+         *
+         * <p>Failing open is right: {@code isTraversable} exists to hide Windows shell pseudo-folders, so where the
+         * question cannot be asked, a readable directory is traversable.
+         */
+        static boolean isTraversable(File file, Supplier<FileSystemView> fileSystemView) {
+            try {
+                return fileSystemView.get().isTraversable(file);
+            } catch (LinkageError e) {
+                return true;
+            }
         }
     }
 

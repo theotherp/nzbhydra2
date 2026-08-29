@@ -1245,6 +1245,36 @@ real and still unidentified.** Reverted whole rather than bisected, because each
 run and the thing being fixed is an annotation on a green run, not a failure. The next attempt should bump one action
 at a time. Logged below.
 
+### 2026-08-29 — The folder browser's "flaky" 500 was a first-call-per-start failure
+
+- **Why not a packet:** one contained bugfix in a single method, shipping a regression test observed red before and
+  green after. No contract, no `data-testid`, no user-observable capability change.
+- **Paths:** `core/src/main/java/org/nzbhydra/config/FileSystemBrowser.java`,
+  `core/src/test/java/org/nzbhydra/config/FileSystemBrowserTest.java`
+- **Gates:** `mvn test -Dtest=FileSystemBrowserTest` **3/3**; red arm with the old `catch` restored errors on exactly
+  the one new assertion with the identical CI exception; `git diff --check` clean.
+- **Commit:** `f469bf67b`
+
+`config-main.spec.ts:276` failed with an unexpected 500 from `POST /internalapi/config/folderlisting`, passed on
+retry, and CI reported **1 flaky**. It was not flaky. `FileSystemView.getFileSystemView()` reaches AWT, the
+native-image container has no `libawt`, and the **first** call per instance start throws
+`UnsatisfiedLinkError: Can't load library: awt` out of `Toolkit`'s static initializer. Every later call throws
+`NoClassDefFoundError`, because a failed initializer leaves the class permanently erroneous — and that was the only
+type the existing `catch` named. One 500 per start, then silence.
+
+**The guard already existed and named a sibling type rather than a supertype.** `NoClassDefFoundError` and
+`UnsatisfiedLinkError` are both `LinkageError`; catching the shared supertype fixes it, and `getRoots`, which called
+the same API with no guard at all, now shares the helper.
+
+**Two things made this expensive to find, and both are worth remembering.** The retry always passed *because* the
+failure mode changes after the first call, so the flake was structurally self-concealing — a retry was guaranteed to
+succeed, which is the opposite of what retry-passes usually implies. And the error appears exactly once in a
+40-minute run's log, 1.7 seconds before the test failure; it was only findable because the log archive was uploaded
+intact. The rotate-not-clear choice made for the log endpoints earlier the same day is what preserved it.
+
+**What a green retry is worth:** nothing, on its own. This defect answered HTTP 500 to a real user's first folder
+browse on every native-image start for as long as it has shipped, and the suite's verdict on it was "flaky".
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
