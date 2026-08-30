@@ -2,7 +2,6 @@ import {
     Alert,
     Box,
     CircularProgress,
-    Paper,
     Portal,
     Stack,
     Typography,
@@ -373,22 +372,35 @@ function ConfigForm({
                                 onToggleAdvanced={toggleAdvanced}
                                 showAdvanced={showAdvanced}
                             />
-                            {/* ADR-0036's ground resolution, in the one
-                                direction the ADR allows: the tab body gains
-                                the `Paper` the dialogs already have, rather
-                                than the input background being taught to
-                                follow whatever it is sitting on. A config
-                                field and the identical field in the indexer or
-                                downloader dialog now render the same recessed
-                                well against the same `background.paper`
-                                ground, which is what makes one border value
-                                readable in both places; the alternative would
-                                have made the field's own fill a function of
-                                its container and left two treatments to keep
-                                in step forever. The sidebar beside this
-                                deliberately stays transparent on the page
-                                ground -- it holds no fields. */}
-                            <Paper
+                            {/* ADR-0036's ground resolution, as the owner
+                                amended it on 2026-08-30: the tab body paints
+                                no ground of its own. Config was the one
+                                section whose content sat in a box; its fields
+                                now render directly on the page's
+                                `background.default`, the way search results,
+                                history and system already do, and the ADR's
+                                "one ground" constraint is withdrawn with it.
+
+                                What still holds the field treatment together
+                                is the ADR's other constraint, the border --
+                                and it holds without help from this container.
+                                `inputOutline` was measured ground-independent
+                                when it was chosen (`theme.ts`): 3.17:1 on
+                                `background.default` and 3.08:1 on
+                                `background.paper`, both above WCAG 1.4.11's
+                                3:1, so the same field reads outlined here and
+                                in the indexer or downloader dialog. What the
+                                amendment accepts is the remaining difference
+                                in the field's own `surfaces.recessed` fill: a
+                                visible well on dialog paper, near-co-planar
+                                on the page ground.
+
+                                The inset stays, and is now load-bearing: with
+                                no `Paper` there is nothing else giving the
+                                fields a gutter. The sidebar beside this was
+                                always transparent on the page ground -- both
+                                sides of the row now are. */}
+                            <Box
                                 data-testid="config-tab-body"
                                 sx={{
                                     flexGrow: 1,
@@ -401,7 +413,7 @@ function ConfigForm({
                                 >
                                     <Outlet />
                                 </FieldsetNavContext.Provider>
-                            </Paper>
+                            </Box>
                         </Stack>
                     </Box>
                     <ReviewChangesPanel

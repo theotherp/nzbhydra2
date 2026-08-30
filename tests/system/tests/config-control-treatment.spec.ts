@@ -130,6 +130,61 @@ function computedStyle(locator: Locator, property: string): Promise<string> {
     );
 }
 
+/** The flat colour actually painted behind an element, and how it got there. */
+type Ground = {color: Rgba; washes: readonly string[]};
+
+/** The browser canvas under everything, if no ancestor ever paints an opaque
+ * colour. Reached only on a build that lost `CssBaseline`'s body background. */
+const CANVAS: Rgba = {a: 1, b: 255, g: 255, r: 255};
+
+/**
+ * The ground an element is *rendered* on, rather than the one it declares.
+ *
+ * Reading `background-color` off the element itself was safe only while every
+ * surface measured here painted one. ADR-0036's 2026-08-30 amendment removed
+ * the config tab body's `Paper`, so that box now answers `rgba(0, 0, 0, 0)` --
+ * and a transparent colour run through `contrastRatio` is not an error, it is
+ * black: an outline would have measured against a ground nothing paints and
+ * the assertions would have stayed green while saying nothing. So the stack is
+ * walked outwards to the first opaque ancestor and composited back down, which
+ * is what the compositor itself does.
+ *
+ * The washes are carried along rather than discarded: every layer that
+ * contributed has to be a flat colour for the composited result to be the
+ * ground, and an elevation gradient reappearing anywhere in that stack is
+ * exactly the regression FM-117 recorded.
+ */
+async function effectiveGround(locator: Locator): Promise<Ground> {
+    const layers = await locator.evaluate((element) => {
+        const stack: {color: string; wash: string}[] = [];
+        let node: Element | null = element;
+        while (node !== null) {
+            const style = window.getComputedStyle(node);
+            stack.push({
+                color: style.backgroundColor,
+                wash: style.backgroundImage,
+            });
+            const channels = style.backgroundColor.match(/[\d.]+/g);
+            if (channels === null || channels.length < 4) {
+                break;
+            }
+            if (Number(channels[3]) === 1) {
+                break;
+            }
+            node = node.parentElement;
+        }
+        return stack;
+    });
+    return {
+        color: layers.reduceRight(
+            (ground, layer) =>
+                compositeOver(parseComputedColor(layer.color), ground),
+            CANVAS,
+        ),
+        washes: layers.map((layer) => layer.wash),
+    };
+}
+
 async function openConfig(page: Page, path: string, ready: string) {
     await page.goto(`/config/${path}`);
     await dismissWelcomeDialog(page);
@@ -163,7 +218,7 @@ async function showAdvanced(page: Page): Promise<void> {
  * The boundary a raised, borderless `Paper` had before FM-117 flattened
  * `MuiPaper`: an elevation-1 surface (MUI's `getOverlayAlpha(1)`, white at
  * ~0.0512 over `background.paper`, i.e. `#313739`) against the
- * `background.default` `#1f2426` a config tab body used to be. Measured
+ * `background.default` `#1f2426` a config tab body renders on. Measured
  * 1.294:1. Whatever replaces it has to be at least that, so the floor is the
  * base build's own number rather than one chosen to fit the answer.
  */
@@ -406,7 +461,7 @@ test.describe("Config control treatment (FM-117)", () => {
         }
     });
 
-    test("should render one readable outline on one ground, in a config tab and a dialog in the same pass", async ({
+    test("should render one readable outline on each of the two grounds, in a config tab and a dialog in the same pass", async ({
         hydra,
         page,
     }) => {
@@ -434,10 +489,20 @@ test.describe("Config control treatment (FM-117)", () => {
 
         await openConfig(page, "main", "config-main");
         const tabBody = page.getByTestId("config-tab-body");
-        const tabGround = parseComputedColor(
-            await computedStyle(tabBody, "background-color"),
-        );
-        const tabWash = await computedStyle(tabBody, "background-image");
+        const tabGround = await effectiveGround(tabBody);
+        // What the amendment actually asked for, stated where it can fail: the
+        // tab body is a box no longer. Read as separate properties rather than
+        // as "is it a `Paper`", because the four things a `Paper` was painting
+        // here are the four things an admin would see come back.
+        const tabBox = await tabBody.evaluate((element) => {
+            const style = window.getComputedStyle(element);
+            return {
+                background: style.backgroundColor,
+                border: style.borderTopWidth,
+                radius: style.borderTopLeftRadius,
+                shadow: style.boxShadow,
+            };
+        });
         const tabOutline = parseComputedColor(
             await computedStyle(
                 fieldRoot(page, "main-host").locator(
@@ -452,10 +517,7 @@ test.describe("Config control treatment (FM-117)", () => {
         const dialog = page.getByTestId("config-indexer-dialog");
         await expect(dialog).toBeVisible();
         const dialogPaper = dialog.locator(".MuiDialog-paper").first();
-        const dialogGround = parseComputedColor(
-            await computedStyle(dialogPaper, "background-color"),
-        );
-        const dialogWash = await computedStyle(dialogPaper, "background-image");
+        const dialogGround = await effectiveGround(dialogPaper);
         const dialogOutline = parseComputedColor(
             await computedStyle(
                 dialog.locator(".MuiOutlinedInput-notchedOutline").first(),
@@ -463,27 +525,62 @@ test.describe("Config control treatment (FM-117)", () => {
             ),
         );
 
-        // One ground, and the `background-image` half is not incidental: MUI
-        // paints its dark-mode elevation wash as a `linear-gradient`
-        // *background image* over `background.paper`, so the two surfaces'
-        // `background-color` was already identical while what they actually
-        // rendered was not (the dialog's `elevation={24}` wash is white at
-        // 0.165, the tab body's `elevation={1}` wash far weaker). Comparing
-        // the colour alone would have been green before this change and after
-        // it -- the "green either way" shape. What proves one ground is that
-        // neither surface paints a wash at all.
+        // ADR-0036's 2026-08-30 amendment. The ADR asked for one ground *or*
+        // one border and got both; the owner has since taken the ground half
+        // back -- config renders on the page like every other section -- so
+        // what is left carrying the field treatment is the border alone, and
+        // the border alone is what this now proves. The grounds are no longer
+        // compared: they are deliberately two.
         expect
-            .soft(tabWash, "the config tab body must paint no elevation wash")
-            .toBe("none");
-        expect
-            .soft(dialogWash, "the dialog must paint no elevation wash")
-            .toBe("none");
-        expect.soft(dialogGround).toEqual(tabGround);
-        // One border: the same token in both places, and legible on both.
-        expect.soft(dialogOutline).toEqual(tabOutline);
+            .soft(
+                tabBox.background,
+                "the config tab body must paint no ground of its own",
+            )
+            .toBe("rgba(0, 0, 0, 0)");
+        for (const [property, value] of [
+            ["border", tabBox.border],
+            ["corner radius", tabBox.radius],
+            ["shadow", tabBox.shadow],
+        ] as const) {
+            expect
+                .soft(value, `the config tab body must paint no ${property}`)
+                .toMatch(/^(0px|none)$/);
+        }
+        // The `background-image` half is not incidental: MUI paints its
+        // dark-mode elevation wash as a `linear-gradient` *background image*
+        // over `background.paper`, so a surface's `background-color` can be
+        // exactly the token while what it renders is a good deal lighter (the
+        // dialog's `elevation={24}` wash is white at 0.165). Every layer that
+        // contributes to either ground has to be flat, or the composited
+        // colour the ratios below are taken against is not the colour on
+        // screen.
         for (const [where, ground] of [
             ["config tab", tabGround],
             ["dialog", dialogGround],
+        ] as const) {
+            expect
+                .soft(
+                    ground.washes.filter((wash) => wash !== "none"),
+                    `nothing under the ${where} may paint an elevation wash`,
+                )
+                .toEqual([]);
+        }
+        // The two grounds, named: the amendment's own claim is that the tab
+        // body's fields end up on `background.default` `#1f2426`, and a ratio
+        // is only worth reading once the colour it was taken against is the
+        // one the theme says.
+        expect
+            .soft(tabGround.color, "the config tab must render on #1f2426")
+            .toEqual({a: 1, b: 38, g: 36, r: 31});
+        expect
+            .soft(dialogGround.color, "the dialog must render on #262c2e")
+            .toEqual({a: 1, b: 46, g: 44, r: 38});
+        // One border: the same token in both places, and legible on each of
+        // the two grounds it now has to cover on its own.
+        expect.soft(dialogOutline).toEqual(tabOutline);
+        for (const [where, ground] of [
+            ["config tab", tabGround.color],
+            ["dialog", dialogGround.color],
         ] as const) {
             const edge = compositeOver(tabOutline, ground);
             expect
@@ -502,7 +599,7 @@ test.describe("Config control treatment (FM-117)", () => {
         const deleteColor = await paintedColor(deleteButton, "color");
         expect
             .soft(
-                contrastRatio(deleteColor, dialogGround),
+                contrastRatio(deleteColor, dialogGround.color),
                 "the text-variant error Delete label must clear WCAG 1.4.3",
             )
             .toBeGreaterThanOrEqual(4.5);
@@ -559,6 +656,56 @@ test.describe("Config control treatment (FM-117)", () => {
                     `control-treatment-config-tab-${viewport}`,
                 ),
                 fullPage: true,
+            });
+
+            // FM-147's other half, both states of it. The bar was flush under
+            // the header and read as a second header row; it now rests the
+            // same 24px below it the search form keeps, and still pins.
+            // Measured because a detached bar is what the owner asked for and
+            // a margin is exactly the kind of thing a later layout change
+            // eats silently.
+            await page.evaluate(() => window.scrollTo(0, 0));
+            const header = await page.locator("header").boundingBox();
+            const restingBar = await page
+                .getByTestId("config-save-bar")
+                .boundingBox();
+            const gap =
+                (restingBar?.y ?? 0) -
+                ((header?.y ?? 0) + (header?.height ?? 0));
+            expect
+                .soft(
+                    gap,
+                    "the save bar must rest a spacing step below the header",
+                )
+                .toBe(24);
+            // The pinned shot is a viewport capture and not `fullPage` on
+            // purpose -- `fullPage` re-renders the document at its full
+            // height, where a sticky element sits at its resting place and the
+            // pinned state cannot appear at all.
+            await page.evaluate(() => {
+                const bar = document.querySelector(
+                    '[data-testid="config-save-bar"]',
+                );
+                const rest =
+                    (bar?.getBoundingClientRect().top ?? 0) + window.scrollY;
+                window.scrollTo(0, rest + 200);
+            });
+            await expect
+                .poll(
+                    async () =>
+                        (
+                            await page
+                                .getByTestId("config-save-bar")
+                                .boundingBox()
+                        )?.y,
+                    {message: "the save bar must pin to the viewport top"},
+                )
+                .toBe(0);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-SHELL",
+                    `save-bar-pinned-${viewport}`,
+                ),
             });
 
             await prepareVisualEvidence(page, viewport, async () => {
@@ -627,11 +774,11 @@ test.describe("Raised surfaces after the paper flattening (FM-117)", () => {
             await expect(summary).toHaveAttribute("aria-expanded", "false");
         }
 
-        const ground = parseComputedColor(
-            await computedStyle(
-                page.getByTestId("config-tab-body"),
-                "background-color",
-            ),
+        // The *effective* ground: since ADR-0036's amendment the tab body
+        // paints nothing, so its own `background-color` is `rgba(0, 0, 0, 0)`
+        // and reading it here would have measured every card against black.
+        const {color: ground} = await effectiveGround(
+            page.getByTestId("config-tab-body"),
         );
         const cards = [first, first + 1].map((index) =>
             page.getByTestId(
@@ -693,11 +840,8 @@ test.describe("Raised surfaces after the paper flattening (FM-117)", () => {
         // body, and a chips list over a dialog. They are the same `Paper` slot
         // and would be the same defect on either surface.
         await openConfig(page, "main", "config-main");
-        const tabGround = parseComputedColor(
-            await computedStyle(
-                page.getByTestId("config-tab-body"),
-                "background-color",
-            ),
+        const {color: tabGround} = await effectiveGround(
+            page.getByTestId("config-tab-body"),
         );
         await page.getByTestId("config-search").fill("port");
         const searchList = page.locator(".MuiAutocomplete-paper").first();
@@ -761,11 +905,8 @@ test.describe("Raised surfaces after the paper flattening (FM-117)", () => {
         await openIndexerEditor(page, "Outline Probe");
         const dialog = page.getByTestId("config-indexer-dialog");
         await expect(dialog).toBeVisible();
-        const dialogGround = parseComputedColor(
-            await computedStyle(
-                dialog.locator(".MuiDialog-paper").first(),
-                "background-color",
-            ),
+        const {color: dialogGround} = await effectiveGround(
+            dialog.locator(".MuiDialog-paper").first(),
         );
         await openGroupSuggestions(page);
         await assertListboxSeparated(

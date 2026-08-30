@@ -347,23 +347,23 @@ afterEach(() => {
 });
 
 describe("ConfigShell", () => {
-    // ADR-0036 resolves "the same field renders two ways on two grounds" in
-    // exactly one direction, and this is the direction taken: the tab body
-    // gains the `Paper` the dialogs already have, rather than the input
-    // background being taught to follow its container. Asserted structurally
-    // -- the tab body is a `Paper` and the fields render inside it -- because
-    // jsdom computes no colour for a themed class and would let a colour
-    // assertion here pass whatever the theme said. The ground the `Paper`
-    // actually paints is pinned in `theme.test.ts` (every `Paper` flat, so
-    // `background.paper` is not a function of elevation) and shown in the
-    // screenshot strip.
-    it("should render the tab body on the same paper ground the dialogs use", async () => {
+    // ADR-0036 as amended on 2026-08-30: the tab body carries no ground of its
+    // own, so the fields render on whatever the page renders on. Asserted
+    // structurally -- it is not a `Paper` and it still holds the fields --
+    // because jsdom computes no colour for a themed class and would let a
+    // colour assertion here pass whatever the theme said. That it is not a
+    // `Paper` is the whole of what can be checked from here: `MuiPaper` is the
+    // only thing that was painting a background, a radius and a shadow onto
+    // this box, and `theme.test.ts` pins what that class does. The ground the
+    // fields actually end up on is measured in
+    // `config-control-treatment.spec.ts` and shown in the screenshot strip.
+    it("should render the tab body with no ground of its own", async () => {
         renderConfigArea({backend: createBackend()});
         await waitForShell();
 
         const body = screen.getByTestId("config-tab-body");
 
-        expect(body).toHaveClass("MuiPaper-root");
+        expect(body).not.toHaveClass("MuiPaper-root");
         // The sidebar is deliberately *not* inside it: it holds no fields, and
         // ADR-0036 is about the ground a field sits on.
         expect(body).not.toContainElement(screen.getByTestId("config-nav"));

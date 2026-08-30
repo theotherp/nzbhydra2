@@ -87,13 +87,38 @@ const mediaSectionWidth = seasonEpisodeFieldWidth * 2 + 10;
 // Two range fields plus their 6px `gap: 0.75` gutter, so Age & Size wraps
 // into a 2x2 block on a wide panel and a single column on a narrow one.
 const rangeSectionWidth = rangeFieldWidth * 2 + 6;
-// The chips row is always rendered (FM-143, owner request 2026-08-30) so the
-// first constraint chip no longer pushes the Advanced panel down and the
-// last one's removal no longer snaps it back up. When empty it reserves
-// exactly one row at MUI's default medium `Chip` height (verified against
-// the installed `@mui/material/Chip` source and the `constraint` variant in
+// The chips row renders whenever Advanced is open or at least one chip has
+// something to show (`advancedOpen || hasChips`; FM-146, owner revision
+// 2026-08-30 of FM-143's same-day "always rendered" rule). While Advanced is
+// open the row still reserves one empty row so the first constraint chip no
+// longer pushes the panel down and the last one's removal no longer snaps it
+// back up (FM-143's original fix, unchanged). While Advanced is collapsed
+// and empty the row is omitted instead, so the initial form has no empty
+// band between the input row and the "Recent searches" footer; active
+// constraints still force the row into view even while collapsed, since
+// `hasChips` is true whenever any chip below would render. Deleting the last
+// chip while collapsed removes the row and moves the footer up in the same
+// click. That transition -- like the Advanced toggle's -- is governed by the
+// row's own `Collapse` (FM-149, owner follow-up 2026-08-30 revising FM-146's
+// "no `Collapse`/animation smoothing it" boundary): the row's space animates
+// on exactly the same predicate and duration as the panel beside it, so a
+// toggle with no chips reads as one motion instead of the panel's top
+// hairline blinking 42px into place ahead of it. The reserved height is
+// exactly one row at MUI's default medium `Chip` height (verified against the
+// installed `@mui/material/Chip` source and the `constraint` variant in
 // `theme.ts`, which overrides colour and typography but not height).
 const chipsRowMinHeight = 32;
+// The row's separation from the input row above it, and the row's full
+// reserved height including it. The gap has to live *inside* the collapsing
+// element rather than as a margin above it: `Collapse` animates the measured
+// height of its wrapper, and a top margin on the wrapper's only child
+// collapses through `MuiCollapse-wrapperInner` and is excluded from that
+// measurement, which would leave the 10px snapping into place in one frame
+// at the end of an otherwise smooth animation. Delivered as `pt` with the
+// padding counted into `minHeight` (global `box-sizing: border-box`), so the
+// row's total is the same 42px it was as `mt: 1.25` + `minHeight: 32`.
+const chipsRowTopGap = 10;
+const chipsRowReservedHeight = chipsRowMinHeight + chipsRowTopGap;
 
 export function SearchWorkspace({
     catalog,
@@ -421,6 +446,20 @@ export function SearchWorkspace({
         showIndexerSelection &&
         eligibleIndexers.length > 0 &&
         selectedIndexers.length !== eligibleIndexers.length;
+    // The single source both the row's presence and its contents read from
+    // (owner revision 2026-08-30 of FM-143's always-render rule): every
+    // predicate here is the exact one guarding its `<Chip>` below, not a
+    // paraphrase, so the row and the chips it holds can never disagree.
+    const hasChips =
+        selected ||
+        (mediaType === "TV" && values.season !== "") ||
+        (mediaType === "TV" && values.episode !== "") ||
+        values.minage !== "" ||
+        values.maxage !== "" ||
+        values.minsize !== "" ||
+        values.maxsize !== "" ||
+        values.additionalQuery !== "" ||
+        showIndexersChip;
     const chips = (
         <>
             {selected && (
@@ -718,18 +757,20 @@ export function SearchWorkspace({
                         {advancedOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                 </Box>
-                <Box
-                    data-testid="search-chips"
-                    sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 0.75,
-                        minHeight: chipsRowMinHeight,
-                        mt: 1.25,
-                    }}
-                >
-                    {chips}
-                </Box>
+                <Collapse in={advancedOpen || hasChips} unmountOnExit>
+                    <Box
+                        data-testid="search-chips"
+                        sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.75,
+                            minHeight: chipsRowReservedHeight,
+                            pt: `${chipsRowTopGap}px`,
+                        }}
+                    >
+                        {chips}
+                    </Box>
+                </Collapse>
                 <Collapse
                     data-testid="search-advanced-panel"
                     id={advancedPanelId}

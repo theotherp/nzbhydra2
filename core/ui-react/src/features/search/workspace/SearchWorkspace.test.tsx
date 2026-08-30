@@ -971,11 +971,36 @@ describe("SearchWorkspace", () => {
     // collapsed panel. Each chip opens Advanced on its own field, and each
     // clearable one clears exactly its own constraint.
     describe("constraint chips", () => {
-        it("should render the reserved chips row with no chips for a search with no constraints", () => {
-            // FM-143: the row itself always renders (its space is reserved
-            // so a later chip cannot shift the layout below it); only the
-            // chips inside it are conditional.
+        it("should render no chips row while Advanced is collapsed and no constraints are set", () => {
+            // FM-146 (owner revision of FM-143's same-day "always rendered"
+            // rule): while Advanced is collapsed and empty, the row itself is
+            // omitted -- no leftover band between the input row and the
+            // footer -- since `advancedOpen || hasChips` is false here.
             renderWorkspace({category: "Series"});
+
+            expect(
+                screen.queryByTestId("search-chips"),
+            ).not.toBeInTheDocument();
+            for (const chip of [
+                "search-chip-title",
+                "search-chip-season",
+                "search-chip-episode",
+                "search-chip-age",
+                "search-chip-size",
+                "search-chip-filter",
+                "search-chip-indexers",
+            ]) {
+                expect(screen.queryByTestId(chip)).not.toBeInTheDocument();
+            }
+        });
+
+        it("should render the reserved chips row with no chips once Advanced is open", () => {
+            // FM-143's original fix, preserved by FM-146: opening Advanced
+            // still reserves one empty row so the first constraint chip
+            // cannot shift the panel below it.
+            renderWorkspace({category: "Series"});
+
+            fireEvent.click(screen.getByTestId("search-advanced-toggle"));
 
             expect(screen.getByTestId("search-chips")).toBeInTheDocument();
             for (const chip of [
@@ -989,6 +1014,44 @@ describe("SearchWorkspace", () => {
             ]) {
                 expect(screen.queryByTestId(chip)).not.toBeInTheDocument();
             }
+        });
+
+        it("should mount the chips row inside its own Collapse driven by advancedOpen || hasChips", () => {
+            // FM-149 (owner follow-up 2026-08-30 revising FM-146's "no
+            // Collapse" boundary): the row's space animates on the same
+            // predicate as the advanced panel beside it, so a toggle with no
+            // chips reads as one motion instead of the panel's top hairline
+            // snapping 42px into place ahead of it. jsdom lays nothing out
+            // and cannot observe the motion, so this pins the structure: the
+            // row's container is a `Collapse` of its own -- not the panel's
+            // -- and it is open (not the exited `hidden` state) in both the
+            // collapsed-with-chips and open-without-chips cases.
+            const {unmount} = renderWorkspace({
+                category: "Series",
+                season: "3",
+            });
+
+            const withChipsCollapse = screen
+                .getByTestId("search-chips")
+                .closest(".MuiCollapse-root");
+            expect(withChipsCollapse).not.toBeNull();
+            expect(withChipsCollapse).not.toHaveClass("MuiCollapse-hidden");
+            expect(withChipsCollapse).not.toBe(
+                screen.getByTestId("search-advanced-panel"),
+            );
+            expect(
+                screen.getByTestId("search-advanced-toggle"),
+            ).toHaveAttribute("aria-expanded", "false");
+
+            unmount();
+            renderWorkspace({category: "Series"});
+            fireEvent.click(screen.getByTestId("search-advanced-toggle"));
+
+            const openCollapse = screen
+                .getByTestId("search-chips")
+                .closest(".MuiCollapse-root");
+            expect(openCollapse).not.toBeNull();
+            expect(openCollapse).not.toHaveClass("MuiCollapse-hidden");
         });
 
         it("should render a chip inside the same reserved container once a constraint is set", () => {

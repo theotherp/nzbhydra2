@@ -46,9 +46,30 @@ export function ConfigSaveBar({
             elevation={0}
             sx={{
                 backgroundColor: "surfaces.bar",
-                borderBottom: "1px solid",
-                borderBottomColor: "surfaces.hairlineFaint",
-                borderRadius: 0,
+                // Detached from the header (owner request, 2026-08-30): the
+                // bar rests the same 24px below it that the search form keeps
+                // (`SearchWorkspace.tsx`), so it reads as this section's own
+                // control strip rather than as a second header row.
+                //
+                // Once it is a free-standing surface it takes the treatment
+                // this theme gives every other one: the 12px radius `MuiPaper`
+                // applies to raised, non-square papers (`theme.ts`), stated
+                // here because `elevation={0}` opts out of that rule, and the
+                // `surfaces.hairlineFaint` edge carried all the way round.
+                // The edge was already there along the bottom, where it
+                // separates the bar from the content scrolling under it while
+                // pinned; a rounded box with an edge on one side only would
+                // have left that line ending in mid-curve.
+                //
+                // The margin is on the bar itself and does not move where it
+                // pins: Chromium constrains a sticky box's *border* box to the
+                // `top` inset, so `top: 0` still puts the bar's live rect at
+                // the viewport top, which `ConfigNav`'s scroll offsets and
+                // `config.spec.ts` both assume (measured, not assumed).
+                border: "1px solid",
+                borderColor: "surfaces.hairlineFaint",
+                borderRadius: 1.5,
+                mt: 3,
                 position: "sticky",
                 px: 2,
                 py: 1.5,

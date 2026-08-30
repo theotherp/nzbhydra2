@@ -471,6 +471,39 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
         );
     });
 
+    /**
+     * FM-148: the control box and both `FormHelperText` blocks below it must
+     * share the same 560px reading-width column, so help and error prose
+     * wraps at the control's own right edge on a wide viewport instead of
+     * spanning the tab body's full, unboxed width (FM-147).
+     */
+    it("should cap the control, error, and help blocks to the same 560px column", async () => {
+        const harness = renderSetting(
+            <TextSetting
+                help="Legacy help text"
+                label="Host"
+                name="main.host"
+                required
+            />,
+        );
+
+        const controlBox = screen
+            .getByTestId("config-input-main-host")
+            .closest(".MuiFormControl-root")?.parentElement;
+        expect(controlBox).toHaveStyle({maxWidth: "560px"});
+
+        const input = screen.getByTestId("config-input-main-host");
+        fireEvent.change(input, {target: {value: ""}});
+        expect(await harness.form.trigger()).toBe(false);
+
+        expect(await screen.findByTestId("config-error-main-host")).toHaveStyle(
+            {maxWidth: "560px"},
+        );
+        expect(document.getElementById("config-help-main-host")).toHaveStyle({
+            maxWidth: "560px",
+        });
+    });
+
     it("should floor the fieldset's minimum width at zero so wide content cannot widen the page", () => {
         renderSetting(
             <ConfigFieldset label="Hosting">

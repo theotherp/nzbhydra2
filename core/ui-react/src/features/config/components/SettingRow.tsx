@@ -22,6 +22,18 @@ import {
 } from "./settings";
 
 /**
+ * Legacy's row was a fraction of a 20-column grid (`col-sm-6` of
+ * `col-sm-20` in `config.html`), not a fixed pixel width, so there is no
+ * literal number to carry forward. 560 is a deliberate reading-width cap
+ * instead: on a wide desktop viewport a single-line control filling the
+ * whole row would read as an oversized empty box, and unbounded help/error
+ * prose below it would run far past the control's own right edge. The
+ * control box and both `FormHelperText` blocks below it all read this one
+ * constant so the three edges cannot drift apart.
+ */
+const settingColumnMaxWidth = 560;
+
+/**
  * `C-CONFIG-FIELDS`: one configuration setting's row — the replacement for
  * legacy's `setting-wrapper.html`.
  *
@@ -76,15 +88,9 @@ export function SettingRow({
     const row = (
         <Box data-testid={settingRowTestId(name)} sx={{mb: 2.5}}>
             <Stack alignItems="center" direction="row" spacing={1}>
-                {/*
-                 * Legacy's row was a fraction of a 20-column grid
-                 * (`col-sm-6` of `col-sm-20` in `config.html`), not a fixed
-                 * pixel width, so there is no literal number to carry
-                 * forward. 560 is a deliberate reading-width cap instead: on
-                 * a wide desktop viewport a single-line control filling the
-                 * whole row would read as an oversized empty box.
-                 */}
-                <Box sx={{flexGrow: 1, maxWidth: 560}}>{children}</Box>
+                <Box sx={{flexGrow: 1, maxWidth: settingColumnMaxWidth}}>
+                    {children}
+                </Box>
                 {advanced === true && hiddenByToggle ? (
                     // ADR-0027: the chip marks a row revealed through its
                     // fieldset's expander only. Toggle-on rows carry no
@@ -118,12 +124,17 @@ export function SettingRow({
                     data-testid={`config-error-${name.replaceAll(".", "-")}`}
                     error
                     id={settingErrorId(name)}
+                    sx={{maxWidth: settingColumnMaxWidth}}
                 >
                     {error}
                 </FormHelperText>
             )}
             {help === undefined ? null : (
-                <FormHelperText component="div" id={settingHelpId(name)}>
+                <FormHelperText
+                    component="div"
+                    id={settingHelpId(name)}
+                    sx={{maxWidth: settingColumnMaxWidth}}
+                >
                     <SettingHelp content={help} />
                 </FormHelperText>
             )}

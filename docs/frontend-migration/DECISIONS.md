@@ -644,6 +644,17 @@ Binding constraints:
   being corrected.
 - Hover, focus, disabled and error states must all still be distinguishable from rest after the border weight changes.
 
+**Amendment, recorded 2026-08-30 on owner request.** The owner asked for the `config-tab-body` `Paper` — this ADR's
+one-ground resolution — to be removed: the config area is the only section whose content sits in a box, and it should
+render directly on the page ground like search results, history & stats, and system do. The "one ground" binding
+constraint is therefore withdrawn; the border constraint alone remains binding. This is valid on this ADR's own terms
+because the strengthened outline was authored as the dedicated `inputOutline` token `rgba(255, 255, 255, 0.35)` and
+measured on both grounds: 3.17:1 on `background.default` `#1f2426` and 3.08:1 on `background.paper` `#262c2e`, both
+≥ 3:1 (WCAG 1.4.11) — the border reads regardless of what the field sits on. The residual difference — the
+`surfaces.recessed` `#1c2224` input fill reads as a well on dialog paper and near-co-planar on the page ground — is
+accepted. The `shrink: true` constraint and the state-distinguishability constraint stand unchanged. Implemented by
+FM-147.
+
 ## ADR-0037 — Actionable toast content forbidden; no `FocusTrap` relaxation (accepted 2026-08-29)
 
 Question: a persistent toast raised over an open modal (`NotificationToasts.tsx`'s `RouterLink` content) cannot be

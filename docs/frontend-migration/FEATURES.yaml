@@ -86,6 +86,13 @@ features:
       - search-advanced-panel
       # FM-087's constraint-chip row: the live status chips the search bar
       # renders for constraints whose fields sit inside the Advanced panel.
+      # FM-146: the row itself renders only while Advanced is open or a chip
+      # has something to show (`advancedOpen || hasChips`), so it is absent
+      # from the DOM on the collapsed, empty default form. FM-149 (owner
+      # follow-up 2026-08-30) puts that predicate on the row's own `Collapse`
+      # (`unmountOnExit`), so the row's space animates in and out with the
+      # Advanced panel instead of appearing in one frame -- still absent from
+      # the DOM once collapsed.
       - search-chips
       - search-chip-age
       - search-chip-size

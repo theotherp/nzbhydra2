@@ -677,16 +677,51 @@ test.describe("Search", () => {
         }
     });
 
+    // FM-146 (owner revision of FM-143's same-day rule): the chips row is
+    // now omitted while Advanced is collapsed and no constraint is set, so
+    // the initial form has no empty band below the input row and the footer
+    // sits directly under it. `search-chips` must not exist at all (not just
+    // be empty), and the gap from the input row's bottom edge to the
+    // footer's top edge must be the fixed chrome only -- comfortably under
+    // the 32px `chipsRowMinHeight` reserved once Advanced opens or a
+    // constraint is set.
+    test("should hide the chips row and close the gap on the collapsed, empty form (FM-146)", async ({
+        page,
+    }) => {
+        await expect(
+            page.getByTestId("search-advanced-toggle"),
+        ).toHaveAttribute("aria-expanded", "false");
+        await expect(page.getByTestId("search-chips")).toHaveCount(0);
+
+        const primaryBox = await page
+            .getByTestId("workspace-primary")
+            .boundingBox();
+        const actionsBox = await page
+            .getByTestId("workspace-actions")
+            .boundingBox();
+        expect(primaryBox).not.toBeNull();
+        expect(actionsBox).not.toBeNull();
+        if (primaryBox && actionsBox) {
+            const gap = actionsBox.y - (primaryBox.y + primaryBox.height);
+            expect(gap).toBeLessThan(32);
+        }
+    });
+
     // FM-143: the chips row's space is always reserved, so the first chip
     // appearing (and the last one disappearing) must move nothing below it.
-    // Advanced is opened and left open for the whole test -- the Collapse's
-    // own open/close movement is a deliberate, separate animation and must
-    // not be captured here. The Advanced panel's own top edge is measured
+    // Advanced is opened and left open for the whole test -- the open/close
+    // movement of the panel's `Collapse` and of the chips row's own one
+    // (FM-149) is a deliberate, separate animation and must not be captured
+    // here, so every box below is read once both have come to rest. The
+    // Advanced panel's own top edge is measured
     // (not `workspace-actions`, further down): it sits immediately below the
     // chips row, so its y is affected only by the primary row and the chips
     // row above it -- not by anything that shifts height inside the panel
     // itself (a focused field's adornment, an indexer-selection reflow),
-    // which would otherwise be misattributed to the chips row.
+    // which would otherwise be misattributed to the chips row. This
+    // reservation now applies only while Advanced is open or a constraint
+    // is set (FM-146's `advancedOpen || hasChips` revision); this test keeps
+    // Advanced open throughout, so the row it exercises is unaffected.
     test("should not shift the layout below the chips row when the first chip appears or the last one disappears (FM-143)", async ({
         page,
     }) => {
@@ -696,6 +731,17 @@ test.describe("Search", () => {
         const ageChip = page.getByTestId("search-chip-age");
 
         await expect(page.getByTestId("search-chips")).toBeVisible();
+        // FM-149: the row's space now animates open with the panel, so the
+        // baseline must be taken at rest -- `toBeVisible()` resolves on the
+        // first frame of that shared motion, where every y below is still
+        // travelling. Both `Collapse`s reach the `entered` state (height
+        // `auto`, transition finished) only once the motion has ended, which
+        // is exactly the moment this test's "nothing moves" comparison is
+        // about; the comparison itself is unchanged.
+        await expect(
+            page.locator('.MuiCollapse-root:has([data-testid="search-chips"])'),
+        ).toHaveClass(/MuiCollapse-entered/);
+        await expect(advancedPanel).toHaveClass(/MuiCollapse-entered/);
         await expect(ageChip).not.toBeVisible();
         const beforeBox = await advancedPanel.boundingBox();
         expect(beforeBox).not.toBeNull();

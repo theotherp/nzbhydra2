@@ -51,13 +51,39 @@ panel is open, as today. Season/episode leave this row (see Media section).
 
 ### Row 2 — status chips
 
-A wrapping row of MUI `Chip`s inside the bar surface. The row itself always
-renders (FM-143, owner request 2026-08-30): when no chip exists it reserves
-`minHeight: 32px` (MUI's default medium `Chip` height), so the first chip
-appearing does not push the Advanced panel down and the last chip's removal
-does not snap it back up. The reservation covers exactly one row; if chips
-wrap onto a second row the form may still grow downward — an accepted
-boundary of the fix, not asserted anywhere. Chips use the theme's existing
+A wrapping row of MUI `Chip`s inside the bar surface. The row renders iff
+`advancedOpen || hasChips` (FM-146, the owner's same-day 2026-08-30 revision
+of FM-143's original "always renders" rule): `hasChips` is true whenever any
+chip in the table below would render, computed from the exact same
+predicates so the row and its contents can never disagree. While Advanced is
+open the row still always renders and reserves `minHeight: 32px` (MUI's
+default medium `Chip` height) when no chip exists, exactly as FM-143 built
+it, so the first chip appearing does not push the Advanced panel down and
+the last chip's removal does not snap it back up. While Advanced is
+collapsed and no chip exists, the row is omitted entirely instead of
+reserving that empty space — the compact-initial-form rationale: a first
+visit with nothing set should show the input row with the "Recent searches"
+footer directly under it, not an empty 32px band advertising a feature nobody
+has used yet. Active constraints still force the row into view even while
+collapsed, since a rendered chip makes `hasChips` true regardless of
+`advancedOpen`, so an existing constraint is never hidden outside the panel.
+The row's appearance and disappearance are animated: it lives inside its own
+`Collapse` (`unmountOnExit`) driven by that same `advancedOpen || hasChips`
+predicate, at the same duration as the Advanced panel's `Collapse` beside it,
+so opening or closing Advanced with no chips set moves the panel's top
+hairline and everything below it in one motion (FM-149, the owner's
+2026-08-30 follow-up). This supersedes FM-146's "no `Collapse`/animation
+smooths it" boundary: without it the row mounted and unmounted in a single
+frame while the panel animated, so the hairline blinked 42px into place
+ahead of the rest — and by the same rule, deleting the last chip while
+Advanced is collapsed now animates the row away instead of snapping the
+footer up. The 42px the row reserves is its 32px content row plus the 10px
+that separates it from the input row; that gap is `padding-top` inside the
+collapsing element rather than a margin above it, because a margin on the
+`Collapse` child collapses through `MuiCollapse-wrapperInner` and is excluded
+from the animated height. The reservation covers exactly one row; if chips wrap
+onto a second row the form may still grow downward — an accepted boundary of
+the original fix, not asserted anywhere. Chips use the theme's existing
 pill language
 (`MuiChip` override: 26 px, `pillRadius`; label in `monoFontFamily` 12 px)
 — visually the refine-surface `refineChip` family, delivered by the stock

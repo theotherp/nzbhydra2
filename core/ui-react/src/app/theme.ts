@@ -965,6 +965,16 @@ export function createHydraTheme(
                         // `background.paper` mean `background.paper` on every
                         // raised surface, which is what lets one field render
                         // one way.
+                        //
+                        // FM-147 has since removed that tab-body `Paper` again
+                        // (ADR-0036's 2026-08-30 amendment: config renders on
+                        // the page ground like every other section), so the
+                        // grounds a field can sit on are two, not one. This
+                        // line is unaffected and stays: a raised surface whose
+                        // colour depends on its elevation is exactly what made
+                        // "what ground is this?" unanswerable, and every
+                        // measurement in this file is taken against flat
+                        // surfaces.
                         backgroundImage: "none",
                         // The mock's results card is `border-radius:12px`.
                         // Raised, non-square surfaces (cards, menus, dialogs,
@@ -1126,24 +1136,33 @@ export function createHydraTheme(
                     //
                     // So the suggestion list behind all 21 `ChipsSetting` call
                     // sites and `SettingsSearchField` opened at exactly
-                    // `background.paper` `#262c2e` over config surfaces that
-                    // are now also `#262c2e`: **1.000:1**, a floating list with
-                    // nothing but a near-black elevation shadow between it and
-                    // the page. At base it was the elevation-1 wash `#313739`,
-                    // **1.294:1** over the then-`background.default` tab body
-                    // and 1.169:1 over `background.paper`.
+                    // `background.paper` `#262c2e` over the config surfaces
+                    // that were `#262c2e` too while FM-117's tab-body `Paper`
+                    // stood: **1.000:1**, a floating list with nothing but a
+                    // near-black elevation shadow between it and the page. At
+                    // base it was the elevation-1 wash `#313739`, **1.294:1**
+                    // over the `background.default` tab body and 1.169:1 over
+                    // `background.paper`.
                     //
                     // Restored with the treatment this theme already gives its
                     // other two floating lists rather than inventing a third:
                     // the raised `surfaces.control` fill plus a
                     // `surfaces.hairline` edge. Measured, the fill reads
-                    // **1.070:1** against a config tab body and **1.185:1**
+                    // **1.070:1** against `background.paper` and **1.185:1**
                     // against `background.default`, and the edge -- which is
                     // what actually delimits the list -- **1.465:1** and
                     // **1.622:1**, both above the 1.294:1 boundary the base
                     // build had. `backgroundImage` is deliberately not
                     // restated: `MuiPaper.root` now says it once for every
                     // surface, which is the point of that rule.
+                    //
+                    // FM-147 removed the tab-body `Paper` again on the owner's
+                    // request (ADR-0036's 2026-08-30 amendment), so a list
+                    // opened over a config tab is back on the
+                    // `background.default` pair of those numbers -- 1.185:1
+                    // and 1.622:1, the better-separated of the two. The
+                    // treatment is unchanged; only which ground a config
+                    // surface presents is.
                     paper: ({theme}) => ({
                         backgroundColor: theme.palette.surfaces.control,
                         border: `1px solid ${theme.palette.surfaces.hairline}`,
@@ -1185,25 +1204,30 @@ export function createHydraTheme(
             // notification entry list
             // (`NotificationEntriesSection.tsx:142`) renders one
             // default-elevation `Accordion` -- a borderless `Paper` -- per
-            // entry directly inside the new `config-tab-body` `Paper`. Both
-            // are now exactly `background.paper` `#262c2e`, so the card
-            // boundary that measured **1.294:1** at base (the elevation-1 wash
-            // `#313739` over the then-`background.default` `#1f2426` tab body)
-            // measured **1.000:1** afterwards: the entries stopped reading as
-            // raised cards and became flat rows separated only by MUI's
-            // `divider` hairline.
+            // entry inside the config tab body. While FM-117's tab-body
+            // `Paper` stood, both were exactly `background.paper` `#262c2e`,
+            // so the card boundary that measured **1.294:1** at base (the
+            // elevation-1 wash `#313739` over the `background.default`
+            // `#1f2426` tab body) measured **1.000:1** afterwards: the entries
+            // stopped reading as raised cards and became flat rows separated
+            // only by MUI's `divider` hairline.
             //
             // Given the same raised treatment as the floating lists below --
             // `surfaces.control` fill plus a `surfaces.hairline` edge -- so
             // that "a raised surface in this application looks like this" has
-            // one answer. Measured against the tab body it now sits on: the
-            // fill lifts the card to **1.070:1** and the edge reads
-            // **1.465:1**, i.e. a stronger boundary than the base build's
-            // 1.294:1. The fields inside keep their outline: ADR-0036's
-            // `inputOutline` measures **3.01:1** against `surfaces.control`,
-            // still clearing WCAG 1.4.11's 3:1, and the recessed field fill
-            // separates from the card at 1.216:1 rather than the 1.169:1 it
-            // had against `background.paper`.
+            // one answer. Measured on `background.paper`: the fill lifts the
+            // card to **1.070:1** and the edge reads **1.465:1**, i.e. a
+            // stronger boundary than the base build's 1.294:1. FM-147 then
+            // removed the tab-body `Paper` on the owner's request (ADR-0036's
+            // 2026-08-30 amendment), so the ground these cards actually sit on
+            // is `background.default` again and the pair is the wider
+            // **1.185:1** / **1.622:1** -- better separation, not worse, and
+            // the treatment itself is untouched. The fields inside keep their
+            // outline either way: ADR-0036's `inputOutline` measures
+            // **3.01:1** against `surfaces.control`, still clearing WCAG
+            // 1.4.11's 3:1, and the recessed field fill separates from the
+            // card at 1.216:1 rather than the 1.169:1 it had against
+            // `background.paper`.
             //
             // The geometry has to move with the colour. MUI stacks accordions
             // flush and separates them with a 1px `::before` divider precisely

@@ -1121,6 +1121,65 @@ row as the reservation's accepted boundary. All `core/ui-react` gates and the re
 minor findings; the reviewer re-ran typecheck and the unit file himself, verified the two-directional bracket, and
 inspected all four screenshots.
 
+FM-149 (Fold The Chips Row Into The Advanced Collapse Motion) fixed the owner's FM-146 follow-up (2026-08-30): the
+chips row's instant mount/unmount made the advanced panel's top hairline "blink" 42px while the panel animated. The
+row's visibility now rides its own `Collapse` (`unmountOnExit`, the `SettingRow` precedent) driven by the unchanged
+`advancedOpen || hasChips`, with the 10px gap moved from `mt` into the collapsing element as `pt` counted into
+`chipsRowReservedHeight` = 42px border-box — the margin-collapse trap that would otherwise leave a 10px snap at
+animation end. Delete-last-chip while collapsed now animates too, the revised FM-146 boundary recorded in
+`search-form-redesign.md` and `FEATURES.yaml`. Per-frame samples show one eased curve both ways; the FM-143 bracket
+test kept its three byte-identical comparisons and only gained `MuiCollapse-entered` waits before the baseline read
+(it had become flaky by sampling mid-travel frames), mutation-checked to still fail without the reservation. All
+gates green, real-backend `search.spec.ts` 17/17. Accepted on a fresh independent review with no required findings;
+the reviewer resolved the geometry constants out of the actually-served bundle to prove the passing run carried the
+reservation, and audited the verification timeline against the junit report. Passed with minor findings, not
+corrected (optional): a vacuous `not.toHaveClass("MuiCollapse-hidden")` assertion in the structural pin, and nothing
+pins the `pt`-inside-measured-height fix itself (reverting to `mt` would stay green while restoring the end-of-motion
+snap — a cheap jsdom padding assertion would close it). Candidates for a future quickfix. The live motion sign-off
+remains the owner's: toggle Advanced both ways and delete the last chip while collapsed.
+
+FM-148 (Cap Config Help And Error Text To The Control's 560px Column) made each config setting row read as one unit
+(owner request 2026-08-30): a module-level `settingColumnMaxWidth = 560` in `SettingRow.tsx` is now the single
+`maxWidth` source for the control box and both `FormHelperText` blocks, so help and error prose wrap at the control's
+right edge instead of spanning the full unboxed tab body, while the page keeps its full-width layout. The reading-width
+rationale comment moved above the constant; ids, order, `aria-describedby` wiring, and the tooltip/Advanced-chip
+placement outside the cap are unchanged. A component test pins all three boxes at 560px (each assertion proved
+red-first), 37/37 green; the strip was captured on the unboxed FM-147 tab body against the real backend. Accepted on a
+fresh independent review whose only required finding was this STATUS.md entry itself lagging the packet's `review`
+status — coordinator-owned lifecycle bookkeeping, discharged by this reconciliation with `validate:migration` re-run
+clean at commit; every substantive criterion passed with no findings (the reviewer grepped for shadow `560` literals,
+re-ran the suite, and confirmed the desktop wrap edge in the captures).
+
+FM-147 (Unbox The Config Tab Body And Detach The Save Bar From The Header) executed the owner's 2026-08-30 config
+requests under the same-day ADR-0036 amendment: the `config-tab-body` `Paper` became a plain `Box` (testid, flex, and
+`p` inset kept; no ground, border, radius, or shadow of its own), so config fields render on the page ground
+`#1f2426` like every other section, and the sticky save bar rests 24px (`mt: 3`) below the header — measured live at
+both viewports — while still pinning to the viewport top on scroll, now as a rounded, fully-edged detached strip
+(`borderRadius: 1.5`, the theme's stock 12px, restated because `elevation={0}` opts out of `MuiPaper`'s rule).
+`config-control-treatment.spec.ts`'s one-ground equality became per-ground ≥ 3:1 outline assertions over each
+surface's effective rendered ground via a new `effectiveGround()` compositing helper; `config.spec.ts` and
+`config-categories.spec.ts` pass unmodified. Accepted on a fresh independent review with no required findings; the
+reviewer re-mutated the outline assertion by arithmetic (a weakened hairline scores 1.36:1, far under the 3:1 floor),
+verified the dialog capture stays readable, and confirmed the theme.ts delta is comment-only. Passed with minor
+findings, not corrected (optional): `effectiveGround`'s opacity check would misparse an `oklch()` background (latent —
+all grounds are hex tokens, and the colour pins catch it in the one-ground test); the "no box" probe samples only the
+top border/radius; and the pinned bar's rounded top corners let ~12px of same-ground content scroll behind them
+(closing it needs scroll-state styling, deliberately out of scope — owner ruling if it bothers). Candidates for a
+future quickfix / owner ruling.
+
+FM-146 (Hide The Chips Row While Advanced Is Collapsed And Empty) revised FM-143's same-day reserved-row rule on the
+owner's request ("the best of two worlds"): the `search-chips` box now renders iff `advancedOpen || hasChips`, with
+`hasChips` built from the exact predicates that guard the seven chips so the row and its contents cannot drift. The
+initial collapsed form has no 32px band under the search field — the input-row→footer gap is asserted < 32px against
+the real backend — while the expanded panel keeps FM-143's jump-free reservation (its bracket test retained and still
+meaningful) and active constraints stay visible when collapsed. The accepted boundary (deleting the last chip while
+collapsed moves the footer up in one step, no animation) is recorded in `search-form-redesign.md`'s rewritten Row 2
+rule. Accepted on a fresh independent review with no required and no minor findings; the reviewer compared the
+predicates line-by-line, re-ran all gates including the full real-backend `search.spec.ts` run (17/17), and confirmed
+by inspection that the bracket test still guards the reservation. One reviewer observation, no action needed: the
+handoff screenshots were captured without configured indexers, a slightly different DOM state than the automated gap
+assertion's own condition, which the reviewer's live re-run covered directly.
+
 FM-144 (History & Stats Placeholder Blink Elimination) eliminated the section-switch blink (owner request 2026-08-30):
 `features/stats/shared/Loading.tsx` now renders nothing for its first 300ms mounted (one named constant, one timer,
 cleared on unmount) before showing its unchanged anatomy, so a fast backend answer never flashes the placeholder.
@@ -1183,6 +1242,19 @@ None.
 None.
 
 ## Upcoming
+
+- FM-146 (Hide The Chips Row While Advanced Is Collapsed And Empty) is done (entry above): the owner's
+  2026-08-30 revision of FM-143's reserved-row rule — the `search-chips` row renders only while `advancedOpen ||
+  hasChips`, so the initial collapsed form has no 32px band under the search field, while the expanded panel keeps
+  FM-143's jump-free reservation and active constraints stay visible when collapsed.
+
+- FM-147 (Unbox The Config Tab Body And Detach The Save Bar From The Header) is done (entry above): the
+  owner's 2026-08-30 config requests — the `config-tab-body` `Paper` goes (fields render on `background.default`,
+  relaxing ADR-0036 to its border constraint; the coordinator appends the amendment to `DECISIONS.md` before merge)
+  and the sticky save bar rests `mt: 3` below the nav bar, still pinning on scroll.
+
+- FM-148 (Cap Config Help And Error Text To The Control's 560px Column), first of the second 2026-08-30 owner-request
+  batch FM-148..FM-149, is done (entry above), as is FM-149 (chips-row collapse motion) — the batch is complete.
 
 - FM-142 (Refine Header Declutter And Uncramp), first of the 2026-08-30 owner-request batch FM-142..FM-145, is done
   (entry above), as are FM-145 (StatsComponentTest context reuse), FM-143 (search-chips reserved row), and FM-144
