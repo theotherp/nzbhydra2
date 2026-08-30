@@ -5,7 +5,6 @@ import org.mockito.Mockito;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -73,7 +72,17 @@ class SystemTestStateResetWebTest {
         return context;
     }
 
-    @Configuration
+    /**
+     * Deliberately NOT annotated {@code @Configuration}: this nested class compiles to its own class file inside
+     * {@code org.nzbhydra}, and during {@code mvn test} the application's {@code @ComponentScan} sees the test
+     * classpath - a {@code @Configuration} here is picked up by every {@code @SpringBootTest} booting
+     * {@code NzbHydra}, and its {@code @EnableWebMvc} import of {@code DelegatingWebMvcConfiguration} then collides
+     * with {@code WebConfiguration extends WebMvcConfigurationSupport}
+     * ({@code BeanDefinitionOverrideException: requestMappingHandlerMapping}), failing unrelated tests such as
+     * {@code StatsComponentTest}. Explicit registration through {@link AnnotatedBeanDefinitionReader} still
+     * processes {@code @EnableWebMvc}'s {@code @Import} without {@code @Configuration} (a "lite" candidate), which
+     * this class's own tests prove: without working MVC infrastructure neither branch could answer at all.
+     */
     @EnableWebMvc
     static class TestWebConfig {
     }
