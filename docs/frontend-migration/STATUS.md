@@ -1066,6 +1066,17 @@ and the DISABLED_USER A/B's decisive log rows weren't captured. Candidates for a
 recorded FM-139 follow-ups (reset leaves `main.apiKey` null contrary to its javadoc; ADR-0048's "cannot reach"
 wording overstated).
 
+FM-136 (Refine Surface Shell Extraction) opened the ADR-0046 batch: the docked/rail/drawer refine chrome left
+`RefineSidebar.tsx` for `C-REFINE-SURFACE` (`components/refine/RefineSurface.tsx`) -- the 248px column, its 48px rail,
+the sub-768px drawer, the header row, paddings, transition and sticky offset, with `useCompactRefineSurface` beside
+them. The shell owns no filter state and imports nothing from `features/`; sections, clear-all, summary, sticky offset,
+labels and test ids arrive as props, so every results selector resolves unchanged and both spec files needed no edit.
+Parity was proven, not asserted, FM-110-style: `outerHTML`, the whole branch subtree and the emotion stylesheet
+captured for all three branches at baseline and after, byte-identical including class hashes -- and the reviewer
+reproduced the probe independently from two scratch replicas. No required findings. One minor finding, not fixed
+(pre-existing and reproduced at baseline): `npm run knip` exits 1 on an unused `RepeatSection` export in
+`features/config/components/index.ts:14`, orphaned when FM-105 removed its last consumer. Single-session fix candidate.
+
 ## Active
 
 None.
@@ -1093,10 +1104,9 @@ None.
 
 ## Upcoming
 
-- FM-136: Refine Surface Shell Extraction. `ready`, dependency-free — first of the 2026-08-29 ADR-0046 batch
-  (FM-136..FM-137, the history-refine redesign per `history-refine-redesign.md`). Extracts the docked/rail/drawer
-  refine chrome from `RefineSidebar.tsx` into a shared `C-REFINE-SURFACE` shell under `components/refine/`, with the
-  results page re-based on it at proven byte parity. FM-137 (history adoption) stays `planned` until FM-136 is done.
+- FM-137: History Refine Sidebar Adoption. `ready` now that FM-136 is done -- closes the 2026-08-29 ADR-0046 batch by
+  moving the three history views off the horizontal bar onto the shared refine surface, with the docked collapsed
+  state shared across them under `hydra.history.refine`.
 
 - FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect

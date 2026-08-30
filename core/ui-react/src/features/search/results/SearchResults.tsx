@@ -32,11 +32,12 @@ import {ApiTransport} from "../../../api/transport";
 import {denseControlFontSize} from "../../../app/theme";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
+import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {writeItem} from "../../../domain/storage/browserStorage";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase, DownloadActions} from "./DownloadActions";
-import {RefineSidebar, useCompactRefineSurface} from "./RefineSidebar";
+import {RefineSidebar} from "./RefineSidebar";
 import {ResultRow} from "./ResultRow";
 import {DisplayOptionsMenu, RejectedResultsTrigger} from "./ResultsPopovers";
 import {SelectionMenu} from "./SelectionMenu";
@@ -247,13 +248,14 @@ export function SearchResults({
     // the docked column, and its open state is a transient overlay state, not
     // a preference: it always starts closed and is deliberately absent from
     // the persisted `hydra.search-results.table` payload (see FM-045's
-    // rationale in `RefineSidebar.tsx`). FM-041 moved the state here -- and
-    // only the state, not its lifecycle -- so the display-options "Show refine
-    // sidebar" entry can read and write whichever of the two per-branch
-    // mechanisms is actually mounted.
+    // rationale in `components/refine/RefineSurface.tsx`). FM-041 moved the
+    // state here -- and only the state, not its lifecycle -- so the
+    // display-options "Show refine sidebar" entry can read and write whichever
+    // of the two per-branch mechanisms is actually mounted.
     const [refineDrawerOpen, setRefineDrawerOpen] = useState(false);
-    // The same branch decision `RefineSidebar` itself makes, from the one
-    // shared definition of it, so the entry can never disagree with the live
+    // The same branch decision the refine surface itself makes, from the one
+    // shared definition of it (`C-REFINE-SURFACE`, which owns both branches
+    // since FM-136), so the entry can never disagree with the live
     // `refine-sidebar-toggle`.
     const refineSurfaceCompact = useCompactRefineSurface();
     const refineSurfaceShown = refineSurfaceCompact
@@ -1139,7 +1141,7 @@ export function SearchResults({
                                     // every header legible. Below the
                                     // breakpoint the table renders as
                                     // unrelated stacked cards instead
-                                    // (`RefineSidebar.tsx`'s shared
+                                    // (`C-REFINE-SURFACE`'s shared
                                     // `useCompactRefineSurface()` moves
                                     // its docked/drawer branch to the
                                     // same threshold, so the sidebar and

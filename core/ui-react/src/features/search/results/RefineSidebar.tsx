@@ -2,24 +2,22 @@ import {
     Box,
     Button,
     Collapse,
-    Drawer,
-    Paper,
     Stack,
     TextField,
     Typography,
-    useMediaQuery,
 } from "@mui/material";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import CloseIcon from "@mui/icons-material/Close";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {useTheme} from "@mui/material/styles";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo} from "react";
 
 import type {SearchResult} from "../../../api/search";
 import {denseControlFontSize, refineSectionGap} from "../../../app/theme";
+import type {
+    RefineSurfaceLabels,
+    RefineSurfaceTestIds,
+} from "../../../components/refine/RefineSurface";
+import {RefineSurface} from "../../../components/refine/RefineSurface";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, quickFilterKey} from "./resultTable";
@@ -38,55 +36,26 @@ function canonicalFilters(value: ResultFilters): string {
     });
 }
 
-// FM-054 (ADR-0014): the mock's `<aside style="flex:0 0 248px;...;
-// padding:18px 16px 40px;">` panel padding, kept as a local layout constant
-// (not an exported design token -- ADR-0014 forbids a per-feature
-// `*Styles.ts` token file, not an in-component spacing constant) since it is
-// neither a color, a font, nor a radius value.
-//
-// FM-129: it is stated in theme spacing units now (18/16/40/8 are all exact
-// steps of the sx spacing scale, so nothing moves). The section rhythm that
-// used to be declared beside it is `theme.ts`'s exported `refineSectionGap`
-// instead of a second declaration of the same 22px -- the value
-// `C-HISTORY-REFINE-BAR` already reproduces from there.
-const SIDEBAR_PADDING = {pb: 5, pt: 2.25, px: 2} as const;
-const COLLAPSED_SIDEBAR_PADDING = {pb: 2.25, pt: 2.25, px: 1} as const;
-
-// Exported so `SearchResults.tsx` can compute how much horizontal room the
-// sidebar currently claims (e.g. to size the results table's minimum width
-// consistently whether the sidebar is expanded or collapsed). The expanded
-// width is the mock's own `<aside style="flex:0 0 248px">`.
-const EXPANDED_WIDTH = 248;
-const COLLAPSED_WIDTH = 48;
-
-// The single definition of "which refine-surface branch is live". Exported so
-// `SearchResults.tsx` resolves the same branch this component renders (FM-041's
-// "Show refine sidebar" display-options entry has to read and write whichever
-// of the two mechanisms is mounted) without duplicating the breakpoint query
-// string, which could then drift from this file's own.
-//
-// `useTheme()` from `@mui/material/styles` (rather than `useMediaQuery`'s own
-// callback form) so the breakpoint still resolves in a component test that
-// renders without a `ThemeProvider`, where `@mui/system`'s theme context is
-// null.
-//
-// FM-042 (ADR-0011): eight table columns cannot render legibly at MUI's
-// `sm` (600px), and legacy's own measured stacking threshold is 767px
-// (`core/ui-src/less/partials/tables.less:91`'s `@media (max-width:
-// @screen-xs-max)`, resolved from the compiled `bright.css` to 767px) --
-// closer to MUI's `md` (900px) than to `sm`, but neither names it exactly.
-// `theme.breakpoints.values` is `theme.ts`'s territory and out of this
-// task's scope, so the threshold is expressed as the raw pixel value 768
-// passed directly to `theme.breakpoints.down` (which resolves it as a
-// literal `@media (max-width:767.95px)`, not a lookup against
-// `theme.breakpoints.values`) rather than through a named `sm`/`md` token.
-// `SearchResults.tsx`'s own stacked-card breakpoint passes the identical
-// raw value to `theme.breakpoints.down`, so the table's stacking branch and
-// this hook's drawer branch switch at the same computed width.
-export function useCompactRefineSurface(): boolean {
-    const theme = useTheme();
-    return useMediaQuery(theme.breakpoints.down(768));
-}
+// The results page's own chrome vocabulary for ADR-0046's shared refine
+// surface. Both objects are compatibility contracts of this feature, not of
+// the shell: `refine-sidebar`, `-toggle`, `-drawer`, `-close` and
+// `refine-clear-all` are the ids `SearchResults.test.tsx` and
+// `tests/system/tests/results.spec.ts` have always queried, and the accessible
+// names are the ones this page's controls have always announced.
+const REFINE_LABELS: RefineSurfaceLabels = {
+    close: "Close refine sidebar",
+    collapse: "Collapse refine sidebar",
+    expand: "Expand refine sidebar",
+    heading: "Refine",
+    surface: "Refine results",
+};
+const REFINE_TEST_IDS: RefineSurfaceTestIds = {
+    clearAll: "refine-clear-all",
+    close: "refine-sidebar-close",
+    drawer: "refine-sidebar-drawer",
+    surface: "refine-sidebar",
+    toggle: "refine-sidebar-toggle",
+};
 
 // The "Refine" filter sidebar. Since FM-045 (ADR-0009: full mock fidelity)
 // it is the *only* result-filter surface at every viewport: FM-034's inline
@@ -97,14 +66,12 @@ export function useCompactRefineSurface(): boolean {
 // `ResultFilters` state those removed surfaces drove; no second, independent
 // filter state exists.
 //
-// At `sm` and up it renders as the mock's persistent, collapsible left
-// column. Below `sm` a 248px docked column would compete with the table for
-// the whole viewport width, so the identical sections render inside a
-// temporary MUI `Drawer` opened by the same `refine-sidebar-toggle` control
-// instead. Which of the two renders is decided in JavaScript
-// (`useMediaQuery`) rather than by CSS `display`, so exactly one copy of
-// every control exists in the DOM at a time and no duplicate accessible name
-// or `data-testid` is ever present.
+// FM-136 (ADR-0046): the chrome around those sections -- the docked column,
+// its 48px collapsed rail, the sub-768px `Drawer` that replaces both, and the
+// header row -- is `C-REFINE-SURFACE`'s now. This component decides *what*
+// filters exist and holds their binding to `ResultFilters`; the shell decides
+// where the surface sits and how it collapses, for this page and for the
+// history views alike.
 export function RefineSidebar({
     categoryOpen,
     clearRange,
@@ -131,12 +98,12 @@ export function RefineSidebar({
     categoryOpen: boolean;
     clearRange: (name: "size" | "grabs" | "age") => void;
     collapsed: boolean;
-    // The below-`sm` drawer's open state, owned by `SearchResults.tsx` since
+    // The below-768px drawer's open state, owned by `SearchResults.tsx` since
     // FM-041 so its display-options "Show refine sidebar" entry can read and
-    // write the same mechanism this branch's `refine-sidebar-toggle` drives.
-    // Deliberately *not* the persisted `collapsed` preference and deliberately
-    // still unpersisted (see the branch's own note below): only the state's
-    // owner moved, its lifecycle did not change.
+    // write the same mechanism the `refine-sidebar-toggle` drives. Deliberately
+    // *not* the persisted `collapsed` preference and deliberately still
+    // unpersisted (the rationale lives with the shell that renders the drawer):
+    // only the state's owner moved, its lifecycle did not change.
     drawerOpen: boolean;
     filters: ResultFilters;
     indexerOpen: boolean;
@@ -151,11 +118,11 @@ export function RefineSidebar({
     setFilters: Dispatch<SetStateAction<ResultFilters>>;
     // FM-055: the sticky results toolbar's *measured* rendered height, owned
     // and re-measured by `SearchResults.tsx` (which already maintains it for
-    // the table header's own sticky offset). The docked branch below pins
-    // itself directly beneath that toolbar and sizes its own scroll box
-    // against it, so the value is passed down rather than duplicated or
-    // hardcoded here -- the toolbar's height changes with viewport width,
-    // font loading, and its own wrapping.
+    // the table header's own sticky offset). It is handed on as the shell's
+    // `stickyOffset`, so the docked branch pins itself directly beneath that
+    // toolbar and sizes its own scroll box against it, rather than the value
+    // being duplicated or hardcoded -- the toolbar's height changes with
+    // viewport width, font loading, and its own wrapping.
     toolbarHeight: number;
     updateRange: (
         name: "size" | "grabs" | "age",
@@ -163,15 +130,6 @@ export function RefineSidebar({
         value: string,
     ) => void;
 }) {
-    const compact = useCompactRefineSurface();
-    // `drawerOpen` is deliberately not the persisted `collapsed` preference:
-    // that preference describes the docked desktop column, and reusing it here
-    // would pop an overlay open over the results the moment a desktop user
-    // with an expanded sidebar opened the same page on a phone. The drawer
-    // always starts closed and is opened on demand. Since FM-041 the state
-    // itself lives in `SearchResults.tsx` (see the prop docs above) so the
-    // display-options menu can drive it; that lift changed the owner only, not
-    // this rationale or the state's initial value.
     const indexerEntries = useMemo(
         () => results.map((result) => result.indexer),
         [results],
@@ -342,190 +300,21 @@ export function RefineSidebar({
             )}
         </Stack>
     );
-    const clearAll = (
-        <Button
-            data-testid="refine-clear-all"
-            disabled={!hasActiveFilters}
-            onClick={onClearAll}
-            size="small"
-            sx={{
-                color: "primary.main",
-                fontSize: denseControlFontSize,
-                minWidth: 0,
-                px: 0.5,
-                py: 0.25,
-            }}
-        >
-            Clear all
-        </Button>
-    );
-
-    if (compact) {
-        return (
-            <>
-                <Button
-                    aria-expanded={drawerOpen}
-                    aria-haspopup="dialog"
-                    aria-label={
-                        drawerOpen
-                            ? "Collapse refine sidebar"
-                            : "Expand refine sidebar"
-                    }
-                    data-testid="refine-sidebar-toggle"
-                    onClick={() => onDrawerOpenChange(!drawerOpen)}
-                    size="small"
-                    // The shared neutral-secondary action; only the layout
-                    // rule is local. This trigger opens a `Drawer`, so it
-                    // carries a caret like every other menu/panel opener.
-                    endIcon={<ExpandMoreIcon />}
-                    sx={{alignSelf: "flex-start"}}
-                    variant="control"
-                >
-                    Refine
-                </Button>
-                <Drawer
-                    anchor="left"
-                    data-testid="refine-sidebar-drawer"
-                    onClose={() => onDrawerOpenChange(false)}
-                    open={drawerOpen}
-                    slotProps={{
-                        paper: {
-                            sx: {
-                                backgroundImage: "none",
-                                maxWidth: "100%",
-                                ...SIDEBAR_PADDING,
-                                width: `min(${EXPANDED_WIDTH + 32}px, 88vw)`,
-                            },
-                        },
-                    }}
-                >
-                    <Box
-                        aria-label="Refine results"
-                        component="nav"
-                        data-testid="refine-sidebar"
-                    >
-                        <RefineHeader
-                            actions={
-                                <>
-                                    {clearAll}
-                                    <Button
-                                        aria-label="Close refine sidebar"
-                                        data-testid="refine-sidebar-close"
-                                        onClick={() =>
-                                            onDrawerOpenChange(false)
-                                        }
-                                        size="small"
-                                        sx={{minWidth: 0, px: 0.75}}
-                                    >
-                                        <CloseIcon fontSize="small" />
-                                    </Button>
-                                </>
-                            }
-                            label="Refine"
-                        />
-                        {sections}
-                    </Box>
-                </Drawer>
-            </>
-        );
-    }
 
     return (
-        <Paper
-            aria-label="Refine results"
-            component="nav"
-            data-testid="refine-sidebar"
-            elevation={0}
-            sx={{
-                // FM-055: the docked column (expanded *and* collapsed rail
-                // alike) is pinned to the viewport directly beneath the
-                // sticky `results-toolbar` and scrolls within itself when it
-                // is taller than the space that leaves, so refinement stays
-                // reachable while the results list scrolls. ADR-0011 is
-                // unaffected: this scroll container is a flex *sibling* of
-                // the results table, never an ancestor of its header cells,
-                // so the table's own viewport-sticky column header keeps
-                // pinning against the document.
-                alignSelf: "flex-start",
-                backgroundColor: "transparent",
-                borderRadius: 0,
-                borderRight: "1px solid",
-                borderRightColor: "surfaces.hairlineFaint",
-                flexShrink: 0,
-                maxHeight: `calc(100vh - ${toolbarHeight}px)`,
-                // `overflowX` stays clipped (it was the previous blanket
-                // `overflow: hidden`'s job) so the width transition below
-                // never produces a horizontal scrollbar mid-animation.
-                overflowX: "hidden",
-                overflowY: "auto",
-                ...(collapsed ? COLLAPSED_SIDEBAR_PADDING : SIDEBAR_PADDING),
-                position: "sticky",
-                top: `${toolbarHeight}px`,
-                transition:
-                    "width 150ms ease-in-out, padding 150ms ease-in-out",
-                width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
-            }}
+        <RefineSurface
+            clearAllDisabled={!hasActiveFilters}
+            collapsed={collapsed}
+            drawerOpen={drawerOpen}
+            labels={REFINE_LABELS}
+            onClearAll={onClearAll}
+            onDrawerOpenChange={onDrawerOpenChange}
+            onToggleCollapsed={onToggleCollapsed}
+            stickyOffset={toolbarHeight}
+            testIds={REFINE_TEST_IDS}
         >
-            <RefineHeader
-                actions={
-                    <>
-                        {!collapsed && clearAll}
-                        <Button
-                            aria-expanded={!collapsed}
-                            aria-label={
-                                collapsed
-                                    ? "Expand refine sidebar"
-                                    : "Collapse refine sidebar"
-                            }
-                            data-testid="refine-sidebar-toggle"
-                            onClick={onToggleCollapsed}
-                            size="small"
-                            sx={{
-                                color: "surfaces.mutedText",
-                                minWidth: 0,
-                                px: 0.75,
-                            }}
-                        >
-                            {collapsed ? (
-                                <ChevronRightIcon fontSize="small" />
-                            ) : (
-                                <ChevronLeftIcon fontSize="small" />
-                            )}
-                        </Button>
-                    </>
-                }
-                label={collapsed ? undefined : "Refine"}
-            />
-            {!collapsed && sections}
-        </Paper>
-    );
-}
-
-function RefineHeader({
-    actions,
-    label,
-}: {
-    actions: ReactNode;
-    // Absent only for the collapsed desktop rail, which has room for the
-    // toggle alone.
-    label?: string;
-}) {
-    return (
-        <Stack
-            alignItems="center"
-            direction="row"
-            justifyContent="space-between"
-            sx={{mb: 2}}
-        >
-            {label !== undefined && (
-                <Typography component="span" variant="refineSurfaceLabel">
-                    {label}
-                </Typography>
-            )}
-            <Stack alignItems="center" direction="row" sx={{gap: 0.25}}>
-                {actions}
-            </Stack>
-        </Stack>
+            {sections}
+        </RefineSurface>
     );
 }
 

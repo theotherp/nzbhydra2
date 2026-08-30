@@ -4,7 +4,7 @@ Status: planned Owner:
 Feature IDs: F-HISTORY-SEARCHES, F-HISTORY-DOWNLOADS, F-HISTORY-NOTIFICATIONS
 Component IDs: C-HISTORY-REFINE-BAR, C-REFINE-SURFACE, C-BROWSER-STORAGE
 API IDs: None
-Depends on: FM-136
+Depends on: None
 Blocks: None
 
 ## Outcome

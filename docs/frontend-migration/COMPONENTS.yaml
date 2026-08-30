@@ -336,8 +336,10 @@ components:
     consumers:
       - F-SEARCH-SORT-FILTER
     classification: shared_hydra
-    state: planned
-    note: Registered ahead of implementation per README Registries; FM-136 extracts it and re-bases the results sidebar at strict parity, FM-137 adopts it for the three history views (which join consumers then).
+    state: partial
+    note: FM-136 extracted the shell and re-based the results sidebar on it at proven byte parity (the rendered refine-sidebar outerHTML is identical for the docked expanded, docked collapsed, and drawer branches). Its own labels
+      and data-testid values are props, so RefineSidebar.tsx keeps refine-sidebar/-toggle/-drawer/-close and refine-clear-all unchanged; useCompactRefineSurface moved into the shell module with it. Partial until FM-137 adopts it for
+      the three history views, which join consumers then.
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach
