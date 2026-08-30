@@ -26,9 +26,12 @@ import java.util.concurrent.TimeUnit;
  * Returns a running instance to a defined known state in one call, for system tests (ADR-0048).
  *
  * <p>The baseline is {@code config/baseConfig.yml}, read from the classpath of the running instance - the same file
- * {@link ConfigReaderWriter#initializeIfNeeded(java.io.File)} copies into an empty data folder, so a reset leaves the
- * instance in the state it boots into with a fresh data folder. That file is the one checked-in definition; no
- * second copy of the baseline exists, and nothing the client sends contributes a value.
+ * {@link ConfigReaderWriter#initializeIfNeeded(java.io.File)} copies into an empty data folder. That file is the one
+ * checked-in definition; no second copy of the baseline exists, and nothing the client sends contributes a value.
+ * Note that a reset applies the YAML verbatim and is therefore <em>not</em> identical to a fresh boot: booting on an
+ * empty data folder additionally runs {@code MainConfigValidator.initializeNewConfig}, which generates
+ * {@code main.apiKey} - this endpoint never does, so after a reset the key is {@code null} (the YAML's literal value)
+ * and a caller that needs authenticated API access must establish a key itself, as the test fixtures do.
  *
  * <p>That last point is the reason this exists rather than a snapshot restore through
  * {@code PUT /internalapi/config}. {@code GET /internalapi/config} masks secrets as
@@ -46,7 +49,9 @@ import java.util.concurrent.TimeUnit;
  * {@link BaseConfig}, so replacing the whole config resets them along with everything else.
  *
  * <p>The gate is a runtime check against the active profiles, not a class-level {@code @Profile}: the handler answers
- * 404 - indistinguishable from an unmapped path - unless the {@code systemtest} profile is active. It is deliberately
+ * a body-less 404 unless the {@code systemtest} profile is active. (Not perfectly indistinguishable from an unmapped
+ * path: method security runs first, so an authenticated non-admin sees 403, and a genuinely unmapped path carries
+ * Spring's error body - but the refused path leaks no content and logs nothing.) It is deliberately
  * not {@code @Profile}, because that is a <em>build-time</em> condition under Spring AOT. The native image is compiled
  * with {@code mvn -Pnative,strictReflection native:compile} and {@code process-aot} configures no profiles
  * ({@code core/pom.xml}), so AOT runs under {@code spring.profiles.active=default}

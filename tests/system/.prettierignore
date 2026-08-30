@@ -16,7 +16,8 @@ visual-evidence/
 package-lock.json
 
 # The Java module's sources and test resources. Not part of this TypeScript
-# project, and `initialNzbhydra.yml` is byte-sensitive fixture input.
+# project. (`initialNzbhydra.yml`, once named here as byte-sensitive fixture
+# input, was deleted by FM-139.)
 src/
 
 # Tracked fixture data for the v1 config-migration test. Reformatting it would

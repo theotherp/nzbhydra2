@@ -471,9 +471,10 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *   which also gives every test in it a fixed list to count against.
      * - `externalTools`: `external-tools.spec.ts`'s last test leaves an
      *   enabled Radarr *and* an enabled Sonarr with `syncOnConfigChange` on,
-     *   and every spec file that writes indexers sorts after it --
+     *   and the indexer-writing spec files that sort after it --
      *   `focus-indication`, `notched-label-geometry`, `results`, `search`,
-     *   `search-history` -- so each of their `configureMockIndexers` calls
+     *   `search-history` (others, e.g. `config*` and `downloads`, sort
+     *   before it and never paid) -- so each of their `configureMockIndexers` calls
      *   paid two real HTTP round trips per changed indexer. See the `indexers`
      *   bullet: this is where the "four seconds per changed indexer" went.
      * - `genericStorage`: emptied to the baseline's `{}`, then

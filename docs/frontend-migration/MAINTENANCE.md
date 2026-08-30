@@ -1422,7 +1422,8 @@ visibility.
   `externalTools` at its baseline, both cost **0.01s**. Corroborated end to end — `results.spec.ts` run alone with the
   indexer list rewritten unconditionally on every test takes **1.2 minutes**, not the 7.3 the original entry
   attributes to that rewrite. FM-141 baselines `externalTools`, so the cost is gone rather than merely known: the full
-  suite went from 5.7 to 5.1 minutes while *adding* baseline surfaces. Surfaced 2026-08-29 by FM-133. Original entry
+  suite went from 5.7 to 5.2 minutes while *adding* baseline surfaces (5.1 was the two-phase run's Playwright leg;
+  the counted full-suite run is 5.2, per the handoff). Surfaced 2026-08-29 by FM-133. Original entry
   retained below.
   **Original entry:** Measured during FM-133 at 8.04s /
   4.03s / 0.01s for two / one / zero changed indexers; an early revision of its baseline cost `results.spec.ts` 7.3
@@ -1757,7 +1758,8 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
 
 - **`AGENTS.md`'s *System and GUI Tests* section does not mention the Java phase's run order.** FM-140 made
   `misc/run_gui_systemtest.py --java-phase` default to `-Dsurefire.runOrder=random` and added `--java-run-order` and
-  `--java-run-order-seed` so a failing order can be replayed, but `AGENTS.md` was outside FM-140's allowlist and still
+  `--java-run-order-seed` — though the seed cannot replay an order on Surefire 3.6.0-M1 (see the entry above); the
+  logged `[INFO] Running org.nzbhydra.<Class>` lines are the record — but `AGENTS.md` was outside FM-140's allowlist and still
   describes the phase as if the order were fixed. A reader who sees an order-dependent failure has no documented way to
   reproduce it. Add the two flags and the seed line to that section. Raised by FM-140.
 
@@ -2743,3 +2745,47 @@ their text and relative order are unchanged.
   regression guard — deliberately left out of the packet as an owner call, because it makes CI failures
   non-deterministic by design (a failing seed must be recorded to be reproducible). Owner decision, then a
   **`/fm-quickfix`**. Surfaced 2026-08-30 by the FM-138..141 batch design.
+
+### 2026-08-30 — Correct SystemTestStateResetWeb's javadoc: reset ≠ fresh boot (null apiKey), and the 404 is not perfectly unmapped-shaped
+
+- **Why not a packet:** comment-only, no behavioral surface; the behavior itself is test-pinned (`StateResetSystemTest`
+  asserts the null-key baseline) and changing it would be packet work against ADR-0048. Discharges two of FM-139's/
+  FM-141's recorded minor findings.
+- **Paths:** `core/src/main/java/org/nzbhydra/systemtest/SystemTestStateResetWeb.java`
+- **Gates:** `mvn --batch-mode -pl core test -DskipTests=false -Dtest=SystemTestStateResetWebTest` → 2 tests, 0F/0E;
+  `git diff --check` clean.
+- **Commit:** `64d0b972a`
+- **Left open, routed here durably** (was only in FM-141's handoff): ADR-0048's phrase "the state a config PUT cannot
+  reach" is overstated — `genericStorage` and `main.welcomeShown` are plain `BaseConfig` fields that round-trip through
+  `GET`/`PUT /internalapi/config`; the reset's unique value is supplying the baseline *values* (and real secrets), not
+  access. The ADR text itself is a decision record and stays; any rewording is an owner call. Whether the reset should
+  *generate* an apiKey like a fresh boot does is likewise an owner call against ADR-0048, not a quickfix.
+
+### 2026-08-30 — Correct two misstated facts in the FM-140/FM-141 ledger entries
+
+- **Why not a packet:** ledger-accuracy only; both were recorded review minor findings (seed "replay" claim; 5.1 vs
+  5.2 minutes). No code touched.
+- **Paths:** `docs/frontend-migration/MAINTENANCE.md`
+- **Gates:** `npm run validate:migration` valid; `git diff --check` clean.
+- **Commit:** `20c8aed60`
+
+### 2026-08-30 — Fix the false universal in `fixtures.ts`'s externalTools doc comment
+
+- **Why not a packet:** comment-only; recorded FM-141 review minor finding.
+- **Paths:** `tests/system/tests/fixtures.ts`
+- **Gates:** `npx tsc --noEmit` clean; `npx prettier --check tests` clean; `git diff --check` clean.
+- **Commit:** `6d28ac19c`
+
+### 2026-08-30 — Import `Arrays` in `HistoryTest` instead of an inline FQN
+
+- **Why not a packet:** cosmetic import consistency; recorded FM-140 review minor finding.
+- **Paths:** `tests/system/src/test/java/org/nzbhydra/HistoryTest.java`
+- **Gates:** `mvn --batch-mode -pl org.nzbhydra.tests:system test-compile -DskipTests=false` green; `git diff --check` clean.
+- **Commit:** `3c721deec`
+
+### 2026-08-30 — Drop the stale `initialNzbhydra.yml` mention from `tests/system/.prettierignore`
+
+- **Why not a packet:** one-line comment correction; the file it named was deleted by FM-139 (its own handoff logged this).
+- **Paths:** `tests/system/.prettierignore`
+- **Gates:** `npx prettier --check tests` clean.
+- **Commit:** `7f80a155a`

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.core.type.TypeReference;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -174,7 +175,7 @@ public class HistoryTest {
     }
 
     private List<Integer> ownRowIds(List<SearchEntityTO> searches, SearchEntityTO... own) {
-        List<Integer> ownIds = java.util.Arrays.stream(own).map(SearchEntityTO::getId).toList();
+        List<Integer> ownIds = Arrays.stream(own).map(SearchEntityTO::getId).toList();
         return searches.stream().map(SearchEntityTO::getId).filter(ownIds::contains).toList();
     }
 }
