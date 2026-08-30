@@ -1,9 +1,7 @@
 import {
     Box,
     Button,
-    Collapse,
     MenuItem,
-    Paper,
     Stack,
     TextField,
     Typography,
@@ -19,111 +17,187 @@ import {
     type HistoryFilterValues,
 } from "../../../../api/history/filters";
 import {refineSectionGap} from "../../../../app/theme";
+import {
+    RefineSurface,
+    useCompactRefineSurface,
+    type RefineSurfaceLabels,
+    type RefineSurfaceTestIds,
+} from "../../../../components/refine/RefineSurface";
+import {useHistoryRefineCollapsed} from "./historyRefineCollapsed";
+
+// This feature's own chrome vocabulary for ADR-0046's shared refine surface.
+// Every one of these is a compatibility contract of the history views, not of
+// the shell, which states none of them itself.
+const TEST_IDS: RefineSurfaceTestIds = {
+    clearAll: "history-refine-clear-all",
+    close: "history-refine-close",
+    drawer: "history-refine-drawer",
+    // The container id every history spec and page test has always queried.
+    // The shell puts it on whichever branch is live, so it keeps resolving
+    // with parallel semantics on the docked column and inside the drawer.
+    surface: "history-refine-bar",
+    toggle: "history-refine-toggle",
+};
+
+type HistoryRefineProps = {
+    dimensions: readonly HistoryDimension[];
+    onChange: (id: string, value: HistoryFilterValue) => void;
+    onClearAll: () => void;
+    values: HistoryFilterValues;
+};
 
 /**
- * `C-HISTORY-REFINE-BAR`: the single filter surface above a history table.
+ * A history route's whole page body: the refine surface as the left sibling of
+ * the route's own vertical stack (heading row with its non-filter controls,
+ * status and alerts, table, pager).
+ *
+ * The row/column switch is read from the shell's own
+ * `useCompactRefineSurface`, not from a second breakpoint declaration, so the
+ * layout flips to a stacked "Refine" trigger at exactly the width the shell
+ * swaps its docked column for the drawer.
+ *
+ * ADR-0011: the surface is a flex *sibling* of the table, never an ancestor of
+ * its header cells, so the table's viewport-sticky header keeps pinning
+ * against the document and its `TableScrollAffordance` scroller keeps owning
+ * the horizontal overflow (ADR-0038).
+ */
+export function HistoryRefineLayout({
+    children,
+    dimensions,
+    onChange,
+    onClearAll,
+    values,
+}: HistoryRefineProps & {children: ReactNode}) {
+    const compact = useCompactRefineSurface();
+    return (
+        <Stack
+            component="main"
+            direction={compact ? "column" : "row"}
+            spacing={2}
+        >
+            <HistoryRefineSurface
+                dimensions={dimensions}
+                onChange={onChange}
+                onClearAll={onClearAll}
+                values={values}
+            />
+            <Stack spacing={2} sx={{flex: 1, minWidth: 0}}>
+                {children}
+            </Stack>
+        </Stack>
+    );
+}
+
+/**
+ * `C-HISTORY-REFINE-BAR`: the single filter surface beside a history table.
  *
  * Its public API is the five `org.nzbhydra.historystats.History` filter kinds
  * a route declares (`C-HISTORY-REQUEST`'s `HistoryDimension`), never a list of
  * this or that route's controls -- download history's indexer/result
  * multi-selects, search history's category, and notification history's event
- * types are all the same `checkboxes` kind, so adopting the bar is declaring
- * dimensions, not editing this file.
+ * types are all the same `checkboxes` kind, so adopting the surface is
+ * declaring dimensions, not editing this file.
  *
- * It deliberately shares no code with the search results' `RefineSidebar`: that
- * surface filters already-loaded results client-side out of `ResultFilters`,
- * derives its options from those results, and carries ADR-0011's scroll and
- * sticky-offset constraints, none of which exist for server-side history
- * filtering. What the two do share -- the mock's caption, spacing, and
- * selection-pill language -- they share through `app/theme.ts`.
+ * What it owns is state and options: the binding to `HistoryFilterValues`,
+ * whose filtering happens server-side through `C-HISTORY-REQUEST` rather than
+ * over already-loaded rows, and options each route *declares* rather than
+ * derives from the page of results it happens to be showing. Those two
+ * differences from the search results' `RefineSidebar` are real and stay.
+ *
+ * The chrome is no longer its own (ADR-0046, FM-137): the docked column, its
+ * collapsed rail, the sub-768px drawer, and the header row all come from
+ * `C-REFINE-SURFACE`, the same shell the results sidebar renders through, so
+ * the app has one refine concept. Nothing here states a width, a padding, or a
+ * transition -- this file passes its domain's labels, test ids, and sections
+ * in, and the shell decides where the surface sits and how it collapses.
  */
-export function HistoryRefineBar({
+function HistoryRefineSurface({
     dimensions,
-    label = "Refine",
     onChange,
     onClearAll,
     values,
-}: {
-    dimensions: readonly HistoryDimension[];
-    /** The surface's own header label; also names its landmark region. */
-    label?: string;
-    onChange: (id: string, value: HistoryFilterValue) => void;
-    onClearAll: () => void;
-    values: HistoryFilterValues;
-}) {
-    // Component-local on purpose: persisting it needs the storage-key decision
-    // that `MAINTENANCE.md` still lists as an open candidate.
-    const [expanded, setExpanded] = useState(true);
+}: HistoryRefineProps) {
+    const compact = useCompactRefineSurface();
+    const [collapsed, toggleCollapsed] = useHistoryRefineCollapsed();
+    // Never persisted, and never seeded from `collapsed`: see
+    // `historyRefineCollapsed.ts` and the shell's own `drawerOpen` note.
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const activeCount = activeHistoryFilterCount(dimensions, values);
+    const summary = activeFilterSummary(activeCount);
     return (
-        <Paper
-            aria-label={label}
-            component="section"
-            data-testid="history-refine-bar"
-            elevation={0}
-            sx={{
-                backgroundColor: "transparent",
-                border: "1px solid",
-                borderColor: "surfaces.hairlineFaint",
-                p: 2,
-            }}
-        >
-            <Stack
-                alignItems="center"
-                direction="row"
-                justifyContent="space-between"
-                sx={{gap: 1}}
-            >
-                <Button
-                    aria-controls={SECTIONS_ID}
-                    aria-expanded={expanded}
-                    data-testid="history-refine-toggle"
-                    onClick={() => setExpanded((current) => !current)}
-                    size="small"
-                    sx={{gap: 1}}
-                >
-                    <Typography component="span" variant="refineSurfaceLabel">
-                        {label}
-                    </Typography>{" "}
-                    <Typography component="span" variant="refineSectionLabel">
-                        {activeFilterSummary(activeCount)}
+        <RefineSurface
+            // The shell's header offers "Clear all" for every consumer; with
+            // no dimension set there is nothing for it to clear, which is what
+            // this reports. The count itself is what tells a history user that
+            // filters are on -- see `refineLabels` below.
+            clearAllDisabled={activeCount === 0}
+            collapsed={collapsed}
+            drawerOpen={drawerOpen}
+            labels={refineLabels(compact, summary)}
+            onClearAll={onClearAll}
+            onDrawerOpenChange={setDrawerOpen}
+            onToggleCollapsed={toggleCollapsed}
+            // No `stickyOffset`: the shell's default of 0 is correct here.
+            // Nothing sticky sits above a `/stats` tab body -- `AppShell`
+            // renders its `AppBar` `position="static"` and `StatsShell` pins
+            // nothing -- unlike the results page, whose measured toolbar
+            // height the sidebar passes down.
+            summary={
+                compact ? undefined : (
+                    <Typography
+                        component="span"
+                        data-testid="history-refine-summary"
+                        // A docked column is a narrow place for a sentence,
+                        // so this shares the header's remaining space with the
+                        // caption and the controls and wraps rather than
+                        // pushing them out of the row.
+                        sx={{flex: 1, minWidth: 0, pl: 1, textAlign: "right"}}
+                        variant="refineSectionLabel"
+                    >
+                        {summary}
                     </Typography>
-                </Button>
-                <Button
-                    data-testid="history-refine-clear-all"
-                    onClick={onClearAll}
-                    size="small"
-                >
-                    Clear all
-                </Button>
+                )
+            }
+            testIds={TEST_IDS}
+        >
+            <Stack sx={{gap: refineSectionGap}}>
+                {dimensions.map((dimension) => (
+                    <HistoryRefineDimension
+                        dimension={dimension}
+                        key={dimension.id}
+                        onChange={onChange}
+                        values={values}
+                    />
+                ))}
             </Stack>
-            <Collapse id={SECTIONS_ID} in={expanded}>
-                <Box
-                    sx={{
-                        display: "grid",
-                        gap: refineSectionGap,
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(auto-fit, minmax(210px, 1fr))",
-                        },
-                        pt: refineSectionGap,
-                    }}
-                >
-                    {dimensions.map((dimension) => (
-                        <HistoryRefineDimension
-                            dimension={dimension}
-                            key={dimension.id}
-                            onChange={onChange}
-                            values={values}
-                        />
-                    ))}
-                </Box>
-            </Collapse>
-        </Paper>
+        </RefineSurface>
     );
 }
 
-const SECTIONS_ID = "history-refine-sections";
+/**
+ * ADR-0046: the active-filter summary is where the two refine surfaces stay
+ * deliberately different. The results sidebar grows no count -- its disabled
+ * "Clear all" already says "nothing is active" there -- but a history user
+ * whose sections are hidden behind a collapsed rail or a closed drawer still
+ * has to see that a filter is on.
+ *
+ * The shell renders its `summary` slot only where there is room for it (the
+ * expanded column and the open drawer), so the two states that hide it carry
+ * the same sentence in the control that reveals them instead: the rail's
+ * expand toggle announces it, and the compact trigger shows it as its own
+ * visible text -- which is also its accessible name there, so the two never
+ * disagree.
+ */
+function refineLabels(compact: boolean, summary: string): RefineSurfaceLabels {
+    const trigger = `Refine · ${summary}`;
+    return {
+        close: "Close history filters",
+        collapse: compact ? "Hide history filters" : "Collapse history filters",
+        expand: compact ? trigger : `Expand history filters, ${summary}`,
+        heading: compact ? trigger : "Refine",
+        surface: "Refine history",
+    };
+}
 
 function activeFilterSummary(count: number): string {
     if (count === 0) return "No active filters";
@@ -218,24 +292,7 @@ function Section({
     return (
         <Box
             data-testid={`history-refine-${dimension.id}`}
-            sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                // A multi-select's wrapping options take the whole row; a
-                // two-field section (a range, a time window) needs two
-                // columns' worth so neither field's label is squeezed into an
-                // ellipsis; a single control shares a row with its neighbours.
-                // Every section is full width in the single-column layout,
-                // where a span would create an implicit second column.
-                gridColumn:
-                    dimension.kind === "checkboxes"
-                        ? "1 / -1"
-                        : dimension.kind === "numberRange" ||
-                            dimension.kind === "time"
-                          ? {xs: "1 / -1", sm: "span 2"}
-                          : undefined,
-            }}
+            sx={{display: "flex", flexDirection: "column", gap: 1}}
         >
             {children}
         </Box>
@@ -368,7 +425,10 @@ function NumberRangeSection({
     return (
         <Section dimension={dimension}>
             <SectionCaption id={captionId} label={dimension.label} />
-            <Stack direction={{xs: "column", sm: "row"}} sx={{gap: 1}}>
+            {/* One column, not the bar's two: both bounds are stacked in a
+                docked column, where a side-by-side pair would squeeze each
+                field's label into an ellipsis. */}
+            <Stack sx={{gap: 1}}>
                 <TextField
                     label={dimension.minLabel}
                     onChange={(event) =>
@@ -381,7 +441,6 @@ function NumberRangeSection({
                     slotProps={{
                         htmlInput: {"data-testid": testId(dimension, "min")},
                     }}
-                    sx={{flex: 1, minWidth: 0}}
                     type="number"
                     value={range.min}
                 />
@@ -397,7 +456,6 @@ function NumberRangeSection({
                     slotProps={{
                         htmlInput: {"data-testid": testId(dimension, "max")},
                     }}
-                    sx={{flex: 1, minWidth: 0}}
                     type="number"
                     value={range.max}
                 />
@@ -413,7 +471,7 @@ function TimeSection({dimension, onChange, values}: SectionProps<"time">) {
     return (
         <Section dimension={dimension}>
             <SectionCaption id={captionId} label={dimension.label} />
-            <Stack direction={{xs: "column", sm: "row"}} sx={{gap: 1}}>
+            <Stack sx={{gap: 1}}>
                 <TextField
                     label={dimension.afterLabel}
                     onChange={(event) =>
@@ -427,7 +485,6 @@ function TimeSection({dimension, onChange, values}: SectionProps<"time">) {
                         htmlInput: {"data-testid": testId(dimension, "after")},
                         inputLabel: {shrink: true},
                     }}
-                    sx={{flex: 1, minWidth: 0}}
                     type="datetime-local"
                     value={range.after}
                 />
@@ -444,7 +501,6 @@ function TimeSection({dimension, onChange, values}: SectionProps<"time">) {
                         htmlInput: {"data-testid": testId(dimension, "before")},
                         inputLabel: {shrink: true},
                     }}
-                    sx={{flex: 1, minWidth: 0}}
                     type="datetime-local"
                     value={range.before}
                 />

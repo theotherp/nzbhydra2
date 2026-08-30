@@ -1174,7 +1174,7 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx
-      - core/ui-react/src/features/stats/history/refine/HistoryRefineBar.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/features/search/SearchPage.test.tsx
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/search-history.spec.ts
@@ -1198,6 +1198,16 @@ features:
       - history-refine-bar
       - history-refine-toggle
       - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before
@@ -1242,7 +1252,7 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx
-      - core/ui-react/src/features/stats/history/refine/HistoryRefineBar.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/domain/downloads/actions.test.ts
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/downloads.spec.ts
@@ -1266,6 +1276,16 @@ features:
       - history-refine-bar
       - history-refine-toggle
       - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before
@@ -1299,7 +1319,7 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/NotificationHistoryPage.test.tsx
-      - core/ui-react/src/features/stats/history/refine/HistoryRefineBar.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/domain/links/textLinks.test.ts
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/notification-history.spec.ts
@@ -1324,6 +1344,16 @@ features:
       - history-refine-bar
       - history-refine-toggle
       - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before

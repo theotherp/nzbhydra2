@@ -43,7 +43,7 @@ import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
-import {HistoryRefineBar} from "./refine/HistoryRefineBar";
+import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 
 const defaultSort: DownloadHistorySort = {column: "time", sortMode: 2};
 
@@ -80,7 +80,7 @@ export function DownloadHistoryPage({
             }),
         // Every filter keystroke is a new query key. Without this the page
         // would fall back to its first-load spinner on each one, unmounting
-        // the refine bar mid-edit and taking keyboard focus with it; the
+        // the refine surface mid-edit and taking keyboard focus with it; the
         // already-rendered "Refreshing download history…" status row is what
         // reports the in-flight request instead.
         placeholderData: keepPreviousData,
@@ -110,7 +110,16 @@ export function DownloadHistoryPage({
     const {entries: downloads, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     return (
-        <Stack component="main" spacing={2}>
+        // The route's single filter surface (ADR-0009/ADR-0046): every
+        // dimension legacy offered per table column lives in the refine
+        // surface this layout docks beside the table, and the table header
+        // carries sorting only.
+        <HistoryRefineLayout
+            dimensions={dimensions}
+            onChange={updateFilter}
+            onClearAll={clearFilters}
+            values={values}
+        >
             <Stack
                 alignItems="center"
                 direction="row"
@@ -128,15 +137,6 @@ export function DownloadHistoryPage({
                     Refresh
                 </Button>
             </Stack>
-            {/* The route's single filter surface (ADR-0009): every dimension
-                legacy offered per table column lives here, and the table
-                header carries sorting only. */}
-            <HistoryRefineBar
-                dimensions={dimensions}
-                onChange={updateFilter}
-                onClearAll={clearFilters}
-                values={values}
-            />
             {query.isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
@@ -284,7 +284,7 @@ export function DownloadHistoryPage({
                     Next page
                 </Button>
             </Stack>
-        </Stack>
+        </HistoryRefineLayout>
     );
 }
 

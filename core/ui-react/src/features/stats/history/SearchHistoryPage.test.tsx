@@ -13,6 +13,7 @@ const navigate = vi.fn();
 vi.mock("@tanstack/react-router", () => ({useNavigate: () => navigate}));
 
 import {ApiTransport} from "../../../api/transport";
+import {NotificationHistoryPage} from "./NotificationHistoryPage";
 import {SearchHistoryPage} from "./SearchHistoryPage";
 
 const bootstrap = {
@@ -56,14 +57,37 @@ function renderPage(fetchImplementation: typeof fetch) {
     );
 }
 
+// This project's jsdom environment configures no `url`, so its opaque origin
+// has no `window.localStorage` at all -- the same limitation
+// `StatsDashboardPage`'s persistence test documents. Installed by the one test
+// that needs a working store and removed by `vi.unstubAllGlobals()`.
+function stubWorkingLocalStorage(): Map<string, string> {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+        get length() {
+            return store.size;
+        },
+        clear: () => store.clear(),
+        getItem: (key: string) =>
+            store.has(key) ? (store.get(key) as string) : null,
+        key: (index: number) => [...store.keys()][index] ?? null,
+        removeItem: (key: string) => store.delete(key),
+        setItem: (key: string, value: string) => {
+            store.set(key, value);
+        },
+    } satisfies Storage);
+    return store;
+}
+
 describe("SearchHistoryPage", () => {
     afterEach(() => {
         cleanup();
         vi.restoreAllMocks();
+        vi.unstubAllGlobals();
         navigate.mockReset();
     });
 
-    it("should refine through the bar while paging, sorting, and refreshing", async () => {
+    it("should refine through the surface while paging, sorting, and refreshing", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
             (_url: RequestInfo | URL, init?: RequestInit) => {
@@ -81,8 +105,8 @@ describe("SearchHistoryPage", () => {
         const lastBody = () => JSON.parse(requests.at(-1)?.body as string);
         renderPage(fetchImplementation);
         await screen.findByTestId("search-history-row");
-        // The bar is the route's only filter surface: nothing above the
-        // table header filters any more.
+        // The refine surface is the route's only filter surface: nothing
+        // above the table header filters any more.
         expect(screen.getAllByTestId("history-refine-bar")).toHaveLength(1);
         const table = screen.getByTestId("search-history-table");
         expect(within(table).queryAllByRole("textbox")).toHaveLength(0);
@@ -122,9 +146,9 @@ describe("SearchHistoryPage", () => {
                 },
             },
         });
-        expect(
-            screen.getByTestId("history-refine-toggle"),
-        ).toHaveAccessibleName("Refine 2 active filters");
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "2 active filters",
+        );
 
         await screen.findByTestId("search-history-refresh");
         fireEvent.click(screen.getByTestId("search-history-refresh"));
@@ -133,7 +157,7 @@ describe("SearchHistoryPage", () => {
         );
     });
 
-    it("should offer After, Before, Query, Category, and Source through the bar, with every selectable category as an option", async () => {
+    it("should offer After, Before, Query, Category, and Source through the surface, with every selectable category as an option", async () => {
         renderPage(
             vi
                 .fn()
@@ -200,9 +224,9 @@ describe("SearchHistoryPage", () => {
         expect(
             screen.getAllByTestId("history-refine-category-option")[0],
         ).toHaveAttribute("aria-pressed", "false");
-        expect(
-            screen.getByTestId("history-refine-toggle"),
-        ).toHaveAccessibleName("Refine No active filters");
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "No active filters",
+        );
     });
 
     it("should reach the user-agent filter only while user agents are shown, and clear it when hidden again", async () => {
@@ -392,7 +416,86 @@ describe("SearchHistoryPage", () => {
             await screen.findByText("Unable to load search history."),
         ).toBeVisible();
     });
+
+    /**
+     * ADR-0046: the three history views are one refine concept, so the docked
+     * column's collapsed state is one preference under `hydra.history.refine`
+     * rather than one per view. This spans two of them deliberately -- and the
+     * second mount is also what a reload does, since each view reads the
+     * preference when its own surface mounts.
+     */
+    it("should keep the docked column collapsed on another history view and across a reload", async () => {
+        const store = stubWorkingLocalStorage();
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+        );
+        await screen.findByTestId("search-history-row");
+        const collapse = screen.getByTestId("history-refine-toggle");
+        expect(collapse).toHaveAttribute("aria-expanded", "true");
+        fireEvent.click(collapse);
+        expect(collapse).toHaveAttribute("aria-expanded", "false");
+        expect(store.get("hydra.history.refine")).toBe("collapsed");
+        cleanup();
+
+        render(
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <NotificationHistoryPage
+                    bootstrap={bootstrap}
+                    transport={
+                        new ApiTransport(
+                            "/hydra/",
+                            vi.fn().mockResolvedValue(
+                                new Response(
+                                    JSON.stringify({
+                                        content: [notificationEntry()],
+                                        totalElements: 1,
+                                    }),
+                                    {
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                    },
+                                ),
+                            ),
+                        )
+                    }
+                />
+            </QueryClientProvider>,
+        );
+        await screen.findByTestId("notification-history-row");
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        // One key, and only that one: the sub-768px drawer's open state is
+        // never written, so nothing else was persisted along the way.
+        expect([...store.keys()]).toEqual(["hydra.history.refine"]);
+    });
 });
+
+function notificationEntry() {
+    return {
+        id: 1,
+        time: "2024-01-01T00:00:00Z",
+        notificationEventType: "INDEXER_DISABLED",
+        messageType: "WARNING",
+        title: "Indexer disabled",
+        body: "NZBHydra: Indexer Mock1 was disabled.",
+        urls: "json://localhost",
+        displayed: false,
+    };
+}
 
 function entry() {
     return {

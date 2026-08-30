@@ -1077,6 +1077,25 @@ reproduced the probe independently from two scratch replicas. No required findin
 (pre-existing and reproduced at baseline): `npm run knip` exits 1 on an unused `RepeatSection` export in
 `features/config/components/index.ts:14`, orphaned when FM-105 removed its last consumer. Single-session fix candidate.
 
+FM-137 (History Refine Sidebar Adoption) closed the 2026-08-29 ADR-0046 batch: the three history views left the
+horizontal bar for FM-136's shared surface, so search, download and notification history now filter through the same
+docked column / rail / drawer the results page uses. `HistoryRefineBar.tsx` became `HistoryRefineSurface.tsx` --
+sections and `HistoryFilterValues` binding only, stating no width, padding or transition -- beside a
+`historyRefineCollapsed.ts` that persists the docked collapsed state through `C-BROWSER-STORAGE` under one
+`hydra.history.refine` key shared by all three views, the drawer's open state deliberately never written. Every
+`history-refine-*` id survived, `-summary`/`-drawer`/`-close` joined them, and the active-filter sentence moved from
+the old toggle's text into the shell's header summary slot (the rail and the compact trigger carry it in their
+accessible name and visible text). `C-REFINE-SURFACE` is `done` with the three history features as consumers; the
+shell itself was not edited. Accepted on a fresh independent review with no required findings, the reviewer having
+diffed every `filterModel` assertion and every `history-refine-*` id against the baseline himself. One deliberate
+deviation, recorded in `COMPONENTS.yaml`: "Clear all" is now disabled at zero active filters, following the shell's
+uniform header control -- nothing pre-existing clicked it empty. Passed with minor findings, not corrected
+(optional): the pre-existing knip failure above; the 248px header row is cramped, so "No active filters" wraps to two
+lines and "Clear all" wraps in the drawer -- the remedy is shell-side, so a contract question for `C-REFINE-SURFACE`
+rather than a history-side change; two duplicate page-fits helpers in `search-history.spec.ts`; and
+`history-refine-drawer` is declared in all three `FEATURES.yaml` selector lists but asserted by no test. Candidates
+for a future quickfix.
+
 ## Active
 
 None.
@@ -1103,10 +1122,6 @@ None.
 None.
 
 ## Upcoming
-
-- FM-137: History Refine Sidebar Adoption. `ready` now that FM-136 is done -- closes the 2026-08-29 ADR-0046 batch by
-  moving the three history views off the horizontal bar onto the shared refine surface, with the docked collapsed
-  state shared across them under `hydra.history.refine`.
 
 - FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect

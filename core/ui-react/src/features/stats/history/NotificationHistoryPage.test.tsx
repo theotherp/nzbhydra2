@@ -247,7 +247,7 @@ describe("NotificationHistoryPage", () => {
         renderPage(fetchImplementation);
         await screen.findByTestId("notification-history-row");
 
-        // The refine bar is the route's only filter surface; the table header
+        // The refine surface is the route's only filter surface; the table header
         // sorts and nothing more.
         expect(screen.getAllByTestId("history-refine-bar")).toHaveLength(1);
         const table = screen.getByTestId("notification-history-table");
@@ -295,7 +295,7 @@ describe("NotificationHistoryPage", () => {
             expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(lastBody().filterModel.time.filterType).toBe("time");
-        expect(screen.getByTestId("history-refine-toggle")).toHaveTextContent(
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
             "2 active filters",
         );
 

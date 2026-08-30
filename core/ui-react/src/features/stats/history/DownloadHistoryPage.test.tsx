@@ -82,7 +82,7 @@ describe("DownloadHistoryPage", () => {
         delete window.__NZBHYDRA_BOOTSTRAP__;
     });
 
-    it("should refine through the bar while paging, sorting, and refreshing", async () => {
+    it("should refine through the surface while paging, sorting, and refreshing", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
             (_url: RequestInfo | URL, init?: RequestInit) => {
@@ -143,9 +143,9 @@ describe("DownloadHistoryPage", () => {
                 name: {filterType: "checkboxes", filterValue: ["Alpha"]},
             },
         });
-        expect(
-            screen.getByTestId("history-refine-toggle"),
-        ).toHaveAccessibleName("Refine 2 active filters");
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "2 active filters",
+        );
 
         fireEvent.click(screen.getByTestId("download-history-refresh"));
         await waitFor(() =>
@@ -226,9 +226,9 @@ describe("DownloadHistoryPage", () => {
         expect(
             screen.getAllByTestId("history-refine-result-option")[0],
         ).toHaveAttribute("aria-pressed", "false");
-        expect(
-            screen.getByTestId("history-refine-toggle"),
-        ).toHaveAccessibleName("Refine No active filters");
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "No active filters",
+        );
     });
 
     it("should show accessible status text, dereferer-transformed links, an eligible repeat action, and isolate malformed rows", async () => {

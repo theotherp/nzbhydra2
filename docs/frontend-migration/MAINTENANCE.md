@@ -1309,11 +1309,53 @@ argument for keeping the fresh-reviewer invariant expensive rather than trimming
 Evidence` required *pasted output* rather than a description of output, and if registry prose were required to cite by
 symbol — a rule the repository already states in packet prompts and does not enforce anywhere.
 
+### 2026-08-30 — Drop the orphaned `RepeatSection` barrel export
+
+- **Why not a packet:** one-line dead-export removal, no behavioral surface, no contract or selector edit. Recorded as a
+  minor finding by both the FM-136 and FM-137 reviews, each having reproduced it at its own clean baseline.
+- **Paths:** `core/ui-react/src/features/config/components/index.ts`
+- **Gates:** `npm run knip` now exits 0 with no findings (was exit 1, one finding); `npm run typecheck`,
+  `format:check`, `build`, `check:api`, `validate:migration` pass; `npm run lint` 0 errors / 15 pre-existing warnings;
+  `npm run test -- --run` 1550 passed; `git diff --check` clean.
+- **Commit:** `c0c2dd9fb`
+
+
+### 2026-08-30 — Fold `search-history.spec.ts`'s local `pageFits` into `pageFitsHorizontally`
+
+- **Why not a packet:** mechanical test-side dedup of two spellings of one ADR-0029 claim; same expression, same
+  locator, so no assertion changed strength. Recorded FM-137 review minor finding.
+- **Paths:** `tests/system/tests/search-history.spec.ts`
+- **Gates:** `npx tsc --noEmit` clean; `npx prettier --check` clean; `python3 misc/run_gui_systemtest.py --runtime
+  local -- tests/search-history.spec.ts` 4 passed against a real JVM core, including the affected `:230` scroller
+  test; `git diff --check` clean.
+- **Commit:** `c4929e98e`
+
+
+### 2026-08-30 — Pin the `history-refine-drawer` selector with an assertion
+
+- **Why not a packet:** test-side only; no `FEATURES.yaml` edit and no id added, renamed, or removed. FM-137 declared
+  the id in all three `F-HISTORY-*` selector lists while nothing asserted it. Recorded FM-137 review minor finding.
+- **Paths:** `core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx`
+- **Gates:** `npm run typecheck`, `format:check`, `build`, `check:api`, `knip`, `validate:migration` pass;
+  `npm run lint` 0 errors / 15 pre-existing warnings; `npm run test -- --run` 1550 passed; `git diff --check` clean.
+  Pinning verified by mutation: renaming the emitted id turns the test red on the missing selector, reverting turns it
+  green.
+- **Commit:** `2f1dd653d`
+
+
 ## Open candidates
 
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
+- **`RepeatSection` has no non-test consumers left.** Found 2026-08-30 while discharging the knip finding above. FM-105
+  (Auth users) and FM-106 (notification entries) replaced its last two consumers; every remaining mention of it in
+  `src/` is prose explaining that some section is *not* `RepeatSection`. The component and its 235-line test still
+  build and pass, and the barrel line that made this visible to knip is gone, so nothing fails today. Whether the
+  component should survive as `C-CONFIG-FIELDS` vocabulary awaiting a future list-of-records tab, or be retired, is a
+  registry question: `C-CONFIG-FIELDS`' entry describes repeat sections generically and several sections' comments
+  cite it as the thing they deliberately are not. Routed to **`/fm-orchestrate`** — a `COMPONENTS.yaml` contract edit
+  is outside the quickfix gate.
 - ~~**Something outside the config makes tests depend on each other, and it is not yet identified.**~~ **Identified
   and closed 2026-08-30 (FM-141).** It was never outside the config. The carrier is `searching.customQuickFilterButtons`
   and `searching.preselectQuickFilterButtons` — ordinary `BaseConfig`, seeded into the refine sidebar's quick-filter

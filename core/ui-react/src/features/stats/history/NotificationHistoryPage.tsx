@@ -32,7 +32,7 @@ import {linkedTextLines} from "../../../domain/links/textLinks";
 import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
-import {HistoryRefineBar} from "./refine/HistoryRefineBar";
+import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 
 const defaultSort: NotificationHistorySort = {column: "time", sortMode: 2};
 
@@ -59,7 +59,7 @@ export function NotificationHistoryPage({
                 sort,
             }),
         // As on download history: a filter keystroke makes a new query key, and
-        // falling back to the first-load spinner would unmount the refine bar
+        // falling back to the first-load spinner would unmount the refine surface
         // mid-edit and take keyboard focus with it.
         placeholderData: keepPreviousData,
     });
@@ -91,7 +91,16 @@ export function NotificationHistoryPage({
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     const dereferer = safeConfig?.dereferer;
     return (
-        <Stack component="main" spacing={2}>
+        // The route's single filter surface (ADR-0009/ADR-0016/ADR-0046):
+        // legacy's per-column time and event-type filters live in the refine
+        // surface this layout docks beside the table, and the table header
+        // carries sorting only.
+        <HistoryRefineLayout
+            dimensions={dimensions}
+            onChange={updateFilter}
+            onClearAll={clearFilters}
+            values={values}
+        >
             <Stack
                 alignItems="center"
                 direction="row"
@@ -109,15 +118,6 @@ export function NotificationHistoryPage({
                     Refresh
                 </Button>
             </Stack>
-            {/* The route's single filter surface (ADR-0009/ADR-0016): legacy's
-                per-column time and event-type filters live here, and the table
-                header carries sorting only. */}
-            <HistoryRefineBar
-                dimensions={dimensions}
-                onChange={updateFilter}
-                onClearAll={clearFilters}
-                values={values}
-            />
             {query.isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
@@ -231,7 +231,7 @@ export function NotificationHistoryPage({
                     Next page
                 </Button>
             </Stack>
-        </Stack>
+        </HistoryRefineLayout>
     );
 }
 

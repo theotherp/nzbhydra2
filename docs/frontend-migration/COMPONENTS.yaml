@@ -153,6 +153,9 @@ components:
       - F-CONFIG-SHELL
       - F-STATS-MAIN
       - F-SYSTEM-LOG
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
     state: done
     note: "FM-109 extracted it from five byte-similar getStorage()/try-catch copies (stats dashboard persistence, system-log persistence, config advancedFields,
@@ -299,20 +302,26 @@ components:
     classification: feature_specific
     state: partial
   - id: C-HISTORY-REFINE-BAR
-    responsibility: Shared stats-history refine bar -- the single filter surface above every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select checkboxes, boolean,
-      number range) with active-filter count and clear-all; it matches the search refine sidebar's token and structure language through theme.ts without sharing its code or its client-side ResultFilters state
+    responsibility: Shared stats-history refine sections and filter state -- the single filter surface beside every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select
+      checkboxes, boolean, number range) with active-filter count and clear-all. It owns state and options only -- HistoryFilterValues filtered server-side through C-HISTORY-REQUEST rather than over already-loaded rows, and options each
+      route declares rather than derives from the page of results it is showing -- the two differences from the results sidebar that ADR-0046 kept. Its chrome is C-REFINE-SURFACE's since FM-137 (the docked column, the collapsed rail, the
+      sub-768px drawer, the header row), so no width, padding, or transition is stated here; the docked collapsed state persists through C-BROWSER-STORAGE under one hydra.history.refine key shared by all three views, and the drawer's open
+      state is never persisted
     legacy:
       - core/ui-src/js/directives/dataTableDirectives.js
       - core/ui-src/html/states/download-history.html
       - core/ui-src/html/states/search-history.html
       - core/ui-src/html/states/notification-history.html
-    target: core/ui-react/src/features/stats/history/refine/HistoryRefineBar.tsx
+    target: core/ui-react/src/features/stats/history/refine
     consumers:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-SEARCHES
       - F-HISTORY-NOTIFICATIONS
     classification: feature_specific
     state: partial
+    note: FM-137 (ADR-0046) moved the chrome to C-REFINE-SURFACE and the file with it (HistoryRefineSurface.tsx, beside historyRefineCollapsed.ts). Every history-refine-* section and control id survived unchanged, including ADR-0016's
+      empty-selection semantics; history-refine-bar now names whichever branch is live and history-refine-summary/-drawer/-close were added. The "deliberately shares no code with RefineSidebar" stance this record and the source file both
+      carried is superseded for the chrome only -- the state and options reasons it gave are the retained rationale above.
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model
@@ -335,11 +344,15 @@ components:
     target: core/ui-react/src/components/refine
     consumers:
       - F-SEARCH-SORT-FILTER
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
-    state: partial
+    state: done
     note: FM-136 extracted the shell and re-based the results sidebar on it at proven byte parity (the rendered refine-sidebar outerHTML is identical for the docked expanded, docked collapsed, and drawer branches). Its own labels
-      and data-testid values are props, so RefineSidebar.tsx keeps refine-sidebar/-toggle/-drawer/-close and refine-clear-all unchanged; useCompactRefineSurface moved into the shell module with it. Partial until FM-137 adopts it for
-      the three history views, which join consumers then.
+      and data-testid values are props, so RefineSidebar.tsx keeps refine-sidebar/-toggle/-drawer/-close and refine-clear-all unchanged; useCompactRefineSurface moved into the shell module with it. FM-137 added the three history views
+      as consumers without changing the shell, which is what closes ADR-0046's one-refine-concept goal -- the history surfaces pass stickyOffset 0 (nothing sticky sits above a /stats tab body) and a header summary the results page does not
+      use.
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach

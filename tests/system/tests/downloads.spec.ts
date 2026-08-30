@@ -236,7 +236,7 @@ test.describe("Downloads", () => {
     // below asserts the same capability -- the entry appears in the download
     // history and its link repeats the download -- through
     // `download-history-row` and `download-nzb`, and additionally proves the
-    // refine bar's filters travel to the backend.
+    // refine surface's filters travel to the backend.
 
     test("should filter and repeat an available download in the React download history", async ({
         page,
@@ -264,11 +264,12 @@ test.describe("Downloads", () => {
             .click();
         expect((await historyResponse).status()).toBe(200);
 
-        // Refining happens in the shared refine bar (C-HISTORY-REFINE-BAR),
-        // the route's only filter surface. Both the freetext and the
-        // multi-select path are exercised against the real backend, and each
-        // request body is read to prove the filter actually travelled -- a 200
-        // on an unfiltered body would prove nothing.
+        // Refining happens in the shared refine surface
+        // (C-HISTORY-REFINE-BAR docked through C-REFINE-SURFACE), the route's
+        // only filter surface. Both the freetext and the multi-select path are
+        // exercised against the real backend, and each request body is read to
+        // prove the filter actually travelled -- a 200 on an unfiltered body
+        // would prove nothing.
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         const filteredResponse = page.waitForResponse((response) =>
             isDownloadHistoryResponse(response),
@@ -302,7 +303,9 @@ test.describe("Downloads", () => {
                 name: {filterType: "checkboxes", filterValue: ["Mock1"]},
             },
         });
-        await expect(page.getByTestId("history-refine-toggle")).toContainText(
+        // ADR-0046: the active-filter summary renders in the shared shell's
+        // header summary slot now, not inside the old bar's toggle.
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
 
@@ -375,7 +378,7 @@ test.describe("Downloads", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("download-history-table")
@@ -396,7 +399,7 @@ test.describe("Downloads", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toBeVisible();
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("download-history-table")
@@ -417,7 +420,7 @@ test.describe("Downloads", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-end"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("download-history-table")
@@ -430,56 +433,99 @@ test.describe("Downloads", () => {
         });
     });
 
-    test("should capture the download history refine bar visual evidence", async ({
+    /**
+     * ADR-0046 (FM-137): at 1280px the surface is a docked column collapsing
+     * to a rail in place; at 390px that branch does not exist and the sections
+     * are reachable only through the drawer the compact "Refine" trigger
+     * opens. Exactly one branch is in the DOM at a time.
+     */
+    test("should capture the download history refine surface visual evidence", async ({
         page,
     }) => {
-        for (const viewport of ["desktop", "mobile"] as const) {
-            await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("/stats/downloads");
-                await dismissWelcomeDialog(page);
-                await expect(
-                    page.getByTestId("history-refine-bar"),
-                ).toBeVisible();
-            });
-            const toggle = page.getByTestId("history-refine-toggle");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-DOWNLOADS",
-                    `refine-bar-expanded-${viewport}`,
-                ),
-            });
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/stats/downloads");
+            await dismissWelcomeDialog(page);
+            await expect(page.getByTestId("history-refine-bar")).toBeVisible();
+        });
+        const toggle = page.getByTestId("history-refine-toggle");
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
+            "No active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "refine-surface-expanded-desktop",
+            ),
+        });
 
-            await toggle.click();
-            await expect(toggle).toHaveAttribute("aria-expanded", "false");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-DOWNLOADS",
-                    `refine-bar-collapsed-${viewport}`,
-                ),
-            });
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+        // The rail hides the summary, so the control that reveals it carries
+        // the same sentence as its accessible name.
+        await expect(toggle).toHaveAccessibleName(
+            "Expand history filters, No active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "refine-surface-collapsed-desktop",
+            ),
+        });
 
-            await toggle.click();
-            await expect(toggle).toHaveAttribute("aria-expanded", "true");
-            await page.getByLabel("Title").fill("evidence");
-            await page
-                .getByTestId("history-refine-result-option")
-                .filter({hasText: "Content download successful"})
-                .click();
-            await expect(toggle).toContainText("2 active filters");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-DOWNLOADS",
-                    `refine-bar-active-${viewport}`,
-                ),
-            });
-            expect(
-                await page
-                    .locator("html")
-                    .evaluate(
-                        (element) => element.scrollWidth <= element.clientWidth,
-                    ),
-            ).toBe(true);
-        }
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await page.getByLabel("Title").fill("evidence");
+        await page
+            .getByTestId("history-refine-result-option")
+            .filter({hasText: "Content download successful"})
+            .click();
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
+            "2 active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "refine-surface-active-desktop",
+            ),
+        });
+        expect(await pageFitsHorizontally(page)).toBe(true);
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/downloads");
+            await dismissWelcomeDialog(page);
+            await expect(
+                page.getByTestId("history-refine-toggle"),
+            ).toBeVisible();
+        });
+        await expect(page.getByTestId("history-refine-bar")).toHaveCount(0);
+        await expect(page.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "refine-surface-drawer-closed-mobile",
+            ),
+        });
+
+        await page.getByTestId("history-refine-toggle").click();
+        await expect(page.getByTestId("history-refine-bar")).toBeVisible();
+        await page.getByLabel("Title").fill("evidence");
+        await page
+            .getByTestId("history-refine-result-option")
+            .filter({hasText: "Content download successful"})
+            .click();
+        await expect(page.getByTestId("history-refine-toggle")).toContainText(
+            "2 active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-DOWNLOADS",
+                "refine-surface-drawer-open-mobile",
+            ),
+        });
+        expect(await pageFitsHorizontally(page)).toBe(true);
     });
 });
 
@@ -490,4 +536,15 @@ function isDownloadHistoryResponse(
         response.request().method() === "POST" &&
         new URL(response.url()).pathname === "/internalapi/history/downloads"
     );
+}
+
+// ADR-0029: the page itself never scrolls sideways -- horizontal overflow
+// belongs to a table's own `TableScrollAffordance` scroller, never to the
+// document.
+async function pageFitsHorizontally(
+    page: import("@playwright/test").Page,
+): Promise<boolean> {
+    return page
+        .locator("html")
+        .evaluate((element) => element.scrollWidth <= element.clientWidth);
 }

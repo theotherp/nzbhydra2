@@ -114,8 +114,9 @@ test.describe("Notification history", () => {
         await expect(urls).toContainText("json://localhost");
         await expect(urls.locator("a")).toHaveCount(1);
 
-        // Refining goes through the shared bar, and the request body proves the
-        // enum constant travelled -- a 200 alone would prove nothing.
+        // Refining goes through the shared refine surface, and the request
+        // body proves the enum constant travelled -- a 200 alone would prove
+        // nothing.
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         const filteredResponse = waitForNotificationHistory(page);
         await page
@@ -248,7 +249,7 @@ test.describe("Notification history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("notification-history-table")
@@ -300,7 +301,7 @@ test.describe("Notification history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toBeVisible();
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("notification-history-table")
@@ -321,7 +322,7 @@ test.describe("Notification history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-end"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page
             .getByTestId("notification-history-table")
@@ -334,10 +335,18 @@ test.describe("Notification history", () => {
         });
     });
 
+    /**
+     * ADR-0046 (FM-137): the event-type options live in the docked column at
+     * 1280px and behind the compact "Refine" trigger's drawer at 390px, so the
+     * mobile pass has to open the drawer before it can reach a filter at all,
+     * and reads the count off that trigger rather than the header summary the
+     * closed drawer hides.
+     */
     test("should capture the notification history visual evidence", async ({
         page,
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
+            const compact = viewport === "mobile";
             await prepareVisualEvidence(page, viewport, async () => {
                 await page.goto("/stats/notifications");
                 await dismissWelcomeDialog(page);
@@ -345,6 +354,9 @@ test.describe("Notification history", () => {
                     page.getByTestId("notification-history-table"),
                 ).toBeVisible();
             });
+            await expect(page.getByTestId("history-refine-bar")).toHaveCount(
+                compact ? 0 : 1,
+            );
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-HISTORY-NOTIFICATIONS",
@@ -352,12 +364,40 @@ test.describe("Notification history", () => {
                 ),
             });
 
+            if (!compact) {
+                // The docked column's rail, which exists only on this branch:
+                // it collapses in place and the summary it hides is carried by
+                // the accessible name of the control that brings it back.
+                const rail = page.getByTestId("history-refine-toggle");
+                await rail.click();
+                await expect(rail).toHaveAttribute("aria-expanded", "false");
+                await expect(rail).toHaveAccessibleName(
+                    "Expand history filters, No active filters",
+                );
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-HISTORY-NOTIFICATIONS",
+                        "refine-surface-collapsed-desktop",
+                    ),
+                });
+                await rail.click();
+                await expect(rail).toHaveAttribute("aria-expanded", "true");
+            }
+
+            if (compact) {
+                await page.getByTestId("history-refine-toggle").click();
+                await expect(
+                    page.getByTestId("history-refine-bar"),
+                ).toBeVisible();
+            }
             await page
                 .getByTestId("history-refine-event-type-option")
                 .filter({hasText: "Indexer disabled"})
                 .click();
             await expect(
-                page.getByTestId("history-refine-toggle"),
+                compact
+                    ? page.getByTestId("history-refine-toggle")
+                    : page.getByTestId("history-refine-summary"),
             ).toContainText("1 active filter");
             await expect(
                 page
@@ -379,6 +419,12 @@ test.describe("Notification history", () => {
                 .getByTestId("history-refine-event-type-option")
                 .filter({hasText: "Automatic update installed"})
                 .click();
+            if (compact) {
+                await page.getByTestId("history-refine-close").click();
+                await expect(
+                    page.getByTestId("history-refine-bar"),
+                ).toHaveCount(0);
+            }
             await expect(
                 page.getByText(
                     "No notification history entries match the current filters.",

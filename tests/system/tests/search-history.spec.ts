@@ -81,7 +81,7 @@ test.describe("Search history", () => {
         await expect(historyRow).toHaveCount(1);
         // FM-094: carried over from the deleted legacy "should show and repeat
         // a UI search". No other test asserts these two rendered cells -- the
-        // refine-bar test proves the backend's `category_name` value by
+        // refine-surface test proves the backend's `category_name` value by
         // filtering on it, which is a different claim.
         await expect(
             historyRow.getByTestId("search-history-category"),
@@ -141,7 +141,7 @@ test.describe("Search history", () => {
         ).toContainText(/\d+ms/);
     });
 
-    test("should filter through the shared refine bar against the real backend", async ({
+    test("should filter through the shared refine surface against the real backend", async ({
         page,
     }) => {
         const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
@@ -167,11 +167,12 @@ test.describe("Search history", () => {
             .click();
         expect((await historyResponse).status()).toBe(200);
 
-        // Refining happens in the shared refine bar (C-HISTORY-REFINE-BAR),
-        // the route's only filter surface. Both the freetext and the
-        // multi-select path are exercised against the real backend, and each
-        // request body is read to prove the filter actually travelled -- a
-        // 200 on an unfiltered body would prove nothing.
+        // Refining happens in the shared refine surface
+        // (C-HISTORY-REFINE-BAR docked through C-REFINE-SURFACE), the route's
+        // only filter surface. Both the freetext and the multi-select path are
+        // exercised against the real backend, and each request body is read to
+        // prove the filter actually travelled -- a 200 on an unfiltered body
+        // would prove nothing.
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         const filteredResponse = page.waitForResponse((response) =>
             isSearchHistoryResponse(response),
@@ -204,7 +205,10 @@ test.describe("Search history", () => {
                 },
             },
         });
-        await expect(page.getByTestId("history-refine-toggle")).toContainText(
+        // ADR-0046: the active-filter summary renders in the shared shell's
+        // header summary slot now, beside the "Refine" caption, rather than
+        // inside the old bar's expand/collapse toggle.
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
 
@@ -235,13 +239,7 @@ test.describe("Search history", () => {
         });
 
         // ADR-0029: the page never scrolls sideways, at any point below.
-        const pageFits = () =>
-            page
-                .locator("html")
-                .evaluate(
-                    (element) => element.scrollWidth <= element.clientWidth,
-                );
-        expect(await pageFits()).toBe(true);
+        expect(await pageFitsHorizontally(page)).toBe(true);
 
         // The table keeps its measured floor and the container scrolls.
         const scroller = page.getByTestId("search-history-scroller");
@@ -260,7 +258,7 @@ test.describe("Search history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
         await page.screenshot({
@@ -281,8 +279,8 @@ test.describe("Search history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toBeVisible();
-        expect(await pageFits()).toBe(true);
-        // The table sits below the refine bar, so bring it into the
+        expect(await pageFitsHorizontally(page)).toBe(true);
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
         await page.screenshot({
@@ -305,7 +303,7 @@ test.describe("Search history", () => {
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toHaveCount(0);
-        // The table sits below the refine bar, so bring it into the
+        // The table sits below the page heading row, so bring it into the
         // frame: a strip of the page header is not evidence of a table.
         await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
         await page.screenshot({
@@ -316,56 +314,105 @@ test.describe("Search history", () => {
         });
     });
 
-    test("should capture the search history refine bar visual evidence", async ({
+    /**
+     * ADR-0046 (FM-137): the two viewports are no longer the same flow with a
+     * different width. At 1280px the surface is a docked column that collapses
+     * to a rail in place; at 390px that branch does not exist at all and the
+     * sections are reachable only through the drawer the compact "Refine"
+     * trigger opens. Exactly one branch is in the DOM at a time, which is what
+     * the `toHaveCount(0)` assertions below pin.
+     */
+    test("should capture the search history refine surface visual evidence", async ({
         page,
     }) => {
-        for (const viewport of ["desktop", "mobile"] as const) {
-            await prepareVisualEvidence(page, viewport, async () => {
-                await page.goto("/stats/searches");
-                await dismissWelcomeDialog(page);
-                await expect(
-                    page.getByTestId("history-refine-bar"),
-                ).toBeVisible();
-            });
-            const toggle = page.getByTestId("history-refine-toggle");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-SEARCHES",
-                    `refine-bar-expanded-${viewport}`,
-                ),
-            });
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/stats/searches");
+            await dismissWelcomeDialog(page);
+            await expect(page.getByTestId("history-refine-bar")).toBeVisible();
+        });
+        const toggle = page.getByTestId("history-refine-toggle");
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
+            "No active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-surface-expanded-desktop",
+            ),
+        });
 
-            await toggle.click();
-            await expect(toggle).toHaveAttribute("aria-expanded", "false");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-SEARCHES",
-                    `refine-bar-collapsed-${viewport}`,
-                ),
-            });
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+        // The rail has room for the toggle alone, so the summary it hides is
+        // carried by the accessible name of the control that reveals it.
+        await expect(toggle).toHaveAccessibleName(
+            "Expand history filters, No active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-surface-collapsed-desktop",
+            ),
+        });
 
-            await toggle.click();
-            await expect(toggle).toHaveAttribute("aria-expanded", "true");
-            await page.getByLabel("Query").fill("evidence");
-            await page
-                .getByTestId("history-refine-category-option")
-                .first()
-                .click();
-            await expect(toggle).toContainText("2 active filters");
-            await page.screenshot({
-                path: visualEvidencePath(
-                    "F-HISTORY-SEARCHES",
-                    `refine-bar-active-${viewport}`,
-                ),
-            });
-            expect(
-                await page
-                    .locator("html")
-                    .evaluate(
-                        (element) => element.scrollWidth <= element.clientWidth,
-                    ),
-            ).toBe(true);
-        }
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await page.getByLabel("Query").fill("evidence");
+        await page
+            .getByTestId("history-refine-category-option")
+            .first()
+            .click();
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
+            "2 active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-surface-active-desktop",
+            ),
+        });
+        expect(await pageFitsHorizontally(page)).toBe(true);
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/searches");
+            await dismissWelcomeDialog(page);
+            await expect(
+                page.getByTestId("history-refine-toggle"),
+            ).toBeVisible();
+        });
+        // The docked branch is not merely hidden below 768px; it is absent,
+        // and the drawer starts closed however the desktop column was left.
+        await expect(page.getByTestId("history-refine-bar")).toHaveCount(0);
+        await expect(page.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-surface-drawer-closed-mobile",
+            ),
+        });
+
+        await page.getByTestId("history-refine-toggle").click();
+        await expect(page.getByTestId("history-refine-bar")).toBeVisible();
+        await page.getByLabel("Query").fill("evidence");
+        await page
+            .getByTestId("history-refine-category-option")
+            .first()
+            .click();
+        // With the sections behind a drawer, the compact trigger is where the
+        // count has to remain readable.
+        await expect(page.getByTestId("history-refine-toggle")).toContainText(
+            "2 active filters",
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-surface-drawer-open-mobile",
+            ),
+        });
+        expect(await pageFitsHorizontally(page)).toBe(true);
     });
 });
 
@@ -402,4 +449,15 @@ function isSearchHistoryResponse(
         response.request().method() === "POST" &&
         new URL(response.url()).pathname === "/internalapi/history/searches"
     );
+}
+
+// ADR-0029: the page itself never scrolls sideways -- horizontal overflow
+// belongs to a table's own `TableScrollAffordance` scroller, never to the
+// document.
+async function pageFitsHorizontally(
+    page: import("@playwright/test").Page,
+): Promise<boolean> {
+    return page
+        .locator("html")
+        .evaluate((element) => element.scrollWidth <= element.clientWidth);
 }

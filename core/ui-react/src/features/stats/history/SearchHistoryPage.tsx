@@ -47,7 +47,7 @@ import {recentSearchCriteria} from "../../search/history/recentSearchCriteria";
 import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
-import {HistoryRefineBar} from "./refine/HistoryRefineBar";
+import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 
 const defaultSort: SearchHistorySort = {column: "time", sortMode: 2};
 
@@ -91,7 +91,7 @@ export function SearchHistoryPage({
             }),
         // Every filter keystroke is a new query key; keeping the previous
         // page's data rendered (rather than falling back to the first-load
-        // spinner) keeps the refine bar mounted and its focus intact -- see
+        // spinner) keeps the refine surface mounted and its focus intact -- see
         // `DownloadHistoryPage` for the same reasoning.
         placeholderData: keepPreviousData,
     });
@@ -134,7 +134,18 @@ export function SearchHistoryPage({
     const {entries: searches, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     return (
-        <Stack component="main" spacing={2}>
+        // The route's single filter surface (ADR-0009/ADR-0046): every
+        // dimension legacy offered per table column lives in the refine
+        // surface this layout docks beside the table, and the table header
+        // carries sorting only. "Show user agents" stays outside the
+        // dimension model -- it is a table-display toggle, not a filter, so
+        // it stays in the heading row with "Refresh".
+        <HistoryRefineLayout
+            dimensions={dimensions}
+            onChange={updateFilter}
+            onClearAll={clearFilters}
+            values={values}
+        >
             <Stack
                 alignItems="center"
                 direction="row"
@@ -171,17 +182,6 @@ export function SearchHistoryPage({
                     </Button>
                 </Stack>
             </Stack>
-            {/* The route's single filter surface (ADR-0009): every dimension
-                legacy offered per table column lives here, and the table
-                header carries sorting only. "Show user agents" stays outside
-                the bar's dimension model -- it is a table-display toggle, not
-                a filter. */}
-            <HistoryRefineBar
-                dimensions={dimensions}
-                onChange={updateFilter}
-                onClearAll={clearFilters}
-                values={values}
-            />
             {query.isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
@@ -354,7 +354,7 @@ export function SearchHistoryPage({
                 details={details}
                 onClose={() => setDetailsId(undefined)}
             />
-        </Stack>
+        </HistoryRefineLayout>
     );
 }
 
