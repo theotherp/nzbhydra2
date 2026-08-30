@@ -817,3 +817,24 @@ Should that be bounded — server-side tail, client-side last-N with a load-ever
 **Why it is defensible.** This is legacy's behaviour (`hydra-log.js`), so it is not a regression. The test pressure
 that surfaced it is gone: `18c5ed445` added `rotatelog`, and the log tests rotate first. What remains is a real
 instance with a very large log, which is a cost its operator already pays for other reasons.
+
+## ADR-0048 — The system-test state reset is a `systemtest`-profile-gated internal endpoint (accepted 2026-08-30)
+
+Question: system tests need a way to return a running instance to a known state — config to a defined baseline plus
+the server-side state `PUT /internalapi/config` cannot reach (`genericstorage` including `forUser` keys,
+`welcomeshown`) — and no reset facility exists (`config/reload` only re-reads disk YAML; snapshot-PUT restores are
+refused since FM-068). Endpoint gated by the `systemtest` profile, an always-present `internalApiKey`-gated endpoint,
+fresh data folder per test via the runner, or a disk-YAML seed plus `config/reload`?
+
+Decided (owner, in conversation): a test-only endpoint under `/internalapi`, active only when the `systemtest` Spring
+profile is active, resetting config to a defined checked-in baseline plus the state a config PUT cannot reach.
+Payload and exact semantics are implementation latitude within the delivering packet (FM-139).
+
+Binding constraints:
+
+- The endpoint must be unreachable in a production-shaped deployment, proven by an automated check, not prose. Core
+  currently has zero `@Profile` usage — the gating mechanism itself is part of FM-139's work, not assumed.
+- The reset never round-trips a client-fetched config snapshot (ADR-0020/FM-068: secret markers); baseline values,
+  secrets included, come from the server-side definition, which lives in exactly one checked-in place.
+- A reset is bounded like a config PUT, never a restart; volatile history/stats tables are out of scope — tests that
+  touch the database self-namespace instead (FM-140/FM-141).

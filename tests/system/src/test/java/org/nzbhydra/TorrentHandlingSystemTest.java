@@ -20,8 +20,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
@@ -37,8 +35,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class TorrentHandlingSystemTest {
 
     private static final String INDEXER_NAME = "Deterministic Torznab";
@@ -69,30 +66,18 @@ public class TorrentHandlingSystemTest {
     @Value("${blackholeFolder.testaccess}")
     private String blackholeFolderTestAccess;
 
-    private BaseConfig originalConfig;
-
-    @Autowired
-    private BeforeAll beforeAll;
-
     @BeforeEach
     public void setUp() throws IOException {
-        // Establish the baseline this test needs instead of inheriting whatever ran before it.
-        beforeAll.applyBaseline();
-        originalConfig = configManager.getCurrentConfig();
+        // BaselineExtension has already established the baseline; this only layers this class's torznab indexer.
         deleteBlackholeArtifacts();
         configureTorznabIndexer();
     }
 
     @AfterEach
-    public void restoreConfigurationAndBlackhole() throws IOException {
-        try {
-            // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
-            // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
-            // matched to a stored record - exactly the case once this test replaced those records.
-            beforeAll.applyBaseline();
-        } finally {
-            deleteBlackholeArtifacts();
-        }
+    public void cleanBlackhole() throws IOException {
+        // The configuration this class layered on is re-established by BaselineExtension before the next test and
+        // after this class; the blackhole files are this class's own and nothing else removes them.
+        deleteBlackholeArtifacts();
     }
 
     @Test

@@ -1020,9 +1020,68 @@ and after) plus real-backend `config-searching` and `config` at 33/33. Passed wi
 `MAINTENANCE.md`, one of them the residual this task could not reach: the field still renders `unit="results per
 page"` beside its corrected label, a fourth surface the design pass did not name and the allowlist explicitly froze.
 
+FM-138 (Supervised Local Two-Phase System-Test Run) made `misc/run_gui_systemtest.py --runtime local --java-phase`
+reproduce CI's `runSystemTestsLinux` ordering locally on one instance — Java phase (80 tests) then Playwright (201),
+with the core supervised through `/internalapi/control/restart` (exit 22 relaunch) and backup restore (exit 33:
+apply `restore/*`, then relaunch), proven by a recorded green end-to-end run with 3 supervised relaunches
+(`[22, 22, 33]`). `--java-test <pattern>` runs one class alone; `existing` runtime warns that restarts are
+unsupervised. The supervisor moved out of `misc/run_systemtest.py` into the GUI runner and is shared, not copied
+(extraction verified behavior-neutral for the native path). The Java phase also mirrors `local_test_properties` in
+full — `nzbhydra.host.external`/`sonarr.host`/`radarr.host` overrides fixed five `ExternalTools*` failures the packet
+had not named. Discharges the MAINTENANCE.md candidate about the Java phase being unrunnable locally; FM-140/FM-141
+verify through it. Passed with minor findings, not corrected (optional): phase commands are logged twice; the three
+Arr/host `-D` overrides are gated on a folder-availability condition unrelated to them; a core death during the
+Playwright phase records `unexpected_exit_code` but is only surfaced by Playwright's own failure. Candidates for a
+future quickfix.
+
+FM-139 (System-Test State Reset Facility) delivered ADR-0048's endpoint: `POST /internalapi/systemtest/reset` returns
+the whole configuration, generic storage, and `welcomeShown` to `config/baseConfig.yml` — the one checked-in
+baseline — via `BaseConfigHandler.replace` + `save(true)`, so no client snapshot and no FM-068 marker path is ever
+involved; secrets come back as real baseline values. Measured 9ms vs a 14ms config PUT; the orphaned
+`initialNzbhydra.yml` is deleted. One fix/review cycle: the original `@Profile("systemtest")` gate was a build-time
+condition Spring AOT would not emit into the native core CI actually tests, so the bean is now unconditional and the
+gate is a runtime `environment.acceptsProfiles` check answering a body-less 404 — proven red-first, both branches
+(404-and-handler-never-called without the profile; handled with it). Passed with minor findings, not corrected
+(optional): the `forUser` generic-storage proof likely exercises the unsuffixed key path under `authType NONE`; the
+reset skips `handleIndexerConfigChanges`, leaving orphaned `IndexerEntity` rows a PUT-based removal would cascade —
+disclosed too narrowly in the javadoc, and worth weighing in FM-140/FM-141's scoping; `tests/system/.prettierignore:19`
+still names the deleted seed file (outside the allowlist); the timing test's config PUT result is unasserted; and the
+"indistinguishable from an unmapped path" javadoc/packet wording overstates (an authenticated non-admin gets 403 first,
+and the 404 body shape differs from Spring's error path). Candidates for a future quickfix.
+
+FM-141 (Playwright Per-Spec Isolation Completion) closed the batch: `applyBaseline` is establish-plus-reset —
+FM-139's endpoint runs once per worker, its read-back supplies the baseline for the four previously uncovered surfaces
+(`categoriesConfig`, `downloading`, `externalTools`, `genericStorage`), `mockApiKeysOf` rejects per-indexer field
+drift against `IndexerConfig` defaults, `config-auth.spec.ts` re-establishes `authType: NONE` even on failure, and
+the hand-rolled preconditions in `smoke`/`config-categories` are gone as redundant. The FM-133 residue is solved by
+intervention experiment: the carrier was `searching`'s quick-filter fields all along (removal reproduces the
+historical 22-of-30 `results.spec.ts` breakage exactly; both over-broad-baseline variants stay green), and the
+"~4s per changed indexer backend cost" was actually `ExternalToolsSyncService` syncing to leftover Arr entries —
+baselining `externalTools` removed it, so the full suite got faster (5.7m → 5.2m) while gaining coverage. Verified:
+all 21 spec files green solo (reverse-alphabetical), five on fresh instances, full suite green, and a two-phase
+random-order run green. Passed with minor findings, not corrected (optional): a false universal in `fixtures.ts`'s
+sort-order doc line; a 5.1-vs-5.2m ledger/handoff timing mismatch; smoke's welcome assertion documents rather than
+verifies (the property pins it true); the ADR-0048-overstatement follow-up lives only in the handoff, not the ledger;
+and the DISABLED_USER A/B's decisive log rows weren't captured. Candidates for a future quickfix — along with the two
+recorded FM-139 follow-ups (reset leaves `main.apiKey` null contrary to its javadoc; ADR-0048's "cannot reach"
+wording overstated).
+
 ## Active
 
 None.
+
+FM-140 (Java Suite Per-Class Precondition Establishment) moved the system-test baseline off `BeforeAll.@PostConstruct`
+(one write per JVM fork) onto `BaselineExtension`, bundled with the Spring context as `@SystemTest` on all 27 classes;
+each named leaker now restores or namespaces what it touches, `HistoryTest` is marker-based (and strictly stronger —
+whole-page sortedness where the original compared two rows), the Arr classes assumption-abort cleanly without the Arrs,
+the two duplicated 90s restart waits are one `HydraClient.awaitRestart()`, and dead `DockerConfig` is gone.
+`misc/run_gui_systemtest.py --java-phase` runs Surefire under `runOrder=random` by default and records the executed
+class order; Surefire 3.6.0-M1's seed does not replay an order (measured; the Acceptance was refined mid-task
+accordingly) and exact-order replay stays a `MAINTENANCE.md` candidate. Verified by two full green two-phase runs under
+different orders, three solo-class runs, plus the reviewer's own third full run under a third order and an independent
+Arr-less gate check — all green. Passed with minor findings, not corrected (optional): a `MAINTENANCE.md` line still
+claims seed replayability its neighbours refute, and one inline fully-qualified `java.util.Arrays.stream` in
+`HistoryTest`. Candidates for a future quickfix.
 
 ## Review
 

@@ -4,18 +4,20 @@
 import argparse
 import json
 import os
+import random
 import shutil
 import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import BinaryIO, TextIO
+from typing import BinaryIO, Protocol, TextIO
 
 if os.name != "nt":
     import fcntl
@@ -35,7 +37,33 @@ MOCKSERVER_PORT = 5080
 RADARR_PORT = 7878
 SONARR_PORT = 18989
 ARR_API_KEY = "system-test-api-key-12345"
+CORE_INSTANCE_NAME = "core"
 COMMAND_TIMEOUT = 600
+# org.nzbhydra.systemcontrol.SystemControl: the core exits with these codes and expects its
+# launcher to bring it back. Nothing does that for a plain JVM, which is why supervision exists.
+RESTART_RETURN_CODE = 22
+RESTORE_RETURN_CODE = 33
+
+
+class SupervisedCore(Protocol):
+    """The attributes `supervise_restartable_core` needs to relaunch a core in place.
+
+    Both this runner's `ManagedProcess` and `run_systemtest.py`'s `Service` satisfy it, which is
+    how one supervisor serves the JVM and the native path without a second copy.
+    """
+
+    name: str
+    process: subprocess.Popen
+    log_file: TextIO
+    command: list[str] | None
+    cwd: Path | None
+    environment: dict[str, str] | None
+    start_new_session: bool
+    stop_supervisor: threading.Event | None
+    supervisor: threading.Thread | None
+    restart_exit_codes: list[int] | None
+    restore_restart_exit_codes: list[int] | None
+    unexpected_exit_code: int | None
 
 
 @dataclass
@@ -45,6 +73,18 @@ class ManagedProcess:
     log_path: Path
     log_file: TextIO
     shutdown_url: str
+    # Everything below is what a relaunch needs: the supervisor re-runs the identical command in
+    # the identical environment and swaps `process` in place, so teardown, which holds this same
+    # object, always shuts down the core that is actually alive.
+    command: list[str] | None = None
+    cwd: Path | None = None
+    environment: dict[str, str] | None = None
+    start_new_session: bool = False
+    stop_supervisor: threading.Event | None = None
+    supervisor: threading.Thread | None = None
+    restart_exit_codes: list[int] | None = None
+    restore_restart_exit_codes: list[int] | None = None
+    unexpected_exit_code: int | None = None
 
 
 def parse_args() -> argparse.Namespace:
@@ -91,11 +131,55 @@ def parse_args() -> argparse.Namespace:
         help="leave services started by this runner running after Playwright exits",
     )
     parser.add_argument(
+        "--java-phase",
+        action="store_true",
+        help=(
+            "run the Maven JVM system-test phase against the same instance before Playwright, "
+            "which is what CI's runSystemTestsLinux job does"
+        ),
+    )
+    parser.add_argument(
+        "--java-test",
+        help=(
+            "Surefire test class, method, or pattern for the Java phase, passed as -Dtest=<value>; "
+            "implies --java-phase"
+        ),
+    )
+    parser.add_argument(
+        "--java-run-order",
+        default="random",
+        help=(
+            "Surefire runOrder for the Java phase (default: random). Every class in tests/system "
+            "establishes its own preconditions (FM-140), so a random order is a gate on that: a "
+            "class that starts free-riding on whichever class ran before it fails here rather "
+            "than months later in CI. Pass filesystem to reproduce a fixed order."
+        ),
+    )
+    parser.add_argument(
+        "--java-run-order-seed",
+        type=int,
+        help=(
+            "seed passed to Surefire as -Dsurefire.runOrder.random.seed (default: a new one per "
+            "run). Surefire echoes it back but does not actually reproduce an order from it -- "
+            "measured on 3.6.0-M1, three runs at seed 4242 gave three different orders -- so the "
+            "record of what ran is the phase's own '[INFO] Running org.nzbhydra.<Class>' lines, "
+            "which appear in execution order in this runner's log."
+        ),
+    )
+    parser.add_argument(
         "playwright_args",
         nargs=argparse.REMAINDER,
         help="arguments passed to 'playwright test' after --",
     )
-    return parser.parse_args()
+    arguments = parser.parse_args()
+    if arguments.java_test:
+        arguments.java_phase = True
+    if arguments.java_run_order_seed is None:
+        # Surefire generates one when none is given; generating it here puts the number in this
+        # runner's log next to the command that used it rather than only inside the plugin's own
+        # output. It identifies the run, not the ordering -- see the flag's help.
+        arguments.java_run_order_seed = random.randrange(2 ** 31)
+    return arguments
 
 
 def find_command(name: str) -> str:
@@ -325,6 +409,102 @@ def start_process(
     return ManagedProcess(name, process, log_path, log_file, shutdown_url)
 
 
+def apply_restore_files(data_dir: Path) -> None:
+    restore_dir = data_dir / "restore"
+    if not restore_dir.is_dir():
+        raise RuntimeError(f"Core requested restore but {restore_dir} does not exist")
+    for source in restore_dir.iterdir():
+        destination = data_dir / "database" / source.name if source.name == "nzbhydra.mv.db" else data_dir / source.name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists():
+            if destination.is_dir():
+                shutil.rmtree(destination)
+            else:
+                destination.unlink()
+        shutil.move(str(source), str(destination))
+    restore_dir.rmdir()
+
+
+def supervisor_decision(return_code: int, stopping: bool) -> str:
+    """Classifies one core exit. Split out so the dispatch is testable without real processes.
+
+    "stop" means teardown asked for this exit, "restart"/"restore" mean relaunch, and "fail" means
+    the core died for a reason supervision cannot answer -- which must end the run loudly rather
+    than leave later tests to fail against a dead port.
+    """
+    if stopping:
+        return "stop"
+    if return_code == RESTORE_RETURN_CODE:
+        return "restore"
+    if return_code == RESTART_RETURN_CODE:
+        return "restart"
+    return "fail"
+
+
+def supervise_restartable_core(service: SupervisedCore, data_dir: Path) -> None:
+    """Relaunches the core when it exits asking to be relaunched.
+
+    The core does not restart itself: `/internalapi/control/restart` makes it exit 22 and a backup
+    restore makes it exit 33, both on the assumption that whatever started it will start it again.
+    In CI that is compose's `restart: unless-stopped`; for a locally started process it is this
+    thread. Without it `AuthorizationSystemTest` kills the instance for every test that follows.
+
+    The relaunched process is assigned back onto `service.process`, so the caller's teardown --
+    which holds this same object -- shuts down the core that is currently alive instead of a PID
+    that died several restarts ago.
+    """
+    stop_supervisor = threading.Event()
+    restart_exit_codes: list[int] = []
+    restore_restart_exit_codes: list[int] = []
+    service.stop_supervisor = stop_supervisor
+    service.restart_exit_codes = restart_exit_codes
+    service.restore_restart_exit_codes = restore_restart_exit_codes
+
+    def supervise() -> None:
+        while not stop_supervisor.is_set():
+            return_code = service.process.wait()
+            decision = supervisor_decision(return_code, stop_supervisor.is_set())
+            if decision == "stop":
+                return
+            if decision == "fail":
+                service.unexpected_exit_code = return_code
+                print(
+                    f"{service.name} exited with code {return_code}, which is neither a restart "
+                    f"({RESTART_RETURN_CODE}) nor a restore ({RESTORE_RETURN_CODE}); supervision "
+                    "has ended and the instance is gone.",
+                    file=sys.stderr,
+                )
+                return
+            try:
+                if decision == "restore":
+                    print(f"{service.name} exited with restore code 33; applying restored files")
+                    apply_restore_files(data_dir)
+                assert service.command is not None
+                assert service.cwd is not None
+                assert service.environment is not None
+                service.process = subprocess.Popen(
+                    service.command,
+                    cwd=service.cwd,
+                    env=service.environment,
+                    stdout=service.log_file,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=service.start_new_session,
+                )
+                restart_exit_codes.append(return_code)
+                if decision == "restore":
+                    restore_restart_exit_codes.append(return_code)
+                    print(f"Restarted {service.name} (PID {service.process.pid}) after restore")
+                else:
+                    print(f"Restarted {service.name} (PID {service.process.pid}) after ordinary restart")
+            except Exception as error:
+                service.unexpected_exit_code = return_code
+                print(f"Unable to restart {service.name}: {error}", file=sys.stderr)
+                return
+
+    service.supervisor = threading.Thread(target=supervise, name="core-restart-supervisor", daemon=True)
+    service.supervisor.start()
+
+
 def wait_for_url(
         name: str,
         url: str,
@@ -396,7 +576,11 @@ def stop_existing_services(core_url: str | None, mockserver_url: str | None) -> 
 
 
 def start_local_services(
-        core_jar: Path, mockserver_jar: Path, run_dir: Path, timeout: float
+        core_jar: Path,
+        mockserver_jar: Path,
+        run_dir: Path,
+        timeout: float,
+        supervise_core: bool = False,
 ) -> list[ManagedProcess]:
     java = find_command("java")
     data_dir = run_dir / "data"
@@ -440,16 +624,21 @@ def start_local_services(
             "--datafolder",
             str(data_dir),
         ]
-        processes.append(
-            start_process(
-                "Hydra JVM core",
-                core_command,
-                PROJECT_ROOT,
-                environment,
-                run_dir / "core.log",
-                f"http://127.0.0.1:{CORE_PORT}/actuator/shutdown",
-            )
+        core = start_process(
+            "Hydra JVM core",
+            core_command,
+            PROJECT_ROOT,
+            environment,
+            run_dir / "core.log",
+            f"http://127.0.0.1:{CORE_PORT}/actuator/shutdown",
         )
+        core.command = core_command
+        core.cwd = PROJECT_ROOT
+        core.environment = environment
+        # `terminate_process_group` kills by process group, so a relaunched core has to get its own
+        # session the way `start_process` gives the first one.
+        core.start_new_session = True
+        processes.append(core)
         wait_for_url(
             "mockserver",
             f"http://127.0.0.1:{MOCKSERVER_PORT}/actuator/health",
@@ -462,6 +651,10 @@ def start_local_services(
             timeout,
             processes,
         )
+        if supervise_core:
+            # Only after the core is healthy: a core that dies during startup is a build or
+            # configuration failure, and relaunching it in a loop would hide that.
+            supervise_restartable_core(core, data_dir)
         return processes
     except Exception:
         for managed in reversed(processes):
@@ -607,6 +800,128 @@ def ensure_playwright_installed() -> None:
         raise RuntimeError("Unable to install Playwright Chromium/Firefox")
 
 
+def run_java_system_tests(
+        core_url: str,
+        mockserver_url: str,
+        test_timeout: float,
+        data_dir: Path | None = None,
+        blackhole_dir: Path | None = None,
+        test_pattern: str | None = None,
+        run_order: str = "random",
+        run_order_seed: int | None = None,
+) -> int:
+    """Runs the Maven JVM system-test phase against the already-running instance.
+
+    This is the half of CI's `runSystemTestsLinux` that has no local equivalent: that job runs
+    `mvn test -pl org.nzbhydra.tests:system` and *then* Playwright, both against the same Hydra.
+    Bugs that only appear in that ordering -- one phase leaving config the other inherits -- are
+    invisible to a Playwright-only run, and FM-134 is one of them.
+
+    The environment here is deliberately not CI's, and that difference is the whole reason this
+    function exists rather than a line in a README. CI sets
+    `spring_profiles_active=build,systemtest,testdocker,core`; the `core` profile resolves
+    docker-compose service hostnames that do not exist outside the compose network, so copying
+    CI's value verbatim fails with dozens of connection errors that look like test failures. An
+    earlier attempt lost an afternoon to exactly that. `systemtest,testdocker` is the working set.
+    """
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "spring_profiles_active": "systemtest,testdocker",
+            "HYDRA_INTERNAL_API_KEY": "internalApiKey",
+            "HYDRA_EXTERNAL_URL": core_url,
+            "MOCKSERVER_EXTERNAL_URL": mockserver_url,
+            "MOCKSERVER_INTERNAL_URL": f"http://127.0.0.1:{MOCKSERVER_PORT}",
+            "RADARR_INTERNAL_URL": f"http://127.0.0.1:{RADARR_PORT}",
+            "RADARR_EXTERNAL_URL": f"http://127.0.0.1:{RADARR_PORT}",
+            "RADARR_API_KEY": ARR_API_KEY,
+            "SONARR_INTERNAL_URL": f"http://127.0.0.1:{SONARR_PORT}",
+            "SONARR_EXTERNAL_URL": f"http://127.0.0.1:{SONARR_PORT}",
+            "SONARR_API_KEY": ARR_API_KEY,
+            "SABNZBD_MOCK_API_KEY": "deterministic-sabnzbd-key",
+        }
+    )
+    command = [
+        find_command("mvn"),
+        "--batch-mode",
+        "test",
+        # `~/.mvn/maven.config` sets `-DskipTests`, so without this the phase silently runs nothing
+        # and reports success.
+        "-DskipTests=false",
+        "-pl",
+        "org.nzbhydra.tests:system",
+        "-DtrimStackTrace=false",
+        # A `-D` flag, not an environment variable: `@Value("${nzbhydra.name}")` resolves from
+        # Spring's property sources, and the shell variable is not one of them.
+        f"-Dnzbhydra.name={CORE_INSTANCE_NAME}",
+        # Order independence is a property of the suite, so it is asserted on every run rather than
+        # audited once. Every class establishes its own preconditions through BaselineExtension;
+        # running them in a random order is what keeps that true.
+        f"-Dsurefire.runOrder={run_order}",
+        # Accepted and echoed by Surefire, but it does not pin the ordering: the seed only shuffles
+        # the scanned class list, and that list is not itself in a stable order. Measured on
+        # 3.6.0-M1, this repository's pinned version, three runs at seed 4242 produced three
+        # different orders. Passed anyway so the plugin's own reproduce-hint names a known number.
+        f"-Dsurefire.runOrder.random.seed={run_order_seed}",
+    ]
+    # The same overrides `run_systemtest.py`'s `local_test_properties` applies for the native path,
+    # and for the same two reasons. `application-testdocker.properties` points the folders at
+    # container paths (`/hydraBlackhole`, `/tmp/hydra/defaultDataFolder`) that do not exist for a
+    # locally started core, and `BackupRestoreSystemTest` and the blackhole tests read them as real
+    # folders. `nzbhydra.host.external` defaults to `127.0.0.1:5076`, which is the Sonarr or Radarr
+    # container itself once the test hands the address over for the Arr to call back on --
+    # `ExternalToolsTest` then fails with "Connection refused (127.0.0.1:5076)".
+    if data_dir is not None and blackhole_dir is not None:
+        command.extend(
+            [
+                f"-DdataFolder.testaccess={data_dir}",
+                f"-DblackholeFolder.nzbhydra={blackhole_dir}",
+                f"-DblackholeFolder.testaccess={blackhole_dir}",
+                f"-Dnzbhydra.host.external=http://host.docker.internal:{CORE_PORT}",
+                f"-Dsonarr.host=http://127.0.0.1:{SONARR_PORT}",
+                f"-Dradarr.host=http://127.0.0.1:{RADARR_PORT}",
+            ]
+        )
+    if test_pattern:
+        command.append(f"-Dtest={test_pattern}")
+    print(
+        f"Java phase run order: {run_order}, seed {run_order_seed}. The order that actually ran is "
+        f"the sequence of '[INFO] Running org.nzbhydra.<Class>' lines below; Surefire 3.6.0-M1 does "
+        f"not reproduce an ordering from the seed. Pass --java-run-order filesystem for a fixed "
+        f"(though not chosen) order."
+    )
+    print(f"Running: {subprocess.list2cmdline(command)}")
+    # From the repository root, not tests/system: the reactor needs the parent POM.
+    return run_command(command, cwd=PROJECT_ROOT, environment=environment, timeout=test_timeout)
+
+
+def report_core_restarts(managed_processes: list[ManagedProcess], exit_code: int) -> int:
+    """Prints what supervision actually did and fails the run if the core died unsupervised.
+
+    The restart count is the only evidence that the supervisor was exercised rather than merely
+    installed, so it belongs in the log of every Java-phase run, passing or failing.
+    """
+    for managed in managed_processes:
+        if managed.stop_supervisor is None:
+            continue
+        restarts = managed.restart_exit_codes or []
+        restores = managed.restore_restart_exit_codes or []
+        print(
+            f"{managed.name}: {len(restarts)} supervised relaunch(es) "
+            f"(exit codes {restarts or 'none'}, of which {len(restores)} after a restore)"
+        )
+        if managed.unexpected_exit_code is not None:
+            print(
+                f"{managed.name} ended supervision after exit code "
+                f"{managed.unexpected_exit_code}; the results above ran against a dying or dead "
+                "instance and cannot be trusted.",
+                file=sys.stderr,
+            )
+            if exit_code == 0:
+                exit_code = 1
+    return exit_code
+
+
 def run_playwright(
         core_url: str, mockserver_url: str, playwright_args: list[str], test_timeout: float
 ) -> int:
@@ -634,14 +949,25 @@ def run_playwright(
     return run_command(command, cwd=SYSTEM_TEST_DIR, environment=environment, timeout=test_timeout)
 
 
+def shutdown_current_process(managed: ManagedProcess) -> None:
+    if managed.process.poll() is None:
+        post_shutdown(managed.shutdown_url)
+        try:
+            managed.process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            terminate_process_group(managed.process)
+
+
 def stop_process(managed: ManagedProcess) -> None:
     try:
-        if managed.process.poll() is None:
-            post_shutdown(managed.shutdown_url)
-            try:
-                managed.process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                terminate_process_group(managed.process)
+        if managed.stop_supervisor is not None:
+            managed.stop_supervisor.set()
+        shutdown_current_process(managed)
+        if managed.supervisor is not None:
+            managed.supervisor.join(timeout=15)
+            # A relaunch that had already started when the stop flag was set leaves a live process
+            # the shutdown above never saw. Whatever is current now is what teardown owns.
+            shutdown_current_process(managed)
     finally:
         managed.log_file.close()
 
@@ -674,27 +1000,68 @@ def run(args: argparse.Namespace) -> int:
         selected_runtime = choose_runtime(
             args.runtime, existing_core is not None, existing_mock is not None
         )
+        data_dir: Path | None = None
+        blackhole_dir: Path | None = None
         if selected_runtime == "existing":
             assert existing_core is not None and existing_mock is not None
             core_url, mockserver_url = existing_core, existing_mock
             print(f"Using existing Hydra at {core_url} and mockserver at {mockserver_url}")
+            if args.java_phase:
+                # This runner did not start the attached instance, so it cannot relaunch it when
+                # `AuthorizationSystemTest` restarts it, and it does not know its data folder.
+                # Under IntelliJ that ends the instance and every later test errors.
+                print(
+                    "Warning: --java-phase against an existing instance is unsupervised. A test "
+                    "that restarts Hydra (AuthorizationSystemTest) will end it permanently and "
+                    "every later test will error. The local run folder properties are also "
+                    "unavailable. Use --runtime local for a supervised, CI-equivalent run.",
+                    file=sys.stderr,
+                )
         else:
             core_jar, mockserver_jar = build_jvm_services()
             if existing_core or existing_mock:
                 stop_existing_services(existing_core, existing_mock)
             managed_processes = start_local_services(
-                core_jar, mockserver_jar, run_dir, args.startup_timeout
+                core_jar,
+                mockserver_jar,
+                run_dir,
+                args.startup_timeout,
+                supervise_core=args.java_phase,
             )
             core_url = f"http://127.0.0.1:{CORE_PORT}"
             mockserver_url = f"http://127.0.0.1:{MOCKSERVER_PORT}"
+            data_dir = run_dir / "data"
+            blackhole_dir = run_dir / "blackhole"
+            blackhole_dir.mkdir(exist_ok=True)
             configure_local_baseline()
 
         started_supporting_services = start_supporting_services(args.startup_timeout)
         if not args.skip_install:
             ensure_playwright_installed()
-        exit_code = run_playwright(
-            core_url, mockserver_url, args.playwright_args, args.test_timeout
-        )
+        exit_code = 0
+        if args.java_phase:
+            # Before Playwright, and against the same instance, because that is the ordering CI
+            # uses and the ordering in which one phase's leftover config reaches the other.
+            exit_code = run_java_system_tests(
+                core_url,
+                mockserver_url,
+                args.test_timeout,
+                data_dir,
+                blackhole_dir,
+                args.java_test,
+                args.java_run_order,
+                args.java_run_order_seed,
+            )
+            exit_code = report_core_restarts(managed_processes, exit_code)
+            if exit_code != 0:
+                print(
+                    "Java system-test phase failed; skipping Playwright so its failures are not "
+                    "attributed to the UI."
+                )
+        if exit_code == 0:
+            exit_code = run_playwright(
+                core_url, mockserver_url, args.playwright_args, args.test_timeout
+            )
         succeeded = exit_code == 0
         if not succeeded:
             for managed in managed_processes:
@@ -714,6 +1081,14 @@ def run(args: argparse.Namespace) -> int:
                     stop_process(managed)
                 except (OSError, RuntimeError, subprocess.SubprocessError) as error:
                     cleanup_errors.append(f"Unable to stop {managed.name}: {error}")
+            if managed_processes:
+                # Proof that supervision did not resurrect the core behind teardown's back: a
+                # relaunch this runner no longer tracks would still be holding these ports.
+                for port in (CORE_PORT, MOCKSERVER_PORT):
+                    try:
+                        wait_for_port_release(port)
+                    except RuntimeError as error:
+                        cleanup_errors.append(str(error))
             if cleanup_errors:
                 succeeded = False
                 print("; ".join(cleanup_errors), file=sys.stderr)

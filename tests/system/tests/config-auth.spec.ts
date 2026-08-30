@@ -177,6 +177,26 @@ async function submitUserDialog(page: Page): Promise<void> {
     await expect(page.getByTestId("config-user-dialog")).toBeHidden();
 }
 
+/**
+ * Puts the instance back to `authType: NONE` after every test in this file,
+ * failed ones included. Not a restore-what-was-there (ADR-0020): it calls the
+ * same `applyBaseline()` the fixture calls beforehand, so what it establishes
+ * is the one known state, not whatever this file happened to find.
+ *
+ * `seedUsers` moves `auth` to `BASIC` with `restrictSearch` on, and nothing
+ * here moves it back. Within a full run the next test's `applyBaseline()`
+ * covers it, so the leak stayed invisible; run this file alone -- which
+ * FM-141's per-spec gate does for every spec file -- and the instance is left
+ * demanding a login that no test configures a working password for, which is
+ * the one leftover in this suite a *person* then trips over rather than only
+ * the next test. Doing it here rather than only in the next `applyBaseline()`
+ * is what makes "run one spec against this instance" a repeatable operation
+ * instead of an ordering question.
+ */
+test.afterEach(async ({hydra}) => {
+    await hydra.applyBaseline();
+});
+
 test.describe("Config auth users search anchor", () => {
     /**
      * The behaviour the missing anchor cost, asserted end to end rather than

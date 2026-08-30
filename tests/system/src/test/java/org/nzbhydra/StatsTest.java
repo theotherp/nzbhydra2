@@ -6,15 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.historystats.StatsResponse;
 import org.nzbhydra.historystats.stats.StatsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class StatsTest {
 
     @Autowired

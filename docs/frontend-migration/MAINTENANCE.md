@@ -1314,16 +1314,25 @@ symbol — a rule the repository already states in packet prompts and does not e
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
-- **Something outside the config makes tests depend on each other, and it is not yet identified.** *(Headline
-  corrected 2026-08-29: this first read "Server-side user preferences leak between tests". The breakage is real but
-  that mechanism was a guess, and `storedChoices.ts:13-33` contradicts it — refine selections are search-scoped and
-  never persisted.)* Applying a config baseline to all 197 tests broke 26 of `results.spec.ts`, the page showing
-  "0 of 3 loaded · 3 filtered", so something the config baseline does not cover was carrying state between them. **This is the blocker on removing the snapshot teardown**, which
-  is otherwise unnecessary once each spec establishes its own preconditions. Needs the preference surface enumerated
-  (which keys, which specs write them, which are `forUser`) before a reset can be written. Routed to a **task
-  packet** — it spans the fixture, several specs, and a server API. Surfaced 2026-08-29. Routed to **FM-133**
-  (2026-08-29), whose design pass found the stated mechanism uncorroborated — `storedChoices.ts:13-33` makes refine
-  selections search-scoped and unpersisted — so the packet reproduces the breakage before designing the reset.
+- ~~**Something outside the config makes tests depend on each other, and it is not yet identified.**~~ **Identified
+  and closed 2026-08-30 (FM-141).** It was never outside the config. The carrier is `searching.customQuickFilterButtons`
+  and `searching.preselectQuickFilterButtons` — ordinary `BaseConfig`, seeded into the refine sidebar's quick-filter
+  selection by `preselectedQuickFilters` (`SearchResults.tsx:204-212`), after which every non-matching result is
+  dropped. FM-133 named it from the same experiment and its `applyBaseline` has covered it since; what stayed
+  unsettled was this entry, and FM-141 settled it by *removing* the cover and watching the recorded failure come
+  back. **Controlled reproduction, run against a live instance and reversible in one edit:** delete the four
+  quick-filter fields from `applyBaseline`, run `results.spec.ts` alone → **22 failed / 8 passed**, first failure at
+  test 5 of 30, immediately after test 4 (`should treat invalid title and quick-filter regexes as non-matches`) leaves
+  `customQuickFilterButtons: ["Invalid regex=/[/"]` with that filter preselected and never clears it. The toolbar reads
+  `0 of 28 loaded (>500 available) · 28 filtered · 98 rejected` — the recorded `0 of 3 loaded · 3 filtered` with a
+  bigger result set. Restore the four fields and the same file is 30 passed. **The stated premise was also wrong in
+  its direction:** a *fuller* baseline does not break `results.spec.ts` at all. FM-141 tried both maximal variants
+  against the current tree — rewriting the indexer list unconditionally on every test, and issuing FM-139's whole-state
+  reset before every test — and each gave **30 passed** in the same 1.2 minutes. Nothing here was ever a blocker on
+  removing the snapshot teardown, which FM-133 removed. Surfaced 2026-08-29. Routed to **FM-133** (2026-08-29), whose
+  design pass found the original "server-side user preferences" mechanism uncorroborated — `storedChoices.ts:13-33`
+  makes refine selections search-scoped and unpersisted. *(Headline corrected 2026-08-29, when the mechanism was a
+  guess; the correction was right to distrust it and wrong to conclude the carrier was outside the config.)*
 
 - ~~**A Java system test leaves `main.showNews` false on the shared CI instance.**~~ **Fixed 2026-08-29 (`f7e4d127a`,
   FM-134).** Reproduced live: the test takes `showNews` true→false, and false→true on a second run, proving a toggle.
@@ -1365,9 +1374,21 @@ visibility.
   permanently and every later test errors — 51 errors of 74, and the same cascade that defeated an earlier attempt at
   74 errors. Running a *single* class works (FM-134 did it). Making the full phase runnable locally means giving the
   runner restart supervision, the way `misc/run_systemtest.py`'s native path already has it. **Task packet.**
-  Surfaced 2026-08-29 while trying to encode the recipe.
+  Surfaced 2026-08-29 while trying to encode the recipe. **Discharged by FM-138** (2026-08-30): `--java-phase` now
+  supervises the locally started core through both restart flavors, and the supervisor is the one
+  `misc/run_systemtest.py` already used rather than a second copy.
 
-- **`mockApiKeysOf`'s doc claims two writers of the mock indexer list; there are seven.** `fixtures.ts:487-488` says
+- ~~**`mockApiKeysOf`'s doc claims two writers of the mock indexer list; there are seven.**~~ **Fixed 2026-08-30
+  (FM-141),** by the second of the two options the entry offered rather than the first: the doc now names the two list
+  writers and the five entry writers separately, *and* the guard checks `BASELINE_INDEXER_FIELDS` — `state`,
+  `preselect`, `showOnSearch`, `enabledForSearchSource`, `score`, `color`, `groupNames`, `hitLimit`, `downloadLimit`,
+  `enabledCategories` — so a deviating list is rewritten instead of accepted. The `DISABLED_USER` scenario the entry
+  predicts was measured live before it was closed: with `Mock1` at `DISABLED_USER`, `GET /api?t=search&q=uitest`
+  returns `indexer2-result1`, `indexer2-result2` where an enabled pair returns all five. A/B on the same instance and
+  the same left-behind state, running one spec that only takes the baseline (`news.spec.ts`): the old guard leaves
+  `[(Mock1, DISABLED_USER), (Mock2, ENABLED)]`, the new one leaves `[(Mock1, ENABLED), (Mock2, ENABLED),
+  (Mock3, ENABLED)]`. Original entry retained below.
+  **Original entry:** `fixtures.ts:487-488` says
   `configureMockIndexers` and `applyBaseline` are the only writers. By grep, `search.spec.ts:775-779,1313-1316`,
   `results.spec.ts:3461-3466`, `config.spec.ts:495-536` and `config-indexers.spec.ts:272-284` all rewrite a
   `Mock<key>`-named list in place. Key recovery still holds — none of them changes the name/key pairing — but the
@@ -1383,13 +1404,44 @@ visibility.
   `GET`/`PUT /internalapi/config` alone, because nothing there exposes the defaults. The residual risk is stated in
   FM-133's own handoff in the sharpest available terms: a spec that starts mutating a config field no listed spec
   mutates today will break a later spec, and the failure will look like a bug in the later spec. **Task packet** — it
-  needs a backend addition and an owner decision on shape. Surfaced 2026-08-29 by FM-133.
+  needs a backend addition and an owner decision on shape. Surfaced 2026-08-29 by FM-133. **Discharged by FM-139**
+  (2026-08-30): `POST /internalapi/systemtest/reset`, live only under the `systemtest` profile, replaces the whole
+  configuration — secrets, `genericStorage` including its `forUser` keys, and `welcomeShown` — with
+  `config/baseConfig.yml`, read server-side, so no snapshot and no marker is ever in the path. The residual risk the
+  entry describes is not gone until the fixtures actually call it: adoption is FM-140 (Java) and FM-141 (Playwright),
+  and `applyBaseline` is still the denylist it was.
 
-- **A config PUT that changes an indexer costs ~4 seconds per changed indexer.** Measured during FM-133 at 8.04s /
+- ~~**A config PUT that changes an indexer costs ~4 seconds per changed indexer.**~~ **Attribution corrected and cost
+  removed 2026-08-30 (FM-141).** The measurement was right and "that is a backend characteristic, not a test one" was
+  wrong — it is inherited test state, and the most expensive kind, because it is charged to every later spec.
+  `ConfigWeb.setConfig` passes every changed indexer to `ExternalToolsSyncService.syncTools`, which is a real HTTP
+  round trip to each enabled external tool; `external-tools.spec.ts`'s last test leaves an enabled Radarr *and* an
+  enabled Sonarr with `syncOnConfigChange` on, and it sorts before `results`, `search`, `search-history`, `smoke`,
+  `stats` and `system`. Re-measured on one live instance, same PUTs, only `externalTools` differing: with the two
+  tools present, two mocks → three costs **8.07s** and three → two **4.07s** (FM-133 recorded 8.04s / 4.03s); with
+  `externalTools` at its baseline, both cost **0.01s**. Corroborated end to end — `results.spec.ts` run alone with the
+  indexer list rewritten unconditionally on every test takes **1.2 minutes**, not the 7.3 the original entry
+  attributes to that rewrite. FM-141 baselines `externalTools`, so the cost is gone rather than merely known: the full
+  suite went from 5.7 to 5.1 minutes while *adding* baseline surfaces. Surfaced 2026-08-29 by FM-133. Original entry
+  retained below.
+  **Original entry:** Measured during FM-133 at 8.04s /
   4.03s / 0.01s for two / one / zero changed indexers; an early revision of its baseline cost `results.spec.ts` 7.3
   minutes instead of 1.4 purely by rewriting the indexer list every test. That is a backend characteristic, not a test
   one, and worth knowing before any future work makes indexer writes routine. **Task packet** if it is worth
-  investigating at all. Surfaced 2026-08-29 by FM-133.
+  investigating at all.
+
+- **FM-139's reset leaves the instance without an API key, which is not "the state it boots into with a fresh data
+  folder".** `SystemTestStateResetWeb`'s javadoc claims the reset leaves the instance in exactly that state. It does
+  not: `config/baseConfig.yml` has `apiKey: null`, and the key a genuinely fresh instance holds comes from
+  `MainConfigValidator.initializeNewConfig`, which the reset path never runs — it goes straight to
+  `BaseConfigHandler.replace`. `main.apiKey` is a required field in the React config form, so an instance in that
+  state answers every save made through the config UI with "Config invalid — Main › API key: This field is required"
+  and sends nothing. Measured: it failed four `config-main`/`config` round trips outright the first time FM-141's
+  fixture called the reset, and the page snapshot names the field. FM-141 works around it by establishing a fixed
+  `main.apiKey` in `applyBaseline`, which is what a test fixture should do anyway, so nothing is red. What is left is
+  the javadoc's claim and the fact that any *other* caller of the reset inherits the same trap. Fix is one call to the
+  validator's initialisation, or a narrowed claim. Routed to **`/fm-quickfix`** — one backend file, or its comment.
+  Surfaced 2026-08-30 by FM-141.
 
 - **FM-131's new section-level drift check has no anti-vacuity guard.** `settingsIndexDrift.test.tsx:411-427` passes
   on an empty list, unlike the neighbouring direction (b) which explicitly defends against exactly that. Harmless
@@ -1693,6 +1745,28 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   sequenced after FM-128, which touches the same results files.
 
 ### Single-session fix
+
+- **Surefire's random run order cannot be replayed from its seed, so a failing order can be recorded but not
+  re-executed.** FM-140 made the Java phase run under `-Dsurefire.runOrder=random` and pass
+  `-Dsurefire.runOrder.random.seed`. The plugin accepts the seed and prints "To reproduce ordering use flag
+  -Dsurefire.runOrder.random.seed=<n>", but on the pinned 3.6.0-M1 it does not reproduce anything: three consecutive
+  runs of the same five classes at seed 4242 gave three different orders, because the seed shuffles a scanned class
+  list that is not itself stably ordered. `-Dtest=<comma list>` does not impose the listed order either. Today the
+  runner logs the order that ran and says what the seed does not do. Worth re-checking on a later Surefire, or raising
+  upstream. Raised by FM-140.
+
+- **`AGENTS.md`'s *System and GUI Tests* section does not mention the Java phase's run order.** FM-140 made
+  `misc/run_gui_systemtest.py --java-phase` default to `-Dsurefire.runOrder=random` and added `--java-run-order` and
+  `--java-run-order-seed` so a failing order can be replayed, but `AGENTS.md` was outside FM-140's allowlist and still
+  describes the phase as if the order were fixed. A reader who sees an order-dependent failure has no documented way to
+  reproduce it. Add the two flags and the seed line to that section. Raised by FM-140.
+
+- **CI runs the Java system-test phase in filesystem order, so the order-independence gate only fires locally.**
+  `.github/workflows/system-test.yml`'s `runSystemTestsLinux` job invokes Maven directly and inherits Surefire's default
+  `runOrder`, while the local runner now randomizes. Every class establishes its own preconditions as of FM-140 and both
+  local orders are green, so this is about keeping the property rather than restoring it: passing
+  `-Dsurefire.runOrder=random` in that job (and printing the seed) would make CI the gate too. Workflow edits were
+  explicitly out of FM-140's scope. Raised by FM-140.
 
 - **`CategoriesTable`'s Add button is not `disabled` while a category dialog is open.** `CategoriesTable.tsx`'s
   `<Button data-testid="config-categories-add" onClick={add} ...>` has no `disabled={editing !== null}` guard, unlike
@@ -2653,3 +2727,19 @@ their text and relative order are unchanged.
   **How it stayed hidden:** the failing job is `waitForNative / build (windows-latest)`, so it is not reachable from a
   Linux dev machine or from the frontend CI, and the branch's system-test workflow had been red for other reasons
   since 2026-08-16 — a pipeline already failing tells you nothing new when it fails again.
+
+- **Every Playwright environment variable falls back silently to a hardcoded default.** `tests/system/tests/environment.ts:1-44`
+  gives every var a fallback, so a missing or misspelled var never fails loudly — you silently test against the
+  local-dev default. `MOCKSERVER_INTERNAL_URL` is the nastiest: its default is the compose-network hostname
+  `http://mockserver:5080`, which outside the compose network makes every mock indexer unreachable (zero results
+  everywhere) *and* defeats `mockApiKeysOf`'s skip-if-clean guard, so the baseline rewrites the indexer list on every
+  test at ~4 s per changed indexer. A fail-loud (or at least warn-loud) treatment for the vars whose defaults are
+  deployment-shaped would remove a whole class of local-vs-CI divergence. Routed to **`/fm-quickfix`** (FM-138 may
+  absorb it, since its runner becomes the canonical producer of these vars). Surfaced 2026-08-30 by the FM-138..141
+  batch design.
+
+- **Once FM-140 lands, CI should enforce order independence.** Adding `-Dsurefire.runOrder=random` to the
+  `system-test.yml` Maven invocations is a one-line change that turns FM-140's verification gate into a permanent
+  regression guard — deliberately left out of the packet as an owner call, because it makes CI failures
+  non-deterministic by design (a failing seed must be recorded to be reproducible). Owner decision, then a
+  **`/fm-quickfix`**. Surfaced 2026-08-30 by the FM-138..141 batch design.

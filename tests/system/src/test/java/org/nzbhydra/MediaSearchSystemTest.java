@@ -3,13 +3,19 @@ package org.nzbhydra;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+/**
+ * The suite's canary for indexer preconditions.
+ *
+ * <p>{@code shouldSearchMovieByImdbId} asserts a total of exactly 30, which is the three mock indexers of
+ * {@link BeforeAll#applyBaseline()} returning ten results each. Nothing in this class writes configuration, so the
+ * number is only right if the baseline is established for it - which {@link BaselineExtension} does before every test.
+ * Before that, this class free-rode on whichever class had last written the indexer list, and it was the first thing to
+ * fail whenever a predecessor left a fourth indexer or a disabled one behind.
+ */
+@SystemTest
 public class MediaSearchSystemTest {
 
     @Autowired

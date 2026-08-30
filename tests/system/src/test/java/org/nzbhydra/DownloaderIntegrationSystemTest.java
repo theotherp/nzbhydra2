@@ -23,8 +23,6 @@ import org.nzbhydra.searching.SearchResponse;
 import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.util.Collections;
@@ -34,8 +32,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class DownloaderIntegrationSystemTest {
 
     private static final String DOWNLOADER_NAME = "Deterministic SABnzbd";
@@ -58,27 +55,18 @@ public class DownloaderIntegrationSystemTest {
     @Value("${nzbhydra.mockUrl.external:http://127.0.0.1:5080}")
     private String mockUrlExternal;
 
-    @Autowired
-    private BeforeAll beforeAll;
-
     @BeforeEach
     public void setUp() {
-        // Establish the baseline this test needs instead of inheriting whatever ran before it.
-        beforeAll.applyBaseline();
+        // BaselineExtension has already established the baseline; this only layers what is specific to this class.
         resetMockserverRecording();
         configureDeterministicDownloaderAndIndexer();
     }
 
     @AfterEach
-    public void restoreConfiguration() {
-        try {
-            // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
-            // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
-            // matched to a stored record - exactly the case once this test replaced those records.
-            beforeAll.applyBaseline();
-        } finally {
-            resetMockserverRecording();
-        }
+    public void resetRecording() {
+        // The configuration this class layered on is re-established by BaselineExtension before the next test and
+        // after this class; the mockserver recording is this class's own and nothing else clears it.
+        resetMockserverRecording();
     }
 
     @Test

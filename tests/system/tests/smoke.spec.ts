@@ -81,26 +81,28 @@ test("should still answer the logout flow with the React shell document", async 
 // way. The sequence itself is proven by component tests with the transport
 // mocked.
 test("should open with no startup dialog once the welcome was shown", async ({
-    hydra,
     page,
 }) => {
-    // FM-133: the assertion at the end of this test is that the downloader
-    // status footer does not render, and legacy's gate for it is "at least one
-    // enabled downloader". That used to hold because the `hydra` fixture put
-    // the configuration back after every test; with that teardown gone,
-    // `downloads.spec.ts` and `config-downloading.spec.ts` leave their
-    // `Deterministic SABnzbd` behind and this test would be asserting the
-    // showing case. It needs no downloader, so it says so.
-    const config = await hydra.getConfig();
-    (config.downloading as Record<string, unknown>).downloaders = [];
-    await hydra.saveConfig(config);
-
+    // FM-141: both preconditions this test used to arrange for itself are the
+    // baseline's now. The downloader-status footer's gate is "at least one
+    // enabled downloader" and `downloads.spec.ts`, `results.spec.ts` and
+    // `config-downloading.spec.ts` all leave a `Deterministic SABnzbd`
+    // behind -- `applyBaseline()` puts `downloading` back, so the assertion at
+    // the end is about the not-showing case by construction rather than by a
+    // hand-rolled save here. And the welcome is raised rather than skipped
+    // over: this used to `test.skip` when the instance had not consumed that
+    // one-shot state yet, which under the `systemtest` profile it never did,
+    // because `application-systemtest.properties` sets
+    // `nzbhydra.welcomeShown=true` and `WelcomeWeb` answers on that as well as
+    // on the field. The skip was therefore unreachable and the field itself
+    // was still `false`. Asserting it states the precondition instead of
+    // stepping around it.
     const welcomeShown = await page.request.get("internalapi/welcomeshown");
     expect(welcomeShown.ok()).toBe(true);
-    test.skip(
-        (await welcomeShown.text()).trim() !== "true",
-        "This instance has not shown the welcome yet; loading the page would consume that one-shot state.",
-    );
+    expect(
+        (await welcomeShown.text()).trim(),
+        "the baseline raises main.welcomeShown, so loading the page cannot consume that one-shot state here",
+    ).toBe("true");
 
     // `FAILED_BACKUP` is the sequence's last check, so its response is the
     // point at which "no dialog" is a statement about the finished sequence

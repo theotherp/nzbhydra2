@@ -1,64 +1,32 @@
 package org.nzbhydra;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+/**
+ * Every test here replaces the stored configuration, and none of them puts anything back.
+ *
+ * <p>That is the point of {@link BaselineExtension}: it establishes {@link BeforeAll#applyBaseline()}'s configuration
+ * before each of these tests and once more after the class, so the API key, the mock indexers, the mock downloader and
+ * the plain {@code main} flags these tests toggle ({@code showNews}, {@code disableTour}) are all a precondition rather
+ * than a debt each test owes its successor. The class used to carry a hand-written {@code @BeforeEach}/{@code @AfterEach}
+ * pair doing exactly this, and the flags it had to restore by hand are the ones FM-134 found leaking into the Playwright
+ * phase one Maven phase later (.github/workflows/system-test.yml).
+ */
+@SystemTest
 public class ConfigurationPersistenceSystemTest {
 
     @Autowired
     private HydraClient hydraClient;
-
-    @Autowired
-    private BeforeAll beforeAll;
-
-    private boolean showNewsBeforeTest;
-    private boolean disableTourBeforeTest;
-
-    @BeforeEach
-    public void setUp() {
-        // Establish the baseline this test needs instead of inheriting whatever ran before it.
-        beforeAll.applyBaseline();
-        BaseConfig config = getConfig();
-        showNewsBeforeTest = config.getMain().isShowNews();
-        disableTourBeforeTest = config.getMain().isDisableTour();
-    }
-
-    @AfterEach
-    public void restoreConfiguration() {
-        // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
-        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
-        // matched to a stored record - exactly the case once this test replaced those records.
-        beforeAll.applyBaseline();
-
-        // applyBaseline only covers what it writes: the API key, the logging flags, the mock indexers and
-        // the mock downloader. The plain `main` flags these tests toggle are not among them, so without
-        // this they survive the class and reach whatever runs next on the same instance - which in CI is
-        // the Playwright suite, one Maven phase later (.github/workflows/system-test.yml). A `showNews`
-        // left false there silently disables the startup news dialog focus-indication.spec.ts asserts on.
-        // Restoring here rather than in a test-local finally keeps a failed restore from masking the
-        // failure that caused it: JUnit reports an @AfterEach error alongside the test's own.
-        BaseConfig config = getConfig();
-        if (config.getMain().isShowNews() != showNewsBeforeTest || config.getMain().isDisableTour() != disableTourBeforeTest) {
-            config.getMain().setShowNews(showNewsBeforeTest);
-            config.getMain().setDisableTour(disableTourBeforeTest);
-            assertSuccessfulSave(config);
-        }
-    }
 
     @Test
     public void shouldPersistConfigurationChanges() {

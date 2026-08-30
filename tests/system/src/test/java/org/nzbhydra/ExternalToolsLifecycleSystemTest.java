@@ -15,8 +15,6 @@ import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.nzbhydra.externaltools.AddRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.time.Duration;
@@ -29,8 +27,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 @EnabledOnOs(OS.LINUX)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ExternalToolsLifecycleSystemTest {
@@ -57,10 +54,6 @@ public class ExternalToolsLifecycleSystemTest {
     @Value("${nzbhydra.host.external}")
     private String nzbhydraHostExternal;
 
-    @Autowired
-    // Fully qualified: this file imports JUnit's @BeforeAll, and a single-type import wins over
-    // the same-named class in this package.
-    private org.nzbhydra.BeforeAll beforeAll;
     private String testName;
 
     @BeforeAll
@@ -71,8 +64,7 @@ public class ExternalToolsLifecycleSystemTest {
 
     @BeforeEach
     public void setUp() {
-        // Establish the baseline this test needs instead of inheriting whatever ran before it.
-        beforeAll.applyBaseline();
+        // BaselineExtension has already established the baseline; this only names and cleans what this class owns.
         testName = TEST_PREFIX + UUID.randomUUID();
         removeOwnedIndexers(sonarrHostExternal);
         removeOwnedIndexers(radarrHostExternal);
@@ -80,15 +72,11 @@ public class ExternalToolsLifecycleSystemTest {
 
     @AfterEach
     public void tearDown() {
-        try {
-            // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
-            // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
-            // matched to a stored record - exactly the case once this test replaced those records.
-            beforeAll.applyBaseline();
-        } finally {
-            removeOwnedIndexers(sonarrHostExternal);
-            removeOwnedIndexers(radarrHostExternal);
-        }
+        // Hydra's own configuration is re-established by BaselineExtension before the next test and after this class.
+        // The indexers this class created live in Sonarr and Radarr, outside anything the baseline reaches, so they
+        // are removed here - by the prefix this class owns, never wholesale.
+        removeOwnedIndexers(sonarrHostExternal);
+        removeOwnedIndexers(radarrHostExternal);
     }
 
     @Test

@@ -2,8 +2,6 @@
 
 package org.nzbhydra.hydraconfigure;
 
-import org.nzbhydra.HydraClient;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -11,38 +9,35 @@ import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class IndexerConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexerConfigurer.class);
-    @Autowired
-    private ConfigManager configManager;
-
-    @Autowired
-    private HydraClient hydraClient;
-
     @Value("${nzbhydra.mockUrl}")
     private String mockUrl;
 
-    public void configureTwoMockIndexers() {
-        logger.info("Configuring two indexers using host " + mockUrl);
-        final BaseConfig config = configManager.getCurrentConfig();
-        config.getIndexers().clear();
+    /**
+     * The three mock indexers the baseline is made of, as configuration rather than as a write.
+     *
+     * <p>Handing back the list instead of saving it lets {@link org.nzbhydra.BeforeAll#applyBaseline()} establish the
+     * whole baseline in a single {@code PUT /internalapi/config}. It used to take three - one here, one for the
+     * downloader, one for the main settings - and each one that changed an indexer cost seconds.
+     */
+    public List<IndexerConfig> getMockIndexerConfigs() {
+        logger.info("Building the three mock indexers using host " + mockUrl);
+        final List<IndexerConfig> indexerConfigs = new ArrayList<>();
         for (int i = 1; i < 4; i++) {
-            IndexerConfig indexerConfig = getIndexerConfig("Mock" + i, String.valueOf(i));
-
-            config.getIndexers().add(indexerConfig);
+            indexerConfigs.add(getIndexerConfig("Mock" + i, String.valueOf(i)));
         }
-
-        configManager.setConfig(config);
-
+        return indexerConfigs;
     }
 
     public IndexerConfig getIndexerConfig(String name, String apikey) {

@@ -8,8 +8,6 @@ import org.nzbhydra.hydraconfigure.ConfigManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -17,8 +15,7 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class AuthLoginTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthLoginTest.class);

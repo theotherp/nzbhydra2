@@ -1,6 +1,5 @@
 package org.nzbhydra;
 
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,18 +11,13 @@ import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.ContextConfiguration;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthorizationSystemTest {
 
@@ -36,20 +30,27 @@ public class AuthorizationSystemTest {
     private static final String INTERNAL_API_KEY = "internalApiKey";
     private static final String WRONG_INTERNAL_API_KEY = "authorization-system-wrong-key";
     private static final String WRONG_API_KEY_DESCRIPTION = "Wrong api key";
+    // The credentials the v1Migration fixture ships with; HydraClient sends them on every call under that profile.
+    private static final String V1_MIGRATION_USERNAME = "test";
+    private static final String V1_MIGRATION_PASSWORD = "test";
 
     @Autowired
     private HydraClient hydraClient;
     @Autowired
     private Environment environment;
+    @Autowired
+    // Fully qualified: this file imports JUnit's @BeforeAll, and a single-type import wins over the same-named class
+    // in this package.
+    private org.nzbhydra.BeforeAll beforeAll;
 
-    private BaseConfig originalConfig;
-    private String externalApiKey;
     private boolean basicAuthActive;
 
     @BeforeAll
     public void configureAuthentication() {
-        originalConfig = getConfig();
-        externalApiKey = originalConfig.getMain().getApiKey();
+        // BaselineExtension establishes the baseline before each test, but this class needs it before its @BeforeAll:
+        // the secured configuration is built on top of the baseline's API key and indexers, and the restart below
+        // makes the state this class asserts against.
+        beforeAll.applyBaseline();
 
         BaseConfig securedConfig = getConfig();
         securedConfig.getAuth().setAuthType(AuthType.BASIC);
@@ -66,12 +67,37 @@ public class AuthorizationSystemTest {
         restartAndWait();
     }
 
+    /**
+     * Establishes the authentication the rest of the suite assumes rather than putting back a snapshot taken in
+     * {@code @BeforeAll} (ADR-0020). The snapshot route cannot work here: {@code GET /internalapi/config} hands user
+     * passwords back as {@code ***UNCHANGED***}, and since FM-068 a save carrying a marker that no longer matches a
+     * stored record is refused - and this class replaced exactly those records.
+     *
+     * <p>Authentication is the one part of the configuration {@code org.nzbhydra.BeforeAll#applyBaseline()} deliberately leaves
+     * alone, because the {@code v1Migration} fixture boots with basic auth that {@code AuthLoginTest} reads. So each
+     * deployment's known state is written here: the checked-in default of {@code config/baseConfig.yml} for the core
+     * deployment, the fixture's {@code test}/{@code test} administrator for {@code v1Migration}.
+     */
     @AfterAll
     public void restoreAuthentication() {
-        if (originalConfig == null) {
-            return;
+        BaseConfig config = getConfig();
+        if (isV1Migration()) {
+            config.getAuth().setAuthType(AuthType.BASIC);
+            config.getAuth().setRestrictAdmin(true);
+            config.getAuth().setRestrictStats(false);
+            config.getAuth().setRestrictSearch(false);
+            config.getAuth().setUsers(List.of(user(V1_MIGRATION_USERNAME, V1_MIGRATION_PASSWORD, true, true)));
+        } else {
+            config.getAuth().setAuthType(AuthType.NONE);
+            config.getAuth().setRestrictAdmin(false);
+            config.getAuth().setRestrictStats(false);
+            config.getAuth().setRestrictSearch(false);
+            config.getAuth().setUsers(List.of());
         }
-        assertSuccessfulSave(originalConfig);
+        assertSuccessfulSave(config);
+        // The administrator this class created is gone as of that save. Under v1Migration the client falls back to the
+        // fixture's own credentials on its own, so the restart below must go through the plain path.
+        basicAuthActive = false;
         restartAndWait();
     }
 
@@ -126,7 +152,7 @@ public class AuthorizationSystemTest {
         assertNewznabApiKeyError(apiRequest("t=search", "q=oneresult"));
         assertNewznabApiKeyError(apiRequest("apikey=authorization-system-wrong-api-key", "t=search", "q=oneresult"));
 
-        HydraResponse searchResponse = apiRequest("apikey=" + externalApiKey, "t=search", "q=oneresult");
+        HydraResponse searchResponse = apiRequest("apikey=" + org.nzbhydra.BeforeAll.API_KEY, "t=search", "q=oneresult");
         NewznabXmlRoot root = Jackson.getUnmarshal(searchResponse.body());
         NewznabXmlItem result = root.getRssChannel().getItems().get(0);
         String identifier = result.getRssGuid().getGuid();
@@ -134,7 +160,7 @@ public class AuthorizationSystemTest {
 
         assertNewznabApiKeyError(apiRequest("t=get", "id=" + identifier));
         assertNewznabApiKeyError(apiRequest("apikey=authorization-system-wrong-api-key", "t=get", "id=" + identifier));
-        HydraResponse downloadResponse = apiRequest("apikey=" + externalApiKey, "t=get", "id=" + identifier);
+        HydraResponse downloadResponse = apiRequest("apikey=" + org.nzbhydra.BeforeAll.API_KEY, "t=get", "id=" + identifier);
         assertThat(downloadResponse.status()).isEqualTo(200);
         assertThat(downloadResponse.header("Content-Type")).startsWith("application/x-nzb");
         assertThat(downloadResponse.body()).contains("Would download NZB with ID");
@@ -185,21 +211,11 @@ public class AuthorizationSystemTest {
     }
 
     private void restartAndWait() {
-        HydraResponse response = isV1Migration()
+        HydraResponse response = isV1Migration() && basicAuthActive
                 ? hydraClient.getWithBasicAuth("/internalapi/control/restart", ADMIN_USERNAME, ADMIN_PASSWORD)
                 : hydraClient.get("/internalapi/control/restart");
         assertThat(response.status()).isEqualTo(200);
-
-        AtomicBoolean becameUnavailable = new AtomicBoolean();
-        Awaitility.await().atMost(Duration.ofSeconds(90)).until(() -> {
-            try {
-                boolean healthy = hydraClient.get("/actuator/health/ping").status() == 200;
-                return becameUnavailable.get() && healthy;
-            } catch (RuntimeException e) {
-                becameUnavailable.set(true);
-                return false;
-            }
-        });
+        hydraClient.awaitRestart();
     }
 
     private void assertNewznabApiKeyError(HydraResponse response) {

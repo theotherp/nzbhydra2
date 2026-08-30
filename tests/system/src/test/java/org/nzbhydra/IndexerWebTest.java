@@ -13,16 +13,13 @@ import org.nzbhydra.hydraconfigure.ConfigManager;
 import org.nzbhydra.hydraconfigure.IndexerConfigurer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class IndexerWebTest {
 
     @Autowired

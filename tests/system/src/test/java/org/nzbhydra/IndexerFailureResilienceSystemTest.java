@@ -3,7 +3,6 @@ package org.nzbhydra;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
@@ -15,8 +14,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.time.Duration;
@@ -26,8 +23,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class IndexerFailureResilienceSystemTest {
 
     private static final String FAILED_INDEXER = "Mock1";
@@ -42,22 +38,13 @@ public class IndexerFailureResilienceSystemTest {
     @Autowired
     private ConfigManager configManager;
 
-    @Autowired
-    private BeforeAll beforeAll;
-
     @BeforeEach
     public void setUp() {
-        // Establish the baseline this test needs instead of inheriting whatever ran before it.
-        beforeAll.applyBaseline();
+        // BaselineExtension has already established the three healthy mock indexers; this breaks exactly one of them.
+        // Nothing puts them back here: BaselineExtension re-establishes them before the next test and after this
+        // class, which also covers the disabled state the core writes into the configuration itself when an indexer
+        // fails repeatedly.
         configureFailedIndexer(1);
-    }
-
-    @AfterEach
-    public void restoreConfiguration() {
-        // Re-apply the baseline rather than putting back a snapshot from GET: that snapshot carries
-        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be
-        // matched to a stored record - exactly the case once this test replaced those records.
-        beforeAll.applyBaseline();
     }
 
     @Test

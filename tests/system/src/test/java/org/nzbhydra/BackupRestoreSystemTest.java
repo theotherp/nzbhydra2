@@ -12,9 +12,7 @@ import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.ByteArrayInputStream;
@@ -28,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -36,8 +33,7 @@ import java.util.zip.ZipOutputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class BackupRestoreSystemTest {
 
     @Autowired
@@ -49,21 +45,32 @@ public class BackupRestoreSystemTest {
     @Value("${dataFolder.testaccess}")
     private Path dataFolder;
 
-    private BaseConfig originalConfig;
+    @Autowired
+    private BeforeAll beforeAll;
 
     @BeforeEach
     public void setUp() {
         assumeFalse(List.of(environment.getActiveProfiles()).contains("v1Migration"),
                 "Backup restore is covered against the core deployment, not the legacy migration fixture");
-        originalConfig = getConfig();
     }
 
+    /**
+     * Establishes the baseline rather than putting back a snapshot taken in {@code @BeforeEach} (ADR-0020). A restore
+     * replaces the whole configuration file with the one inside the archive, so the snapshot's {@code ***UNCHANGED***}
+     * secret markers no longer match any stored record and, since FM-068, the save putting it back is refused.
+     *
+     * <p>{@link BaselineExtension} would establish it before the next test anyway; doing it here as well is what keeps
+     * the marker this class writes into {@code searching.userAgent} out of the instance between classes. The wait comes
+     * first because a restore restarts the instance and a test may fail while it is still down.
+     *
+     * <p>This class rewinds the shared database on purpose - the restored archive carries the search history as it was
+     * when the backup was taken. Nothing else in the suite may assume the database grows monotonically, which is why
+     * the other classes identify their own rows by marker instead of by position.
+     */
     @AfterEach
-    public void restoreConfiguration() {
-        waitUntilHealthy();
-        if (originalConfig != null) {
-            assertSuccessfulSave(originalConfig);
-        }
+    public void reestablishBaseline() {
+        hydraClient.awaitHealthy();
+        beforeAll.applyBaseline();
     }
 
     @Test
@@ -89,7 +96,7 @@ public class BackupRestoreSystemTest {
         assertThat(restoreResponse.status()).isEqualTo(200);
         assertThat(restoreResult.isSuccessful()).isTrue();
 
-        waitForRestoreRestart();
+        hydraClient.awaitRestart();
         assertThat(getConfig().getSearching().getUserAgent()).contains(backupMarker);
         assertThat(historyQueries()).contains(preBackupQuery).doesNotContain(postBackupQuery);
     }
@@ -103,7 +110,7 @@ public class BackupRestoreSystemTest {
 
         assertThat(response.status()).isEqualTo(200);
         assertThat(result.isSuccessful()).isFalse();
-        waitUntilHealthy();
+        hydraClient.awaitHealthy();
         assertThat(getConfig().getSearching().getUserAgent()).isEqualTo(Optional.ofNullable(originalMarker));
     }
 
@@ -121,7 +128,7 @@ public class BackupRestoreSystemTest {
 
             assertThat(response.status()).isEqualTo(200);
             assertThat(result.isSuccessful()).isFalse();
-            waitUntilHealthy();
+            hydraClient.awaitHealthy();
             assertThat(Files.exists(markerPath)).isFalse();
         } finally {
             Files.deleteIfExists(markerPath);
@@ -140,7 +147,7 @@ public class BackupRestoreSystemTest {
 
         assertThat(response.status()).isEqualTo(200);
         assertThat(result.isSuccessful()).isFalse();
-        waitUntilHealthy();
+        hydraClient.awaitHealthy();
         assertThat(backups()).extracting(BackupEntry::getFilename).contains(backup.getFilename());
         byte[] downloadedBackup = hydraClient.get("/internalapi/backup/download", "filename=" + backup.getFilename()).bodyBytes();
         assertThat(downloadedBackup).isEqualTo(originalBackup);
@@ -190,24 +197,6 @@ public class BackupRestoreSystemTest {
         assertThat(validationResult.isOk()).isTrue();
         assertThat(validationResult.getErrorMessages()).isEmpty();
         assertThat(validationResult.getNewConfig()).isNotNull();
-    }
-
-    private void waitUntilHealthy() {
-        Awaitility.await().atMost(Duration.ofSeconds(90)).ignoreExceptions().untilAsserted(() ->
-                assertThat(hydraClient.get("/actuator/health/ping").status()).isEqualTo(200));
-    }
-
-    private void waitForRestoreRestart() {
-        AtomicBoolean becameUnavailable = new AtomicBoolean();
-        Awaitility.await().atMost(Duration.ofSeconds(90)).until(() -> {
-            try {
-                boolean healthy = hydraClient.get("/actuator/health/ping").status() == 200;
-                return becameUnavailable.get() && healthy;
-            } catch (RuntimeException e) {
-                becameUnavailable.set(true);
-                return false;
-            }
-        });
     }
 
     private static byte[] zipWithEntry(String name, byte[] contents) throws IOException {

@@ -13,14 +13,11 @@ import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.hydraconfigure.ConfigManager;
 import org.nzbhydra.notifications.NotificationEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.util.Collections;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class NotificationsTest {
 
     @Autowired
@@ -29,6 +26,12 @@ public class NotificationsTest {
     @Autowired
     private ConfigManager configManager;
 
+    /**
+     * Replaces the notification entries and deliberately does not put them back: {@link BeforeAll#applyBaseline()}
+     * establishes an empty {@code entries} and {@code filterOuts} list, and {@link BaselineExtension} applies it before
+     * the next test and after this class. This used to be a plain leak - the entry below survived the class and any
+     * later test reading the notification configuration saw it.
+     */
     @Test
     public void shouldTestNotificationAndStoreInHistory() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();

@@ -25,8 +25,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.nio.charset.StandardCharsets;
@@ -39,8 +37,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class NzbGetIntegrationSystemTest {
 
     private static final String DOWNLOADER_NAME = "Deterministic NZBGet";
@@ -60,30 +57,18 @@ public class NzbGetIntegrationSystemTest {
     @Value("${nzbhydra.mockUrl.external:http://127.0.0.1:5080}")
     private String mockUrlExternal;
 
-    @Autowired
-    private BeforeAll beforeAll;
-
     @BeforeEach
     public void setUp() {
-        // Establish the baseline this test needs rather than inheriting whatever the previous test left behind, then
-        // layer this test's own downloader and indexer on top.
-        beforeAll.applyBaseline();
+        // BaselineExtension has already established the baseline; this only layers this class's downloader and indexer.
         resetMockserver();
         configureNzbGetAndIndexer();
     }
 
     @AfterEach
-    public void restoreConfiguration() {
-        // Re-apply the baseline instead of putting back a snapshot captured with GET. That snapshot carries
-        // ***UNCHANGED*** secret markers, and since FM-068 a save is refused when a marker cannot be matched to a
-        // stored record - which is precisely the case here, because this test replaced the records those markers came
-        // from. The refused restore is what used to leave a single mock indexer behind and cascade into every later
-        // test that assumed the baseline.
-        try {
-            beforeAll.applyBaseline();
-        } finally {
-            resetMockserver();
-        }
+    public void resetMockserverRecording() {
+        // The configuration this class layered on is re-established by BaselineExtension before the next test and
+        // after this class; the mockserver recording is this class's own and nothing else clears it.
+        resetMockserver();
     }
 
     @Test

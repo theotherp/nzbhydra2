@@ -16,6 +16,74 @@ type ConfigValidationResult = {
     ok?: boolean;
 };
 
+/** FM-139's reset (`SystemTestStateResetWeb.RESET_ENDPOINT`, ADR-0048). */
+const RESET_ENDPOINT = "/internalapi/systemtest/reset";
+
+/**
+ * The per-indexer fields the baseline pins on a mock indexer, and the value it
+ * pins each one to.
+ *
+ * These are exactly the fields the specs listed on `mockApiKeysOf` write on an
+ * *existing* mock entry rather than by replacing the list -- a state, a score,
+ * a colour, a group, a limit -- plus the two neighbouring switches that decide
+ * whether an indexer is searched at all. Each value is that field's
+ * `IndexerConfig` default, so `mockIndexers` writes what `mockApiKeysOf`
+ * checks for and neither can drift from the other.
+ *
+ * `state` is the one with teeth. `config-indexers.spec.ts:272-284` puts `Mock1`
+ * into `DISABLED_USER` through the config UI and only removes that entry a few
+ * lines later, so a death or a timeout in between leaves it disabled -- and a
+ * disabled indexer is silently not searched. Measured on a live instance: with
+ * `Mock1` disabled and `Mock2` enabled, `GET /api?t=search&q=uitest` returns
+ * `indexer2-result1` and `indexer2-result2` where an enabled pair returns those
+ * plus `indexer1-result1..3`. The next spec that searches without configuring
+ * its own indexers therefore gets a short result set and an assertion failure
+ * that reads as its own bug.
+ */
+const BASELINE_INDEXER_FIELDS: HydraConfig = {
+    color: null,
+    downloadLimit: null,
+    enabledCategories: [],
+    enabledForSearchSource: "BOTH",
+    groupNames: [],
+    hitLimit: null,
+    preselect: true,
+    score: 0,
+    showOnSearch: true,
+    state: "ENABLED",
+};
+
+/**
+ * The external API key the baseline establishes.
+ *
+ * A value rather than "whatever the instance generated at first start", and it
+ * has to be established rather than left alone, because the reset does not
+ * leave one: `baseConfig.yml` has `apiKey: null`, and the key a fresh instance
+ * has comes from `MainConfigValidator.initializeNewConfig`, which a reset never
+ * runs. The React config form marks the field `required`
+ * (`MainConfigTab.tsx:194-201`), so an instance without one answers every save
+ * made through the config UI with "Config invalid - Main > API key: This field
+ * is required" and sends nothing at all; that failed the `config-main` and
+ * `config` round trips outright when this fixture first called the reset.
+ * Alphanumeric, per that field's own help text and `apiKeyValidator`. Written
+ * literally here so the value is the same on every instance and in every run.
+ */
+const BASELINE_API_KEY = "SYSTEMTESTAPIKEY";
+
+/**
+ * `config/baseConfig.yml` as the running instance itself reads it, fetched
+ * once per worker process and reused by every `applyBaseline()` afterwards.
+ *
+ * The baseline for a surface with no interesting default -- the sixteen stock
+ * categories, an empty downloader list, no external tools -- cannot be written
+ * out here without keeping a second copy of a checked-in file in a test
+ * fixture, which is the copy that goes stale. FM-139's reset hands over the
+ * real one instead: reset the instance, read the configuration back, and that
+ * *is* the baseline, secrets and all resolved server-side (ADR-0048). One
+ * reset per process, not per test -- see `applyBaseline`.
+ */
+let checkedInBaseline: Promise<HydraConfig> | undefined;
+
 type HydraApi = {
     baseURL: string;
     getConfig(): Promise<HydraConfig>;
@@ -262,7 +330,23 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             allCapsChecked: true,
             supportedSearchTypes: ["SEARCH", "TVSEARCH", "MOVIE", "BOOK"],
             supportedSearchIds: ["IMDB", "TVMAZE", "TMDB"],
+            ...BASELINE_INDEXER_FIELDS,
         }));
+
+    const fetchCheckedInBaseline = async (): Promise<HydraConfig> => {
+        checkedInBaseline ??= (async () => {
+            const response = await request.post(
+                RESET_ENDPOINT,
+                internalRequest(),
+            );
+            expect(
+                response.status(),
+                `POST ${RESET_ENDPOINT} returned ${await response.text()}. The reset is mapped only while the 'systemtest' Spring profile is active (ADR-0048); start the instance through misc/run_gui_systemtest.py, which activates it.`,
+            ).toBe(200);
+            return getConfig();
+        })();
+        return checkedInBaseline;
+    };
 
     /**
      * Puts the instance into a known configuration. Applied before every test
@@ -276,6 +360,19 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      * false. Restoring state afterwards cannot fix that and is not the point;
      * establishing it beforehand is.
      *
+     * Two sources, one call (FM-141). The sections whose baseline is a value
+     * nobody would want transcribed into a test fixture come from
+     * `checkedInBaseline` -- `config/baseConfig.yml`, read back through
+     * FM-139's reset. Everything else is written out below, because its
+     * baseline is a claim this file is making about the suite rather than a
+     * default: `showNews` is on *because a Java test turns it off*, the mock
+     * indexers exist at all only because the suite needs something to search.
+     *
+     * The reset is issued once per worker process, not once per test. Per test
+     * it would have to re-add three indexers every time, and an indexer-list
+     * write is the only `PUT` on this API ever measured to cost more than
+     * 0.01s -- see the `indexers` bullet for what actually charges for it.
+     *
      * Overrides only the fields whose wrong value the suite has actually been
      * caught inheriting, on top of the config as it stands:
      *
@@ -284,18 +381,42 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *   configured" for the first and "same host and API key" for the second,
      *   and either warning replaces the "Configuration saved." toast the
      *   `config-*` specs wait for. Written only when the list is not *already*
-     *   such a set (`mockApiKeysOf`), because a `PUT /internalapi/config` that
-     *   changes the indexer list costs about four seconds per changed indexer
-     *   -- measured against this instance: 8.04s to go from two mocks to
-     *   three, 4.03s back to two, 0.01s for a PUT that changes no indexer.
-     *   Rewriting the list unconditionally therefore fought
-     *   `configureMockIndexers` in every spec that wants a different number of
-     *   them, and cost `results.spec.ts` alone 7.3 minutes against 1.2 before
-     *   this fixture existed. A list a spec left as `Mock<key>` mocks on the
-     *   mockserver host is already what this asserts about it, so it is left
-     *   alone and its keys are what `assertUniqueIndexerCredentials` then
-     *   checks.
+     *   such a set (`mockApiKeysOf`), and `mockApiKeysOf` now also requires
+     *   every `BASELINE_INDEXER_FIELDS` entry to be at its default, so a list
+     *   a spec left searchable-looking but disabled is rewritten rather than
+     *   accepted.
+     *
+     *   The skip stays because an indexer-changing `PUT` is the only call here
+     *   that has ever been expensive -- but the cost is *inherited state, not a
+     *   backend characteristic*, which is the opposite of what FM-133
+     *   recorded. Measured on this instance (FM-141): with the two external
+     *   tools `external-tools.spec.ts` leaves behind, two mocks to three costs
+     *   8.07s and three back to two 4.07s -- `ConfigWeb.setConfig` hands every
+     *   changed indexer to `ExternalToolsSyncService.syncTools`, which is a
+     *   round trip to Radarr and to Sonarr each. With `externalTools` at its
+     *   baseline the identical writes cost 0.01s, and `results.spec.ts` runs
+     *   the same 1.2 minutes whether this rewrites the list every test or
+     *   never. FM-133 measured 8.04s/4.03s/0.01s on an instance that had run
+     *   `external-tools.spec.ts`; the numbers were right and the attribution
+     *   was not. Baselining `externalTools` below is what removes it.
+     *
+     *   A list a spec left as `Mock<key>` mocks on the mockserver host, all
+     *   fields at baseline, is already what this asserts about it, so it is
+     *   left alone and its keys are what `assertUniqueIndexerCredentials`
+     *   then checks.
+     * - `main.apiKey`: `BASELINE_API_KEY`, which is where that constant's doc
+     *   explains why the reset makes this necessary.
      * - `main.showNews`: on, per `baseConfig.yml`'s default.
+     * - `main.welcomeShown`: raised. The welcome dialog is one-shot server
+     *   state, so a run that consumed it and a run that has not are different
+     *   instances to every test that navigates. `smoke.spec.ts` used to skip
+     *   its "no startup dialog" test rather than assert on either -- and under
+     *   the `systemtest` profile it never actually skipped, because
+     *   `application-systemtest.properties` sets `nzbhydra.welcomeShown=true`
+     *   and `WelcomeWeb` reads that as well as the field, so the skip was
+     *   dead code that hid the field's real value (`false` after a full suite
+     *   run, measured). Raising the field means the endpoint and the config
+     *   agree, on an instance with the profile and on one without.
      * - `main.indexerSelectionAsCheckboxes`: off, also that default.
      *   `config-main.spec.ts:153` turns it on, and with it on the search
      *   form's indexer control is a checkbox group rather than the `Select`
@@ -333,15 +454,56 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *   adds an entry at `entriesBefore.length` and reads it back by that
      *   index, so entries a predecessor left move the one it just added.
      *
-     * Deliberately narrow: every field here is one the suite has been
-     * *observed* to inherit wrongly, with the failure it caused named above. A
-     * spec that needs something else says so in its own `beforeEach`, which
-     * runs after this -- `config-categories.spec.ts` establishes that its own
-     * categories do not exist yet that way, rather than the baseline carrying
-     * a copy of the default category list.
+     * And the sections taken wholesale from `checkedInBaseline`:
+     *
+     * - `downloading`: `downloads.spec.ts`, `results.spec.ts` and
+     *   `config-downloading.spec.ts` leave a `Deterministic SABnzbd` behind,
+     *   and `configureSabnzbdMock` also leaves `fallbackForFailed` at `NONE`
+     *   against the baseline's `BOTH`. The downloader is the visible half:
+     *   the downloader-status footer renders whenever at least one enabled
+     *   downloader exists, which is the thing `smoke.spec.ts` asserts the
+     *   absence of -- it cleared the list by hand until this covered it.
+     * - `categoriesConfig`: `config-categories.spec.ts` adds a category named
+     *   "System Test ...", and `BaseConfig`'s category map is keyed by name,
+     *   so a second copy makes the save answer 500 with `IllegalStateException:
+     *   Duplicate key`. That file used to strip its own leftovers in a
+     *   `beforeEach`; the sixteen stock categories come back here instead,
+     *   which also gives every test in it a fixed list to count against.
+     * - `externalTools`: `external-tools.spec.ts`'s last test leaves an
+     *   enabled Radarr *and* an enabled Sonarr with `syncOnConfigChange` on,
+     *   and every spec file that writes indexers sorts after it --
+     *   `focus-indication`, `notched-label-geometry`, `results`, `search`,
+     *   `search-history` -- so each of their `configureMockIndexers` calls
+     *   paid two real HTTP round trips per changed indexer. See the `indexers`
+     *   bullet: this is where the "four seconds per changed indexer" went.
+     * - `genericStorage`: emptied to the baseline's `{}`, then
+     *   `isGroupEpisodesHelpShown` raised. It is a `BaseConfig` field, so this
+     *   `PUT` reaches it -- including the `forUser` keys, which for an
+     *   anonymous session are the plain keys
+     *   (`GenericStorageWeb` only suffixes a `getRemoteUser()` it has). The
+     *   flag is raised rather than merely defined because *not* raised is what
+     *   opens FM-091's modal help dialog on the next eligible TV search, and a
+     *   modal intercepts pointer events for the rest of the page:
+     *   `results.spec.ts`, `search.spec.ts` and `focus-indication.spec.ts`
+     *   each raise it in their own `beforeEach` for that reason, and
+     *   `results.spec.ts:3367` lowers it on purpose to exercise the dialog.
+     *   A death between the lowering and the dialog left it lowered for
+     *   whatever ran next; it cannot now.
+     *
+     * Deliberately narrow all the same: every field written out above is one
+     * the suite has been *observed* to inherit wrongly, with the failure it
+     * caused named. A spec that needs something else says so in its own
+     * `beforeEach`, which runs after this.
+     *
+     * Nothing is written when nothing needs to change. The whole prepared
+     * configuration is compared against the one just read and the `PUT` is
+     * skipped when they match, so the common case -- a test whose predecessor
+     * left the instance at baseline -- costs one `GET`.
      */
     const applyBaseline = async (): Promise<void> => {
+        const baseline = await fetchCheckedInBaseline();
         const config = await getConfig();
+        const inherited = JSON.stringify(config);
         const inheritedMockKeys = mockApiKeysOf(config.indexers);
         const apiKeys = inheritedMockKeys ?? ["1", "2", "3"];
         if (inheritedMockKeys === undefined) {
@@ -349,8 +511,10 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         }
         config.main = {
             ...(config.main as HydraConfig),
+            apiKey: BASELINE_API_KEY,
             showNews: true,
             indexerSelectionAsCheckboxes: false,
+            welcomeShown: true,
         };
         config.auth = {
             ...(config.auth as HydraConfig),
@@ -381,7 +545,16 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             ...(config.notificationConfig as HydraConfig),
             entries: [],
         };
-        await saveConfig(config);
+        config.categoriesConfig = structuredClone(baseline.categoriesConfig);
+        config.downloading = structuredClone(baseline.downloading);
+        config.externalTools = structuredClone(baseline.externalTools);
+        config.genericStorage = {
+            ...(structuredClone(baseline.genericStorage) as HydraConfig),
+            isGroupEpisodesHelpShown: "true",
+        };
+        if (JSON.stringify(config) !== inherited) {
+            await saveConfig(config);
+        }
         configuredMockCredentials = apiKeys.map(
             (apiKey) => `${testEnvironment.mockserverInternalUrl}/${apiKey}`,
         );
@@ -484,11 +657,22 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
 
 /**
  * The API keys of an indexer list that is already a usable mock set: every
- * entry a `Mock<key>` on the mockserver host, with distinct names and at least
- * one of them. `configureMockIndexers` and `applyBaseline` are the only writers
- * of such a list and both derive the name from the key, so the keys are
- * recoverable from the names -- `GET /internalapi/config` redacts the keys
- * themselves.
+ * entry a `Mock<key>` on the mockserver host, with distinct names, at least one
+ * of them, and every `BASELINE_INDEXER_FIELDS` entry still at its default.
+ *
+ * Key recovery works because every writer of such a list derives the name from
+ * the key -- `GET /internalapi/config` redacts the keys themselves. There are
+ * two writers of the *list*: `configureMockIndexers` and `applyBaseline`. There
+ * are five more writers of an *entry inside* it, which is why the field check
+ * exists: `search.spec.ts:769-781` sets `preselect` and `groupNames`,
+ * `search.spec.ts:1304-1317` sets `hitLimit` and `downloadLimit`,
+ * `results.spec.ts:3459-3467` sets `color`, `config.spec.ts:492-536` sets
+ * `score` through the config UI, and `config-indexers.spec.ts:272-284` sets
+ * `state` to `DISABLED_USER` through it. None of them changes a name or a
+ * host, so before FM-141 all five produced a list this accepted unchanged --
+ * `DISABLED_USER` included, and an indexer in that state is simply not
+ * searched. Nothing was red only because every search-running spec happens to
+ * configure its own indexers first.
  *
  * @return those keys in list order, or `undefined` when the list is anything
  * else and the baseline has to write its own.
@@ -503,13 +687,21 @@ function mockApiKeysOf(indexers: unknown): string[] | undefined {
         if (
             key === undefined ||
             indexer.host !== testEnvironment.mockserverInternalUrl ||
-            keys.includes(key)
+            keys.includes(key) ||
+            !isAtBaseline(indexer)
         ) {
             return undefined;
         }
         keys.push(key);
     }
     return keys;
+}
+
+function isAtBaseline(indexer: HydraConfig): boolean {
+    return Object.entries(BASELINE_INDEXER_FIELDS).every(
+        ([field, expected]) =>
+            JSON.stringify(indexer[field]) === JSON.stringify(expected),
+    );
 }
 
 async function expectSuccessfulResponse(

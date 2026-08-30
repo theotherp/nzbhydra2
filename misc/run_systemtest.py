@@ -71,10 +71,12 @@ class Service:
     command: list[str] | None = None
     cwd: Path | None = None
     environment: dict[str, str] | None = None
+    start_new_session: bool = False
     stop_supervisor: threading.Event | None = None
     supervisor: threading.Thread | None = None
     restart_exit_codes: list[int] | None = None
     restore_restart_exit_codes: list[int] | None = None
+    unexpected_exit_code: int | None = None
 
 
 def now_iso() -> str:
@@ -449,61 +451,10 @@ def start_service(
     return Service(name, process, log_path, log_file)
 
 
-def apply_restore_files(data_dir: Path) -> None:
-    restore_dir = data_dir / "restore"
-    if not restore_dir.is_dir():
-        raise RuntimeError(f"Core requested restore but {restore_dir} does not exist")
-    for source in restore_dir.iterdir():
-        destination = data_dir / "database" / source.name if source.name == "nzbhydra.mv.db" else data_dir / source.name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if destination.exists():
-            if destination.is_dir():
-                shutil.rmtree(destination)
-            else:
-                destination.unlink()
-        shutil.move(str(source), str(destination))
-    restore_dir.rmdir()
-
-
-def supervise_restartable_core(service: Service, data_dir: Path) -> None:
-    stop_supervisor = threading.Event()
-    restart_exit_codes: list[int] = []
-    restore_restart_exit_codes: list[int] = []
-    service.stop_supervisor = stop_supervisor
-    service.restart_exit_codes = restart_exit_codes
-    service.restore_restart_exit_codes = restore_restart_exit_codes
-
-    def supervise() -> None:
-        while not stop_supervisor.is_set():
-            return_code = service.process.wait()
-            if stop_supervisor.is_set() or return_code not in (22, 33):
-                return
-            try:
-                if return_code == 33:
-                    print(f"{service.name} exited with restore code 33; applying restored files")
-                    apply_restore_files(data_dir)
-                assert service.command is not None
-                assert service.cwd is not None
-                assert service.environment is not None
-                service.process = subprocess.Popen(
-                    service.command,
-                    cwd=service.cwd,
-                    env=service.environment,
-                    stdout=service.log_file,
-                    stderr=subprocess.STDOUT,
-                )
-                restart_exit_codes.append(return_code)
-                if return_code == 33:
-                    restore_restart_exit_codes.append(return_code)
-                    print(f"Restarted {service.name} (PID {service.process.pid}) after restore")
-                else:
-                    print(f"Restarted {service.name} (PID {service.process.pid}) after ordinary restart")
-            except Exception as error:
-                print(f"Unable to restart {service.name}: {error}", file=sys.stderr)
-                return
-
-    service.supervisor = threading.Thread(target=supervise, name="core-restart-supervisor", daemon=True)
-    service.supervisor.start()
+# The restart supervisor moved to run_gui_systemtest.py so the JVM and native paths share one
+# implementation. Import direction is fixed: this module already imports that one.
+apply_restore_files = run_gui_systemtest.apply_restore_files
+supervise_restartable_core = run_gui_systemtest.supervise_restartable_core
 
 
 def start_native_core(

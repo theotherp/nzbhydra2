@@ -7,14 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.indexer.CapsCheckRequest;
 import org.nzbhydra.news.NewsEntryForWeb;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class NewsTest {
 
     @Autowired

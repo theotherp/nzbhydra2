@@ -4,6 +4,7 @@ package org.nzbhydra;
 
 import com.google.common.collect.Sets;
 import jakarta.annotation.PostConstruct;
+import org.awaitility.Awaitility;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Headers;
@@ -27,6 +28,7 @@ import tools.jackson.core.JacksonException;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -35,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class HydraClient {
@@ -49,9 +53,11 @@ public class HydraClient {
     @Autowired
     private Environment environment;
 
+    private final AtomicLong mutatingRequests = new AtomicLong();
+
     @PostConstruct
     public void logData() {
-        logger.info("Using NZBHydra host " + nzbhydraHost + " and port " + nzbhydraPort);
+        logger.info("Using NZBHydra host {} and port {}", nzbhydraHost, nzbhydraPort);
     }
 
     private OkHttpClient getClient(boolean followRedirects, Session session) {
@@ -112,6 +118,9 @@ public class HydraClient {
                 // Must be provided to the instance in the docker container.
                 urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
             }
+        }
+        if (!"GET".equals(method)) {
+            mutatingRequests.incrementAndGet();
         }
         RequestBody body = createRequestBody(requestBody);
         if (body == null && (method.equals("POST") || method.equals("PUT") || method.equals("PATCH"))) {
@@ -217,6 +226,66 @@ public class HydraClient {
         return call("POST", endpoint, Collections.emptyMap(), body, false, RequestOptions.withSession(session), parameters);
     }
 
+    /**
+     * Returns the instance to the checked-in baseline in one call: the whole configuration, the generic storage
+     * (including the {@code forUser} keys) and the welcome-shown flag (ADR-0048).
+     *
+     * <p>The baseline lives on the server, in {@code config/baseConfig.yml}. Nothing this client sends contributes a
+     * value, which is the point: {@code GET /internalapi/config} masks secrets as {@code ***UNCHANGED***}, and since
+     * FM-068 a save carrying a marker that cannot be matched to a stored record is refused - so a captured snapshot
+     * cannot be put back, while this call always can.
+     *
+     * <p>The endpoint exists only under the {@code systemtest} Spring profile; against an instance started without
+     * it the call returns 404.
+     */
+    public HydraResponse resetToBaseline() {
+        return post("/internalapi/systemtest/reset", null);
+    }
+
+    /**
+     * How many requests this client has made that could have changed the instance's state - everything that is not a
+     * {@code GET}.
+     *
+     * <p>{@link BeforeAll#applyBaseline()} uses it to tell "nothing has happened since I last wrote the baseline" from
+     * "something has", which is what lets it skip the write. A count rather than a flag so a caller can compare against
+     * a value it recorded earlier without any reset protocol between them.
+     */
+    public long mutatingRequestCount() {
+        return mutatingRequests.get();
+    }
+
+    /**
+     * Waits until the instance has gone away and come back, for up to 90 seconds.
+     *
+     * <p>Both halves matter. A restart takes long enough to start that a health check made immediately after asking for
+     * one still answers from the old process, so waiting only for "healthy" returns before the restart has begun and
+     * the caller then asserts against configuration the restart is about to replace. The wait therefore only completes
+     * once the instance has first been observed unavailable.
+     *
+     * <p>{@code AuthorizationSystemTest} and {@code BackupRestoreSystemTest} each carried a copy of this loop.
+     */
+    public void awaitRestart() {
+        final AtomicBoolean becameUnavailable = new AtomicBoolean();
+        Awaitility.await().atMost(Duration.ofSeconds(90)).until(() -> {
+            try {
+                boolean healthy = get("/actuator/health/ping").status() == 200;
+                return becameUnavailable.get() && healthy;
+            } catch (RuntimeException e) {
+                becameUnavailable.set(true);
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Waits until the instance answers its health check, for up to 90 seconds, without requiring it to have been
+     * unavailable first. For callers that may or may not have triggered a restart.
+     */
+    public void awaitHealthy() {
+        Awaitility.await().atMost(Duration.ofSeconds(90)).ignoreExceptions()
+                .until(() -> get("/actuator/health/ping").status() == 200);
+    }
+
     public Session createSession() {
         return new Session();
     }
@@ -256,6 +325,7 @@ public class HydraClient {
         if (endpoint.contains("internalapi")) {
             urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
         }
+        mutatingRequests.incrementAndGet();
         Request.Builder requestBuilder = new Request.Builder().post(body).url(urlBuilder.build());
         if (v1Migration) {
             requestBuilder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString("test:test".getBytes(StandardCharsets.UTF_8)));
