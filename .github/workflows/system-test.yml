@@ -148,7 +148,7 @@ jobs:
         run: "curl --verbose http://127.0.0.1:5076"
 
       - name: "Run tests"
-        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dsurefire.runOrder=random
 
       - name: "Convert JVM system test results to CTRF"
         if: always()
@@ -430,7 +430,7 @@ jobs:
         run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
       - name: "Run system tests against JVM core"
         if: steps.build-decision.outputs.should-run == 'true'
-        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dsurefire.runOrder=random
 
       - name: "Convert JVM system test results to CTRF"
         if: always() && steps.build-decision.outputs.should-run == 'true'
