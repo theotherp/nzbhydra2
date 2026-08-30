@@ -40,6 +40,14 @@ const bootstrap = {
     },
 };
 
+// Slower than Loading's 300ms delay so the placeholder assertion below can
+// observe it before the query settles (FM-144).
+function delayed(response: Response, ms = 350): Promise<Response> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(response), ms);
+    });
+}
+
 function renderPage(fetchImplementation: typeof fetch) {
     return render(
         <QueryClientProvider
@@ -61,14 +69,16 @@ describe("SavedSearchesPage", () => {
     it("should preserve server indices when deleting after a malformed entry", async () => {
         const fetchImplementation = vi
             .fn()
-            .mockResolvedValueOnce(
-                new Response(
-                    JSON.stringify([
-                        {categoryName: 3},
-                        {categoryName: "All", query: "retained"},
-                        {categoryName: "All", query: "deleted"},
-                    ]),
-                    {headers: {"Content-Type": "application/json"}},
+            .mockImplementationOnce(() =>
+                delayed(
+                    new Response(
+                        JSON.stringify([
+                            {categoryName: 3},
+                            {categoryName: "All", query: "retained"},
+                            {categoryName: "All", query: "deleted"},
+                        ]),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
                 ),
             )
             .mockResolvedValueOnce(new Response(null, {status: 204}))
@@ -79,7 +89,7 @@ describe("SavedSearchesPage", () => {
                 ),
             );
         renderPage(fetchImplementation);
-        expect(screen.getByRole("status")).toHaveTextContent(
+        expect(await screen.findByRole("status")).toHaveTextContent(
             "Loading saved searches",
         );
         expect(

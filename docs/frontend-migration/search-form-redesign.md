@@ -51,8 +51,14 @@ panel is open, as today. Season/episode leave this row (see Media section).
 
 ### Row 2 — status chips
 
-A wrapping row of MUI `Chip`s inside the bar surface, rendered only when at
-least one chip exists. Chips use the theme's existing pill language
+A wrapping row of MUI `Chip`s inside the bar surface. The row itself always
+renders (FM-143, owner request 2026-08-30): when no chip exists it reserves
+`minHeight: 32px` (MUI's default medium `Chip` height), so the first chip
+appearing does not push the Advanced panel down and the last chip's removal
+does not snap it back up. The reservation covers exactly one row; if chips
+wrap onto a second row the form may still grow downward — an accepted
+boundary of the fix, not asserted anywhere. Chips use the theme's existing
+pill language
 (`MuiChip` override: 26 px, `pillRadius`; label in `monoFontFamily` 12 px)
 — visually the refine-surface `refineChip` family, delivered by the stock
 `Chip` component. Each chip is clickable: click opens Advanced and moves

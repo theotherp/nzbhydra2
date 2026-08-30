@@ -321,7 +321,8 @@ components:
     state: partial
     note: FM-137 (ADR-0046) moved the chrome to C-REFINE-SURFACE and the file with it (HistoryRefineSurface.tsx, beside historyRefineCollapsed.ts). Every history-refine-* section and control id survived unchanged, including ADR-0016's
       empty-selection semantics; history-refine-bar now names whichever branch is live and history-refine-summary/-drawer/-close were added. The "deliberately shares no code with RefineSidebar" stance this record and the source file both
-      carried is superseded for the chrome only -- the state and options reasons it gave are the retained rationale above.
+      carried is superseded for the chrome only -- the state and options reasons it gave are the retained rationale above. FM-142 moved history-refine-summary from the header's right edge to its left slot and made it single-line (noWrap)
+      when the shared header dropped its "Refine" caption; the sentence, the id, and the rail/compact fallbacks that carry the count where the slot is hidden are unchanged.
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model
@@ -337,7 +338,8 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-REFINE-SURFACE
-    responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px drawer switching, header row (label, clear-all, collapse/close toggle), widths, paddings, transitions, and
+    responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px drawer switching, header row (the consumer's optional summary in the left slot, an icon-only clear-all and the
+      collapse/close toggle at the end, and no caption), widths, paddings, transitions, and
       stickiness, taken from RefineSidebar.tsx; it takes sections, clear-all wiring, an optional sticky offset, an optional header summary, and per-consumer test ids as props and owns no filter state -- ResultFilters stays with the
       results feature and HistoryFilterValues with the history features
     legacy: []
@@ -352,7 +354,10 @@ components:
     note: FM-136 extracted the shell and re-based the results sidebar on it at proven byte parity (the rendered refine-sidebar outerHTML is identical for the docked expanded, docked collapsed, and drawer branches). Its own labels
       and data-testid values are props, so RefineSidebar.tsx keeps refine-sidebar/-toggle/-drawer/-close and refine-clear-all unchanged; useCompactRefineSurface moved into the shell module with it. FM-137 added the three history views
       as consumers without changing the shell, which is what closes ADR-0046's one-refine-concept goal -- the history surfaces pass stickyOffset 0 (nothing sticky sits above a /stats tab body) and a header summary the results page does not
-      use.
+      use. FM-142 (owner request 2026-08-30) redesigned that header row -- the "Refine" caption is gone from every branch and every consumer (RefineSurfaceLabels.heading is the compact trigger's visible text and nothing else), "Clear all"
+      became an icon-only ClearAllIcon control named "Clear all filters" (the clearAll/close/drawer/surface/toggle test ids, the disabled rule and the onClearAll wiring all unchanged), and the summary took the header's left slot on a
+      single line. That closes FM-137's recorded cramped-header finding -- at 248px minus the px 2 padding the old caption + summary + text button + toggle overflowed 216px, wrapping "No active filters" over two lines and "Clear all"
+      inside its own button in the drawer -- pinned now by a geometry assertion in search-history.spec.ts's visual-evidence test. theme.ts's refineSurfaceLabel typography variant left with the caption, its last consumer.
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach

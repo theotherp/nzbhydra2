@@ -1,7 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {
     Alert,
-    CircularProgress,
     Stack,
     Table,
     TableBody,
@@ -22,6 +21,7 @@ import {
     formatServerDateTime,
     parseServerDateTime,
 } from "../../../domain/date-time/dateTime";
+import {Loading} from "../shared/Loading";
 
 type Props = {
     bootstrap: BootstrapData;
@@ -47,7 +47,7 @@ export function IndexerStatusesPage({
             loadStatuses ??
             (() => getIndexerStatuses(transport as ApiTransport)),
     });
-    if (query.isPending) return <Loading />;
+    if (query.isPending) return <Loading message="Loading indexer statuses…" />;
     if (query.isError)
         return <Alert severity="error">Unable to load indexer statuses.</Alert>;
     const {statuses, malformedCount} = query.data;
@@ -72,15 +72,6 @@ export function IndexerStatusesPage({
                     timeZone={bootstrap.serverTimeZone}
                 />
             )}
-        </Stack>
-    );
-}
-
-function Loading() {
-    return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
-            <CircularProgress />
-            <Typography>Loading indexer statuses…</Typography>
         </Stack>
     );
 }

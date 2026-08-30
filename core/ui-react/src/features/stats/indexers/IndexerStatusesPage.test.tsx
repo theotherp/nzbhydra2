@@ -22,6 +22,14 @@ const bootstrap = {
     serverTimeZone: "UTC",
 };
 
+// Slower than Loading's 300ms delay so the placeholder tests below can
+// observe it before the query settles (FM-144).
+function delayed<T>(value: T, ms = 350): Promise<T> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(value), ms);
+    });
+}
+
 function renderPage(
     loadStatuses: Parameters<typeof IndexerStatusesPage>[0]["loadStatuses"],
 ) {
@@ -46,41 +54,43 @@ function statusRow(table: HTMLElement, indexer: string): HTMLElement {
 describe("IndexerStatusesPage", () => {
     afterEach(cleanup);
     it("should render loading, partial data, status semantics, limits, resets, and VIP warnings", async () => {
-        renderPage(async () => ({
-            malformedCount: 1,
-            statuses: [
-                {
-                    indexer: "Alpha",
-                    state: "ENABLED",
-                    apiHits: 3,
-                    downloadHits: 0,
-                },
-                {
-                    indexer: "Bravo",
-                    state: "DISABLED_SYSTEM_TEMPORARY",
-                    disabledUntil: "2025-01-02T00:00:00Z",
-                    lastError: "Quota",
-                    apiHits: 4,
-                    apiHitLimit: 5,
-                    downloadHits: 1,
-                    downloadHitLimit: 2,
-                    apiResetTime: "2025-01-03T00:00:00Z",
-                    downloadResetTime: "2025-01-04T00:00:00Z",
-                    vipExpirationDate: "2025-01-01",
-                },
-                {
-                    indexer: "Charlie",
-                    state: "DISABLED_SYSTEM",
-                    apiHits: 0,
-                    apiHitLimit: 3,
-                    downloadHits: 2,
-                    downloadHitLimit: 4,
-                    downloadResetTime: "2025-01-05T00:00:00Z",
-                },
-                {indexer: "Delta", state: "DISABLED_USER"},
-            ],
-        }));
-        expect(screen.getByRole("status")).toHaveTextContent(
+        renderPage(() =>
+            delayed({
+                malformedCount: 1,
+                statuses: [
+                    {
+                        indexer: "Alpha",
+                        state: "ENABLED",
+                        apiHits: 3,
+                        downloadHits: 0,
+                    },
+                    {
+                        indexer: "Bravo",
+                        state: "DISABLED_SYSTEM_TEMPORARY",
+                        disabledUntil: "2025-01-02T00:00:00Z",
+                        lastError: "Quota",
+                        apiHits: 4,
+                        apiHitLimit: 5,
+                        downloadHits: 1,
+                        downloadHitLimit: 2,
+                        apiResetTime: "2025-01-03T00:00:00Z",
+                        downloadResetTime: "2025-01-04T00:00:00Z",
+                        vipExpirationDate: "2025-01-01",
+                    },
+                    {
+                        indexer: "Charlie",
+                        state: "DISABLED_SYSTEM",
+                        apiHits: 0,
+                        apiHitLimit: 3,
+                        downloadHits: 2,
+                        downloadHitLimit: 4,
+                        downloadResetTime: "2025-01-05T00:00:00Z",
+                    },
+                    {indexer: "Delta", state: "DISABLED_USER"},
+                ],
+            }),
+        );
+        expect(await screen.findByRole("status")).toHaveTextContent(
             "Loading indexer statuses…",
         );
         const table = await screen.findByRole("table", {
@@ -243,6 +253,18 @@ describe("IndexerStatusesPage", () => {
         expect(await screen.findByRole("alert")).toHaveTextContent(
             "Unable to load indexer statuses.",
         );
+    });
+
+    it("never shows the placeholder when the query resolves faster than its delay (FM-144)", async () => {
+        renderPage(async () => ({statuses: [], malformedCount: 0}));
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+            "No indexer statuses",
+        );
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        // Even once Loading's own delay would otherwise have elapsed, nothing
+        // status-shaped ever mounted -- the fast query already replaced it.
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
     });
 
     it("should calculate expiry warnings and ignore lifetime values", () => {

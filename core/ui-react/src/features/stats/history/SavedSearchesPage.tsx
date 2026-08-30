@@ -1,7 +1,6 @@
 import {
     Alert,
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -30,6 +29,7 @@ import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {savedSearchCriteria} from "../../search/history/savedSearchCriteria";
+import {Loading} from "../shared/Loading";
 
 const queryKey = ["saved-searches"];
 
@@ -57,17 +57,7 @@ export function SavedSearchesPage({
         },
     });
     if (query.isPending) {
-        return (
-            <Stack
-                alignItems="center"
-                component="main"
-                role="status"
-                spacing={1}
-            >
-                <CircularProgress />
-                <Typography>Loading saved searches…</Typography>
-            </Stack>
-        );
+        return <Loading message="Loading saved searches…" />;
     }
     if (query.isError) {
         return <Alert severity="error">Unable to load saved searches.</Alert>;

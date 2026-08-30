@@ -78,7 +78,9 @@ describe("RefineSurface", () => {
         const surface = screen.getByTestId(testIds.surface);
         expect(surface.tagName).toBe("NAV");
         expect(surface).toHaveAttribute("aria-label", labels.surface);
-        expect(screen.getByText(labels.heading)).toBeInTheDocument();
+        // FM-142: `heading` is the compact trigger's text only. No branch of
+        // the docked column renders it as a header caption any more.
+        expect(screen.queryByText(labels.heading)).not.toBeInTheDocument();
         expect(screen.getByTestId(testIds.clearAll)).toBeEnabled();
         expect(
             screen.getByRole("button", {name: labels.collapse}),
@@ -104,6 +106,44 @@ describe("RefineSurface", () => {
             screen.getByRole("button", {name: labels.close}),
         ).toBeInTheDocument();
         expect(screen.getByTestId("probe-sections")).toBeInTheDocument();
+        // The trigger's own text is the only place `heading` renders; the
+        // drawer's header is captionless like the docked column's.
+        expect(screen.getAllByText(labels.heading)).toHaveLength(1);
+        expect(screen.getByTestId(testIds.drawer)).not.toHaveTextContent(
+            labels.heading,
+        );
+    });
+
+    // FM-142: the header row cannot hold a text button beside the summary and
+    // the toggle at the 248px docked width, so clear-all is icon-only in every
+    // branch that shows it -- named for assistive technology, silent on screen,
+    // and still the same `data-testid` and disabled rule its consumers query.
+    it("offers clear-all as a named icon-only control", () => {
+        const onClearAll = vi.fn();
+        const {rerender} = render(
+            <RefineSurface
+                clearAllDisabled
+                collapsed={false}
+                drawerOpen={false}
+                labels={labels}
+                onClearAll={onClearAll}
+                onDrawerOpenChange={vi.fn()}
+                onToggleCollapsed={vi.fn()}
+                testIds={testIds}
+            >
+                <div data-testid="probe-sections">sections</div>
+            </RefineSurface>,
+        );
+        const disabled = screen.getByTestId(testIds.clearAll);
+        expect(disabled).toBeDisabled();
+        expect(disabled).toHaveAccessibleName("Clear all filters");
+        expect(disabled.textContent).toBe("");
+
+        rerender(<Surface />);
+        const enabled = screen.getByRole("button", {
+            name: "Clear all filters",
+        });
+        expect(enabled).toHaveAttribute("data-testid", testIds.clearAll);
     });
 
     // Closed, the drawer's own content is unmounted; the trigger stays, and it
@@ -118,8 +158,9 @@ describe("RefineSurface", () => {
         expect(screen.queryByTestId("probe-sections")).not.toBeInTheDocument();
     });
 
-    // The 48px rail has room for the toggle alone: no caption, no clear-all,
-    // and no sections.
+    // The 48px rail has room for the toggle alone: no clear-all, no summary,
+    // and no sections. (Since FM-142 the expanded column carries no caption
+    // either, so `heading` is absent in both docked states.)
     it("collapses to a rail carrying only the toggle", () => {
         render(<Surface collapsed />);
         expect(screen.getByTestId(testIds.surface)).toBeInTheDocument();

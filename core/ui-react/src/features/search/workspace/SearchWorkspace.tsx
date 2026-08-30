@@ -87,6 +87,13 @@ const mediaSectionWidth = seasonEpisodeFieldWidth * 2 + 10;
 // Two range fields plus their 6px `gap: 0.75` gutter, so Age & Size wraps
 // into a 2x2 block on a wide panel and a single column on a narrow one.
 const rangeSectionWidth = rangeFieldWidth * 2 + 6;
+// The chips row is always rendered (FM-143, owner request 2026-08-30) so the
+// first constraint chip no longer pushes the Advanced panel down and the
+// last one's removal no longer snaps it back up. When empty it reserves
+// exactly one row at MUI's default medium `Chip` height (verified against
+// the installed `@mui/material/Chip` source and the `constraint` variant in
+// `theme.ts`, which overrides colour and typography but not height).
+const chipsRowMinHeight = 32;
 
 export function SearchWorkspace({
     catalog,
@@ -492,16 +499,6 @@ export function SearchWorkspace({
             )}
         </>
     );
-    const hasChips =
-        selected ||
-        (mediaType === "TV" &&
-            (values.season !== "" || values.episode !== "")) ||
-        values.minage !== "" ||
-        values.maxage !== "" ||
-        values.minsize !== "" ||
-        values.maxsize !== "" ||
-        values.additionalQuery !== "" ||
-        showIndexersChip;
     return (
         <Paper
             component="form"
@@ -721,19 +718,18 @@ export function SearchWorkspace({
                         {advancedOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                 </Box>
-                {hasChips && (
-                    <Box
-                        data-testid="search-chips"
-                        sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 0.75,
-                            mt: 1.25,
-                        }}
-                    >
-                        {chips}
-                    </Box>
-                )}
+                <Box
+                    data-testid="search-chips"
+                    sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.75,
+                        minHeight: chipsRowMinHeight,
+                        mt: 1.25,
+                    }}
+                >
+                    {chips}
+                </Box>
                 <Collapse
                     data-testid="search-advanced-panel"
                     id={advancedPanelId}

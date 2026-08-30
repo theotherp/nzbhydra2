@@ -677,6 +677,42 @@ test.describe("Search", () => {
         }
     });
 
+    // FM-143: the chips row's space is always reserved, so the first chip
+    // appearing (and the last one disappearing) must move nothing below it.
+    // Advanced is opened and left open for the whole test -- the Collapse's
+    // own open/close movement is a deliberate, separate animation and must
+    // not be captured here. The Advanced panel's own top edge is measured
+    // (not `workspace-actions`, further down): it sits immediately below the
+    // chips row, so its y is affected only by the primary row and the chips
+    // row above it -- not by anything that shifts height inside the panel
+    // itself (a focused field's adornment, an indexer-selection reflow),
+    // which would otherwise be misattributed to the chips row.
+    test("should not shift the layout below the chips row when the first chip appears or the last one disappears (FM-143)", async ({
+        page,
+    }) => {
+        await openAdvanced(page);
+        const advancedPanel = page.getByTestId("search-advanced-panel");
+        const minAge = page.getByLabel("Min age");
+        const ageChip = page.getByTestId("search-chip-age");
+
+        await expect(page.getByTestId("search-chips")).toBeVisible();
+        await expect(ageChip).not.toBeVisible();
+        const beforeBox = await advancedPanel.boundingBox();
+        expect(beforeBox).not.toBeNull();
+
+        await minAge.fill("10");
+        await expect(ageChip).toBeVisible();
+        const withChipBox = await advancedPanel.boundingBox();
+        expect(withChipBox).not.toBeNull();
+        expect(withChipBox?.y).toBe(beforeBox?.y);
+
+        await minAge.fill("");
+        await expect(ageChip).not.toBeVisible();
+        const afterBox = await advancedPanel.boundingBox();
+        expect(afterBox).not.toBeNull();
+        expect(afterBox?.y).toBe(beforeBox?.y);
+    });
+
     test("should render deterministic STOMP progress in the React search modal", async ({
         page,
     }) => {

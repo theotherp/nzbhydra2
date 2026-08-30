@@ -971,12 +971,13 @@ describe("SearchWorkspace", () => {
     // collapsed panel. Each chip opens Advanced on its own field, and each
     // clearable one clears exactly its own constraint.
     describe("constraint chips", () => {
-        it("should render no chips row for a search with no constraints", () => {
+        it("should render the reserved chips row with no chips for a search with no constraints", () => {
+            // FM-143: the row itself always renders (its space is reserved
+            // so a later chip cannot shift the layout below it); only the
+            // chips inside it are conditional.
             renderWorkspace({category: "Series"});
 
-            expect(
-                screen.queryByTestId("search-chips"),
-            ).not.toBeInTheDocument();
+            expect(screen.getByTestId("search-chips")).toBeInTheDocument();
             for (const chip of [
                 "search-chip-title",
                 "search-chip-season",
@@ -988,6 +989,15 @@ describe("SearchWorkspace", () => {
             ]) {
                 expect(screen.queryByTestId(chip)).not.toBeInTheDocument();
             }
+        });
+
+        it("should render a chip inside the same reserved container once a constraint is set", () => {
+            renderWorkspace({category: "Series", season: "3"});
+
+            const chipsRow = screen.getByTestId("search-chips");
+            expect(chipsRow).toContainElement(
+                screen.getByTestId("search-chip-season"),
+            );
         });
 
         it("should show the matched title, focus the additional filter, and clear the identifiers", () => {

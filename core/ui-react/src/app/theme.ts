@@ -6,18 +6,19 @@ import {
 } from "@mui/material/styles";
 
 declare module "@mui/material/styles" {
-    // FM-056 (ADR-0014): the two caption styles the refine surfaces share --
-    // the panel's own header label and each filter section's caption. Declared
-    // as typography variants rather than restated as `sx` blocks so
+    // FM-056 (ADR-0014): the caption style the refine surfaces share -- each
+    // filter section's caption, and the history views' header summary.
+    // Declared as a typography variant rather than restated as `sx` blocks so
     // `C-HISTORY-REFINE-BAR` inherits the search refine sidebar's language
-    // from the theme instead of from that component's code.
+    // from the theme instead of from that component's code. Its louder sibling
+    // `refineSurfaceLabel` (12px/600/0.7px uppercase) painted the surface's own
+    // "Refine" header caption and left with it in FM-142, having no other
+    // consumer.
     interface TypographyVariants {
-        refineSurfaceLabel: TypographyStyle;
         refineSectionLabel: TypographyStyle;
     }
 
     interface TypographyVariantsOptions {
-        refineSurfaceLabel?: TypographyStyle;
         refineSectionLabel?: TypographyStyle;
     }
 
@@ -77,7 +78,6 @@ declare module "@mui/material/styles" {
 
 declare module "@mui/material/Typography" {
     interface TypographyPropsVariantOverrides {
-        refineSurfaceLabel: true;
         refineSectionLabel: true;
     }
 }
@@ -564,16 +564,10 @@ export function createHydraTheme(
             // `typography.fontSize` is deliberately left at MUI's default 14,
             // which already matches the mock page `<div>`'s own `font-size:14px`.
             //
-            // The mock's Refine panel captions, as two reusable variants: the
-            // panel header label and, one step quieter, each filter section's
-            // caption.
-            refineSurfaceLabel: {
-                color: mockPalette.textSecondary,
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.7px",
-                textTransform: "uppercase",
-            },
+            // The mock's Refine panel caption, as a reusable variant: each
+            // filter section's caption, and the history views' header summary.
+            // The mock's louder panel-header label above it is gone with the
+            // caption it painted (FM-142).
             refineSectionLabel: {
                 color: mockSurfaces.mutedText,
                 fontSize: "11px",

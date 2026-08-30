@@ -206,8 +206,10 @@ test.describe("Search history", () => {
             },
         });
         // ADR-0046: the active-filter summary renders in the shared shell's
-        // header summary slot now, beside the "Refine" caption, rather than
-        // inside the old bar's expand/collapse toggle.
+        // header summary slot now, rather than inside the old bar's
+        // expand/collapse toggle. Since FM-142 that slot is the whole left
+        // side of the header row -- the "Refine" caption it used to sit beside
+        // is gone.
         await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
@@ -334,6 +336,7 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "No active filters",
         );
+        await expectSingleLineRefineHeader(page);
         await page.screenshot({
             path: visualEvidencePath(
                 "F-HISTORY-SEARCHES",
@@ -365,6 +368,7 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
+        await expectSingleLineRefineHeader(page);
         await page.screenshot({
             path: visualEvidencePath(
                 "F-HISTORY-SEARCHES",
@@ -406,6 +410,13 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("history-refine-toggle")).toContainText(
             "2 active filters",
         );
+        // FM-142: the drawer's own header carries no summary (the trigger
+        // above holds the count), so what FM-137 recorded wrapping inside the
+        // drawer was the "Clear all" text button. It is icon-only now, with no
+        // text left to break over a second line.
+        const drawerClearAll = page.getByTestId("history-refine-clear-all");
+        await expect(drawerClearAll).toHaveAccessibleName("Clear all filters");
+        await expect(drawerClearAll).toHaveText("");
         await page.screenshot({
             path: visualEvidencePath(
                 "F-HISTORY-SEARCHES",
@@ -460,4 +471,43 @@ async function pageFitsHorizontally(
     return page
         .locator("html")
         .evaluate((element) => element.scrollWidth <= element.clientWidth);
+}
+
+/**
+ * FM-142. FM-137 measured the docked header at 248px -- 216px inside the
+ * shell's `px: 2` padding -- holding a "Refine" caption, this summary, a
+ * "Clear all" text button and the collapse toggle, and recorded the result:
+ * "No active filters" broke over two lines. The caption is gone and clear-all
+ * is icon-only, so the summary and the controls share one line. Pinned as a
+ * geometry assertion rather than left to the screenshot alone because
+ * README's Visual Gate allows one for a regression that actually happened.
+ */
+async function expectSingleLineRefineHeader(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const summary = page.getByTestId("history-refine-summary");
+    await expect(page.getByTestId("history-refine-clear-all")).toHaveText("");
+    const metrics = await summary.evaluate((element) => ({
+        fontSize: Number.parseFloat(getComputedStyle(element).fontSize),
+        height: element.getBoundingClientRect().height,
+        // `noWrap` would hide a too-narrow slot behind an ellipsis instead of
+        // a wrap, which is no better: the whole sentence has to be readable.
+        truncated: element.scrollWidth > element.clientWidth,
+    }));
+    expect(metrics.truncated).toBe(false);
+    // A second line of an 11px caption puts the box well past twice its font
+    // size; a single line stays under it whatever line-height resolves to.
+    expect(metrics.height).toBeLessThan(metrics.fontSize * 2);
+
+    // And the icon-only control shares that line rather than sitting below it.
+    const summaryBox = await summary.boundingBox();
+    const clearAllBox = await page
+        .getByTestId("history-refine-clear-all")
+        .boundingBox();
+    if (!summaryBox || !clearAllBox) {
+        throw new Error("The refine header requires deterministic geometry");
+    }
+    const summaryCentre = summaryBox.y + summaryBox.height / 2;
+    const clearAllCentre = clearAllBox.y + clearAllBox.height / 2;
+    expect(Math.abs(summaryCentre - clearAllCentre)).toBeLessThan(2);
 }

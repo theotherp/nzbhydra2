@@ -147,11 +147,16 @@ function HistoryRefineSurface({
                     <Typography
                         component="span"
                         data-testid="history-refine-summary"
-                        // A docked column is a narrow place for a sentence,
-                        // so this shares the header's remaining space with the
-                        // caption and the controls and wraps rather than
-                        // pushing them out of the row.
-                        sx={{flex: 1, minWidth: 0, pl: 1, textAlign: "right"}}
+                        // FM-142: the header's left slot, which the removed
+                        // "Refine" caption used to hold. It takes the row's
+                        // free width (`flex: 1`) and is allowed to shrink
+                        // (`minWidth: 0`) so the icon-only clear-all and the
+                        // collapse toggle keep their place at the end; `noWrap`
+                        // is what stops the 216px inner width of the docked
+                        // column from breaking the sentence over two lines, as
+                        // FM-137 recorded it doing.
+                        noWrap
+                        sx={{flex: 1, minWidth: 0}}
                         variant="refineSectionLabel"
                     >
                         {summary}
@@ -187,6 +192,11 @@ function HistoryRefineSurface({
  * expand toggle announces it, and the compact trigger shows it as its own
  * visible text -- which is also its accessible name there, so the two never
  * disagree.
+ *
+ * FM-142: `heading` is the compact trigger's text and nothing else now, so it
+ * no longer has a docked variant. The docked column used to render the bare
+ * word "Refine" as a header caption; the owner asked for it gone, and what the
+ * surface is is said by the sections themselves.
  */
 function refineLabels(compact: boolean, summary: string): RefineSurfaceLabels {
     const trigger = `Refine · ${summary}`;
@@ -194,7 +204,7 @@ function refineLabels(compact: boolean, summary: string): RefineSurfaceLabels {
         close: "Close history filters",
         collapse: compact ? "Hide history filters" : "Collapse history filters",
         expand: compact ? trigger : `Expand history filters, ${summary}`,
-        heading: compact ? trigger : "Refine",
+        heading: trigger,
         surface: "Refine history",
     };
 }

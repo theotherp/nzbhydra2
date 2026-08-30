@@ -448,6 +448,8 @@ class JavaPhaseTest(unittest.TestCase):
                 keep_services=False,
                 java_phase=True,
                 java_test=None,
+                java_run_order="random",
+                java_run_order_seed=4242,
                 playwright_args=[],
             )
             with patch.object(runner, "RUNS_DIR", Path(temporary_directory)):

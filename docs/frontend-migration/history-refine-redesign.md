@@ -25,9 +25,14 @@ A refine surface is a docked left column beside the table it filters:
   button with a caret, `variant="control"`. The drawer always starts closed and its open state is
   never persisted (the same rationale `RefineSidebar.tsx` records: a persisted expanded preference
   from desktop must not pop an overlay over the content on a phone).
-- Header row: `refineSurfaceLabel` "Refine" label, a "Clear all" text button, the collapse/close
-  control. Sections use `refineSectionLabel` captions, `refineSectionGap` rhythm, and the
-  `refineChip` button variant for on/off options.
+- Header row: the consumer's optional active-filter summary in the left slot, single-line, and an
+  icon-only clear-all beside the collapse/close control at the end. No caption — FM-142 (owner
+  request 2026-08-30) removed the `refineSurfaceLabel` "Refine" label and the "Clear all" text
+  button together, because at 248px minus the `px: 2` padding the four elements did not fit 216px
+  (FM-137 measured "No active filters" wrapping over two lines, and "Clear all" wrapping inside its
+  own button in the drawer). "Refine" survives only as the sub-768px trigger's own text. Sections
+  use `refineSectionLabel` captions, `refineSectionGap` rhythm, and the `refineChip` button variant
+  for on/off options.
 - Exactly one branch (docked or drawer) exists in the DOM at a time, decided by `useMediaQuery` in
   JavaScript, so no duplicate accessible names or test ids ever render.
 

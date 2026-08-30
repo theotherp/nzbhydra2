@@ -46,6 +46,8 @@ const REFINE_LABELS: RefineSurfaceLabels = {
     close: "Close refine sidebar",
     collapse: "Collapse refine sidebar",
     expand: "Expand refine sidebar",
+    // FM-142: the below-768px trigger's visible text only. The docked column
+    // renders no caption of its own any more.
     heading: "Refine",
     surface: "Refine results",
 };

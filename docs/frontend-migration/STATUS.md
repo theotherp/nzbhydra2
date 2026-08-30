@@ -1096,6 +1096,67 @@ rather than a history-side change; two duplicate page-fits helpers in `search-hi
 `history-refine-drawer` is declared in all three `FEATURES.yaml` selector lists but asserted by no test. Candidates
 for a future quickfix.
 
+FM-145 (StatsComponentTest Context Reuse) dropped `@DirtiesContext(BEFORE_EACH_TEST_METHOD)` from
+`StatsComponentTest`: the `@SpringBootTest(classes = NzbHydra.class)` context now boots once per class and isolation
+comes from an explicit FK-safe repository sweep (children before parents, ending at `indexerRepository`) run both
+`@BeforeEach` — before re-seeding `indexer1`/`indexer2`, which are re-fetched by name every method — and `@AfterEach`,
+so the shared cached context inherits empty tables even after a failed method. Class wall time fell from the measured
+88.72s baseline to ~4.5-5.2s; assertions and test bodies are byte-unchanged. Accepted on a fresh independent review
+with no required findings; the reviewer re-ran all verification commands himself, traced every entity the class can
+write (the one FK gap, `IndexerSearchResultOccurrenceEntity`, is covered by `@OnDelete(CASCADE)`), and confirmed one
+context boot in the logs. Passed with minor findings, not corrected (optional): the sweep restores database rows but
+not singleton bean state (`searchModuleConfigProvider.setIndexers` leaves the two test indexers in the cached
+`BaseConfig` — harmless while every sibling on this context key is `@Disabled`); `ConfigWebTest:39` still carries the
+identical `@DirtiesContext` pattern (also `@Disabled` today). Candidates for a future quickfix.
+
+FM-143 (Search Chips Row Reserved Space) made `SearchWorkspace.tsx`'s `search-chips` box render unconditionally,
+reserving a `chipsRowMinHeight` of 32px (MUI's default medium `Chip` height, confirmed against the installed
+`@mui/material/Chip` source) when empty, so the first constraint chip appearing — and the last one's removal — moves
+nothing below the row (owner request 2026-08-30). `SearchWorkspace.test.tsx`'s absence assertion is inverted to a
+presence assertion plus a same-container containment test; `search.spec.ts` gained a real-backend test bracketing the
+Advanced panel's own y across the chip's appearance and disappearance with Advanced kept open throughout.
+`search-form-redesign.md`'s Row 2 rule is rewritten to the reserved-row behaviour, recording a wrapped second chip
+row as the reservation's accepted boundary. All `core/ui-react` gates and the real-backend
+`search.spec.ts`/`smoke.spec.ts` run passed (23/23). Accepted on a fresh independent review with no required and no
+minor findings; the reviewer re-ran typecheck and the unit file himself, verified the two-directional bracket, and
+inspected all four screenshots.
+
+FM-144 (History & Stats Placeholder Blink Elimination) eliminated the section-switch blink (owner request 2026-08-30):
+`features/stats/shared/Loading.tsx` now renders nothing for its first 300ms mounted (one named constant, one timer,
+cleared on unmount) before showing its unchanged anatomy, so a fast backend answer never flashes the placeholder.
+`IndexerStatusesPage`'s and `SavedSearchesPage`'s local placeholder copies now render the shared component with their
+unchanged messages; all seven `/stats` tab bodies share the one delayed placeholder. Unit tests cover the 299ms/300ms
+boundary and the unmount-before-delay leak-free case with fake timers; `IndexerStatusesPage.test.tsx` gained a
+route-delayed loader so its existing synchronous placeholder assertion could advance past the delay, plus a new test
+proving a query resolving before 300ms never mounts `role="status"`; `SavedSearchesPage.test.tsx`'s equivalent
+assertion got the same treatment. `NotificationHistoryPage.test.tsx`'s never-resolving-query test needed no change
+(findByRole already polls past 300ms). FM-121's cached-revisit test is unmodified and still green. Accepted on a
+fresh independent review with no required findings; the reviewer re-ran the three changed unit files 10x (130
+executions, no flakiness, no act warnings), grepped all six message strings byte-identical himself, and viewed the
+placeholder screenshot. Minor finding, not corrected (pre-existing, optional): `FEATURES.yaml`'s `F-STATS-INDEXERS`
+tests list omits `IndexerStatusesPage.test.tsx`. The reviewer also noted a pre-existing cosmetic oddity outside
+scope: in the loading capture the top tab bar highlights "Stats" while "Indexer statuses" is the active tab.
+Candidates for a future quickfix.
+
+FM-142 dropped the "Refine" caption from `RefineSurface`'s header on every consumer (owner request 2026-08-30) and
+re-laid the freed row: `RefineHeader` lost its `label` prop, "Clear all" became an icon-only `ClearAllIcon` control
+named "Clear all filters", and the history summary took the header's left slot single-line (`flex: 1`, `minWidth: 0`,
+`noWrap`), with the controls held at the end by `ml: "auto"` so the results header — which passes no summary — still
+right-aligns them. `RefineSurfaceLabels.heading` survives as the sub-768px trigger's visible text only, and
+`theme.ts`'s `refineSurfaceLabel` typography variant left with the caption, its last consumer. Every `data-testid`,
+accessible name, `disabled` rule and `onClearAll` wiring is unchanged. That closes FM-137's cramped-header finding,
+proven in the real 248px column rather than asserted: a geometry assertion in `search-history.spec.ts`'s
+visual-evidence test pins the summary to one un-ellipsized line sharing the clear-all's centre line, at both "No
+active filters" and "2 active filters", plus the drawer's now text-free clear-all. Accepted on a fresh independent
+review with no required findings; the reviewer re-ran the cheap deterministic gates himself, grepped every spec and
+unit suite for the old "Clear all" text query (none exists), and inspected all six strip images at 248px/390px rather
+than trusting the handoff. Passed with minor findings, not corrected (optional): `HistoryRefineSurface.tsx`'s doc
+comment still claims the open drawer carries the summary (it never has — the consumer passes `compact ? undefined`),
+now contradicted in writing by the spec's own comment; and the icon-only clear-all has no `Tooltip`, matching the
+FM-088 precedent, so hover affordance is an owner ruling for both sites together. Two owner rulings flagged in the
+handoff, deliberately untouched as Out Of Scope: the compact triggers' visible "Refine" text, and the 390px drawer
+header carrying no active-filter count while it covers the trigger. Candidates for a future quickfix / owner ruling.
+
 ## Active
 
 None.
@@ -1122,6 +1183,10 @@ None.
 None.
 
 ## Upcoming
+
+- FM-142 (Refine Header Declutter And Uncramp), first of the 2026-08-30 owner-request batch FM-142..FM-145, is done
+  (entry above), as are FM-145 (StatsComponentTest context reuse), FM-143 (search-chips reserved row), and FM-144
+  (stats placeholder delay) — the whole 2026-08-30 owner-request batch is complete.
 
 - FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect

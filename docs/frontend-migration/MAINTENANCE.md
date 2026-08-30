@@ -1342,6 +1342,18 @@ symbol — a rule the repository already states in packet prompts and does not e
   green.
 - **Commit:** `2f1dd653d`
 
+### 2026-08-30 — Add the FM-140 run-order attributes to the java-phase test's hand-built Namespace
+
+- **Why not a packet:** single-module test repair with the regression observed both ways: CI's
+  `python3 -m unittest misc/test_run_gui_systemtest.py` failed with `AttributeError: 'Namespace' object has no
+  attribute 'java_run_order'` because FM-140 added `--java-run-order`/`--java-run-order-seed` and `run()` reads them
+  unconditionally on the `java_phase` path, while `test_should_warn_that_an_attached_instance_is_unsupervised`'s
+  hand-built `Namespace` was never updated. `run()` expects a fully-parsed namespace; the fix adds the two attributes
+  with `parse_args`-shaped values.
+- **Paths:** `misc/test_run_gui_systemtest.py`
+- **Gates:** target test observed failing before the fix; `python3 -m unittest misc.test_run_gui_systemtest` after —
+  27 tests, OK; `git diff --check` clean.
+- **Commit:** `c8f6123b9`
 
 ## Open candidates
 

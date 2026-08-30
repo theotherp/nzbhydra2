@@ -2,19 +2,18 @@ import {
     Box,
     Button,
     Drawer,
+    IconButton,
     Paper,
     Stack,
-    Typography,
     useMediaQuery,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ClearAllIcon from "@mui/icons-material/ClearAll";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useTheme} from "@mui/material/styles";
 import type {ReactNode} from "react";
-
-import {denseControlFontSize} from "../../app/theme";
 
 // FM-054 (ADR-0014): the mock's `<aside style="flex:0 0 248px;...;
 // padding:18px 16px 40px;">` panel padding, kept as a local layout constant
@@ -84,7 +83,12 @@ export type RefineSurfaceLabels = {
     /** The docked branch's toggle while the rail is collapsed, and the
      *  compact branch's trigger while the drawer is closed. */
     expand: string;
-    /** The header row's own caption, and the compact trigger's visible text. */
+    /**
+     * The compact trigger's visible text -- the button that summons the
+     * drawer, which has to name what it opens. FM-142 (owner request
+     * 2026-08-30): it is no longer also a caption inside the surface's own
+     * header, which is why no branch of the docked column renders it.
+     */
     heading: string;
     /** The landmark's accessible name (`aria-label` on the `nav`). */
     surface: string;
@@ -159,30 +163,32 @@ export function RefineSurface({
      */
     stickyOffset?: number;
     /**
-     * Optional header content between the caption and the header's controls --
+     * Optional header content in the row's left slot, ahead of its controls --
      * ADR-0046's active-filter summary slot. The results page passes nothing:
-     * its "Clear all" disabled state already signals "no active filters".
+     * its clear-all's disabled state already signals "no active filters", and
+     * its header then holds the controls alone, right-aligned.
      */
     summary?: ReactNode;
     testIds: RefineSurfaceTestIds;
 }) {
     const compact = useCompactRefineSurface();
+    // FM-142: icon-only, following `filterControls.tsx`'s numeric-range clear
+    // (FM-088). The 216px inner width of the 248px docked column cannot hold a
+    // text button beside the active-filter summary and the collapse toggle --
+    // FM-137 measured "Clear all" wrapping inside its own button in the
+    // drawer. `ClearAllIcon`, not `CloseIcon`: the drawer's own close button
+    // already carries that one, and the two must not read as the same action.
     const clearAll = (
-        <Button
+        <IconButton
+            aria-label="Clear all filters"
+            color="primary"
             data-testid={testIds.clearAll}
             disabled={clearAllDisabled}
             onClick={onClearAll}
             size="small"
-            sx={{
-                color: "primary.main",
-                fontSize: denseControlFontSize,
-                minWidth: 0,
-                px: 0.5,
-                py: 0.25,
-            }}
         >
-            Clear all
-        </Button>
+            <ClearAllIcon fontSize="small" />
+        </IconButton>
     );
 
     if (compact) {
@@ -242,7 +248,6 @@ export function RefineSurface({
                                     </Button>
                                 </>
                             }
-                            label={labels.heading}
                             summary={summary}
                         />
                         {children}
@@ -314,7 +319,6 @@ export function RefineSurface({
                         </Button>
                     </>
                 }
-                label={collapsed ? undefined : labels.heading}
                 summary={collapsed ? undefined : summary}
             />
             {!collapsed && children}
@@ -322,31 +326,31 @@ export function RefineSurface({
     );
 }
 
+// FM-142 (owner request 2026-08-30): no caption. The row is the consumer's
+// optional summary in the left slot and the chrome controls at the end, and
+// nothing else -- what the surface is is already said by the trigger that
+// opens it and by the sections beneath, and at the 248px docked width a
+// third element is what made FM-137's header wrap.
+//
+// `ml: "auto"` rather than the row's former `justifyContent="space-between"`,
+// because the controls have to sit at the end whether or not a summary
+// precedes them: with no summary (the results page) `space-between` would
+// leave them at the start of the row.
 function RefineHeader({
     actions,
-    label,
     summary,
 }: {
     actions: ReactNode;
-    // Absent only for the collapsed desktop rail, which has room for the
-    // toggle alone.
-    label?: string;
     summary?: ReactNode;
 }) {
     return (
-        <Stack
-            alignItems="center"
-            direction="row"
-            justifyContent="space-between"
-            sx={{mb: 2}}
-        >
-            {label !== undefined && (
-                <Typography component="span" variant="refineSurfaceLabel">
-                    {label}
-                </Typography>
-            )}
+        <Stack alignItems="center" direction="row" sx={{mb: 2}}>
             {summary}
-            <Stack alignItems="center" direction="row" sx={{gap: 0.25}}>
+            <Stack
+                alignItems="center"
+                direction="row"
+                sx={{gap: 0.25, ml: "auto"}}
+            >
                 {actions}
             </Stack>
         </Stack>
