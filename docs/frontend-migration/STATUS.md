@@ -1276,6 +1276,16 @@ corrected (optional): one test doc comment overstates "real jsdom localStorage" 
 a "read once" comment overstates memoization, and the collision suite lacks the empty-string case. Candidates for a future
 quickfix.
 
+FM-158 (Grey's Primary Family Becomes Lightened Logo Green, ADR-0052) moved exactly five grey palette leaves — primary
+main/light/dark (`oklch(0.68/0.75/0.78 0.195 144.6)`, the logo mark's own hue/chroma with lightness measured ≥4.5:1 on all
+three grey grounds), contrastText `#131b13` (6.57:1), and `surfaces.barAccent` — off the uimock teal; focus ring and nav
+accent follow the family, the other themes and grey's role/chart colors are proven byte-identical, and the four test files'
+teal literals were substituted 1:1 with no assertion weakened (reviewer-verified by deleted-line enumeration). Passed
+2026-08-31 with minor findings, not corrected (optional): the handoff's recorded test count is one off the final tree and
+two prose ratios differ in the last digit from an independent recompute. Candidates for a future quickfix. Owner strip
+approval outstanding — including ADR-0052's deferred `info`-color call (frame 04) and the success-vs-primary green
+distinction (frame 05).
+
 ## Active
 
 None.
@@ -1303,7 +1313,7 @@ None.
 
 ## Upcoming
 
-- The 2026-08-31 follow-up batch is complete: FM-156 and FM-157 are done (entries above).
+- The 2026-08-31 follow-up work is complete: FM-156, FM-157, and FM-158 are done (entries above).
 
 - The 2026-08-31 owner-request batch (ADR-0049/0050/0051) is complete: FM-150 through FM-155 are all done (entries above).
 

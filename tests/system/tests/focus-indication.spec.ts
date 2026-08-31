@@ -14,7 +14,7 @@
  * for menu items, real `Enter`/`ArrowDown`) keypresses, records
  * `element.matches(":focus-visible")` for each, and asserts both that the
  * focused/unfocused computed-style delta is non-empty and that the *literal*
- * authored values render -- `outline: 3px solid oklch(0.75 0.1 190)` at a
+ * authored values render -- `outline: 3px solid oklch(0.68 0.195 144.6)` at a
  * `3px` (or, for the three families measured clipped by an ancestor, `-3px`)
  * offset. It asserts computed styles and measured geometry, never a
  * screenshot comparison.
@@ -72,12 +72,20 @@ import type {Locator, Page} from "@playwright/test";
 
 /**
  * The authored token, as `theme.ts` declares it. `palette.primary.main` is the
- * ADR-0009 mock's brand teal and Chromium reports it back verbatim rather than
- * converting it to `rgb()`, so the computed value is asserted as authored.
+ * product's brand green since ADR-0052 (FM-158) -- the logo mark
+ * `rgb(6, 161, 40)`'s own hue and chroma, lifted in lightness for the grey
+ * theme's dark grounds -- replacing the ADR-0009 mock's teal
+ * `oklch(0.75 0.1 190)`. Chromium reports an `oklch()` colour back verbatim
+ * rather than converting it to `rgb()`, so the computed value is asserted as
+ * authored; that round trip was re-verified in Chrome for Testing for this
+ * value.
  */
-const FOCUS_RING_COLOR = "oklch(0.75 0.1 190)";
-/** The same colour, canvas-resolved to sRGB, for the contrast computation. */
-const FOCUS_RING_RGB: [number, number, number] = [85, 194, 188];
+const FOCUS_RING_COLOR = "oklch(0.68 0.195 144.6)";
+/**
+ * The same colour, canvas-resolved to sRGB, for the contrast computation.
+ * Measured in Chrome for Testing rather than converted by hand.
+ */
+const FOCUS_RING_RGB: [number, number, number] = [48, 181, 63];
 const FOCUS_RING_WIDTH = "3px";
 const OUTSET_OFFSET = "3px";
 const INSET_OFFSET = "-3px";

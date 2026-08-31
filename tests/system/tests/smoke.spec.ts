@@ -272,7 +272,7 @@ test.describe("Branded app shell visual evidence", () => {
                 // MUI's AppBar defaults `enableColorOnDark` to `false`, so the
                 // AppBar itself does not render `primary`-colored under
                 // `palette.mode: "dark"`. The real, genuine use of the
-                // branded primary teal as an interactive affordance is the
+                // branded primary green as an interactive affordance is the
                 // current route's own nav item (the default `/` route lands
                 // on "Search", which is active here); assert its actual
                 // rendered color in the real browser, not just its presence.
@@ -283,7 +283,13 @@ test.describe("Branded app shell visual evidence", () => {
                     (element) =>
                         window.getComputedStyle(element).borderBottomColor,
                 );
-                expect(borderBottomColor).toBe("oklch(0.75 0.1 190)");
+                // ADR-0052's re-authored `primary.main`, asserted as the
+                // browser's own *computed* serialization: Chromium reports an
+                // `oklch()` colour back verbatim rather than converting it to
+                // `rgb()`, which is why the authored form is the expected
+                // string here (verified in Chrome for Testing for this value,
+                // as it was for the teal it replaced).
+                expect(borderBottomColor).toBe("oklch(0.68 0.195 144.6)");
 
                 // Width-stability regression coverage (FM-035): selecting a
                 // different destination must only toggle the previously

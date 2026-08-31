@@ -874,3 +874,14 @@ their current presentation. Owner decided 2026-08-31.
 
 The stats disclaimer text moves out of the info-icon popover into a permanently visible, non-dismissible compact info alert at
 the top of the stats section, so every user is guaranteed to see it. Owner decided 2026-08-31.
+
+## ADR-0052 — Grey's primary family becomes lightened logo green (accepted 2026-08-31)
+
+The grey (default) theme's teal primary — inherited byte-for-byte from the uimock (ADR-0008/0009), never a theme decision —
+does not match the brand identity the logo established. Grey's primary main/light/dark and contrast text are re-authored to
+a green in the logo's `rgb(6,161,40)`/`#00640e` family, lifted in lightness for grey's dark ground with measured contrast
+(the FM-156 method); the ADR-0013 focus ring and `surfaces.barAccent` follow the block's primary automatically. Scope is
+the primary family only: `info` (#398da5) and the categorical chart sequence stay — they are semantic/data-encoding colors,
+not brand, and the owner will judge whether `info` needs a follow-up after seeing the result (strip must include a stats
+capture for that call). Dark, bright, and dark-dyschromatopsia are untouched. FM-154's grey invariance pins move for
+exactly the primary-family tokens, superseded by measured assertions, per the FM-156 precedent. Owner decided 2026-08-31.

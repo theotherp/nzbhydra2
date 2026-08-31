@@ -461,9 +461,11 @@ type ThemeColors = {
  * superseded ADR-0007's legacy-grey tokens per ADR-0009's accepted
  * full-mock-fidelity decision. Every value here is carried across from the
  * pre-FM-154 `mockPalette`/`mockSurfaces`/`inputOutline`/chart constants
- * unchanged, and `theme.test.ts` pins that -- with the two exceptions FM-156
- * re-authored under ADR-0049 against measured contrast, `surfaces.mutedText`
- * and `surfaces.selectAllOutline`, each measured at its own line below.
+ * unchanged, and `theme.test.ts` pins that -- with the exceptions re-authored
+ * under ADR-0049 against measured contrast, each measured at its own line
+ * below: `surfaces.mutedText` and `surfaces.selectAllOutline` (FM-156), and
+ * the whole `primary` family plus the `surfaces.barAccent` that restates it
+ * (FM-158, ADR-0052 -- the mock's teal was never this product's brand).
  */
 const greyColors: ThemeColors = {
     mode: "dark",
@@ -480,17 +482,53 @@ const greyColors: ThemeColors = {
         // The mock's muted nav/label color (`<nav>`'s inactive links).
         secondary: "#9aa2a1",
     },
+    /*
+     * ADR-0052. This family was the mock's brand teal
+     * (`oklch(0.75 0.1 190)` and its two lighter variants) -- carried in
+     * byte-for-byte from the uimock under ADR-0008/0009 and never a theme
+     * decision of this application's own. It is the wrong brand: the product's
+     * logo is green (`rgb(6, 161, 40)`, and legacy's `@brand-primary`
+     * `#00640e`), and this is the family every primary button, link, active nav
+     * rail, `surfaces.barAccent` and ADR-0013 focus ring in the default theme
+     * paints.
+     *
+     * Re-authored the way ADR-0035 corrected `error.main` and FM-156 corrected
+     * `surfaces.mutedText`: hue and chroma are carried across from the brand
+     * mark unchanged and only lightness moves. `rgb(6, 161, 40)` decomposes to
+     * `oklch(0.6164 0.1948 144.57)`, so the whole family is authored at
+     * **0.195 / 144.6** -- the logo's own chroma and hue, well above `success`'s
+     * muted 0.11 and below its 150 hue. (The darker logo pair member `#00640e`
+     * is `oklch(0.4367 0.1426 143.8)`: the same family, one shade down.)
+     *
+     * Lightness is measured, not copied. The mark's own 0.616 reaches only
+     * 4.58 / 4.13 / 3.86:1 on this theme's three grounds (`background.default`
+     * `#1f2426`, `background.paper` `#262c2e`, `surfaces.control` `#2a3133`) --
+     * short of WCAG 1.4.3's 4.5:1 on two of them, and this token is a
+     * *foreground* at every text button and link. 0.68 is the first 0.01 step
+     * that clears 4.5:1 on all three by a margin rather than by rounding: at
+     * the worst ground, `surfaces.control`, 0.66 lands on 4.59 and 0.67 on
+     * 4.76, against 0.68's 4.95. It was not pushed further because every step
+     * of lightness spends the separation from `success.main` (0.75) and from
+     * the sixth chart series (0.78) that keeps this green readable as the
+     * brand rather than as a status.
+     */
     primary: {
-        // The mock's brand teal: logo tile, primary "Search" button, active
-        // accents.
-        main: "oklch(0.75 0.1 190)",
-        // The mock's own emphasis variant of the same hue (result action
-        // links).
-        light: "oklch(0.82 0.1 190)",
-        // The mock's `a:hover` variant of the same hue.
-        dark: "oklch(0.85 0.1 190)",
-        // Text drawn on top of the brand teal (`<button>Search</button>`).
-        contrastText: "#0e1c1b",
+        // The brand green: primary "Search" button, active nav rail,
+        // `surfaces.barAccent`, and the ADR-0013 focus ring. 5.86 / 5.29 /
+        // 4.95:1 on `background.default` / `background.paper` /
+        // `surfaces.control` -- WCAG 1.4.3 as text, and far past 1.4.11's 3:1
+        // as the focus-ring and boundary axis.
+        main: "oklch(0.68 0.195 144.6)",
+        // The emphasis variant (result action links), lighter than `main` as
+        // this block's role shape has always had it. 7.56 / 6.83 / 6.38:1.
+        light: "oklch(0.75 0.195 144.6)",
+        // The `a:hover` variant, lighter again. 8.39 / 7.58 / 7.08:1.
+        dark: "oklch(0.78 0.195 144.6)",
+        // Text drawn on top of the brand green (`<button>Search</button>`).
+        // The teal family's `#0e1c1b` was that hue at `oklch(0.213 0.020 190)`;
+        // re-derived is the same near-black rotated onto the new hue,
+        // `oklch(0.213 0.020 144.6)`, measured 6.54:1 on `main`.
+        contrastText: "#131b13",
     },
     // The mock's "all indexers online" status dot.
     success: {main: "oklch(0.75 0.11 150)", contrastText: darkContrastText},
@@ -548,9 +586,10 @@ const greyColors: ThemeColors = {
         // as far apart as that theme's already do.
         mutedText: "#919a98",
         // A dark theme's app bar is `background.paper`, so the accent on it is
-        // the brand teal itself -- the value `AppShell` read as
-        // `primary.main` before this token existed.
-        barAccent: "oklch(0.75 0.1 190)",
+        // the brand green itself -- the value `AppShell` read as
+        // `primary.main` before this token existed, and it follows that token
+        // through ADR-0052's re-authoring.
+        barAccent: "oklch(0.68 0.195 144.6)",
         // FM-156: this block's own `inputOutline` alpha, so the theme states
         // one neutral-edge strength rather than two -- 3.17:1 on the page the
         // sticky select column paints. The `rgba(255, 255, 255, 0.25)` FM-154
@@ -594,8 +633,12 @@ const greyColors: ThemeColors = {
     // above): six oklch hues at the mock's own lightness/chroma band
     // (L 0.72-0.82, C 0.09-0.12), spaced around the hue circle so adjacent
     // series stay distinguishable for the deuteranopia/protanopia range the
-    // `dark-dyschromatopsia` theme exists for -- teal (reuses the brand
-    // primary), amber, violet, rose, blue, and green.
+    // `dark-dyschromatopsia` theme exists for -- teal, amber, violet, rose,
+    // blue, and green. The first entry was the brand primary when this theme's
+    // primary was the mock's teal; ADR-0052 moved the brand to green and left
+    // this sequence alone, because a categorical series colour is a
+    // data encoding rather than a brand accent -- and because moving it onto
+    // the new primary would have put it beside the sixth entry's green.
     charts: [
         "oklch(0.75 0.1 190)",
         "oklch(0.78 0.12 80)",

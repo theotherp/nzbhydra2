@@ -242,8 +242,10 @@ describe("resolveThemeName", () => {
             mutedText: "#919a98",
             // FM-154's one addition to the token set. It is the theme's own
             // `primary.main`, which is what `AppShell` read before the token
-            // existed, so the grey theme's app bar renders exactly as it did.
-            barAccent: "oklch(0.75 0.1 190)",
+            // existed, so the grey theme's app bar renders whatever that
+            // token renders -- ADR-0052's brand green since FM-158, measured
+            // in the block below.
+            barAccent: "oklch(0.68 0.195 144.6)",
             // FM-154's second addition, held byte-identical to the colour
             // `SelectionMenu` composited from `alpha(common.white, 0.25)`
             // until FM-156 raised it to this block's own `inputOutline` alpha
@@ -287,10 +289,15 @@ describe("resolveThemeName", () => {
             expect(theme.palette.background.paper).toBe("#262c2e");
             expect(theme.palette.text.primary).toBe("#d6dad9");
             expect(theme.palette.text.secondary).toBe("#9aa2a1");
-            expect(theme.palette.primary.main).toBe("oklch(0.75 0.1 190)");
-            expect(theme.palette.primary.light).toBe("oklch(0.82 0.1 190)");
-            expect(theme.palette.primary.dark).toBe("oklch(0.85 0.1 190)");
-            expect(theme.palette.primary.contrastText).toBe("#0e1c1b");
+            // ADR-0052 (FM-158): the one family in this block that is no
+            // longer the pre-FM-154 value. The byte pins it used to carry are
+            // superseded by the measured block at the bottom of this file, on
+            // the FM-156 precedent; they are restated here so the "the default
+            // did not drift" claim above still covers every key.
+            expect(theme.palette.primary.main).toBe("oklch(0.68 0.195 144.6)");
+            expect(theme.palette.primary.light).toBe("oklch(0.75 0.195 144.6)");
+            expect(theme.palette.primary.dark).toBe("oklch(0.78 0.195 144.6)");
+            expect(theme.palette.primary.contrastText).toBe("#131b13");
             expect(theme.palette.success.main).toBe("oklch(0.75 0.11 150)");
             expect(theme.palette.warning.main).toBe("oklch(0.76 0.1 70)");
             expect(theme.palette.info.main).toBe("#398da5");
@@ -342,16 +349,18 @@ describe("resolveThemeName", () => {
 });
 
 describe("createHydraTheme base palette", () => {
-    it("should source the base palette from the mock's oklch teal/cyan design", () => {
+    it("should source the base palette from the mock's oklch design, with the brand family re-authored", () => {
         const theme = createHydraTheme("grey", false);
 
         expect(theme.palette.background.default).toBe("#1f2426");
         expect(theme.palette.background.paper).toBe("#262c2e");
         expect(theme.palette.text.primary).toBe("#d6dad9");
         expect(theme.palette.text.secondary).toBe("#9aa2a1");
-        expect(theme.palette.primary.main).toBe("oklch(0.75 0.1 190)");
-        expect(theme.palette.primary.light).toBe("oklch(0.82 0.1 190)");
-        expect(theme.palette.primary.dark).toBe("oklch(0.85 0.1 190)");
+        // ADR-0052: the mock's teal `oklch(0.75 0.1 190)` family is gone from
+        // this role; the logo's green is here instead. Measured below.
+        expect(theme.palette.primary.main).toBe("oklch(0.68 0.195 144.6)");
+        expect(theme.palette.primary.light).toBe("oklch(0.75 0.195 144.6)");
+        expect(theme.palette.primary.dark).toBe("oklch(0.78 0.195 144.6)");
         expect(theme.palette.success.main).toBe("oklch(0.75 0.11 150)");
         expect(theme.palette.warning.main).toBe("oklch(0.76 0.1 70)");
     });
@@ -495,7 +504,7 @@ describe("createHydraTheme base palette", () => {
         // component asks the theme for a translucent or tonal variant of it,
         // which is every `MenuItem`, `Chip`, and hovered `Button`.
         expect(theme.alpha(theme.palette.primary.main, 0.08)).toBe(
-            "oklch(from oklch(0.75 0.1 190) l c h / 0.08)",
+            "oklch(from oklch(0.68 0.195 144.6) l c h / 0.08)",
         );
         expect(theme.palette.success.light).toBe(
             "color-mix(in oklch, oklch(0.75 0.11 150), #fff 20%)",
@@ -518,7 +527,7 @@ describe("createHydraTheme base palette", () => {
         ] as const) {
             expect(theme.palette[role].contrastText).not.toContain("var(--");
         }
-        expect(theme.palette.primary.contrastText).toBe("#0e1c1b");
+        expect(theme.palette.primary.contrastText).toBe("#131b13");
     });
 });
 
@@ -600,7 +609,7 @@ describe("createHydraTheme typography and density", () => {
             paddingTop: 0,
             paddingBottom: 0,
             "&.Mui-focusVisible": {
-                outline: "3px solid oklch(0.75 0.1 190)",
+                outline: "3px solid oklch(0.68 0.195 144.6)",
                 outlineOffset: "3px",
             },
         });
@@ -732,7 +741,7 @@ describe("createHydraTheme typography and density", () => {
             height: 26,
             borderRadius: "999px",
             "&.Mui-focusVisible": {
-                outline: "3px solid oklch(0.75 0.1 190)",
+                outline: "3px solid oklch(0.68 0.195 144.6)",
                 outlineOffset: "3px",
             },
         });
@@ -779,7 +788,7 @@ describe("createHydraTheme typography and density", () => {
                 },
                 "& .MuiChip-deleteIcon": {
                     color: "#919a98",
-                    "&:hover": {color: "oklch(0.82 0.1 190)"},
+                    "&:hover": {color: "oklch(0.75 0.195 144.6)"},
                 },
             },
         ]);
@@ -898,7 +907,7 @@ describe("createHydraTheme typography and density", () => {
         // it renders `palette.primary.main` explicitly instead of the
         // `currentColor` that measured 1.29:1 on `NewsPage`'s bare anchors.
         expect(styles[":focus-visible"]).toEqual({
-            outline: "3px solid oklch(0.75 0.1 190)",
+            outline: "3px solid oklch(0.68 0.195 144.6)",
             outlineOffset: "3px",
         });
         expect(styles["*::-webkit-scrollbar"]).toEqual({width: 11, height: 11});
@@ -1571,5 +1580,227 @@ describe("every theme's measured contrast (ADR-0049)", () => {
         ).toBeLessThan(1.5);
         // Legacy `@text-color: rgb(156, 156, 156)`, verbatim.
         expect(dark.text.primary).toBe("#9c9c9c");
+    });
+});
+
+/*
+ * FM-158 (ADR-0052): grey's primary family is the product's own brand, not the
+ * uimock's.
+ *
+ * The teal `oklch(0.75 0.1 190)` family this replaced came in byte-for-byte
+ * with the rest of the mock under ADR-0008/0009 and was never a decision this
+ * repository took; the product's logo is green (`rgb(6, 161, 40)`, and legacy's
+ * `@brand-primary: #00640e`, which the `bright` theme still states verbatim).
+ * ADR-0052 moves the family, and only the family: `info`, the categorical chart
+ * sequence -- `charts[0]`'s teal included, because a series colour is a data
+ * encoding rather than a brand accent -- and the other three themes stay.
+ *
+ * The FM-154 byte pins for these five values are superseded here rather than
+ * dropped, on the FM-156 precedent: every one of them is restated as a literal
+ * *and* measured, and each measurement is paired with the inverse taken on the
+ * superseded teal, so no case below can go green on a family that never moved.
+ */
+describe("grey's brand-green primary family (FM-158, ADR-0052)", () => {
+    const {palette} = createHydraTheme("grey", false);
+    /** The logo mark, decomposed the way ADR-0035 decomposed `#a33938`. */
+    const logo = rgbToOklch([6 / 255, 161 / 255, 40 / 255]);
+    /** The family this supersedes, kept so the inverses can be measured. */
+    const teal = {
+        main: "oklch(0.75 0.1 190)",
+        light: "oklch(0.82 0.1 190)",
+        dark: "oklch(0.85 0.1 190)",
+        contrastText: "#0e1c1b",
+    };
+    /** The three grounds a primary-coloured foreground renders on. */
+    const grounds = {
+        "background.default": resolveColor(palette.background.default),
+        "background.paper": resolveColor(palette.background.paper),
+        "surfaces.control": resolveColor(palette.surfaces.control),
+    } as const;
+
+    it("should state the re-authored family, hue and chroma carried from the logo mark", () => {
+        expect(palette.primary.main).toBe("oklch(0.68 0.195 144.6)");
+        expect(palette.primary.light).toBe("oklch(0.75 0.195 144.6)");
+        expect(palette.primary.dark).toBe("oklch(0.78 0.195 144.6)");
+        expect(palette.primary.contrastText).toBe("#131b13");
+
+        // `rgb(6, 161, 40)` is `oklch(0.6164 0.1948 144.57)`. Only lightness
+        // was allowed to move, so the assertion is on the two channels that
+        // carry the brand rather than on the strings above alone.
+        for (const value of [
+            palette.primary.main,
+            palette.primary.light,
+            palette.primary.dark,
+        ]) {
+            const [, chroma, hue] = parseOklch(value);
+
+            expect(chroma).toBeCloseTo(logo[1], 2);
+            expect(hue).toBeCloseTo(logo[2], 1);
+            // ADR-0052's band, stated absolutely as well as relatively: inside
+            // the logo pair's own hues and strictly below `success.main`'s 150,
+            // at a chroma no lower than the darker logo member's 0.143 and
+            // well above `success`'s muted 0.11.
+            expect(hue).toBeGreaterThanOrEqual(139);
+            expect(hue).toBeLessThanOrEqual(149);
+            expect(chroma).toBeGreaterThanOrEqual(0.14);
+        }
+        // The inverse. The teal family sits at hue 190 and chroma 0.1, so a
+        // revert fails both bounds rather than passing them quietly.
+        const [, tealChroma, tealHue] = parseOklch(teal.main);
+
+        expect(tealHue).toBeGreaterThan(149);
+        expect(tealChroma).toBeLessThan(0.14);
+    });
+
+    for (const role of ["main", "light", "dark"] as const) {
+        for (const [groundName, ground] of Object.entries(grounds)) {
+            it(`should carry primary.${role} at WCAG 1.4.3 on ${groundName}`, () => {
+                // Measured -- main 5.86 / 5.29 / 4.95:1, light 7.56 / 6.83 /
+                // 6.38:1, dark 8.39 / 7.58 / 7.08:1 on `background.default`,
+                // `background.paper` and `surfaces.control`. All three are
+                // painted as text (links and text buttons), so the axis is
+                // 1.4.3's 4.5:1 rather than 1.4.11's 3:1.
+                expect(
+                    contrastRatio(
+                        compositeOver(palette.primary[role], ground),
+                        ground,
+                    ),
+                ).toBeGreaterThanOrEqual(4.5);
+            });
+        }
+    }
+
+    it("should clear the focus-ring and boundary axis on every grey ground", () => {
+        for (const ground of Object.values(grounds)) {
+            expect(
+                contrastRatio(
+                    compositeOver(palette.primary.main, ground),
+                    ground,
+                ),
+            ).toBeGreaterThanOrEqual(3);
+        }
+    });
+
+    it("should reject the logo's own lightness, which is what made this a measurement", () => {
+        // The mark carried across unlifted (`oklch(0.616 0.195 144.6)`)
+        // measures 4.58 / 4.13 / 3.86:1 -- short of 4.5:1 on two of the three
+        // grounds. This is the case that makes 0.68 a derived value rather
+        // than a taste, and it is asserted so that a later "use the logo
+        // colour verbatim" edit fails here with the reason.
+        const unlifted = "oklch(0.616 0.195 144.6)";
+        const short = Object.values(grounds).filter(
+            (ground) =>
+                contrastRatio(compositeOver(unlifted, ground), ground) < 4.5,
+        );
+
+        expect(short).toHaveLength(2);
+        expect(parseOklch(palette.primary.main)[0]).toBeGreaterThan(
+            parseOklch(unlifted)[0],
+        );
+    });
+
+    it("should keep the block's role shape, both variants lighter than main", () => {
+        const [mainL] = parseOklch(palette.primary.main);
+        const [lightL] = parseOklch(palette.primary.light);
+        const [darkL] = parseOklch(palette.primary.dark);
+
+        // A dark theme's emphasis and hover variants go *up* in lightness, as
+        // the teal family's 0.75 / 0.82 / 0.85 did. The shape is asserted, not
+        // the steps, so a future retune may move the values without silently
+        // inverting the roles.
+        expect(lightL).toBeGreaterThan(mainL);
+        expect(darkL).toBeGreaterThan(lightL);
+    });
+
+    it("should pair the re-derived contrast text with the new main", () => {
+        const main = resolveColor(palette.primary.main);
+
+        // 6.54:1. `#0e1c1b` was the teal hue at `oklch(0.213 0.020 190)`;
+        // `#131b13` is that same near-black rotated onto the new hue, so the
+        // pairing is re-derived rather than inherited -- even though the old
+        // value happens to still clear the bar, which is exactly why the
+        // hue check below is asserted alongside the ratio.
+        expect(
+            contrastRatio(
+                compositeOver(palette.primary.contrastText, main),
+                main,
+            ),
+        ).toBeGreaterThanOrEqual(4.5);
+        const [, , contrastHue] = rgbToOklch(
+            hexToRgb(palette.primary.contrastText),
+        );
+
+        expect(
+            Math.abs(contrastHue - parseOklch(teal.main)[2]),
+        ).toBeGreaterThan(20);
+        // White is not an option on this main (2.69:1), which is the pairing a
+        // careless "just use #fff" would reach for.
+        expect(contrastRatio(main, [1, 1, 1])).toBeLessThan(4.5);
+    });
+
+    it("should stay distinguishable from grey's other greens", () => {
+        // The two greens already in this palette: `success.main`
+        // `oklch(0.75 0.11 150)` (status dots) and `charts[5]`
+        // `oklch(0.78 0.11 140)`. The brand green is separated from both on
+        // lightness *and* chroma -- 0.070 / 0.085 against success and
+        // 0.100 / 0.085 against the chart series -- which is what keeps a
+        // "succeeded" dot from reading as a brand accent beside a primary
+        // button. The binding judgement is the owner's strip approval
+        // (ADR-0052); this pins the arithmetic behind it.
+        const [mainL, mainC] = parseOklch(palette.primary.main);
+
+        for (const other of [
+            palette.success.main,
+            palette.charts.categorical[5],
+        ]) {
+            const [otherL, otherC] = parseOklch(other);
+
+            expect(Math.abs(mainL - otherL)).toBeGreaterThanOrEqual(0.05);
+            expect(mainC - otherC).toBeGreaterThanOrEqual(0.05);
+        }
+    });
+
+    it("should carry the app bar accent and the focus ring with the family", () => {
+        // Neither is a second declaration of the colour: `surfaces.barAccent`
+        // restates `primary.main` (ADR-0049 keeps every colour in the block),
+        // and the ADR-0013 ring reads it off the theme. Asserted through the
+        // rendered rule rather than through the token, so a ring that stopped
+        // following the palette would fail here.
+        expect(palette.surfaces.barAccent).toBe(palette.primary.main);
+        const baseline = (
+            createHydraTheme("grey", false).components?.MuiCssBaseline
+                ?.styleOverrides as (
+                theme: unknown,
+            ) => Record<string, Record<string, string>>
+        )(createHydraTheme("grey", false));
+
+        expect(baseline[":focus-visible"].outline).toBe(
+            `3px solid ${palette.primary.main}`,
+        );
+        // The inverse: none of the five values is the superseded teal.
+        for (const [key, superseded] of Object.entries(teal)) {
+            expect(palette.primary[key as keyof typeof teal]).not.toBe(
+                superseded,
+            );
+        }
+        expect(palette.surfaces.barAccent).not.toBe(teal.main);
+    });
+
+    it("should leave the data-encoding teal and the other themes' primaries alone", () => {
+        // ADR-0052's scope line, enforced: the chart sequence's first series is
+        // still the teal literal, and the three other themes' primaries are
+        // untouched by a change made to the grey block.
+        expect(palette.charts.categorical[0]).toBe(teal.main);
+        expect(palette.info.main).toBe("#398da5");
+        expect(createHydraTheme("bright", false).palette.primary.main).toBe(
+            "#00640e",
+        );
+        expect(createHydraTheme("dark", false).palette.primary.main).toBe(
+            "#9aa6ac",
+        );
+        expect(
+            createHydraTheme("dark-dyschromatopsia", false).palette.primary
+                .main,
+        ).toBe("#78909c");
     });
 });

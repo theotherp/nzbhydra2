@@ -287,21 +287,21 @@ describe("AppShell", () => {
         );
 
         // Real, non-vacuous evidence that the theme's `primary.main` (the
-        // mock's teal `oklch(0.75 0.1 190)`) is genuinely rendered as an
-        // interactive affordance, not just declared in theme.ts: the active
-        // item's own computed border color resolves to the theme's actual
-        // brand color, and the inactive item does not get it.
+        // logo's green `oklch(0.68 0.195 144.6)` since ADR-0052) is genuinely
+        // rendered as an interactive affordance, not just declared in theme.ts:
+        // the active item's own computed border color resolves to the theme's
+        // actual brand color, and the inactive item does not get it.
         const activeLink = screen.getByRole("link", {name: "History & Stats"});
         expect(activeLink).toHaveAttribute("aria-current", "page");
         expect(window.getComputedStyle(activeLink).borderBottomColor).toBe(
-            "oklch(0.75 0.1 190)",
+            "oklch(0.68 0.195 144.6)",
         );
 
         const inactiveLink = screen.getByRole("link", {name: "Search"});
         expect(inactiveLink).not.toHaveAttribute("aria-current");
         expect(
             window.getComputedStyle(inactiveLink).borderBottomColor,
-        ).not.toBe("oklch(0.75 0.1 190)");
+        ).not.toBe("oklch(0.68 0.195 144.6)");
     });
 
     it("should reserve identical border and label geometry for a nav item whether it is active or inactive", () => {
@@ -498,7 +498,7 @@ describe("AppShell theme selector", () => {
         const active = () =>
             screen.getByRole("link", {name: "History & Stats"});
         expect(window.getComputedStyle(active()).borderBottomColor).toBe(
-            "oklch(0.75 0.1 190)",
+            "oklch(0.68 0.195 144.6)",
         );
 
         openSelector();
