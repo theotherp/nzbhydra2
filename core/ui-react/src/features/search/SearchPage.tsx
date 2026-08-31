@@ -34,6 +34,7 @@ import {
 } from "../../api/search";
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
+import {useSafeConfig} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
 import {createCategoryCatalog} from "../../domain/categories/catalog";
 import {recentSearchCriteria} from "./history/recentSearchCriteria";
@@ -67,7 +68,8 @@ export function SearchPage({
         );
     const navigate = useNavigate({from: "/"});
     const search = useSearch({strict: false});
-    const catalog = createCategoryCatalog(bootstrap.safeConfig);
+    const safeConfig = useSafeConfig(bootstrap);
+    const catalog = createCategoryCatalog(safeConfig);
     const [refillCriteria, setRefillCriteria] =
         useState<Record<string, string>>();
     const [draggedRecentSearch, setDraggedRecentSearch] =
@@ -258,7 +260,7 @@ export function SearchPage({
             if (activeSubmission.current === submission) {
                 setState({loading: false, data, request});
                 setRecentRefreshKey((key) => key + 1);
-                if (isEmbyConfigured(bootstrap.safeConfig)) {
+                if (isEmbyConfigured(safeConfig)) {
                     void checkEmbyAvailability(
                         transport,
                         values,
@@ -444,7 +446,7 @@ export function SearchPage({
                 }
                 showIndexerSelection={bootstrap.showIndexerSelection === true}
                 indexerSelectionAsCheckboxes={isCheckboxIndexerSelection(
-                    bootstrap.safeConfig,
+                    safeConfig,
                 )}
                 onSearchDrop={() => {
                     if (draggedRecentSearch) {

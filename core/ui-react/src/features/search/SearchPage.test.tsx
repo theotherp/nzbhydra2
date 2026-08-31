@@ -20,6 +20,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import {ApiTransport} from "../../api/transport";
+import {SafeConfigContext} from "../../bootstrap";
 import type {
     SearchLiveTransport,
     SearchProgress,
@@ -315,6 +316,54 @@ describe("SearchPage", () => {
         );
         fireEvent.click(screen.getByTestId("search-submit"));
         expect(searchRequestCalls(fetchImplementation)).toHaveLength(0);
+    });
+
+    it("should search with an indexer added to the live safe config after mount", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        const page = (liveConfig: Record<string, unknown>) => (
+            <SafeConfigContext.Provider value={liveConfig}>
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />
+            </SafeConfigContext.Provider>
+        );
+        const rendered = render(page(bootstrap.safeConfig));
+        // ADR-0017: a config save invalidates the safe-config query; the page
+        // must pick the new indexer up from the context without a reload.
+        rendered.rerender(
+            page({
+                ...bootstrap.safeConfig,
+                indexers: [
+                    ...bootstrap.safeConfig.indexers,
+                    {name: "Added", preselect: true},
+                ],
+            }),
+        );
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "query"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toMatchObject({
+            indexers: ["Added", "Configured"],
+        });
     });
 
     it("should refill and repeat complete recent criteria while reconciling unavailable indexers", async () => {

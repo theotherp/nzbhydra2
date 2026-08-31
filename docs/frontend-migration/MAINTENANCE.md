@@ -2843,3 +2843,10 @@ their text and relative order are unchanged.
 - **Paths:** `tests/system/.prettierignore`
 - **Gates:** `npx prettier --check tests` clean.
 - **Commit:** `7f80a155a`
+
+### 2026-08-31 — Read the live safe config on the search page (stale indexer catalog)
+
+- **Why not a packet:** one contained bugfix in a single module (`SearchPage.tsx` swapped three `bootstrap.safeConfig` reads for the ADR-0017 `useSafeConfig` value), with a regression test observed failing before and passing after.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
+- **Gates:** in `core/ui-react`: `typecheck` clean; `lint` 0 errors (15 pre-existing warnings); `format:check` clean; `test -- --run` 1559 passed; `build` green; `check:api` current; `validate:migration` valid. Repo root: `git diff --check` clean.
+- **Commit:** `c86b5882c`
