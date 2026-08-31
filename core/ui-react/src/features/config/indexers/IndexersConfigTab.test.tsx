@@ -904,6 +904,28 @@ describe("The edit modal transaction", () => {
         expect(screen.getByTestId("config-indexer-dialog")).toBeVisible();
     });
 
+    it("puts the caret on the first invalid setting when a draft is refused", async () => {
+        renderIndexers({
+            fetchMock: backend().fetchMock,
+            values: configWith([newznab({name: "Mock1"})]),
+        });
+
+        await openEntry(0);
+        fireEvent.change(draftField("name"), {target: {value: ""}});
+        // The caret is somewhere else entirely, as it is after editing any of
+        // the ~30 settings below the name -- which is the state in which the
+        // toast alone tells the admin nothing about where the problem is.
+        draftField("score").focus();
+        submitDialog();
+
+        expect(
+            await screen.findByText(
+                "Config invalid. Please check your settings.",
+            ),
+        ).toBeVisible();
+        await waitFor(() => expect(draftField("name")).toHaveFocus());
+    });
+
     it("offers the other indexers' group names as suggestions", async () => {
         renderIndexers({
             values: configWith([

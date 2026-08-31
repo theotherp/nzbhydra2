@@ -27,6 +27,7 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {
     connectionSettingsChanged,
     downloaderEntry,
@@ -194,6 +195,10 @@ export function DownloaderDialog({
                 message: "Config invalid. Please check your settings.",
                 severity: "error",
             });
+            // The toast names nothing and does not last; on a long dialog the
+            // setting it is about is usually scrolled out of view. Putting the
+            // caret on it is what actually shows the admin where to look.
+            focusFirstInvalidField(draft.control);
             return;
         }
         const committed = await checkBeforeClose(draftValues());

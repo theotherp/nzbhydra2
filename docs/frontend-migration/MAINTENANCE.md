@@ -3031,3 +3031,59 @@ their text and relative order are unchanged.
 - **Gates (batch-final set):** full vitest 1714/1714 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The new coalescing case observed red first — 2 synchronous measurements for 2 observer deliveries.
 - **Commit:** `ea350d559`
 - **Note:** the sticky `results-toolbar`'s height is tracked by a `MutationObserver` over `{characterData, childList, subtree}`, but the toolbar's own text carries the "N of M loaded / N filtered / N selected" counters — so every checkbox click and every committed filter change ran a callback that calls `getBoundingClientRect()`, forcing a synchronous reflow. The mutation-driven measure now goes through one `requestAnimationFrame` per burst (`ConfigNav.tsx`'s scroll-handler shape), with a direct-measure fallback where `rAF` is unavailable and a frame cancel in the effect's cleanup. The initial measure, `document.fonts.ready` and the `ResizeObserver` still measure directly, so the reason the observer exists — the action row's `<Select>`s populating asynchronously — is unchanged.
+
+### 2026-08-31 — Bring a config save rejection on screen and put focus on it
+
+- **Why not a packet:** one behavior on one existing feature's error path, two modules, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigFeedbackBanner.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `ConfigShell.test.tsx` + `ConfigFeedbackBanner.test.tsx` 68/68 (the new case observed red first — focus stayed on `<body>` and the banner never took it); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `0c6d57c3d`
+- **Note:** the sticky bar deliberately holds Save at every scroll position, but the report a refusal produces renders in flow at the top of the config area, so a save pressed from the bottom of a long tab changed nothing visible except an 8px dot in the settings nav. The banner now exposes its error alert through an optional `errorRef` and makes it programmatically focusable (`tabIndex={-1}`, out of the tab order — it is a report, not a control); the shell scrolls to it and focuses it when one appears. Plain `scrollIntoView({block: "start"})`: there is no `prefers-reduced-motion` convention in the repository to follow, and the feature's one other call site (`useSettingsNavigation`) is unqualified too. Deliberately skipped while FM-100's review panel is open — the report is then the raised portal layer inside the panel's own `FocusTrap`, which is the cross-module focus question already recorded in this ledger.
+
+### 2026-08-31 — Focus the first invalid field when a config editor dialog refuses a draft
+
+- **Why not a packet:** one behavior on an existing refusal path, mechanically identical at all five call sites (one call plus its import), shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** new `core/ui-react/src/features/config/invalidFieldFocus.ts`; `indexers/IndexerDialog.tsx`, `downloading/DownloaderDialog.tsx`, `external-tools/ExternalToolDialog.tsx`, `categories/CategoryDialog.tsx`, `auth/UserDialog.tsx` (all under `core/ui-react/src/features/config/`); `indexers/IndexersConfigTab.test.tsx`
+- **Gates:** `IndexersConfigTab.test.tsx` plus the downloading, external-tools, categories and auth config suites, 227/227 across 8 files (the new case observed red first — the caret stayed on the score field); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `d07bc52cf`
+- **Note:** one commit for five dialogs because the change is the same mechanical shape in each. Two things were measured rather than assumed. The error's own `ref` is used instead of `setFocus(path)`, which throws for a path the form has not registered. And the tree is read from `control._formState` rather than from the rendered `formState`: the caller stands in the tick right after `await trigger()`, before React has re-rendered, so against the rendered snapshot the walk sees an empty error tree and focuses nothing — that was the first attempt here, and the regression test caught it.
+
+### 2026-08-31 — Ask before the config save bar's Discard throws every edit away
+
+- **Why not a packet:** one interaction on one existing control, through the confirmation service this same file already uses twice, shipping regression tests; no capability, contract, API, or persisted-data change, and the only `data-testid` involved is the one the new dialog introduces.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `ConfigShell.test.tsx` 58/58 (both discard cases observed red first — no `config-discard-changes` dialog appeared at all); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `bd367ff32`
+- **Note:** Discard sat beside Save with nothing between them and discarded every edit on every tab on one click, while the navigation guard asked a three-way question about the same loss. The new confirmation is two-answer, not three: the admin declined "save instead" by not pressing Save. The guard's own Discard answer still resets directly — it has already asked — so both paths keep sharing the one `discardChanges` definition.
+
+### 2026-08-31 — Keep config edits typed while a save was in flight
+
+- **Why not a packet:** one hook, no rendering change, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/config/useConfigSave.ts`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `test --run src/features/config/` 625/625 across 26 files (the new case observed red first — the field held `normalized-by-server` and the typed value was gone); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `eff429c13`
+- **Note:** only the Save button goes disabled during the PUT, so the form stays editable while the request is out, and the success path's `form.reset(savedResponse)` overwrote anything typed after Save — silent data loss on a slow connection. Of the two candidate fixes, keeping the edits beat disabling the form: a `<fieldset disabled>` does not reach MUI's non-native controls (a `Select`'s own surface stays clickable) and a busy overlay is a rendering change, hence a packet. The reset stays — `defaultValues` must become the server's normalized, re-masked copy — and a leaf-path diff between a submit-time snapshot and the form as it stands when the answer arrives is re-applied over it with `shouldDirty`. The snapshot has to be deep-cloned: `getValues()` spreads the form's value object only one level, so every section below it is the live object React Hook Form keeps writing keystrokes into, and without the clone the diff always finds nothing. That was the first attempt here, and the regression test caught it.
+
+### 2026-08-31 — Return to the top of the page when a config tab is opened
+
+- **Why not a packet:** one effect in one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `test --run src/features/config/` 626/626 across 26 files (the new case observed red first — `scrollTo` was never called); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `36e8eea9c`
+- **Note:** nothing in the application resets scroll on a route change — there is no `ScrollRestoration` and no scroll handling in `src/app/` or `src/router.tsx` — and the config tabs differ in length by an order of magnitude, so leaving the bottom of Searching for Categories left the viewport at an arbitrary offset. Kept config-scoped on purpose: a router-level `ScrollRestoration` is a decision about every route in the application, which is a packet. A layout effect rather than a passive one, so it can never land on top of FM-099's settings navigation, which scrolls to a specific row from a passive effect or a timer — every layout effect in a commit runs before any passive effect in it. Guarded on `window.scrollY !== 0`, which is both honest and what keeps jsdom's unimplemented `scrollTo` out of every test that merely switches tabs. The fieldset scrollspy and the "on this page" list assume window scrolling and are untouched — this scrolls the same window.
+
+### 2026-08-31 — Offer a retry when the configuration cannot be loaded
+
+- **Why not a packet:** one branch of one component, shipping a regression test; no capability, contract, API, or persisted-data change, and the only `data-testid` involved is the one the new control introduces.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates (batch-final set):** full vitest 1720/1720 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The new case observed red first — no `config-load-retry` element existed.
+- **Commit:** `f5d740102`
+- **Note:** the error branch was a static `Alert`, so a failed `GET /internalapi/config` — the backend still starting, a dropped connection — left the whole configuration area dead with a browser reload as the only way out. The alert now carries a Retry action wired to the query's own `refetch()`, disabled while a fetch is in flight so it cannot be queued twice.
+
+### 2026-08-31 — Stop refetching every query when the window regains focus
+
+- **Why not a packet:** one client-wide default plus a mechanical move of one constant and its three references, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** new `core/ui-react/src/app/queryDefaults.ts`; `core/ui-react/src/App.tsx`, `core/ui-react/src/App.test.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run` on `App.test.tsx`, `SearchPage.test.tsx` and `StatsDashboardPage.test.tsx` 71/71 across 3 files. The new focus case observed red first — 2 indexer-status reads where 1 was expected.
+- **Commit:** `bbd4fd194`
+- **Note:** react-query's `refetchOnWindowFocus` defaults to `true` and nothing overrode it at the client level, so any query past `DEFAULT_QUERY_STALE_TIME_MS` refetched on focus — alt-tabbing back to a history page re-POSTed the page read *and* its COUNT and moved the table under the pointer, for an action the reader never took. Legacy never did this, and every page that can go stale already carries a Refresh control. The same commit closes the `App` → `router` → `SearchPage` → `App` import cycle noted in the recent-searches entry above: `DEFAULT_QUERY_STALE_TIME_MS` now lives in a leaf module with no imports of its own, so the lazy-read-inside-`useState` comment that made the cycle safe is gone rather than merely justified. The test drives the real application and dispatches the `visibilitychange` event on `window`, which is what `focusManager` actually subscribes to — a `document` dispatch does not reach it, and that first attempt passed against the unfixed tree.

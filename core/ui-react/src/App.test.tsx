@@ -185,6 +185,40 @@ describe("App", () => {
         expect(backend.indexerStatusCalls()).toBe(1);
     });
 
+    /*
+     * react-query's own `refetchOnWindowFocus` default is `true`, so every
+     * query that does not pin the option refetched the moment the tab was
+     * focused again with its data stale -- alt-tabbing back to a history page
+     * re-issued the page read and its COUNT and jumped the layout for an
+     * action the reader never took. Legacy never did this. Asserted from the
+     * application rather than from the client object because what matters is
+     * the default the mounted client actually carries.
+     */
+    it("should not refetch a stale query when the window regains focus", async () => {
+        stubWorkingLocalStorage();
+        const backend = statsBackend();
+        vi.stubGlobal("fetch", backend.fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        expect(backend.indexerStatusCalls()).toBe(1);
+
+        // Well past `DEFAULT_QUERY_STALE_TIME_MS`, so the entry is stale and
+        // a focus refetch is the only thing that could issue a second read.
+        const frozen = Date.now() + 5 * 60_000;
+        vi.spyOn(Date, "now").mockReturnValue(frozen);
+        // `focusManager` subscribes to `visibilitychange` on `window`, and
+        // jsdom reports `visibilityState: "visible"`, so this is exactly the
+        // event a tab regaining focus delivers.
+        await act(async () => {
+            window.dispatchEvent(new Event("visibilitychange"));
+        });
+        await settle();
+
+        expect(backend.indexerStatusCalls()).toBe(1);
+    });
+
     it("should render the application loading convention", () => {
         render(<App bootstrap={bootstrap} isLoading />);
 

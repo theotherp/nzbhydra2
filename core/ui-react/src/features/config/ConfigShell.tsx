@@ -1,6 +1,7 @@
 import {
     Alert,
     Box,
+    Button,
     CircularProgress,
     Portal,
     Stack,
@@ -10,7 +11,7 @@ import {
 } from "@mui/material";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {Outlet, useBlocker, useLocation} from "@tanstack/react-router";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {FormProvider, useForm} from "react-hook-form";
 
 import {
@@ -89,7 +90,26 @@ export function ConfigShell({transport}: {transport: ApiTransport}) {
     }
     if (query.isError) {
         return (
-            <Alert severity="error" sx={{my: 3}}>
+            // The only way out of this used to be a browser reload, which for
+            // a transient failure -- the backend still starting, a dropped
+            // connection -- is a heavier act than the one that failed. The
+            // query already knows how to run again, so the recovery is a
+            // button on the report rather than a page load.
+            <Alert
+                action={
+                    <Button
+                        color="inherit"
+                        data-testid="config-load-retry"
+                        disabled={query.isFetching}
+                        onClick={() => void query.refetch()}
+                        size="small"
+                    >
+                        Retry
+                    </Button>
+                }
+                severity="error"
+                sx={{my: 3}}
+            >
                 Unable to load the configuration.
             </Alert>
         );
@@ -139,6 +159,28 @@ function ConfigForm({
     // registering through `<Outlet />` and `ConfigNav` reading the result are
     // both reachable from here and nowhere narrower.
     const fieldsetNav = useFieldsetNav();
+    // Switching tabs is arriving somewhere new, so it starts at the top. The
+    // config tabs differ in length by an order of magnitude, and without this
+    // leaving the bottom of Searching for Categories dropped the admin into
+    // whatever happened to be at that offset -- often past the end of the
+    // whole tab.
+    //
+    // A layout effect, not a passive one: FM-099's settings navigation aims at
+    // a specific row and scrolls to it from a passive effect (or, once the
+    // anchor is being polled for, from a timer). Every layout effect in a
+    // commit runs before any passive effect in it, so this can never land on
+    // top of that scroll.
+    //
+    // Config-scoped on purpose. A `ScrollRestoration` at the router would be a
+    // decision about every route in the application, which is a packet.
+    useLayoutEffect(() => {
+        // Nothing to do when the page is already there -- and this is what
+        // keeps jsdom, whose `scrollTo` is unimplemented and whose `scrollY`
+        // is always 0, quiet in every test that merely switches tabs.
+        if (window.scrollY !== 0) {
+            window.scrollTo({top: 0});
+        }
+    }, [pathname]);
     const {dirtyFields, errors, isDirty} = form.formState;
     // Derived from the same RHF state the sticky bar's own dirty branch reads,
     // so a section badge can never disagree with the bar's summary. Recomputed
@@ -174,6 +216,33 @@ function ConfigForm({
     // means the error tree holds at least one entry, so this is the same
     // answer the banner reaches by walking that tree.
     const hasErrorReport = errorMessages.length > 0 || refusedBySelf;
+
+    // A save rejection has to reach the admin wherever they pressed Save. The
+    // sticky bar puts Save at every scroll position, but the report renders at
+    // the top of the page: from the bottom of a long tab, a refused save
+    // otherwise changes nothing on screen but an 8px dot in the nav. So the
+    // report is scrolled to and takes focus when it appears — which also
+    // announces it, since it is what the reading position lands on.
+    //
+    // Not while FM-100's panel is open: the report is then the raised layer
+    // below, inside the panel's `FocusTrap`, and stealing focus out of a trap
+    // is the cross-module question `MAINTENANCE.md` already records.
+    const errorReportRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!hasErrorReport || reviewOpen) {
+            return;
+        }
+        const node = errorReportRef.current;
+        if (node === null) {
+            return;
+        }
+        // jsdom implements no layout and therefore no `scrollIntoView`; the
+        // same guard `useSettingsNavigation` uses, for the same reason.
+        if (typeof node.scrollIntoView === "function") {
+            node.scrollIntoView({block: "start"});
+        }
+        node.focus({preventScroll: true});
+    }, [hasErrorReport, reviewOpen]);
 
     const dismissErrorReport = useCallback(() => {
         clearFeedback();
@@ -239,6 +308,28 @@ function ConfigForm({
             queryClient.getQueryData<ConfigValues>(CONFIG_QUERY_KEY) ??
                 initialConfig,
         );
+    };
+
+    // The bar's Discard, unlike the guard's, is a click on a button that sits
+    // beside Save with nothing between the two: one mis-aimed press threw away
+    // every edit on every tab, irrecoverably. The guard asks a three-way
+    // question about exactly the same loss, so asking here is not a new
+    // ceremony — it is the same question, minus the "save instead" answer the
+    // admin already declined by not pressing Save.
+    const confirmDiscard = async () => {
+        const answer = await dialogs.confirm({
+            title: "Discard changes",
+            message:
+                dirtyCount === 1
+                    ? "Your 1 unsaved setting will be restored to the saved configuration."
+                    : `Your ${String(dirtyCount)} unsaved settings will be restored to the saved configuration.`,
+            confirmLabel: "Discard",
+            cancelLabel: "Cancel",
+            testId: "config-discard-changes",
+        });
+        if (answer === "confirmed") {
+            discardChanges();
+        }
     };
 
     useBlocker({
@@ -326,7 +417,7 @@ function ConfigForm({
                         <ConfigSaveBar
                             dirty={isDirty}
                             dirtyCount={dirtyCount}
-                            onDiscard={discardChanges}
+                            onDiscard={() => void confirmDiscard()}
                             onReviewChanges={() => setReviewOpen(true)}
                             saving={saving}
                             search={
@@ -349,6 +440,7 @@ function ConfigForm({
                             errorMessages={
                                 reviewOpen ? NO_MESSAGES : errorMessages
                             }
+                            errorRef={errorReportRef}
                             invalidErrors={
                                 reviewOpen ? undefined : invalidErrors
                             }

@@ -14,6 +14,7 @@ import {
     TextSetting,
     textValue,
 } from "../components";
+import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {
     userDraftFieldPath,
     userLegend,
@@ -108,6 +109,11 @@ export function UserDialog({
                     onClick={() => {
                         void (async () => {
                             if (!(await draft.trigger())) {
+                                // This dialog does not even growl, so without
+                                // this the Save button is simply inert. The
+                                // caret on the offending field is the whole
+                                // report.
+                                focusFirstInvalidField(draft.control);
                                 return;
                             }
                             onSubmit(

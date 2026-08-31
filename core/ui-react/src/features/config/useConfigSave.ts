@@ -1,6 +1,6 @@
 import {useQueryClient} from "@tanstack/react-query";
 import {useCallback, useState} from "react";
-import type {UseFormReturn} from "react-hook-form";
+import type {Path, UseFormReturn} from "react-hook-form";
 
 import {CONFIG_QUERY_KEY, getConfig, saveConfig} from "../../api/config/config";
 import {SAFE_CONFIG_QUERY_KEY} from "../../api/config/safeConfig";
@@ -50,7 +50,10 @@ export type ConfigSaveController = {
  * - success -> the form resets from `newConfig`, never from what was
  *   submitted: the server normalizes the config and re-masks secrets before
  *   returning it (`ConfigWeb.java:96`,
- *   `SensitiveDataConfigValidator.prepareForDisplay`);
+ *   `SensitiveDataConfigValidator.prepareForDisplay`) -- but an edit made
+ *   *while* the request was in flight is put back over that copy, because the
+ *   form stays editable during the save and the server's answer is not about
+ *   it;
  * - `restartNeeded` -> hands over to `C-RESTART-COORDINATOR`;
  * - a transport failure -> an error toast, never a silent success.
  *
@@ -83,8 +86,19 @@ export function useConfigSave({
         // longer exists; a report never outlives the next attempt.
         setFeedback(null);
         let result;
+        // What is being sent. Kept because the form stays editable while the
+        // request is in flight (the sticky bar only disables Save), so
+        // anything typed after this point is *not* part of what the server is
+        // answering about and must survive the re-baselining below.
+        //
+        // Deep-cloned, and that is load-bearing: `getValues()` spreads the
+        // form's own value object one level deep, so every section below it
+        // is the *live* object React Hook Form goes on writing keystrokes
+        // into. Without the clone this snapshot follows the form and the
+        // comparison below always finds nothing (measured).
+        const submitted = structuredClone(form.getValues());
         try {
-            result = await saveConfig(transport, form.getValues());
+            result = await saveConfig(transport, submitted);
         } catch (error) {
             toasts.showToast({
                 message: saveFailureMessage(error),
@@ -110,7 +124,22 @@ export function useConfigSave({
 
         const saved = result.newConfig ?? (await getConfig(transport));
         queryClient.setQueryData(CONFIG_QUERY_KEY, saved);
+        // Anything the admin typed while the request was in flight, taken
+        // before the reset wipes it. The reset itself is not optional -- the
+        // server normalizes the config and re-masks secrets, and
+        // `defaultValues` has to become that copy or the review panel and the
+        // discard both compare against a config that no longer exists.
+        const pending = changedLeaves(submitted, form.getValues());
         form.reset(saved);
+        for (const [path, value] of pending) {
+            // `shouldDirty` is what puts the edit back into the dirty summary
+            // and the unsaved-changes guard; React Hook Form still resolves
+            // it against the new `defaultValues`, so an edit that happens to
+            // match what the server saved is correctly not dirty.
+            form.setValue(path as Path<ConfigValues>, value as never, {
+                shouldDirty: true,
+            });
+        }
         await queryClient.invalidateQueries({queryKey: SAFE_CONFIG_QUERY_KEY});
 
         if (result.warningMessages.length > 0) {
@@ -145,6 +174,46 @@ export function useConfigSave({
     const clearFeedback = useCallback(() => setFeedback(null), []);
 
     return {clearFeedback, feedback, save};
+}
+
+/**
+ * The leaf paths at which `after` differs from `before`, with their values in
+ * `after`.
+ *
+ * A "leaf" is anything that is not a plain object: a scalar, `null`, or a
+ * whole array. Arrays are compared and carried whole because the config's
+ * arrays are lists of entries that the list editors replace wholesale
+ * (indexers, downloaders, users), so half of a changed list is never a
+ * meaningful thing to put back.
+ *
+ * A key present in `before` and gone from `after` is not reported: that is not
+ * something the admin typed, and the form does not drop keys.
+ */
+function changedLeaves(
+    before: unknown,
+    after: unknown,
+    prefix = "",
+): [string, unknown][] {
+    if (!isPlainRecord(before) || !isPlainRecord(after)) {
+        return JSON.stringify(before) === JSON.stringify(after)
+            ? []
+            : [[prefix, after]];
+    }
+    const changed: [string, unknown][] = [];
+    for (const [key, value] of Object.entries(after)) {
+        changed.push(
+            ...changedLeaves(
+                before[key],
+                value,
+                prefix === "" ? key : `${prefix}.${key}`,
+            ),
+        );
+    }
+    return changed;
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function saveFailureMessage(error: unknown): string {

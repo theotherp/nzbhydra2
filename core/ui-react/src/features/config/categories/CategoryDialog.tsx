@@ -14,6 +14,7 @@ import {
     AdvancedDisclosureContext,
     NO_ADVANCED_DISCLOSURE,
 } from "../components/advancedDisclosure";
+import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {CategoryEntryFields} from "./CategoryEntryFields";
 import {
     categoryDraftFieldPath,
@@ -91,6 +92,10 @@ export function CategoryDialog({
                 message: "Config invalid. Please check your settings.",
                 severity: "error",
             });
+            // The toast names nothing and does not last; on a long dialog the
+            // setting it is about is usually scrolled out of view. Putting the
+            // caret on it is what actually shows the admin where to look.
+            focusFirstInvalidField(draft.control);
             return;
         }
         const draftValue = (draft.getValues(CATEGORY_DRAFT_PATH) ??

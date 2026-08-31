@@ -111,8 +111,9 @@ type DashboardData = {
  * preset does not refetch (same days in, same key out, and react-query serves
  * the cached entry within `staleTime`). That is intended, and the escape
  * hatch for a reader who wants a forced re-read is the Refresh control, which
- * calls `query.refetch()` and ignores `staleTime` entirely (see `App.tsx`'s
- * `DEFAULT_QUERY_STALE_TIME_MS` docblock for the staleTime side of that).
+ * calls `query.refetch()` and ignores `staleTime` entirely (see
+ * `app/queryDefaults.ts`'s `DEFAULT_QUERY_STALE_TIME_MS` docblock for the
+ * staleTime side of that).
  */
 function statsQueryKey(range: DateRange, includeDisabled: boolean) {
     return [

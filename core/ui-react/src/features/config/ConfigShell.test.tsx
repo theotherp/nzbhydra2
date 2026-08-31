@@ -19,7 +19,15 @@ import {
     within,
 } from "@testing-library/react";
 import {useFormContext} from "react-hook-form";
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    onTestFinished,
+    vi,
+} from "vitest";
 
 import {ApiTransport} from "../../api/transport";
 import {SafeConfigProvider} from "../../app/SafeConfigProvider";
@@ -370,6 +378,46 @@ describe("ConfigShell", () => {
         expect(body).toContainElement(screen.getByLabelText("Host"));
     });
 
+    it("should offer a retry when the configuration cannot be loaded", async () => {
+        const backend = createBackend();
+        const answer = backend.fetch.getMockImplementation();
+        if (answer === undefined) {
+            throw new Error("the backend has no implementation");
+        }
+        let failNext = true;
+        backend.fetch.mockImplementation(async (input, init) => {
+            const url = String(input);
+            if (url.endsWith("/internalapi/config") && failNext) {
+                failNext = false;
+                throw new Error("the backend is not up yet");
+            }
+            return answer(input, init);
+        });
+        renderConfigArea({backend});
+
+        // Until now the only way out of this was a browser reload.
+        fireEvent.click(await screen.findByTestId("config-load-retry"));
+
+        expect(await screen.findByTestId("config-shell")).toBeVisible();
+        expect(screen.getByLabelText("Host")).toHaveValue("0.0.0.0");
+    });
+
+    it("should return to the top of the page when another tab is opened", async () => {
+        const scrollTo = vi.fn();
+        vi.stubGlobal("scrollTo", scrollTo);
+        // jsdom never scrolls, so the position an admin left the previous tab
+        // at has to be stated.
+        vi.stubGlobal("scrollY", 1800);
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+        scrollTo.mockClear();
+
+        fireEvent.click(screen.getByTestId("config-tab-auth"));
+
+        expect(await screen.findByText("Authorization body")).toBeVisible();
+        expect(scrollTo).toHaveBeenCalledWith({top: 0});
+    });
+
     it("should offer every canonical tab", async () => {
         renderConfigArea({backend: createBackend()});
         await waitForShell();
@@ -474,6 +522,35 @@ describe("ConfigShell", () => {
         ).toBeVisible();
     });
 
+    it("should bring a rejection report on screen and put the reading position on it", async () => {
+        // jsdom implements no layout, so `scrollIntoView` does not exist on
+        // its elements at all; the shell guards on that, and the spy is what
+        // stands in for the browser half of the behaviour.
+        const scrollIntoView = vi.fn();
+        const proto = Element.prototype as {scrollIntoView?: unknown};
+        proto.scrollIntoView = scrollIntoView;
+        onTestFinished(() => {
+            delete proto.scrollIntoView;
+        });
+        const backend = createBackend({
+            saveResults: [
+                {ok: false, errorMessages: ["Port must be a number"]},
+            ],
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("0.0.0.0x");
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        const banner = await screen.findByTestId("config-validation-errors");
+        // Save is reachable from the bottom of a long tab; the report is not,
+        // so it comes to the admin rather than waiting to be scrolled back to.
+        await waitFor(() => expect(banner).toHaveFocus());
+        expect(scrollIntoView).toHaveBeenCalled();
+        expect(scrollIntoView.mock.instances).toContain(banner);
+    });
+
     it("should let a rejection be dismissed and still report the next one", async () => {
         const backend = createBackend({
             saveResults: [
@@ -521,6 +598,70 @@ describe("ConfigShell", () => {
         expect(await screen.findByText("Configuration saved.")).toBeVisible();
         await waitFor(() =>
             expect(screen.queryByTestId("config-validation-errors")).toBeNull(),
+        );
+    });
+
+    it("should keep an edit typed while the save was in flight", async () => {
+        const normalized = {
+            ...serverConfig,
+            main: {...serverConfig.main, host: "normalized-by-server"},
+        };
+        const backend = createBackend({
+            saveResults: [
+                {ok: true, restartNeeded: false, newConfig: normalized},
+            ],
+        });
+        // The form stays editable while the PUT is in flight -- only Save goes
+        // disabled -- so the request has to be held open to reproduce what an
+        // admin on a slow connection does by simply carrying on typing.
+        const answer = backend.fetch.getMockImplementation();
+        if (answer === undefined) {
+            throw new Error("the backend has no implementation");
+        }
+        let release = () => {};
+        const held = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        backend.fetch.mockImplementation(async (input, init) => {
+            const response = await answer(input, init);
+            if ((init?.method ?? "GET") === "PUT") {
+                await held;
+            }
+            return response;
+        });
+        renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("submitted-value");
+        fireEvent.click(screen.getByTestId("config-save"));
+        await waitFor(() => expect(backend.puts).toHaveLength(1));
+
+        setHost("typed-during-the-save");
+        await act(async () => {
+            release();
+            await held;
+        });
+
+        // The server's answer is about `submitted-value`, not about this, so
+        // re-baselining on it must not swallow it.
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue(
+                "typed-during-the-save",
+            ),
+        );
+        expect(await screen.findByTestId("config-dirty-summary")).toBeVisible();
+        // And the baseline underneath it is still the server's copy: discarding
+        // now goes back to that, not to what was submitted.
+        fireEvent.click(screen.getByTestId("config-discard"));
+        fireEvent.click(
+            within(
+                await screen.findByTestId("config-discard-changes"),
+            ).getByRole("button", {name: "Discard"}),
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue(
+                "normalized-by-server",
+            ),
         );
     });
 
@@ -1046,7 +1187,28 @@ describe("ConfigShell sticky save bar", () => {
         expect(screen.getByTestId("config-discard")).toBeVisible();
     });
 
-    it("should restore the loaded config and clear the summary when Discard is used", async () => {
+    it("should keep every edit when a Discard is called off", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+
+        setHost("keep-me");
+        fireEvent.click(await screen.findByTestId("config-discard"));
+
+        // Discard sits beside Save with nothing between them and throws away
+        // every edit on every tab, so it asks first — the same loss the
+        // unsaved-changes guard asks about.
+        const dialog = await screen.findByTestId("config-discard-changes");
+        expect(dialog).toHaveTextContent("1 unsaved setting");
+        fireEvent.click(within(dialog).getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-discard-changes")).toBeNull(),
+        );
+        expect(screen.getByLabelText("Host")).toHaveValue("keep-me");
+        expect(screen.getByTestId("config-dirty-summary")).toBeVisible();
+    });
+
+    it("should restore the loaded config and clear the summary when Discard is confirmed", async () => {
         const backend = createBackend();
         renderConfigArea({backend});
         await waitForShell();
@@ -1055,6 +1217,11 @@ describe("ConfigShell sticky save bar", () => {
         expect(await screen.findByTestId("config-dirty-summary")).toBeVisible();
 
         fireEvent.click(screen.getByTestId("config-discard"));
+        fireEvent.click(
+            within(
+                await screen.findByTestId("config-discard-changes"),
+            ).getByRole("button", {name: "Discard"}),
+        );
 
         await waitFor(() =>
             expect(screen.getByLabelText("Host")).toHaveValue("0.0.0.0"),
@@ -1093,6 +1260,11 @@ describe("ConfigShell sticky save bar", () => {
 
         setHost("edited-again");
         fireEvent.click(await screen.findByTestId("config-discard"));
+        fireEvent.click(
+            within(
+                await screen.findByTestId("config-discard-changes"),
+            ).getByRole("button", {name: "Discard"}),
+        );
 
         await waitFor(() =>
             expect(screen.getByLabelText("Host")).toHaveValue(

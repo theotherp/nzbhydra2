@@ -156,12 +156,21 @@ export function ConfigErrorReport({
 
 export function ConfigFeedbackBanner({
     errorMessages,
+    errorRef,
     invalidErrors,
     onDismissErrors,
     onDismissWarnings,
     onSelectField,
     warningMessages,
 }: ConfigErrorReportProps & {
+    /**
+     * The error report's own element, so the shell can bring a rejection to
+     * the admin — Save is reachable from the bottom of a long tab, and the
+     * report it produces renders here, at the top. The banner does not scroll
+     * or focus itself: when to do that is a property of the save attempt, and
+     * only the shell knows one happened.
+     */
+    errorRef?: React.Ref<HTMLDivElement>;
     onDismissErrors: () => void;
     onDismissWarnings: () => void;
     /** `warningMessages` of a config that *was* saved. */
@@ -177,7 +186,12 @@ export function ConfigFeedbackBanner({
                 <Alert
                     data-testid="config-validation-errors"
                     onClose={onDismissErrors}
+                    ref={errorRef}
                     severity="error"
+                    // Not in the tab order — it is a report, not a control —
+                    // but focusable programmatically, so the shell can move
+                    // the reading position here when a save is refused.
+                    tabIndex={-1}
                 >
                     <ConfigErrorReport
                         errorMessages={errorMessages}

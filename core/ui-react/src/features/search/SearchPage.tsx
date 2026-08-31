@@ -40,9 +40,7 @@ import {
     shortcutSearch,
 } from "../../api/search";
 import {ApiTransport} from "../../api/transport";
-// Read lazily inside `useState`'s initializer, never at module scope: this
-// import closes a cycle (App -> router -> SearchPage -> App).
-import {DEFAULT_QUERY_STALE_TIME_MS} from "../../App";
+import {DEFAULT_QUERY_STALE_TIME_MS} from "../../app/queryDefaults";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";

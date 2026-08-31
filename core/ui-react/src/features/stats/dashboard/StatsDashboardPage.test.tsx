@@ -11,7 +11,7 @@ import {ThemeProvider} from "@mui/material/styles";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
-import {DEFAULT_QUERY_STALE_TIME_MS} from "../../../App";
+import {DEFAULT_QUERY_STALE_TIME_MS} from "../../../app/queryDefaults";
 import {createHydraTheme} from "../../../app/theme";
 import type {StatsQuery, StatsParseResult} from "../../../api/stats/mainStats";
 import {ApiTransport} from "../../../api/transport";
