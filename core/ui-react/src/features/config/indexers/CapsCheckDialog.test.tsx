@@ -63,7 +63,7 @@ function setup(messages: string[][], request: CapsCheckRequest = SINGLE_CHECK) {
     const onFailed = vi.fn();
     const onResolved = vi.fn<(results: IndexerCapsCheckResult[]) => void>();
     const view = render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <CapsCheckDialog
                 onFailed={onFailed}
                 onResolved={onResolved}
@@ -214,7 +214,7 @@ describe("CapsCheckDialog", () => {
         const onFailed = vi.fn();
         const onResolved = vi.fn();
         render(
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <CapsCheckDialog
                     onFailed={onFailed}
                     onResolved={onResolved}

@@ -84,7 +84,7 @@ function createBackend(
 function renderUpdatesTab(backend: Backend) {
     vi.stubGlobal("fetch", backend.fetch);
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider
                 client={
                     new QueryClient({defaultOptions: {queries: {retry: false}}})

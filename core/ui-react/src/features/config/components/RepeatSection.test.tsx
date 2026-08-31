@@ -48,7 +48,7 @@ function renderRepeat(initial: readonly Entry[]): Harness {
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <FormProvider {...form}>
                     <RepeatSection<Entry>
                         addLabel="Add entry"

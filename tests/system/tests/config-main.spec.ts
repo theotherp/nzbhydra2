@@ -1,7 +1,11 @@
 import type {Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
-import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+import {
+    captureVisualRegion,
+    prepareVisualEvidence,
+    visualEvidencePath,
+} from "./visualEvidence";
 
 const UNCHANGED_MARKER = "***UNCHANGED***";
 
@@ -228,6 +232,50 @@ test.describe("Config main tab round trip", () => {
         expect(allowReMaskedSecrets(after, expected)).toEqual(expected);
     });
 
+    /*
+     * FM-155 (ADR-0049): the Theme dropdown left this tab with the settings
+     * index entry behind it, because the theme is a per-user preference chosen
+     * in the nav bar and stored through `C-THEME-PREFERENCE`.
+     *
+     * Both halves are asserted against the running application rather than
+     * against the index alone: a row can survive an index deletion, and an
+     * index entry can survive a row's -- and the drift test in
+     * `core/ui-react` catches only the pairing, not what the search actually
+     * answers.
+     */
+    test("should no longer offer the Theme dropdown or find it in the settings search", async ({
+        page,
+        hydra,
+    }) => {
+        await hydra.getConfig();
+        await openMainConfig(page);
+        await setAdvanced(page, true);
+
+        await expect(page.getByTestId("config-fieldset-ui")).toBeVisible();
+        await expect(page.getByTestId("config-setting-main-theme")).toHaveCount(
+            0,
+        );
+        await expect(page.getByRole("combobox", {name: "Theme"})).toHaveCount(
+            0,
+        );
+
+        const search = page.getByTestId("config-search");
+        // A query that still finds something, so "nothing found" below is a
+        // statement about the index and not about a search field that stopped
+        // answering.
+        await search.fill("bypass domains");
+        await expect(
+            page.getByTestId("config-search-option-main-proxyIgnoreDomains"),
+        ).toBeVisible();
+
+        await search.fill("theme");
+        // With no match the `Autocomplete` renders its `noOptionsText` panel
+        // instead of a listbox, so there is no listbox to inspect for absent
+        // options -- the empty panel *is* the assertion.
+        await expect(page.getByText("No matching setting")).toBeVisible();
+        await expect(page.getByRole("listbox")).toHaveCount(0);
+    });
+
     test("should block the save on an invalid field and leave the config untouched", async ({
         page,
         hydra,
@@ -318,6 +366,15 @@ test.describe("Config main tab visual evidence", () => {
                 ),
                 fullPage: true,
             });
+
+            // FM-155's own Visual Gate item: the UI fieldset with the Theme
+            // dropdown gone, captured as a region because the removal is one
+            // row of a very long page.
+            await captureVisualRegion(
+                page.getByTestId("config-fieldset-ui"),
+                "F-CONFIG-MAIN",
+                `main-ui-fieldset-${viewport}`,
+            );
 
             // Captured before the validation state, so the invalid-form toast
             // does not sit on top of the dialog's own buttons.

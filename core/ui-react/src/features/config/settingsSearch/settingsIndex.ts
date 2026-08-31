@@ -196,7 +196,6 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
     ]);
     fieldset("UI", {}, [
-        {label: "Theme", path: "main.theme"},
         {
             advanced: true,
             help: "Show indexer selection on the search page as a checkbox list with a separate action menu instead of a multiselect dropdown.",

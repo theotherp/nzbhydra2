@@ -12,7 +12,7 @@ import {ShowAdvancedContext} from "../advancedFields";
 import {MainConfigTab} from "./MainConfigTab";
 
 /**
- * The 53 fields of `config-fields-service.js:50-735`, in legacy's order and
+ * The 52 fields of `config-fields-service.js:50-735`, in legacy's order and
  * grouping, as the paths they bind to. `advanced` mirrors the effective legacy
  * flag: a field is advanced when its own `templateOptions.advanced` is set or
  * when its fieldset's is (`fieldset-wrapper.html` hides the whole group).
@@ -33,8 +33,8 @@ const MAIN_FIELDS: readonly {advanced: boolean; path: string}[] = [
     {advanced: true, path: "main.proxyPassword"},
     {advanced: true, path: "main.proxyIgnoreLocal"},
     {advanced: true, path: "main.proxyIgnoreDomains"},
-    // UI (2)
-    {advanced: false, path: "main.theme"},
+    // UI (1). FM-155 removed the Theme dropdown (ADR-0049): the theme is a
+    // per-user preference chosen in the nav bar, not a config field.
     {advanced: true, path: "main.indexerSelectionAsCheckboxes"},
     // Security (7)
     {advanced: false, path: "main.apiKey"},
@@ -172,7 +172,7 @@ function renderMain({
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     <FormProvider {...form}>
                         <ShowAdvancedContext.Provider value={showAdvanced}>
@@ -200,13 +200,13 @@ function visibleSettingPaths(): string[] {
 afterEach(cleanup);
 
 describe("F-CONFIG-MAIN field inventory", () => {
-    it("should render all 53 fields of the legacy Main tab", () => {
+    it("should render all 52 fields of the legacy Main tab", () => {
         renderMain();
 
         expect(visibleSettingPaths()).toEqual(
             MAIN_FIELDS.map((field) => field.path),
         );
-        expect(MAIN_FIELDS).toHaveLength(53);
+        expect(MAIN_FIELDS).toHaveLength(52);
     });
 
     it("should group them into legacy's ten fieldsets", () => {

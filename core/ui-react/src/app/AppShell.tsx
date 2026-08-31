@@ -1,10 +1,13 @@
 import {
     AppBar,
     Box,
+    Button,
     Drawer,
     IconButton,
     List,
     ListItemButton,
+    Menu,
+    MenuItem,
     Toolbar,
     Typography,
 } from "@mui/material";
@@ -22,6 +25,8 @@ import {
     type SafeConfig,
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
+import {useThemePreference} from "./ThemePreferenceProvider";
+import {themePreferenceOptions, type ThemePreference} from "./theme";
 import {DownloaderStatusFooter} from "./status/DownloaderStatusFooter";
 import {NotificationToasts} from "./status/NotificationToasts";
 import {StartupChecks} from "./status/StartupChecks";
@@ -113,6 +118,7 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                         >
                             <NavigationLabel
                                 active={active}
+                                horizontal={horizontal}
                                 label={item.label}
                             />
                         </ListItemButton>
@@ -152,6 +158,14 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                     </Box>
                     {/* Legacy's `navbar-right` login/logout affordance. */}
                     <Box sx={{flexGrow: 1}} />
+                    {/*
+                     * FM-154 (ADR-0049): the theme selector, "in the
+                     * upper-right of the nav bar (beside the login/logout
+                     * control)" as the ADR places it. Legacy reached the same
+                     * setting through Config > Main > Theme, which FM-155
+                     * removes.
+                     */}
+                    <ThemeSelector />
                     <LoginOutButton
                         bootstrap={bootstrap}
                         transport={transport}
@@ -214,6 +228,88 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
     );
 }
 
+/**
+ * FM-154 (ADR-0049): the nav-bar theme selector.
+ *
+ * A stock `Button` in this theme's own neutral `control` variant plus a stock
+ * `Menu`, rather than a `TextField select`: the toolbar is the one row in the
+ * application with no space for a field's notched label, and a menu is what an
+ * "apply one of five settings now" control is anyway. The trigger states the
+ * setting *and* its current value ("Theme: Grey"), which is the visible label
+ * ADR-0014 asks for and is also what makes the current choice readable without
+ * opening anything.
+ *
+ * The options carry `role="menuitemradio"` with `aria-checked`, because that is
+ * what this menu is: one of five mutually exclusive values, exactly one of them
+ * current. MUI's `selected` only paints; it announces nothing on a `menuitem`.
+ *
+ * Keyboard operation and focus indication are entirely stock and deliberately
+ * so -- `Button` and `MenuItem` are two of ADR-0013's authored focus-ring
+ * families (families B and F), so the trigger and every option already carry
+ * the application's one focus indicator, and `Menu` brings its own focus
+ * management and type-ahead.
+ */
+function ThemeSelector() {
+    const {preference, setPreference} = useThemePreference();
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+    const current =
+        themePreferenceOptions.find((option) => option.value === preference) ??
+        themePreferenceOptions[0];
+
+    const choose = (value: ThemePreference) => {
+        setPreference(value);
+        setAnchor(null);
+    };
+
+    return (
+        <>
+            <Button
+                aria-controls={anchor === null ? undefined : THEME_MENU_ID}
+                aria-expanded={anchor !== null}
+                aria-haspopup="menu"
+                data-testid="app-shell-theme-selector"
+                id={THEME_TRIGGER_ID}
+                onClick={(event) => setAnchor(event.currentTarget)}
+                sx={{mr: 1}}
+                variant="control"
+            >
+                Theme: {current.label}
+            </Button>
+            <Menu
+                anchorEl={anchor}
+                id={THEME_MENU_ID}
+                onClose={() => setAnchor(null)}
+                open={anchor !== null}
+                // The menu itself carries no `data-testid`: MUI 7's
+                // `slotProps` are typed to each slot's own props and reject a
+                // `data-*` attribute outright. It needs none -- it is reachable
+                // as the `menu` role named by the trigger, and each option has
+                // a testid of its own.
+                slotProps={{list: {"aria-labelledby": THEME_TRIGGER_ID}}}
+            >
+                {themePreferenceOptions.map((option) => (
+                    <MenuItem
+                        aria-checked={option.value === preference}
+                        data-testid={`app-shell-theme-option-${option.value}`}
+                        key={option.value}
+                        onClick={() => choose(option.value)}
+                        role="menuitemradio"
+                        selected={option.value === preference}
+                    >
+                        {option.label}
+                    </MenuItem>
+                ))}
+            </Menu>
+        </>
+    );
+}
+
+// The trigger/menu pair's `aria-controls`/`aria-labelledby` relationship needs
+// stable DOM ids; the shell renders exactly one selector, so they are constants
+// rather than `useId` values.
+const THEME_MENU_ID = "app-shell-theme-menu";
+const THEME_TRIGGER_ID = "app-shell-theme-selector";
+
 function navigationItems(
     bootstrap: BootstrapData,
     safeConfig: SafeConfig,
@@ -263,8 +359,18 @@ function navigationTo(path: string): string {
 // added only when active, so selecting an item never changes its box size
 // (which used to shove neighboring items sideways) — only its color
 // transitions, in both directions.
+//
+// FM-154: which accent that is now depends on which ground the item is drawn
+// on, because the two are no longer the same surface in every theme. The
+// horizontal row is inside the `AppBar`, whose colour MUI derives per palette
+// mode — `background.paper` in the dark themes, `primary.main` under
+// `bright` — so it takes `surfaces.barAccent`, the token each theme block
+// states for exactly this (the dark blocks state their own `primary.main`, so
+// nothing about their rendering changes). The mobile drawer's vertical copy is
+// an ordinary `Paper` and keeps `primary.main`.
 function navigationItemSx(horizontal: boolean, active: boolean) {
-    const borderColor = active ? "primary.main" : "transparent";
+    const accent = horizontal ? "surfaces.barAccent" : "primary.main";
+    const borderColor = active ? accent : "transparent";
     return {
         ...(horizontal ? {width: "auto"} : undefined),
         ...(horizontal
@@ -279,7 +385,15 @@ function navigationItemSx(horizontal: boolean, active: boolean) {
 // visible copy that only changes color (animatable) rather than font-weight
 // (not smoothly animatable, and would otherwise resize the box). This keeps
 // nav items a constant width whether active or not.
-function NavigationLabel({label, active}: {label: string; active: boolean}) {
+function NavigationLabel({
+    active,
+    horizontal,
+    label,
+}: {
+    active: boolean;
+    horizontal: boolean;
+    label: string;
+}) {
     return (
         <Box sx={{display: "inline-grid"}}>
             <Typography
@@ -297,7 +411,12 @@ function NavigationLabel({label, active}: {label: string; active: boolean}) {
             <Typography
                 component="span"
                 sx={{
-                    color: active ? "primary.main" : "inherit",
+                    // The same per-ground accent `navigationItemSx` picks.
+                    color: active
+                        ? horizontal
+                            ? "surfaces.barAccent"
+                            : "primary.main"
+                        : "inherit",
                     fontWeight: active ? 700 : 400,
                     gridArea: "1 / 1",
                     transition: "color 200ms ease-in-out",

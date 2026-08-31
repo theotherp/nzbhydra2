@@ -31,28 +31,10 @@ declare module "@mui/material/styles" {
         colorSpace?: string | undefined;
     }
 
-    // ADR-0014: the mock's surface tokens, exposed on the palette so feature
-    // code can consume them via `sx` palette paths ("surfaces.control")
-    // instead of restating hex literals.
-    interface SurfaceTokens {
-        /** The search-bar row ground (`#232a2c` in the mock). */
-        bar: string;
-        /** Raised control surface: selects, menus, secondary buttons. */
-        control: string;
-        /** Recessed input surface: text fields. */
-        recessed: string;
-        /** 1px control border hairline. */
-        hairline: string;
-        /** Fainter hairline for row/section separators. */
-        hairlineFaint: string;
-        /**
-         * The mock's muted-glyph color (`#6b7472`): section captions, counts,
-         * popover captions, and disabled/neutral control text. FM-054: four
-         * independent feature-local literals collapsed into this one token.
-         */
-        mutedText: string;
-    }
-
+    // ADR-0014: the mock's surface tokens (declared as `SurfaceTokens` at this
+    // file's own module scope, because FM-154's theme blocks state them too),
+    // exposed on the palette so feature code can consume them via `sx` palette
+    // paths ("surfaces.control") instead of restating hex literals.
     interface Palette {
         surfaces: SurfaceTokens;
         charts: ChartTokens;
@@ -114,21 +96,50 @@ declare module "@mui/material/Button" {
     }
 }
 
-export type ThemePreference =
-    | "auto"
-    | "light"
-    | "dark"
-    | "dark-dyschromatopsia";
+/**
+ * The concrete themes this application ships (ADR-0049), each one a complete
+ * colour block in `themeColors` below.
+ *
+ * `grey` is the default and is the palette this application rendered before
+ * FM-154 gave it a name; `bright`, `dark` and `dark-dyschromatopsia` carry the
+ * character of the legacy AngularJS themes of the same names
+ * (`core/ui-src/less/themes/`) into this file's token vocabulary.
+ */
+export type ThemeName = "grey" | "bright" | "dark" | "dark-dyschromatopsia";
 
-export function resolveThemeMode(
+/** A concrete theme, or "follow the operating system" (ADR-0049). */
+export type ThemePreference = "auto" | ThemeName;
+
+/**
+ * The preference vocabulary the nav-bar selector offers, in the order it
+ * offers it. Authored here rather than in `AppShell.tsx` so the set of themes
+ * and the labels for them cannot drift apart from the blocks below.
+ */
+export const themePreferenceOptions: readonly {
+    label: string;
+    value: ThemePreference;
+}[] = [
+    {label: "Auto", value: "auto"},
+    {label: "Grey", value: "grey"},
+    {label: "Bright", value: "bright"},
+    {label: "Dark", value: "dark"},
+    {label: "Dark (Dyschromatopsia)", value: "dark-dyschromatopsia"},
+];
+
+/**
+ * ADR-0049's `auto` rule: a system light preference resolves to `bright`, a
+ * system dark preference to `grey` (the application's default dark theme, not
+ * the near-black `dark` one).
+ */
+export function resolveThemeName(
     preference: ThemePreference,
     prefersDark: boolean,
-): "light" | "dark" {
+): ThemeName {
     if (preference === "auto") {
-        return prefersDark ? "dark" : "light";
+        return prefersDark ? "grey" : "bright";
     }
 
-    return preference === "light" ? "light" : "dark";
+    return preference;
 }
 
 // The mock's own IBM Plex Sans UI stack, copied from the outer page `<div>`'s
@@ -274,35 +285,184 @@ export const selectAllRadius = "5px";
  */
 export const refineSectionGap = "22px";
 
-// Mock palette, sourced from `uimock/NZBHydra Search.dc.html` (its `<helmet>`
-// `<style>` block, the outer
-// page `<div>`'s inline style, and its `<header>`). Supersedes ADR-0007's
-// legacy-grey tokens per ADR-0009's accepted full-mock-fidelity decision.
-const mockPalette = {
-    // Outer page `<div>` / `body{background:#1f2426}`.
-    backgroundDefault: "#1f2426",
-    // `<header>` surface tone; reused by MUI for `AppBar`, `Paper`, popovers.
-    backgroundPaper: "#262c2e",
-    // Outer page `<div>`'s `color:#d6dad9`.
-    textPrimary: "#d6dad9",
-    // The mock's muted nav/label color (`<nav>`'s inactive links).
-    textSecondary: "#9aa2a1",
-    // The mock's brand teal: logo tile, primary "Search" button, active accents.
-    primary: "oklch(0.75 0.1 190)",
-    // The mock's own emphasis variant of the same hue (result action links).
-    primaryLight: "oklch(0.82 0.1 190)",
-    // The mock's `a:hover` variant of the same hue.
-    primaryDark: "oklch(0.85 0.1 190)",
-    // Text drawn on top of the brand teal (`<button>Search</button>`).
-    primaryContrastText: "#0e1c1b",
+/*
+ * ===========================================================================
+ * The theme colour blocks (ADR-0049, FM-154).
+ * ===========================================================================
+ *
+ * Every colour this application renders is stated in exactly one of the four
+ * `ThemeColors` blocks below, and `createHydraTheme` resolves exactly one of
+ * them per theme. Nothing outside this section states a colour: the component
+ * `styleOverrides` further down read either the resolved MUI palette
+ * (`theme.palette.*`) or the active block itself (`colors.*`), never a literal
+ * of their own. That is the ADR's own requirement -- "all colours of a theme
+ * live together in one named palette block so each theme's full colour set is
+ * readable in one place" -- and it is what makes reviewing a new theme a matter
+ * of reading one object rather than of grepping the file.
+ *
+ * The blocks are deliberately *complete* rather than layered on a base. Before
+ * FM-154 `dark-dyschromatopsia` was expressed as a spread of six overrides over
+ * the grey palette, and reading it meant holding two objects in mind and
+ * knowing which key won; it is now written out in full, with the same effective
+ * values. Duplication between blocks is the price, and it is the price the ADR
+ * chose.
+ *
+ * The two `contrastText` values below are the only colours shared *between*
+ * blocks. They are MUI's own defaults for a role that is light enough / dark
+ * enough to need them, restated here because `oklch()` is outside the sRGB
+ * formats `@mui/system`'s `getContrastRatio` can decompose, so MUI cannot
+ * derive them for this palette. They are consumed only from inside the blocks.
+ */
+const darkContrastText = "rgba(0, 0, 0, 0.87)";
+const lightContrastText = "#fff";
+
+/**
+ * ADR-0014's surface tokens: the non-role colours the mock's control language
+ * needs, carried on `palette.surfaces` so feature code reaches them through an
+ * `sx` palette path rather than by restating a literal. Every theme block below
+ * states a complete set.
+ */
+type SurfaceTokens = {
+    /** The search-bar row ground (`#232a2c` in the mock). */
+    bar: string;
+    /**
+     * FM-154 (ADR-0049): the accent drawn *on the app-bar ground* -- the
+     * active navigation item's rail and its label.
+     *
+     * Its own token rather than `primary.main` because the app bar is the one
+     * surface whose colour MUI derives from the palette differently per mode.
+     * `AppBar`'s `enableColorOnDark: false` default (see `AppBar.js`'s two
+     * `enableColorOnDark` variants) drops the colour declaration under
+     * `palette.mode: "dark"`, so a dark theme's bar is `background.paper` and
+     * `primary.main` reads on it; under `mode: "light"` the same variant paints
+     * the bar `primary.main` itself, where a `primary.main` accent is
+     * invisible. Each block states what its own bar wants: the three dark
+     * themes repeat their `primary.main` verbatim (so nothing about their
+     * rendering changes), and `bright` -- whose bar is the legacy bright
+     * theme's green -- states the contrast text instead.
+     */
+    barAccent: string;
+    /** Raised control surface: selects, menus, secondary buttons. */
+    control: string;
+    /** 1px control border hairline. */
+    hairline: string;
+    /** Fainter hairline for row/section separators. */
+    hairlineFaint: string;
+    /**
+     * The mock's muted-glyph color (`#6b7472`): section captions, counts,
+     * popover captions, and disabled/neutral control text. FM-054: four
+     * independent feature-local literals collapsed into this one token.
+     */
+    mutedText: string;
+    /** Recessed input surface: text fields. */
+    recessed: string;
+    /**
+     * FM-154: the resting edge of the results table's tri-state select-all
+     * square (`SelectionMenu`'s `SelectAllUncheckedIcon`), the one unfilled
+     * control this application draws directly on `background.default`.
+     *
+     * Named for its single consumer, like `selectAllRadius` above and for the
+     * same reason: it is a measured property of that one 17x17 box, not a
+     * shared control language. It is a token rather than a call-site colour
+     * because the call site wrote `alpha(common.white, 0.25)` -- a dark-theme
+     * remnant that ADR-0014 already bars and that a light ground makes
+     * invisible (1.03:1 on `bright`'s `#f2f4f3`, against WCAG 1.4.11's 3:1).
+     *
+     * Not `surfaces.hairline` and not `inputOutline`: the first is fainter
+     * still, and the second is the notched-input border ADR-0036 measured
+     * against a *recessed fill* -- reusing it would tie this box's edge to a
+     * value authored for a different ground.
+     *
+     * Measured on each theme's `background.default`, the ground the sticky
+     * select column paints:
+     *   - `bright` `rgba(0, 0, 0, 0.45)` -- **3.30:1** on `#f2f4f3` and
+     *     3.33:1 on `background.paper`, clearing 1.4.11. (The 0.25 white the
+     *     call site used reached 1.03:1 here.)
+     *   - `dark` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on `#000000`, and
+     *     the same alpha as this block's own `inputOutline`, so the theme
+     *     states one neutral-edge strength rather than two.
+     *   - `grey` and `dark-dyschromatopsia` keep `rgba(255, 255, 255, 0.25)`
+     *     verbatim -- the exact colour the call site composited before this
+     *     token existed, so neither theme's rendering moves. Both measure
+     *     under 3:1 (2.28:1 and 2.02:1); raising them is a rendering change to
+     *     the default palette, which FM-154 is pinned against, and is carried
+     *     as a follow-up in this task's handoff.
+     */
+    selectAllOutline: string;
+};
+
+/** A MUI palette role. `light`/`dark` are omitted where MUI derives them. */
+type RoleColors = {
+    contrastText: string;
+    dark?: string;
+    light?: string;
+    main: string;
+};
+
+type ThemeColors = {
+    background: {default: string; paper: string};
+    /** The dashboard's categorical chart sequence (see `ChartTokens`). */
+    charts: string[];
+    error: RoleColors;
+    info: RoleColors;
+    /** The outlined-input notch border (ADR-0036). */
+    inputOutline: string;
+    /** MUI's own light/dark switch: it decides every derived palette value. */
+    mode: "light" | "dark";
+    primary: RoleColors;
+    scrollbar: {thumb: string; thumbHover: string};
+    success: RoleColors;
+    surfaces: SurfaceTokens;
+    text: {primary: string; secondary: string};
+    warning: RoleColors;
+};
+
+/**
+ * `grey` -- the default theme, and the palette this application rendered
+ * before FM-154 named it.
+ *
+ * Sourced from `uimock/NZBHydra Search.dc.html` (its `<helmet>` `<style>`
+ * block, the outer page `<div>`'s inline style, and its `<header>`), which
+ * superseded ADR-0007's legacy-grey tokens per ADR-0009's accepted
+ * full-mock-fidelity decision. Every value here is carried across from the
+ * pre-FM-154 `mockPalette`/`mockSurfaces`/`inputOutline`/chart constants
+ * unchanged, and `theme.test.ts` pins that.
+ */
+const greyColors: ThemeColors = {
+    mode: "dark",
+    background: {
+        // Outer page `<div>` / `body{background:#1f2426}`.
+        default: "#1f2426",
+        // `<header>` surface tone; reused by MUI for `AppBar`, `Paper`,
+        // popovers.
+        paper: "#262c2e",
+    },
+    text: {
+        // Outer page `<div>`'s `color:#d6dad9`.
+        primary: "#d6dad9",
+        // The mock's muted nav/label color (`<nav>`'s inactive links).
+        secondary: "#9aa2a1",
+    },
+    primary: {
+        // The mock's brand teal: logo tile, primary "Search" button, active
+        // accents.
+        main: "oklch(0.75 0.1 190)",
+        // The mock's own emphasis variant of the same hue (result action
+        // links).
+        light: "oklch(0.82 0.1 190)",
+        // The mock's `a:hover` variant of the same hue.
+        dark: "oklch(0.85 0.1 190)",
+        // Text drawn on top of the brand teal (`<button>Search</button>`).
+        contrastText: "#0e1c1b",
+    },
     // The mock's "all indexers online" status dot.
-    success: "oklch(0.75 0.11 150)",
+    success: {main: "oklch(0.75 0.11 150)", contrastText: darkContrastText},
     // The mock's amber accent.
-    warning: "oklch(0.76 0.1 70)",
+    warning: {main: "oklch(0.76 0.1 70)", contrastText: darkContrastText},
     // No mock evidence: the mock never renders an `info` role, so ADR-0007's
     // legacy-grey value is deliberately kept rather than inventing an
     // unreviewed `oklch` one (see the FM-043 packet's Out Of Scope).
-    info: "#398da5",
+    info: {main: "#398da5", contrastText: lightContrastText},
     // ADR-0035. The carried-over legacy `#a33938` was the one role never
     // re-authored with the rest of the palette, and it is used as a
     // *foreground* -- the text-variant `Button color="error"` Delete in the
@@ -320,72 +480,318 @@ const mockPalette = {
     // `background.default`. L was not pushed further towards the rest of the
     // palette's 0.74-0.78 band because this token is also a *background* in
     // two families (filled `Chip color="error"`, filled error `Alert`), and
-    // every step of lightness spends contrast there to buy it here.
-    error: "oklch(0.7 0.14 24.3)",
-    // The mock's `::-webkit-scrollbar` thumb colors; it has no theme-token
-    // equivalent, so the two literals stay here next to the palette they belong
-    // to. The track and thumb border reuse `background.default` instead.
-    scrollbarThumb: "#3a4446",
-    scrollbarThumbHover: "#495456",
-} as const;
-
-// ADR-0014 surface tokens, read from the mock's search-bar row and controls.
-// The single authoritative copy: feature code consumes these through the
-// palette (`surfaces.*`), never by restating the literals.
-const mockSurfaces = {
-    bar: "#232a2c",
-    control: "#2a3133",
-    recessed: "#1c2224",
-    hairline: "rgba(255, 255, 255, 0.1)",
-    hairlineFaint: "rgba(255, 255, 255, 0.06)",
-    mutedText: "#6b7472",
-} as const;
+    // every step of lightness spends contrast there to buy it here. The
+    // lightened token then broke the previous `#fff` contrast text (2.84:1)
+    // that `#a33938` passed at 6.56:1, so the pairing moves with it: MUI's
+    // dark contrast text restores it at 6.51:1.
+    error: {main: "oklch(0.7 0.14 24.3)", contrastText: darkContrastText},
+    // ADR-0014 surface tokens, read from the mock's search-bar row and
+    // controls. Feature code consumes these through the palette
+    // (`surfaces.*`), never by restating the literals.
+    surfaces: {
+        bar: "#232a2c",
+        control: "#2a3133",
+        recessed: "#1c2224",
+        hairline: "rgba(255, 255, 255, 0.1)",
+        hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        mutedText: "#6b7472",
+        // A dark theme's app bar is `background.paper`, so the accent on it is
+        // the brand teal itself -- the value `AppShell` read as
+        // `primary.main` before this token existed.
+        barAccent: "oklch(0.75 0.1 190)",
+        // Exactly what `SelectionMenu` composited from `alpha(common.white,
+        // 0.25)` before the token existed, so this theme's select-all square
+        // renders unchanged. See the token's doc comment for the measurement.
+        selectAllOutline: "rgba(255, 255, 255, 0.25)",
+    },
+    /*
+     * ADR-0036: the outlined-input notch border, as its own token rather than
+     * as `surfaces.hairline`.
+     *
+     * The defect was that an outlined field did not read as outlined.
+     * Measured, the resting `surfaces.hairline` `rgba(255, 255, 255, 0.1)`
+     * edge is **1.37:1** against `background.paper` `#262c2e` and **1.36:1**
+     * against `background.default` `#1f2426` -- below the 3:1 WCAG 1.4.11 asks
+     * of the visual boundary that identifies a control, and so faint that
+     * MUI's permanently shrunk label had nothing to sit in and read as
+     * floating over a filled box instead of notched into a border.
+     *
+     * `0.35` is the lowest round alpha that clears 3:1 on **both** grounds:
+     * **3.08:1** on `background.paper`, **3.17:1** on `background.default`,
+     * and **3.19:1** against the field's own `surfaces.recessed` fill, so the
+     * edge is legible from the inside too. (0.30 reaches only 2.64 / 2.69;
+     * MUI's own stock dark outline, 0.23, only 2.11 / 2.13.)
+     *
+     * A token of its own rather than a raised `surfaces.hairline` -- ADR-0036
+     * allows either -- because that token also paints the menu, popover and
+     * constraint-chip borders, none of which were reported and none of which
+     * were measured.
+     */
+    inputOutline: "rgba(255, 255, 255, 0.35)",
+    // The mock's `::-webkit-scrollbar` thumb colors. The track and the thumb's
+    // border reuse `background.default` instead of stating a third value.
+    scrollbar: {thumb: "#3a4446", thumbHover: "#495456"},
+    // FM-024's chart categorical sequence (see the `ChartTokens` doc comment
+    // above): six oklch hues at the mock's own lightness/chroma band
+    // (L 0.72-0.82, C 0.09-0.12), spaced around the hue circle so adjacent
+    // series stay distinguishable for the deuteranopia/protanopia range the
+    // `dark-dyschromatopsia` theme exists for -- teal (reuses the brand
+    // primary), amber, violet, rose, blue, and green.
+    charts: [
+        "oklch(0.75 0.1 190)",
+        "oklch(0.78 0.12 80)",
+        "oklch(0.76 0.11 300)",
+        "oklch(0.74 0.12 20)",
+        "oklch(0.75 0.1 250)",
+        "oklch(0.78 0.11 140)",
+    ],
+};
 
 /**
- * ADR-0036: the outlined-input notch border, as its own token rather than as
- * `surfaces.hairline`.
+ * `dark-dyschromatopsia` -- the accessibility variant, unchanged in effect.
  *
- * The defect was that an outlined field did not read as outlined. Measured, the
- * resting `surfaces.hairline` `rgba(255, 255, 255, 0.1)` edge is **1.37:1**
- * against `background.paper` `#262c2e` and **1.36:1** against
- * `background.default` `#1f2426` -- below the 3:1 WCAG 1.4.11 asks of the
- * visual boundary that identifies a control, and so faint that MUI's permanently
- * shrunk label had nothing to sit in and read as floating over a filled box
- * instead of notched into a border.
- *
- * `0.35` is the lowest round alpha that clears 3:1 on **both** grounds:
- * **3.08:1** on `background.paper`, **3.17:1** on `background.default`, and
- * **3.19:1** against the field's own `surfaces.recessed` fill, so the edge is
- * legible from the inside too. (0.30 reaches only 2.64 / 2.69; MUI's own stock
- * dark outline, 0.23, only 2.11 / 2.13.)
- *
- * Authored here instead of by raising `surfaces.hairline` -- ADR-0036 allows
- * either -- because that token also paints the menu, popover and constraint-chip
- * borders, none of which were reported and none of which were measured. A
- * dedicated token keeps the change to the family the ADR is about.
+ * Legacy source: `core/ui-src/less/themes/theme-dark-dyschromatopsia.less`,
+ * which is `vars-grey.less` plus a black ground and a set of role colours
+ * chosen so the roles stay distinguishable without relying on the red/green
+ * axis. ADR-0007 carried those role colours into this file; before FM-154 they
+ * lived as a six-key spread over the grey palette, and this block is that
+ * merge written out. Its effective palette is byte-for-byte what the spread
+ * produced, which `theme.test.ts` pins -- including the deliberate absence of
+ * `primary.light`/`primary.dark`, which MUI derives from `main` here (the
+ * spread replaced the whole `primary` object, so it always did).
  */
-const inputOutline = "rgba(255, 255, 255, 0.35)";
+const darkDyschromatopsiaColors: ThemeColors = {
+    mode: "dark",
+    // Legacy `@body-bg: #000000`, with the paper tone ADR-0007 chose for it.
+    background: {default: "#000000", paper: "#0f1113"},
+    // Unchanged from `grey`: the variant never re-authored its text colours,
+    // and the mock's pair clears 4.5:1 on this darker ground by a wider margin
+    // than on the grey one.
+    text: {primary: "#d6dad9", secondary: "#9aa2a1"},
+    // Legacy `@brand-primary` for this theme was `#303437`, a near-invisible
+    // near-black; ADR-0007 lifted it to the blue-grey `#78909c` it still is.
+    // `light`/`dark` are deliberately not stated -- MUI derives them, as it
+    // did before this block existed.
+    primary: {main: "#78909c", contrastText: lightContrastText},
+    success: {main: "#30b885", contrastText: darkContrastText},
+    warning: {main: "#f0a830", contrastText: darkContrastText},
+    info: {main: "#3aaccf", contrastText: darkContrastText},
+    // Legacy `@brand-danger-message: #B090C8` -- the violet that carries
+    // "error" off the red/green axis.
+    error: {main: "#b090c8", contrastText: darkContrastText},
+    surfaces: {
+        bar: "#232a2c",
+        control: "#2a3133",
+        recessed: "#1c2224",
+        hairline: "rgba(255, 255, 255, 0.1)",
+        hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        mutedText: "#6b7472",
+        barAccent: "#78909c",
+        // Carried across unchanged with the rest of grey's surface tokens:
+        // this variant never restated them, and its select-all square must
+        // render exactly as it did.
+        selectAllOutline: "rgba(255, 255, 255, 0.25)",
+    },
+    inputOutline: "rgba(255, 255, 255, 0.35)",
+    scrollbar: {thumb: "#3a4446", thumbHover: "#495456"},
+    charts: [
+        "oklch(0.75 0.1 190)",
+        "oklch(0.78 0.12 80)",
+        "oklch(0.76 0.11 300)",
+        "oklch(0.74 0.12 20)",
+        "oklch(0.75 0.1 250)",
+        "oklch(0.78 0.11 140)",
+    ],
+};
 
-// FM-024's chart categorical sequence (see the `ChartTokens` doc comment
-// above): six oklch hues at the mock's own lightness/chroma band (L 0.72-0.82,
-// C 0.09-0.12), spaced around the hue circle so adjacent series stay
-// distinguishable for the deuteranopia/protanopia range the
-// `dark-dyschromatopsia` preference exists for -- teal (reuses the brand
-// primary), amber, violet, rose, blue, and green.
-const chartCategoricalColors = [
-    "oklch(0.75 0.1 190)",
-    "oklch(0.78 0.12 80)",
-    "oklch(0.76 0.11 300)",
-    "oklch(0.74 0.12 20)",
-    "oklch(0.75 0.1 250)",
-    "oklch(0.78 0.11 140)",
-] as const;
+/**
+ * `dark` -- legacy's near-black theme.
+ *
+ * Legacy source: `core/ui-src/less/themes/theme-dark.less`, which is
+ * `vars-grey.less` with `@body-bg: rgb(0, 0, 0)`, `@text-color:
+ * rgb(156, 156, 156)` and `@input-bg: rgb(15, 17, 19)`. That is the character
+ * ADR-0049 asks to keep: a black page, a barely-lifted set of surfaces, and
+ * light text that is muted rather than white. The two values legacy states
+ * exactly are carried across exactly (`#000000`, `#0f1113`); the rest are
+ * authored to sit between them.
+ *
+ * Every colour below was measured against this theme's own grounds while it
+ * was authored (`background.default` `#000000` / `background.paper` `#1a1a1a`
+ * / `surfaces.control` `#1e1e1e`, the darkest and the two lightest surfaces a
+ * glyph lands on):
+ *
+ *   - `text.primary` `#9c9c9c` -- legacy's own muted grey -- 7.65:1 / 6.34:1 /
+ *     6.07:1;
+ *   - `text.secondary` `#8b9299` -- legacy's `@gray-light: rgb(122, 130, 136)`
+ *     lifted for the black ground -- 6.67:1 / 5.53:1 / 5.29:1. The legacy value
+ *     itself measured 4.27:1 on `surfaces.control`, under WCAG 1.4.3;
+ *   - `surfaces.mutedText` `#8a8a8a` -- 6.08:1 / 5.04:1 / 4.83:1;
+ *   - `primary.main` `#9aa6ac`, legacy's `@brand-primary: @gray-light` in the
+ *     same blue-grey family, lifted the same way -- 8.42:1 / 6.98:1 / 6.69:1,
+ *     which is also the ADR-0013 focus ring's contrast (its axis is 3:1);
+ *   - `inputOutline` at alpha 0.42 -- 3.95:1 on the black page and 4.09:1 on
+ *     the recessed field fill, clearing WCAG 1.4.11's 3:1 from both sides. The
+ *     grey theme's 0.35 reaches only 3.01:1 on a pure black ground.
+ *
+ * The four accent roles are the grey theme's (`success`, `warning`, `info`,
+ * `error`), which is what legacy does too -- `theme-dark.less` imports
+ * `vars-grey.less` and overrides only the ground and the text. Measured on the
+ * black page they read 9.86 / 9.63 / 5.53 / 7.39:1.
+ */
+const darkColors: ThemeColors = {
+    mode: "dark",
+    background: {default: "#000000", paper: "#1a1a1a"},
+    text: {primary: "#9c9c9c", secondary: "#8b9299"},
+    primary: {
+        main: "#9aa6ac",
+        light: "#b4bfc4",
+        // The same relationship the grey theme's `primary.dark` has to its
+        // `main`: this token is the mock's *hover* variant, which on a dark
+        // ground is lighter than rest, not darker.
+        dark: "#c8d1d5",
+        contrastText: darkContrastText,
+    },
+    success: {main: "oklch(0.75 0.11 150)", contrastText: darkContrastText},
+    warning: {main: "oklch(0.76 0.1 70)", contrastText: darkContrastText},
+    // The one accent whose *pairing* is re-authored rather than carried
+    // across: `#398da5` is light enough that the grey theme's `#fff` on it
+    // measures 3.80:1, under WCAG 1.4.3 for the filled `Chip`/`Alert` families
+    // that paint this role as a ground. A new theme has no invariance to keep,
+    // so it takes the dark contrast text instead, at 4.98:1. (The grey and
+    // dyschromatopsia blocks keep theirs unchanged; see the FM-154 handoff.)
+    info: {main: "#398da5", contrastText: darkContrastText},
+    error: {main: "oklch(0.7 0.14 24.3)", contrastText: darkContrastText},
+    surfaces: {
+        bar: "#111111",
+        // Legacy's `@navbar-default-bg`/`@btn-default-bg`
+        // `rgb(40, 40, 40)` family, a step under it so that a raised control
+        // still reads as raised against `background.paper` without becoming
+        // the lightest thing on the page.
+        control: "#1e1e1e",
+        // Legacy `@input-bg: rgb(15, 17, 19)`, verbatim.
+        recessed: "#0f1113",
+        hairline: "rgba(255, 255, 255, 0.12)",
+        hairlineFaint: "rgba(255, 255, 255, 0.07)",
+        mutedText: "#8a8a8a",
+        barAccent: "#9aa6ac",
+        // The same alpha as this block's `inputOutline`, so the theme states
+        // one neutral-edge strength: 3.95:1 on the black page.
+        selectAllOutline: "rgba(255, 255, 255, 0.42)",
+    },
+    inputOutline: "rgba(255, 255, 255, 0.42)",
+    scrollbar: {thumb: "#2c2c2c", thumbHover: "#3a3a3a"},
+    charts: [
+        "oklch(0.75 0.1 190)",
+        "oklch(0.78 0.12 80)",
+        "oklch(0.76 0.11 300)",
+        "oklch(0.74 0.12 20)",
+        "oklch(0.75 0.1 250)",
+        "oklch(0.78 0.11 140)",
+    ],
+};
 
-// MUI's default contrast text for a light-enough surface. Used verbatim for the
-// roles MUI would otherwise compute it for, because `oklch()` is outside the
-// sRGB formats `@mui/system`'s `getContrastRatio` can decompose.
-const darkContrastText = "rgba(0, 0, 0, 0.87)";
-const lightContrastText = "#fff";
+/**
+ * `bright` -- legacy's light theme, and the only theme in this application
+ * that renders `palette.mode: "light"`.
+ *
+ * Legacy source: `core/ui-src/less/themes/theme-bright.less` -- a white page
+ * (`@body-bg: rgb(255, 255, 255)`), black text, a green brand
+ * (`@brand-primary: #00640e`) and a green navigation bar
+ * (`@navbar-default-bg: rgb(6, 161, 40)` with white links). ADR-0049 keeps that
+ * character and allows the individual colours to be improved, which here means
+ * one thing consistently: legacy's accent colours were authored for a white
+ * ground without measuring against it, and half of them do not carry text on
+ * one. Each role below states the legacy value it descends from and what it
+ * measures now.
+ *
+ * The green bar is not authored here and is not an accident: `AppBar`'s
+ * `enableColorOnDark: false` default paints the bar `primary.main` under
+ * `mode: "light"` (see the `barAccent` doc comment above), so legacy's green
+ * navigation bar comes back on its own, with `primary.contrastText` on it.
+ *
+ * Measured against this theme's three grounds -- `background.default`
+ * `#f2f4f3`, `background.paper` `#fafbfb`, `surfaces.control` `#ffffff`:
+ *
+ *   - `text.primary` `#111514` (legacy `@text-color: rgb(0, 0, 0)`, warmed a
+ *     shade off pure black) -- 16.66 / 17.75 / 18.40:1;
+ *   - `text.secondary` `#4a524f` -- 7.28 / 7.76 / 8.04:1;
+ *   - `surfaces.mutedText` `#5f6b66` -- 5.03 / 5.36 / 5.55:1;
+ *   - `primary.main` `#00640e` (legacy `@brand-primary`, verbatim) -- 6.72 /
+ *     7.16 / 7.42:1, and `#fff` on it 7.42:1, which is what carries the bar;
+ *   - `primary.light` `#0a7a20` -- the emphasis variant legacy spells
+ *     `@link-color: rgb(12, 164, 63)`; that value measures 3.24:1 on white and
+ *     cannot carry text, so it is darkened to 4.98 / 5.31 / 5.50:1;
+ *   - `success` `#17742a` (legacy `rgb(35, 161, 35)`, 3.10:1 on white) --
+ *     4.94:1 on the bar ground, `#fff` on it 5.89:1;
+ *   - `warning` `#9c5400` (legacy `rgb(255, 133, 27)`, 2.20:1) -- 4.79:1 on
+ *     the bar ground, `#fff` on it 5.70:1;
+ *   - `info` `#0f6c86` (legacy `rgb(117, 202, 235)`, 1.72:1) -- 5.42 / 5.77 /
+ *     5.98:1;
+ *   - `error` `#c62222` (legacy `rgb(255, 65, 54)`, 3.38:1) -- 5.20 / 5.55 /
+ *     5.75:1, and `#fff` on it 5.75:1 for the filled `Chip`/`Alert` families
+ *     ADR-0035 requires re-checking whenever `error` moves;
+ *   - `inputOutline` at alpha 0.45 -- 3.30:1 on the page, 3.35:1 on the white
+ *     field fill, clearing WCAG 1.4.11's 3:1 from both sides (0.40 reaches
+ *     only 2.81 / 2.85);
+ *   - the chart sequence -- the grey theme's six hues dropped from L 0.72-0.82
+ *     to L 0.54-0.58 and given a little more chroma, because the originals
+ *     measure under 2:1 on a white card; these read 3.91-5.31:1 on
+ *     `background.paper`.
+ *
+ * The grounds themselves invert the dark themes' relationship, which is MUI's
+ * own light-mode convention and legacy's: the page is the *tinted* surface and
+ * a raised one is white. `surfaces.recessed` is white too -- legacy's input
+ * fill -- and is told apart from the paper it sits on by `inputOutline`, which
+ * is exactly the job ADR-0036 gives that token.
+ */
+const brightColors: ThemeColors = {
+    mode: "light",
+    background: {default: "#f2f4f3", paper: "#fafbfb"},
+    text: {primary: "#111514", secondary: "#4a524f"},
+    primary: {
+        main: "#00640e",
+        light: "#0a7a20",
+        dark: "#004a0a",
+        contrastText: lightContrastText,
+    },
+    success: {main: "#17742a", contrastText: lightContrastText},
+    warning: {main: "#9c5400", contrastText: lightContrastText},
+    info: {main: "#0f6c86", contrastText: lightContrastText},
+    error: {main: "#c62222", contrastText: lightContrastText},
+    surfaces: {
+        bar: "#e8ecea",
+        control: "#ffffff",
+        recessed: "#ffffff",
+        hairline: "rgba(0, 0, 0, 0.18)",
+        hairlineFaint: "rgba(0, 0, 0, 0.1)",
+        mutedText: "#5f6b66",
+        // The one theme whose app bar is `primary.main` rather than
+        // `background.paper`, so its accent is the contrast text (legacy's own
+        // `@navbar-default-link-color: rgb(255, 255, 255)`) instead.
+        barAccent: lightContrastText,
+        // The one theme where the dark-theme white edge disappeared entirely
+        // (1.03:1): a dark edge at this block's own `inputOutline` alpha
+        // instead, 3.30:1 on the page ground the select column paints.
+        selectAllOutline: "rgba(0, 0, 0, 0.45)",
+    },
+    inputOutline: "rgba(0, 0, 0, 0.45)",
+    scrollbar: {thumb: "#c3c9c6", thumbHover: "#adb5b1"},
+    charts: [
+        "oklch(0.55 0.12 190)",
+        "oklch(0.58 0.14 80)",
+        "oklch(0.56 0.15 300)",
+        "oklch(0.54 0.16 20)",
+        "oklch(0.55 0.14 250)",
+        "oklch(0.58 0.14 140)",
+    ],
+};
+
+const themeColors: Record<ThemeName, ThemeColors> = {
+    grey: greyColors,
+    bright: brightColors,
+    dark: darkColors,
+    "dark-dyschromatopsia": darkDyschromatopsiaColors,
+};
 
 /*
  * ---------------------------------------------------------------------------
@@ -476,11 +882,12 @@ function focusRing(theme: Theme, offset: string = focusRingOutsetOffset) {
 }
 
 export function createHydraTheme(
-    preference: ThemePreference = "dark",
+    preference: ThemePreference = "grey",
     prefersDark = systemPrefersDark(),
 ): Theme {
-    const mode = resolveThemeMode(preference, prefersDark);
-    const dyschromatopsia = preference === "dark-dyschromatopsia";
+    // The one place a theme is chosen. Everything below reads `colors` and
+    // nothing below states a colour of its own (ADR-0049).
+    const colors = themeColors[resolveThemeName(preference, prefersDark)];
 
     return createTheme({
         // MUI 7.3's own opt-in for a non-sRGB palette. `@mui/system`'s
@@ -493,73 +900,20 @@ export function createHydraTheme(
         // `oklch` palette renderable at all.
         colorSpace: "oklch",
         palette: {
-            mode,
-            background: {
-                default: mockPalette.backgroundDefault,
-                paper: mockPalette.backgroundPaper,
-            },
-            text: {
-                primary: mockPalette.textPrimary,
-                secondary: mockPalette.textSecondary,
-            },
-            surfaces: mockSurfaces,
-            charts: {categorical: [...chartCategoricalColors]},
-            // Every role spells out its own `contrastText`: under `colorSpace`
-            // MUI would otherwise derive it as `oklch(from <main> var(--__l) 0
-            // h / var(--__a))`, whose custom properties only exist in the CSS
-            // theme-variables build this app does not use.
-            primary: {
-                main: mockPalette.primary,
-                light: mockPalette.primaryLight,
-                dark: mockPalette.primaryDark,
-                contrastText: mockPalette.primaryContrastText,
-            },
-            success: {
-                main: mockPalette.success,
-                contrastText: darkContrastText,
-            },
-            warning: {
-                main: mockPalette.warning,
-                contrastText: darkContrastText,
-            },
-            info: {main: mockPalette.info, contrastText: lightContrastText},
-            // ADR-0035's required re-check of the sites that use this token as
-            // a *background* rather than a foreground. `error.main` is now
-            // light, so the previous `#fff` fails on it (2.84:1) where it
-            // passed on `#a33938` (6.56:1); the dark contrast text MUI itself
-            // derives for a light role restores the pairing at 6.51:1. This is
-            // the same move the dyschromatopsia variant below already makes for
-            // its own lighter `error`, and it stays a token change -- no call
-            // site gains a colour of its own.
-            error: {main: mockPalette.error, contrastText: darkContrastText},
-            // The dark-dyschromatopsia accessibility variant's own overrides are
-            // spread last so they continue to take precedence over the base
-            // palette above, unchanged in value from ADR-0007. Their
-            // `contrastText` values are the ones MUI itself derived for them
-            // before `colorSpace` was introduced, restated here only so the
-            // variant keeps rendering exactly the same text colors.
-            ...(dyschromatopsia
-                ? {
-                      background: {default: "#000000", paper: "#0f1113"},
-                      error: {
-                          main: "#b090c8",
-                          contrastText: darkContrastText,
-                      },
-                      info: {main: "#3aaccf", contrastText: darkContrastText},
-                      primary: {
-                          main: "#78909c",
-                          contrastText: lightContrastText,
-                      },
-                      success: {
-                          main: "#30b885",
-                          contrastText: darkContrastText,
-                      },
-                      warning: {
-                          main: "#f0a830",
-                          contrastText: darkContrastText,
-                      },
-                  }
-                : {}),
+            mode: colors.mode,
+            background: colors.background,
+            text: colors.text,
+            surfaces: colors.surfaces,
+            charts: {categorical: colors.charts},
+            // Every role spells out its own `contrastText` in its block: under
+            // `colorSpace` MUI would otherwise derive it as `oklch(from <main>
+            // var(--__l) 0 h / var(--__a))`, whose custom properties only exist
+            // in the CSS theme-variables build this app does not use.
+            primary: colors.primary,
+            success: colors.success,
+            warning: colors.warning,
+            info: colors.info,
+            error: colors.error,
         },
         typography: {
             fontFamily: uiFontFamily,
@@ -571,7 +925,7 @@ export function createHydraTheme(
             // The mock's louder panel-header label above it is gone with the
             // caption it painted (FM-142).
             refineSectionLabel: {
-                color: mockSurfaces.mutedText,
+                color: colors.surfaces.mutedText,
                 fontSize: "11px",
                 fontWeight: 600,
                 letterSpacing: "0.6px",
@@ -604,12 +958,12 @@ export function createHydraTheme(
                         background: theme.palette.background.default,
                     },
                     "*::-webkit-scrollbar-thumb": {
-                        background: mockPalette.scrollbarThumb,
+                        background: colors.scrollbar.thumb,
                         borderRadius: 6,
                         border: `2px solid ${theme.palette.background.default}`,
                     },
                     "*::-webkit-scrollbar-thumb:hover": {
-                        background: mockPalette.scrollbarThumbHover,
+                        background: colors.scrollbar.thumbHover,
                     },
                 }),
             },
@@ -1011,7 +1365,7 @@ export function createHydraTheme(
                         borderRadius: 8,
                         backgroundColor: theme.palette.surfaces.recessed,
                         "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: inputOutline,
+                            borderColor: colors.inputOutline,
                         },
                         // ADR-0036's "hover, focus, disabled and error stay
                         // mutually distinguishable" clause, and the one state

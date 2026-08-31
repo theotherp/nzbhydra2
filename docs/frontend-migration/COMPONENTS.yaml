@@ -13,7 +13,7 @@ components:
       - F-STATS-SHELL
     classification: shared_hydra
     state: partial
-    note: FM-078 added the header's login/logout affordance (`shell-loginout`, rendered by `C-AUTH-SESSION`'s `LoginOutButton`), completing legacy's `header-controller.js` visibility rules. FM-080 added the shell's own half of `directives/footer.js`'s content-padding compensation -- measuring `C-UPDATE-COORDINATOR`'s footer banners' real rendered height rather than reproducing legacy's pixel bookkeeping -- and mounts those banners alongside the startup checks. The downloader-status footer (FM-081) remains.
+    note: FM-078 added the header's login/logout affordance (`shell-loginout`, rendered by `C-AUTH-SESSION`'s `LoginOutButton`), completing legacy's `header-controller.js` visibility rules. FM-080 added the shell's own half of `directives/footer.js`'s content-padding compensation -- measuring `C-UPDATE-COORDINATOR`'s footer banners' real rendered height rather than reproducing legacy's pixel bookkeeping -- and mounts those banners alongside the startup checks. The downloader-status footer (FM-081) remains. FM-154 (ADR-0049) added the nav-bar theme selector beside that affordance and `app/ThemePreferenceProvider.tsx`, which owns the in-session `ThemePreference` and provides the theme built from it; the shell's active-navigation accent now reads `palette.surfaces.barAccent` rather than `primary.main`, because the app bar's own ground differs per palette mode. FM-155 made the choice durable per user through `C-THEME-PREFERENCE`, which is a change to that provider and to the new service only -- the selector itself is untouched.
   - id: C-API-TRANSPORT
     responsibility: Base-URL-aware HTTP, binary, and progress-reporting upload transport with credentials, CSRF, session headers, and common errors. FM-075 added the upload method ADR-0003 reserved -- XHR-based, because fetch cannot
       observe request-body progress -- keeping the same base URL, `credentials`/`withCredentials`, and CSRF-header contract as `request`
@@ -148,6 +148,7 @@ components:
     legacy: []
     target: core/ui-react/src/domain/storage
     consumers:
+      - F-PLATFORM-SHELL
       - F-SEARCH-FORM
       - F-SEARCH-SORT-FILTER
       - F-CONFIG-SHELL
@@ -168,6 +169,7 @@ components:
     target: core/ui-react/src/services/preferences; core/ui-react/src/api/preferences.ts
     consumers:
       - F-PLATFORM-LIVE-STATUS
+      - F-PLATFORM-SHELL
       - F-SEARCH-SORT-FILTER
     classification: shared_hydra
     state: done
@@ -473,6 +475,8 @@ components:
       - F-CONFIG-SHELL
     classification: feature_specific
     state: done
+    note: "FM-155 removed the `main.theme` entry with the dropdown behind it (ADR-0049); the drift test is what makes removing the row and the entry a single
+      atomic change, and `config-main.spec.ts` additionally asserts that the running search answers \"No matching setting\" for \"theme\"."
   - id: C-REFINE-MULTISELECT
     responsibility: Controlled, presentational collapsible multiselect for refine surfaces -- a caption toggle button (refineSectionLabel typography, aria-expanded)
       over a Collapse of full-width toggle rows (aria-pressed, data-filter-value, optional mono count). It renders entries in the order given and holds no state,
@@ -504,6 +508,15 @@ components:
     consumers:
       - F-PLATFORM-SHELL
     classification: shared_hydra
-    state: planned
-    note: "Created for FM-155 (ADR-0049). The deprecated Java MainConfig.theme field is not read or migrated (safe config does not expose it and full config reads
-      are admin-only); the config UI's main.theme dropdown is removed by the same task."
+    state: done
+    note: "FM-155 (ADR-0049) built it as core/ui-react/src/services/theme/themePreference.ts. The server record is THEME_PREFERENCE_KEY (`themePreference`,
+      forUser=true) and the startup seed is THEME_PREFERENCE_CACHE_KEY (`hydra.theme.preference`), both exported constants; the system test writes the first one
+      directly to restore the shared instance's default. parseThemePreference is the read boundary for both: it accepts a known preference bare (`bright`) or
+      JSON-string-encoded (`\"bright\"`, which is what a client write reads back as, per API-PREFERENCES-PUT), and answers undefined for everything else --
+      unknown names, legacy main.theme-era values, doubly encoded strings, non-strings -- because createHydraTheme's palette lookup has no entry for a name this
+      build does not ship. read never rejects; write does, and its one caller swallows that. Its only consumer is app/ThemePreferenceProvider.tsx
+      (F-PLATFORM-SHELL), which seeds synchronously from the cache, lets the server value win when it arrives unless the user has already chosen in this session,
+      and keeps the applied theme when a write fails. The provider builds its own ApiTransport from the bootstrap base URL rather than taking the router's,
+      because FM-154 mounts it above the query client and the router; with no bootstrap in the document (every component test) it persists nothing.
+      The deprecated Java MainConfig.theme field is not read or migrated (safe config does not expose it and full config reads are admin-only); the config UI's
+      main.theme dropdown is removed by the same task."

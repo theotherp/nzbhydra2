@@ -35,7 +35,7 @@ function renderRecentSearches({
         ),
     );
     render(
-        <ThemeProvider theme={createHydraTheme("dark", false)}>
+        <ThemeProvider theme={createHydraTheme("grey", false)}>
             <QueryClientProvider client={new QueryClient()}>
                 <RecentSearches
                     enabled
@@ -151,7 +151,7 @@ describe("RecentSearches", () => {
                 () => new Promise<Response>(() => {}),
             );
             render(
-                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                <ThemeProvider theme={createHydraTheme("grey", false)}>
                     <QueryClientProvider client={new QueryClient()}>
                         <RecentSearches
                             enabled
@@ -185,7 +185,7 @@ describe("RecentSearches", () => {
                 ),
             );
             render(
-                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                <ThemeProvider theme={createHydraTheme("grey", false)}>
                     <QueryClientProvider client={new QueryClient()}>
                         <RecentSearches
                             enabled
@@ -215,7 +215,7 @@ describe("RecentSearches", () => {
                 Promise.resolve(new Response(null, {status: 500})),
             );
             render(
-                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                <ThemeProvider theme={createHydraTheme("grey", false)}>
                     <QueryClientProvider client={new QueryClient()}>
                         <RecentSearches
                             enabled

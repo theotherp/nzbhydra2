@@ -10,13 +10,13 @@ import "@fontsource/ibm-plex-sans/700.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import {CircularProgress, Container, Stack, Typography} from "@mui/material";
-import {CssBaseline, ThemeProvider} from "@mui/material";
+import {CssBaseline} from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {RouterProvider} from "@tanstack/react-router";
 import {useState} from "react";
 
 import {SafeConfigProvider} from "./app/SafeConfigProvider";
-import {createHydraTheme} from "./app/theme";
+import {ThemePreferenceProvider} from "./app/ThemePreferenceProvider";
 import type {BootstrapData} from "./bootstrap";
 import {DialogProvider} from "./components/dialogs/DialogProvider";
 import {ToastProvider} from "./components/toasts/ToastProvider";
@@ -63,7 +63,18 @@ export function App({bootstrap, isLoading = false}: AppProps) {
     const [router] = useState(() => createAppRouter(bootstrap));
 
     return (
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        /*
+         * FM-154 (ADR-0049): the theme is no longer built here. It comes from
+         * `ThemePreferenceProvider`, which owns the in-session preference the
+         * shell's nav-bar selector writes and renders MUI's `ThemeProvider`
+         * itself. Nothing moved relative to anything else -- the provider takes
+         * exactly the position `ThemeProvider` held, outside `CssBaseline` and
+         * outside `SafeConfigProvider` -- because the preference is a client
+         * concern with no dependency on the query client or the server config.
+         * FM-155, which makes the choice durable per user, is the task that
+         * will need it to sit under the transport instead.
+         */
+        <ThemePreferenceProvider>
             <CssBaseline />
             {isLoading ? (
                 <Container maxWidth="sm" sx={{py: 8}}>
@@ -83,6 +94,6 @@ export function App({bootstrap, isLoading = false}: AppProps) {
                     </SafeConfigProvider>
                 </QueryClientProvider>
             )}
-        </ThemeProvider>
+        </ThemePreferenceProvider>
     );
 }

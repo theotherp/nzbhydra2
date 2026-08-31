@@ -30,13 +30,12 @@ import {
     REVERSE_PROXY_WIKI,
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
-    THEME_OPTIONS,
     timeOfDayValidator,
     urlBaseValidator,
 } from "./mainSettings";
 
 /**
- * `F-CONFIG-MAIN`: the Main configuration tab — the 53 fields of
+ * `F-CONFIG-MAIN`: the Main configuration tab — the 52 fields of
  * `config-fields-service.js:50-735`, in legacy's order and grouping, bound to
  * `C-CONFIG-FORM`'s whole-config form through the `C-CONFIG-FIELDS`
  * vocabulary.
@@ -177,12 +176,15 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                 ) : null}
             </ConfigFieldset>
 
+            {/*
+             * FM-155 (ADR-0049): the Theme dropdown is gone from here. The
+             * theme is a per-user preference chosen from the nav-bar selector
+             * and stored through `C-THEME-PREFERENCE`, not a shared,
+             * admin-saved config field -- so an instance-wide `main.theme` in
+             * the config UI could only contradict what each user actually
+             * sees. The Java field stays, deprecated and unread by this UI.
+             */}
             <ConfigFieldset label="UI">
-                <SelectSetting
-                    label="Theme"
-                    name="main.theme"
-                    options={THEME_OPTIONS}
-                />
                 <SwitchSetting
                     advanced
                     help="Show indexer selection on the search page as a checkbox list with a separate action menu instead of a multiselect dropdown."

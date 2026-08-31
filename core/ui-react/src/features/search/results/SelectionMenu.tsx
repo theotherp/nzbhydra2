@@ -39,10 +39,18 @@ const selectAllSquareSx = {
 function SelectAllUncheckedIcon() {
     return (
         <Box
-            sx={(theme) => ({
+            sx={{
                 ...selectAllSquareSx,
-                border: `1.5px solid ${theme.alpha(theme.palette.common.white, 0.25)}`,
-            })}
+                border: "1.5px solid",
+                // FM-154: a per-theme token (`surfaces.selectAllOutline`),
+                // reached by palette path exactly as the two filled icons
+                // below reach `primary.main`. It replaces an
+                // `alpha(common.white, 0.25)` literal -- a dark-theme remnant
+                // ADR-0014 already bars, and one that vanished (1.03:1) on the
+                // bright theme's light results ground, under WCAG 1.4.11's 3:1
+                // for the boundary that identifies a control.
+                borderColor: "surfaces.selectAllOutline",
+            }}
         />
     );
 }

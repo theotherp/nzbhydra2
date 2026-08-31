@@ -100,7 +100,7 @@ function renderTab({
         }, [form]);
         const isDirty = form.formState.isDirty;
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <DialogProvider>
                     <ToastProvider>
                         <FormProvider {...form}>

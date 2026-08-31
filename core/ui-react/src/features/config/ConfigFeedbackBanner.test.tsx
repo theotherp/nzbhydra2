@@ -19,7 +19,7 @@ function renderBanner(
 ) {
     const onSelectField = vi.fn<(entry: SettingsIndexEntry) => void>();
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <ConfigFeedbackBanner
                 errorMessages={[]}
                 onDismissErrors={vi.fn()}

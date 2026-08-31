@@ -85,7 +85,7 @@ const bootstrap: BootstrapData = {
 
 function renderChecks(overrides: Partial<BootstrapData> = {}) {
     return render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <ToastProvider>
                 <StartupChecks
                     bootstrap={{...bootstrap, ...overrides}}
@@ -419,7 +419,7 @@ describe("StartupChecks", () => {
         const requestCount = requests.length;
 
         rerender(
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <ToastProvider>
                     <StartupChecks
                         bootstrap={bootstrap}

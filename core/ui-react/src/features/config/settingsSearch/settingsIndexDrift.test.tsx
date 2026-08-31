@@ -268,7 +268,7 @@ function renderTab(
             shouldUnregister: false,
         });
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     <DialogProvider>
                         <ToastProvider>

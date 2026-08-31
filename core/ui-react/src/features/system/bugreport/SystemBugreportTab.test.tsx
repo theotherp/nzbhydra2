@@ -91,7 +91,7 @@ function renderTab(backend: Backend) {
     vi.stubGlobal("fetch", backend.fetch);
     const transport = new ApiTransport("/hydra/", backend.fetch);
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <ToastProvider>
                 <SystemBugreportTab
                     bootstrap={bootstrap}

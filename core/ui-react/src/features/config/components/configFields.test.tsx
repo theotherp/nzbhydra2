@@ -77,7 +77,7 @@ function renderSetting(
             </ShowAdvancedContext.Provider>
         );
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     <SafeConfigContext.Provider
                         value={dereferer === undefined ? null : {dereferer}}
@@ -158,20 +158,22 @@ describe("C-CONFIG-FIELDS control kinds", () => {
     it("should choose an option in a select setting", async () => {
         const harness = renderSetting(
             <SelectSetting
-                label="Theme"
-                name="main.theme"
+                label="Use proxy"
+                name="main.proxyType"
                 options={[
-                    {label: "Grey", value: "grey"},
-                    {label: "Bright", value: "bright"},
+                    {label: "None", value: "NONE"},
+                    {label: "SOCKS", value: "SOCKS"},
                 ]}
             />,
-            {values: {main: {theme: "grey"}}},
+            {values: {main: {proxyType: "NONE"}}},
         );
 
-        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Theme"}));
-        fireEvent.click(await screen.findByRole("option", {name: "Bright"}));
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Use proxy"}));
+        fireEvent.click(await screen.findByRole("option", {name: "SOCKS"}));
         await waitFor(() =>
-            expect(harness.form.getValues().main).toEqual({theme: "bright"}),
+            expect(harness.form.getValues().main).toEqual({
+                proxyType: "SOCKS",
+            }),
         );
     });
 
@@ -433,17 +435,17 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
         renderSetting(
             <SelectSetting
                 help="Legacy help text"
-                label="Theme"
-                name="main.theme"
-                options={[{label: "Grey", value: "grey"}]}
+                label="Use proxy"
+                name="main.proxyType"
+                options={[{label: "None", value: "NONE"}]}
             />,
         );
 
         expect(
             screen
-                .getByRole("combobox", {name: "Theme"})
+                .getByRole("combobox", {name: "Use proxy"})
                 .getAttribute("aria-describedby"),
-        ).toBe("config-help-main-theme");
+        ).toBe("config-help-main-proxyType");
     });
 
     it("should hide advanced rows and fieldsets without touching their values", () => {

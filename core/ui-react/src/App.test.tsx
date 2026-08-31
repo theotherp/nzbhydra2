@@ -193,4 +193,131 @@ describe("App", () => {
         expect(status).toContainElement(screen.getByRole("progressbar"));
         expect(screen.getByText("Loading…")).toBeVisible();
     });
+
+    /*
+     * FM-154 (ADR-0049): `App` no longer builds the theme itself; it renders
+     * `ThemePreferenceProvider`, which owns the preference and provides the
+     * theme built from it.
+     *
+     * Both halves are asserted from the *application*, not from the provider in
+     * isolation, because the failure this guards against is a wiring one: a
+     * provider mounted below the shell (so the selector cannot reach it), or
+     * mounted but not supplying the theme (so `CssBaseline` and every component
+     * fall back to MUI's stock light default). The loading branch is included
+     * for the same reason -- it renders outside `QueryClientProvider` and would
+     * be the easy one to leave outside the theme too.
+     */
+    it("should provide the default theme and the selector that changes it", async () => {
+        stubWorkingLocalStorage();
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const selector = await screen.findByTestId("app-shell-theme-selector");
+        expect(selector).toHaveTextContent("Theme: Grey");
+        // The grey theme's page ground, applied by `CssBaseline` under the
+        // provider's theme -- evidence that the theme is genuinely in force and
+        // not merely constructed.
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+
+        fireEvent.click(selector);
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-bright"));
+
+        expect(selector).toHaveTextContent("Theme: Bright");
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+    });
+
+    /*
+     * ADR-0049's `auto` has to follow the operating system *while the page is
+     * open*, which is the one behaviour in `ThemePreferenceProvider` that no
+     * amount of clicking the selector exercises: it lives in the media query's
+     * `change` event, not in the preference state.
+     *
+     * jsdom implements neither `matchMedia` nor `MediaQueryList`, so the stub
+     * below is the only way to reach it. It is a real (if minimal) store --
+     * `matches` is mutable and the captured listener is the provider's own --
+     * so flipping it and firing the event is exactly what the browser does.
+     * The assertion stays the one the cases above use, the rendered page
+     * ground, so a provider that re-subscribed but never re-created the theme
+     * would still fail here.
+     */
+    it("should follow the system scheme while Auto is selected", async () => {
+        stubWorkingLocalStorage();
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        const listeners: (() => void)[] = [];
+        const darkScheme = {
+            matches: false,
+            media: "(prefers-color-scheme: dark)",
+            addEventListener: (_event: string, listener: () => void) => {
+                listeners.push(listener);
+            },
+            removeEventListener: (_event: string, listener: () => void) => {
+                listeners.splice(listeners.indexOf(listener), 1);
+            },
+        };
+        vi.stubGlobal(
+            "matchMedia",
+            vi.fn((query: string) =>
+                query === darkScheme.media
+                    ? darkScheme
+                    : {
+                          matches: false,
+                          media: query,
+                          addEventListener: () => undefined,
+                          removeEventListener: () => undefined,
+                      },
+            ),
+        );
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const selector = await screen.findByTestId("app-shell-theme-selector");
+        fireEvent.click(selector);
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-auto"));
+
+        // A system in light mode resolves `auto` to bright.
+        expect(selector).toHaveTextContent("Theme: Auto");
+        expect(listeners).toHaveLength(1);
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+
+        // The system switches to dark with the page open: no reselection, no
+        // reload, and the resolved theme moves to grey.
+        act(() => {
+            darkScheme.matches = true;
+            for (const listener of listeners) {
+                listener();
+            }
+        });
+
+        expect(selector).toHaveTextContent("Theme: Auto");
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+
+        // ...and back, so the case cannot pass on a one-way latch.
+        act(() => {
+            darkScheme.matches = false;
+            for (const listener of listeners) {
+                listener();
+            }
+        });
+
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+    });
+
+    it("should render the loading branch under the theme as well", () => {
+        render(<App bootstrap={bootstrap} isLoading />);
+
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+    });
 });

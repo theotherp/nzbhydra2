@@ -93,7 +93,7 @@ function renderCategories({
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     <DialogProvider>
                         <ToastProvider>
@@ -430,7 +430,7 @@ describe("F-CONFIG-CATEGORIES category dialog", () => {
         cleanup();
         function Remount() {
             return (
-                <ThemeProvider theme={createHydraTheme("dark")}>
+                <ThemeProvider theme={createHydraTheme("grey")}>
                     <DialogProvider>
                         <ToastProvider>
                             <FormProvider {...harness.form}>

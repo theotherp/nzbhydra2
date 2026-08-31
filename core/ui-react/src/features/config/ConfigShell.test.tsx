@@ -259,7 +259,7 @@ function renderConfigArea({
         ]),
     });
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider client={queryClient}>
                 <SafeConfigProvider bootstrap={bootstrap}>
                     <DialogProvider>

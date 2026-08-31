@@ -35,7 +35,7 @@ function renderAboutTab(infos: unknown, safeConfig: SafeConfig = {}) {
         }),
     );
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider
                 client={
                     new QueryClient({defaultOptions: {queries: {retry: false}}})
@@ -125,7 +125,7 @@ describe("SystemAboutTab", () => {
             .fn<typeof fetch>()
             .mockRejectedValue(new Error("network down"));
         render(
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider
                     client={
                         new QueryClient({

@@ -1239,6 +1239,25 @@ assertion-only test edit. Passed 2026-08-31 with minor findings, not corrected (
 carry no tooltip, `openRefineMultiselect` helper triplicated across three specs (fixtures.ts wasn't allowlisted), and the
 removed `history-refine-<id>-label` caption isn't noted in C-HISTORY-REFINE-BAR. Candidates for a future quickfix.
 
+FM-154 (Multi-Theme Palettes And In-Session Theme Switching, ADR-0049) consolidated theme.ts into four complete named color
+blocks — grey (default, baseline-invariant, test-pinned), bright, dark, dark-dyschromatopsia — plus auto (system light→bright,
+dark→grey), with a nav-bar selector via the new `ThemePreferenceProvider` applying immediately (persistence is FM-155's).
+First review failed on an invisible select-all border in bright (fixed via the new `surfaces.selectAllOutline` token after a
+designer allowlist refinement for `SelectionMenu.tsx`; bright 3.30:1, dark 3.95:1, old themes byte-identical) and missing
+auto-reactivity coverage (added in App.test.tsx). Passed 2026-08-31 (one fix cycle) with minor findings, not corrected
+(optional): grey/dyschromatopsia select-all border stays sub-3:1 (invariance-pinned, proposed for an ADR-0014 remnant-sweep
+packet with TableScrollAffordance's black scrim), no component test pins the token's consumption path, the selector-open and
+mobile captures don't cover the default theme / worst-case label. Candidates for a future quickfix / proposed packet.
+
+FM-155 (Per-User Theme Persistence And Config Dropdown Removal, ADR-0049) made the theme choice durable per user via the new
+`C-THEME-PREFERENCE` service over `C-SERVER-PREFERENCES` (`themePreference?forUser=true`, read-boundary normalization of the
+GenericStorage JSON-string asymmetry, localStorage seed for first paint, server-wins-unless-user-chose), and removed the
+`main.theme` dropdown, `THEME_OPTIONS`, and settings-index entry (settings search proves "No matching setting"; no Java
+change, deliberate F-CONFIG-MAIN gap per ADR-0049). Passed 2026-08-31 with minor findings, not corrected (optional): stale
+FM-154 provider-position comment in App.tsx, browser-scoped (not user-scoped) seed cache briefly shows the previous user's
+theme on shared browsers, and the system-test restore pins literal `grey` instead of clearing the record. Candidates for a
+future quickfix / proposed packet.
+
 ## Active
 
 None.
@@ -1266,9 +1285,7 @@ None.
 
 ## Upcoming
 
-- Remaining members of the 2026-08-31 owner-request batch (ADR-0049/0050/0051) stay planned packets in `tasks/`:
-  FM-154, FM-155 (after FM-154). FM-150 through FM-153 are done.
-  Sequencing: FM-151 not alongside FM-155 (settings-index drift test mounts every config tab).
+- The 2026-08-31 owner-request batch (ADR-0049/0050/0051) is complete: FM-150 through FM-155 are all done (entries above).
 
 - FM-146 (Hide The Chips Row While Advanced Is Collapsed And Empty) is done (entry above): the owner's
   2026-08-30 revision of FM-143's reserved-row rule — the `search-chips` row renders only while `advancedOpen ||

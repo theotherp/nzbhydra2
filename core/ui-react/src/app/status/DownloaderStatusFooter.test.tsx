@@ -102,7 +102,7 @@ function footer(
     safeConfig: Record<string, unknown> | null,
 ) {
     return (
-        <ThemeProvider theme={createHydraTheme("dark", false)}>
+        <ThemeProvider theme={createHydraTheme("grey", false)}>
             <SafeConfigContext.Provider value={safeConfig}>
                 <DownloaderStatusFooter
                     bootstrap={bootstrap}

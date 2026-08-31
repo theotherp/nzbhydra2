@@ -78,7 +78,7 @@ function renderBanners(
         defaultOptions: {queries: {retry: false}},
     });
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider client={queryClient}>
                 <ToastProvider>
                     <UpdateFooterBanners

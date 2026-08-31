@@ -689,6 +689,17 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await page.getByLabel("Min age").fill("10");
         const chip = page.getByTestId("search-chip-age");
         await expect(chip).toBeVisible();
+        // FM-149 folded the chips row into its own `Collapse`, which keeps
+        // `overflow: hidden` while its enter transition runs and only
+        // switches to `overflow: visible` once MUI stamps
+        // `MuiCollapse-entered`. The chip is visible mid-transition, so
+        // probing then measures the outset ring clipped by a bound that no
+        // longer exists in the settled UI. Wait for the entered state.
+        await expect(
+            page
+                .locator(".MuiCollapse-entered")
+                .filter({has: page.getByTestId("search-chips")}),
+        ).toBeVisible();
 
         const probe = await probeFocus(page, chip);
         expectAuthoredFocusRing("search constraint chip", probe, OUTSET_OFFSET);

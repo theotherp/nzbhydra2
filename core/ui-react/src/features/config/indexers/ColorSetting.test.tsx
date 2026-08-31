@@ -22,7 +22,7 @@ function renderColorSetting(color: unknown): Harness {
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <FormProvider {...form}>
                     <ColorSetting
                         label="Color"

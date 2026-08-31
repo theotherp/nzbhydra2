@@ -14,14 +14,6 @@ export const PROXY_TYPE_OPTIONS: readonly SettingOption[] = [
     {label: "HTTP(S)", value: "HTTP"},
 ];
 
-export const THEME_OPTIONS: readonly SettingOption[] = [
-    {label: "Auto", value: "auto"},
-    {label: "Grey", value: "grey"},
-    {label: "Bright", value: "bright"},
-    {label: "Dark", value: "dark"},
-    {label: "Dark (Dyschromatopsia)", value: "dark-dyschromatopsia"},
-];
-
 export const LOG_LEVEL_OPTIONS: readonly SettingOption[] = [
     {label: "Error", value: "ERROR"},
     {label: "Warning", value: "WARN"},

@@ -1,4 +1,4 @@
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {dismissWelcomeDialog, expect, searchForResult, test} from "./fixtures";
 import {
     captureVisualRegion,
     expectVisualGeometry,
@@ -325,4 +325,272 @@ test.describe("Branded app shell visual evidence", () => {
             }
         });
     }
+});
+
+/*
+ * FM-154 (ADR-0049): the nav-bar theme selector, and the Visual Gate strip for
+ * the four themes it switches between.
+ *
+ * This lives beside the shell's other cases because the selector is a shell
+ * affordance, and because the shell is the one surface every theme has to be
+ * right on. The captures below are the strip the repository owner approves: the
+ * search results and one config page in each theme, the grey pair first so that
+ * "the default did not drift" is checkable side by side against the same pages
+ * from before FM-154, plus the open selector on both viewports.
+ */
+test.describe("Theme selection", () => {
+    const themes = [
+        {label: "Grey", value: "grey"},
+        {label: "Bright", value: "bright"},
+        {label: "Dark", value: "dark"},
+        {label: "Dark (Dyschromatopsia)", value: "dark-dyschromatopsia"},
+    ] as const;
+
+    async function chooseTheme(
+        page: import("@playwright/test").Page,
+        value: string,
+    ): Promise<void> {
+        await page.getByTestId("app-shell-theme-selector").click();
+        await page.getByTestId(`app-shell-theme-option-${value}`).click();
+        // Unmounted, not merely hidden. MUI keeps a closing `Menu` mounted and
+        // fading for the length of its exit transition, and a capture taken in
+        // that window photographs a translucent menu over the page -- which is
+        // exactly what the first FM-154 strip caught.
+        await expect(page.getByRole("menu")).toHaveCount(0);
+    }
+
+    /*
+     * FM-155: the preference is stored per user now, so every test below
+     * leaves a durable record behind on a shared instance -- which is exactly
+     * what FM-124's restoration discipline is about. `themePreference` is
+     * `THEME_PREFERENCE_KEY` (`core/ui-react/src/services/theme/
+     * themePreference.ts`), written here in the same shape the application
+     * writes it: a JSON string body, which `GenericStorageWeb.put` stores
+     * JSON-encoded again.
+     */
+    const THEME_PREFERENCE_URL =
+        "/internalapi/genericstorage/themePreference?forUser=true";
+    const DEFAULT_THEME = "grey";
+
+    async function storeThemePreference(
+        page: import("@playwright/test").Page,
+        preference: string,
+    ): Promise<void> {
+        const response = await page.request.put(THEME_PREFERENCE_URL, {
+            data: JSON.stringify(preference),
+            headers: {"content-type": "application/json"},
+        });
+        expect(response.ok()).toBe(true);
+    }
+
+    test.beforeEach(async ({hydra, page}) => {
+        await hydra.configureMockIndexers(["1", "2"]);
+        await page.request.put(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+            {data: true},
+        );
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("search-query")).toBeVisible();
+    });
+
+    // Every case here re-themes the instance for the user it runs as, and the
+    // record outlives the browser context. Restored to the default so the next
+    // spec -- and the next run -- starts from the palette every other visual
+    // capture in this suite was taken in.
+    test.afterEach(async ({page}) => {
+        await storeThemePreference(page, DEFAULT_THEME);
+    });
+
+    test("should apply a chosen theme immediately, without a reload", async ({
+        page,
+    }) => {
+        const selector = page.getByTestId("app-shell-theme-selector");
+        await expect(selector).toHaveText("Theme: Grey");
+
+        // The page ground is the honest evidence that a *theme* changed rather
+        // than a label: it is painted by `CssBaseline` from
+        // `palette.background.default`, which is a different value in all four.
+        const ground = () =>
+            page.evaluate(
+                () => getComputedStyle(document.body).backgroundColor,
+            );
+        const grounds = new Map<string, string>();
+        // A load counter that a full navigation would reset: "no reload" is
+        // asserted, not assumed.
+        await page.evaluate(() => {
+            (window as unknown as {fm154: number}).fm154 = 1;
+        });
+
+        for (const theme of themes) {
+            await chooseTheme(page, theme.value);
+            await expect(selector).toHaveText(`Theme: ${theme.label}`);
+            grounds.set(theme.value, await ground());
+        }
+
+        expect(
+            await page.evaluate(
+                () => (window as unknown as {fm154?: number}).fm154,
+            ),
+            "choosing a theme must not reload the document",
+        ).toBe(1);
+        // Each theme's own `background.default`, named rather than merely
+        // counted: `dark` and `dark-dyschromatopsia` deliberately share a pure
+        // black page (legacy's `@body-bg` for both), so a "four distinct
+        // values" assertion would be wrong about the palettes rather than
+        // about the switching. What each of the four *is* is the real claim --
+        // and it covers the two a screenshot would not pin, that the light
+        // theme is genuinely light and the near-black one genuinely
+        // near-black.
+        expect(Object.fromEntries(grounds)).toEqual({
+            grey: "rgb(31, 36, 38)",
+            bright: "rgb(242, 244, 243)",
+            dark: "rgb(0, 0, 0)",
+            "dark-dyschromatopsia": "rgb(0, 0, 0)",
+        });
+    });
+
+    /*
+     * FM-155 (ADR-0049): the whole point of the persistence half -- the choice
+     * survives a reload, through the server record rather than through the
+     * browser.
+     *
+     * The local seed cache is cleared before the reload deliberately: with it
+     * in place this test would pass on a `localStorage` round trip alone and
+     * say nothing about `API-PREFERENCES-GET/PUT`, which is the durable,
+     * cross-browser half the ADR actually asked for.
+     */
+    test("should still apply a chosen theme after a reload, from the stored per-user preference", async ({
+        page,
+    }) => {
+        const selector = page.getByTestId("app-shell-theme-selector");
+        await expect(selector).toHaveText("Theme: Grey");
+
+        const stored = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/genericstorage/themePreference",
+        );
+        await chooseTheme(page, "bright");
+        expect((await stored).ok()).toBe(true);
+
+        await page.evaluate(() => {
+            localStorage.clear();
+        });
+        await page.reload();
+        await dismissWelcomeDialog(page);
+
+        await expect(selector).toHaveText("Theme: Bright");
+        await expect
+            .poll(() =>
+                page.evaluate(
+                    () => getComputedStyle(document.body).backgroundColor,
+                ),
+            )
+            .toBe("rgb(242, 244, 243)");
+
+        // The Visual Gate's second FM-155 item: the reloaded page, in the
+        // theme the stored preference put it in.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(page.getByTestId("search-query")).toBeVisible();
+        });
+        await captureVisualRegion(
+            page.locator("body"),
+            "F-PLATFORM-SHELL",
+            "theme-persisted-after-reload-desktop",
+        );
+    });
+
+    test("should keep the selector keyboard operable with a visible focus ring", async ({
+        page,
+    }) => {
+        const selector = page.getByTestId("app-shell-theme-selector");
+        await selector.focus();
+        await expect(selector).toBeFocused();
+        // ADR-0013's authored ring, which `MuiButton` carries; measured here
+        // rather than in jsdom, which has no `:focus-visible` and no computed
+        // outline at all (ADR-0004).
+        await page.keyboard.press("Tab");
+        await page.keyboard.press("Shift+Tab");
+        expect(
+            await selector.evaluate((element) => {
+                const style = getComputedStyle(element);
+                return {
+                    style: style.outlineStyle,
+                    width: style.outlineWidth,
+                };
+            }),
+        ).toEqual({style: "solid", width: "3px"});
+
+        await page.keyboard.press("Enter");
+        const menu = page.getByRole("menu");
+        await expect(menu).toBeVisible();
+        await expect(
+            menu.getByTestId("app-shell-theme-option-grey"),
+        ).toHaveAttribute("aria-checked", "true");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+        await expect(menu).toBeHidden();
+        await expect(selector).not.toHaveText("Theme: Grey");
+    });
+
+    test("should capture the Visual Gate strip for every theme", async ({
+        page,
+    }) => {
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await searchForResult(page, "uitest", "indexer1-result1");
+        });
+
+        for (const theme of themes) {
+            await chooseTheme(page, theme.value);
+            await expect(
+                page.getByTestId("app-shell-theme-selector"),
+            ).toHaveText(`Theme: ${theme.label}`);
+            await captureVisualRegion(
+                page.locator("body"),
+                "F-PLATFORM-SHELL",
+                `theme-${theme.value}-results-desktop`,
+            );
+        }
+
+        // Re-prepared after the navigation rather than assumed: the
+        // reduced-motion style tag `prepareVisualEvidence` injects belongs to
+        // the previous document, so without this the config captures are taken
+        // while transitions are still running.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/config/searching");
+            await expect(page.getByTestId("config-save")).toBeVisible();
+        });
+        for (const theme of themes) {
+            await chooseTheme(page, theme.value);
+            await captureVisualRegion(
+                page.locator("body"),
+                "F-PLATFORM-SHELL",
+                `theme-${theme.value}-config-desktop`,
+            );
+        }
+
+        await page.getByTestId("app-shell-theme-selector").click();
+        await expect(page.getByRole("menu")).toBeVisible();
+        await captureVisualRegion(
+            page.locator("body"),
+            "F-PLATFORM-SHELL",
+            "theme-selector-open-desktop",
+        );
+        await page.keyboard.press("Escape");
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/");
+            await expect(page.getByTestId("search-query")).toBeVisible();
+        });
+        await page.getByTestId("app-shell-theme-selector").click();
+        await expect(page.getByRole("menu")).toBeVisible();
+        await captureVisualRegion(
+            page.locator("body"),
+            "F-PLATFORM-SHELL",
+            "theme-selector-open-mobile",
+        );
+    });
 });

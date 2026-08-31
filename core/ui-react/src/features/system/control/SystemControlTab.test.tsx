@@ -41,7 +41,7 @@ function createBackend(
 function renderControlTab(backend: Backend) {
     vi.stubGlobal("fetch", backend.fetch);
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <ToastProvider>
                 <SystemControlTab
                     transport={new ApiTransport("/hydra/", backend.fetch)}

@@ -2850,3 +2850,10 @@ their text and relative order are unchanged.
 - **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** in `core/ui-react`: `typecheck` clean; `lint` 0 errors (15 pre-existing warnings); `format:check` clean; `test -- --run` 1559 passed; `build` green; `check:api` current; `validate:migration` valid. Repo root: `git diff --check` clean.
 - **Commit:** `c86b5882c`
+
+### 2026-08-31 — Wait for the chips-row Collapse to settle before probing the constraint-chip focus ring
+
+- **Why not a packet:** assertion-timing repair in a test; the app's settled state is compliant (measured live: the clip exists only while FM-149's fold transition runs with MUI's transient `overflow: hidden`). Surfaced by FM-154's system-test run and reproduced on the untouched baseline.
+- **Paths:** `tests/system/tests/focus-indication.spec.ts`
+- **Gates:** `tests/system`: `npx tsc --noEmit` clean; `npx prettier --check` clean; full `focus-indication.spec.ts` 10/10 green on a fresh instance via `run_gui_systemtest.py` (exit 0). Two other failures seen only on a long-lived shared instance (stale downloader 500, accumulated search state) are environmental, pre-existing, and absent on the fresh run.
+- **Commit:** `605552eaa`

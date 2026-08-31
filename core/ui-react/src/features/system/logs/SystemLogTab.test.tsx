@@ -92,7 +92,7 @@ function createBackend(rawLog = "a plain log line"): Backend {
 function renderLogTab(backend: Backend) {
     vi.stubGlobal("fetch", backend.fetch);
     return render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider
                 client={
                     new QueryClient({defaultOptions: {queries: {retry: false}}})

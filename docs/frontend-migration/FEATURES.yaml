@@ -12,10 +12,15 @@ features:
     target: core/ui-react/src/app
     tests:
       - core/ui-react/src/app/AppShell.test.tsx
+      - core/ui-react/src/app/theme.test.ts
+      - core/ui-react/src/app/ThemePreferenceProvider.test.tsx
+      - core/ui-react/src/App.test.tsx
       - tests/system/tests/smoke.spec.ts
     selectors:
       - app-shell-logo
       - app-shell-nav
+      - app-shell-theme-selector
+      - app-shell-theme-option-{{themePreference}}
       - shell-loginout
     parity: partial
     gaps:
@@ -29,6 +34,8 @@ features:
       # shipped it (STATUS.md, `C-DOWNLOADER-STATUS`), so the line described
       # a forward reference that had already been discharged.
       - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
+      - deliberate - FM-154/FM-155 (ADR-0049) put theme selection in the nav bar beside the login/logout control rather than in Config > Main, and offer Auto/Grey/Bright/Dark/Dark (Dyschromatopsia) rather than legacy's fixed four; the choice applies immediately and FM-155 persists it per user through C-THEME-PREFERENCE (server record, with a localStorage seed that only shortens the wrong-theme flash)
+      - "deliberate - the `bright` theme reuses the shell's `banner-grey-dark.png` masthead rather than legacy's separate `banner-bright.png`, because MUI paints the app bar `primary.main` under `palette.mode: \"light\"` and the white/green wordmark reads on that green ground; legacy switched the asset per theme"
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
     routes:
@@ -576,7 +583,8 @@ features:
       - config-file-browser-file
       - config-file-browser-select
     parity: done
-    gaps: []
+    gaps:
+      - "deliberate - FM-155 (ADR-0049) removes the Theme dropdown from the UI fieldset: the theme is a per-user preference (C-THEME-PREFERENCE, nav-bar selector) rather than an instance-wide config field, so this tab renders 52 of legacy's 53 fields. The deprecated Java `MainConfig.theme` stays untouched and is deliberately not migrated into the per-user record -- safe config does not expose `main.theme` and a full config read is admin-only, so no uniform per-user seed exists"
   - id: F-CONFIG-AUTH
     name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
     routes:

@@ -104,7 +104,7 @@ function renderSearching({
         // would.
         const isDirty = form.formState.isDirty;
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <FormProvider {...form}>
                     <ShowAdvancedContext.Provider value={showAdvanced}>
                         <span data-testid="form-dirty">{String(isDirty)}</span>

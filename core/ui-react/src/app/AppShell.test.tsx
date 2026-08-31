@@ -1,11 +1,16 @@
-import {ThemeProvider} from "@mui/material";
-import {cleanup, render, screen, within} from "@testing-library/react";
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../api/transport";
 import {ToastProvider} from "../components/toasts/ToastProvider";
 import {AppShell} from "./AppShell";
-import {createHydraTheme} from "./theme";
+import {ThemePreferenceProvider} from "./ThemePreferenceProvider";
 
 let mockPathname = "/hydra/";
 const mockRouterNavigate = vi.fn();
@@ -104,9 +109,18 @@ const transport = new ApiTransport("/hydra/", fetchImplementation);
 /**
  * The shell renders the login/logout affordance, which reports failures
  * through `C-TOAST-SERVICE`; every shell render therefore needs the provider.
+ *
+ * FM-154: it also renders the theme selector, which reads and writes the
+ * preference `ThemePreferenceProvider` owns -- and that provider is what
+ * supplies the MUI theme, so the two arrive together exactly as they do in
+ * `App.tsx`. Its default preference is `grey`, the application's default theme.
  */
 function renderShell(ui: React.ReactElement) {
-    return render(<ToastProvider>{ui}</ToastProvider>);
+    return render(
+        <ThemePreferenceProvider>
+            <ToastProvider>{ui}</ToastProvider>
+        </ThemePreferenceProvider>,
+    );
 }
 
 const bootstrap = {
@@ -260,18 +274,16 @@ describe("AppShell", () => {
     it("should mark the current route's nav item with the branded primary active indicator", () => {
         mockPathname = "/hydra/stats/indexers";
         renderShell(
-            <ThemeProvider theme={createHydraTheme("dark", false)}>
-                <AppShell
-                    bootstrap={{
-                        ...bootstrap,
-                        adminRestricted: false,
-                        statsRestricted: false,
-                    }}
-                    transport={transport}
-                >
-                    <p>Page content</p>
-                </AppShell>
-            </ThemeProvider>,
+            <AppShell
+                bootstrap={{
+                    ...bootstrap,
+                    adminRestricted: false,
+                    statsRestricted: false,
+                }}
+                transport={transport}
+            >
+                <p>Page content</p>
+            </AppShell>,
         );
 
         // Real, non-vacuous evidence that the theme's `primary.main` (the
@@ -400,5 +412,110 @@ describe("AppShell", () => {
         );
 
         expect(screen.queryByTestId("shell-loginout")).not.toBeInTheDocument();
+    });
+});
+
+/*
+ * FM-154 (ADR-0049): the nav-bar theme selector.
+ *
+ * These cases are about the affordance, not about the palettes -- `theme.ts`'s
+ * own tests measure those. What matters here is that the control names itself,
+ * shows the choice in force, sits where the ADR puts it, and that choosing an
+ * option actually repaints the application rather than only updating a label.
+ */
+describe("AppShell theme selector", () => {
+    function openSelector() {
+        fireEvent.click(screen.getByTestId("app-shell-theme-selector"));
+        return screen.getByRole("menu");
+    }
+
+    it("should show the theme in force and offer every theme ADR-0049 names", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        const trigger = screen.getByTestId("app-shell-theme-selector");
+        expect(trigger).toHaveTextContent("Theme: Grey");
+        expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+        expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+        const menu = openSelector();
+        expect(
+            within(menu)
+                .getAllByRole("menuitemradio")
+                .map((option) => option.textContent),
+        ).toEqual(["Auto", "Grey", "Bright", "Dark", "Dark (Dyschromatopsia)"]);
+        // The current choice is announced, not only painted: `selected` on a
+        // `MenuItem` sets no ARIA state of its own.
+        expect(
+            within(menu).getByTestId("app-shell-theme-option-grey"),
+        ).toHaveAttribute("aria-checked", "true");
+        expect(
+            within(menu).getByTestId("app-shell-theme-option-bright"),
+        ).toHaveAttribute("aria-checked", "false");
+        expect(trigger).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("should sit beside the login/logout control, where ADR-0049 puts it", () => {
+        renderShell(
+            <AppShell
+                bootstrap={{...bootstrap, username: "u", showLogout: true}}
+                transport={transport}
+            >
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        const selector = screen.getByTestId("app-shell-theme-selector");
+        const loginout = screen.getByTestId("shell-loginout");
+        expect(
+            selector.compareDocumentPosition(loginout) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(screen.getByTestId("app-shell-nav")).toBeInTheDocument();
+    });
+
+    it("should repaint the application when a theme is chosen, with no reload", () => {
+        mockPathname = "/hydra/stats/indexers";
+        renderShell(
+            <AppShell
+                bootstrap={{
+                    ...bootstrap,
+                    adminRestricted: false,
+                    statsRestricted: false,
+                }}
+                transport={transport}
+            >
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        // The active nav item's rail renders `surfaces.barAccent`, which is a
+        // different value in every theme -- so it is real, rendered evidence
+        // that the theme changed, not just that a label did.
+        const active = () =>
+            screen.getByRole("link", {name: "History & Stats"});
+        expect(window.getComputedStyle(active()).borderBottomColor).toBe(
+            "oklch(0.75 0.1 190)",
+        );
+
+        openSelector();
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-dark"));
+
+        expect(
+            screen.getByTestId("app-shell-theme-selector"),
+        ).toHaveTextContent("Theme: Dark");
+        expect(window.getComputedStyle(active()).borderBottomColor).toBe(
+            "rgb(154, 166, 172)",
+        );
+
+        openSelector();
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-bright"));
+
+        expect(window.getComputedStyle(active()).borderBottomColor).toBe(
+            "rgb(255, 255, 255)",
+        );
     });
 });

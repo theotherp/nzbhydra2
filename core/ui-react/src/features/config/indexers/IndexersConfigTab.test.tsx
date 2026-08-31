@@ -217,7 +217,7 @@ function renderIndexers({
         }, [form]);
         const isDirty = form.formState.isDirty;
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <DialogProvider>
                     <ToastProvider>
                         <FormProvider {...form}>
@@ -1676,7 +1676,7 @@ describe("The Jackett and Prowlarr imports", () => {
 describe("SettingRow's table-cell opt-in", () => {
     function renderRow(children: React.ReactNode) {
         render(
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 {children}
             </ThemeProvider>,
         );

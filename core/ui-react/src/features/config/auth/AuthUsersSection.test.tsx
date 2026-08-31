@@ -55,7 +55,7 @@ function renderUsers(values: ConfigValues): Harness {
         }, [form]);
         const isDirty = form.formState.isDirty;
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <DialogProvider>
                     <FormProvider {...form}>
                         <ShowAdvancedContext.Provider value={true}>

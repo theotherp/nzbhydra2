@@ -1,12 +1,15 @@
 import {describe, expect, it} from "vitest";
 
+import {readFileSync} from "node:fs";
+
 import {
     controlHeight,
     createHydraTheme,
     monoFontFamily,
     pillRadius,
-    resolveThemeMode,
+    resolveThemeName,
     selectAllRadius,
+    themePreferenceOptions,
 } from "./theme";
 
 /*
@@ -169,16 +172,46 @@ function compositeOver(
     }) as [number, number, number];
 }
 
-describe("resolveThemeMode", () => {
-    it("should follow the system preference for automatic mode", () => {
-        expect(resolveThemeMode("auto", true)).toBe("dark");
-        expect(resolveThemeMode("auto", false)).toBe("light");
+describe("resolveThemeName", () => {
+    // ADR-0049 states the `auto` mapping in words -- system light to `bright`,
+    // system dark to `grey` -- and the second half is the one worth pinning:
+    // the theme named `dark` is *not* what a system dark preference resolves
+    // to. `grey` is this application's default dark theme; `dark` is legacy's
+    // separate near-black one, which a user has to ask for.
+    it("should map the automatic preference onto bright and grey", () => {
+        expect(resolveThemeName("auto", true)).toBe("grey");
+        expect(resolveThemeName("auto", false)).toBe("bright");
     });
 
-    it("should preserve the requested explicit mode", () => {
-        expect(resolveThemeMode("light", true)).toBe("light");
-        expect(resolveThemeMode("dark", false)).toBe("dark");
-        expect(resolveThemeMode("dark-dyschromatopsia", false)).toBe("dark");
+    it("should pass an explicit preference through unchanged", () => {
+        for (const name of [
+            "grey",
+            "bright",
+            "dark",
+            "dark-dyschromatopsia",
+        ] as const) {
+            expect(resolveThemeName(name, true)).toBe(name);
+            expect(resolveThemeName(name, false)).toBe(name);
+        }
+    });
+
+    it("should offer every theme, and only themes that exist, in the selector", () => {
+        expect(themePreferenceOptions.map((option) => option.value)).toEqual([
+            "auto",
+            "grey",
+            "bright",
+            "dark",
+            "dark-dyschromatopsia",
+        ]);
+        for (const option of themePreferenceOptions) {
+            expect(option.label).not.toHaveLength(0);
+            // Every offered value has to build a theme; `auto` included.
+            expect(createHydraTheme(option.value, false).palette.mode).toBe(
+                option.value === "auto" || option.value === "bright"
+                    ? "light"
+                    : "dark",
+            );
+        }
     });
 
     it("should provide the dyschromatopsia severity palette", () => {
@@ -194,7 +227,7 @@ describe("resolveThemeMode", () => {
     });
 
     it("should expose the mock's surface tokens on the palette", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.palette.surfaces).toEqual({
             bar: "#232a2c",
@@ -203,7 +236,19 @@ describe("resolveThemeMode", () => {
             hairline: "rgba(255, 255, 255, 0.1)",
             hairlineFaint: "rgba(255, 255, 255, 0.06)",
             mutedText: "#6b7472",
+            // FM-154's one addition to the token set. It is the theme's own
+            // `primary.main`, which is what `AppShell` read before the token
+            // existed, so the grey theme's app bar renders exactly as it did.
+            barAccent: "oklch(0.75 0.1 190)",
+            // FM-154's second addition, and the one that must not move a
+            // pixel here: it is the colour `SelectionMenu` composited from
+            // `alpha(common.white, 0.25)` before the token existed, so the
+            // grey theme's select-all square renders exactly as it did.
+            selectAllOutline: "rgba(255, 255, 255, 0.25)",
         });
+        expect(theme.palette.surfaces.barAccent).toBe(
+            theme.palette.primary.main,
+        );
     });
 
     it("should keep the dyschromatopsia variant's contrast text unchanged by the mock palette", () => {
@@ -216,16 +261,74 @@ describe("resolveThemeMode", () => {
         expect(theme.palette.warning.contrastText).toBe("rgba(0, 0, 0, 0.87)");
     });
 
-    it("should default palette.mode to dark when no preference is supplied", () => {
-        const theme = createHydraTheme();
+    // ADR-0049 makes `grey` the default, and `grey` is the palette this
+    // application already rendered -- so "the default did not drift" is the
+    // single most load-bearing claim FM-154 makes. It is asserted as a whole
+    // palette rather than as a mode, against the values read off the
+    // pre-FM-154 build, so a change to any one of them has to come through
+    // here. (The derived tonal and alpha variants are pinned by the
+    // `createHydraTheme base palette` block below.)
+    it("should default to the grey theme, whose palette is the pre-FM-154 one", () => {
+        const fromDefault = createHydraTheme();
+        const grey = createHydraTheme("grey", false);
 
-        expect(theme.palette.mode).toBe("dark");
+        expect(fromDefault.palette.mode).toBe("dark");
+        for (const theme of [fromDefault, grey]) {
+            expect(theme.palette.background.default).toBe("#1f2426");
+            expect(theme.palette.background.paper).toBe("#262c2e");
+            expect(theme.palette.text.primary).toBe("#d6dad9");
+            expect(theme.palette.text.secondary).toBe("#9aa2a1");
+            expect(theme.palette.primary.main).toBe("oklch(0.75 0.1 190)");
+            expect(theme.palette.primary.light).toBe("oklch(0.82 0.1 190)");
+            expect(theme.palette.primary.dark).toBe("oklch(0.85 0.1 190)");
+            expect(theme.palette.primary.contrastText).toBe("#0e1c1b");
+            expect(theme.palette.success.main).toBe("oklch(0.75 0.11 150)");
+            expect(theme.palette.warning.main).toBe("oklch(0.76 0.1 70)");
+            expect(theme.palette.info.main).toBe("#398da5");
+            expect(theme.palette.error.main).toBe("oklch(0.7 0.14 24.3)");
+            expect(theme.palette.charts.categorical).toEqual([
+                "oklch(0.75 0.1 190)",
+                "oklch(0.78 0.12 80)",
+                "oklch(0.76 0.11 300)",
+                "oklch(0.74 0.12 20)",
+                "oklch(0.75 0.1 250)",
+                "oklch(0.78 0.11 140)",
+            ]);
+        }
+    });
+
+    // The dyschromatopsia variant used to be six overrides spread over the grey
+    // palette; FM-154 wrote it out as a block of its own. What that must not
+    // change is the *effective* palette, so the merge's outcome is asserted
+    // key by key -- including the three keys the merge produced by omission
+    // rather than by statement: the variant never restated `primary.light` /
+    // `primary.dark` (its spread replaced the whole role object, so MUI derives
+    // both from `main`), and it never restated the surface tokens.
+    it("should keep the dyschromatopsia palette exactly as the pre-FM-154 override spread produced it", () => {
+        const theme = createHydraTheme("dark-dyschromatopsia", false);
+
+        expect(theme.palette.primary.light).toBe(
+            "color-mix(in oklch, #78909c, #fff 20%)",
+        );
+        expect(theme.palette.primary.dark).toBe(
+            "color-mix(in oklch, #78909c, #000 30%)",
+        );
+        expect(theme.palette.text.primary).toBe("#d6dad9");
+        expect(theme.palette.text.secondary).toBe("#9aa2a1");
+        const grey = createHydraTheme("grey", false).palette.surfaces;
+
+        expect(theme.palette.surfaces).toEqual({
+            ...grey,
+            // The one token that is not shared, and must not be: this theme's
+            // app bar accent is its own `primary.main`, not grey's teal.
+            barAccent: theme.palette.primary.main,
+        });
     });
 });
 
 describe("createHydraTheme base palette", () => {
     it("should source the base palette from the mock's oklch teal/cyan design", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.palette.background.default).toBe("#1f2426");
         expect(theme.palette.background.paper).toBe("#262c2e");
@@ -239,7 +342,7 @@ describe("createHydraTheme base palette", () => {
     });
 
     it("should keep info at its prior value, which the mock never renders", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.palette.info.main).toBe("#398da5");
     });
@@ -251,7 +354,7 @@ describe("createHydraTheme base palette", () => {
     // channels rather than on a hex string: a future retune that moved hue or
     // chroma would still be a different decision than the one ADR-0035 took.
     it("should raise error.main's lightness while carrying the legacy hue and chroma across", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.palette.error.main).toBe("oklch(0.7 0.14 24.3)");
 
@@ -263,16 +366,113 @@ describe("createHydraTheme base palette", () => {
         expect(lightness).toBeGreaterThan(legacy[0]);
     });
 
-    it("should apply the base palette regardless of light/dark mode", () => {
-        const theme = createHydraTheme("light", false);
+    // ADR-0049: every theme is a *complete* block, so "complete" is asserted
+    // structurally rather than trusted. The failure this guards against is the
+    // one a light theme makes silent: a block that omits `inputOutline`, a
+    // scrollbar colour or a chart sequence does not throw, it renders the
+    // wrong-mode value or `undefined` at one surface nobody screenshotted.
+    it("should give every theme a full colour set, with no key left to a neighbouring block", () => {
+        for (const name of [
+            "grey",
+            "bright",
+            "dark",
+            "dark-dyschromatopsia",
+        ] as const) {
+            const {palette} = createHydraTheme(name, false);
+            const surfaces = palette.surfaces;
 
-        expect(theme.palette.mode).toBe("light");
-        expect(theme.palette.primary.main).toBe("oklch(0.75 0.1 190)");
-        expect(theme.palette.background.default).toBe("#1f2426");
+            for (const value of [
+                palette.background.default,
+                palette.background.paper,
+                palette.text.primary,
+                palette.text.secondary,
+                palette.primary.main,
+                palette.primary.contrastText,
+                palette.success.main,
+                palette.warning.main,
+                palette.info.main,
+                palette.error.main,
+                surfaces.bar,
+                surfaces.barAccent,
+                surfaces.control,
+                surfaces.recessed,
+                surfaces.hairline,
+                surfaces.hairlineFaint,
+                surfaces.mutedText,
+                surfaces.selectAllOutline,
+            ]) {
+                expect(typeof value).toBe("string");
+                expect(value).not.toHaveLength(0);
+            }
+            expect(palette.charts.categorical).toHaveLength(6);
+            // The two tokens that are consumed from the block directly rather
+            // than through the palette, and so cannot be read off `palette`:
+            // asserted through the rules that render them.
+            const outlined = (
+                createHydraTheme(name, false).components?.MuiOutlinedInput
+                    ?.styleOverrides?.root as (props: {
+                    theme: ReturnType<typeof createHydraTheme>;
+                }) => Record<string, Record<string, string>>
+            )({theme: createHydraTheme(name, false)});
+
+            expect(
+                outlined["& .MuiOutlinedInput-notchedOutline"].borderColor,
+            ).toMatch(/^(#|rgba?\(|oklch\()/);
+            const baseline = (
+                createHydraTheme(name, false).components?.MuiCssBaseline
+                    ?.styleOverrides as (
+                    theme: unknown,
+                ) => Record<string, Record<string, unknown>>
+            )(createHydraTheme(name, false));
+
+            expect(baseline["*::-webkit-scrollbar-thumb"].background).toMatch(
+                /^#/,
+            );
+            expect(
+                baseline["*::-webkit-scrollbar-thumb:hover"].background,
+            ).toMatch(/^#/);
+        }
+    });
+
+    /*
+     * ADR-0049's structural requirement, enforced rather than described: "all
+     * colours of a theme live together in one named palette block". A colour
+     * written anywhere else in this file -- a hairline in a `styleOverride`, a
+     * contrast text beside a component entry -- is invisible to a reader
+     * comparing two themes and, worse, is the same in all four of them, which
+     * is precisely how a dark-theme remnant survives into a light one.
+     *
+     * The check is a grep over this file's own source with comments removed
+     * (the prose above and below the blocks quotes measured colours constantly,
+     * and quoting a colour is not stating one). The block region is delimited
+     * by two declarations rather than by a comment marker, so stripping the
+     * comments cannot move it.
+     */
+    it("should state no colour outside the theme blocks", () => {
+        // Read from the Vitest root (`core/ui-react`) rather than from
+        // `import.meta.url`, which Vite rewrites to a non-`file:` URL.
+        const source = readFileSync("src/app/theme.ts", {encoding: "utf8"})
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/^\s*\/\/.*$/gm, "");
+        const start = source.indexOf("const darkContrastText");
+        const end = source.indexOf("const focusRingWidth");
+
+        expect(start).toBeGreaterThan(0);
+        expect(end).toBeGreaterThan(start);
+        const strays = [
+            ...source.matchAll(/#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\(/g),
+        ].filter((match) => match.index < start || match.index > end);
+
+        expect(
+            strays.map(
+                (match) =>
+                    `${match[0]} at ${source.slice(Math.max(0, match.index - 40), match.index + 20).trim()}`,
+            ),
+        ).toEqual([]);
     });
 
     it("should derive every palette role's alpha and tonal variants inside the oklch color space", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         // Without this MUI 7.3 opt-in, `@mui/system`'s sRGB-only
         // `decomposeColor` throws for an `oklch()` token the first time any
@@ -287,7 +487,7 @@ describe("createHydraTheme base palette", () => {
     });
 
     it("should spell out contrast text for every role rather than deriving it from CSS variables", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         // `colorSpace` makes MUI derive contrast text as
         // `oklch(from <main> var(--__l) 0 h / var(--__a))`, and those custom
@@ -308,7 +508,7 @@ describe("createHydraTheme base palette", () => {
 
 describe("createHydraTheme typography and density", () => {
     it("should use the mock's vendored IBM Plex Sans stack at MUI's default base size", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.typography.fontFamily).toBe(
             '"IBM Plex Sans", system-ui, -apple-system, sans-serif',
@@ -340,7 +540,7 @@ describe("createHydraTheme typography and density", () => {
     // out -- a future edit that drops its `minHeight: 0` would silently
     // inflate the mock's dense 26px quality/type pills to 32px.
     it("should let the refine pill opt out of the shared control height", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const variants = theme.components?.MuiButton?.variants ?? [];
         const refineChip = variants.find(
             (variant) =>
@@ -363,7 +563,7 @@ describe("createHydraTheme typography and density", () => {
     });
 
     it("should adopt the mock's denser radii and sentence-case buttons", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
 
         expect(theme.shape.borderRadius).toBe(8);
         // `MuiButton`'s root override became a theme-reading function when
@@ -528,7 +728,7 @@ describe("createHydraTheme typography and density", () => {
     // colour; the surface half only to the default one, leaving MUI's stock
     // `warning` treatment intact for the empty-indexer-selection chip.
     it("should dress a constraint chip from the theme, without repainting its warning colour", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const variants = theme.components?.MuiChip?.variants ?? [];
         const resolve = (props: Record<string, unknown>) =>
             variants
@@ -578,7 +778,7 @@ describe("createHydraTheme typography and density", () => {
     });
 
     it("should round only raised, non-square paper surfaces so the AppBar stays full-bleed", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const paperRoot = theme.components?.MuiPaper?.styleOverrides?.root;
 
         expect(typeof paperRoot).toBe("function");
@@ -614,7 +814,7 @@ describe("createHydraTheme typography and density", () => {
     // rule deliberately skips, because "one ground" is exactly the claim that
     // no `Paper` in the application is exempt.
     it("should paint every paper surface flat, so background.paper means background.paper", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const paperRoot = theme.components?.MuiPaper?.styleOverrides
             ?.root as (props: {
             ownerState: {square?: boolean; elevation?: number};
@@ -638,7 +838,7 @@ describe("createHydraTheme typography and density", () => {
     // control and keeps it, which is why the rule is keyed on MUI's own
     // `multiple` prop and not on the Autocomplete class alone.
     it("should let a multi-value autocomplete grow with its chip rows while single-line inputs keep the clamp", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const variants = theme.components?.MuiAutocomplete?.variants ?? [];
         const growing = variants.filter(
             (variant) =>
@@ -670,7 +870,7 @@ describe("createHydraTheme typography and density", () => {
     });
 
     it("should style the scrollbar from the mock while sourcing its track from the page background", () => {
-        const theme = createHydraTheme("dark", false);
+        const theme = createHydraTheme("grey", false);
         const baseline = theme.components?.MuiCssBaseline?.styleOverrides;
 
         expect(typeof baseline).toBe("function");
@@ -708,7 +908,7 @@ describe("createHydraTheme typography and density", () => {
  * surface" is the failure ADR-0036 exists to correct.
  */
 describe("createHydraTheme measured contrast (ADR-0035, ADR-0036)", () => {
-    const theme = createHydraTheme("dark", false);
+    const theme = createHydraTheme("grey", false);
     const grounds = {
         "background.default": hexToRgb(theme.palette.background.default),
         "background.paper": hexToRgb(theme.palette.background.paper),
@@ -837,6 +1037,60 @@ describe("createHydraTheme measured contrast (ADR-0035, ADR-0036)", () => {
 });
 
 /*
+ * FM-154's one call-site correction, measured rather than described.
+ *
+ * `SelectionMenu`'s unchecked select-all square drew its border from
+ * `alpha(common.white, 0.25)` -- a colour authored when this application had
+ * exactly one, dark, theme. The square sits on `background.default` (the
+ * results table's sticky select column paints the page ground), so on the
+ * `bright` theme's `#f2f4f3` that white edge measured 1.03:1: the boundary
+ * that identifies the control was simply absent, against WCAG 1.4.11's 3:1.
+ *
+ * The two themes that existed before FM-154 keep the exact composited colour
+ * they rendered -- the invariance this task is pinned against outranks the
+ * ratio here, and their shortfall is carried as a follow-up, not fixed in
+ * silence. So the assertions below are split: the two new themes must clear
+ * 3:1, and the two old ones must still hold the byte-identical remnant value.
+ */
+describe("the select-all square's border (FM-154)", () => {
+    const remnant = "rgba(255, 255, 255, 0.25)";
+
+    for (const name of ["bright", "dark"] as const) {
+        it(`should reach WCAG 1.4.11's 3:1 boundary contrast on ${name}'s results ground`, () => {
+            const {palette} = createHydraTheme(name, false);
+            const ground = hexToRgb(palette.background.default);
+            const outline = palette.surfaces.selectAllOutline;
+
+            // Measured: bright 3.30:1 on `#f2f4f3` (3.33:1 on its paper),
+            // dark 3.95:1 on `#000000`.
+            expect(
+                contrastRatio(compositeOver(outline, ground), ground),
+            ).toBeGreaterThanOrEqual(3);
+            expect(
+                contrastRatio(
+                    compositeOver(outline, hexToRgb(palette.background.paper)),
+                    hexToRgb(palette.background.paper),
+                ),
+            ).toBeGreaterThanOrEqual(3);
+            // The value replaced, on the same ground: 1.03:1 on bright and
+            // 2.02:1 on dark. Asserted alongside so neither case can go green
+            // on a token that was never re-authored.
+            expect(
+                contrastRatio(compositeOver(remnant, ground), ground),
+            ).toBeLessThan(3);
+        });
+    }
+
+    it("should keep the pre-FM-154 themes' square rendering byte-identical", () => {
+        for (const name of ["grey", "dark-dyschromatopsia"] as const) {
+            expect(
+                createHydraTheme(name, false).palette.surfaces.selectAllOutline,
+            ).toBe(remnant);
+        }
+    });
+});
+
+/*
  * The FM-117 correction: `MuiPaper.root`'s `backgroundImage: "none"` is what
  * makes ADR-0036's one ground true, but it also removes the only separation a
  * *borderless* raised `Paper` had from the surface under it. Two such surfaces
@@ -851,7 +1105,7 @@ describe("createHydraTheme measured contrast (ADR-0035, ADR-0036)", () => {
  * halves rather than leaving a green test behind.
  */
 describe("borderless raised surfaces after the paper flattening (FM-117)", () => {
-    const theme = createHydraTheme("dark", false);
+    const theme = createHydraTheme("grey", false);
     const paper = hexToRgb(theme.palette.background.paper);
     const pageGround = hexToRgb(theme.palette.background.default);
     /**
@@ -986,5 +1240,211 @@ describe("borderless raised surfaces after the paper flattening (FM-117)", () =>
                 control,
             ),
         ).toBeLessThan(3);
+    });
+});
+
+/*
+ * FM-154 (ADR-0049). Every theme is measured, not only the one this repository
+ * had already measured, because ADR-0049's "individual colours may be improved"
+ * is not permission to ship a palette that has not been checked -- and because
+ * `bright` is the first `palette.mode: "light"` this codebase has ever
+ * rendered, where every dark-theme value is wrong in the same direction at
+ * once.
+ *
+ * The grounds are each theme's own three: the page, the raised paper, and
+ * `surfaces.control`, which is where menus, popovers, autocomplete lists and
+ * notification cards put text. The axes are WCAG 1.4.3 (4.5:1 for text) for the
+ * two text roles and WCAG 1.4.11 (3:1 for a control boundary) for the notch
+ * border and for `primary.main`, which is also the ADR-0013 focus ring's
+ * colour.
+ *
+ * `surfaces.mutedText` is deliberately not asserted here: the mock's own
+ * `#6b7472` measures 2.75-3.26:1 on the grey theme's grounds, a pre-existing
+ * shortfall FM-154 neither introduced nor is scoped to fix, and pinning the two
+ * new themes to a bar the default theme does not clear would misreport which
+ * palette has the problem. It is recorded in the FM-154 handoff instead.
+ */
+describe("every theme's measured contrast (ADR-0049)", () => {
+    for (const name of [
+        "grey",
+        "bright",
+        "dark",
+        "dark-dyschromatopsia",
+    ] as const) {
+        describe(name, () => {
+            const theme = createHydraTheme(name, false);
+            const grounds = {
+                "background.default": resolveColor(
+                    theme.palette.background.default,
+                ),
+                "background.paper": resolveColor(
+                    theme.palette.background.paper,
+                ),
+                "surfaces.control": resolveColor(
+                    theme.palette.surfaces.control,
+                ),
+            } as const;
+            const notch = (
+                theme.components?.MuiOutlinedInput?.styleOverrides
+                    ?.root as (props: {
+                    theme: typeof theme;
+                }) => Record<string, Record<string, string>>
+            )({theme})["& .MuiOutlinedInput-notchedOutline"].borderColor;
+
+            for (const [groundName, ground] of Object.entries(grounds)) {
+                it(`should carry both text roles at WCAG 1.4.3 on ${groundName}`, () => {
+                    for (const text of [
+                        theme.palette.text.primary,
+                        theme.palette.text.secondary,
+                    ]) {
+                        expect(
+                            contrastRatio(compositeOver(text, ground), ground),
+                        ).toBeGreaterThanOrEqual(4.5);
+                    }
+                });
+
+                it(`should draw the focus ring and the notch border at WCAG 1.4.11 on ${groundName}`, () => {
+                    for (const boundary of [
+                        theme.palette.primary.main,
+                        notch,
+                    ]) {
+                        expect(
+                            contrastRatio(
+                                compositeOver(boundary, ground),
+                                ground,
+                            ),
+                        ).toBeGreaterThanOrEqual(3);
+                    }
+                });
+            }
+
+            it("should keep the notch border legible from inside the field too", () => {
+                const fill = resolveColor(theme.palette.surfaces.recessed);
+
+                expect(
+                    contrastRatio(compositeOver(notch, fill), fill),
+                ).toBeGreaterThanOrEqual(3);
+            });
+
+            /*
+             * ADR-0035's standing re-check, applied to every theme: five roles
+             * are painted as *grounds* somewhere (a filled `Chip`, a filled
+             * `Alert`, and -- for `primary` -- the `bright` theme's app bar and
+             * every `variant="contained"` button), and each takes its text from
+             * its own `contrastText`.
+             *
+             * Two of the fifteen pairings this repository already shipped fall
+             * short, and FM-154 carries both across unchanged rather than
+             * quietly retuning a palette it was asked to preserve
+             * byte-for-byte: grey's `info` `#398da5` under `#fff` measures
+             * 3.80:1, and dyschromatopsia's `primary` `#78909c` under `#fff`
+             * 3.35:1. They are named and pinned below rather than excluded by a
+             * lowered bar, so a later correction has to come through this test,
+             * and the two themes FM-154 authored are held to the full 4.5:1.
+             */
+            const carriedOverShortfall: Partial<Record<string, number>> = {
+                grey: 3.79,
+                "dark-dyschromatopsia": 3.35,
+            };
+
+            it("should pair every filled role with a contrast text that carries on it", () => {
+                const measured = new Map<string, number>();
+                for (const role of [
+                    "primary",
+                    "success",
+                    "warning",
+                    "info",
+                    "error",
+                ] as const) {
+                    const main = resolveColor(theme.palette[role].main);
+
+                    measured.set(
+                        role,
+                        contrastRatio(
+                            compositeOver(
+                                theme.palette[role].contrastText,
+                                main,
+                            ),
+                            main,
+                        ),
+                    );
+                }
+                const floor = carriedOverShortfall[name] ?? 4.5;
+
+                for (const ratio of measured.values()) {
+                    expect(ratio).toBeGreaterThanOrEqual(floor);
+                }
+                // The inverse, so a shortfall cannot be recorded here and then
+                // silently persist after the value is fixed: the two carried-
+                // over exceptions are pinned to the exact pairing that is short,
+                // and a theme with no exception is asserted to need none.
+                if (name === "grey") {
+                    expect(measured.get("info")).toBeCloseTo(3.8, 1);
+                } else if (name === "dark-dyschromatopsia") {
+                    expect(measured.get("primary")).toBeCloseTo(3.35, 1);
+                } else {
+                    for (const ratio of measured.values()) {
+                        expect(ratio).toBeGreaterThanOrEqual(4.5);
+                    }
+                }
+            });
+
+            it("should keep the chart sequence readable on the card it is drawn on", () => {
+                const ground = grounds["background.paper"];
+
+                for (const series of theme.palette.charts.categorical) {
+                    expect(
+                        contrastRatio(compositeOver(series, ground), ground),
+                    ).toBeGreaterThanOrEqual(3);
+                }
+            });
+        });
+    }
+
+    // The `bright` theme's own reason for existing, and the assertion that
+    // would fail first if a dark-theme value were left in its block: on a light
+    // ground the page must be light and the text dark, not the other way round.
+    it("should render bright as a genuinely light theme", () => {
+        const bright = createHydraTheme("bright", false).palette;
+
+        expect(bright.mode).toBe("light");
+        expect(
+            relativeLuminance(resolveColor(bright.background.default)),
+        ).toBeGreaterThan(0.7);
+        expect(
+            relativeLuminance(resolveColor(bright.text.primary)),
+        ).toBeLessThan(0.05);
+        // Legacy `theme-bright.less`'s `@brand-primary: #00640e`, carried
+        // across verbatim; ADR-0049 asks for the character to be kept and this
+        // is the value that is the character.
+        expect(bright.primary.main).toBe("#00640e");
+        // Every hairline and outline in a light theme composites *black* over
+        // the ground. A remaining `rgba(255, 255, 255, ...)` would be invisible
+        // rather than wrong-looking, which is why it is asserted rather than
+        // eyeballed on the strip.
+        for (const token of [
+            bright.surfaces.hairline,
+            bright.surfaces.hairlineFaint,
+        ]) {
+            expect(token).toMatch(/^rgba\(0, 0, 0,/);
+        }
+    });
+
+    // The `dark` theme's character per ADR-0049 and `theme-dark.less`: a pure
+    // black page with a lifted -- but only just lifted -- paper, and text that
+    // is muted rather than white.
+    it("should render dark as legacy's near-black theme", () => {
+        const dark = createHydraTheme("dark", false).palette;
+
+        expect(dark.background.default).toBe("#000000");
+        expect(dark.surfaces.recessed).toBe("#0f1113");
+        expect(
+            contrastRatio(
+                resolveColor(dark.background.paper),
+                resolveColor(dark.background.default),
+            ),
+        ).toBeLessThan(1.5);
+        // Legacy `@text-color: rgb(156, 156, 156)`, verbatim.
+        expect(dark.text.primary).toBe("#9c9c9c");
     });
 });

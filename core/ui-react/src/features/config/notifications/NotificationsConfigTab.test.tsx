@@ -76,7 +76,7 @@ function renderNotifications({
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     <ToastProvider>
                         <FormProvider {...form}>

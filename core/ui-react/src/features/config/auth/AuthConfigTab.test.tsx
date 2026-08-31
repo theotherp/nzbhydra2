@@ -75,7 +75,7 @@ function renderAuth({
             harness.form = form;
         }, [form]);
         return (
-            <ThemeProvider theme={createHydraTheme("dark")}>
+            <ThemeProvider theme={createHydraTheme("grey")}>
                 <QueryClientProvider client={queryClient}>
                     {/* The Users table's Delete asks the shared confirm dialog. */}
                     <DialogProvider>
@@ -308,7 +308,7 @@ describe("F-CONFIG-AUTH Users section", () => {
         cleanup();
         function Remount() {
             return (
-                <ThemeProvider theme={createHydraTheme("dark")}>
+                <ThemeProvider theme={createHydraTheme("grey")}>
                     <DialogProvider>
                         <FormProvider {...harness.form}>
                             <ShowAdvancedContext.Provider value={true}>

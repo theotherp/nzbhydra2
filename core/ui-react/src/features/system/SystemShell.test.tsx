@@ -100,7 +100,7 @@ function renderSystemArea(initialPath = "/hydra/system/control") {
         ]),
     });
     render(
-        <ThemeProvider theme={createHydraTheme("dark")}>
+        <ThemeProvider theme={createHydraTheme("grey")}>
             <QueryClientProvider client={queryClient}>
                 <DialogProvider>
                     <ToastProvider>
