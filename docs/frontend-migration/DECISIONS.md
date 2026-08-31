@@ -849,3 +849,28 @@ Binding constraints:
   secrets included, come from the server-side definition, which lives in exactly one checked-in place.
 - A reset is bounded like a config PUT, never a restart; volatile history/stats tables are out of scope — tests that
   touch the database self-namespace instead (FM-140/FM-141).
+
+## ADR-0049 — Multi-theme system with per-user persistence via generic storage (accepted 2026-08-31)
+
+The React UI offers the legacy theme set adapted to the MUI token design: Grey (default, neutral dark-grey), Bright (light,
+green accents), Dark (near-black), Dark-dyschromatopsia, and Auto (system light → Bright, system dark → Grey). Themes change
+colors only — typography, spacing, radii, and other structure stay shared. All colors of a theme live together in one named
+palette block in `theme.ts` so each theme's full color set is readable in one place; each legacy theme's character is kept, but
+individual colors may be improved. Theme selection moves to a selector in the upper-right of the nav bar (beside the
+login/logout control). The choice persists per user through `GenericStorageWeb` (`internalapi/genericstorage`, `forUser=true`)
+behind a typed TypeScript theme-preference service built on `C-SERVER-PREFERENCES`. The `main.theme` config-UI dropdown is
+removed (settings-search index and tests updated); the Java `MainConfig.theme` field stays untouched as deprecated and may seed
+a one-time migration of an existing value. Owner decided 2026-08-31.
+
+## ADR-0050 — History refine checkbox dimensions render as collapsible multiselects (accepted 2026-08-31)
+
+All four history `checkboxes` refine dimensions — Category (search history), Result and Indexer (download history), Event type
+(notification history) — stop rendering as chip rows and adopt the collapsible-list multiselect presentation the search
+results refine sidebar uses for Category/Indexer (caption button + `Collapse`, one toggle row per option). They render
+collapsed by default and their open state is not persisted. Non-checkbox refine controls (free text, Source, Age, Time) keep
+their current presentation. Owner decided 2026-08-31.
+
+## ADR-0051 — The stats disclaimer is always visible (accepted 2026-08-31)
+
+The stats disclaimer text moves out of the info-icon popover into a permanently visible, non-dismissible compact info alert at
+the top of the stats section, so every user is guaranteed to see it. Owner decided 2026-08-31.

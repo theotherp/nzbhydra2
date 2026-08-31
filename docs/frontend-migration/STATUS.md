@@ -1243,6 +1243,12 @@ None.
 
 ## Upcoming
 
+- FM-150: Results Table Polish (narrower Age/Size into Title, icon expand controls with title x-alignment, inline icon
+  download) — first of the 2026-08-31 owner-request batch FM-150..FM-155 (ADR-0049/0050/0051), planned, dependency-ready,
+  next. Later members stay planned packets in `tasks/`: FM-151, FM-152, FM-153, FM-154, FM-155 (after FM-154).
+  Sequencing: FM-150 not alongside FM-153 (shared results test surface); FM-151 not alongside FM-155 (settings-index
+  drift test mounts every config tab).
+
 - FM-146 (Hide The Chips Row While Advanced Is Collapsed And Empty) is done (entry above): the owner's
   2026-08-30 revision of FM-143's reserved-row rule — the `search-chips` row renders only while `advancedOpen ||
   hasChips`, so the initial collapsed form has no 32px band under the search field, while the expanded panel keeps

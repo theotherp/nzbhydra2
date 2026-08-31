@@ -471,3 +471,31 @@ components:
       - F-CONFIG-SHELL
     classification: feature_specific
     state: done
+  - id: C-REFINE-MULTISELECT
+    responsibility: Controlled, presentational collapsible multiselect for refine surfaces -- a caption toggle button (refineSectionLabel typography, aria-expanded)
+      over a Collapse of full-width toggle rows (aria-pressed, data-filter-value, optional mono count). It renders entries in the order given and holds no state,
+      no sorting, no dedup, no counting, and no persistence -- selection/open state and option derivation stay with each consumer (ADR-0046's state/options split).
+    legacy: []
+    target: core/ui-react/src/components/refine
+    consumers:
+      - F-SEARCH-SORT-FILTER
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-NOTIFICATIONS
+    classification: shared_hydra
+    state: planned
+    note: "Created for FM-153 (ADR-0050): the four history checkbox dimensions adopt the results sidebar's collapsible-list presentation, extracted from
+      RefineSidebar.tsx's RefineCollapsibleList + filterControls.tsx's ToggleRowFilter rows; the results sidebar re-bases on it at rendered parity."
+  - id: C-THEME-PREFERENCE
+    responsibility: Typed per-user theme preference -- read/write of a ThemePreference value over C-SERVER-PREFERENCES (forUser=true, one exported storage key),
+      validating untrusted stored data on read (bare or JSON-string-encoded known values only; anything else reads as undefined), plus a C-BROWSER-STORAGE-guarded
+      localStorage cache of the last applied preference used only as a startup seed until the server value arrives.
+    legacy:
+      - core/ui-src/js/config/main-config.js
+    target: core/ui-react/src/services/theme
+    consumers:
+      - F-PLATFORM-SHELL
+    classification: shared_hydra
+    state: planned
+    note: "Created for FM-155 (ADR-0049). The deprecated Java MainConfig.theme field is not read or migrated (safe config does not expose it and full config reads
+      are admin-only); the config UI's main.theme dropdown is removed by the same task."
