@@ -1263,9 +1263,11 @@ export function SearchResults({
                                           measures 35px against the 13px this
                                           track leaves between the cell's own
                                           16px paddings, so it spends that
-                                          padding and ends ~6px past the cell
-                                          edge, over the Actions column's
-                                          padding. It stays fully legible and
+                                          padding and (these cells are
+                                          right-aligned) ends ~6px past the
+                                          cell's left edge, into the Details
+                                          column's right padding. It stays
+                                          fully legible and
                                           collides with no neighbouring text
                                           (these cells are `nowrap`, so
                                           nothing reflows), but the guarantee
@@ -1276,7 +1278,9 @@ export function SearchResults({
                                           mathematical maximum, since
                                           `formatResultSize` never reaches
                                           four digits -- measures 57px and
-                                          ends ~2px past the cell edge, while
+                                          ends ~2px past the cell's left
+                                          edge, into the Category column's
+                                          right padding, while
                                           real values (`51.2 GB`, `780 MB`,
                                           ~43px) sit inside it.
                                         - Title 35% -> 39% (349px measured),

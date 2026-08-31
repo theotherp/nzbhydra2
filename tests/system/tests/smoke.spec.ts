@@ -370,8 +370,6 @@ test.describe("Theme selection", () => {
      */
     const THEME_PREFERENCE_URL =
         "/internalapi/genericstorage/themePreference?forUser=true";
-    const DEFAULT_THEME = "grey";
-
     async function storeThemePreference(
         page: import("@playwright/test").Page,
         preference: string,
@@ -381,6 +379,20 @@ test.describe("Theme selection", () => {
             headers: {"content-type": "application/json"},
         });
         expect(response.ok()).toBe(true);
+    }
+
+    /**
+     * Restores "no preference" rather than writing the literal default:
+     * GenericStorageWeb has no delete, so an empty string is stored, which
+     * `C-THEME-PREFERENCE`'s read boundary rejects into `undefined` -- the
+     * same state a fresh instance has. Pinning `grey` instead would silently
+     * keep re-theming the instance to today's default if the product default
+     * ever changed.
+     */
+    async function clearThemePreference(
+        page: import("@playwright/test").Page,
+    ): Promise<void> {
+        await storeThemePreference(page, "");
     }
 
     test.beforeEach(async ({hydra, page}) => {
@@ -395,11 +407,12 @@ test.describe("Theme selection", () => {
     });
 
     // Every case here re-themes the instance for the user it runs as, and the
-    // record outlives the browser context. Restored to the default so the next
-    // spec -- and the next run -- starts from the palette every other visual
-    // capture in this suite was taken in.
+    // record outlives the browser context. Restored to "no preference" so the
+    // next spec -- and the next run -- starts from whatever the product
+    // default is, which today renders the palette every other visual capture
+    // in this suite was taken in.
     test.afterEach(async ({page}) => {
-        await storeThemePreference(page, DEFAULT_THEME);
+        await clearThemePreference(page);
     });
 
     test("should apply a chosen theme immediately, without a reload", async ({
@@ -572,6 +585,10 @@ test.describe("Theme selection", () => {
             );
         }
 
+        // Captured in the default theme, not whatever the config loop last
+        // selected -- the strip should show the open menu as a first-time
+        // user meets it.
+        await chooseTheme(page, "grey");
         await page.getByTestId("app-shell-theme-selector").click();
         await expect(page.getByRole("menu")).toBeVisible();
         await captureVisualRegion(
@@ -581,16 +598,35 @@ test.describe("Theme selection", () => {
         );
         await page.keyboard.press("Escape");
 
+        // The mobile capture deliberately pins the *longest* trigger label,
+        // "Theme: Dark (Dyschromatopsia)" (~1.8x the default's width), so the
+        // strip proves the 390px bar holds the worst case beside the Menu
+        // button and the masthead -- asserted, not just photographed.
+        await chooseTheme(page, "dark-dyschromatopsia");
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
             await expect(page.getByTestId("search-query")).toBeVisible();
         });
-        await page.getByTestId("app-shell-theme-selector").click();
+        const selector = page.getByTestId("app-shell-theme-selector");
+        await expect(selector).toHaveText("Theme: Dark (Dyschromatopsia)");
+        expect(
+            await page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth <=
+                    document.documentElement.clientWidth,
+            ),
+            "the worst-case trigger label must not overflow the mobile bar",
+        ).toBe(true);
+        await selector.click();
         await expect(page.getByRole("menu")).toBeVisible();
         await captureVisualRegion(
             page.locator("body"),
             "F-PLATFORM-SHELL",
             "theme-selector-open-mobile",
         );
+        // Back to the default before this test's own teardown capture-proofing;
+        // the afterEach restore below covers the server record either way.
+        await page.keyboard.press("Escape");
+        await chooseTheme(page, "grey");
     });
 });

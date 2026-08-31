@@ -4,33 +4,12 @@ import type {Page} from "@playwright/test";
 import {
     dismissWelcomeDialog,
     expect,
+    openRefineMultiselect,
     searchForResult,
     test,
     testEnvironment,
 } from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
-
-/**
- * ADR-0050 (FM-153): a history refine `checkboxes` dimension renders as a
- * `C-REFINE-MULTISELECT` -- a caption button over a collapsible list -- and
- * starts collapsed on every mount, with no persistence of the open state. Its
- * option rows are therefore not interactable until the caption is pressed.
- * Idempotent, so a section already open is left open.
- */
-async function openRefineMultiselect(
-    page: Page,
-    dimensionId: string,
-): Promise<void> {
-    const toggle = page.getByTestId(`history-refine-${dimensionId}-toggle`);
-    await expect(toggle).toBeVisible();
-    if ((await toggle.getAttribute("aria-expanded")) === "false") {
-        await toggle.click();
-    }
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(
-        page.getByTestId(`history-refine-${dimensionId}-list`),
-    ).toBeVisible();
-}
 
 test.describe("Downloads", () => {
     test.beforeEach(async ({hydra, page}) => {

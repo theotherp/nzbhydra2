@@ -359,9 +359,10 @@ features:
     selectors:
       # 2026-08-29 (FM-128): `send-to-downloader` does ship, but it is not
       # legacy's per-row `addable-nzb` control of the same name -- it is the
-      # single bulk-bar button in `DownloadActions.tsx:358`, which acts on the
-      # current selection. `download-torrent` was rendered all along
-      # (`DownloadActions.tsx:450`) and simply went unlisted.
+      # single bulk-bar button in `DownloadActions.tsx` (the
+      # `send-to-downloader` control), which acts on the current selection.
+      # `download-torrent` was rendered all along (`DownloadActions.tsx`,
+      # `DirectDownloadActions`) and simply went unlisted.
       # 2026-08-31 (FM-150, owner request): in a *search result* row these two
       # are an icon button (`DirectDownloadActions`' opt-in `iconOnly` form) on
       # the detail-links line rather than an "NZB"/"Torrent" text button; the

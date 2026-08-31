@@ -483,7 +483,10 @@ export function DirectDownloadActions({
     if (iconOnly) {
         return (
             <Tooltip
-                title={type === "nzb" ? "Download NZB" : "Download Torrent"}
+                // Repeats the accessible name verbatim (`Download NZB` /
+                // `Download TORRENT`) so the visible and announced labels
+                // never diverge.
+                title={label}
             >
                 {/* `flexShrink: 0` because the results row puts this in a
                     non-wrapping icon group whose other member (the detail

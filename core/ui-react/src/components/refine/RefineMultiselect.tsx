@@ -205,6 +205,12 @@ export function RefineMultiselect({
                                         textOverflow: "ellipsis",
                                         whiteSpace: "nowrap",
                                     }}
+                                    // Long labels (history's notification
+                                    // event types) ellipsize in the narrow
+                                    // refine column; the native title keeps
+                                    // the full text reachable on hover
+                                    // without altering the rendered row.
+                                    title={entry.label}
                                 >
                                     {entry.label}
                                 </Box>

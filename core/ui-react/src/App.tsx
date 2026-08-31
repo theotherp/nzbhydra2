@@ -71,8 +71,10 @@ export function App({bootstrap, isLoading = false}: AppProps) {
          * exactly the position `ThemeProvider` held, outside `CssBaseline` and
          * outside `SafeConfigProvider` -- because the preference is a client
          * concern with no dependency on the query client or the server config.
-         * FM-155, which makes the choice durable per user, is the task that
-         * will need it to sit under the transport instead.
+         * FM-155 kept it here when it made the choice durable: the provider
+         * builds its own transport from the bootstrap base URL rather than
+         * sitting under the app's, so one GET and a PUT-per-click never
+         * forced a provider reorder.
          */
         <ThemePreferenceProvider>
             <CssBaseline />

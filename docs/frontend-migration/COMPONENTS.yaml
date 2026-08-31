@@ -326,7 +326,9 @@ components:
       carried is superseded for the chrome only -- the state and options reasons it gave are the retained rationale above. FM-142 moved history-refine-summary from the header's right edge to its left slot and made it single-line (noWrap)
       when the shared header dropped its "Refine" caption; the sentence, the id, and the rail/compact fallbacks that carry the count where the slot is hidden are unchanged. FM-153 (ADR-0050) replaced the checkboxes kind's wrapping refineChip row with C-REFINE-MULTISELECT, so that history-refine-<id> and
       -option survived, -toggle and -list were added, the sections start collapsed on every mount and persist no open state, and ADR-0016's empty-selection
-      semantics and the dimensions' declared option order are unchanged.
+      semantics and the dimensions' declared option order are unchanged. The standalone history-refine-<id>-label caption element is gone for checkboxes
+      sections (never listed as a selector, zero references repo-wide) -- the caption is now the -toggle button, and the sections' role="group" naming moved to
+      C-REFINE-MULTISELECT's groupLabel aria-label.
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model

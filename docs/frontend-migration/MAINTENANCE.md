@@ -2857,3 +2857,75 @@ their text and relative order are unchanged.
 - **Paths:** `tests/system/tests/focus-indication.spec.ts`
 - **Gates:** `tests/system`: `npx tsc --noEmit` clean; `npx prettier --check` clean; full `focus-indication.spec.ts` 10/10 green on a fresh instance via `run_gui_systemtest.py` (exit 0). Two other failures seen only on a long-lived shared instance (stale downloader 500, accumulated search state) are environmental, pre-existing, and absent on the fresh run.
 - **Commit:** `605552eaa`
+
+### 2026-08-31 — Replace stale DownloadActions line citations with symbol references
+
+- **Why not a packet:** documentation-only; recorded FM-150 review minor finding.
+- **Paths:** `docs/frontend-migration/FEATURES.yaml`
+- **Gates:** `validate:migration` valid; `git diff --check` clean.
+- **Commit:** `942dd03fb`
+
+### 2026-08-31 — Record the removed history-refine caption element in C-HISTORY-REFINE-BAR
+
+- **Why not a packet:** registry documentation only; recorded FM-153 review minor finding.
+- **Paths:** `docs/frontend-migration/COMPONENTS.yaml`
+- **Gates:** recorded as `validate:migration` valid, **which was false** — the gate command piped the validator through `tail`, masking a failing exit code caused by a `): ` sequence this very entry's note introduced (YAML read a nested mapping). Repaired in `28857cde8` below; the validator's real exit code is now checked.
+- **Commit:** `b968eca56`
+
+### 2026-08-31 — Correct the colgroup comment's overflow neighbour and direction
+
+- **Why not a packet:** comment-only (verified line by line); recorded FM-150 review minor finding.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`
+- **Gates:** `typecheck` clean; `lint` 0 errors; `format:check` clean; `git diff --check` clean.
+- **Commit:** `b3e0d1b61`
+
+### 2026-08-31 — Update App.tsx's provider comment to what FM-155 actually did
+
+- **Why not a packet:** comment-only; recorded FM-155 review minor finding.
+- **Paths:** `core/ui-react/src/App.tsx`
+- **Gates:** `typecheck` clean; `format:check` clean; `git diff --check` clean.
+- **Commit:** `0e6fa0dbe`
+
+### 2026-08-31 — Make the download tooltip repeat the accessible name verbatim
+
+- **Why not a packet:** label polish, no behavior/testid/aria change; recorded FM-150 review minor finding.
+- **Paths:** `core/ui-react/src/features/search/results/DownloadActions.tsx`
+- **Gates:** results vitest suites 98/98; `typecheck`/`lint` 0 errors/`format:check`/`build` green; `git diff --check` clean.
+- **Commit:** `0819ec073`
+
+### 2026-08-31 — Pin the select-all square's selectAllOutline consumption path
+
+- **Why not a packet:** test-only guard; recorded FM-154 review minor finding. Observed red with the palette path deliberately broken, green restored.
+- **Paths:** `core/ui-react/src/features/search/results/SelectionMenu.test.tsx` (new)
+- **Gates:** new test red-on-defect/green-on-fix; `typecheck`/`lint` 0 errors/`format:check`/`knip` green; `git diff --check` clean.
+- **Commit:** `05113dcd2`
+
+### 2026-08-31 — Expose full refine option labels via a native title on hover
+
+- **Why not a packet:** UX polish with no rendered-layout change (native `title` attribute); recorded FM-153 review minor finding.
+- **Paths:** `core/ui-react/src/components/refine/RefineMultiselect.tsx`
+- **Gates:** refine vitest suites 36/36; `typecheck`/`lint` 0 errors/`format:check`/`build` green; `git diff --check` clean.
+- **Commit:** `ea4c37924`
+
+### 2026-08-31 — Repair the COMPONENTS.yaml note b968eca56 broke
+
+- **Why not a packet:** one-character-class YAML repair enabling `validate:migration`; authored by the FM-156/157 designer mid-batch, committed by the coordinator.
+- **Paths:** `docs/frontend-migration/COMPONENTS.yaml`
+- **Gates:** `validate:migration` exit code 0 (checked unpiped).
+- **Commit:** `28857cde8`
+
+### 2026-08-31 — Move openRefineMultiselect into fixtures.ts
+
+- **Why not a packet:** mechanical dedup of a test helper FM-153's allowlist forced into three specs; recorded FM-153 review minor finding.
+- **Paths:** `tests/system/tests/{fixtures.ts,search-history.spec.ts,downloads.spec.ts,notification-history.spec.ts}`
+- **Gates:** `npx tsc --noEmit` clean; prettier clean; the four affected specs 24/24 on a fresh real-backend instance (exit 0).
+- **Commit:** `eb04032c9`
+
+### 2026-08-31 — Harden the theme selector captures and restore semantics
+
+- **Why not a packet:** spec-only assertion/capture improvements; recorded FM-154 minors (selector-open capture theme, worst-case mobile label — now asserted non-overflowing) and FM-155 minor (restore clears the preference instead of pinning literal `grey`). Three same-file findings batched into one verified commit — a deliberate deviation from one-fix-per-commit, each finding listed in the message.
+- **Paths:** `tests/system/tests/smoke.spec.ts`
+- **Gates:** `npx tsc --noEmit` clean; prettier clean; `smoke.spec.ts` 11/11 within the 24/24 fresh-instance run (exit 0).
+- **Commit:** `daf8798b1`
+
+**Ledger discipline note (2026-08-31):** the ten entries above were appended in one batch after their fix commits rather than each in its own immediate second commit — a process deviation, recorded rather than hidden.
