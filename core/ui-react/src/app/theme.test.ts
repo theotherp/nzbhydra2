@@ -10,6 +10,7 @@ import {
     resolveThemeName,
     selectAllRadius,
     themePreferenceOptions,
+    type ThemeName,
 } from "./theme";
 
 /*
@@ -235,16 +236,24 @@ describe("resolveThemeName", () => {
             recessed: "#1c2224",
             hairline: "rgba(255, 255, 255, 0.1)",
             hairlineFaint: "rgba(255, 255, 255, 0.06)",
-            mutedText: "#6b7472",
+            // FM-156 raised the mock's `#6b7472` (2.75-3.26:1 on this theme's
+            // three grounds) by lightness alone, keeping the mock's neutral
+            // green-grey hue and chroma.
+            mutedText: "#919a98",
             // FM-154's one addition to the token set. It is the theme's own
             // `primary.main`, which is what `AppShell` read before the token
             // existed, so the grey theme's app bar renders exactly as it did.
             barAccent: "oklch(0.75 0.1 190)",
-            // FM-154's second addition, and the one that must not move a
-            // pixel here: it is the colour `SelectionMenu` composited from
-            // `alpha(common.white, 0.25)` before the token existed, so the
-            // grey theme's select-all square renders exactly as it did.
-            selectAllOutline: "rgba(255, 255, 255, 0.25)",
+            // FM-154's second addition, held byte-identical to the colour
+            // `SelectionMenu` composited from `alpha(common.white, 0.25)`
+            // until FM-156 raised it to this block's own `inputOutline` alpha
+            // for WCAG 1.4.11.
+            selectAllOutline: "rgba(255, 255, 255, 0.35)",
+            // FM-156's addition, and the one that must not move a pixel here:
+            // it is the colour `TableScrollAffordance` composited from
+            // `alpha(common.black, 0.45)` before the token existed, so the
+            // grey theme's scrolled tables render exactly as they did.
+            tableScrollFade: "rgba(0, 0, 0, 0.45)",
         });
         expect(theme.palette.surfaces.barAccent).toBe(
             theme.palette.primary.main,
@@ -322,6 +331,12 @@ describe("resolveThemeName", () => {
             // The one token that is not shared, and must not be: this theme's
             // app bar accent is its own `primary.main`, not grey's teal.
             barAccent: theme.palette.primary.main,
+            // The second, since FM-156: a boundary alpha is a measurement
+            // against a ground, and this variant's page is pure black rather
+            // than grey's `#1f2426`. Stated here rather than folded into
+            // `...grey` so that a *drift* in this token still fails, and so
+            // that the other seven staying shared remains asserted.
+            selectAllOutline: "rgba(255, 255, 255, 0.42)",
         });
     });
 });
@@ -400,6 +415,7 @@ describe("createHydraTheme base palette", () => {
                 surfaces.hairlineFaint,
                 surfaces.mutedText,
                 surfaces.selectAllOutline,
+                surfaces.tableScrollFade,
             ]) {
                 expect(typeof value).toBe("string");
                 expect(value).not.toHaveLength(0);
@@ -762,7 +778,7 @@ describe("createHydraTheme typography and density", () => {
                     borderColor: theme.alpha(theme.palette.primary.main, 0.16),
                 },
                 "& .MuiChip-deleteIcon": {
-                    color: "#6b7472",
+                    color: "#919a98",
                     "&:hover": {color: "oklch(0.82 0.1 190)"},
                 },
             },
@@ -1046,23 +1062,31 @@ describe("createHydraTheme measured contrast (ADR-0035, ADR-0036)", () => {
  * `bright` theme's `#f2f4f3` that white edge measured 1.03:1: the boundary
  * that identifies the control was simply absent, against WCAG 1.4.11's 3:1.
  *
- * The two themes that existed before FM-154 keep the exact composited colour
- * they rendered -- the invariance this task is pinned against outranks the
- * ratio here, and their shortfall is carried as a follow-up, not fixed in
- * silence. So the assertions below are split: the two new themes must clear
- * 3:1, and the two old ones must still hold the byte-identical remnant value.
+ * FM-154 could only fix the two themes it authored: `grey` and
+ * `dark-dyschromatopsia` were pinned byte-identical, so they kept the remnant
+ * and its 2.28:1 / 2.02:1 shortfall, pinned as such and carried as a
+ * follow-up. FM-156 redeems that follow-up, so the split is gone: all four
+ * themes are held to the same measured bar, and the byte-identical pin the two
+ * old themes used to carry is superseded by these strictly stronger
+ * assertions rather than dropped.
  */
-describe("the select-all square's border (FM-154)", () => {
+describe("the select-all square's border (FM-154, raised by FM-156)", () => {
     const remnant = "rgba(255, 255, 255, 0.25)";
 
-    for (const name of ["bright", "dark"] as const) {
+    for (const name of [
+        "grey",
+        "bright",
+        "dark",
+        "dark-dyschromatopsia",
+    ] as const) {
         it(`should reach WCAG 1.4.11's 3:1 boundary contrast on ${name}'s results ground`, () => {
             const {palette} = createHydraTheme(name, false);
             const ground = hexToRgb(palette.background.default);
             const outline = palette.surfaces.selectAllOutline;
 
-            // Measured: bright 3.30:1 on `#f2f4f3` (3.33:1 on its paper),
-            // dark 3.95:1 on `#000000`.
+            // Measured on `background.default` (and on `background.paper`):
+            // grey 3.17 (3.08), bright 3.30 (3.33), dark 3.95 (3.79),
+            // dyschromatopsia 3.95 (4.09).
             expect(
                 contrastRatio(compositeOver(outline, ground), ground),
             ).toBeGreaterThanOrEqual(3);
@@ -1072,20 +1096,119 @@ describe("the select-all square's border (FM-154)", () => {
                     hexToRgb(palette.background.paper),
                 ),
             ).toBeGreaterThanOrEqual(3);
-            // The value replaced, on the same ground: 1.03:1 on bright and
-            // 2.02:1 on dark. Asserted alongside so neither case can go green
-            // on a token that was never re-authored.
+            // The value replaced, on the same ground: 1.03:1 on bright,
+            // 2.02:1 on dark and dyschromatopsia, 2.28:1 on grey. Asserted
+            // alongside so no case can go green on a token that was never
+            // re-authored -- which is what the byte-identical pin FM-156
+            // removed used to guarantee for the two older themes.
             expect(
                 contrastRatio(compositeOver(remnant, ground), ground),
             ).toBeLessThan(3);
+            expect(outline).not.toBe(remnant);
+        });
+    }
+});
+
+/*
+ * FM-156: the scroll-edge fade `TableScrollAffordance` paints, which was the
+ * last ADR-0014 call-site colour left in `src` -- `alpha(common.black, 0.45)`,
+ * a value authored when every theme had a dark ground.
+ *
+ * The fade is decoration, so it has no WCAG axis of its own; what it has is
+ * two ends of one band, measured at the gradient's opaque end on the two
+ * grounds a scrolling table sits on (`background.paper` for the history
+ * tables, `surfaces.control` for the config ones). It has to darken its ground
+ * to read as an edge at all, and it must not take the text it crosses down
+ * with it. The three dark themes render the composited colour they always did
+ * -- 1.05-1.31:1 of darkening, leaving their `text.primary` at 6.90-14.10:1 --
+ * and `bright`'s value is authored against those two ends, because the scrim
+ * it inherited fails the second one outright: black at 0.45 on a white card is
+ * a 3.33:1 wall that drops `text.primary` from 17.75:1 to 5.33:1.
+ */
+describe("the table scroll-edge fade (FM-156)", () => {
+    const darkThemes = ["grey", "dark", "dark-dyschromatopsia"] as const;
+    const rendered = "rgba(0, 0, 0, 0.45)";
+
+    /** Every ground a horizontally scrolling table paints under the fade. */
+    const measure = (name: ThemeName, scrim: string) => {
+        const {palette} = createHydraTheme(name, false);
+
+        return [palette.background.paper, palette.surfaces.control].map(
+            (groundValue) => {
+                const ground = resolveColor(groundValue);
+                const faded = compositeOver(scrim, ground);
+
+                return {
+                    step: contrastRatio(faded, ground),
+                    text: contrastRatio(
+                        compositeOver(palette.text.primary, faded),
+                        faded,
+                    ),
+                };
+            },
+        );
+    };
+
+    for (const name of [
+        "grey",
+        "bright",
+        "dark",
+        "dark-dyschromatopsia",
+    ] as const) {
+        it(`should darken ${name}'s scrolled table edge without hiding the text under it`, () => {
+            const {palette} = createHydraTheme(name, false);
+
+            for (const {step, text} of measure(
+                name,
+                palette.surfaces.tableScrollFade,
+            )) {
+                expect(step).toBeGreaterThan(1);
+                expect(text).toBeGreaterThan(6.5);
+            }
         });
     }
 
-    it("should keep the pre-FM-154 themes' square rendering byte-identical", () => {
-        for (const name of ["grey", "dark-dyschromatopsia"] as const) {
+    it("should keep the three dark themes' rendered fade and re-author only the light one", () => {
+        for (const name of darkThemes) {
             expect(
-                createHydraTheme(name, false).palette.surfaces.selectAllOutline,
-            ).toBe(remnant);
+                createHydraTheme(name, false).palette.surfaces.tableScrollFade,
+            ).toBe(rendered);
+        }
+        expect(
+            createHydraTheme("bright", false).palette.surfaces.tableScrollFade,
+        ).not.toBe(rendered);
+    });
+
+    /*
+     * The band `bright`'s value was authored against, taken from the themes
+     * themselves rather than restated: the faintest darkening any dark theme
+     * renders (1.05:1) and the least legible text any of them leaves through
+     * the fade (6.90:1). The light theme's fade may not be weaker than the
+     * first, and may not be harsher than the second -- which is precisely what
+     * the inherited scrim was on a white card.
+     */
+    it("should hold the light theme's fade inside the band the dark themes render", () => {
+        const dark = darkThemes.flatMap((name) =>
+            measure(
+                name,
+                createHydraTheme(name, false).palette.surfaces.tableScrollFade,
+            ),
+        );
+        const faintestStep = Math.min(...dark.map(({step}) => step));
+        const harshestText = Math.min(...dark.map(({text}) => text));
+
+        for (const {step, text} of measure(
+            "bright",
+            createHydraTheme("bright", false).palette.surfaces.tableScrollFade,
+        )) {
+            expect(step).toBeGreaterThanOrEqual(faintestStep);
+            expect(text).toBeGreaterThanOrEqual(harshestText);
+        }
+        // The scrim replaced, on the same grounds: it clears the first end
+        // easily and fails the second, which is the defect FM-156 closes.
+        for (const {step, text} of measure("bright", rendered)) {
+            expect(step).toBeGreaterThan(faintestStep);
+            expect(text).toBeLessThan(harshestText);
         }
     });
 });
@@ -1258,11 +1381,12 @@ describe("borderless raised surfaces after the paper flattening (FM-117)", () =>
  * border and for `primary.main`, which is also the ADR-0013 focus ring's
  * colour.
  *
- * `surfaces.mutedText` is deliberately not asserted here: the mock's own
- * `#6b7472` measures 2.75-3.26:1 on the grey theme's grounds, a pre-existing
- * shortfall FM-154 neither introduced nor is scoped to fix, and pinning the two
- * new themes to a bar the default theme does not clear would misreport which
- * palette has the problem. It is recorded in the FM-154 handoff instead.
+ * `surfaces.mutedText` is measured on the same 1.4.3 axis as the two text
+ * roles, because that is what it is: the colour of section captions, result
+ * counts and popover captions. FM-154 had to exclude it -- the mock's own
+ * `#6b7472` measured 2.75-3.26:1 on the grey theme's grounds and FM-154 was
+ * pinned against moving it -- and FM-156 re-authored the grey and
+ * dyschromatopsia blocks' value instead, so the exclusion is gone.
  */
 describe("every theme's measured contrast (ADR-0049)", () => {
     for (const name of [
@@ -1292,10 +1416,11 @@ describe("every theme's measured contrast (ADR-0049)", () => {
             )({theme})["& .MuiOutlinedInput-notchedOutline"].borderColor;
 
             for (const [groundName, ground] of Object.entries(grounds)) {
-                it(`should carry both text roles at WCAG 1.4.3 on ${groundName}`, () => {
+                it(`should carry both text roles and the muted glyph colour at WCAG 1.4.3 on ${groundName}`, () => {
                     for (const text of [
                         theme.palette.text.primary,
                         theme.palette.text.secondary,
+                        theme.palette.surfaces.mutedText,
                     ]) {
                         expect(
                             contrastRatio(compositeOver(text, ground), ground),

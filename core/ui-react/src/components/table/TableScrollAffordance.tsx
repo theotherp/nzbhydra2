@@ -1,5 +1,4 @@
 import {Box, TableContainer} from "@mui/material";
-import {alpha} from "@mui/material/styles";
 import {useEffect, useRef, useState, type ReactNode} from "react";
 
 /**
@@ -132,13 +131,14 @@ export function TableScrollAffordance({
  * technology through the scroll container itself, and a screen reader
  * announcing an empty gradient strip would be noise.
  *
- * The fade is authored here rather than in `theme.ts` because MUI has no
- * component for it to override -- ADR-0014's rule is that a *standard* need
- * gets a standard component and its look from the theme, and this is a
- * non-standard need. It is still built from palette tokens: a `common.black`
- * scrim, the same darkening the theme's own overlays use, at the opacity that
- * reads over both `background.paper` and the `surfaces.control` fills the
- * config tables sit on without hiding the text underneath it.
+ * The gradient's *shape* is authored here rather than in `theme.ts` because
+ * MUI has no component for it to override -- ADR-0014's rule is that a
+ * *standard* need gets a standard component and its look from the theme, and
+ * this is a non-standard need. Its *colour* is not authored here: FM-156 moved
+ * the scrim onto the per-theme `surfaces.tableScrollFade` token, because the
+ * `alpha(common.black, 0.45)` this used to composite was measured against the
+ * dark grounds that were once the only ones, and on `bright` it smeared black
+ * over the text it crosses. The token's doc comment carries the measurements.
  */
 function EdgeFade({side}: {side: "left" | "right"}) {
     return (
@@ -150,10 +150,9 @@ function EdgeFade({side}: {side: "left" | "right"}) {
                     : SCROLL_AFFORDANCE_END_TEST_ID
             }
             sx={(theme) => ({
-                background: `linear-gradient(to ${side === "left" ? "right" : "left"}, ${alpha(
-                    theme.palette.common.black,
-                    0.45,
-                )}, transparent)`,
+                background: `linear-gradient(to ${side === "left" ? "right" : "left"}, ${
+                    theme.palette.surfaces.tableScrollFade
+                }, transparent)`,
                 bottom: 0,
                 pointerEvents: "none",
                 position: "absolute",

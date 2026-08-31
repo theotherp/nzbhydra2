@@ -1,8 +1,15 @@
-import {Table, TableBody, TableCell, TableRow} from "@mui/material";
-import {render, screen} from "@testing-library/react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+    ThemeProvider,
+} from "@mui/material";
+import {cleanup, render, screen} from "@testing-library/react";
 import {act} from "react";
 import {describe, expect, it} from "vitest";
 
+import {createHydraTheme} from "../../app/theme";
 import {
     horizontalScrollEdges,
     SCROLL_AFFORDANCE_END_TEST_ID,
@@ -93,17 +100,25 @@ function driveMetrics(
 }
 
 describe("TableScrollAffordance", () => {
-    const renderScroller = () => {
+    // Rendered under the application's own theme rather than MUI's default,
+    // because since FM-156 the fade reads its scrim from `surfaces`, a token
+    // set only this application's themes declare -- exactly as `AppShell`
+    // mounts it.
+    const renderScroller = (
+        themeName: Parameters<typeof createHydraTheme>[0] = "grey",
+    ) => {
         render(
-            <TableScrollAffordance scrollerTestId="test-scroller">
-                <Table>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>Cell</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableScrollAffordance>,
+            <ThemeProvider theme={createHydraTheme(themeName, false)}>
+                <TableScrollAffordance scrollerTestId="test-scroller">
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Cell</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableScrollAffordance>
+            </ThemeProvider>,
         );
         return screen.getByTestId("test-scroller");
     };
@@ -175,5 +190,34 @@ describe("TableScrollAffordance", () => {
         const fade = screen.getByTestId(SCROLL_AFFORDANCE_END_TEST_ID);
         expect(fade).toHaveAttribute("aria-hidden", "true");
         expect(fade).toHaveStyle({pointerEvents: "none"});
+    });
+
+    // FM-156 moved the fade's scrim off an `alpha(common.black, 0.45)` literal
+    // onto the per-theme `surfaces.tableScrollFade` token. A typo in that
+    // palette path would not throw -- the gradient would just resolve its
+    // first stop to nothing and the affordance would go invisible on every
+    // theme at once -- so the rendered gradient is pinned against the token
+    // each theme actually declares.
+    it("paints the scrim from each theme's own tableScrollFade token", () => {
+        for (const name of [
+            "grey",
+            "bright",
+            "dark",
+            "dark-dyschromatopsia",
+        ] as const) {
+            const theme = createHydraTheme(name, false);
+
+            cleanup();
+            driveMetrics(renderScroller(name), {
+                clientWidth: 390,
+                scrollLeft: 0,
+                scrollWidth: 900,
+            });
+            const fade = screen.getByTestId(SCROLL_AFFORDANCE_END_TEST_ID);
+            const gradient = getComputedStyle(fade).backgroundImage;
+
+            expect(gradient).toContain(theme.palette.surfaces.tableScrollFade);
+            expect(gradient).toContain("transparent");
+        }
     });
 });

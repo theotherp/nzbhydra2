@@ -48,7 +48,9 @@ function SelectAllUncheckedIcon() {
                 // `alpha(common.white, 0.25)` literal -- a dark-theme remnant
                 // ADR-0014 already bars, and one that vanished (1.03:1) on the
                 // bright theme's light results ground, under WCAG 1.4.11's 3:1
-                // for the boundary that identifies a control.
+                // for the boundary that identifies a control. FM-154 could
+                // only re-author the two themes it authored; FM-156 raised the
+                // other two, so all four now clear 3:1 on their own ground.
                 borderColor: "surfaces.selectAllOutline",
             }}
         />

@@ -349,9 +349,15 @@ type SurfaceTokens = {
     /** Fainter hairline for row/section separators. */
     hairlineFaint: string;
     /**
-     * The mock's muted-glyph color (`#6b7472`): section captions, counts,
-     * popover captions, and disabled/neutral control text. FM-054: four
-     * independent feature-local literals collapsed into this one token.
+     * The muted-glyph color: section captions, counts, popover captions, and
+     * disabled/neutral control text. FM-054: four independent feature-local
+     * literals collapsed into this one token.
+     *
+     * It is text, so WCAG 1.4.3's 4.5:1 is its axis on all three grounds a
+     * glyph lands on (`background.default`, `background.paper`,
+     * `surfaces.control`), and `theme.test.ts`'s ADR-0049 block measures it
+     * there for every theme. FM-156 re-authored the two blocks that did not
+     * clear it; each block states its own measurements.
      */
     mutedText: string;
     /** Recessed input surface: text fields. */
@@ -374,21 +380,50 @@ type SurfaceTokens = {
      * value authored for a different ground.
      *
      * Measured on each theme's `background.default`, the ground the sticky
-     * select column paints:
-     *   - `bright` `rgba(0, 0, 0, 0.45)` -- **3.30:1** on `#f2f4f3` and
-     *     3.33:1 on `background.paper`, clearing 1.4.11. (The 0.25 white the
-     *     call site used reached 1.03:1 here.)
-     *   - `dark` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on `#000000`, and
-     *     the same alpha as this block's own `inputOutline`, so the theme
-     *     states one neutral-edge strength rather than two.
-     *   - `grey` and `dark-dyschromatopsia` keep `rgba(255, 255, 255, 0.25)`
-     *     verbatim -- the exact colour the call site composited before this
-     *     token existed, so neither theme's rendering moves. Both measure
-     *     under 3:1 (2.28:1 and 2.02:1); raising them is a rendering change to
-     *     the default palette, which FM-154 is pinned against, and is carried
-     *     as a follow-up in this task's handoff.
+     * select column paints (`background.paper` in brackets, the ground the
+     * same square gets inside a raised results card):
+     *   - `bright` `rgba(0, 0, 0, 0.45)` -- **3.30:1** on `#f2f4f3` (3.33:1).
+     *     (The 0.25 white the call site used reached 1.03:1 here.)
+     *   - `dark` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on `#000000`
+     *     (3.79:1), and the same alpha as this block's own `inputOutline`, so
+     *     the theme states one neutral-edge strength rather than two.
+     *   - `grey` `rgba(255, 255, 255, 0.35)` -- **3.17:1** on `#1f2426`
+     *     (3.08:1), likewise this block's own `inputOutline` alpha.
+     *   - `dark-dyschromatopsia` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on
+     *     `#000000` (4.09:1). It takes `dark`'s alpha rather than the grey
+     *     block's it shares its other surfaces with, for the reason the `dark`
+     *     block states: 0.35 reaches only 3.01:1 on a pure black page, which
+     *     clears 1.4.11 by too little to be worth stating.
+     *
+     * FM-154 authored only the first two: `grey` and `dark-dyschromatopsia`
+     * were pinned byte-identical and kept the call site's own
+     * `rgba(255, 255, 255, 0.25)`, at 2.28:1 and 2.02:1. FM-156 redeems that
+     * follow-up, and `theme.test.ts` now measures all four themes on the one
+     * bar instead of pinning two of them to the remnant.
      */
     selectAllOutline: string;
+    /**
+     * FM-156: the scrim `TableScrollAffordance`'s edge fade gradients from
+     * (`C-TABLE-SCROLL-AFFORDANCE`, ADR-0038) -- the strip that says "there is
+     * more content that way" over whichever edge of a horizontally scrolling
+     * table currently clips content.
+     *
+     * Named for its single consumer, like `selectAllOutline` above. It is a
+     * token rather than a call-site colour because the call site wrote
+     * `alpha(common.black, 0.45)`, the last of ADR-0014's call-site-colour
+     * remnants in `src`: a value authored when every theme had a dark ground,
+     * where -- on the two grounds a scrolling table sits on,
+     * `background.paper` and `surfaces.control` -- it darkens by 1.05-1.31:1
+     * and leaves the text it crosses at 6.90-14.10:1. On `bright` the same
+     * scrim is a 3.33:1 black smear over a
+     * white card that takes `text.primary` from 17.75:1 down to 5.33:1.
+     *
+     * Decoration, so it carries no WCAG axis of its own; what it has is a band
+     * with an end at each side. The three dark themes keep the composited
+     * colour they render today, and `bright` states the alpha that lands in
+     * that same band on its own grounds. Each block states its measurements.
+     */
+    tableScrollFade: string;
 };
 
 /** A MUI palette role. `light`/`dark` are omitted where MUI derives them. */
@@ -426,7 +461,9 @@ type ThemeColors = {
  * superseded ADR-0007's legacy-grey tokens per ADR-0009's accepted
  * full-mock-fidelity decision. Every value here is carried across from the
  * pre-FM-154 `mockPalette`/`mockSurfaces`/`inputOutline`/chart constants
- * unchanged, and `theme.test.ts` pins that.
+ * unchanged, and `theme.test.ts` pins that -- with the two exceptions FM-156
+ * re-authored under ADR-0049 against measured contrast, `surfaces.mutedText`
+ * and `surfaces.selectAllOutline`, each measured at its own line below.
  */
 const greyColors: ThemeColors = {
     mode: "dark",
@@ -494,15 +531,37 @@ const greyColors: ThemeColors = {
         recessed: "#1c2224",
         hairline: "rgba(255, 255, 255, 0.1)",
         hairlineFaint: "rgba(255, 255, 255, 0.06)",
-        mutedText: "#6b7472",
+        // FM-156, ADR-0049: the mock's own `#6b7472` measured 3.26 / 2.95 /
+        // 2.75:1 on this theme's three grounds -- under WCAG 1.4.3 for the
+        // captions and counts it paints, and worst on `surfaces.control`,
+        // where every menu and popover caption lands. Corrected the way
+        // ADR-0035 corrected `error.main`: lightness only, so the mock's
+        // neutral green-grey is kept exactly. `#6b7472` decomposes to
+        // `oklch(0.551 0.011 181.1)`; chroma and hue carry across and L moves
+        // 0.551 -> 0.678, landing on 5.44 / 4.91 / 4.59:1.
+        //
+        // L was not pushed further because this token has a second job: it
+        // must still read *muted* beside `text.secondary` `#9aa2a1`, which
+        // measures 6.02 / 5.44 / 5.08:1. The gap left here on the binding
+        // ground is 0.49, against the 0.46 the `dark` block's own pair holds
+        // there (5.29 against 4.83:1) -- so this theme's two muted tones stand
+        // as far apart as that theme's already do.
+        mutedText: "#919a98",
         // A dark theme's app bar is `background.paper`, so the accent on it is
         // the brand teal itself -- the value `AppShell` read as
         // `primary.main` before this token existed.
         barAccent: "oklch(0.75 0.1 190)",
-        // Exactly what `SelectionMenu` composited from `alpha(common.white,
-        // 0.25)` before the token existed, so this theme's select-all square
-        // renders unchanged. See the token's doc comment for the measurement.
-        selectAllOutline: "rgba(255, 255, 255, 0.25)",
+        // FM-156: this block's own `inputOutline` alpha, so the theme states
+        // one neutral-edge strength rather than two -- 3.17:1 on the page the
+        // sticky select column paints. The `rgba(255, 255, 255, 0.25)` FM-154
+        // carried across here reached 2.28:1. See the token's doc comment.
+        selectAllOutline: "rgba(255, 255, 255, 0.35)",
+        // FM-156: the composited colour `TableScrollAffordance` painted from
+        // `alpha(common.black, 0.45)` before the token existed, so this
+        // theme's scrolled tables render unchanged -- 1.26:1 of darkening on
+        // `background.paper` and 1.31:1 on `surfaces.control`, leaving
+        // `text.primary` at 12.64 / 12.31:1 through the fade.
+        tableScrollFade: "rgba(0, 0, 0, 0.45)",
     },
     /*
      * ADR-0036: the outlined-input notch border, as its own token rather than
@@ -559,6 +618,11 @@ const greyColors: ThemeColors = {
  * produced, which `theme.test.ts` pins -- including the deliberate absence of
  * `primary.light`/`primary.dark`, which MUI derives from `main` here (the
  * spread replaced the whole `primary` object, so it always did).
+ *
+ * The exceptions are the two tokens FM-156 re-authored against measured
+ * contrast under ADR-0049 (`surfaces.mutedText`, `surfaces.selectAllOutline`),
+ * and `selectAllOutline` is the one surface token this block no longer shares
+ * with `grey`: it is measured against this variant's own black page.
  */
 const darkDyschromatopsiaColors: ThemeColors = {
     mode: "dark",
@@ -585,12 +649,26 @@ const darkDyschromatopsiaColors: ThemeColors = {
         recessed: "#1c2224",
         hairline: "rgba(255, 255, 255, 0.1)",
         hairlineFaint: "rgba(255, 255, 255, 0.06)",
-        mutedText: "#6b7472",
+        // FM-156: the grey block's re-authored value, which this variant
+        // shares as it shares the rest of that block's surfaces. The mock's
+        // `#6b7472` measured 4.37 / 3.93 / 2.75:1 here; the binding ground is
+        // `surfaces.control`, the one surface this variant does not darken
+        // along with its page. `#919a98` reads 7.28 / 6.56 / 4.59:1.
+        mutedText: "#919a98",
         barAccent: "#78909c",
-        // Carried across unchanged with the rest of grey's surface tokens:
-        // this variant never restated them, and its select-all square must
-        // render exactly as it did.
-        selectAllOutline: "rgba(255, 255, 255, 0.25)",
+        // FM-156, and the one surface token this variant states differently
+        // from `grey`: measured on its own pure-black page rather than on the
+        // grey block's `#1f2426`, where 0.35 reaches only 3.01:1. At 0.42 --
+        // the alpha the `dark` block chose for the same black ground -- this
+        // edge reads 3.95:1 on the page and 4.09:1 on the paper. The
+        // `rgba(255, 255, 255, 0.25)` FM-154 carried across reached 2.02:1,
+        // the worst of the four themes after `bright`'s.
+        selectAllOutline: "rgba(255, 255, 255, 0.42)",
+        // FM-156: as in `grey`, the colour `TableScrollAffordance` composited
+        // before the token existed, so this variant's scrolled tables render
+        // unchanged -- 1.05:1 of darkening on `background.paper` and 1.31:1 on
+        // `surfaces.control`, leaving `text.primary` at 14.10 / 12.31:1.
+        tableScrollFade: "rgba(0, 0, 0, 0.45)",
     },
     inputOutline: "rgba(255, 255, 255, 0.35)",
     scrollbar: {thumb: "#3a4446", thumbHover: "#495456"},
@@ -677,6 +755,13 @@ const darkColors: ThemeColors = {
         // The same alpha as this block's `inputOutline`, so the theme states
         // one neutral-edge strength: 3.95:1 on the black page.
         selectAllOutline: "rgba(255, 255, 255, 0.42)",
+        // FM-156: the colour `TableScrollAffordance` composited before the
+        // token existed, kept, so this theme's scrolled tables render
+        // unchanged -- 1.11:1 of darkening on `background.paper` and 1.14:1 on
+        // `surfaces.control`. This theme's `text.primary` is legacy's own
+        // muted grey, so it reads through the fade at 7.02 / 6.90:1, the
+        // narrowest of the four and still well clear of body-text contrast.
+        tableScrollFade: "rgba(0, 0, 0, 0.45)",
     },
     inputOutline: "rgba(255, 255, 255, 0.42)",
     scrollbar: {thumb: "#2c2c2c", thumbHover: "#3a3a3a"},
@@ -773,6 +858,21 @@ const brightColors: ThemeColors = {
         // (1.03:1): a dark edge at this block's own `inputOutline` alpha
         // instead, 3.30:1 on the page ground the select column paints.
         selectAllOutline: "rgba(0, 0, 0, 0.45)",
+        // FM-156, and the only block that re-authors this scrim rather than
+        // keeping what the call site composited. The 0.45 black the three dark
+        // themes render is, on a white card, a 3.33:1 wall that drops
+        // `text.primary` from 17.75:1 to 5.33:1 -- black smeared over the last
+        // column of a config table, not an edge affordance.
+        //
+        // Authored against the band the dark themes actually render, from both
+        // ends: at 0.14 the fade darkens `background.paper` by 1.38:1 and
+        // `surfaces.control` by 1.38:1 (the dark themes' own step is
+        // 1.05-1.31:1), and leaves `text.primary` at 12.87 / 13.33:1 through
+        // it (theirs, 12.31-14.10:1, bar `dark`'s muted 6.90:1). Not the
+        // block's `inputOutline` 0.45: that token is a *boundary* measured
+        // against 1.4.11, and a scrim over live text is the one thing it is
+        // not.
+        tableScrollFade: "rgba(0, 0, 0, 0.14)",
     },
     inputOutline: "rgba(0, 0, 0, 0.45)",
     scrollbar: {thumb: "#c3c9c6", thumbHover: "#adb5b1"},

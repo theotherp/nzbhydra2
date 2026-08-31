@@ -259,6 +259,8 @@ components:
     responsibility: ADR-0038's single scroll-edge affordance for horizontally scrollable tables -- one `TableContainer` wrapper that reads its own scroll metrics (`scrollLeft`/`scrollWidth`/`clientWidth`, re-read on `scroll` and on a
       guarded `ResizeObserver` over both the scroller and its content) and paints a fade at each edge that currently clips content, clearing that edge's fade once it is scrolled to its limit. It owns the affordance only; each consuming table
       still declares its own measured `minWidth` floor, because the width at which a table's columns stop being squeezed is a property of that table's columns, not of the scroller
+    note: FM-156 moved the edge fade's scrim off an `alpha(common.black, 0.45)` call-site literal onto the per-theme `surfaces.tableScrollFade` token (ADR-0014). The three dark themes declare the colour the component composited before,
+      so their rendering is unchanged; `bright` declares its own, because on a white card the inherited scrim was a 3.33:1 black smear that dropped `text.primary` from 17.75:1 to 5.33:1
     legacy: []
     target: core/ui-react/src/components/table/TableScrollAffordance.tsx
     consumers:
@@ -512,13 +514,23 @@ components:
     classification: shared_hydra
     state: done
     note: "FM-155 (ADR-0049) built it as core/ui-react/src/services/theme/themePreference.ts. The server record is THEME_PREFERENCE_KEY (`themePreference`,
-      forUser=true) and the startup seed is THEME_PREFERENCE_CACHE_KEY (`hydra.theme.preference`), both exported constants; the system test writes the first one
-      directly to restore the shared instance's default. parseThemePreference is the read boundary for both: it accepts a known preference bare (`bright`) or
-      JSON-string-encoded (`\"bright\"`, which is what a client write reads back as, per API-PREFERENCES-PUT), and answers undefined for everything else --
-      unknown names, legacy main.theme-era values, doubly encoded strings, non-strings -- because createHydraTheme's palette lookup has no entry for a name this
-      build does not ship. read never rejects; write does, and its one caller swallows that. Its only consumer is app/ThemePreferenceProvider.tsx
-      (F-PLATFORM-SHELL), which seeds synchronously from the cache, lets the server value win when it arrives unless the user has already chosen in this session,
-      and keeps the applied theme when a write fails. The provider builds its own ApiTransport from the bootstrap base URL rather than taking the router's,
-      because FM-154 mounts it above the query client and the router; with no bootstrap in the document (every component test) it persists nothing.
+      forUser=true), an exported constant; the system test writes it directly to restore the shared instance's default. FM-157 scoped the startup seed
+      per user, mirroring GenericStorageWeb.java's `key + \"-\" + remoteUser` scoping of that server record: themePreferenceCacheKey(username), the single
+      authority, returns `hydra.theme.preference.user.<username>` for an authenticated username (THEME_PREFERENCE_CACHE_KEY_USER_PREFIX) and the shared
+      `hydra.theme.preference.shared` (THEME_PREFERENCE_CACHE_KEY_SHARED) for an anonymous session -- the two shapes are disjoint by the fixed `.user.`
+      segment regardless of what a username contains. readCachedThemePreference/writeCachedThemePreference take that username explicitly; the FM-155
+      browser-scoped key (LEGACY_THEME_PREFERENCE_CACHE_KEY, `hydra.theme.preference`) is kept only as a quarantined constant and never read again -- a
+      value under it may belong to a different user than the one now loading the page. readBootstrapUsername reads app/bootstrap.ts's
+      `window.__NZBHYDRA_BOOTSTRAP__.username` directly and tolerantly (absent/invalid bootstrap, or a null username, both read as anonymous), the same
+      tolerance createDefaultThemePreferenceService applies to baseUrl, because the seed read stays synchronous inside a useState initializer, before any
+      provider -- including one that would supply the parsed bootstrap -- has mounted. parseThemePreference is the read boundary for both the server
+      record and every seed scope: it accepts a known preference bare (`bright`) or JSON-string-encoded (`\"bright\"`, which is what a client write reads
+      back as, per API-PREFERENCES-PUT), and answers undefined for everything else -- unknown names, legacy main.theme-era values, doubly encoded strings,
+      non-strings -- because createHydraTheme's palette lookup has no entry for a name this build does not ship. read never rejects; write does, and its
+      one caller swallows that. Its only consumer is app/ThemePreferenceProvider.tsx (F-PLATFORM-SHELL), which reads the username once per mount, seeds
+      synchronously from that scope's cache, lets the server value win when it arrives unless the user has already chosen in this session, and keeps the
+      applied theme when a write fails. The provider builds its own ApiTransport from the bootstrap base URL rather than taking the router's, because
+      FM-154 mounts it above the query client and the router; with no bootstrap in the document (every component test) it persists nothing and scopes to
+      anonymous.
       The deprecated Java MainConfig.theme field is not read or migrated (safe config does not expose it and full config reads are admin-only); the config UI's
       main.theme dropdown is removed by the same task."

@@ -41,17 +41,58 @@ import {
 export const THEME_PREFERENCE_KEY = "themePreference";
 
 /**
- * The localStorage key of the startup seed, in this UI's own
- * `hydra.<area>.<thing>` convention (`hydra.config.showAdvanced`,
- * `hydra.search-results.table`).
+ * FM-155's original localStorage key of the startup seed, browser-scoped
+ * rather than user-scoped: on a shared browser a second user's first paint
+ * was briefly seeded with the previous user's cached theme until the server
+ * read landed. FM-157 quarantines that data rather than migrating it -- a
+ * value under this key may belong to a different user than the one now
+ * loading the page, which is exactly what scoping exists to stop trusting.
+ * Kept only so nothing else in this repository reintroduces the same
+ * spelling; never read again, by this module or by a test that means to
+ * assert the current, scoped behaviour.
+ */
+export const LEGACY_THEME_PREFERENCE_CACHE_KEY = "hydra.theme.preference";
+
+/**
+ * The localStorage key prefix for an authenticated user's startup seed, in
+ * this UI's own `hydra.<area>.<thing>` convention (`hydra.config.showAdvanced`,
+ * `hydra.search-results.table`), extended with the username so a shared
+ * browser gives each authenticated user their own seed -- mirroring
+ * `GenericStorageWeb`'s `key + "-" + remoteUser` scoping of the server record
+ * this cache seeds from.
+ */
+export const THEME_PREFERENCE_CACHE_KEY_USER_PREFIX =
+    "hydra.theme.preference.user.";
+
+/**
+ * The localStorage key of the startup seed shared by every anonymous
+ * session, mirroring `GenericStorageWeb`'s bare-key fallback when
+ * `getRemoteUser()` is null -- one record shared by all anonymous sessions,
+ * never merged with the per-user shapes above regardless of what a username
+ * contains (the two shapes are disjoint by the fixed `.user.` segment, not by
+ * escaping, so a user literally named `shared` still lands under
+ * `hydra.theme.preference.user.shared`).
+ */
+export const THEME_PREFERENCE_CACHE_KEY_SHARED =
+    "hydra.theme.preference.shared";
+
+/**
+ * The startup seed's storage key for `username`, the single authority
+ * `readCachedThemePreference`/`writeCachedThemePreference` and their callers
+ * derive from. `username` is `null` for an anonymous session or an
+ * absent/invalid bootstrap -- see `readBootstrapUsername`.
  *
  * This cache is deliberately *not* the source of truth -- it is a copy of the
- * last preference this browser applied, read synchronously so the first paint
- * is usually already in the right theme instead of flashing the default while
- * the server round trip is in flight. The server value wins the moment it
- * arrives.
+ * last preference this browser applied for this scope, read synchronously so
+ * the first paint is usually already in the right theme instead of flashing
+ * the default while the server round trip is in flight. The server value wins
+ * the moment it arrives.
  */
-export const THEME_PREFERENCE_CACHE_KEY = "hydra.theme.preference";
+export function themePreferenceCacheKey(username: string | null): string {
+    return username === null
+        ? THEME_PREFERENCE_CACHE_KEY_SHARED
+        : `${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}${username}`;
+}
 
 /** Read/write of the current user's stored theme preference. */
 export type ThemePreferenceService = {
@@ -169,12 +210,41 @@ export function createDefaultThemePreferenceService():
     }
 }
 
-/** The last preference this browser applied, validated the same way. */
-export function readCachedThemePreference(): ThemePreference | undefined {
-    return parseThemePreference(readItem(THEME_PREFERENCE_CACHE_KEY));
+/**
+ * The authenticated username this document's bootstrap carries, or `null` for
+ * an anonymous session -- and, tolerantly, for a document with no bootstrap or
+ * one whose shape this application does not recognise, the same tolerance
+ * `createDefaultThemePreferenceService` applies to `baseUrl`.
+ *
+ * Read directly from `window.__NZBHYDRA_BOOTSTRAP__` rather than through
+ * `getBootstrapData`/a hook: the seed the caller derives from this must be
+ * read synchronously, inside a `useState` initializer, before any provider
+ * -- including whatever would supply the parsed bootstrap -- has mounted.
+ */
+export function readBootstrapUsername(): string | null {
+    const bootstrap: unknown = window.__NZBHYDRA_BOOTSTRAP__;
+    if (
+        typeof bootstrap !== "object" ||
+        bootstrap === null ||
+        !("username" in bootstrap)
+    ) {
+        return null;
+    }
+    const {username} = bootstrap as {username: unknown};
+    return typeof username === "string" ? username : null;
 }
 
-/** Records `preference` as this browser's startup seed. */
-export function writeCachedThemePreference(preference: ThemePreference): void {
-    writeItem(THEME_PREFERENCE_CACHE_KEY, preference);
+/** The last preference this browser applied for `username`'s scope, validated the same way. */
+export function readCachedThemePreference(
+    username: string | null,
+): ThemePreference | undefined {
+    return parseThemePreference(readItem(themePreferenceCacheKey(username)));
+}
+
+/** Records `preference` as this browser's startup seed for `username`'s scope. */
+export function writeCachedThemePreference(
+    preference: ThemePreference,
+    username: string | null,
+): void {
+    writeItem(themePreferenceCacheKey(username), preference);
 }

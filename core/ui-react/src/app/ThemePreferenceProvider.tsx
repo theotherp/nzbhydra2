@@ -12,6 +12,7 @@ import {
 
 import {
     createDefaultThemePreferenceService,
+    readBootstrapUsername,
     readCachedThemePreference,
     writeCachedThemePreference,
     type ThemePreferenceService,
@@ -111,13 +112,20 @@ export function ThemePreferenceProvider({
      */
     service?: ThemePreferenceService;
 }) {
+    // The username the seed is scoped to (FM-157): read once, directly from
+    // the raw bootstrap rather than a hook or the router, because the seed
+    // read below must stay synchronous inside this `useState` initializer.
+    // `null` for an anonymous session or a document with no bootstrap, which
+    // is every focused component test.
+    const username = readBootstrapUsername();
     // The synchronous half of the startup path: the last preference this
-    // browser applied, so the first paint is usually already the right theme
-    // instead of flashing the default until the server answers. It is a cache
-    // and not the source of truth, so an absent or malformed value simply
-    // leaves the default standing.
+    // browser applied *for this scope*, so the first paint is usually already
+    // the right theme instead of flashing the default until the server
+    // answers. It is a cache and not the source of truth, so an absent or
+    // malformed value simply leaves the default standing -- and a different
+    // user's cached value, under a different scope, is never seen at all.
     const [preference, setPreference] = useState<ThemePreference>(
-        () => readCachedThemePreference() ?? initialPreference,
+        () => readCachedThemePreference(username) ?? initialPreference,
     );
     const persistence = useMemo(
         () => service ?? createDefaultThemePreferenceService(),
@@ -141,12 +149,12 @@ export function ThemePreferenceProvider({
                 return;
             }
             setPreference(stored);
-            writeCachedThemePreference(stored);
+            writeCachedThemePreference(stored, username);
         });
         return () => {
             cancelled = true;
         };
-    }, [persistence]);
+    }, [persistence, username]);
     // Recreating a MUI theme is not free (it augments every palette role), so
     // it is memoised on the two inputs that decide it. `prefersDark` is only
     // one of them while `auto` is selected, but `createHydraTheme` already
@@ -166,10 +174,10 @@ export function ThemePreferenceProvider({
             // toast renders in), so it has no way to surface a message here
             // even if a failed preference write deserved one.
             setPreference(next);
-            writeCachedThemePreference(next);
+            writeCachedThemePreference(next, username);
             void persistence?.write(next).catch(() => undefined);
         },
-        [persistence],
+        [persistence, username],
     );
     const value = useMemo(
         () => ({preference, setPreference: change}),

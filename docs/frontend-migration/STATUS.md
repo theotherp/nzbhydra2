@@ -1258,6 +1258,24 @@ FM-154 provider-position comment in App.tsx, browser-scoped (not user-scoped) se
 theme on shared browsers, and the system-test restore pins literal `grey` instead of clearing the record. Candidates for a
 future quickfix / proposed packet.
 
+FM-156 (ADR-0014 Contrast Remnant Sweep) raised `surfaces.selectAllOutline` to ≥3:1 on grey (0.35 alpha, 3.17:1) and
+dark-dyschromatopsia (0.42, 3.95:1), lifted `surfaces.mutedText` to ≥4.5:1 on both via a lightness-only oklch move
+(#6b7472→#919a98), and moved the scroll-edge scrim onto a per-theme `surfaces.tableScrollFade` token (dark themes rendered
+unchanged; bright authored 0.14 against the dark themes' measured darkening band, replacing a 0.45 black wall). The FM-154
+byte pins were superseded by strictly stronger ratio+remnant assertions; a deep palette compare proves only the named tokens
+moved. Passed 2026-08-31 with minor findings, not corrected (optional): one comment states dark's paper ratio as 3.79:1
+where it measures 4.06:1, the scroll-fade strip frames are 390x844 by justified necessity (no desktop scroller exists), and
+one comment wraps at ~40 columns. Candidates for a future quickfix. Owner strip approval outstanding.
+
+FM-157 (User-Scoped Theme Seed Cache) scoped the theme's localStorage startup seed per authenticated username with a shared
+anonymous bucket (`hydra.theme.preference.user.<name>` / `.shared`), mirroring GenericStorageWeb's remoteUser suffixing; the
+legacy browser-scoped key is quarantined unread (no migration — it is exactly the other-user data being fenced off). Key
+disjointness proven adversarially (a user named "shared", delimiter-bearing names, empty string); the shared-browser
+regression is covered end to end through the real cache-read path, red-first. Passed 2026-08-31 with minor findings, not
+corrected (optional): one test doc comment overstates "real jsdom localStorage" (the Storage backend is a faithful stub),
+a "read once" comment overstates memoization, and the collision suite lacks the empty-string case. Candidates for a future
+quickfix.
+
 ## Active
 
 None.
@@ -1284,6 +1302,8 @@ None.
 None.
 
 ## Upcoming
+
+- The 2026-08-31 follow-up batch is complete: FM-156 and FM-157 are done (entries above).
 
 - The 2026-08-31 owner-request batch (ADR-0049/0050/0051) is complete: FM-150 through FM-155 are all done (entries above).
 

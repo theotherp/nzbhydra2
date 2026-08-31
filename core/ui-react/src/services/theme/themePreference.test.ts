@@ -5,10 +5,14 @@ import {createServerPreferences} from "../preferences/serverPreferences";
 import {
     createDefaultThemePreferenceService,
     createThemePreferenceService,
+    LEGACY_THEME_PREFERENCE_CACHE_KEY,
     parseThemePreference,
+    readBootstrapUsername,
     readCachedThemePreference,
-    THEME_PREFERENCE_CACHE_KEY,
+    THEME_PREFERENCE_CACHE_KEY_SHARED,
+    THEME_PREFERENCE_CACHE_KEY_USER_PREFIX,
     THEME_PREFERENCE_KEY,
+    themePreferenceCacheKey,
     writeCachedThemePreference,
 } from "./themePreference";
 
@@ -184,33 +188,134 @@ describe("createDefaultThemePreferenceService", () => {
     });
 });
 
+describe("themePreferenceCacheKey", () => {
+    it("should give every username its own key, disjoint from the shared and legacy keys", () => {
+        expect(themePreferenceCacheKey("alice")).toBe(
+            `${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}alice`,
+        );
+        expect(themePreferenceCacheKey("bob")).toBe(
+            `${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}bob`,
+        );
+        expect(themePreferenceCacheKey("alice")).not.toBe(
+            themePreferenceCacheKey("bob"),
+        );
+        expect(themePreferenceCacheKey(null)).toBe(
+            THEME_PREFERENCE_CACHE_KEY_SHARED,
+        );
+    });
+
+    it("should never let a username collide with the shared scope, even one named exactly that", () => {
+        // The shapes are disjoint by the fixed `.user.` segment, not by
+        // escaping the username -- so a user literally named `shared`, or one
+        // containing the delimiter, still lands under its own key.
+        expect(themePreferenceCacheKey("shared")).toBe(
+            `${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}shared`,
+        );
+        expect(themePreferenceCacheKey("shared")).not.toBe(
+            THEME_PREFERENCE_CACHE_KEY_SHARED,
+        );
+        expect(themePreferenceCacheKey("a.user.b")).not.toBe(
+            themePreferenceCacheKey("a"),
+        );
+    });
+
+    it("should never produce the legacy bare key for any scope", () => {
+        expect(themePreferenceCacheKey(null)).not.toBe(
+            LEGACY_THEME_PREFERENCE_CACHE_KEY,
+        );
+        expect(themePreferenceCacheKey("alice")).not.toBe(
+            LEGACY_THEME_PREFERENCE_CACHE_KEY,
+        );
+    });
+});
+
+describe("readBootstrapUsername", () => {
+    it("should read the bootstrap's username", () => {
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: "alice"});
+        expect(readBootstrapUsername()).toBe("alice");
+    });
+
+    it("should treat a null, absent, or invalid bootstrap as anonymous", () => {
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: null});
+        expect(readBootstrapUsername()).toBeNull();
+
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", undefined);
+        expect(readBootstrapUsername()).toBeNull();
+
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", "not an object");
+        expect(readBootstrapUsername()).toBeNull();
+
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: 42});
+        expect(readBootstrapUsername()).toBeNull();
+    });
+});
+
 describe("the startup seed cache", () => {
-    it("should round trip an applied preference", () => {
+    it("should round trip an applied preference within one user's scope", () => {
         const store = new Map<string, string>();
         stubLocalStorage(store);
 
-        writeCachedThemePreference("dark");
+        writeCachedThemePreference("dark", "alice");
 
-        expect(store.get(THEME_PREFERENCE_CACHE_KEY)).toBe("dark");
-        expect(readCachedThemePreference()).toBe("dark");
+        expect(
+            store.get(`${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}alice`),
+        ).toBe("dark");
+        expect(readCachedThemePreference("alice")).toBe("dark");
     });
 
-    it("should read a malformed or unknown cached value as no preference", () => {
+    it("should round trip an applied preference for the shared, anonymous scope", () => {
+        const store = new Map<string, string>();
+        stubLocalStorage(store);
+
+        writeCachedThemePreference("bright", null);
+
+        expect(store.get(THEME_PREFERENCE_CACHE_KEY_SHARED)).toBe("bright");
+        expect(readCachedThemePreference(null)).toBe("bright");
+    });
+
+    it("should keep two different users' seeds independent", () => {
+        const store = new Map<string, string>();
+        stubLocalStorage(store);
+
+        writeCachedThemePreference("dark", "alice");
+        writeCachedThemePreference("bright", "bob");
+
+        expect(readCachedThemePreference("alice")).toBe("dark");
+        expect(readCachedThemePreference("bob")).toBe("bright");
+        // Proves the shared-browser bug this task closes: reading bob's scope
+        // must never surface alice's cached value.
+        expect(readCachedThemePreference("bob")).not.toBe("dark");
+    });
+
+    it("should never return a value cached under the legacy bare key, for any scope", () => {
+        const store = new Map<string, string>();
+        stubLocalStorage(store);
+        store.set(LEGACY_THEME_PREFERENCE_CACHE_KEY, "dark");
+
+        expect(readCachedThemePreference(null)).toBeUndefined();
+        expect(readCachedThemePreference("alice")).toBeUndefined();
+    });
+
+    it("should read a malformed or unknown cached value as no preference, in either scope", () => {
         const store = new Map<string, string>();
         stubLocalStorage(store);
 
         for (const stored of ["", "light", "{}", '"light"', "[]"]) {
-            store.set(THEME_PREFERENCE_CACHE_KEY, stored);
-            expect(readCachedThemePreference(), stored).toBeUndefined();
+            store.set(`${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}alice`, stored);
+            expect(readCachedThemePreference("alice"), stored).toBeUndefined();
+
+            store.set(THEME_PREFERENCE_CACHE_KEY_SHARED, stored);
+            expect(readCachedThemePreference(null), stored).toBeUndefined();
         }
     });
 
     it("should read nothing when there is no storage at all", () => {
         // The unstubbed environment: no `localStorage` on an opaque origin,
         // which is exactly what `C-BROWSER-STORAGE`'s guard exists for.
-        expect(readCachedThemePreference()).toBeUndefined();
+        expect(readCachedThemePreference("alice")).toBeUndefined();
+        expect(readCachedThemePreference(null)).toBeUndefined();
         expect(() => {
-            writeCachedThemePreference("dark");
+            writeCachedThemePreference("dark", "alice");
         }).not.toThrow();
     });
 });

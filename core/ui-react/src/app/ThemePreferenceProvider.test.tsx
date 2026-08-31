@@ -3,7 +3,8 @@ import {act, render, screen, waitFor} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {
-    THEME_PREFERENCE_CACHE_KEY,
+    THEME_PREFERENCE_CACHE_KEY_SHARED,
+    themePreferenceCacheKey,
     type ThemePreferenceService,
 } from "../services/theme/themePreference";
 import {
@@ -113,7 +114,9 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should seed the first render from the local cache, before the server answers", async () => {
-        stubLocalStorage(new Map([[THEME_PREFERENCE_CACHE_KEY, "bright"]]));
+        stubLocalStorage(
+            new Map([[THEME_PREFERENCE_CACHE_KEY_SHARED, "bright"]]),
+        );
         const {resolve, service} = deferredService();
 
         render(
@@ -134,7 +137,9 @@ describe("ThemePreferenceProvider", () => {
 
     it("should ignore a malformed cached value rather than failing to render", () => {
         stubLocalStorage(
-            new Map([[THEME_PREFERENCE_CACHE_KEY, '{"theme":"bright"}']]),
+            new Map([
+                [THEME_PREFERENCE_CACHE_KEY_SHARED, '{"theme":"bright"}'],
+            ]),
         );
         const {service} = deferredService();
 
@@ -148,7 +153,7 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should let the stored server preference win over the cached seed", async () => {
-        const store = new Map([[THEME_PREFERENCE_CACHE_KEY, "bright"]]);
+        const store = new Map([[THEME_PREFERENCE_CACHE_KEY_SHARED, "bright"]]);
         stubLocalStorage(store);
         const {resolve, service} = deferredService();
 
@@ -164,7 +169,7 @@ describe("ThemePreferenceProvider", () => {
         expect(ground()).toBe(GROUNDS.dark);
         // And the cache follows it, so the next load seeds from the right
         // value on this browser too.
-        expect(store.get(THEME_PREFERENCE_CACHE_KEY)).toBe("dark");
+        expect(store.get(THEME_PREFERENCE_CACHE_KEY_SHARED)).toBe("dark");
     });
 
     it("should keep a choice made while the startup read is still in flight", async () => {
@@ -207,7 +212,7 @@ describe("ThemePreferenceProvider", () => {
         await waitFor(() => {
             expect(ground()).toBe(GROUNDS.dark);
         });
-        expect(store.get(THEME_PREFERENCE_CACHE_KEY)).toBe("dark");
+        expect(store.get(THEME_PREFERENCE_CACHE_KEY_SHARED)).toBe("dark");
         expect(writes).toEqual(["dark"]);
     });
 
@@ -240,6 +245,91 @@ describe("ThemePreferenceProvider", () => {
     it("should mount without a service in a document that carries no bootstrap", () => {
         render(
             <ThemePreferenceProvider>
+                <Probe />
+            </ThemePreferenceProvider>,
+        );
+
+        expect(ground()).toBe(GROUNDS.grey);
+    });
+});
+
+describe("ThemePreferenceProvider seed scoping (FM-157)", () => {
+    /**
+     * The shared-browser scenario this task closes: user A's session cached
+     * a non-default theme, and a second session on the same browser -- user
+     * B, or the same browser before anyone signs in -- must not first-paint
+     * in it. Goes through real (jsdom) `localStorage`, not a stubbed cache
+     * read, so it proves the actual key derivation rather than an assumption
+     * about it.
+     */
+    it("should not seed a second user's first paint with the first user's cached theme", async () => {
+        const store = new Map<string, string>();
+        stubLocalStorage(store);
+
+        // User A's session: chooses a non-default theme, which caches it
+        // under A's scope.
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: "alice"});
+        const aSession = deferredService();
+        const {unmount} = render(
+            <ThemePreferenceProvider service={aSession.service}>
+                <Probe />
+            </ThemePreferenceProvider>,
+        );
+        await act(async () => {
+            aSession.resolve(undefined);
+        });
+        screen.getByRole("button", {name: "Choose dark"}).click();
+        await waitFor(() => {
+            expect(ground()).toBe(GROUNDS.dark);
+        });
+        unmount();
+
+        expect(store.get(themePreferenceCacheKey("alice"))).toBe("dark");
+
+        // User B mounts on the same browser. The server has nothing for B
+        // yet (an empty/grey answer), so first paint must come from B's own,
+        // empty scope -- never from A's cached seed.
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: "bob"});
+        const bSession = deferredService();
+        render(
+            <ThemePreferenceProvider service={bSession.service}>
+                <Probe />
+            </ThemePreferenceProvider>,
+        );
+
+        expect(ground()).toBe(GROUNDS.grey);
+        await act(async () => {
+            bSession.resolve("grey");
+        });
+        expect(ground()).toBe(GROUNDS.grey);
+    });
+
+    it("should give an anonymous session its own shared seed, independent of any user's", async () => {
+        const store = new Map<string, string>();
+        stubLocalStorage(store);
+
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: "alice"});
+        const aSession = deferredService();
+        const {unmount} = render(
+            <ThemePreferenceProvider service={aSession.service}>
+                <Probe />
+            </ThemePreferenceProvider>,
+        );
+        await act(async () => {
+            aSession.resolve(undefined);
+        });
+        screen.getByRole("button", {name: "Choose dark"}).click();
+        await waitFor(() => {
+            expect(ground()).toBe(GROUNDS.dark);
+        });
+        unmount();
+
+        // No bootstrap at all -- an anonymous session, the same as every
+        // focused component test above.
+        vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", undefined);
+        const anonymousSession = deferredService();
+        render(
+            <ThemePreferenceProvider service={anonymousSession.service}>
                 <Probe />
             </ThemePreferenceProvider>,
         );
