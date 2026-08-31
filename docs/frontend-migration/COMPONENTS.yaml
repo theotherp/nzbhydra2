@@ -322,7 +322,9 @@ components:
     note: FM-137 (ADR-0046) moved the chrome to C-REFINE-SURFACE and the file with it (HistoryRefineSurface.tsx, beside historyRefineCollapsed.ts). Every history-refine-* section and control id survived unchanged, including ADR-0016's
       empty-selection semantics; history-refine-bar now names whichever branch is live and history-refine-summary/-drawer/-close were added. The "deliberately shares no code with RefineSidebar" stance this record and the source file both
       carried is superseded for the chrome only -- the state and options reasons it gave are the retained rationale above. FM-142 moved history-refine-summary from the header's right edge to its left slot and made it single-line (noWrap)
-      when the shared header dropped its "Refine" caption; the sentence, the id, and the rail/compact fallbacks that carry the count where the slot is hidden are unchanged.
+      when the shared header dropped its "Refine" caption; the sentence, the id, and the rail/compact fallbacks that carry the count where the slot is hidden are unchanged. FM-153 (ADR-0050) replaced the checkboxes kind's wrapping refineChip row with C-REFINE-MULTISELECT, so that history-refine-<id> and
+      -option survived, -toggle and -list were added, the sections start collapsed on every mount and persist no open state, and ADR-0016's empty-selection
+      semantics and the dimensions' declared option order are unchanged.
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model
@@ -483,9 +485,15 @@ components:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
-    state: planned
-    note: "Created for FM-153 (ADR-0050): the four history checkbox dimensions adopt the results sidebar's collapsible-list presentation, extracted from
-      RefineSidebar.tsx's RefineCollapsibleList + filterControls.tsx's ToggleRowFilter rows; the results sidebar re-bases on it at rendered parity."
+    state: done
+    note: "FM-153 (ADR-0050) extracted it from RefineSidebar.tsx's RefineCollapsibleList and filterControls.tsx's ToggleRowFilter rows into
+      components/refine/RefineMultiselect.tsx. Consumers: the results sidebar's Category and Indexer sections (F-SEARCH-SORT-FILTER, refine-category-*/
+      refine-indexer-*, open state persisted through hydra.search-results.table, options derived and sorted by the feature's own toggleRowEntries and carrying
+      counts) and all four history checkboxes dimensions (F-HISTORY-SEARCHES category, F-HISTORY-DOWNLOADS indexer/result, F-HISTORY-NOTIFICATIONS event-type,
+      history-refine-<id>-toggle/-list/-option, collapsed on every mount with the open state in component-local state and no storage key, options in declared
+      order and no counts). The results rebase was proven at rendered parity the FM-136/FM-110 way -- the docked expanded Category and Indexer sections'
+      outerHTML byte-identical before and after. The optional groupLabel prop is what keeps the history sections' pre-existing role=group naming; the results
+      sidebar passes none and renders exactly as before."
   - id: C-THEME-PREFERENCE
     responsibility: Typed per-user theme preference -- read/write of a ThemePreference value over C-SERVER-PREFERENCES (forUser=true, one exported storage key),
       validating untrusted stored data on read (bare or JSON-string-encoded known values only; anything else reads as undefined), plus a C-BROWSER-STORAGE-guarded

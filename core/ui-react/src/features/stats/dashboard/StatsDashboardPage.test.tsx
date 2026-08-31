@@ -225,7 +225,7 @@ describe("StatsDashboardPage", () => {
                 avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
             }),
         );
-        fireEvent.click(within(screen.getByRole("alert")).getByText("Retry"));
+        fireEvent.click(screen.getByRole("button", {name: "Retry"}));
         await waitFor(() =>
             expect(
                 screen.queryByText(
@@ -380,7 +380,11 @@ describe("StatsDashboardPage", () => {
             ),
         ).toBeInTheDocument();
         expect(screen.queryByText("Stale")).not.toBeInTheDocument();
-        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        // Only the permanent disclaimer alert (ADR-0051) remains -- no error
+        // banner was raised for the superseded request.
+        expect(screen.getAllByRole("alert")).toEqual([
+            screen.getByTestId("stats-disclaimer"),
+        ]);
     });
 
     it("swallows a superseded request's abort rejection without surfacing an error banner", async () => {
@@ -423,7 +427,11 @@ describe("StatsDashboardPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 20));
         });
 
-        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        // Only the permanent disclaimer alert (ADR-0051) remains -- no error
+        // banner was raised for the swallowed abort.
+        expect(screen.getAllByRole("alert")).toEqual([
+            screen.getByTestId("stats-disclaimer"),
+        ]);
         expect(
             within(screen.getByTestId("stats-indexers-table")).getByText(
                 "Newer",
@@ -481,6 +489,56 @@ describe("StatsDashboardPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 20));
         });
         expect(getStatsMock).toHaveBeenCalledTimes(1);
+    });
+
+    // ADR-0051: the disclaimer alert is permanently visible and must not
+    // depend on the stats query -- it has to render before the very first
+    // response settles, not only once the dashboard has data or has failed.
+    it("shows the disclaimer alert immediately, during the initial loading state, independently of the stats query", async () => {
+        const inFlight = deferred<StatsParseResult>();
+        getStatsMock.mockReturnValueOnce(inFlight.promise);
+        renderPage();
+
+        expect(screen.getByTestId("stats-disclaimer")).toHaveTextContent(
+            "Don't read too much into these stats.",
+        );
+        // The dashboard itself has not appeared yet -- this really is the
+        // loading branch, not a race that happened to resolve first.
+        expect(screen.queryByTestId("stats-dashboard")).not.toBeInTheDocument();
+
+        inFlight.resolve(resultOf({}));
+        await screen.findByTestId("stats-dashboard");
+        expect(screen.getByTestId("stats-disclaimer")).toBeInTheDocument();
+    });
+
+    it("shows the disclaimer alert on the initial-load error state, with no stale disclaimer button left behind", async () => {
+        getStatsMock.mockRejectedValueOnce(new Error("network down"));
+        renderPage();
+
+        expect(
+            await screen.findByText("Unable to load statistics."),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId("stats-disclaimer")).toHaveTextContent(
+            "Don't read too much into these stats.",
+        );
+        expect(
+            screen.queryByTestId("stats-disclaimer-button"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("replaces the old info-icon popover with the permanent disclaimer alert once loaded", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+
+        const disclaimer = screen.getByTestId("stats-disclaimer");
+        expect(disclaimer).toHaveTextContent(
+            "Don't read too much into these stats. Which indexer is picked for a download depends on its score",
+        );
+        expect(disclaimer).toHaveAttribute("role", "alert");
+        expect(
+            screen.queryByTestId("stats-disclaimer-button"),
+        ).not.toBeInTheDocument();
     });
 
     it("hides user/host share cards the bootstrap config says cannot exist", async () => {

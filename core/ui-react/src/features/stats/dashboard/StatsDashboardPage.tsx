@@ -47,6 +47,25 @@ import {IndexersSection} from "./sections/IndexersSection";
 import {OverviewTiles} from "./sections/OverviewTiles";
 import {SourcesSection} from "./sections/SourcesSection";
 
+// ADR-0051: permanently visible so every user is guaranteed to see it -- no
+// dismiss/acknowledge mechanism, and it must render in every one of the
+// dashboard's loading/error/loaded returns below, independently of the stats
+// query. Previously the info-icon `Popover` in `ControlsHeader`; this is now
+// the constant's owner file.
+const DISCLAIMER =
+    "Don't read too much into these stats. Which indexer is picked for a download depends on its score and some " +
+    "more or less random values like posting time of the NZB. They are also heavily influenced by individual " +
+    "settings, including indexer priority, search order, free vs. paid accounts, and the type of content being " +
+    "searched for.";
+
+function StatsDisclaimer() {
+    return (
+        <Alert data-testid="stats-disclaimer" severity="info">
+            {DISCLAIMER}
+        </Alert>
+    );
+}
+
 /**
  * The dashboard's held state, exactly what `API-STATS-QUERY` describes: one
  * `StatsResult` merged field-by-field from every response so far (never
@@ -291,11 +310,17 @@ export function StatsDashboardPage({
     };
 
     if (!hasLoadedOnce && isFetching) {
-        return <Loading message="Calculating stats…" />;
+        return (
+            <>
+                <StatsDisclaimer />
+                <Loading message="Calculating stats…" />
+            </>
+        );
     }
     if (!hasLoadedOnce && query.isError) {
         return (
             <Stack alignItems="flex-start" component="main" spacing={2}>
+                <StatsDisclaimer />
                 <Typography component="h1" variant="h4">
                     Statistics
                 </Typography>
@@ -309,6 +334,7 @@ export function StatsDashboardPage({
 
     return (
         <Stack component="main" data-testid="stats-dashboard" spacing={3}>
+            <StatsDisclaimer />
             <Stack
                 alignItems="center"
                 direction="row"

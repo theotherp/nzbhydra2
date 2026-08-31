@@ -280,6 +280,43 @@ describe("RefineSidebar", () => {
         expect(within(indexerList).getByText("2")).toBeInTheDocument();
     });
 
+    // FM-153: the rows are `C-REFINE-MULTISELECT`'s now, but the dedup, count
+    // and alphabetical sort are this feature's and stay here -- the shared
+    // component renders what it is handed in the order it is handed it, so
+    // that the history views' declared option order survives.
+    it("dedupes and alphabetically sorts the category and indexer rows it derives from the loaded results", () => {
+        render(
+            <Harness
+                loadedResults={[
+                    {
+                        category: "TV",
+                        indexer: "Zeta",
+                        searchResultId: "1",
+                        title: "Alpha",
+                    },
+                    {
+                        category: "Movies",
+                        indexer: "Alpha",
+                        searchResultId: "2",
+                        title: "Bravo",
+                    },
+                    {
+                        category: "TV",
+                        indexer: "Zeta",
+                        searchResultId: "3",
+                        title: "Charlie",
+                    },
+                ]}
+            />,
+        );
+        const values = (optionTestId: string) =>
+            screen
+                .getAllByTestId(optionTestId)
+                .map((row) => row.getAttribute("data-filter-value"));
+        expect(values("refine-category-option")).toEqual(["Movies", "TV"]);
+        expect(values("refine-indexer-option")).toEqual(["Alpha", "Zeta"]);
+    });
+
     it("renders category and indexer entries as clickable toggle rows rather than a checkbox list", () => {
         render(<Harness />);
         for (const [listTestId, optionTestId] of [

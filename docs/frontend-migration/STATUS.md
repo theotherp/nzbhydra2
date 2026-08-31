@@ -1216,6 +1216,29 @@ FM-088 precedent, so hover affordance is an owner ruling for both sites together
 handoff, deliberately untouched as Out Of Scope: the compact triggers' visible "Refine" text, and the 390px drawer
 header carrying no active-filter count while it covers the trigger. Candidates for a future quickfix / owner ruling.
 
+FM-150 (Results Table Polish) narrowed Age (8%→5%) and Size (9%→8%) into Title (39%), replaced the expand-group/duplicates
+text buttons with icon buttons whose reservation spacers keep titles x-aligned across mixed rows, and made the results row's
+NZB/Torrent download an inline icon button (`DirectDownloadActions` opt-in `iconOnly`; `/history` text form untouched).
+Passed 2026-08-31 with minor findings, not corrected (optional): colgroup comment names the wrong overflow neighbour/direction,
+two stale FEATURES.yaml line citations, the 1280px 2x2 detail-link fold awaits owner visual approval, torrent tooltip case
+divergence. Candidates for a future quickfix.
+
+FM-151 (Indexer Config Table Row Alignment) aligned the wide indexer table's five cells on one centerline via a
+`SettingRowTableCellScope` context opt-in that drops `SettingRow`'s reserved margin and lifts help/error text out of flow
+only inside the wide row (name-cell chips likewise); compact stack and every other `SettingRow` consumer are provably
+unchanged (byte-identical Searching-tab DOM, pixel-identical dialog/mobile captures). Passed 2026-08-31 with no findings.
+
+FM-152 (Always-Visible Stats Disclaimer, ADR-0051) replaced the stats info-icon popover with a permanent non-dismissible
+info alert (`stats-disclaimer`) rendered first in the dashboard's loading, error, and loaded branches, disclaimer wording
+unchanged; `stats-disclaimer-button` removed from F-STATS-MAIN. Passed 2026-08-31 with no findings.
+
+FM-153 (History Refine Collapsible Multiselects, ADR-0050) replaced the four history checkbox chip rows with the new shared
+controlled `C-REFINE-MULTISELECT` (collapsed by default, open state unpersisted, declared option order), re-basing the
+results sidebar's Category/Indexer on it at byte-identical outerHTML parity; a mid-task designer refinement allowlisted one
+assertion-only test edit. Passed 2026-08-31 with minor findings, not corrected (optional): ellipsized long option labels
+carry no tooltip, `openRefineMultiselect` helper triplicated across three specs (fixtures.ts wasn't allowlisted), and the
+removed `history-refine-<id>-label` caption isn't noted in C-HISTORY-REFINE-BAR. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -1243,11 +1266,9 @@ None.
 
 ## Upcoming
 
-- FM-150: Results Table Polish (narrower Age/Size into Title, icon expand controls with title x-alignment, inline icon
-  download) — first of the 2026-08-31 owner-request batch FM-150..FM-155 (ADR-0049/0050/0051), planned, dependency-ready,
-  next. Later members stay planned packets in `tasks/`: FM-151, FM-152, FM-153, FM-154, FM-155 (after FM-154).
-  Sequencing: FM-150 not alongside FM-153 (shared results test surface); FM-151 not alongside FM-155 (settings-index
-  drift test mounts every config tab).
+- Remaining members of the 2026-08-31 owner-request batch (ADR-0049/0050/0051) stay planned packets in `tasks/`:
+  FM-154, FM-155 (after FM-154). FM-150 through FM-153 are done.
+  Sequencing: FM-151 not alongside FM-155 (settings-index drift test mounts every config tab).
 
 - FM-146 (Hide The Chips Row While Advanced Is Collapsed And Empty) is done (entry above): the owner's
   2026-08-30 revision of FM-143's reserved-row rule — the `search-chips` row renders only while `advancedOpen ||

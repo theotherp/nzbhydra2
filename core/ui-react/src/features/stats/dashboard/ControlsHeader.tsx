@@ -1,14 +1,11 @@
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
     Box,
     Button,
     Checkbox,
     FormControlLabel,
     FormGroup,
-    IconButton,
     Menu,
     MenuItem,
-    Popover,
     Stack,
     Switch,
     TextField,
@@ -16,7 +13,7 @@ import {
     ToggleButtonGroup,
     Typography,
 } from "@mui/material";
-import {useId, useState} from "react";
+import {useState} from "react";
 
 import {
     STAT_FAMILIES,
@@ -24,12 +21,6 @@ import {
     type StatFamilySelection,
 } from "../../../api/stats/mainStats";
 import {DATE_PRESETS, toDateInputValue, type DatePresetId} from "./dateRange";
-
-const DISCLAIMER =
-    "Don't read too much into these stats. Which indexer is picked for a download depends on its score and some " +
-    "more or less random values like posting time of the NZB. They are also heavily influenced by individual " +
-    "settings, including indexer priority, search order, free vs. paid accounts, and the type of content being " +
-    "searched for.";
 
 const FAMILY_GROUPS: {label: string; families: StatFamily[]}[] = [
     {
@@ -114,8 +105,6 @@ export function ControlsHeader({
 }) {
     const [familyMenuAnchor, setFamilyMenuAnchor] =
         useState<HTMLElement | null>(null);
-    const [infoAnchor, setInfoAnchor] = useState<HTMLElement | null>(null);
-    const infoId = useId();
     const selectedCount = STAT_FAMILIES.filter(
         (family) => families[family],
     ).length;
@@ -246,26 +235,6 @@ export function ControlsHeader({
             >
                 Refresh
             </Button>
-            <IconButton
-                aria-describedby={infoId}
-                aria-label="About these statistics"
-                data-testid="stats-disclaimer-button"
-                onClick={(event) => setInfoAnchor(event.currentTarget)}
-                size="small"
-            >
-                <InfoOutlinedIcon fontSize="small" />
-            </IconButton>
-            <Popover
-                anchorEl={infoAnchor}
-                anchorOrigin={{vertical: "bottom", horizontal: "left"}}
-                id={infoId}
-                onClose={() => setInfoAnchor(null)}
-                open={Boolean(infoAnchor)}
-            >
-                <Typography sx={{p: 2, maxWidth: 420}} variant="body2">
-                    {DISCLAIMER}
-                </Typography>
-            </Popover>
         </Stack>
     );
 }

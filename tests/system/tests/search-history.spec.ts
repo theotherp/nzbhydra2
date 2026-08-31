@@ -1,4 +1,6 @@
 import {randomUUID} from "node:crypto";
+
+import type {Page} from "@playwright/test";
 import {
     dismissWelcomeDialog,
     expect,
@@ -7,6 +9,28 @@ import {
     testEnvironment,
 } from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+
+/**
+ * ADR-0050 (FM-153): a history refine `checkboxes` dimension renders as a
+ * `C-REFINE-MULTISELECT` -- a caption button over a collapsible list -- and
+ * starts collapsed on every mount, with no persistence of the open state. Its
+ * option rows are therefore not interactable until the caption is pressed.
+ * Idempotent, so a section already open is left open.
+ */
+async function openRefineMultiselect(
+    page: Page,
+    dimensionId: string,
+): Promise<void> {
+    const toggle = page.getByTestId(`history-refine-${dimensionId}-toggle`);
+    await expect(toggle).toBeVisible();
+    if ((await toggle.getAttribute("aria-expanded")) === "false") {
+        await toggle.click();
+    }
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(
+        page.getByTestId(`history-refine-${dimensionId}-list`),
+    ).toBeVisible();
+}
 
 test.describe("Search history", () => {
     test.beforeEach(async ({hydra, page}) => {
@@ -190,6 +214,7 @@ test.describe("Search history", () => {
         const multiSelectResponse = page.waitForResponse((response) =>
             isSearchHistoryResponse(response),
         );
+        await openRefineMultiselect(page, "category");
         await page
             .getByTestId("history-refine-category-option")
             .filter({hasText: category})
@@ -344,6 +369,24 @@ test.describe("Search history", () => {
             ),
         });
 
+        // ADR-0050: the Category dimension is a collapsible multi-select that
+        // starts closed, so a freshly opened surface shows its caption row and
+        // not a wrapping block of chips.
+        const categoryToggle = page.getByTestId(
+            "history-refine-category-toggle",
+        );
+        await expect(categoryToggle).toBeVisible();
+        await expect(categoryToggle).toHaveAttribute("aria-expanded", "false");
+        await expect(
+            page.getByTestId("history-refine-category-list"),
+        ).toBeHidden();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-multiselect-collapsed-desktop",
+            ),
+        });
+
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "false");
         // The rail has room for the toggle alone, so the summary it hides is
@@ -361,6 +404,7 @@ test.describe("Search history", () => {
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
         await page.getByLabel("Query").fill("evidence");
+        await openRefineMultiselect(page, "category");
         await page
             .getByTestId("history-refine-category-option")
             .first()
@@ -368,6 +412,13 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
+        await expect(categoryToggle).toHaveAttribute("aria-expanded", "true");
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "refine-multiselect-expanded-desktop",
+            ),
+        });
         await expectSingleLineRefineHeader(page);
         await page.screenshot({
             path: visualEvidencePath(
@@ -401,6 +452,7 @@ test.describe("Search history", () => {
         await page.getByTestId("history-refine-toggle").click();
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         await page.getByLabel("Query").fill("evidence");
+        await openRefineMultiselect(page, "category");
         await page
             .getByTestId("history-refine-category-option")
             .first()

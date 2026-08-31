@@ -219,6 +219,11 @@ features:
       - display-options-toggle
       - display-options
       - search-result-indexer-swatch
+      # 2026-08-31 (FM-150, owner request): the table's width budget moved --
+      # Age 8% -> 5% and Size 9% -> 8%, both surrendered to Title (35% -> 39%)
+      # -- so those two columns are now sized for the values users see, not for
+      # `9999d`/`999.99 GB`. The expand controls that share the Title cell are
+      # icon buttons from the same request; see F-SEARCH-GROUP-SELECTION.
     parity: partial
     gaps:
       - deliberate - FM-096 (owner decision 2026-08-23) replaces legacy's whole-`tbody` `rgba(colour,0.5)` row tint with a bounded, outlined swatch beside the indexer name; an arbitrary user colour at 0.5 alpha behind row text cannot meet WCAG contrast on the dark palette and collides with the FM-054 recency stripe, the nested-row `action.hover` background, and the Downloaded chip
@@ -319,6 +324,13 @@ features:
       - toolbar-selection-menu
       - display-options-toggle
       - display-options
+      # 2026-08-31 (FM-150): the "Expand group"/"Expand duplicates" toggles are
+      # icon buttons now; their accessible names (and so every
+      # `getByRole("button", {name})` that addresses them) are unchanged. Rows
+      # that carry fewer toggles than the widest row pad with this invisible,
+      # same-sized placeholder instead, so
+      # every title at one nesting level starts at the same x.
+      - search-result-expand-spacer
     parity: partial
   - id: F-SEARCH-DOWNLOADS
     name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
@@ -343,6 +355,12 @@ features:
       # single bulk-bar button in `DownloadActions.tsx:358`, which acts on the
       # current selection. `download-torrent` was rendered all along
       # (`DownloadActions.tsx:450`) and simply went unlisted.
+      # 2026-08-31 (FM-150, owner request): in a *search result* row these two
+      # are an icon button (`DirectDownloadActions`' opt-in `iconOnly` form) on
+      # the detail-links line rather than an "NZB"/"Torrent" text button; the
+      # download-history row still renders the text form. Same testids, same
+      # anchor, same `href`/`download`/`onClick`; the type is told apart by
+      # tooltip and by the unchanged `Download NZB`/`Download TORRENT` labels.
       - send-to-downloader
       - download-nzb
       - download-torrent
@@ -924,6 +942,15 @@ features:
       # `config-setting-indexerDraft-<field>` and never collide with the list
       # row behind them; its banners are
       # `config-indexer-banner-<incomplete-config|incomplete-caps>`.
+      # FM-151 (owner request 2026-08-31): the wide table's search-source,
+      # state, and priority cells wrap their `C-CONFIG-FIELDS` control in
+      # `SettingRowTableCellScope` so the shared `SettingRow` drops its
+      # reserved bottom margin and renders help/error text out of flow
+      # (`position: absolute`) instead of adding to the cell's box height;
+      # the name cell's status chips are similarly lifted below the edit
+      # button. No selector changed -- every control keeps its help text,
+      # error wiring, and `aria-describedby`, and the compact (< sm) stacked
+      # layout is untouched.
       - config-indexers
       - config-indexers-empty
       - config-indexer-add
@@ -1116,7 +1143,7 @@ features:
       # Controls header: stats-dashboard, stats-controls-header,
       # stats-date-preset-<last7|last30|last90|lastYear|allTime|custom>,
       # stats-custom-after, stats-custom-before, stats-include-disabled-toggle,
-      # stats-family-menu-button, stats-refresh-button, stats-disclaimer-button.
+      # stats-family-menu-button, stats-refresh-button, stats-disclaimer.
       # One checkbox per family, keyed by its request boolean:
       # stats-family-<indexerApiAccessStats|avgIndexerUniquenessScore|
       # avgResponseTimes|indexerDownloadShares|downloadsPerDayOfWeek|
@@ -1221,6 +1248,8 @@ features:
       - history-refine-query
       - history-refine-query-input
       - history-refine-category
+      - history-refine-category-toggle
+      - history-refine-category-list
       - history-refine-category-option
       - history-refine-source
       - history-refine-source-select
@@ -1297,10 +1326,14 @@ features:
       - history-refine-time-after
       - history-refine-time-before
       - history-refine-indexer
+      - history-refine-indexer-toggle
+      - history-refine-indexer-list
       - history-refine-indexer-option
       - history-refine-title
       - history-refine-title-input
       - history-refine-result
+      - history-refine-result-toggle
+      - history-refine-result-list
       - history-refine-result-option
       - history-refine-source
       - history-refine-source-select
@@ -1365,6 +1398,8 @@ features:
       - history-refine-time-after
       - history-refine-time-before
       - history-refine-event-type
+      - history-refine-event-type-toggle
+      - history-refine-event-type-list
       - history-refine-event-type-option
     parity: partial
   - id: F-SYSTEM-SHELL

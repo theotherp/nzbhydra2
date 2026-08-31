@@ -3437,7 +3437,210 @@ describe("SearchResults", () => {
             expect(puts).toEqual([]);
         });
     });
+
+    // FM-150. The expand controls are icons in the title cell, so a row that
+    // has none would otherwise start its title further left than a row that
+    // has one -- the ragged left edge the owner asked to remove. Every row
+    // reserves the widest control set any *rendered* row carries, so the proof
+    // is per result set, not per row.
+    describe("expand-control width reservation", () => {
+        it("should reserve nothing when no rendered row can expand anything", () => {
+            renderResults(<SearchResults data={mixedExpandData([])} />);
+
+            expect(
+                screen.queryAllByTestId("search-result-expand-spacer"),
+            ).toHaveLength(0);
+            expect(
+                screen.queryAllByRole("button", {
+                    name: /^(Expand|Collapse) (group|duplicates)$/,
+                }),
+            ).toHaveLength(0);
+        });
+
+        it("should reserve one slot on the bare rows when the widest row carries one control", () => {
+            renderResults(
+                <SearchResults data={mixedExpandData(["duplicate"])} />,
+            );
+
+            expect(
+                screen.getByRole("button", {name: "Expand duplicates"}),
+            ).toBeInTheDocument();
+            expect(spacersByRowTitle()).toEqual({
+                "Alpha release": 0,
+                "Zulu release": 1,
+            });
+        });
+
+        it("should reserve two slots when the widest row carries both controls", () => {
+            renderResults(
+                <SearchResults
+                    data={mixedExpandData(["duplicate", "title"])}
+                />,
+            );
+
+            expect(
+                screen.getByRole("button", {name: "Expand group"}),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", {name: "Expand duplicates"}),
+            ).toBeInTheDocument();
+            expect(spacersByRowTitle()).toEqual({
+                "Alpha release": 0,
+                "Zulu release": 2,
+            });
+        });
+
+        it("should keep every row's reservation equal while a group is expanded", () => {
+            renderResults(
+                <SearchResults
+                    data={mixedExpandData(["duplicate", "title"])}
+                />,
+            );
+
+            fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+
+            // The revealed row carries no control of its own, so it pads to
+            // the same two slots the expanded row spends on real controls.
+            expect(spacersByRowTitle()).toEqual({
+                "Alpha release": [0, 2],
+                "Zulu release": 2,
+            });
+        });
+
+        it("should render both expand controls as icon buttons that keep their accessible names", () => {
+            renderResults(
+                <SearchResults
+                    data={mixedExpandData(["duplicate", "title"])}
+                />,
+            );
+
+            const group = screen.getByRole("button", {name: "Expand group"});
+            const duplicates = screen.getByRole("button", {
+                name: "Expand duplicates",
+            });
+            for (const control of [group, duplicates]) {
+                expect(control).toHaveClass("MuiIconButton-root");
+                expect(control).toHaveAttribute("aria-expanded", "false");
+                expect(control).toHaveTextContent("");
+            }
+
+            fireEvent.click(group);
+            fireEvent.click(duplicates);
+            expect(
+                screen.getByRole("button", {name: "Collapse group"}),
+            ).toHaveAttribute("aria-expanded", "true");
+            expect(
+                screen.getByRole("button", {name: "Collapse duplicates"}),
+            ).toHaveAttribute("aria-expanded", "true");
+        });
+    });
+
+    // FM-150: the results row opts into `DirectDownloadActions`' icon form so
+    // the download sits on the detail-links line. The download history page
+    // keeps the text form (asserted in `DownloadHistoryPage.test.tsx`).
+    it("should render the row's download control as an icon anchor beside the detail links", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "NZB result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        const download = screen.getByTestId("download-nzb");
+        expect(download.tagName).toBe("A");
+        expect(download).toHaveClass("MuiIconButton-root");
+        expect(download).toHaveAttribute("aria-label", "Download NZB");
+        expect(download).toHaveAttribute("download");
+        expect(download).toHaveTextContent("");
+        // Same Actions stack as the NFO/detail icons, which is what puts them
+        // on one line.
+        const links = screen.getByTestId("result-links");
+        expect(links.parentElement).toBe(download.parentElement);
+    });
 });
+
+/**
+ * FM-150 fixture: "Alpha release" plus an unrelated "Zulu release" that can
+ * never expand anything, with the alpha group shaped to carry the requested
+ * controls -- a second same-hash result gives it "Expand duplicates", a
+ * different-hash result gives it "Expand group".
+ */
+function mixedExpandData(controls: ("duplicate" | "title")[]) {
+    const alpha = [
+        {
+            searchResultId: "alpha-one",
+            title: "Alpha release",
+            indexer: "One",
+            category: "TV",
+            hash: 1,
+        },
+    ];
+    if (controls.includes("duplicate")) {
+        alpha.push({
+            searchResultId: "alpha-two",
+            title: "Alpha release",
+            indexer: "Two",
+            category: "TV",
+            hash: 1,
+        });
+    }
+    if (controls.includes("title")) {
+        alpha.push({
+            searchResultId: "alpha-three",
+            title: "Alpha release",
+            indexer: "Three",
+            category: "TV",
+            hash: 2,
+        });
+    }
+    const searchResults = [
+        ...alpha,
+        {
+            searchResultId: "zulu",
+            title: "Zulu release",
+            indexer: "Four",
+            category: "TV",
+            hash: 9,
+        },
+    ];
+    return {
+        ...response,
+        numberOfAvailableResults: searchResults.length,
+        searchResults,
+    };
+}
+
+/**
+ * Spacers rendered per row title: a number for a title with one rendered row,
+ * an array in render order for a title with several.
+ */
+function spacersByRowTitle(): Record<string, number | number[]> {
+    const counts: Record<string, number[]> = {};
+    for (const row of screen.getAllByTestId("search-result-row")) {
+        const title = row.getAttribute("data-result-title") ?? "";
+        counts[title] = [
+            ...(counts[title] ?? []),
+            within(row).queryAllByTestId("search-result-expand-spacer").length,
+        ];
+    }
+    return Object.fromEntries(
+        Object.entries(counts).map(([title, values]) => [
+            title,
+            values.length === 1 ? values[0] : values,
+        ]),
+    );
+}
 
 const STORAGE_KEY = "hydra.search-results.table";
 

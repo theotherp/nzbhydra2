@@ -121,6 +121,14 @@ function renderSurface(
     return {onChange, onClearAll};
 }
 
+// ADR-0050: a `checkboxes` dimension renders as a `C-REFINE-MULTISELECT` that
+// starts collapsed, so its options are in the DOM but hidden from the
+// accessibility tree until its caption button is pressed. Every assertion about
+// the options themselves opens the section first.
+function expandMultiselect(id: string): void {
+    fireEvent.click(screen.getByTestId(`history-refine-${id}-toggle`));
+}
+
 describe("HistoryRefineSurface", () => {
     afterEach(() => {
         cleanup();
@@ -145,7 +153,68 @@ describe("HistoryRefineSurface", () => {
         expect(
             screen.getByRole("combobox", {name: "Source"}),
         ).toHaveTextContent("All sources");
+        expandMultiselect("indexer");
         expect(screen.getByRole("group", {name: "Indexer"})).toBeVisible();
+    });
+
+    // ADR-0050: collapsed on every mount, with no persistence of its own --
+    // the open state is component-local and nothing writes it anywhere.
+    it("should render every multi-select collapsed until its caption is pressed", () => {
+        const store = stubWorkingLocalStorage();
+        renderSurface();
+        const toggle = screen.getByTestId("history-refine-indexer-toggle");
+        expect(toggle).toHaveTextContent("Indexer");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByRole("group", {name: "Indexer"}),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByRole("group", {name: "Indexer"})).toBeVisible();
+        // Opening a section persists nothing: the only key this surface ever
+        // writes is the shell's own collapsed preference.
+        expect([...store.keys()]).not.toContain("hydra.history.refine");
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+        // A remount starts collapsed again, whatever was open before.
+        cleanup();
+        renderSurface();
+        expect(
+            screen.getByTestId("history-refine-indexer-toggle"),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect([...store.keys()]).toHaveLength(0);
+    });
+
+    // The results sidebar sorts its derived options; a history dimension's are
+    // declared, and the declared order is the rendered order.
+    it("should render multi-select options in the dimension's declared order", () => {
+        renderSurface(
+            {},
+            {
+                dimensions: [
+                    {
+                        kind: "checkboxes",
+                        id: "result",
+                        column: "status",
+                        label: "Result",
+                        options: [
+                            {value: "REQUESTED", label: "Requested"},
+                            {value: "NONE", label: "Unknown"},
+                            {value: "CONTENT_DOWNLOAD_ERROR", label: "Error"},
+                        ],
+                    },
+                ],
+            },
+        );
+        expandMultiselect("result");
+        expect(
+            screen
+                .getAllByTestId("history-refine-result-option")
+                .map((option) => option.getAttribute("data-filter-value")),
+        ).toEqual(["REQUESTED", "NONE", "CONTENT_DOWNLOAD_ERROR"]);
     });
 
     it("should dock the surface as a sibling of the page body, not an ancestor of it", () => {
@@ -318,6 +387,7 @@ describe("HistoryRefineSurface", () => {
 
     it("should select and deselect multi-select values without a preselect-all or invert control", () => {
         const {onChange} = renderSurface();
+        expandMultiselect("indexer");
         const group = screen.getByRole("group", {name: "Indexer"});
         const options = within(group).getAllByTestId(
             "history-refine-indexer-option",
@@ -342,6 +412,7 @@ describe("HistoryRefineSurface", () => {
         const selected = renderSurface({
             indexer: {kind: "checkboxes", selected: ["Alpha", "Beta"]},
         });
+        expandMultiselect("indexer");
         const pressed = screen.getAllByTestId("history-refine-indexer-option");
         expect(pressed[0]).toHaveAttribute("aria-pressed", "true");
         fireEvent.click(pressed[0]);

@@ -20,6 +20,8 @@ import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {ShowAdvancedContext} from "../advancedFields";
 import {UNCHANGED_SECRET_MARKER} from "../components";
+import {settingHelpId} from "../components/settings";
+import {SettingRow, SettingRowTableCellScope} from "../components/SettingRow";
 import {IndexersConfigTab} from "./IndexersConfigTab";
 
 const CATEGORIES = {
@@ -1659,5 +1661,109 @@ describe("The Jackett and Prowlarr imports", () => {
             await screen.findByTestId("config-indexer-import-error"),
         ).toHaveTextContent("Request failed with status 500");
         expect(indexersOf(harness)).toHaveLength(1);
+    });
+});
+
+/**
+ * FM-151. `SettingRow`'s table-cell opt-in (`SettingRowTableCellScope`): a
+ * row rendered inside the scope drops its reserved bottom margin and lifts
+ * its help/error text out of flow, so a table can center every column's
+ * control on one shared line no matter which cells carry help or error text.
+ * A row rendered outside the scope — every other `SettingRow` consumer in
+ * the app — is unaffected, which is what keeps this an opt-in rather than a
+ * behaviour change for `C-CONFIG-FIELDS` at large.
+ */
+describe("SettingRow's table-cell opt-in", () => {
+    function renderRow(children: React.ReactNode) {
+        render(
+            <ThemeProvider theme={createHydraTheme("dark")}>
+                {children}
+            </ThemeProvider>,
+        );
+    }
+
+    it("reserves margin below the control and renders help in flow by default", () => {
+        renderRow(
+            <SettingRow help="Some help" label="Widget" name="a.b">
+                <div>control</div>
+            </SettingRow>,
+        );
+
+        expect(screen.getByTestId("config-setting-a-b")).toHaveStyle({
+            marginBottom: "20px",
+        });
+        const help = document.getElementById(settingHelpId("a.b"));
+        expect(help?.parentElement).not.toHaveStyle({position: "absolute"});
+    });
+
+    it("drops the margin and hangs help/error below the control when scoped to a table cell", () => {
+        renderRow(
+            <SettingRowTableCellScope>
+                <SettingRow
+                    error="Bad value"
+                    help="Some help"
+                    label="Widget"
+                    name="a.b"
+                >
+                    <div>control</div>
+                </SettingRow>
+            </SettingRowTableCellScope>,
+        );
+
+        expect(screen.getByTestId("config-setting-a-b")).toHaveStyle({
+            marginBottom: "0px",
+        });
+        const help = document.getElementById(settingHelpId("a.b"));
+        expect(help?.parentElement).toHaveStyle({
+            position: "absolute",
+            top: "100%",
+        });
+        // Both messages share the one out-of-flow wrapper.
+        expect(screen.getByTestId("config-error-a-b").parentElement).toBe(
+            help?.parentElement,
+        );
+    });
+
+    it("scopes the indexer table's search-source, state and priority cells but not the name cell", () => {
+        renderIndexers({
+            values: configWith([
+                newznab({
+                    allCapsChecked: false,
+                    name: "Mock1",
+                    // `indexerStateHelp` only supplies help text for the two
+                    // system-disabled states, so this is the fixture that
+                    // exercises the out-of-flow help path this table needs
+                    // (packet acceptance: "a row that renders help text
+                    // under State").
+                    state: "DISABLED_SYSTEM_TEMPORARY",
+                }),
+            ]),
+        });
+
+        // The State cell's box is exactly its switch's height: help text is
+        // present but does not add to it.
+        const stateRow = screen.getByTestId("config-setting-indexers-0-state");
+        expect(stateRow).toHaveStyle({marginBottom: "0px"});
+        const stateHelp = document.getElementById(
+            settingHelpId("indexers.0.state"),
+        );
+        expect(stateHelp).not.toBeNull();
+        expect(stateHelp?.parentElement).toHaveStyle({
+            position: "absolute",
+            top: "100%",
+        });
+
+        // The priority cell has no help/error to show but is scoped all the
+        // same, since the opt-in is applied by placement, not by content.
+        expect(
+            screen.getByTestId("config-setting-indexers-0-score"),
+        ).toHaveStyle({marginBottom: "0px"});
+
+        // The caps-incomplete chip lives in the name cell, which is built by
+        // `IndexerTable` itself rather than `SettingRow` and carries no such
+        // wrapper at all.
+        expect(
+            screen.getByTestId("config-indexer-caps-incomplete-0"),
+        ).toBeVisible();
     });
 });

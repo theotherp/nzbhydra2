@@ -18,11 +18,12 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import {useMemo, useState} from "react";
+import {useMemo, useState, type ReactElement} from "react";
 
 import type {IndexerValues} from "../../../api/config/indexers";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {NumberSetting, SelectSetting} from "../components";
+import {SettingRowTableCellScope} from "../components/SettingRow";
 import {IndexerStateSwitch} from "./IndexerStateSwitch";
 import {
     filterIndexers,
@@ -410,60 +411,90 @@ function IndexerTableRow({
             options={SEARCH_SOURCE_OPTIONS}
         />
     );
+    const nameButton = (
+        <Button
+            data-testid={`config-indexer-edit-${index}`}
+            onClick={onEdit}
+            sx={{
+                // A name is free text and a few of the presets' are long;
+                // past this the name column would push every control off a
+                // laptop screen. The full value stays available as the
+                // button's title, and the editor it opens shows it in
+                // full. Compact, the cell is the whole width of the page,
+                // so the cell itself is the cap.
+                maxWidth: compact ? "100%" : 260,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+            }}
+            title={legend}
+            type="button"
+            variant="outlined"
+        >
+            {legend}
+        </Button>
+    );
+    // Up to three markers, each optional. Built once, exactly as before —
+    // only where they are placed differs between the two layouts below.
+    const nameChips = [
+        configComplete ? null : (
+            <Chip
+                color="error"
+                data-testid={`config-indexer-incomplete-${index}`}
+                icon={<ErrorOutlineIcon />}
+                key="incomplete"
+                label={CONFIG_INCOMPLETE_MARKER}
+                size="small"
+                variant="outlined"
+            />
+        ),
+        configComplete && entry.allCapsChecked !== true ? (
+            <Chip
+                color="warning"
+                data-testid={`config-indexer-caps-incomplete-${index}`}
+                icon={<HelpOutlineIcon />}
+                key="caps-incomplete"
+                label={CAPS_INCOMPLETE_MARKER}
+                size="small"
+                variant="outlined"
+            />
+        ) : null,
+        expiry === undefined ? null : (
+            <Chip
+                color="warning"
+                data-testid={`config-indexer-vip-warning-${index}`}
+                icon={<WarningAmberIcon />}
+                key="vip-warning"
+                label={expiry}
+                size="small"
+                variant="outlined"
+            />
+        ),
+    ].filter((chip): chip is ReactElement => chip !== null);
+    // The compact stack: chips flow normally below the button, exactly as
+    // the single-column layout always rendered them.
     const name = (
         <Stack alignItems="flex-start" spacing={0.5}>
-            <Button
-                data-testid={`config-indexer-edit-${index}`}
-                onClick={onEdit}
-                sx={{
-                    // A name is free text and a few of the presets' are long;
-                    // past this the name column would push every control off a
-                    // laptop screen. The full value stays available as the
-                    // button's title, and the editor it opens shows it in
-                    // full. Compact, the cell is the whole width of the page,
-                    // so the cell itself is the cap.
-                    maxWidth: compact ? "100%" : 260,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                }}
-                title={legend}
-                type="button"
-                variant="outlined"
-            >
-                {legend}
-            </Button>
-            {configComplete ? null : (
-                <Chip
-                    color="error"
-                    data-testid={`config-indexer-incomplete-${index}`}
-                    icon={<ErrorOutlineIcon />}
-                    label={CONFIG_INCOMPLETE_MARKER}
-                    size="small"
-                    variant="outlined"
-                />
-            )}
-            {configComplete && entry.allCapsChecked !== true ? (
-                <Chip
-                    color="warning"
-                    data-testid={`config-indexer-caps-incomplete-${index}`}
-                    icon={<HelpOutlineIcon />}
-                    label={CAPS_INCOMPLETE_MARKER}
-                    size="small"
-                    variant="outlined"
-                />
-            ) : null}
-            {expiry === undefined ? null : (
-                <Chip
-                    color="warning"
-                    data-testid={`config-indexer-vip-warning-${index}`}
-                    icon={<WarningAmberIcon />}
-                    label={expiry}
-                    size="small"
-                    variant="outlined"
-                />
-            )}
+            {nameButton}
+            {nameChips}
         </Stack>
+    );
+    // The wide row: chips are lifted out of flow so a chip-bearing name
+    // never grows past the button's own height — the box the row centers
+    // this cell's control on stays exactly the button, and the chips hang
+    // below it instead of dragging it off the row's shared centerline.
+    const wideName = (
+        <Box sx={{position: "relative"}}>
+            {nameButton}
+            {nameChips.length === 0 ? null : (
+                <Stack
+                    spacing={0.5}
+                    sx={{left: 0, position: "absolute", top: "100%"}}
+                >
+                    {nameChips}
+                </Stack>
+            )}
+        </Box>
     );
     const state = (
         <IndexerStateSwitch
@@ -482,8 +513,11 @@ function IndexerTableRow({
     );
     if (compact) {
         // The same five pieces, stacked in one cell instead of spread across
-        // five columns. Nothing here is a second copy: each element is built
-        // once above and placed once, in exactly one of the two branches.
+        // five columns. `type`, `searchSource`, `state` and `priority` are
+        // each built once above and placed once, in exactly one of the two
+        // branches; only `name` has a second, wide-only arrangement
+        // (`wideName`, used below) that lifts its chips out of flow —
+        // `nameButton` and each chip are still each built exactly once.
         return (
             <TableRow data-testid={`config-indexer-entry-${index}`}>
                 <TableCell>
@@ -506,11 +540,19 @@ function IndexerTableRow({
     }
     return (
         <TableRow data-testid={`config-indexer-entry-${index}`}>
-            <TableCell>{name}</TableCell>
+            <TableCell>{wideName}</TableCell>
             <TableCell>{type}</TableCell>
-            <TableCell>{searchSource}</TableCell>
-            <TableCell>{state}</TableCell>
-            <TableCell>{priority}</TableCell>
+            <TableCell>
+                <SettingRowTableCellScope>
+                    {searchSource}
+                </SettingRowTableCellScope>
+            </TableCell>
+            <TableCell>
+                <SettingRowTableCellScope>{state}</SettingRowTableCellScope>
+            </TableCell>
+            <TableCell>
+                <SettingRowTableCellScope>{priority}</SettingRowTableCellScope>
+            </TableCell>
         </TableRow>
     );
 }

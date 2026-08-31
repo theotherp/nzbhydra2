@@ -8,7 +8,7 @@ import {
     Stack,
     Tooltip,
 } from "@mui/material";
-import {useEffect} from "react";
+import {createContext, useContext, useEffect} from "react";
 
 import {useShowAdvanced} from "../advancedFields";
 import {useAdvancedDisclosure} from "./advancedDisclosure";
@@ -32,6 +32,43 @@ import {
  * constant so the three edges cannot drift apart.
  */
 const settingColumnMaxWidth = 560;
+
+/**
+ * FM-151's opt-in. `SettingRow`'s default box reserves `mb: 2.5` below its
+ * control so the help/error text that may follow has room in the document's
+ * normal flow — correct in a form column, where every row's neighbour is the
+ * next row down. It is wrong inside a table row, where every column's
+ * control has to sit on one shared line no matter which cells carry help or
+ * error text and which do not: a cell's box has to be exactly its control's
+ * own height, or the table's own vertical centering (each cell centers in
+ * its row, unstyled) centers a different box in each column and the controls
+ * drift apart.
+ *
+ * A `SettingRow` rendered inside `<SettingRowTableCellScope>` drops the
+ * reserved margin and pulls its error/help text out of flow (`position:
+ * absolute`, anchored to the control's own bottom edge) so that text can
+ * still render — legible, still owning the same ids `aria-describedby`
+ * points at — without changing the box height the table centers on. It hangs
+ * below the control rather than growing the cell for it.
+ *
+ * Every consumer outside the scope is unaffected: the context defaults to
+ * `false`, so a `SettingRow` that never mounts inside the scope renders its
+ * original margin and its original in-flow help/error placement, byte for
+ * byte.
+ */
+const SettingRowTableCellContext = createContext(false);
+
+export function SettingRowTableCellScope({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return (
+        <SettingRowTableCellContext.Provider value={true}>
+            {children}
+        </SettingRowTableCellContext.Provider>
+    );
+}
 
 /**
  * `C-CONFIG-FIELDS`: one configuration setting's row — the replacement for
@@ -78,6 +115,7 @@ export function SettingRow({
     const showAdvanced = useShowAdvanced();
     const {registerHiddenAdvancedRow, revealed} = useAdvancedDisclosure();
     const hiddenByToggle = advanced === true && !showAdvanced;
+    const inTableCell = useContext(SettingRowTableCellContext);
     useEffect(() => {
         if (!hiddenByToggle) {
             return undefined;
@@ -85,8 +123,52 @@ export function SettingRow({
         return registerHiddenAdvancedRow(name);
     }, [hiddenByToggle, name, registerHiddenAdvancedRow]);
 
+    const errorNode =
+        error === undefined ? null : (
+            <FormHelperText
+                data-testid={`config-error-${name.replaceAll(".", "-")}`}
+                error
+                id={settingErrorId(name)}
+                sx={{maxWidth: settingColumnMaxWidth}}
+            >
+                {error}
+            </FormHelperText>
+        );
+    const helpNode =
+        help === undefined ? null : (
+            <FormHelperText
+                component="div"
+                id={settingHelpId(name)}
+                sx={{maxWidth: settingColumnMaxWidth}}
+            >
+                <SettingHelp content={help} />
+            </FormHelperText>
+        );
+    // Outside the scope this is just the two nodes as direct children of the
+    // row `Box`, exactly as before. Inside it, they move into one wrapper
+    // that is lifted out of flow so neither can add to the box height the
+    // table centers the row's controls on.
+    const supportingText =
+        errorNode === null && helpNode === null ? null : inTableCell ? (
+            <Box sx={{left: 0, position: "absolute", top: "100%"}}>
+                {errorNode}
+                {helpNode}
+            </Box>
+        ) : (
+            <>
+                {errorNode}
+                {helpNode}
+            </>
+        );
+
     const row = (
-        <Box data-testid={settingRowTestId(name)} sx={{mb: 2.5}}>
+        <Box
+            data-testid={settingRowTestId(name)}
+            sx={{
+                mb: inTableCell ? 0 : 2.5,
+                position: inTableCell ? "relative" : undefined,
+            }}
+        >
             <Stack alignItems="center" direction="row" spacing={1}>
                 <Box sx={{flexGrow: 1, maxWidth: settingColumnMaxWidth}}>
                     {children}
@@ -119,25 +201,7 @@ export function SettingRow({
                     </Tooltip>
                 )}
             </Stack>
-            {error === undefined ? null : (
-                <FormHelperText
-                    data-testid={`config-error-${name.replaceAll(".", "-")}`}
-                    error
-                    id={settingErrorId(name)}
-                    sx={{maxWidth: settingColumnMaxWidth}}
-                >
-                    {error}
-                </FormHelperText>
-            )}
-            {help === undefined ? null : (
-                <FormHelperText
-                    component="div"
-                    id={settingHelpId(name)}
-                    sx={{maxWidth: settingColumnMaxWidth}}
-                >
-                    <SettingHelp content={help} />
-                </FormHelperText>
-            )}
+            {supportingText}
         </Box>
     );
     if (!hiddenByToggle) {

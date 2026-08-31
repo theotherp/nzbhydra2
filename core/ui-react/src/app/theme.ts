@@ -104,8 +104,10 @@ declare module "@mui/material/Button" {
         // but not *the* action of its surface -- the results
         // toolbar's ZIP / black hole / copy-links / save-search row, the
         // "Display" and "Refine" popover triggers, the search bar's "Recent
-        // searches" trigger, and each result row's NZB/Torrent link. Before
-        // this variant, six call sites authored the same intent with six
+        // searches" trigger, and the download-history row's NZB/Torrent link
+        // (FM-150 turned the *search result* row's copy of that control into
+        // an icon button, so the results table no longer uses this variant).
+        // Before this variant, six call sites authored the same intent with six
         // slightly different `sx` blocks (three paddings, two colour roles,
         // and MUI's stock teal `outlined` in two of them).
         control: true;

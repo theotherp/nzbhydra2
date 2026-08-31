@@ -1,4 +1,4 @@
-import type {APIRequestContext} from "@playwright/test";
+import type {APIRequestContext, Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
@@ -20,6 +20,28 @@ const DOWNLOAD_BODY =
     'Grabbed from https://example.com/details\nSecond line javascript:alert(1) <b>markup</b> <img src=x onerror="alert(1)">';
 const DISABLED_TITLE = "System test indexer disabled";
 const DISABLED_BODY = "Indexer $indexerName$ went down";
+
+/**
+ * ADR-0050 (FM-153): a history refine `checkboxes` dimension renders as a
+ * `C-REFINE-MULTISELECT` -- a caption button over a collapsible list -- and
+ * starts collapsed on every mount, with no persistence of the open state. Its
+ * option rows are therefore not interactable until the caption is pressed.
+ * Idempotent, so a section already open is left open.
+ */
+async function openRefineMultiselect(
+    page: Page,
+    dimensionId: string,
+): Promise<void> {
+    const toggle = page.getByTestId(`history-refine-${dimensionId}-toggle`);
+    await expect(toggle).toBeVisible();
+    if ((await toggle.getAttribute("aria-expanded")) === "false") {
+        await toggle.click();
+    }
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(
+        page.getByTestId(`history-refine-${dimensionId}-list`),
+    ).toBeVisible();
+}
 
 test.describe("Notification history", () => {
     test.beforeEach(async ({hydra, request}) => {
@@ -119,6 +141,7 @@ test.describe("Notification history", () => {
         // nothing.
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         const filteredResponse = waitForNotificationHistory(page);
+        await openRefineMultiselect(page, "event-type");
         await page
             .getByTestId("history-refine-event-type-option")
             .filter({hasText: "Indexer disabled"})
@@ -172,6 +195,7 @@ test.describe("Notification history", () => {
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
 
         const emptyResponse = waitForNotificationHistory(page);
+        await openRefineMultiselect(page, "event-type");
         await page
             .getByTestId("history-refine-event-type-option")
             .filter({hasText: "Automatic update installed"})
@@ -390,6 +414,7 @@ test.describe("Notification history", () => {
                     page.getByTestId("history-refine-bar"),
                 ).toBeVisible();
             }
+            await openRefineMultiselect(page, "event-type");
             await page
                 .getByTestId("history-refine-event-type-option")
                 .filter({hasText: "Indexer disabled"})
@@ -411,6 +436,7 @@ test.describe("Notification history", () => {
                 ),
             });
 
+            await openRefineMultiselect(page, "event-type");
             await page
                 .getByTestId("history-refine-event-type-option")
                 .filter({hasText: "Indexer disabled"})

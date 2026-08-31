@@ -274,6 +274,11 @@ describe("NotificationHistoryPage", () => {
         ).toBe(true);
         expect(screen.queryByRole("button", {name: /invert/i})).toBeNull();
 
+        // ADR-0050: the event-type dimension is a collapsible multi-select
+        // that starts collapsed, so its rows stay mounted but hidden from the
+        // accessibility tree until the caption is pressed -- which is why the
+        // `data-testid` queries above resolve and this role query would not.
+        fireEvent.click(screen.getByTestId("history-refine-event-type-toggle"));
         fireEvent.click(screen.getByRole("button", {name: "Indexer disabled"}));
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(2),

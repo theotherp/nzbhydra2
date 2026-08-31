@@ -1,11 +1,16 @@
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import {
     Box,
-    Button,
     Checkbox,
     Chip,
+    IconButton,
     Stack,
     TableCell,
     TableRow,
+    Tooltip,
 } from "@mui/material";
 import type {ReactNode} from "react";
 import {memo} from "react";
@@ -74,6 +79,7 @@ export const ResultRow = memo(function ResultRow({
     downloaded,
     duplicateExpanded,
     duplicateKey,
+    expandSlots,
     indexerColors,
     isNewGroup,
     maySeeDetailsDl,
@@ -95,6 +101,14 @@ export const ResultRow = memo(function ResultRow({
     downloaded: boolean;
     duplicateExpanded: boolean;
     duplicateKey: string;
+    // FM-150: how many expand-control slots every row of the current render
+    // reserves -- the largest number of expand controls any single visible row
+    // carries (0, 1, or both). A row renders its own controls and then pads the
+    // rest with same-sized invisible spacers, so the title text of every row at
+    // one nesting level starts at the same x whether or not that row can expand
+    // anything. The parent computes it because only the parent can see every
+    // rendered row.
+    expandSlots: number;
     // FM-096: indexer name -> validated `rgb(r,g,b)` colour, built once per
     // config change in the parent (`indexerColorsFromSafeConfig`) and passed
     // down as this stable reference -- looking it up here rather than
@@ -123,6 +137,10 @@ export const ResultRow = memo(function ResultRow({
     titleGroupKey: string;
     transport: ApiTransport;
 }) {
+    const reservedSpacers = Math.max(
+        0,
+        expandSlots - (showTitleExpand ? 1 : 0) - (showDuplicateExpand ? 1 : 0),
+    );
     return (
         <TableRow
             data-result-id={result.searchResultId}
@@ -234,63 +252,67 @@ export const ResultRow = memo(function ResultRow({
                         }}
                     >
                         {isTitle ? (
+                            // FM-150: `nowrap`, not the previous `wrap`. The
+                            // expand controls are icons now, so the row is
+                            // "controls, then title" rather than a chip row a
+                            // long title could be pushed under -- and a
+                            // wrapped title that slid back under the controls
+                            // would break the shared start-of-title x this
+                            // cell now guarantees. The title itself still
+                            // wraps inside its own box.
                             <Stack
-                                alignItems="center"
+                                alignItems="flex-start"
                                 direction="row"
-                                flexWrap="wrap"
+                                flexWrap="nowrap"
                                 gap={0.5}
                             >
                                 {showTitleExpand && (
-                                    <Button
-                                        aria-expanded={titleExpanded}
-                                        onClick={() =>
+                                    <ExpandControl
+                                        expanded={titleExpanded}
+                                        collapsedIcon={
+                                            <KeyboardArrowRightIcon fontSize="small" />
+                                        }
+                                        expandedIcon={
+                                            <KeyboardArrowDownIcon fontSize="small" />
+                                        }
+                                        label={
+                                            titleExpanded
+                                                ? "Collapse group"
+                                                : "Expand group"
+                                        }
+                                        onToggle={() =>
                                             onToggleTitleExpansion(
                                                 titleGroupKey,
                                             )
                                         }
-                                        onKeyDown={(event) => {
-                                            if (
-                                                event.key === "Enter" ||
-                                                event.key === " "
-                                            ) {
-                                                event.preventDefault();
-                                                onToggleTitleExpansion(
-                                                    titleGroupKey,
-                                                );
-                                            }
-                                        }}
-                                        size="small"
-                                    >
-                                        {titleExpanded
-                                            ? "Collapse group"
-                                            : "Expand group"}
-                                    </Button>
+                                    />
                                 )}
                                 {showDuplicateExpand && (
-                                    <Button
-                                        aria-expanded={duplicateExpanded}
-                                        onClick={() =>
+                                    <ExpandControl
+                                        expanded={duplicateExpanded}
+                                        collapsedIcon={
+                                            <UnfoldMoreIcon fontSize="small" />
+                                        }
+                                        expandedIcon={
+                                            <UnfoldLessIcon fontSize="small" />
+                                        }
+                                        label={
+                                            duplicateExpanded
+                                                ? "Collapse duplicates"
+                                                : "Expand duplicates"
+                                        }
+                                        onToggle={() =>
                                             onToggleDuplicateExpansion(
                                                 duplicateKey,
                                             )
                                         }
-                                        onKeyDown={(event) => {
-                                            if (
-                                                event.key === "Enter" ||
-                                                event.key === " "
-                                            ) {
-                                                event.preventDefault();
-                                                onToggleDuplicateExpansion(
-                                                    duplicateKey,
-                                                );
-                                            }
-                                        }}
-                                        size="small"
-                                    >
-                                        {duplicateExpanded
-                                            ? "Collapse duplicates"
-                                            : "Expand duplicates"}
-                                    </Button>
+                                    />
+                                )}
+                                {Array.from(
+                                    {length: reservedSpacers},
+                                    (_, index) => (
+                                        <ExpandSpacer key={index} />
+                                    ),
                                 )}
                                 <Box>{column.value(result)}</Box>
                             </Stack>
@@ -327,27 +349,55 @@ export const ResultRow = memo(function ResultRow({
                 );
             })}
             <TableCell align="right" data-label="Actions">
+                {/* FM-150: a row at every breakpoint. This stack used to
+                    switch to `column` at `sm` and up, which is what put the
+                    download on a line of its own no matter how much room the
+                    cell had. `flexWrap` stays on for the "Downloaded" chip --
+                    the one item here that is not an icon -- which may still
+                    drop below the icons in a narrow Actions column. */}
                 <Stack
-                    alignItems={{xs: "center", sm: "flex-end"}}
-                    direction={{xs: "row", sm: "column"}}
+                    alignItems="center"
+                    direction="row"
                     flexWrap="wrap"
                     gap={0.5}
                     justifyContent="flex-end"
                 >
-                    {/* FM-082: the NFO action plus the session-gated
-                        Binsearch/comments/details links legacy rendered in its
-                        own Links column, kept in this cell so no ninth column
-                        takes width from Title (ADR-0011). */}
-                    <ResultDetailLinks
-                        dereferer={dereferer}
-                        maySeeDetailsDl={maySeeDetailsDl}
-                        result={result}
-                        transport={transport}
-                    />
-                    <DirectDownloadActions
-                        onDownloaded={() => onDownloaded(result.searchResultId)}
-                        result={result}
-                    />
+                    {/* FM-150: the icons are one non-wrapping group, so the
+                        download shares a line with the detail links instead of
+                        being wrapped onto a line of its own -- `ResultDetailLinks`
+                        is itself a flex container, and as a sibling flex item its
+                        full four-icon width would otherwise claim the whole first
+                        line and push the download below it. Inside this group the
+                        links keep their own wrapping (ADR-0011: this cell must be
+                        able to shrink), so in a narrow Actions column they fold
+                        into a block with the download beside it rather than
+                        forcing the row taller by a whole control. */}
+                    <Stack
+                        alignItems="center"
+                        direction="row"
+                        flexWrap="nowrap"
+                        gap={0.5}
+                        justifyContent="flex-end"
+                        sx={{minWidth: 0}}
+                    >
+                        {/* FM-082: the NFO action plus the session-gated
+                            Binsearch/comments/details links legacy rendered in
+                            its own Links column, kept in this cell so no ninth
+                            column takes width from Title (ADR-0011). */}
+                        <ResultDetailLinks
+                            dereferer={dereferer}
+                            maySeeDetailsDl={maySeeDetailsDl}
+                            result={result}
+                            transport={transport}
+                        />
+                        <DirectDownloadActions
+                            iconOnly
+                            onDownloaded={() =>
+                                onDownloaded(result.searchResultId)
+                            }
+                            result={result}
+                        />
+                    </Stack>
                     {downloaded && (
                         <Chip
                             color="success"
@@ -361,3 +411,77 @@ export const ResultRow = memo(function ResultRow({
         </TableRow>
     );
 });
+
+/**
+ * One of the title cell's two expand toggles, in the icon-button anatomy
+ * `ResultDetailLinks` already uses (`IconButton size="small"` + a
+ * `fontSize="small"` icon inside a `Tooltip`). FM-150 replaced the previous
+ * text buttons: the words cost the Title column more width than the two
+ * controls are worth, and the icon state (chevron for a title group, unfold
+ * for duplicates) reads at a glance in a dense table.
+ *
+ * The accessible name is the same text the buttons carried before -- "Expand
+ * group"/"Collapse group"/"Expand duplicates"/"Collapse duplicates" -- and the
+ * tooltip repeats it verbatim, so the visible label and the announced name
+ * never diverge.
+ */
+function ExpandControl({
+    collapsedIcon,
+    expanded,
+    expandedIcon,
+    label,
+    onToggle,
+}: {
+    collapsedIcon: ReactNode;
+    expanded: boolean;
+    expandedIcon: ReactNode;
+    label: string;
+    onToggle: () => void;
+}) {
+    return (
+        <Tooltip title={label}>
+            <IconButton
+                aria-expanded={expanded}
+                aria-label={label}
+                onClick={onToggle}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onToggle();
+                    }
+                }}
+                size="small"
+            >
+                {expanded ? expandedIcon : collapsedIcon}
+            </IconButton>
+        </Tooltip>
+    );
+}
+
+/**
+ * The width one unrendered expand control reserves, so titles at the same
+ * nesting level start at the same x whether or not their row can expand
+ * anything.
+ *
+ * Deliberately the same `IconButton size="small"` + `fontSize="small"` icon as
+ * a real control rather than a `Box` with a measured width: that keeps the
+ * reservation exact by construction -- including under the "compact rows"
+ * density, whose descendant overrides retune icon-button padding for every
+ * `.MuiIconButton-root` in the table body. `visibility: hidden` (not
+ * `display: none`) is what makes it occupy the space while removing it from
+ * the tab order, and `aria-hidden` keeps it out of the accessibility tree, so
+ * it is neither reachable nor announced.
+ */
+function ExpandSpacer() {
+    return (
+        <IconButton
+            aria-hidden
+            data-testid="search-result-expand-spacer"
+            size="small"
+            sx={{visibility: "hidden"}}
+            tabIndex={-1}
+        >
+            <KeyboardArrowRightIcon fontSize="small" />
+        </IconButton>
+    );
+}

@@ -1,4 +1,6 @@
 import {readFile} from "node:fs/promises";
+
+import type {Page} from "@playwright/test";
 import {
     dismissWelcomeDialog,
     expect,
@@ -7,6 +9,28 @@ import {
     testEnvironment,
 } from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+
+/**
+ * ADR-0050 (FM-153): a history refine `checkboxes` dimension renders as a
+ * `C-REFINE-MULTISELECT` -- a caption button over a collapsible list -- and
+ * starts collapsed on every mount, with no persistence of the open state. Its
+ * option rows are therefore not interactable until the caption is pressed.
+ * Idempotent, so a section already open is left open.
+ */
+async function openRefineMultiselect(
+    page: Page,
+    dimensionId: string,
+): Promise<void> {
+    const toggle = page.getByTestId(`history-refine-${dimensionId}-toggle`);
+    await expect(toggle).toBeVisible();
+    if ((await toggle.getAttribute("aria-expanded")) === "false") {
+        await toggle.click();
+    }
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(
+        page.getByTestId(`history-refine-${dimensionId}-list`),
+    ).toBeVisible();
+}
 
 test.describe("Downloads", () => {
     test.beforeEach(async ({hydra, page}) => {
@@ -292,6 +316,7 @@ test.describe("Downloads", () => {
         const multiSelectResponse = page.waitForResponse((response) =>
             isDownloadHistoryResponse(response),
         );
+        await openRefineMultiselect(page, "indexer");
         await page
             .getByTestId("history-refine-indexer-option")
             .filter({hasText: "Mock1"})
@@ -475,6 +500,7 @@ test.describe("Downloads", () => {
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
         await page.getByLabel("Title").fill("evidence");
+        await openRefineMultiselect(page, "result");
         await page
             .getByTestId("history-refine-result-option")
             .filter({hasText: "Content download successful"})
@@ -512,6 +538,7 @@ test.describe("Downloads", () => {
         await page.getByTestId("history-refine-toggle").click();
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         await page.getByLabel("Title").fill("evidence");
+        await openRefineMultiselect(page, "result");
         await page
             .getByTestId("history-refine-result-option")
             .filter({hasText: "Content download successful"})

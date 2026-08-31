@@ -47,7 +47,12 @@ import {
     isGroupEpisodesHelpEligible,
     showGroupEpisodesHelpIfNeeded,
 } from "./groupEpisodesHelp";
-import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
+import type {
+    NumericRange,
+    QuickFilter,
+    ResultFilters,
+    ResultGroup,
+} from "./resultTable";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -359,6 +364,31 @@ export function SearchResults({
     const visibleResults = useMemo(
         () => visibleGroupedResults(groups, expandedTitles, expandedDuplicates),
         [expandedDuplicates, expandedTitles, groups],
+    );
+    // FM-150: the shape of every row the table body is about to render,
+    // derived once instead of inside the JSX, because the expand-control width
+    // each row reserves is a property of the whole rendered set (see
+    // `expandSlots` below) and cannot be decided row by row.
+    const rowDescriptors = useMemo(
+        () => visibleRowDescriptors(groups, expandedTitles, expandedDuplicates),
+        [expandedDuplicates, expandedTitles, groups],
+    );
+    // The largest number of expand controls any one visible row carries. Rows
+    // with fewer pad to it with invisible spacers, so a title at a given
+    // nesting level always starts at the same x; when no row can expand
+    // anything this is 0 and nothing is reserved at all.
+    const expandSlots = useMemo(
+        () =>
+            rowDescriptors.reduce(
+                (widest, row) =>
+                    Math.max(
+                        widest,
+                        (row.showTitleExpand ? 1 : 0) +
+                            (row.showDuplicateExpand ? 1 : 0),
+                    ),
+                0,
+            ),
+        [rowDescriptors],
     );
     const visibleResultsRef = useRef(visibleResults);
     visibleResultsRef.current = visibleResults;
@@ -1115,6 +1145,17 @@ export function SearchResults({
                                                   paddingBottom: 0,
                                                   paddingTop: 0,
                                               },
+                                              // FM-150: since the expand and
+                                              // download controls became icon
+                                              // buttons, the `.MuiButton-root`
+                                              // rule above no longer reaches
+                                              // the controls that set a row's
+                                              // height -- these do, together
+                                              // with the detail links that
+                                              // were always icons.
+                                              "& tbody .MuiIconButton-root": {
+                                                  padding: 0.25,
+                                              },
                                               "& tbody .MuiChip-root": {
                                                   fontSize:
                                                       COMPACT_CHIP_FONT_SIZE,
@@ -1196,45 +1237,70 @@ export function SearchResults({
                                     },
                                 })}
                             >
-                                {/* FM-042 (ADR-0011): re-proportioned from
-                                        legacy's byte-for-byte-ported
-                                        54/9/8/7/6.5/5.5/10 now that the
-                                        `overflowX: "auto"` wrapper and its
-                                        `TABLE_MIN_WIDTH` floor are gone --
-                                        those ratios left the metadata
-                                        columns with no slack once the table
-                                        could be compressed below ~1320px.
-                                        Measured against a real-browser
-                                        render (see the handoff for the
-                                        observed numbers) rather than
-                                        implemented from ADR-0011's sketch
-                                        unmeasured. Age's 9% (from that
-                                        pass) was re-measured in a
-                                        follow-up quickfix: even the widest
-                                        realistic value the unbounded
-                                        `ageInDays + "d"` backend format can
-                                        produce this side of absurd
-                                        (`9999d`, ~27 years) only needs
-                                        ~67px against the 81px 9% resolved
-                                        to at 1280x800, so it drops to 8%
-                                        and the freed 1% goes to Title.
-                                        Size's 9% was re-measured the same
-                                        way and left alone: its own
-                                        mathematical worst case
-                                        (`999.99 GB` -- `formatResultSize`
-                                        guarantees the numeric part never
-                                        reaches 4 digits) needs ~89px
-                                        against the 81px available, so it
-                                        already has no real slack to give
-                                        up. */}
+                                {/* FM-042 (ADR-0011) established that this
+                                        table never scrolls horizontally and
+                                        carries no `min-width` floor, so these
+                                        eight tracks are the whole width
+                                        budget: what one column gives up,
+                                        another gets.
+
+                                        FM-150 (owner request, 2026-08-31)
+                                        sets the current basis, and it is not
+                                        the previous one. Age and Size used to
+                                        be sized so their *mathematical* worst
+                                        case fit; they are now sized for the
+                                        values users actually see, and the
+                                        surplus goes to Title. At the 1280x800
+                                        basis these percentages are measured
+                                        against (a ~896px table beside the
+                                        docked refine sidebar), 1% is ~9px:
+
+                                        - Age 8% -> 5% (45px measured). This
+                                          deliberately gives up the `9999d`
+                                          (~27 year) worst case the previous
+                                          pass sized for. `999d` measures 28px
+                                          and sits inside the cell; `9999d`
+                                          measures 35px against the 13px this
+                                          track leaves between the cell's own
+                                          16px paddings, so it spends that
+                                          padding and ends ~6px past the cell
+                                          edge, over the Actions column's
+                                          padding. It stays fully legible and
+                                          collides with no neighbouring text
+                                          (these cells are `nowrap`, so
+                                          nothing reflows), but the guarantee
+                                          that it fits is gone -- accepted,
+                                          not overlooked.
+                                        - Size 9% -> 8% (72px measured). Same
+                                          trade: `999.99 GB` -- the
+                                          mathematical maximum, since
+                                          `formatResultSize` never reaches
+                                          four digits -- measures 57px and
+                                          ends ~2px past the cell edge, while
+                                          real values (`51.2 GB`, `780 MB`,
+                                          ~43px) sit inside it.
+                                        - Title 35% -> 39% (349px measured),
+                                          the sum of what the two gave up.
+                                          Title is the column whose overflow
+                                          actually costs something: it is the
+                                          one cell that wraps, and every extra
+                                          line makes the whole row taller.
+
+                                        The checkbox track stays a fixed 40px
+                                        and Indexer/Category/Details/Actions
+                                        are untouched; the percentages still
+                                        sum to 100. The Age *header* is the
+                                        one label that no longer fits its
+                                        track -- see the header cell's own
+                                        padding note below. */}
                                 <colgroup>
                                     <col style={{width: 40}} />
-                                    <col style={{width: "35%"}} />
+                                    <col style={{width: "39%"}} />
                                     <col style={{width: "11%"}} />
-                                    <col style={{width: "11%"}} />
-                                    <col style={{width: "9%"}} />
                                     <col style={{width: "11%"}} />
                                     <col style={{width: "8%"}} />
+                                    <col style={{width: "11%"}} />
+                                    <col style={{width: "5%"}} />
                                     <col style={{width: "15%"}} />
                                 </colgroup>
                                 <TableHead>
@@ -1348,7 +1414,24 @@ export function SearchResults({
                                                                         "hidden",
                                                                     position:
                                                                         "sticky",
-                                                                    px: 1,
+                                                                    // FM-150: Age is the one header
+                                                                    // whose label no longer fits the
+                                                                    // column the owner asked for --
+                                                                    // "AGE ▼" measures 34.9px against
+                                                                    // the 29px the 5% track leaves
+                                                                    // once this padding is taken, so
+                                                                    // it rendered clipped. Halving
+                                                                    // its own padding buys the 8px
+                                                                    // that makes the header legible
+                                                                    // again without touching any
+                                                                    // column's width.
+                                                                    px:
+                                                                        header
+                                                                            .column
+                                                                            .id ===
+                                                                        "epoch"
+                                                                            ? 0.5
+                                                                            : 1,
                                                                     py: HEADER_CELL_PADDING_Y,
                                                                     textOverflow:
                                                                         "ellipsis",
@@ -1496,128 +1579,49 @@ export function SearchResults({
                                         ))}
                                 </TableHead>
                                 <TableBody>
-                                    {groups.flatMap((group, groupIndex) =>
-                                        group.duplicateGroups.flatMap(
-                                            (duplicates, duplicateIndex) => {
-                                                const first = duplicates[0];
-                                                const duplicateKey =
-                                                    duplicateGroupKey(
-                                                        group.key,
-                                                        first,
-                                                    );
-                                                const titleExpanded =
-                                                    expandedTitles.has(
-                                                        group.key,
-                                                    );
-                                                const duplicateExpanded =
-                                                    expandedDuplicates.has(
-                                                        duplicateKey,
-                                                    );
-                                                if (
-                                                    duplicateIndex > 0 &&
-                                                    !titleExpanded
-                                                ) {
-                                                    return [];
-                                                }
-                                                return duplicates
-                                                    .filter(
-                                                        (_, index) =>
-                                                            index === 0 ||
-                                                            duplicateExpanded,
-                                                    )
-                                                    .map((result, index) => {
-                                                        const nestingLevel =
-                                                            (duplicateIndex > 0
-                                                                ? 1
-                                                                : 0) +
-                                                            (index > 0 ? 1 : 0);
-                                                        const isNewGroup =
-                                                            groupIndex > 0 &&
-                                                            duplicateIndex ===
-                                                                0 &&
-                                                            index === 0;
-                                                        return (
-                                                            <ResultRow
-                                                                dereferer={
-                                                                    dereferer
-                                                                }
-                                                                downloaded={downloadedIds.has(
-                                                                    result.searchResultId,
-                                                                )}
-                                                                duplicateExpanded={
-                                                                    duplicateExpanded
-                                                                }
-                                                                duplicateKey={
-                                                                    duplicateKey
-                                                                }
-                                                                indexerColors={
-                                                                    indexerColors
-                                                                }
-                                                                isNewGroup={
-                                                                    isNewGroup
-                                                                }
-                                                                key={
-                                                                    result.searchResultId
-                                                                }
-                                                                maySeeDetailsDl={
-                                                                    maySeeDetailsDl
-                                                                }
-                                                                nestingLevel={
-                                                                    nestingLevel
-                                                                }
-                                                                onDownloaded={
-                                                                    handleDownloaded
-                                                                }
-                                                                onSelectionChange={
-                                                                    updateSelection
-                                                                }
-                                                                onToggleDuplicateExpansion={
-                                                                    handleToggleDuplicateExpansion
-                                                                }
-                                                                onToggleTitleExpansion={
-                                                                    handleToggleTitleExpansion
-                                                                }
-                                                                recent={
-                                                                    highlightRecent &&
-                                                                    isRecentResult(
-                                                                        result,
-                                                                    )
-                                                                }
-                                                                result={result}
-                                                                selected={selected.has(
-                                                                    result.searchResultId,
-                                                                )}
-                                                                showDuplicateExpand={
-                                                                    index ===
-                                                                        0 &&
-                                                                    duplicates.length >
-                                                                        1
-                                                                }
-                                                                showTitleExpand={
-                                                                    index ===
-                                                                        0 &&
-                                                                    duplicateIndex ===
-                                                                        0 &&
-                                                                    group
-                                                                        .duplicateGroups
-                                                                        .length >
-                                                                        1
-                                                                }
-                                                                titleExpanded={
-                                                                    titleExpanded
-                                                                }
-                                                                titleGroupKey={
-                                                                    group.key
-                                                                }
-                                                                transport={
-                                                                    transport
-                                                                }
-                                                            />
-                                                        );
-                                                    });
-                                            },
-                                        ),
-                                    )}
+                                    {rowDescriptors.map((row) => (
+                                        <ResultRow
+                                            dereferer={dereferer}
+                                            downloaded={downloadedIds.has(
+                                                row.result.searchResultId,
+                                            )}
+                                            duplicateExpanded={
+                                                row.duplicateExpanded
+                                            }
+                                            duplicateKey={row.duplicateKey}
+                                            expandSlots={expandSlots}
+                                            indexerColors={indexerColors}
+                                            isNewGroup={row.isNewGroup}
+                                            key={row.result.searchResultId}
+                                            maySeeDetailsDl={maySeeDetailsDl}
+                                            nestingLevel={row.nestingLevel}
+                                            onDownloaded={handleDownloaded}
+                                            onSelectionChange={updateSelection}
+                                            onToggleDuplicateExpansion={
+                                                handleToggleDuplicateExpansion
+                                            }
+                                            onToggleTitleExpansion={
+                                                handleToggleTitleExpansion
+                                            }
+                                            recent={
+                                                highlightRecent &&
+                                                isRecentResult(row.result)
+                                            }
+                                            result={row.result}
+                                            selected={selected.has(
+                                                row.result.searchResultId,
+                                            )}
+                                            showDuplicateExpand={
+                                                row.showDuplicateExpand
+                                            }
+                                            showTitleExpand={
+                                                row.showTitleExpand
+                                            }
+                                            titleExpanded={row.titleExpanded}
+                                            titleGroupKey={row.titleGroupKey}
+                                            transport={transport}
+                                        />
+                                    ))}
                                 </TableBody>
                             </Table>
                         </Box>
@@ -1625,6 +1629,61 @@ export function SearchResults({
                 </>
             )}
         </Stack>
+    );
+}
+
+/** One rendered table-body row, with everything the grouping decides about it. */
+type VisibleRowDescriptor = {
+    duplicateExpanded: boolean;
+    duplicateKey: string;
+    isNewGroup: boolean;
+    nestingLevel: number;
+    result: SearchResult;
+    showDuplicateExpand: boolean;
+    showTitleExpand: boolean;
+    titleExpanded: boolean;
+    titleGroupKey: string;
+};
+
+/**
+ * Flattens the grouped results into the rows the table body actually renders,
+ * in render order. `visibleGroupedResults` answers "which results are visible"
+ * for selection; this answers the richer "how does each visible row render",
+ * which FM-150 needs before the first row is emitted so every row can reserve
+ * the same expand-control width.
+ */
+function visibleRowDescriptors(
+    groups: ResultGroup[],
+    expandedTitles: ReadonlySet<string>,
+    expandedDuplicates: ReadonlySet<string>,
+): VisibleRowDescriptor[] {
+    return groups.flatMap((group, groupIndex) =>
+        group.duplicateGroups.flatMap((duplicates, duplicateIndex) => {
+            const duplicateKey = duplicateGroupKey(group.key, duplicates[0]);
+            const titleExpanded = expandedTitles.has(group.key);
+            const duplicateExpanded = expandedDuplicates.has(duplicateKey);
+            if (duplicateIndex > 0 && !titleExpanded) {
+                return [];
+            }
+            return duplicates
+                .filter((_, index) => index === 0 || duplicateExpanded)
+                .map((result, index) => ({
+                    duplicateExpanded,
+                    duplicateKey,
+                    isNewGroup:
+                        groupIndex > 0 && duplicateIndex === 0 && index === 0,
+                    nestingLevel:
+                        (duplicateIndex > 0 ? 1 : 0) + (index > 0 ? 1 : 0),
+                    result,
+                    showDuplicateExpand: index === 0 && duplicates.length > 1,
+                    showTitleExpand:
+                        index === 0 &&
+                        duplicateIndex === 0 &&
+                        group.duplicateGroups.length > 1,
+                    titleExpanded,
+                    titleGroupKey: group.key,
+                }));
+        }),
     );
 }
 

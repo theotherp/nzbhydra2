@@ -1,11 +1,4 @@
-import {
-    Box,
-    Button,
-    MenuItem,
-    Stack,
-    TextField,
-    Typography,
-} from "@mui/material";
+import {Box, MenuItem, Stack, TextField, Typography} from "@mui/material";
 import {useState, type ReactNode} from "react";
 
 import {
@@ -17,6 +10,7 @@ import {
     type HistoryFilterValues,
 } from "../../../../api/history/filters";
 import {refineSectionGap} from "../../../../app/theme";
+import {RefineMultiselect} from "../../../../components/refine/RefineMultiselect";
 import {
     RefineSurface,
     useCompactRefineSurface,
@@ -372,10 +366,30 @@ function BooleanSection({
 }
 
 /**
- * ADR-0016: nothing is selected initially, an empty selection filters nothing,
- * and there is no select-all or invert control. Each option is a stock
- * `Button` carrying its own pressed state, which is what the theme's
- * `refineChip` variant paints.
+ * ADR-0050: a history multi-select is the same collapsible list the results
+ * sidebar's Category/Indexer sections are -- `C-REFINE-MULTISELECT`, a caption
+ * button over a `Collapse` of full-width toggle rows -- rather than the
+ * wrapping `refineChip` row it used to be. In a 248px docked column a dimension
+ * with a dozen options (download statuses, notification event types) wrapped
+ * into a block several rows tall and pushed everything below it off the fold.
+ *
+ * Two things stay this feature's and are visible in what is passed:
+ *
+ * - The options render in the order the dimension *declares* them
+ *   (`C-HISTORY-REQUEST`), not sorted: `DOWNLOAD_STATUSES` and
+ *   `NOTIFICATION_EVENT_TYPES` are ordered lists, and the results sidebar's
+ *   alphabetical sort belongs to its own derived options, not here. No `count`
+ *   is supplied either -- these options are declared, and filtering happens
+ *   server-side over the whole history rather than over the loaded page, so
+ *   there is no number of loaded rows to annotate a label with.
+ * - ADR-0016 is unchanged: nothing is selected initially, an empty selection
+ *   filters nothing, and there is no select-all or invert control.
+ *
+ * The open state is component-local and deliberately unpersisted: every mount
+ * starts collapsed. The results page persists its two section-open booleans
+ * through `hydra.search-results.table` because a search session returns to the
+ * same result set; a history view is entered fresh, and ADR-0050 decided that
+ * a remembered open section is not worth a fourth persisted key here.
  */
 function CheckboxesSection({
     dimension,
@@ -384,43 +398,26 @@ function CheckboxesSection({
 }: SectionProps<"checkboxes">) {
     const value = historyFilterValue(values, dimension);
     const selected = value.kind === "checkboxes" ? value.selected : [];
+    const [open, setOpen] = useState(false);
     if (dimension.options.length === 0) return null;
-    const captionId = testId(dimension, "label");
     return (
-        <Section dimension={dimension}>
-            <SectionCaption id={captionId} label={dimension.label} />
-            <Box
-                aria-labelledby={captionId}
-                role="group"
-                sx={{display: "flex", flexWrap: "wrap", gap: "6px"}}
-            >
-                {dimension.options.map((option) => {
-                    const active = selected.includes(option.value);
-                    return (
-                        <Button
-                            aria-pressed={active}
-                            data-filter-value={option.value}
-                            data-testid={testId(dimension, "option")}
-                            key={option.value}
-                            onClick={() =>
-                                onChange(dimension.id, {
-                                    kind: "checkboxes",
-                                    selected: active
-                                        ? selected.filter(
-                                              (entry) => entry !== option.value,
-                                          )
-                                        : [...selected, option.value],
-                                })
-                            }
-                            size="small"
-                            variant="refineChip"
-                        >
-                            {option.label}
-                        </Button>
-                    );
-                })}
-            </Box>
-        </Section>
+        <RefineMultiselect
+            entries={dimension.options}
+            groupLabel={dimension.label}
+            label={dimension.label}
+            onChange={(next) =>
+                onChange(dimension.id, {kind: "checkboxes", selected: next})
+            }
+            onToggleOpen={() => setOpen((current) => !current)}
+            open={open}
+            selected={selected}
+            testId={`history-refine-${dimension.id}`}
+            testIds={{
+                list: testId(dimension, "list"),
+                option: testId(dimension, "option"),
+                toggle: testId(dimension, "toggle"),
+            }}
+        />
     );
 }
 

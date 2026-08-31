@@ -1,24 +1,20 @@
-import {
-    Box,
-    Button,
-    Collapse,
-    Stack,
-    TextField,
-    Typography,
-} from "@mui/material";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import {Box, Button, Stack, TextField, Typography} from "@mui/material";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo} from "react";
 
 import type {SearchResult} from "../../../api/search";
 import {denseControlFontSize, refineSectionGap} from "../../../app/theme";
 import type {
+    RefineMultiselectEntry,
+    RefineMultiselectTestIds,
+} from "../../../components/refine/RefineMultiselect";
+import {RefineMultiselect} from "../../../components/refine/RefineMultiselect";
+import type {
     RefineSurfaceLabels,
     RefineSurfaceTestIds,
 } from "../../../components/refine/RefineSurface";
 import {RefineSurface} from "../../../components/refine/RefineSurface";
-import {NumericFilter, ToggleRowFilter} from "./filterControls";
+import {NumericFilter} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, quickFilterKey} from "./resultTable";
 
@@ -57,6 +53,20 @@ const REFINE_TEST_IDS: RefineSurfaceTestIds = {
     drawer: "refine-sidebar-drawer",
     surface: "refine-sidebar",
     toggle: "refine-sidebar-toggle",
+};
+
+// FM-153: this page's own ids for the two `C-REFINE-MULTISELECT` sections --
+// the ids `SearchResults.test.tsx` and `tests/system/tests/results.spec.ts`
+// have always queried, unchanged by the extraction.
+const CATEGORY_TEST_IDS: RefineMultiselectTestIds = {
+    list: "refine-category-list",
+    option: "refine-category-option",
+    toggle: "refine-category-toggle",
+};
+const INDEXER_TEST_IDS: RefineMultiselectTestIds = {
+    list: "refine-indexer-list",
+    option: "refine-indexer-option",
+    toggle: "refine-indexer-toggle",
 };
 
 // The "Refine" filter sidebar. Since FM-045 (ADR-0009: full mock fidelity)
@@ -132,12 +142,15 @@ export function RefineSidebar({
         value: string,
     ) => void;
 }) {
+    // FM-153: the derivation (dedupe, count, sort) stays here, in the feature
+    // that has loaded results to derive from; `RefineMultiselect` renders what
+    // it is handed, in the order it is handed it.
     const indexerEntries = useMemo(
-        () => results.map((result) => result.indexer),
+        () => toggleRowEntries(results.map((result) => result.indexer)),
         [results],
     );
     const categoryEntries = useMemo(
-        () => results.map((result) => result.category),
+        () => toggleRowEntries(results.map((result) => result.category)),
         [results],
     );
     // Derived from the loaded results rather than a hardcoded NZB/Torrent
@@ -219,10 +232,9 @@ export function RefineSidebar({
                     value={filters.title}
                 />
             </RefineSection>
-            <RefineCollapsibleList
+            <RefineMultiselect
                 entries={categoryEntries}
                 label="Category"
-                listTestId="refine-category-list"
                 onChange={(categories) =>
                     setFilters((current) => ({
                         ...current,
@@ -231,14 +243,12 @@ export function RefineSidebar({
                 }
                 onToggleOpen={onToggleCategoryOpen}
                 open={categoryOpen}
-                optionTestId="refine-category-option"
                 selected={filters.categories}
-                toggleTestId="refine-category-toggle"
+                testIds={CATEGORY_TEST_IDS}
             />
-            <RefineCollapsibleList
+            <RefineMultiselect
                 entries={indexerEntries}
                 label="Indexer"
-                listTestId="refine-indexer-list"
                 onChange={(indexers) =>
                     setFilters((current) => ({
                         ...current,
@@ -247,9 +257,8 @@ export function RefineSidebar({
                 }
                 onToggleOpen={onToggleIndexerOpen}
                 open={indexerOpen}
-                optionTestId="refine-indexer-option"
                 selected={filters.indexers}
-                toggleTestId="refine-indexer-toggle"
+                testIds={INDEXER_TEST_IDS}
             />
             <RefineSection label="Size (MB)">
                 <NumericFilter
@@ -320,6 +329,31 @@ export function RefineSidebar({
     );
 }
 
+/**
+ * The Category/Indexer options, derived from the loaded results: one entry per
+ * distinct value, carrying its number of occurrences, sorted by label.
+ *
+ * FM-153: deliberately *not* inside `RefineMultiselect`. That component renders
+ * the entries it is given in the order it is given them, because the history
+ * views' options are declared by `C-HISTORY-REQUEST` dimensions in an order
+ * that carries meaning (download statuses, notification event types) and must
+ * not be re-sorted. Only this page derives and sorts, so only this page does
+ * it.
+ *
+ * Counting semantics are FM-039's, unchanged: `values` is one entry per
+ * *loaded* result, so an option's count is its number of loaded results, not
+ * its number of results in the currently filtered subset.
+ */
+function toggleRowEntries(values: string[]): RefineMultiselectEntry[] {
+    const counts = new Map<string, number>();
+    for (const value of values) {
+        counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+    return [...counts.keys()]
+        .sort((first, second) => first.localeCompare(second))
+        .map((value) => ({count: counts.get(value), label: value, value}));
+}
+
 // The mock's Quality and Type pills (`chip(active)`): a compact monospace
 // label in a bordered box that changes background, border, and text color
 // when selected. Every one of those rules is `app/theme.ts`'s `MuiButton`
@@ -366,70 +400,6 @@ function RefineSection({
                 {label}
             </Typography>
             {children}
-        </Box>
-    );
-}
-
-function RefineCollapsibleList({
-    entries,
-    label,
-    listTestId,
-    onChange,
-    onToggleOpen,
-    open,
-    optionTestId,
-    selected,
-    toggleTestId,
-}: {
-    entries: string[];
-    label: string;
-    listTestId: string;
-    onChange: (values: string[]) => void;
-    onToggleOpen: () => void;
-    open: boolean;
-    optionTestId: string;
-    selected: string[];
-    toggleTestId: string;
-}) {
-    return (
-        <Box>
-            <Button
-                aria-expanded={open}
-                data-testid={toggleTestId}
-                onClick={onToggleOpen}
-                size="small"
-                // The section caption's own typography role, spread from
-                // the theme rather than restated: this caption is a `Button`
-                // (the section is collapsible), so it cannot take
-                // `Typography`'s `variant` prop the way `RefineSection`'s
-                // static caption above does, and consuming the variant here
-                // is what keeps the two captions identical.
-                sx={(theme) => ({
-                    ...theme.typography.refineSectionLabel,
-                    justifyContent: "space-between",
-                    mb: 1,
-                    minWidth: 0,
-                    px: 0,
-                    py: 0,
-                    width: "100%",
-                })}
-            >
-                {label}
-                {open ? (
-                    <ExpandLessIcon fontSize="small" />
-                ) : (
-                    <ExpandMoreIcon fontSize="small" />
-                )}
-            </Button>
-            <Collapse in={open}>
-                <ToggleRowFilter
-                    entries={entries}
-                    onChange={onChange}
-                    optionTestId={optionTestId}
-                    selected={selected}
-                    testId={listTestId}
-                />
-            </Collapse>
         </Box>
     );
 }

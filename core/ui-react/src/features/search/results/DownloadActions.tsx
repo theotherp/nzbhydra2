@@ -1,4 +1,13 @@
-import {Alert, Button, MenuItem, Select, Stack} from "@mui/material";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import {
+    Alert,
+    Button,
+    IconButton,
+    MenuItem,
+    Select,
+    Stack,
+    Tooltip,
+} from "@mui/material";
 import type {ReactNode} from "react";
 import {useEffect, useMemo, useState} from "react";
 
@@ -436,26 +445,59 @@ export function DownloadActions({
     );
 }
 
+/**
+ * The direct "fetch this result's NZB/torrent file" control, shared by the
+ * search results table and the download history page.
+ *
+ * FM-150: the results row asks for the icon form (`iconOnly`) so the download
+ * sits on the same single line as `ResultDetailLinks`' icons instead of
+ * claiming a row of its own in a cell whose column the Title column is
+ * competing with. The history page's row is a free-flowing `Stack` with no such
+ * pressure, so the text form stays the default and that page renders exactly
+ * what it rendered before. Both forms are the same anchor with the same
+ * `data-testid`, `href`, `download` and `onClick`.
+ */
 export function DirectDownloadActions({
+    iconOnly = false,
     result,
     onDownloaded,
 }: {
+    iconOnly?: boolean;
     result: SearchResult;
     onDownloaded: () => void;
 }) {
     const type = result.downloadType === "TORRENT" ? "torrent" : "nzb";
+    const label = `Download ${type.toUpperCase()}`;
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
+    const shared = {
+        "aria-label": label,
+        component: "a" as const,
+        "data-testid": type === "nzb" ? "download-nzb" : "download-torrent",
+        download: true,
+        href: transport.browserTransferUrl(
+            `get${type}/user/${downloadId(result)}`,
+        ),
+        onClick: onDownloaded,
+        size: "small" as const,
+    };
+    if (iconOnly) {
+        return (
+            <Tooltip
+                title={type === "nzb" ? "Download NZB" : "Download Torrent"}
+            >
+                {/* `flexShrink: 0` because the results row puts this in a
+                    non-wrapping icon group whose other member (the detail
+                    links) is allowed to shrink and fold; without it a narrow
+                    Actions column would squash the download instead. */}
+                <IconButton {...shared} sx={{flexShrink: 0}}>
+                    <DownloadOutlinedIcon fontSize="small" />
+                </IconButton>
+            </Tooltip>
+        );
+    }
     return (
         <Button
-            aria-label={`Download ${type.toUpperCase()}`}
-            component="a"
-            data-testid={type === "nzb" ? "download-nzb" : "download-torrent"}
-            download
-            href={transport.browserTransferUrl(
-                `get${type}/user/${downloadId(result)}`,
-            )}
-            onClick={onDownloaded}
-            size="small"
+            {...shared}
             sx={{minWidth: 0, whiteSpace: "nowrap"}}
             variant="control"
         >
