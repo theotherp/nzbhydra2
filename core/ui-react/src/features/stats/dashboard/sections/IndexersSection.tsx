@@ -67,7 +67,11 @@ function compareIndexerRows(
 }
 
 export function IndexersSection({stats}: {stats: StatsResult}) {
-    const rows = joinIndexerRows(stats);
+    // Memoized for its identity as much as for its cost: `rows` is the sort
+    // memo's dependency below, so a fresh array on every render made that memo
+    // recompute on every render too -- including the ones that only opened the
+    // detail columns or moved a sort arrow.
+    const rows = useMemo(() => joinIndexerRows(stats), [stats]);
     const columns = indexerColumnsEnabled(stats);
     const [showDetails, setShowDetails] = useState(false);
     const [sortKey, setSortKey] = useState<keyof IndexerRow>("indexerName");

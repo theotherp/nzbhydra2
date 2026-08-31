@@ -14,16 +14,16 @@ import {
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
 import {useMemo, useState} from "react";
 
-import type {
-    HistoryFilterValue,
-    HistoryFilterValues,
-} from "../../../api/history/filters";
 import {
     NOTIFICATION_EVENT_LABELS,
     getNotificationHistory,
     notificationHistoryDimensions,
     type NotificationHistorySort,
 } from "../../../api/history/notifications";
+import {
+    activeHistoryFilterCount,
+    historyFilterModel,
+} from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
@@ -33,6 +33,7 @@ import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
+import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
 const defaultSort: NotificationHistorySort = {column: "time", sortMode: 2};
 
@@ -43,36 +44,49 @@ export function NotificationHistoryPage({
     bootstrap: BootstrapData;
     transport: ApiTransport;
 }) {
-    const [page, setPage] = useState(1);
-    const [values, setValues] = useState<HistoryFilterValues>({});
+    const {
+        clearFilters,
+        commitFilters,
+        criteria,
+        goToPage,
+        updateFilter,
+        values,
+    } = useHistoryFilterCriteria();
+    const page = criteria.page;
     const [sort, setSort] = useState<NotificationHistorySort>(defaultSort);
     const safeConfig = useSafeConfig(bootstrap);
     const dimensions = useMemo(() => notificationHistoryDimensions(), []);
     const query = useQuery({
-        queryKey: ["notification-history", page, values, sort],
+        /*
+         * Keyed on the *filter model* rather than on the raw values: the model
+         * is what actually reaches the server, and it already collapses empty
+         * text, whitespace, an unparseable bound and a `boolean` left on "all"
+         * to no filter at all. Keying on the values gave every one of those a
+         * key of its own, so typing a character and deleting it -- or clearing
+         * a field a different way than it was filled -- missed the cache and
+         * re-read a byte-identical page.
+         */
+        queryKey: [
+            "notification-history",
+            criteria.page,
+            historyFilterModel(dimensions, criteria.values),
+            sort,
+        ],
         queryFn: () =>
             getNotificationHistory(transport, {
                 dimensions,
-                values,
-                page,
+                values: criteria.values,
+                page: criteria.page,
                 limit: PAGE_SIZE,
                 sort,
             }),
-        // As on download history: a filter keystroke makes a new query key, and
-        // falling back to the first-load spinner would unmount the refine surface
-        // mid-edit and take keyboard focus with it.
+        // As on download history: a committed filter edit makes a new query
+        // key, and falling back to the first-load spinner would unmount the
+        // refine surface mid-edit and take keyboard focus with it.
         placeholderData: keepPreviousData,
     });
-    const updateFilter = (id: string, value: HistoryFilterValue) => {
-        setPage(1);
-        setValues((current) => ({...current, [id]: value}));
-    };
-    const clearFilters = () => {
-        setPage(1);
-        setValues({});
-    };
     const updateSort = (column: NotificationHistorySort["column"]) => {
-        setPage(1);
+        commitFilters();
         setSort((current) => ({
             column,
             sortMode:
@@ -89,6 +103,10 @@ export function NotificationHistoryPage({
     }
     const {entries: notifications, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+    const activeFilterCount = activeHistoryFilterCount(
+        dimensions,
+        criteria.values,
+    );
     const dereferer = safeConfig?.dereferer;
     return (
         // The route's single filter surface (ADR-0009/ADR-0016/ADR-0046):
@@ -118,12 +136,29 @@ export function NotificationHistoryPage({
                     Refresh
                 </Button>
             </Stack>
-            {query.isFetching && (
-                <Stack direction="row" role="status" spacing={1}>
-                    <CircularProgress size={20} />
-                    <Typography>Refreshing notification history…</Typography>
-                </Stack>
-            )}
+            {/*
+             * A constant-height slot, not a conditional row: this indicator
+             * used to be inserted above the table when a fetch started and
+             * removed when it ended, moving everything below it by its own
+             * height twice per refresh -- under the reader's pointer, and for
+             * every filter commit. The row is always in the layout (and is
+             * always the same live region); only its contents come and go.
+             */}
+            <Stack
+                direction="row"
+                role="status"
+                spacing={1}
+                sx={{minHeight: (theme) => theme.spacing(3)}}
+            >
+                {query.isFetching && (
+                    <>
+                        <CircularProgress size={20} />
+                        <Typography>
+                            Refreshing notification history…
+                        </Typography>
+                    </>
+                )}
+            </Stack>
             {malformedCount > 0 && (
                 <Alert severity="warning">
                     {malformedCount} malformed notification history entries were
@@ -131,7 +166,25 @@ export function NotificationHistoryPage({
                 </Alert>
             )}
             {notifications.length === 0 ? (
-                <Alert severity="info">
+                <Alert
+                    // A filtered-empty page is otherwise a dead end: the
+                    // filters that emptied it are in the refine surface, which
+                    // is collapsed on narrow viewports. Offered only when
+                    // there is something to clear -- an empty history has no
+                    // filters to blame.
+                    action={
+                        activeFilterCount > 0 ? (
+                            <Button
+                                color="inherit"
+                                onClick={clearFilters}
+                                size="small"
+                            >
+                                Clear filters
+                            </Button>
+                        ) : undefined
+                    }
+                    severity="info"
+                >
                     No notification history entries match the current filters.
                 </Alert>
             ) : (
@@ -217,7 +270,10 @@ export function NotificationHistoryPage({
                 </TableScrollAffordance>
             )}
             <Stack alignItems="center" direction="row" spacing={1}>
-                <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                <Button
+                    disabled={page === 1}
+                    onClick={() => goToPage(page - 1)}
+                >
                     Previous page
                 </Button>
                 <Typography data-testid="notification-history-page-status">
@@ -226,7 +282,7 @@ export function NotificationHistoryPage({
                 </Typography>
                 <Button
                     disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => goToPage(page + 1)}
                 >
                     Next page
                 </Button>

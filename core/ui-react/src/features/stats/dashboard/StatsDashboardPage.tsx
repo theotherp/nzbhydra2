@@ -10,7 +10,7 @@ import {
     useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
-import {useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 
 import {
     allFamiliesSelected,
@@ -131,6 +131,14 @@ function statsQueryKey(range: DateRange, includeDisabled: boolean) {
  * ranges need no such step: `dateRange.ts`'s `parseDateInput` already parses
  * `<input type="date">` values at midnight.
  */
+/**
+ * How long the custom date fields wait after the last edit before the range
+ * they describe becomes a request. Longer than the history pages' filter
+ * debounce because what it defers is a full stats recalculation, and because
+ * the value being typed is a date rather than a search term.
+ */
+const CUSTOM_RANGE_COMMIT_DELAY_MS = 400;
+
 function truncateToDayBoundary(date: Date): Date {
     const truncated = new Date(date);
     truncated.setHours(0, 0, 0, 0);
@@ -188,6 +196,10 @@ export function StatsDashboardPage({
      * selected.
      */
     const nextRequestRef = useRef<StatFamilySelection | undefined>(undefined);
+    const customRangeCommit = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+    );
+    useEffect(() => () => clearTimeout(customRangeCommit.current), []);
 
     const query = useQuery<DashboardData>({
         queryKey: statsQueryKey(range, includeDisabled),
@@ -251,6 +263,7 @@ export function StatsDashboardPage({
     };
 
     const handlePresetChange = (nextPreset: DatePresetId) => {
+        clearTimeout(customRangeCommit.current);
         setPreset(nextPreset);
         setCustomError(undefined);
         if (nextPreset === "custom") {
@@ -261,13 +274,29 @@ export function StatsDashboardPage({
         if (nextRange) setRange(truncateRangeToDayBoundary(nextRange));
     };
 
+    /**
+     * A custom range is adopted `CUSTOM_RANGE_COMMIT_DELAY_MS` after the last
+     * edit, not on the edit itself. A `<input type="date">` reports every
+     * intermediate value the reader types, and most of them parse: typing the
+     * year of "2024-01-01" walks through 0002, 0020 and 0202, each a valid
+     * range, each a new query key, each a full multi-second stats
+     * recalculation on the server. The validation message stays immediate --
+     * it costs nothing and it is what tells the reader the range is not
+     * finished. Presets are unaffected: they set the range directly, and
+     * switching to one cancels a pending adoption.
+     */
     const handleCustomChange = (field: "after" | "before", value: string) => {
         const next = {...customInputs, [field]: value};
         setCustomInputs(next);
         const validation = validateCustomRange(next);
+        clearTimeout(customRangeCommit.current);
         if (validation.valid) {
             setCustomError(undefined);
-            setRange(validation.range);
+            const adopted = validation.range;
+            customRangeCommit.current = setTimeout(
+                () => setRange(adopted),
+                CUSTOM_RANGE_COMMIT_DELAY_MS,
+            );
         } else {
             setCustomError(validation.error);
         }
@@ -377,12 +406,27 @@ export function StatsDashboardPage({
                     .
                 </Typography>
             )}
-            {isFetching && (
-                <Stack direction="row" role="status" spacing={1}>
-                    <CircularProgress size={20} />
-                    <Typography>Calculating stats…</Typography>
-                </Stack>
-            )}
+            {/*
+             * A constant-height slot, not a conditional row: this indicator
+             * used to be inserted above the table when a fetch started and
+             * removed when it ended, moving everything below it by its own
+             * height twice per refresh -- under the reader's pointer, and for
+             * every filter commit. The row is always in the layout (and is
+             * always the same live region); only its contents come and go.
+             */}
+            <Stack
+                direction="row"
+                role="status"
+                spacing={1}
+                sx={{minHeight: (theme) => theme.spacing(3)}}
+            >
+                {isFetching && (
+                    <>
+                        <CircularProgress size={20} />
+                        <Typography>Calculating stats…</Typography>
+                    </>
+                )}
+            </Stack>
             {query.isError && (
                 <Alert
                     action={

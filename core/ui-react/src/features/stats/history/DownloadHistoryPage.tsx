@@ -19,10 +19,6 @@ import {
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
 import {useMemo, useState, type ReactNode} from "react";
 
-import type {
-    HistoryFilterValue,
-    HistoryFilterValues,
-} from "../../../api/history/filters";
 import {
     DOWNLOAD_STATUSES,
     downloadHistoryDimensions,
@@ -32,6 +28,10 @@ import {
     type DownloadHistorySearchResult,
     type DownloadStatus,
 } from "../../../api/history/downloads";
+import {
+    activeHistoryFilterCount,
+    historyFilterModel,
+} from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
@@ -44,6 +44,7 @@ import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
+import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
 const defaultSort: DownloadHistorySort = {column: "time", sortMode: 2};
 
@@ -54,8 +55,15 @@ export function DownloadHistoryPage({
     bootstrap: BootstrapData;
     transport: ApiTransport;
 }) {
-    const [page, setPage] = useState(1);
-    const [values, setValues] = useState<HistoryFilterValues>({});
+    const {
+        clearFilters,
+        commitFilters,
+        criteria,
+        goToPage,
+        updateFilter,
+        values,
+    } = useHistoryFilterCriteria();
+    const page = criteria.page;
     const [sort, setSort] = useState<DownloadHistorySort>(defaultSort);
     const safeConfig = useSafeConfig(bootstrap);
     const userInfoType = historyUserInfoType(safeConfig);
@@ -69,32 +77,38 @@ export function DownloadHistoryPage({
         [safeConfig, userInfoType],
     );
     const query = useQuery({
-        queryKey: ["download-history", page, values, sort],
+        /*
+         * Keyed on the *filter model* rather than on the raw values: the model
+         * is what actually reaches the server, and it already collapses empty
+         * text, whitespace, an unparseable bound and a `boolean` left on "all"
+         * to no filter at all. Keying on the values gave every one of those a
+         * key of its own, so typing a character and deleting it -- or clearing
+         * a field a different way than it was filled -- missed the cache and
+         * re-read a byte-identical page.
+         */
+        queryKey: [
+            "download-history",
+            criteria.page,
+            historyFilterModel(dimensions, criteria.values),
+            sort,
+        ],
         queryFn: () =>
             getDownloadHistory(transport, {
                 dimensions,
-                values,
-                page,
+                values: criteria.values,
+                page: criteria.page,
                 limit: PAGE_SIZE,
                 sort,
             }),
-        // Every filter keystroke is a new query key. Without this the page
+        // A committed filter edit is a new query key. Without this the page
         // would fall back to its first-load spinner on each one, unmounting
         // the refine surface mid-edit and taking keyboard focus with it; the
         // already-rendered "Refreshing download history…" status row is what
         // reports the in-flight request instead.
         placeholderData: keepPreviousData,
     });
-    const updateFilter = (id: string, value: HistoryFilterValue) => {
-        setPage(1);
-        setValues((current) => ({...current, [id]: value}));
-    };
-    const clearFilters = () => {
-        setPage(1);
-        setValues({});
-    };
     const updateSort = (column: DownloadHistorySort["column"]) => {
-        setPage(1);
+        commitFilters();
         setSort((current) => ({
             column,
             sortMode:
@@ -109,6 +123,10 @@ export function DownloadHistoryPage({
     }
     const {entries: downloads, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+    const activeFilterCount = activeHistoryFilterCount(
+        dimensions,
+        criteria.values,
+    );
     return (
         // The route's single filter surface (ADR-0009/ADR-0046): every
         // dimension legacy offered per table column lives in the refine
@@ -137,12 +155,27 @@ export function DownloadHistoryPage({
                     Refresh
                 </Button>
             </Stack>
-            {query.isFetching && (
-                <Stack direction="row" role="status" spacing={1}>
-                    <CircularProgress size={20} />
-                    <Typography>Refreshing download history…</Typography>
-                </Stack>
-            )}
+            {/*
+             * A constant-height slot, not a conditional row: this indicator
+             * used to be inserted above the table when a fetch started and
+             * removed when it ended, moving everything below it by its own
+             * height twice per refresh -- under the reader's pointer, and for
+             * every filter commit. The row is always in the layout (and is
+             * always the same live region); only its contents come and go.
+             */}
+            <Stack
+                direction="row"
+                role="status"
+                spacing={1}
+                sx={{minHeight: (theme) => theme.spacing(3)}}
+            >
+                {query.isFetching && (
+                    <>
+                        <CircularProgress size={20} />
+                        <Typography>Refreshing download history…</Typography>
+                    </>
+                )}
+            </Stack>
             {malformedCount > 0 && (
                 <Alert severity="warning">
                     {malformedCount} malformed download history entries were not
@@ -150,7 +183,25 @@ export function DownloadHistoryPage({
                 </Alert>
             )}
             {downloads.length === 0 ? (
-                <Alert severity="info">
+                <Alert
+                    // A filtered-empty page is otherwise a dead end: the
+                    // filters that emptied it are in the refine surface, which
+                    // is collapsed on narrow viewports. Offered only when
+                    // there is something to clear -- an empty history has no
+                    // filters to blame.
+                    action={
+                        activeFilterCount > 0 ? (
+                            <Button
+                                color="inherit"
+                                onClick={clearFilters}
+                                size="small"
+                            >
+                                Clear filters
+                            </Button>
+                        ) : undefined
+                    }
+                    severity="info"
+                >
                     No download history entries match the current filters.
                 </Alert>
             ) : (
@@ -271,7 +322,10 @@ export function DownloadHistoryPage({
                 </TableScrollAffordance>
             )}
             <Stack direction="row" alignItems="center" spacing={1}>
-                <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                <Button
+                    disabled={page === 1}
+                    onClick={() => goToPage(page - 1)}
+                >
                     Previous page
                 </Button>
                 <Typography>
@@ -279,7 +333,7 @@ export function DownloadHistoryPage({
                 </Typography>
                 <Button
                     disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => goToPage(page + 1)}
                 >
                     Next page
                 </Button>

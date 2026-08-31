@@ -24,10 +24,6 @@ import {
 import {useNavigate} from "@tanstack/react-router";
 import {useMemo, useState, type ReactNode} from "react";
 
-import type {
-    HistoryFilterValue,
-    HistoryFilterValues,
-} from "../../../api/history/filters";
 import {
     getSearchHistory,
     getSearchHistoryDetails,
@@ -37,6 +33,11 @@ import {
     type SearchHistorySort,
 } from "../../../api/searchHistory";
 import {redirectRidUrl} from "../../../api/savedSearches";
+import {
+    activeHistoryFilterCount,
+    historyFilterModel,
+    isHistoryFilterActive,
+} from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
@@ -48,6 +49,7 @@ import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
 import {PAGE_SIZE} from "../shared/pageSize";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
+import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
 const defaultSort: SearchHistorySort = {column: "time", sortMode: 2};
 
@@ -61,11 +63,19 @@ export function SearchHistoryPage({
     const navigate = useNavigate({from: "/stats/searches"});
     const safeConfig = useSafeConfig(bootstrap);
     const catalog = createCategoryCatalog(safeConfig);
-    const [page, setPage] = useState(1);
-    const [values, setValues] = useState<HistoryFilterValues>({});
+    const {
+        clearFilters,
+        commitFilters,
+        criteria,
+        goToPage,
+        updateFilter,
+        values,
+    } = useHistoryFilterCriteria();
+    const page = criteria.page;
     const [sort, setSort] = useState<SearchHistorySort>(defaultSort);
     const [showUserAgent, setShowUserAgent] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
+    const userAgentFilter = values["user-agent"];
     const userInfoType = historyUserInfoType(safeConfig);
     const dimensions = useMemo(
         () =>
@@ -80,16 +90,30 @@ export function SearchHistoryPage({
         [catalog.categories, showUserAgent, userInfoType],
     );
     const query = useQuery({
-        queryKey: ["search-history", page, values, sort],
+        /*
+         * Keyed on the *filter model* rather than on the raw values: the model
+         * is what actually reaches the server, and it already collapses empty
+         * text, whitespace, an unparseable bound and a `boolean` left on "all"
+         * to no filter at all. Keying on the values gave every one of those a
+         * key of its own, so typing a character and deleting it -- or clearing
+         * a field a different way than it was filled -- missed the cache and
+         * re-read a byte-identical page.
+         */
+        queryKey: [
+            "search-history",
+            criteria.page,
+            historyFilterModel(dimensions, criteria.values),
+            sort,
+        ],
         queryFn: () =>
             getSearchHistory(transport, {
                 dimensions,
-                values,
-                page,
+                values: criteria.values,
+                page: criteria.page,
                 limit: PAGE_SIZE,
                 sort,
             }),
-        // Every filter keystroke is a new query key; keeping the previous
+        // A committed filter edit is a new query key; keeping the previous
         // page's data rendered (rather than falling back to the first-load
         // spinner) keeps the refine surface mounted and its focus intact -- see
         // `DownloadHistoryPage` for the same reasoning.
@@ -100,16 +124,8 @@ export function SearchHistoryPage({
         queryFn: () => getSearchHistoryDetails(transport, detailsId!),
         enabled: detailsId !== undefined,
     });
-    const updateFilter = (id: string, value: HistoryFilterValue) => {
-        setPage(1);
-        setValues((current) => ({...current, [id]: value}));
-    };
-    const clearFilters = () => {
-        setPage(1);
-        setValues({});
-    };
     const updateSort = (column: SearchHistorySort["column"]) => {
-        setPage(1);
+        commitFilters();
         setSort((current) => ({
             column,
             sortMode:
@@ -133,6 +149,10 @@ export function SearchHistoryPage({
     }
     const {entries: searches, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+    const activeFilterCount = activeHistoryFilterCount(
+        dimensions,
+        criteria.values,
+    );
     return (
         // The route's single filter surface (ADR-0009/ADR-0046): every
         // dimension legacy offered per table column lives in the refine
@@ -162,7 +182,18 @@ export function SearchHistoryPage({
                                 checked={showUserAgent}
                                 onChange={(event) => {
                                     setShowUserAgent(event.target.checked);
-                                    if (!event.target.checked) {
+                                    // Hiding the column drops any filter the
+                                    // column carried -- but only if it carried
+                                    // one. Writing an empty value
+                                    // unconditionally made a toggle of a
+                                    // column nobody had filtered into a filter
+                                    // edit, and so into a re-read of a
+                                    // byte-identical page.
+                                    if (
+                                        !event.target.checked &&
+                                        userAgentFilter !== undefined &&
+                                        isHistoryFilterActive(userAgentFilter)
+                                    ) {
                                         updateFilter("user-agent", {
                                             kind: "freetext",
                                             text: "",
@@ -182,12 +213,27 @@ export function SearchHistoryPage({
                     </Button>
                 </Stack>
             </Stack>
-            {query.isFetching && (
-                <Stack direction="row" role="status" spacing={1}>
-                    <CircularProgress size={20} />
-                    <Typography>Refreshing search history…</Typography>
-                </Stack>
-            )}
+            {/*
+             * A constant-height slot, not a conditional row: this indicator
+             * used to be inserted above the table when a fetch started and
+             * removed when it ended, moving everything below it by its own
+             * height twice per refresh -- under the reader's pointer, and for
+             * every filter commit. The row is always in the layout (and is
+             * always the same live region); only its contents come and go.
+             */}
+            <Stack
+                direction="row"
+                role="status"
+                spacing={1}
+                sx={{minHeight: (theme) => theme.spacing(3)}}
+            >
+                {query.isFetching && (
+                    <>
+                        <CircularProgress size={20} />
+                        <Typography>Refreshing search history…</Typography>
+                    </>
+                )}
+            </Stack>
             {malformedCount > 0 && (
                 <Alert severity="warning">
                     {malformedCount} malformed search history entries were not
@@ -195,7 +241,25 @@ export function SearchHistoryPage({
                 </Alert>
             )}
             {searches.length === 0 ? (
-                <Alert severity="info">
+                <Alert
+                    // A filtered-empty page is otherwise a dead end: the
+                    // filters that emptied it are in the refine surface, which
+                    // is collapsed on narrow viewports. Offered only when
+                    // there is something to clear -- an empty history has no
+                    // filters to blame.
+                    action={
+                        activeFilterCount > 0 ? (
+                            <Button
+                                color="inherit"
+                                onClick={clearFilters}
+                                size="small"
+                            >
+                                Clear filters
+                            </Button>
+                        ) : undefined
+                    }
+                    severity="info"
+                >
                     No search history entries match the current filters.
                 </Alert>
             ) : (
@@ -284,13 +348,28 @@ export function SearchHistoryPage({
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <Button
-                                            data-testid="search-history-repeat"
-                                            onClick={() => repeat(entry)}
+                                        {/*
+                                         * The query first, its action after:
+                                         * with the button leading, every cell
+                                         * in the column began "Repeat" and the
+                                         * queries themselves started at a
+                                         * different offset in every row, which
+                                         * is the one column a reader scans.
+                                         */}
+                                        <Stack
+                                            alignItems="center"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
                                         >
-                                            Repeat
-                                        </Button>
-                                        {queryLabel(entry)}
+                                            <span>{queryLabel(entry)}</span>
+                                            <Button
+                                                data-testid="search-history-repeat"
+                                                onClick={() => repeat(entry)}
+                                            >
+                                                Repeat
+                                            </Button>
+                                        </Stack>
                                     </TableCell>
                                     {showUserAgent && (
                                         <TableCell>
@@ -337,7 +416,10 @@ export function SearchHistoryPage({
                 </TableScrollAffordance>
             )}
             <Stack direction="row" alignItems="center" spacing={1}>
-                <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                <Button
+                    disabled={page === 1}
+                    onClick={() => goToPage(page - 1)}
+                >
                     Previous page
                 </Button>
                 <Typography>
@@ -345,7 +427,7 @@ export function SearchHistoryPage({
                 </Typography>
                 <Button
                     disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
+                    onClick={() => goToPage(page + 1)}
                 >
                     Next page
                 </Button>

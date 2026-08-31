@@ -114,12 +114,17 @@ describe("SearchHistoryPage", () => {
         fireEvent.change(screen.getByLabelText("Query"), {
             target: {value: "query"},
         });
-        await screen.findByRole("button", {name: "Query"});
+        // Deliberately synchronous from here: awaiting between the typed
+        // edit and the sort click would let the filter debounce fire on its
+        // own on a slow machine, and this case is about the commit the sort
+        // click performs, not about the timer.
         fireEvent.click(screen.getByRole("button", {name: "Query"}));
-        await screen.findByRole("button", {name: "Next page"});
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        // Three reads, not four: the typed "Query" edit is committed by the
+        // sort click rather than racing it, so the sort and the filter reach
+        // the server in one request (`useHistoryFilterCriteria`).
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(lastBody()).toMatchObject({
             page: 2,
@@ -134,7 +139,7 @@ describe("SearchHistoryPage", () => {
             screen.getAllByTestId("history-refine-category-option")[1],
         );
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+            expect(fetchImplementation).toHaveBeenCalledTimes(4),
         );
         expect(lastBody()).toMatchObject({
             page: 1,
@@ -153,7 +158,7 @@ describe("SearchHistoryPage", () => {
         await screen.findByTestId("search-history-refresh");
         fireEvent.click(screen.getByTestId("search-history-refresh"));
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(6),
+            expect(fetchImplementation).toHaveBeenCalledTimes(5),
         );
     });
 
@@ -185,6 +190,132 @@ describe("SearchHistoryPage", () => {
         expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
     });
 
+    /*
+     * The page keyed its query on the raw filter values, so every keystroke in
+     * a free-text or range field was its own POST -- and each of those runs a
+     * COUNT beside the page read. Typing an eight-letter title was eight round
+     * trips whose first seven answers were discarded.
+     *
+     * Timers are faked only after the first page has arrived, so the mount and
+     * its `await` run on real ones and nothing has to advance react-query's own
+     * internals by hand.
+     */
+    it("should issue one read for a burst of typing, keeping the field responsive", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(
+                    JSON.stringify({content: [entry()], totalElements: 1}),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        expect(fetchImplementation).toHaveBeenCalledTimes(1);
+
+        vi.useFakeTimers();
+        const field = screen.getByLabelText("Query");
+        for (const text of ["a", "av", "ave", "aven", "aveng"]) {
+            fireEvent.change(field, {target: {value: text}});
+        }
+        // Nothing has left yet, and the field is nonetheless current.
+        expect(fetchImplementation).toHaveBeenCalledTimes(1);
+        expect(field).toHaveValue("aveng");
+        vi.advanceTimersByTime(500);
+        vi.useRealTimers();
+
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(2),
+        );
+        expect(
+            JSON.parse(
+                (fetchImplementation.mock.calls.at(-1)?.[1] as RequestInit)
+                    .body as string,
+            ),
+        ).toMatchObject({
+            page: 1,
+            filterModel: {
+                query: {filterType: "freetext", filterValue: "aveng"},
+            },
+        });
+    });
+
+    /*
+     * "Show user agents" is a column toggle, not a filter, and hiding the
+     * column used to write `{kind: "freetext", text: ""}` into the filter
+     * values whether or not anything had been typed there -- a new query key
+     * for a byte-identical page, and so a full re-read plus its COUNT for a
+     * click that changed nothing the server can see.
+     */
+    it("should not re-read the page when the user-agent column is toggled unfiltered", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(
+                    JSON.stringify({content: [entry()], totalElements: 1}),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        expect(fetchImplementation).toHaveBeenCalledTimes(1);
+
+        const toggle = screen.getByLabelText("Show user agents");
+        fireEvent.click(toggle);
+        await screen.findByLabelText("User agent");
+        fireEvent.click(toggle);
+        await waitFor(() =>
+            expect(screen.queryByLabelText("User agent")).toBeNull(),
+        );
+        // Long enough for a filter commit to have fired had one been queued.
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    });
+
+    /*
+     * The refresh indicator used to be inserted above the table when a fetch
+     * started and removed when it ended, so every refresh moved the table down
+     * and back up by the indicator's own height -- under the reader's pointer.
+     * The row is now always in the layout, and only its contents come and go:
+     * the assertion that it is the *same* node in both states is what would
+     * fail again if the conditional came back.
+     */
+    it("should keep the refresh indicator's row in the layout when idle", async () => {
+        let releaseRefresh: ((response: Response) => void) | undefined;
+        const page = () =>
+            new Response(
+                JSON.stringify({content: [entry()], totalElements: 1}),
+                {headers: {"Content-Type": "application/json"}},
+            );
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementationOnce(() => Promise.resolve(page()))
+            .mockImplementationOnce(
+                () =>
+                    new Promise<Response>((resolve) => {
+                        releaseRefresh = resolve;
+                    }),
+            );
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+
+        const slot = screen.getByRole("status");
+        expect(slot).toBeEmptyDOMElement();
+
+        fireEvent.click(screen.getByTestId("search-history-refresh"));
+        await waitFor(() =>
+            expect(screen.getByRole("status")).toHaveTextContent(
+                "Refreshing search history…",
+            ),
+        );
+        expect(screen.getByRole("status")).toBe(slot);
+
+        releaseRefresh?.(page());
+        await waitFor(() => expect(slot).toBeEmptyDOMElement());
+        expect(screen.getByRole("status")).toBe(slot);
+    });
+
     it("should clear every dimension and return to page 1", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
@@ -209,12 +340,14 @@ describe("SearchHistoryPage", () => {
             screen.getAllByTestId("history-refine-category-option")[0],
         );
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        // Two reads: the first page, then the paging click carrying both
+        // pending filter edits with it.
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+            expect(fetchImplementation).toHaveBeenCalledTimes(2),
         );
         fireEvent.click(screen.getByTestId("history-refine-clear-all"));
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
             page: 1,
@@ -376,7 +509,11 @@ describe("SearchHistoryPage", () => {
                 "1 malformed indexer search entries were not displayed.",
             ),
         ).toBeVisible();
-        fireEvent.click(within(row).getByTestId("search-history-repeat"));
+        const repeat = within(row).getByTestId("search-history-repeat");
+        // The query leads its cell and its action follows, so the column reads
+        // as the queries rather than as a column of "Repeat".
+        expect(repeat.closest("td")).toHaveTextContent(/^queryRepeat$/);
+        fireEvent.click(repeat);
         expect(navigate).toHaveBeenCalledWith({
             to: "/",
             search: {
@@ -415,6 +552,55 @@ describe("SearchHistoryPage", () => {
         expect(
             await screen.findByText("Unable to load search history."),
         ).toBeVisible();
+    });
+
+    /*
+     * A filtered-empty page used to be a dead end: the notice named the
+     * filters but offered nothing to do about them, and on a narrow viewport
+     * the refine surface that holds them is collapsed. The unfiltered empty
+     * page has nothing to clear, and must not offer to.
+     */
+    it("should offer to clear the filters that emptied the page, and only then", async () => {
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                const body = JSON.parse((init?.body ?? "{}") as string) as {
+                    filterModel?: Record<string, unknown>;
+                };
+                const filtered = Object.keys(body.filterModel ?? {}).length > 0;
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            content: filtered ? [] : [entry()],
+                            totalElements: filtered ? 0 : 1,
+                        }),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        // Nothing is filtered, so there is nothing to clear.
+        expect(
+            screen.queryByRole("button", {name: "Clear filters"}),
+        ).toBeNull();
+
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "nothing-matches-this"},
+        });
+        await screen.findByText(
+            "No search history entries match the current filters.",
+        );
+
+        fireEvent.click(
+            await screen.findByRole("button", {name: "Clear filters"}),
+        );
+
+        expect(await screen.findByTestId("search-history-row")).toBeVisible();
+        expect(screen.getByLabelText("Query")).toHaveValue("");
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "No active filters",
+        );
     });
 
     /**

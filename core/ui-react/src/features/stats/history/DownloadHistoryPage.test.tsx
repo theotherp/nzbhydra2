@@ -114,12 +114,17 @@ describe("DownloadHistoryPage", () => {
         fireEvent.change(screen.getByLabelText("Title"), {
             target: {value: "example"},
         });
-        await screen.findByRole("button", {name: "Title"});
+        // Deliberately synchronous from here: awaiting between the typed
+        // edit and the sort click would let the filter debounce fire on its
+        // own on a slow machine, and this case is about the commit the sort
+        // click performs, not about the timer.
         fireEvent.click(screen.getByRole("button", {name: "Title"}));
-        await screen.findByRole("button", {name: "Next page"});
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        // Three reads, not four: the typed "Title" edit is committed by the
+        // sort click rather than racing it, so the sort and the filter reach
+        // the server in one request (`useHistoryFilterCriteria`).
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(lastBody()).toMatchObject({
             page: 2,
@@ -134,7 +139,7 @@ describe("DownloadHistoryPage", () => {
             screen.getAllByTestId("history-refine-indexer-option")[0],
         );
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+            expect(fetchImplementation).toHaveBeenCalledTimes(4),
         );
         expect(lastBody()).toMatchObject({
             page: 1,
@@ -149,7 +154,7 @@ describe("DownloadHistoryPage", () => {
 
         fireEvent.click(screen.getByTestId("download-history-refresh"));
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(6),
+            expect(fetchImplementation).toHaveBeenCalledTimes(5),
         );
     });
 
@@ -211,12 +216,14 @@ describe("DownloadHistoryPage", () => {
             screen.getAllByTestId("history-refine-result-option")[0],
         );
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        // Two reads: the first page, then the paging click carrying both
+        // pending filter edits with it.
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+            expect(fetchImplementation).toHaveBeenCalledTimes(2),
         );
         fireEvent.click(screen.getByTestId("history-refine-clear-all"));
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
             page: 1,

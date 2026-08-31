@@ -326,6 +326,41 @@ describe("StatsDashboardPage", () => {
         expect(getStatsMock).toHaveBeenCalledTimes(1);
     });
 
+    /*
+     * `<input type="date">` reports every intermediate value typed into it,
+     * and most of them are valid ranges: the year of "2020-01-01" walks
+     * through 0002, 0020 and 0202. Each one used to become the range, and so a
+     * new query key and a full stats recalculation the reader never asked for.
+     */
+    it("recalculates once for a typed custom date, not once per keystroke", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        vi.useFakeTimers();
+        const afterInput = within(
+            screen.getByTestId("stats-custom-after"),
+        ).getByLabelText("After");
+        for (const year of ["0002", "0020", "0202", "2020"]) {
+            fireEvent.change(afterInput, {target: {value: `${year}-01-01`}});
+        }
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(1000);
+        vi.useRealTimers();
+
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        expect((getStatsMock.mock.calls[1][1] as StatsQuery).after).toEqual(
+            new Date("2020-01-01T00:00:00"),
+        );
+        // And nothing else follows the one adoption.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        });
+        expect(getStatsMock).toHaveBeenCalledTimes(2);
+    });
+
     it("ignores a stale request's late completion once a newer request has superseded it", async () => {
         getStatsMock.mockResolvedValueOnce(
             resultOf({

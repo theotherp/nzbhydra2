@@ -1380,7 +1380,9 @@ visibility.
   an unmount cannot cancel. `SearchResults.test.tsx`'s existing FM-091 case already drives the real dialog and asserts
   the PUT; a throwaway `SearchPage`-level integration test (full page, real `DialogProvider`, real search, with and
   without `StrictMode`) also went green first try. What is left to distinguish is environmental — CSRF cookie, session
-  user, a stale served bundle — and needs a running instance with the network panel, not another unit test. Needs
+  user — and needs a running instance with the network panel, not another unit test. A stale served bundle is ruled
+  out: the observed jar was rebuilt the same evening (2026-08-31 20:09, from `f58de8dbb`), after every commit touching
+  this path. The observed rig ran `-Dmain.useCsrf=false` with auth `NONE` and the `systemtest` profile. Needs
   reproduction before it can be routed. Surfaced 2026-08-31.
 
 - **`RepeatSection` has no non-test consumers left.** Found 2026-08-30 while discharging the knip finding above. FM-105
@@ -3087,3 +3089,76 @@ their text and relative order are unchanged.
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run` on `App.test.tsx`, `SearchPage.test.tsx` and `StatsDashboardPage.test.tsx` 71/71 across 3 files. The new focus case observed red first — 2 indexer-status reads where 1 was expected.
 - **Commit:** `bbd4fd194`
 - **Note:** react-query's `refetchOnWindowFocus` defaults to `true` and nothing overrode it at the client level, so any query past `DEFAULT_QUERY_STALE_TIME_MS` refetched on focus — alt-tabbing back to a history page re-POSTed the page read *and* its COUNT and moved the table under the pointer, for an action the reader never took. Legacy never did this, and every page that can go stale already carries a Refresh control. The same commit closes the `App` → `router` → `SearchPage` → `App` import cycle noted in the recent-searches entry above: `DEFAULT_QUERY_STALE_TIME_MS` now lives in a leaf module with no imports of its own, so the lazy-read-inside-`useState` comment that made the cycle safe is gone rather than merely justified. The test drives the real application and dispatches the `visibilitychange` event on `window`, which is what `focusManager` actually subscribes to — a `document` dispatch does not reach it, and that first attempt passed against the unfixed tree.
+
+### 2026-08-31 — Debounce the history pages' filter round trips
+
+- **Why not a packet:** one new feature-local hook plus the state wiring of three existing pages, the same mechanical shape at each, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change.
+- **Paths:** new `core/ui-react/src/features/stats/history/useHistoryFilterCriteria.ts`; `SearchHistoryPage.tsx`, `DownloadHistoryPage.tsx`, `NotificationHistoryPage.tsx` and the search/download suites (all under `core/ui-react/src/features/stats/history/`)
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 44/44 across 5 files. The new burst-of-typing case observed red against the pre-fix pages — 6 reads for 5 keystrokes where 1 was expected.
+- **Commit:** `ce3c315e4`
+- **Note:** the refine surface's free-text, number-range and datetime fields commit per input event, and all three routes keyed their query on the raw values, so typing "avengers" was eight POSTs — each a page read *and* its COUNT — with seven answers discarded. The hook splits the values the controls edit (still per keystroke, so nothing about the fields changes) from the criteria the query is keyed on, 275ms behind. The page number travels *inside* those criteria rather than beside them: a filter edit also returns to page 1, and committing the two separately would have made every filter change two requests instead of one, which is the opposite of the point. Paging and sorting change the key themselves and so commit a pending edit rather than racing it — that coalescing is why two existing cases now expect three and two reads where they expected four and five, with the request bodies they assert unchanged.
+
+### 2026-08-31 — Key the history queries on the filter model, not the raw values
+
+- **Why not a packet:** a query-key expression on three pages plus one guard on an existing handler, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change, and the request bodies are unchanged.
+- **Paths:** `SearchHistoryPage.tsx`, `DownloadHistoryPage.tsx`, `NotificationHistoryPage.tsx`, `SearchHistoryPage.test.tsx` (all under `core/ui-react/src/features/stats/history/`)
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 45/45 across 5 files. The new user-agent-toggle case observed red first — 2 reads where 1 was expected.
+- **Commit:** `502fe7aab`
+- **Note:** `historyFilterModel` already collapses empty text, whitespace, an unparseable numeric bound and a `boolean` left on "all" to no filter, so it is the honest identity of a history read; the raw values gave each of those states a key of its own, and typing a character and deleting it re-read a byte-identical page with its COUNT. The search page's own instance of the same waste is fixed with it: unchecking "Show user agents", a column toggle rather than a filter, wrote `{kind: "freetext", text: ""}` into the values whether or not anything had been typed there, so the dimension is now cleared only when it actually held something.
+
+### 2026-08-31 — Reserve the fetch indicator's row instead of inserting it
+
+- **Why not a packet:** styling and markup polish inside existing features — an already-present wrapper made unconditional, the same shape at four sites — shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/stats/history/{SearchHistoryPage,DownloadHistoryPage,NotificationHistoryPage}.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/` 116/116 across 13 files. The new case observed red first — no `status` element existed at all while idle.
+- **Commit:** `d53e269cd`
+- **Note:** the spinner row was mounted when a fetch started and unmounted when it ended, so each refresh moved everything below it by the row's own height twice — on the history pages that is once per committed filter edit, under the reader's pointer. The row is now always in the layout with a reserved minimum height (`theme.spacing(3)`, the row's own line height) and only its contents come and go, which also makes it one durable live region rather than one created and destroyed per fetch. No screenshot strip: nothing about the fetching state's appearance changed, only whether the idle state reserves its space.
+
+### 2026-08-31 — Adopt a typed custom stats range once, not per keystroke
+
+- **Why not a packet:** one handler in one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/dashboard/` 46/46 across 5 files. The new case observed red first — 5 recalculations where 1 was expected.
+- **Commit:** `5b1b4f950`
+- **Note:** `<input type="date">` reports every intermediate value, and most of them parse — the year of "2020-01-01" walks through 0002, 0020 and 0202 — so each was adopted as the range, and a range is a query key, so typing a date started three full multi-second recalculations over windows spanning two millennia. Adoption now waits 400ms after the last edit (longer than the history pages' 275ms because what it defers is a recalculation rather than a page read). The inline validation message stays immediate: it costs nothing and it is what tells the reader the range is unfinished. Preset buttons still set the range directly, and switching to one cancels a pending adoption.
+
+### 2026-08-31 — Offer a way out of a filtered-empty history page
+
+- **Why not a packet:** one action on an existing alert, driven by state each page already held, the same addition at three sites, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/stats/history/{SearchHistoryPage,DownloadHistoryPage,NotificationHistoryPage}.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 47/47 across 5 files. The new case observed red first — no "Clear filters" control existed.
+- **Commit:** `fa1eb1f69`
+- **Note:** the empty notice named the filters as the cause but offered nothing to do about them, and on a narrow viewport the refine surface that holds them is collapsed (ADR-0046), so the cause was named and unreachable at once. The action reuses each page's existing clear, and is rendered only while `activeHistoryFilterCount` over the *committed* criteria is non-zero — an empty history has no filters to blame, and offering to clear none of them would be worse than offering nothing.
+
+### 2026-08-31 — Lead the search history Query cell with the query
+
+- **Why not a packet:** markup order inside one table cell; no capability, contract, `data-testid`, persisted-data, or API change, and the button keeps its test id and accessible name.
+- **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 47/47 across 5 files. The cell's reading order is now asserted, and that assertion fails against the previous markup.
+- **Commit:** `6a7d55312`
+- **Note:** the Repeat button preceded the query text, so the one column a reader scans read "Repeat avengers" in every row — the same leading word everywhere and the queries themselves starting at a different offset in each. Query first, Repeat right-aligned after it in a row, so the actions form their own edge. No screenshot strip: the change is a reordering of two nodes already in the cell, with no token, palette or density involved.
+
+### 2026-08-31 — Derive the horizontal bar chart's label margin from its labels
+
+- **Why not a packet:** one chart wrapper's layout arithmetic; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/` 118/118 across 13 files.
+- **Commit:** `1af552286`
+- **Note:** the chart reserved a fixed 140px for category labels regardless of what they said or how wide the viewport was, so on a 390px phone a chart whose whole purpose is comparing bar lengths had roughly 200px of plot, and a chart of five-letter indexer names reserved as much as one of full user-agent strings. The margin is now the longest label's own width, capped at the old 140px and at 84px below `sm`; a label that outgrows its margin is elided with an ellipsis on the axis only, so the tooltip still carries it in full. No screenshot strip and no new test: the change is dimensional and jsdom lays out neither the chart nor the media query it reads — the sizes above are derived from a per-character estimate, not measured in a browser, which is why the *ceiling* remains the previously shipped value rather than a new number.
+- **Open candidate carried out of this batch:** the five stats tables (`sections/{IndexersSection,ActivitySection,SourcesSection,DownloadAgeSection}.tsx` and `indexers/IndexerStatusesPage.tsx`) still use a bare `TableContainer` with no measured `minWidth` floor and no `C-TABLE-SCROLL-AFFORDANCE`, unlike every history table. Giving them the same treatment is not a quickfix: each scroller needs a new `data-testid`, `COMPONENTS.yaml` would gain five consumers on `C-TABLE-SCROLL-AFFORDANCE`, and each floor has to be *measured* at 390x844 rather than guessed, which is exactly what the existing floors' site comments justify.
+
+### 2026-08-31 — Memoize the indexer section's joined rows
+
+- **Why not a packet:** one derivation wrapped in `useMemo`, no behavior change; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/sections/IndexersSection.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/dashboard/` 46/46 across 5 files.
+- **Commit:** `600ad2050`
+- **Note:** memoized for its identity as much as for its cost — `rows` is the dependency of the sort memo directly below it, so a fresh array each render defeated that memo too and re-joined and re-sorted every indexer for renders that only opened the detail columns or moved a sort arrow. Keyed on `stats`, its only input. No test: nothing observable changes.
+
+### 2026-08-31 — Keep the history paging/sorting cases off the filter debounce
+
+- **Why not a packet:** two test files, no production code.
+- **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`, `core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx`
+- **Gates (batch-final set):** full vitest 1726/1726 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The two cases were also run three consecutive times in isolation.
+- **Commit:** `6020bb7aa`
+- **Note:** `ce3c315e4` gave a typed filter edit a 275ms commit delay, and both cases awaited an element *between* the typed edit and the sort click that commits it. On a loaded machine that await can outlast the debounce, so the timer commits first and the run sees four reads instead of three — seen once in a full-suite run and never in an isolated one, which is the signature. The three interactions are now issued synchronously so no timer can interleave; the counts and request bodies asserted are unchanged.
