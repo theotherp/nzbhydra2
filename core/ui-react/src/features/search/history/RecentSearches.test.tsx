@@ -48,10 +48,22 @@ function renderRecentSearches({
             </QueryClientProvider>
         </ThemeProvider>,
     );
-    return {onRefill, onRepeat, onDragStart};
+    return {onRefill, onRepeat, onDragStart, fetchImplementation};
 }
 
 describe("RecentSearches", () => {
+    // The menu has no presence on the page until it is opened, so fetching on
+    // mount spent a request per page load on a list nobody was looking at.
+    it("should not request recent searches until the menu is opened", async () => {
+        const {fetchImplementation} = renderRecentSearches();
+
+        expect(fetchImplementation).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+        expect(await screen.findByTestId("recent-search-entry")).toBeVisible();
+        expect(fetchImplementation).toHaveBeenCalledOnce();
+    });
+
     it("shows a single entry per search, with the refill button executing refill and the row executing repeat", async () => {
         const {onRefill, onRepeat} = renderRecentSearches();
 

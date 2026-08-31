@@ -13,7 +13,14 @@ import {
 } from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
-import {useContext, useEffect, useRef, useState} from "react";
+import {
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import type {
     SearchLiveTransport,
     SearchProgress,
@@ -33,6 +40,9 @@ import {
     shortcutSearch,
 } from "../../api/search";
 import {ApiTransport} from "../../api/transport";
+// Read lazily inside `useState`'s initializer, never at module scope: this
+// import closes a cycle (App -> router -> SearchPage -> App).
+import {DEFAULT_QUERY_STALE_TIME_MS} from "../../App";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
@@ -58,18 +68,48 @@ export function SearchPage({
     transport?: ApiTransport;
     liveTransport?: SearchLiveTransport;
 }) {
-    const transport = suppliedTransport ?? new ApiTransport(bootstrap.baseUrl);
+    // This page re-renders on every live progress tick, so everything built
+    // here is memoized on what it is actually derived from: otherwise each
+    // tick allocated a transport pair and re-ran the safe config's full zod
+    // parse, and handed the workspace fresh object identities that its own
+    // effects treat as changes.
+    const transport = useMemo(
+        () => suppliedTransport ?? new ApiTransport(bootstrap.baseUrl),
+        [suppliedTransport, bootstrap.baseUrl],
+    );
     const toasts = useContext(ToastContext);
-    const [recentSearchQueryClient] = useState(() => new QueryClient());
-    const liveTransport =
-        suppliedLiveTransport ??
-        createSearchLiveTransport(
-            new SockJsStompLiveTransport(bootstrap.baseUrl),
-        );
+    // Private to the recent-search menu (its `refreshKey` keys the cache, and
+    // the page's own tests render it without the app's provider), but it must
+    // not therefore miss the app's query defaults: an unconfigured client
+    // means `staleTime: 0`, so every reopen of the menu refetched. Window
+    // focus is off on top of the app default -- a browser tab returning to a
+    // search page is no reason to re-read a list the user is not looking at.
+    const [recentSearchQueryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        refetchOnWindowFocus: false,
+                        staleTime: DEFAULT_QUERY_STALE_TIME_MS,
+                    },
+                },
+            }),
+    );
+    const liveTransport = useMemo(
+        () =>
+            suppliedLiveTransport ??
+            createSearchLiveTransport(
+                new SockJsStompLiveTransport(bootstrap.baseUrl),
+            ),
+        [suppliedLiveTransport, bootstrap.baseUrl],
+    );
     const navigate = useNavigate({from: "/"});
     const search = useSearch({strict: false});
     const safeConfig = useSafeConfig(bootstrap);
-    const catalog = createCategoryCatalog(safeConfig);
+    const catalog = useMemo(
+        () => createCategoryCatalog(safeConfig),
+        [safeConfig],
+    );
     const [refillCriteria, setRefillCriteria] =
         useState<Record<string, string>>();
     const [draggedRecentSearch, setDraggedRecentSearch] =
@@ -188,13 +228,16 @@ export function SearchPage({
                 : {}),
         };
         rememberSubmittedRoute(submittedRoutes.current, route, values);
+        // Before awaiting the navigation, so the modal and the button's busy
+        // state answer the click in the same frame rather than after the
+        // router has settled.
+        setProgress(undefined);
+        setLiveUnavailable(undefined);
+        setState({loading: true});
         await navigate({to: "/", search: route});
         if (submission.cancelled) {
             return;
         }
-        setProgress(undefined);
-        setLiveUnavailable(undefined);
-        setState({loading: true});
         const request: SearchRequest = {
             query:
                 values.additionalQuery ||
@@ -227,8 +270,15 @@ export function SearchPage({
                     }
                   : {}),
         };
-        try {
-            const subscribed = await liveTransport.subscribeSearchState(
+        // Deliberately not awaited: the subscription only feeds the progress
+        // modal, while `subscribeSearchState` waits on a websocket handshake
+        // that a blocked or absent socket only ends at its own 1500ms ready
+        // timeout. Awaiting it here put that whole handshake in front of every
+        // search request. Attaching concurrently costs nothing if it resolves
+        // late or never -- the modal simply shows less -- and the same
+        // submission-identity checks still gate every write it can make.
+        void liveTransport
+            .subscribeSearchState(
                 request.searchRequestId,
                 (nextProgress) => {
                     if (activeSubmission.current === submission) {
@@ -240,21 +290,28 @@ export function SearchPage({
                         setLiveUnavailable(error.message);
                     }
                 },
+            )
+            .then(
+                (subscribed) => {
+                    // Covers both a cancelled submission and one whose search
+                    // already finished and released it, so a subscription that
+                    // arrives after either is closed rather than leaked.
+                    if (submission.cancelled) {
+                        subscribed.close();
+                        return;
+                    }
+                    submission.subscription = subscribed;
+                },
+                (error: unknown) => {
+                    if (activeSubmission.current === submission) {
+                        setLiveUnavailable(
+                            error instanceof Error
+                                ? error.message
+                                : "Live progress is unavailable",
+                        );
+                    }
+                },
             );
-            if (submission.cancelled) {
-                subscribed.close();
-                return;
-            }
-            submission.subscription = subscribed;
-        } catch (error) {
-            if (activeSubmission.current === submission) {
-                setLiveUnavailable(
-                    error instanceof Error
-                        ? error.message
-                        : "Live progress is unavailable",
-                );
-            }
-        }
         try {
             const data = await executeSearch(transport, request);
             if (activeSubmission.current === submission) {
@@ -397,6 +454,16 @@ export function SearchPage({
             setSavingSearch(false);
         }
     };
+    // Stable across renders on purpose: the workspace's 300ms autocomplete
+    // debounce lists this callback among its effect dependencies, so a fresh
+    // closure on every parent render -- and this page re-renders on every
+    // live progress tick -- restarted the timer mid-word and could keep the
+    // request from ever being issued.
+    const autocomplete = useCallback(
+        (type: "MOVIE" | "TV", input: string) =>
+            getAutocomplete(transport, type, input),
+        [transport],
+    );
     const recentSearchTool = (
         <QueryClientProvider client={recentSearchQueryClient}>
             <RecentSearches
@@ -441,9 +508,8 @@ export function SearchPage({
                 catalog={catalog}
                 initialValues={initialValues}
                 onSubmit={submit}
-                autocomplete={(type, input) =>
-                    getAutocomplete(transport, type, input)
-                }
+                busy={state.loading}
+                autocomplete={autocomplete}
                 showIndexerSelection={bootstrap.showIndexerSelection === true}
                 indexerSelectionAsCheckboxes={isCheckboxIndexerSelection(
                     safeConfig,
@@ -472,12 +538,9 @@ export function SearchPage({
                     Unable to check Emby availability.
                 </Alert>
             )}
-            {state.loading && (
-                <Stack alignItems="center" role="status">
-                    <CircularProgress />
-                    <Typography>Loading…</Typography>
-                </Stack>
-            )}
+            {/* No inline spinner here: the blocking progress modal below
+                opens on the same `state.loading` and already says the search
+                is running, so a second one only pushed the page around. */}
             {state.error && (
                 <Alert severity="error">Unable to execute search.</Alert>
             )}

@@ -1,14 +1,17 @@
 import {
+    act,
     cleanup,
     fireEvent,
     render,
     screen,
+    waitFor,
     within,
 } from "@testing-library/react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import type {SearchResult} from "../../../api/search";
+import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {RefineSidebar} from "./RefineSidebar";
 import type {QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, filterResults, quickFilterKey} from "./resultTable";
@@ -62,6 +65,7 @@ function Harness({
     collapsed = false,
     loadedResults = results,
     onClearAll = vi.fn(),
+    onFiltersCommit,
     onToggleCollapsed = vi.fn(),
     quickFilters = [],
     // FM-055: in the app this is `SearchResults.tsx`'s measured
@@ -74,6 +78,9 @@ function Harness({
     collapsed?: boolean;
     loadedResults?: SearchResult[];
     onClearAll?: () => void;
+    /** Called once per committed `ResultFilters` value, so a test can count
+        how many times a control actually drove the shared filter state. */
+    onFiltersCommit?: (filters: ResultFilters) => void;
     onToggleCollapsed?: () => void;
     quickFilters?: QuickFilter[];
     toolbarHeight?: number;
@@ -93,6 +100,9 @@ function Harness({
     // -- the sidebar used to hold itself.
     const [categoryOpen, setCategoryOpen] = useState(true);
     const [indexerOpen, setIndexerOpen] = useState(true);
+    useEffect(() => {
+        onFiltersCommit?.(filters);
+    }, [filters, onFiltersCommit]);
     return (
         <>
             <RefineSidebar
@@ -164,6 +174,7 @@ describe("RefineSidebar", () => {
     afterEach(() => {
         cleanup();
         vi.unstubAllGlobals();
+        vi.useRealTimers();
     });
 
     it("collapses to a narrow rail with only a labeled toggle", () => {
@@ -383,7 +394,7 @@ describe("RefineSidebar", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("calls onClearAll from the clear-all action and onToggleCollapsed from the sidebar toggle", () => {
+    it("calls onClearAll from the clear-all action and onToggleCollapsed from the sidebar toggle", async () => {
         const onClearAll = vi.fn();
         const onToggleCollapsed = vi.fn();
         render(
@@ -398,7 +409,9 @@ describe("RefineSidebar", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
-        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
+        await waitFor(() =>
+            expect(screen.getByTestId("refine-clear-all")).toBeEnabled(),
+        );
         fireEvent.click(screen.getByTestId("refine-clear-all"));
         expect(onClearAll).toHaveBeenCalledTimes(1);
         fireEvent.click(
@@ -407,14 +420,88 @@ describe("RefineSidebar", () => {
         expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
     });
 
-    it("updates the bound title filter as the user types", () => {
+    it("updates the bound title filter as the user types", async () => {
         render(<Harness />);
         const titleInput = screen.getByTestId("refine-filter-title");
         fireEvent.change(titleInput, {target: {value: "alpha"}});
         expect(titleInput).toHaveValue("alpha");
+        await waitFor(() => expect(filteredTitles()).toEqual(["Alpha"]));
     });
 
-    it("keeps every filter section reachable below sm through the drawer the sidebar toggle opens", () => {
+    // Maintenance fix: every committed filter value re-filters, re-sorts and
+    // re-groups every loaded result, rewrites the selection and persists the
+    // choices (`SearchResults.tsx`), so a burst of typing must commit once,
+    // not once per keystroke.
+    it("coalesces a burst of typing into a single committed title filter", () => {
+        vi.useFakeTimers();
+        const onFiltersCommit = vi.fn();
+        render(<Harness onFiltersCommit={onFiltersCommit} />);
+        const titleInput = screen.getByTestId("refine-filter-title");
+        onFiltersCommit.mockClear();
+
+        for (const value of ["a", "al", "alp", "alph", "alpha"]) {
+            fireEvent.change(titleInput, {target: {value}});
+        }
+        // The field follows the keystrokes immediately; the shared filter
+        // state has not moved at all yet.
+        expect(titleInput).toHaveValue("alpha");
+        expect(onFiltersCommit).not.toHaveBeenCalled();
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(onFiltersCommit).toHaveBeenCalledTimes(1);
+        expect(filteredTitles()).toEqual(["Alpha"]);
+    });
+
+    it("coalesces a burst of typing into a single committed numeric range", () => {
+        vi.useFakeTimers();
+        const onFiltersCommit = vi.fn();
+        render(<Harness onFiltersCommit={onFiltersCommit} />);
+        const minInput = screen.getByTestId("number-filter-min-refine-size");
+        onFiltersCommit.mockClear();
+
+        for (const value of ["1", "10", "100"]) {
+            fireEvent.change(minInput, {target: {value}});
+        }
+        expect(minInput).toHaveValue(100);
+        expect(onFiltersCommit).not.toHaveBeenCalled();
+
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(onFiltersCommit).toHaveBeenCalledTimes(1);
+    });
+
+    // The committed value stays the source of truth: a clear that did not come
+    // from the field itself has to reach the field immediately, and a commit
+    // still in flight must not resurrect the cleared value.
+    it("adopts a cleared range immediately and drops the pending commit", () => {
+        vi.useFakeTimers();
+        render(<Harness />);
+        const minInput = screen.getByTestId("number-filter-min-refine-size");
+        fireEvent.change(minInput, {target: {value: "100"}});
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeEnabled();
+
+        fireEvent.change(minInput, {target: {value: "250"}});
+        fireEvent.click(screen.getByTestId("number-filter-clear-refine-size"));
+        expect(minInput).toHaveValue(null);
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(minInput).toHaveValue(null);
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeDisabled();
+    });
+
+    it("keeps every filter section reachable below sm through the drawer the sidebar toggle opens", async () => {
         stubMobileViewport();
         render(<Harness quickFilters={oneQualityFilter} />);
 
@@ -446,10 +533,13 @@ describe("RefineSidebar", () => {
         fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
-        expect(filteredTitles()).toEqual(["Alpha"]);
+        await waitFor(() => expect(filteredTitles()).toEqual(["Alpha"]));
         fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
+        await waitFor(() =>
+            expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]),
+        );
         const indexerTwo = sidebar
             .getAllByTestId("refine-indexer-option")
             .find(

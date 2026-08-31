@@ -1365,4 +1365,31 @@ describe("SearchWorkspace", () => {
         );
         expect(screen.getByTestId("additional-query")).toHaveFocus();
     });
+
+    // The workspace used to read the form through a blanket `watch()`, which
+    // subscribed it to every field: typing in the query box -- a field
+    // nothing outside the input itself renders -- re-rendered the category
+    // select, all indexer checkboxes, and every advanced input, and re-ran
+    // this filter/map/sort per character.
+    it("should not recompute the eligible indexers while the query is typed", () => {
+        const eligibleIndexers = vi.fn((category: string) =>
+            selectionCatalog.eligibleIndexers(category),
+        );
+        renderWorkspace(
+            {},
+            {
+                catalog: {...selectionCatalog, eligibleIndexers},
+                showIndexerSelection: true,
+            },
+        );
+        eligibleIndexers.mockClear();
+
+        const queryBox = screen.getByTestId("search-query");
+        for (const value of ["a", "ab", "abc", "abcd"]) {
+            fireEvent.change(queryBox, {target: {value}});
+        }
+
+        expect(queryBox).toHaveValue("abcd");
+        expect(eligibleIndexers).not.toHaveBeenCalled();
+    });
 });

@@ -1360,6 +1360,29 @@ symbol — a rule the repository already states in packet prompts and does not e
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
+- **The group-episodes help dialog's eligibility is derived from the results, not from the searched category.**
+  `isGroupEpisodesHelpEligible` (`groupEpisodesHelp.ts`) tests the *returned results'* categories for a
+  case-insensitive `"tv"`, because `SearchResults` is handed only the results; legacy tested `$stateParams.category`.
+  Two consequences the owner saw live on 2026-08-31: a plain "All" search whose results merely include TV-categorized
+  items shows the dialog, and a search in a TV category whose configured *name* contains no `"tv"` ("Series", "Anime")
+  never shows it — the erratic "sometimes never shown" appearance. Threading the searched category from `SearchPage`
+  into `SearchResults` is small, but the current behavior is recorded as a deliberate deviation on `FEATURES.yaml`'s
+  `F-SEARCH-SORT-FILTER` gap line, so changing it edits that file. Routed to **`/fm-orchestrate`**. Surfaced
+  2026-08-31.
+
+- **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
+  reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
+  no `PUT /internalapi/genericstorage`, the `isGroupEpisodesHelpShown` flag stayed empty, and the dialog returned on
+  the next search. Traced through the whole real path — `SearchResults.tsx`'s effect, `showGroupEpisodesHelpIfNeeded`,
+  `DialogProvider` (which resolves, never rejects, on both OK and an acknowledge-variant dismissal),
+  `createServerPreferences`, `putPreference`, `ApiTransport.request` — and none of the three offered hypotheses holds:
+  the promise resolves, the guard ref survives the effect re-run, and the write is a detached async continuation that
+  an unmount cannot cancel. `SearchResults.test.tsx`'s existing FM-091 case already drives the real dialog and asserts
+  the PUT; a throwaway `SearchPage`-level integration test (full page, real `DialogProvider`, real search, with and
+  without `StrictMode`) also went green first try. What is left to distinguish is environmental — CSRF cookie, session
+  user, a stale served bundle — and needs a running instance with the network panel, not another unit test. Needs
+  reproduction before it can be routed. Surfaced 2026-08-31.
+
 - **`RepeatSection` has no non-test consumers left.** Found 2026-08-30 while discharging the knip finding above. FM-105
   (Auth users) and FM-106 (notification entries) replaced its last two consumers; every remaining mention of it in
   `src/` is prose explaining that some section is *not* `RepeatSection`. The component and its 235-line test still
@@ -2936,3 +2959,75 @@ their text and relative order are unchanged.
 - **Paths:** `core/ui-react/vite/{devBackend.ts,devBackend.test.ts}`, `core/src/main/resources/templates/react.html` (owner's links, folded in at their request), `misc/images/favicons/favicon.svg` (owner's source copy)
 - **Gates:** devBackend vitest 9/9 (parity test observed red before the fix); `typecheck`/`lint`/`format:check` exit 0; live Vite dev server verified emitting all six icon links including `favicon.svg`.
 - **Commit:** `1a1ad2f79`
+
+### 2026-08-31 — Larger field labels; separated label/value text in the dark theme
+
+- **Why not a packet:** owner-requested styling polish, tried live on the dev server and approved on screen by the owner (the Visual Gate's approval, given interactively rather than via a strip); no behavior, contract, or testid change. Two same-session tweaks in one commit, both enumerated in its message.
+- **Paths:** `core/ui-react/src/app/{theme.ts,theme.test.ts}`
+- **Gates:** theme suite 122/122 (FM-090 notch pin generalized to legend = 0.75 x label); full vitest 1704/1704; typecheck/lint/format/build/knip/validate:migration/validate:focus-affordances exit 0; `notched-label-geometry.spec.ts` 2/2 in a real browser against an isolated :5176 instance packaged from the diff.
+- **Commit:** `b853699ed`
+- **Note:** dark's `text.secondary` (#7e868d) now sits a step under `surfaces.mutedText` (#8a8a8a) — an accepted inversion, documented in the theme block; revisit only if the muted/secondary hierarchy bothers the owner in practice.
+
+### 2026-08-31 — Stop holding the search request behind the live-progress handshake
+
+- **Why not a packet:** single-module behavior repair inside an existing feature, shipping its own regression test; no capability, contract, `data-testid`, or API/URL change.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
+- **Gates:** `SearchPage.test.tsx` 46/46 (the new "without waiting for the live subscription handshake" case observed red first — 0 search requests instead of 1); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `74069fb6d`
+- **Note:** `subscribeSearchState` is now attached concurrently rather than awaited, so a blocked websocket no longer costs every search the transport's 1500ms ready timeout before the HTTP request is issued. `setState({loading: true})` also moved ahead of `await navigate(...)`.
+
+### 2026-08-31 — Give the search submit button disabled and busy states
+
+- **Why not a packet:** UX repair inside an existing feature with its own regression tests; no new capability, contract, `data-testid`, or API/URL change.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx` (new optional `busy` prop), `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
+- **Gates:** `SearchPage.test.tsx` + `SearchWorkspace.test.tsx` 92/92 (both new assertions observed red first); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `7722cf751`
+- **Note:** submitting with no indexers selected was a silent no-op that a stale comment described as already disabled. Disabling also removes the form's implicit submission, so Enter matches the button. Two existing cases that re-clicked submit mid-search were adjusted rather than weakened — one now waits for the auto-submit to settle, the other submits the form directly, since overlapping submissions still arise from the page's non-button paths.
+
+### 2026-08-31 — Watch only the search fields the workspace renders
+
+- **Why not a packet:** render-path-only change inside one component, with an assertion pinning it; no contract, `data-testid`, or API change.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx`
+- **Gates:** `SearchWorkspace.test.tsx` + `SearchPage.test.tsx` 93/93 (the new eligible-indexers case observed red first); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `bc5198de7`
+- **Note:** the blanket `watch()` subscribed the whole workspace to every field, so each keystroke re-rendered the category select, all indexer checkboxes, and every advanced input, and re-ran `catalog.eligibleIndexers` (filter + map + sort). Replaced with two `useWatch` subscriptions over module-level name constants, plus a `useMemo` on `eligibleIndexers`.
+
+### 2026-08-31 — Memoize the search page's derived transports, catalog, and autocomplete callback
+
+- **Why not a packet:** render-path-only change inside one page, shipping a regression test; no contract, `data-testid`, or API change.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
+- **Gates:** `SearchPage.test.tsx` + `SearchWorkspace.test.tsx` 94/94 (the new debounce case observed red first — 0 autocomplete requests instead of 1); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `c1d946082`
+- **Note:** the page re-renders on every live progress tick and was rebuilding an `ApiTransport`, a `SockJsStompLiveTransport`, a full zod parse of the safe config (`createCategoryCatalog`), and the `autocomplete` closure each time. The closure was the behavioral one: it is a dependency of the workspace's 300ms debounce effect, so a page re-rendering faster than 300ms could defer the request indefinitely. `vi.useRealTimers()` added to the suite's `afterEach`.
+
+### 2026-08-31 — Remove the search page's second loading affordance
+
+- **Why not a packet:** rendering and UX polish inside an existing feature, shipping a regression test; no capability, contract, `data-testid`, or API change.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
+- **Gates:** `SearchPage.test.tsx` + `RecentSearches.test.tsx` + `SearchWorkspace.test.tsx` 104/104 (the new case observed red first — the trigger was not in the document at all); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `52064bdda`
+- **Rendering change, no screenshot strip:** the owner approved the direction in advance and waived the strip for this batch. A running search used to show an inline `CircularProgress` + "Loading…" *and* the blocking `search-status-modal` on the same `state.loading`; the inline one is gone. `RecentSearches` also used to unmount while loading, collapsing the workspace's action row — the form's last row — so the form shrank and regrew around every search; the trigger now stays mounted and goes `disabled` instead.
+
+### 2026-08-31 — Fetch recent searches only when their menu is open
+
+- **Why not a packet:** one component's query options, shipping a regression test; no contract, `data-testid`, or API change.
+- **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`, and both suites' tests
+- **Gates (batch-final set):** full vitest 1710/1710 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean.
+- **Commit:** `0617f05b1`
+- **Note:** the list was fetched on mount with the menu closed, from a private `QueryClient` built with no options — so TanStack's own defaults (`staleTime: 0`, `refetchOnWindowFocus: true`) rather than the app's, costing a request per page load, per tab refocus, and per reopen. The client stays private (its `refreshKey` keys the cache, and the page's tests render it without the app's provider) but now carries `DEFAULT_QUERY_STALE_TIME_MS` and window-focus refetching off; that constant is imported and read lazily inside `useState`'s initializer because the import closes an `App` → `router` → `SearchPage` → `App` cycle.
+
+### 2026-08-31 — Debounce the refine sidebar's typed filter commits
+
+- **Why not a packet:** render-path-only change inside one feature's filter controls, shipping regression tests; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/search/results/filterControls.tsx`, `core/ui-react/src/features/search/results/RefineSidebar.tsx`, and both `RefineSidebar.test.tsx` and `SearchResults.test.tsx`
+- **Gates:** `RefineSidebar.test.tsx` + `SearchResults.test.tsx` 104/104 (the two new "coalesces a burst of typing" cases observed red first — 5 and 3 commits for 5 and 3 keystrokes); `typecheck`, `lint`, `format:check` exit 0.
+- **Commit:** `baaaef2ac`
+- **Note:** "Title contains" and the Size/Age/Grabs range fields wrote into `SearchResults`'s `ResultFilters` on every keystroke, and each write re-ran `filterResults` over every loaded result, the full re-sort and re-group, the selected-rewrite effect, `hasActiveFilters` (a `defaultFilters` scan plus two `JSON.stringify`), a synchronous `localStorage` write, and a full table re-render. `useDebouncedFilterValue` holds the typed value locally and commits it 175ms after the last keystroke; an outside change ("Clear all", the per-range clear, restored filters) is adopted during render and cancels a commit still in flight. Written without refs-in-render and without `setState` in an effect, both of which this repo's `react-hooks` lint rules reject.
+
+### 2026-08-31 — Coalesce the results toolbar's re-measurement into one animation frame
+
+- **Why not a packet:** one effect inside one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`
+- **Gates (batch-final set):** full vitest 1714/1714 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The new coalescing case observed red first — 2 synchronous measurements for 2 observer deliveries.
+- **Commit:** `ea350d559`
+- **Note:** the sticky `results-toolbar`'s height is tracked by a `MutationObserver` over `{characterData, childList, subtree}`, but the toolbar's own text carries the "N of M loaded / N filtered / N selected" counters — so every checkbox click and every committed filter change ran a callback that calls `getBoundingClientRect()`, forcing a synchronous reflow. The mutation-driven measure now goes through one `requestAnimationFrame` per burst (`ConfigNav.tsx`'s scroll-handler shape), with a direct-measure fallback where `rAF` is unavailable and a frame cancel in the effect's cleanup. The initial measure, `document.fonts.ready` and the `ResizeObserver` still measure directly, so the reason the observer exists — the action row's `<Select>`s populating asynchronously — is unchanged.

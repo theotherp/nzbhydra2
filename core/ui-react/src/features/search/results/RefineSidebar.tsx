@@ -14,7 +14,7 @@ import type {
     RefineSurfaceTestIds,
 } from "../../../components/refine/RefineSurface";
 import {RefineSurface} from "../../../components/refine/RefineSurface";
-import {NumericFilter} from "./filterControls";
+import {NumericFilter, useDebouncedFilterValue} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, quickFilterKey} from "./resultTable";
 
@@ -174,6 +174,13 @@ export function RefineSidebar({
             canonicalFilters(defaultFilters(results, quickFilters)),
         [filters, results, quickFilters],
     );
+    // FM maintenance: the field is debounced (`useDebouncedFilterValue`) so a
+    // burst of typing commits once instead of running the whole filter / sort
+    // / group / persist pipeline per keystroke.
+    const [title, changeTitle] = useDebouncedFilterValue(
+        filters.title,
+        (next) => setFilters((current) => ({...current, title: next})),
+    );
     const toggleDownloadType = (type: string) => {
         setFilters((current) => ({
             ...current,
@@ -214,12 +221,7 @@ export function RefineSidebar({
                     local background/border override. */}
                 <TextField
                     fullWidth
-                    onChange={(event) =>
-                        setFilters((current) => ({
-                            ...current,
-                            title: event.target.value,
-                        }))
-                    }
+                    onChange={(event) => changeTitle(event.target.value)}
                     placeholder="e.g. 1080p, name…"
                     size="small"
                     slotProps={{
@@ -229,7 +231,7 @@ export function RefineSidebar({
                         },
                     }}
                     sx={{"& input": {fontSize: denseControlFontSize}}}
-                    value={filters.title}
+                    value={title}
                 />
             </RefineSection>
             <RefineMultiselect

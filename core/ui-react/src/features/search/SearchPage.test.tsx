@@ -137,6 +137,7 @@ describe("SearchPage", () => {
     afterEach(() => {
         cleanup();
         vi.restoreAllMocks();
+        vi.useRealTimers();
     });
 
     beforeEach(() => {
@@ -314,8 +315,36 @@ describe("SearchPage", () => {
         expect(screen.getByRole("alert")).toHaveTextContent(
             "No indexers are configured or enabled.",
         );
+        expect(screen.getByTestId("search-submit")).toBeDisabled();
         fireEvent.click(screen.getByTestId("search-submit"));
         expect(searchRequestCalls(fetchImplementation)).toHaveLength(0);
+    });
+
+    it("should mark the submit button busy while a search is in flight", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementation(() => new Promise<Response>(() => undefined));
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        expect(screen.getByTestId("search-submit")).toBeEnabled();
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        expect(screen.getByTestId("search-submit")).toBeDisabled();
+
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Cancel search and return to search mask",
+            }),
+        );
+        await waitFor(() =>
+            expect(screen.getByTestId("search-submit")).toBeEnabled(),
+        );
     });
 
     it("should search with an indexer added to the live safe config after mount", async () => {
@@ -756,6 +785,12 @@ describe("SearchPage", () => {
             "fm051 first query alpha",
         );
 
+        // The remounted page auto-submits the route it was handed, which
+        // marks the submit button busy; the second search starts from the
+        // settled form the user would actually be looking at.
+        await waitFor(() =>
+            expect(screen.getByTestId("search-submit")).toBeEnabled(),
+        );
         fireEvent.change(screen.getByLabelText("Search"), {
             target: {value: "fm051 second query beta"},
         });
@@ -1561,8 +1596,14 @@ describe("SearchPage", () => {
         });
         expect(earlyResults).toBeEnabled();
         fireEvent.click(earlyResults);
+        // Named rather than counted: the recent-search list is no longer
+        // fetched on mount, so a total call count would pin an unrelated fact.
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(3),
+            expect(
+                fetchImplementation.mock.calls.filter(([url]) =>
+                    String(url).includes("shortcutSearch"),
+                ),
+            ).toHaveLength(1),
         );
         resolveSearch(
             new Response(JSON.stringify(responseEnvelope), {
@@ -1597,6 +1638,110 @@ describe("SearchPage", () => {
         await waitFor(() =>
             expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
         );
+    });
+
+    // The page hands the workspace an `autocomplete` callback that the
+    // workspace's 300ms debounce effect depends on. Rebuilt per render -- and
+    // this page re-renders on every live progress tick -- it restarted the
+    // debounce each time, so a request could be deferred indefinitely while
+    // the user was still mid-word.
+    it("should not restart the autocomplete debounce when the page re-renders", async () => {
+        vi.useFakeTimers({shouldAdvanceTime: true});
+        const autocompleteCalls: string[] = [];
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (String(url).includes("internalapi/autocomplete")) {
+                autocompleteCalls.push(String(url));
+            }
+            return Promise.resolve(
+                new Response(JSON.stringify([]), {
+                    headers: {"Content-Type": "application/json"},
+                }),
+            );
+        });
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+        // A fresh element each time: re-rendering the identical element would
+        // let React bail out before the page's body runs at all.
+        const page = () => (
+            <SearchPage
+                bootstrap={mediaBootstrap}
+                transport={transport}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />
+        );
+        const rendered = render(page());
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "autocompleted title"},
+        });
+        // Well past the 300ms debounce in total, but never 300ms without a
+        // re-render in between.
+        for (let tick = 0; tick < 10; tick++) {
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(60);
+            });
+            rendered.rerender(page());
+        }
+
+        expect(autocompleteCalls).toHaveLength(1);
+    });
+
+    it("should keep the recent-searches trigger in place and disabled while a search runs, with no second spinner", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            String(url).includes("forsearching")
+                ? Promise.resolve(
+                      new Response(JSON.stringify([]), {
+                          headers: {"Content-Type": "application/json"},
+                      }),
+                  )
+                : new Promise<Response>(() => undefined),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        const trigger = await screen.findByTestId("recent-searches-trigger");
+        expect(trigger).toBeEnabled();
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+
+        // Still mounted, so the workspace's action row keeps its height and
+        // the form does not shrink and regrow around every search.
+        expect(screen.getByTestId("recent-searches-trigger")).toBeDisabled();
+        // The blocking progress modal is the only loading affordance.
+        expect(screen.queryByText("Loading…")).not.toBeInTheDocument();
+    });
+
+    it("should issue the search without waiting for the live subscription handshake", async () => {
+        const liveTransport: SearchLiveTransport = {
+            // A handshake that never completes -- what a blocked websocket
+            // looks like until the transport's own ready timeout fires. The
+            // subscription only feeds the progress modal, so the search must
+            // not be held behind it.
+            subscribeSearchState: vi.fn(
+                () => new Promise<LiveSubscription>(() => undefined),
+            ),
+        };
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementation(() => new Promise<Response>(() => undefined));
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={liveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(liveTransport.subscribeSearchState).toHaveBeenCalledOnce();
     });
 
     it("should report parser failures without preventing the search", async () => {
@@ -1799,7 +1944,11 @@ describe("SearchPage", () => {
 
         fireEvent.click(screen.getByTestId("search-submit"));
         await waitFor(() => expect(subscriptions).toHaveLength(1));
-        fireEvent.click(screen.getByTestId("search-submit"));
+        // Submitted through the form rather than the button: the button is
+        // busy while the first search is in flight, but the page's other
+        // submission paths (a history repeat, an auto-submit from a new
+        // route) can still overlap two submissions, which is what this pins.
+        fireEvent.submit(screen.getByTestId("search-workspace"));
         await waitFor(() => expect(subscriptions).toHaveLength(2));
         subscriptions[0]({close: firstClose});
         subscriptions[1]({close: secondClose});

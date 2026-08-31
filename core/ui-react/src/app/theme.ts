@@ -882,9 +882,16 @@ const darkDyschromatopsiaColors: ThemeColors = {
  *
  *   - `text.primary` `#9c9c9c` -- legacy's own muted grey -- 7.65:1 / 6.34:1 /
  *     6.07:1;
- *   - `text.secondary` `#8b9299` -- legacy's `@gray-light: rgb(122, 130, 136)`
- *     lifted for the black ground -- 6.67:1 / 5.53:1 / 5.29:1. The legacy value
- *     itself measured 4.27:1 on `surfaces.control`, under WCAG 1.4.3;
+ *   - `text.secondary` `#7e868d` -- legacy's `@gray-light: rgb(122, 130, 136)`
+ *     lifted for the black ground -- 5.68:1 / 4.71:1 / 4.51:1. The legacy value
+ *     itself measured 4.27:1 on `surfaces.control`, under WCAG 1.4.3. First
+ *     authored as `#8b9299` (6.67 / 5.53 / 5.29:1), which sat only 1.15:1
+ *     from `text.primary` -- field labels and values read as one colour
+ *     (owner report 2026-08-31); this value keeps the hue and separates the
+ *     roles at 1.35:1 while staying at 1.4.3 on all three grounds. It now
+ *     sits a step *under* `surfaces.mutedText` `#8a8a8a`, an accepted
+ *     inversion: both stay mid-grey annotations, and pushing muted below it
+ *     would break muted's own 4.5:1 floor on `surfaces.control`;
  *   - `surfaces.mutedText` `#8a8a8a` -- 6.08:1 / 5.04:1 / 4.83:1;
  *   - `primary.main` `#9aa6ac`, legacy's `@brand-primary: @gray-light` in the
  *     same blue-grey family, lifted the same way -- 8.42:1 / 6.98:1 / 6.69:1,
@@ -901,7 +908,13 @@ const darkDyschromatopsiaColors: ThemeColors = {
 const darkColors: ThemeColors = {
     mode: "dark",
     background: {default: "#000000", paper: "#1a1a1a"},
-    text: {primary: "#9c9c9c", secondary: "#8b9299"},
+    // Owner report (2026-08-31): secondary was #8b9299, only 1.15:1 apart
+    // from primary -- field labels and field values read as the same
+    // colour. #7e868d is the same legacy blue-grey darkened until the two
+    // roles separate (1.35:1 vs primary) while staying at WCAG 1.4.3 on
+    // every ground it paints: 5.68:1 on the page, 4.71:1 on paper, 4.51:1
+    // on surfaces.control.
+    text: {primary: "#9c9c9c", secondary: "#7e868d"},
     primary: {
         main: "#9aa6ac",
         light: "#b4bfc4",
@@ -1579,7 +1592,15 @@ export function createHydraTheme(
                     // the control size here makes both copies of the label
                     // derive from the same number again, which is the whole
                     // reason a long label now fits its own notch.
-                    root: {fontSize: controlFontSize},
+                    // Owner request (2026-08-31): the label reads one step
+                    // larger than the control size -- 16px here renders at
+                    // 16 x 0.75 = 12px in the notch, against the previous
+                    // 14 x 0.75 = 10.5px. The invariant survives in a
+                    // generalized form: `MuiOutlinedInput` below states the
+                    // legend at exactly 0.75 x this size (12px), so the
+                    // notch is still cut for the same text the label
+                    // paints; `theme.test.ts` pins the pair.
+                    root: {fontSize: "16px"},
                 },
             },
             // The mock's checkbox rows (the indexer grid) label at 13px;
@@ -1707,6 +1728,14 @@ export function createHydraTheme(
                         backgroundColor: theme.palette.surfaces.recessed,
                         "& .MuiOutlinedInput-notchedOutline": {
                             borderColor: colors.inputOutline,
+                            // The notch-width copy of the label. Its stock
+                            // size is 0.75em of the 14px input (10.5px),
+                            // which matched the label only while the label
+                            // was also 14px; with the label at 16px the
+                            // legend states 0.75 x 16 = 12px explicitly so
+                            // the notch is cut for the text painted over it
+                            // (FM-090's invariant, generalized).
+                            "& legend": {fontSize: "12px"},
                         },
                         // ADR-0036's "hover, focus, disabled and error stay
                         // mutually distinguishable" clause, and the one state

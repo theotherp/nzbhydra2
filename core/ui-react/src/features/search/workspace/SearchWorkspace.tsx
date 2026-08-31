@@ -19,8 +19,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import type {ReactNode} from "react";
-import {Controller, useForm} from "react-hook-form";
-import {useEffect, useId, useRef, useState} from "react";
+import {Controller, useForm, useWatch} from "react-hook-form";
+import {useEffect, useId, useMemo, useRef, useState} from "react";
 
 import type {MediaSuggestion} from "../../../api/media";
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
@@ -28,11 +28,7 @@ import {readItem, writeItem} from "../../../domain/storage/browserStorage";
 import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
 import {IndexerSelectionButton} from "./IndexerSelectionButton";
 import type {SearchFormValues} from "./searchFormModel";
-import {
-    hasIdentifier,
-    identifierFields,
-    mediaTypeForCategoryName,
-} from "./searchFormModel";
+import {identifierFields, mediaTypeForCategoryName} from "./searchFormModel";
 import {
     SeasonEpisodeInput,
     seasonEpisodeFieldWidth,
@@ -120,11 +116,25 @@ const chipsRowMinHeight = 32;
 const chipsRowTopGap = 10;
 const chipsRowReservedHeight = chipsRowMinHeight + chipsRowTopGap;
 
+// The constraint fields the chips row reads, named rather than taken from a
+// blanket `watch()`. Module-level so the array identity is stable across
+// renders and `useWatch` re-subscribes only when the form itself changes.
+const chipFields = [
+    "additionalQuery",
+    "episode",
+    "maxage",
+    "maxsize",
+    "minage",
+    "minsize",
+    "season",
+] as const;
+
 export function SearchWorkspace({
     catalog,
     initialValues,
     onSubmit,
     autocomplete = defaultAutocomplete,
+    busy = false,
     showIndexerSelection = false,
     indexerSelectionAsCheckboxes = false,
     onSearchDrop,
@@ -137,6 +147,7 @@ export function SearchWorkspace({
         type: "MOVIE" | "TV",
         input: string,
     ): Promise<MediaSuggestion[]>;
+    busy?: boolean;
     showIndexerSelection?: boolean;
     indexerSelectionAsCheckboxes?: boolean;
     onSearchDrop?(): void;
@@ -152,7 +163,15 @@ export function SearchWorkspace({
     } = useForm<SearchFormValues>({defaultValues: initialValues});
     const selectedCategory = watch("category");
     const title = watch("title");
-    const values = watch();
+    // Only the fields something below actually renders. The blanket `watch()`
+    // this replaces subscribed the whole workspace to every field, so a
+    // keystroke in any input re-rendered the category select, every indexer
+    // checkbox, and every advanced input, and re-ran
+    // `catalog.eligibleIndexers` -- a filter, map, and sort over the whole
+    // indexer list -- per character.
+    const [additionalQuery, episode, maxage, maxsize, minage, minsize, season] =
+        useWatch({control, name: chipFields});
+    const identifiers = useWatch({control, name: identifierFields});
     const [suggestions, setSuggestions] = useState<MediaSuggestion[]>([]);
     // "Nothing found" is deliberately not a state: mid-typing, an absent
     // dropdown already says it, and a status Alert flashing into the form on
@@ -186,7 +205,7 @@ export function SearchWorkspace({
     const listboxId = useId();
     const advancedPanelId = useId();
     const mediaType = mediaTypeForCategoryName(catalog, selectedCategory);
-    const selected = hasIdentifier(values);
+    const selected = identifiers.some((value) => value !== "");
     // The Advanced panel is a `Collapse`: while it is collapsed its content
     // is rendered but `visibility: hidden`, and focusing a hidden element is
     // a silent no-op. Every "open Advanced and focus X" path therefore only
@@ -325,7 +344,10 @@ export function SearchWorkspace({
             setValue("maxsize", selected?.maxSizePreset?.toString() ?? "");
         }
     };
-    const eligibleIndexers = catalog.eligibleIndexers(selectedCategory);
+    const eligibleIndexers = useMemo(
+        () => catalog.eligibleIndexers(selectedCategory),
+        [catalog, selectedCategory],
+    );
     const selectedIndexers = watch("indexers");
     const noIndexers = selectedIndexers.length === 0;
     const selectIndexers = (names: string[]) => setValue("indexers", names);
@@ -452,13 +474,13 @@ export function SearchWorkspace({
     // paraphrase, so the row and the chips it holds can never disagree.
     const hasChips =
         selected ||
-        (mediaType === "TV" && values.season !== "") ||
-        (mediaType === "TV" && values.episode !== "") ||
-        values.minage !== "" ||
-        values.maxage !== "" ||
-        values.minsize !== "" ||
-        values.maxsize !== "" ||
-        values.additionalQuery !== "" ||
+        (mediaType === "TV" && season !== "") ||
+        (mediaType === "TV" && episode !== "") ||
+        minage !== "" ||
+        maxage !== "" ||
+        minsize !== "" ||
+        maxsize !== "" ||
+        additionalQuery !== "" ||
         showIndexersChip;
     const chips = (
         <>
@@ -471,28 +493,28 @@ export function SearchWorkspace({
                     variant="constraint"
                 />
             )}
-            {mediaType === "TV" && values.season !== "" && (
+            {mediaType === "TV" && season !== "" && (
                 <Chip
                     data-testid="search-chip-season"
-                    label={`S ${values.season}`}
+                    label={`S ${season}`}
                     onClick={() => revealAdvanced("season")}
                     onDelete={() => setValue("season", "")}
                     variant="constraint"
                 />
             )}
-            {mediaType === "TV" && values.episode !== "" && (
+            {mediaType === "TV" && episode !== "" && (
                 <Chip
                     data-testid="search-chip-episode"
-                    label={`E ${values.episode}`}
+                    label={`E ${episode}`}
                     onClick={() => revealAdvanced("episode")}
                     onDelete={() => setValue("episode", "")}
                     variant="constraint"
                 />
             )}
-            {(values.minage !== "" || values.maxage !== "") && (
+            {(minage !== "" || maxage !== "") && (
                 <Chip
                     data-testid="search-chip-age"
-                    label={rangeLabel("Age", values.minage, values.maxage, "d")}
+                    label={rangeLabel("Age", minage, maxage, "d")}
                     onClick={() => revealAdvanced("minage")}
                     onDelete={() => {
                         setValue("minage", "");
@@ -501,15 +523,10 @@ export function SearchWorkspace({
                     variant="constraint"
                 />
             )}
-            {(values.minsize !== "" || values.maxsize !== "") && (
+            {(minsize !== "" || maxsize !== "") && (
                 <Chip
                     data-testid="search-chip-size"
-                    label={rangeLabel(
-                        "Size",
-                        values.minsize,
-                        values.maxsize,
-                        "MB",
-                    )}
+                    label={rangeLabel("Size", minsize, maxsize, "MB")}
                     onClick={() => revealAdvanced("minsize")}
                     onDelete={() => {
                         setValue("minsize", "");
@@ -518,10 +535,10 @@ export function SearchWorkspace({
                     variant="constraint"
                 />
             )}
-            {values.additionalQuery !== "" && (
+            {additionalQuery !== "" && (
                 <Chip
                     data-testid="search-chip-filter"
-                    label={`Filter: ${values.additionalQuery}`}
+                    label={`Filter: ${additionalQuery}`}
                     onClick={() => revealAdvanced("additionalQuery")}
                     onDelete={() => setValue("additionalQuery", "")}
                     variant="constraint"
@@ -644,6 +661,27 @@ export function SearchWorkspace({
                         {queryInput}
                         <Button
                             data-testid="search-submit"
+                            // Submitting with no indexers selected was a
+                            // silent no-op in `SearchPage.submit`; the button
+                            // now says so, with the reason carried by the
+                            // "You didn't select any indexers" Alert below
+                            // rather than a tooltip a disabled control could
+                            // not host. `disabled` also removes the form's
+                            // implicit submission, so Enter in the query field
+                            // is inert in exactly the same states.
+                            disabled={noIndexers}
+                            loading={busy}
+                            // MUI's stock indicator borrows the button's own
+                            // label via `aria-labelledby`, which would give
+                            // the page a second element named "Search"; this
+                            // one names the state it reports instead.
+                            loadingIndicator={
+                                <CircularProgress
+                                    aria-label="Searching"
+                                    color="inherit"
+                                    size={16}
+                                />
+                            }
                             sx={{flexShrink: 0, px: 3}}
                             type="submit"
                             variant="contained"

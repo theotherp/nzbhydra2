@@ -1,4 +1,5 @@
 import {
+    act,
     cleanup,
     fireEvent,
     render,
@@ -11,6 +12,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {SearchResults} from "./SearchResults";
 
 const response = {
@@ -44,6 +46,19 @@ function renderResults(ui: React.ReactNode) {
 // duration of a single test; `vi.stubGlobal("localStorage", ...)` installs
 // one and the existing `afterEach`'s `vi.unstubAllGlobals()` removes it
 // again automatically.
+// The refine sidebar's free-text and numeric filter fields keep the typed
+// value local and commit it into the shared `ResultFilters` state on a
+// debounce, so the whole filter / sort / group / persist pipeline runs once
+// per burst of typing instead of once per keystroke. A test that types into
+// one and then asserts on the table has to let that pending commit land.
+async function settleFilterCommits(): Promise<void> {
+    await act(async () => {
+        await new Promise((resolve) =>
+            setTimeout(resolve, FILTER_COMMIT_DELAY_MS + 5),
+        );
+    });
+}
+
 function stubWorkingLocalStorage(): void {
     const store = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -393,7 +408,7 @@ describe("SearchResults", () => {
         ).toBeVisible();
     });
 
-    it("should sort and filter rows with accessible controls", () => {
+    it("should sort and filter rows with accessible controls", async () => {
         renderResults(
             <SearchResults
                 data={{
@@ -440,12 +455,14 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "!web"},
         });
+        await settleFilterCommits();
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "/[/"},
         });
+        await settleFilterCommits();
         expect(
             screen.queryByTestId("search-result-row"),
         ).not.toBeInTheDocument();
@@ -453,12 +470,14 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
+        await settleFilterCommits();
         expect(
             screen.getByTestId("number-filter-clear-refine-size"),
         ).toBeDisabled();
         fireEvent.change(screen.getByTestId("number-filter-min-refine-size"), {
             target: {value: "4"},
         });
+        await settleFilterCommits();
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Zulu WEB",
         );
@@ -1128,7 +1147,7 @@ describe("SearchResults", () => {
         expect(summary).not.toHaveTextContent("available");
     });
 
-    it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", () => {
+    it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", async () => {
         const initial = {
             ...response,
             numberOfAvailableResults: 3,
@@ -1163,6 +1182,7 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "Alpha"},
         });
+        await settleFilterCommits();
         fireEvent.click(
             screen.getByRole("button", {name: "Expand duplicates"}),
         );
@@ -2404,7 +2424,7 @@ describe("SearchResults", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("should drive every filter dimension from the refine-sidebar as the single filter surface", () => {
+    it("should drive every filter dimension from the refine-sidebar as the single filter surface", async () => {
         renderResults(
             <SearchResults
                 data={{
@@ -2437,12 +2457,14 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
+        await settleFilterCommits();
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
+        await settleFilterCommits();
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
         // Indexer.
@@ -2482,6 +2504,7 @@ describe("SearchResults", () => {
             fireEvent.change(screen.getByTestId(fieldTestId), {
                 target: {value},
             });
+            await settleFilterCommits();
             expect(screen.getByTestId("search-result-row")).toHaveTextContent(
                 "Alpha BluRay",
             );
@@ -2501,7 +2524,7 @@ describe("SearchResults", () => {
         );
     });
 
-    it("should reset every result-side filter via refine-clear-all while leaving sorting, grouping, and selection untouched", () => {
+    it("should reset every result-side filter via refine-clear-all while leaving sorting, grouping, and selection untouched", async () => {
         renderResults(
             <SearchResults
                 data={{
@@ -2546,6 +2569,7 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
+        await settleFilterCommits();
         fireEvent.click(refineOption("refine-indexer-option", "One"));
         fireEvent.click(screen.getByRole("button", {name: "NZB"}));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
@@ -2574,7 +2598,7 @@ describe("SearchResults", () => {
         expect(displayOption("Group TV episodes")).not.toBeChecked();
     });
 
-    it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting and filters", () => {
+    it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting and filters", async () => {
         // See `stubWorkingLocalStorage`: this environment's `window.localStorage`
         // is otherwise unavailable, so a genuine unmount/remount persistence
         // round trip needs a real, working `Storage` installed first.
@@ -2612,6 +2636,7 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
+        await settleFilterCommits();
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha Result",
         );
@@ -3542,6 +3567,79 @@ describe("SearchResults", () => {
     // has one -- the ragged left edge the owner asked to remove. Every row
     // reserves the widest control set any *rendered* row carries, so the proof
     // is per result set, not per row.
+    // Maintenance fix: the sticky toolbar's own text carries the "N of M
+    // loaded / N filtered / N selected" counters, so its `MutationObserver`
+    // fires on every checkbox click -- and the callback reads layout, which
+    // forces a synchronous reflow. The re-measure still has to happen (the
+    // toolbar's `<Select>`s populate asynchronously); it just has to happen
+    // once per frame instead of once per mutation.
+    it("coalesces toolbar re-measurements into one animation frame per burst", async () => {
+        const frames: (FrameRequestCallback | undefined)[] = [];
+        vi.stubGlobal(
+            "requestAnimationFrame",
+            (callback: FrameRequestCallback) => frames.push(callback),
+        );
+        vi.stubGlobal("cancelAnimationFrame", (handle: number) => {
+            frames[handle - 1] = undefined;
+        });
+        const measured = vi.fn();
+        const realRect = Element.prototype.getBoundingClientRect;
+        vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+            function (this: Element) {
+                if (this.getAttribute("data-testid") === "results-toolbar") {
+                    measured();
+                }
+                return realRect.call(this);
+            },
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        measured.mockClear();
+
+        // Two separate selections, so the toolbar's counter text changes
+        // twice and the observer delivers twice.
+        await act(async () => {
+            fireEvent.click(
+                screen.getByRole("checkbox", {name: "Select Alpha Result"}),
+            );
+        });
+        await act(async () => {
+            fireEvent.click(
+                screen.getByRole("checkbox", {name: "Select Bravo Result"}),
+            );
+        });
+        // Nothing has read layout yet: both deliveries only queued a frame,
+        // and the second cancelled the first.
+        expect(measured).not.toHaveBeenCalled();
+
+        await act(async () => {
+            for (const frame of frames) {
+                frame?.(0);
+            }
+        });
+        expect(measured).toHaveBeenCalledTimes(1);
+    });
+
     describe("expand-control width reservation", () => {
         it("should reserve nothing when no rendered row can expand anything", () => {
             renderResults(<SearchResults data={mixedExpandData([])} />);

@@ -34,14 +34,18 @@ export function RecentSearches({
     onRepeat(search: RecentSearch): void;
     onDragStart(search: RecentSearch): void;
 }) {
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchor);
+    // Only while the menu is actually open: this list has no presence on the
+    // page until then, so fetching it on mount cost every page load a request
+    // for a closed menu. `refreshKey`, bumped after each executed search,
+    // still keys a stale list out of the cache.
     const recentSearches = useQuery({
         queryKey: ["recent-searches", refreshKey],
         queryFn: () => getRecentSearches(transport),
-        enabled,
+        enabled: enabled && open,
         retry: false,
     });
-    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-    const open = Boolean(anchor);
     // ADR-0012 (Option A1): the recent-search row's Refill `IconButton` is
     // reachable by keyboard via `ArrowRight`/`ArrowLeft` focus moves between
     // the row and the button, keyed by each entry's stable `key`. These refs
@@ -65,6 +69,11 @@ export function RecentSearches({
             aria-expanded={open}
             aria-haspopup="menu"
             data-testid="recent-searches-trigger"
+            // Disabled rather than unmounted while a search runs: the
+            // workspace's action row is the form's last row, so removing its
+            // only child collapsed the row and made the whole form shrink and
+            // regrow around every search.
+            disabled={!enabled}
             endIcon={<ExpandMoreIcon />}
             onClick={(event) => setAnchor(event.currentTarget)}
             variant="control"
@@ -73,9 +82,6 @@ export function RecentSearches({
         </Button>
     );
 
-    if (!enabled) {
-        return null;
-    }
     return (
         <>
             {trigger}

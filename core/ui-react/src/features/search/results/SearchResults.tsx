@@ -704,6 +704,23 @@ export function SearchResults({
                 setToolbarHeight(node.getBoundingClientRect().height);
             }
         };
+        // The toolbar's own text carries the "N of M loaded / N filtered / N
+        // selected" counters, so the `MutationObserver` below fires on every
+        // checkbox click and every filter commit -- and `measure` reads
+        // layout, which forces a synchronous reflow each time. Coalescing
+        // through one animation frame per burst keeps the re-measure (the
+        // `<Select>` case the observer exists for) without paying a reflow
+        // per counter update. Same shape as `ConfigNav.tsx`'s scroll
+        // handler.
+        let frame = 0;
+        const scheduleMeasure = () => {
+            if (typeof requestAnimationFrame === "undefined") {
+                measure();
+                return;
+            }
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(measure);
+        };
         measure();
         // The self-hosted IBM Plex Sans/Mono faces `theme.ts` declares can
         // still be loading at this point (this component's own first layout
@@ -728,16 +745,22 @@ export function SearchResults({
         // deterministic fix than guessing a settle delay.
         let mutationObserver: MutationObserver | undefined;
         if (typeof MutationObserver !== "undefined") {
-            mutationObserver = new MutationObserver(measure);
+            mutationObserver = new MutationObserver(scheduleMeasure);
             mutationObserver.observe(node, {
                 characterData: true,
                 childList: true,
                 subtree: true,
             });
         }
+        const cancelFrame = () => {
+            if (typeof cancelAnimationFrame !== "undefined") {
+                cancelAnimationFrame(frame);
+            }
+        };
         if (typeof ResizeObserver === "undefined") {
             return () => {
                 cancelled = true;
+                cancelFrame();
                 mutationObserver?.disconnect();
             };
         }
@@ -745,6 +768,7 @@ export function SearchResults({
         resizeObserver.observe(node);
         return () => {
             cancelled = true;
+            cancelFrame();
             mutationObserver?.disconnect();
             resizeObserver.disconnect();
         };

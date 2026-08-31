@@ -676,6 +676,10 @@ describe("createHydraTheme typography and density", () => {
             // `action.disabled`. Both ratios are measured below.
             "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: "rgba(255, 255, 255, 0.35)",
+                // The notch legend, stated at 0.75 x the 16px label so the
+                // notch is cut for the text painted over it (the FM-090
+                // invariant, generalized -- see the label pin below).
+                "& legend": {fontSize: "12px"},
             },
             "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
                 borderColor: "rgba(255, 255, 255, 0.1)",
@@ -739,32 +743,40 @@ describe("createHydraTheme typography and density", () => {
         });
         // FM-090's notch invariant, pinned as a pair: an outlined field's
         // label is rendered twice at two independently declared sizes -- the
-        // visible `InputLabel` (this entry) and the hidden `legend` MUI cuts
-        // the notch from at `0.75em` of the `InputBase` root (asserted
-        // above). When those two sizes disagree the notch is cut for text of
-        // a different width than the text painted over it, and the deficit
-        // grows with the label until the border crosses it. Asserting the
-        // *same* value in both places is what makes a future retune of one
-        // of them fail here rather than in a screenshot nobody takes during
-        // the font swap. The always-shrunk default is asserted with it: the
-        // label only sits in the notch at all because of it.
+        // visible `InputLabel` (this entry, painted at `fontSize x 0.75` by
+        // MUI's shrink transform) and the hidden `legend` the notch is cut
+        // from. When those two disagree the notch is cut for text of a
+        // different width than the text painted over it, and the deficit
+        // grows with the label until the border crosses it. The label was
+        // originally pinned equal to the 14px input (legend = 0.75em of the
+        // input); the owner's 2026-08-31 larger-label request decoupled
+        // them, so the invariant is now pinned in its general form: the
+        // explicit legend size must equal 0.75 x the label size. The
+        // always-shrunk default is asserted with it: the label only sits in
+        // the notch at all because of it.
         expect(theme.components?.MuiInputLabel).toEqual({
             defaultProps: {shrink: true},
-            styleOverrides: {root: {fontSize: "14px"}},
+            styleOverrides: {root: {fontSize: "16px"}},
         });
-        expect(
-            (
-                theme.components?.MuiInputLabel?.styleOverrides?.root as {
-                    fontSize: string;
-                }
-            ).fontSize,
-        ).toBe(
-            (
-                theme.components?.MuiInputBase?.styleOverrides?.root as {
-                    fontSize: string;
-                }
-            ).fontSize,
-        );
+        {
+            const labelSize = Number.parseFloat(
+                (
+                    theme.components?.MuiInputLabel?.styleOverrides?.root as {
+                        fontSize: string;
+                    }
+                ).fontSize,
+            );
+            const legendSize = Number.parseFloat(
+                (
+                    (outlinedRoot as (props: {theme: typeof theme}) => never)({
+                        theme,
+                    })["& .MuiOutlinedInput-notchedOutline"] as {
+                        "& legend": {fontSize: string};
+                    }
+                )["& legend"].fontSize,
+            );
+            expect(legendSize).toBe(labelSize * 0.75);
+        }
         // `MuiChip`'s root override became a theme-reading function for the
         // same reason `MuiButton`'s did: `Chip` is one of ADR-0013's authored
         // control families, so its `&.Mui-focusVisible` rule reads the shared
