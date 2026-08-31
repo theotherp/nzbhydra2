@@ -58,6 +58,50 @@ function backendAuthorization(): string | undefined {
         : `Basic ${btoa(credentials)}`;
 }
 
+/**
+ * The icon links injected into the dev shell. Must mirror the icon set
+ * `core/src/main/resources/templates/react.html` declares (dev uses absolute
+ * paths where the template is base-relative); `devBackend.test.ts` pins the
+ * parity against the template itself, so an icon added to the served shell
+ * cannot silently stay missing from the dev tab again.
+ */
+export const DEV_SHELL_ICON_LINKS = [
+    {
+        rel: "shortcut icon",
+        type: "image/x-icon",
+        href: "/static/img/favicon.ico",
+    },
+    {
+        rel: "icon",
+        type: "image/svg+xml",
+        sizes: "any",
+        href: "/static/img/favicon.svg",
+    },
+    {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/static/img/favicon32.png",
+    },
+    {
+        rel: "icon",
+        type: "image/png",
+        sizes: "48x48",
+        href: "/static/img/favicon48.png",
+    },
+    {
+        rel: "icon",
+        type: "image/png",
+        sizes: "96x96",
+        href: "/static/img/favicon96.png",
+    },
+    {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: "/static/img/favicon180.png",
+    },
+] as const;
+
 export function backendProxy(): Record<string, ProxyOptions> {
     const authorization = backendAuthorization();
     const options: ProxyOptions = {
@@ -184,15 +228,11 @@ export function devBackendPlugin(): Plugin {
                         // terminate the tag early.
                         children: `window.__NZBHYDRA_BOOTSTRAP__ = ${json.replaceAll("<", "\\u003C")};`,
                     },
-                    {
+                    ...DEV_SHELL_ICON_LINKS.map((attrs) => ({
                         tag: "link",
-                        injectTo: "head",
-                        attrs: {
-                            rel: "shortcut icon",
-                            type: "image/x-icon",
-                            href: "/static/img/favicon.ico",
-                        },
-                    },
+                        injectTo: "head" as const,
+                        attrs,
+                    })),
                 ];
             },
         },

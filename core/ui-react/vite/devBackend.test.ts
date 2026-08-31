@@ -1,6 +1,13 @@
+import {readFileSync} from "node:fs";
+import {join} from "node:path";
+
 import {describe, expect, it} from "vitest";
 
-import {backendProxy, extractBootstrapJson} from "./devBackend";
+import {
+    DEV_SHELL_ICON_LINKS,
+    backendProxy,
+    extractBootstrapJson,
+} from "./devBackend";
 
 function shell(script: string): string {
     return `<!DOCTYPE html><html><body><div id="root"></div><script>
@@ -77,5 +84,26 @@ describe("backendProxy", () => {
         // dev` an unproxied path falls through to the SPA fallback and
         // returns `index.html` instead of image bytes.
         expect(Object.keys(backendProxy())).toContain("/cache");
+    });
+});
+
+describe("DEV_SHELL_ICON_LINKS", () => {
+    it("mirrors the icon set the served shell declares", () => {
+        const template = readFileSync(
+            join(__dirname, "../../src/main/resources/templates/react.html"),
+            "utf8",
+        );
+        const templateHrefs = [
+            ...template.matchAll(
+                /<link[^>]*rel="(?:[^"]*icon[^"]*)"[^>]*href="([^"]+)"|<link[^>]*href="([^"]+)"[^>]*rel="(?:[^"]*icon[^"]*)"/g,
+            ),
+        ]
+            .map((match) => match[1] ?? match[2])
+            .filter((href) => !href.includes("${"));
+        expect(templateHrefs.length).toBeGreaterThan(0);
+        // Dev injects absolute paths where the template is base-relative.
+        expect(DEV_SHELL_ICON_LINKS.map((link) => link.href).sort()).toEqual(
+            templateHrefs.map((href) => `/${href}`).sort(),
+        );
     });
 });

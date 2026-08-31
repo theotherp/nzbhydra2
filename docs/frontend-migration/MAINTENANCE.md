@@ -2929,3 +2929,10 @@ their text and relative order are unchanged.
 - **Commit:** `daf8798b1`
 
 **Ledger discipline note (2026-08-31):** the ten entries above were appended in one batch after their fix commits rather than each in its own immediate second commit — a process deviation, recorded rather than hidden.
+
+### 2026-08-31 — Serve the full favicon set from the dev shell
+
+- **Why not a packet:** dev-tooling fix with a drift-guard test; the served shell's link set (owner-authored) and the dev injection are now pinned to each other. Owner-requested.
+- **Paths:** `core/ui-react/vite/{devBackend.ts,devBackend.test.ts}`, `core/src/main/resources/templates/react.html` (owner's links, folded in at their request), `misc/images/favicons/favicon.svg` (owner's source copy)
+- **Gates:** devBackend vitest 9/9 (parity test observed red before the fix); `typecheck`/`lint`/`format:check` exit 0; live Vite dev server verified emitting all six icon links including `favicon.svg`.
+- **Commit:** `1a1ad2f79`
