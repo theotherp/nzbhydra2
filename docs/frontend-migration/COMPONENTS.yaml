@@ -207,7 +207,9 @@ components:
     responsibility: >-
       Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations; an unset
       category selection resolves client-side to the downloader's configured defaultCategory (the fetched category
-      list is a convenience for picking, never the authority for what is sent, and the server resolves nothing)
+      list is a convenience for picking, never the authority for what is sent, and the server resolves nothing); the
+      downloader selection is reconciled against the live configured downloader list (ADR-0017), never seeded once
+      from mount-time config
     legacy:
       - core/ui-src/js/nzb-download-service.js
       - core/ui-src/js/downloader-categories-service.js
@@ -501,7 +503,9 @@ components:
       history-refine-<id>-toggle/-list/-option, collapsed on every mount with the open state in component-local state and no storage key, options in declared
       order and no counts). The results rebase was proven at rendered parity the FM-136/FM-110 way -- the docked expanded Category and Indexer sections'
       outerHTML byte-identical before and after. The optional groupLabel prop is what keeps the history sections' pre-existing role=group naming; the results
-      sidebar passes none and renders exactly as before."
+      sidebar passes none and renders exactly as before. FM-161 moved the rows' four state backgrounds behind theme.ts's refineRowBackgrounds(theme):
+      the resting pair is FM-153's unchanged (transparent / alpha(primary,0.12)), an unselected row's hover is the neutral per-theme surfaces.hoverWash and
+      a selected row's deepens to alpha(primary,0.34), every adjacent pair measured at or above 1.10:1 composited background contrast on all four themes."
   - id: C-THEME-PREFERENCE
     responsibility: Typed per-user theme preference -- read/write of a ThemePreference value over C-SERVER-PREFERENCES (forUser=true, one exported storage key),
       validating untrusted stored data on read (bare or JSON-string-encoded known values only; anything else reads as undefined), plus a C-BROWSER-STORAGE-guarded

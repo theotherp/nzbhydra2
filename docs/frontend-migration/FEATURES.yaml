@@ -367,8 +367,22 @@ features:
       # are an icon button (`DirectDownloadActions`' opt-in `iconOnly` form) on
       # the detail-links line rather than an "NZB"/"Torrent" text button; the
       # download-history row still renders the text form. Same testids, same
-      # anchor, same `href`/`download`/`onClick`; the type is told apart by
-      # tooltip and by the unchanged `Download NZB`/`Download TORRENT` labels.
+      # anchor, same `href`/`onClick`; the type is told apart by tooltip and by
+      # the unchanged `Download NZB`/`Download TORRENT` labels. (Corrected
+      # 2026-08-31 by FM-160: `download` did not in fact survive as a shared
+      # contract detail -- see below.)
+      # 2026-08-31 (FM-160, owner-reported): the anchor no longer carries
+      # `download`; it now carries `target="_blank"`/`rel="noopener"` instead,
+      # restoring legacy parity (`master:core/ui-src/html/directives/
+      # search-result.html:112` gettorrent, `:124` getnzb). The backend
+      # (`NzbHandlingWeb.getnzb/user/{guid}` ->
+      # `FileHandler.getFileByGuid(...).getAsResponseEntity()`) answers file
+      # content, a 302 redirect to the indexer, or an error; browsers drop the
+      # `download` attribute on a cross-origin redirect, so with it set the
+      # indexer redirect navigated the app in-tab instead of downloading,
+      # destroying the results view. `target="_blank"` sends redirects and
+      # errors to a disposable tab while content still downloads via the
+      # server's `Content-Disposition` header.
       - send-to-downloader
       - download-nzb
       - download-torrent

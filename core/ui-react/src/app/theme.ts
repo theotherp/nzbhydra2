@@ -285,6 +285,100 @@ export const selectAllRadius = "5px";
  */
 export const refineSectionGap = "22px";
 
+/**
+ * FM-161: the alpha at which a *selected* refine selection control paints
+ * `primary.main` while the pointer is over it -- the refine rows' selected
+ * hover and the `refineChip` pill's `aria-pressed="true"` hover.
+ *
+ * A single number rather than a per-theme token because it is an alpha, not a
+ * colour: it composites the theme's own `primary.main` over the theme's own
+ * ground, so each palette arrives at its own composited value from it. The
+ * resting alphas it sits above are the pinned ones -- 0.12 for a row
+ * (FM-153's quiet wall-of-teal treatment) and 0.16 for a pill -- and 0.34 is
+ * the value that clears FM-161's 1.10:1 composited-background floor for
+ * *both* of them on all four palettes at once, in the same step. It has to
+ * reach that far: the hovered-unselected state has to be tellable from the
+ * *selected resting* fill too, and on `dark` and `dark-dyschromatopsia` the
+ * whole span from the page ground to that resting fill is only 1.14:1 and
+ * 1.11:1 wide, so a neutral hover cannot fit *underneath* it and must sit
+ * above it -- which in turn pushes the selected hover above that again.
+ * `theme.test.ts` measures every pair.
+ *
+ * Module-private: its two consumers -- `refineRowBackgrounds` below and
+ * `MuiButton`'s `refineChip` variant -- both live in this file, and the value
+ * a feature would want is the composited colour, which they already return.
+ */
+const refineSelectedHoverAlpha = 0.34;
+
+/**
+ * FM-161: the four background colours a `RefineMultiselect` row renders in,
+ * for the one component that draws them.
+ *
+ * A theme-reading helper rather than four exported literals, on the
+ * `denseControlFontSize` precedent (a shared value a feature applies through
+ * `sx`) crossed with FM-054's ADR-0014 rule that these fills are
+ * `theme.alpha()` of a palette role rather than restated `oklch(... / N)`
+ * strings. It stays out of `MuiButton`'s variants deliberately: the rows have
+ * a single consumer, and their `active` flag already drives both the fill and
+ * the `aria-pressed` state the specs assert, so a variant would only split one
+ * decision across two files.
+ *
+ * The resting pair is FM-153's, unchanged: `transparent` unselected, and
+ * `primary.main` at 0.12 selected -- quieter than the pills' 0.16 because the
+ * results sidebar starts with every category and indexer selected and the
+ * pills' language turns that into a wall of teal. Only the two hover values
+ * are FM-161's, and they say two different things: an *unselected* row lifts
+ * neutrally (`surfaces.hoverWash`, no hue at all), a *selected* one deepens in
+ * the selection's own hue, so the state a click is about to produce is legible
+ * from the colour under the cursor rather than only from the row's memory of
+ * what it was.
+ *
+ * `surfaces` is read defensively for one reason: this component renders in
+ * several feature suites that mount it under MUI's *stock* theme rather than
+ * a `createHydraTheme` one, where no `surfaces` block exists at all. Those
+ * suites assert `aria-pressed` and text, never colour, so what they need is
+ * for the row to render; MUI's own `action.hover` is what they rendered
+ * before FM-161 and is what they keep. Nothing about the four real palettes
+ * routes through the fallback, and `theme.test.ts` measures each of them.
+ */
+export function refineRowBackgrounds(theme: Theme): {
+    selected: string;
+    selectedHover: string;
+    unselected: string;
+    unselectedHover: string;
+} {
+    return {
+        selected: theme.alpha(theme.palette.primary.main, 0.12),
+        selectedHover: theme.alpha(
+            theme.palette.primary.main,
+            refineSelectedHoverAlpha,
+        ),
+        unselected: "transparent",
+        unselectedHover:
+            theme.palette.surfaces?.hoverWash ?? theme.palette.action.hover,
+    };
+}
+
+/**
+ * FM-161: `surfaces.hoverWash` as a `background-image`, for the two control
+ * families that already own an opaque fill.
+ *
+ * A `RefineMultiselect` row is unpainted at rest, so its hover can simply be
+ * the wash and composite over the page. A pill and a constraint chip are not:
+ * both rest on `surfaces.bar`, and a translucent `background-color` would
+ * *replace* that fill and composite over whatever page happens to be behind
+ * -- which is a different colour per theme and per surface, and not the
+ * ground the eye is comparing against. Painting the wash as a one-stop
+ * gradient instead layers it above the control's own fill (CSS paints
+ * `background-image` over `background-color`), so the step is stated once and
+ * lands identically wherever the control is used. It is the same mechanism
+ * MUI's own dark-mode `--Paper-overlay` uses.
+ */
+function hoverWash(theme: Theme): string {
+    const wash = theme.palette.surfaces.hoverWash;
+    return `linear-gradient(${wash}, ${wash})`;
+}
+
 /*
  * ===========================================================================
  * The theme colour blocks (ADR-0049, FM-154).
@@ -348,6 +442,33 @@ type SurfaceTokens = {
     hairline: string;
     /** Fainter hairline for row/section separators. */
     hairlineFaint: string;
+    /**
+     * FM-161: the neutral wash a refine selection control paints while the
+     * pointer is over it *and it is not selected* -- the `RefineMultiselect`
+     * row's unselected hover (over `background.default`, or over
+     * `background.paper` in the compact drawer), and the overlay the
+     * `refineChip` pill and the `constraint` `Chip` lay over their own
+     * `surfaces.bar` ground.
+     *
+     * Translucent and hueless on purpose. It is the half of the hover
+     * vocabulary that means "the pointer is here", against the
+     * `primary.main`-at-`refineSelectedHoverAlpha` half that means "and this
+     * one is selected"; a hue here would make an unselected row's hover read
+     * as a selection it is not.
+     *
+     * A per-theme token rather than MUI's `action.hover`, which is what these
+     * controls used and is where the defect lived: at
+     * `rgba(255, 255, 255, 0.08)` it lands within 1.006-1.056:1 of the
+     * *selected resting* fill on the three dark palettes, so a click's
+     * deselect result was invisible under the cursor, and its light-mode
+     * `rgba(0, 0, 0, 0.04)` is 1.09:1 from the page it sits on. Each block
+     * states its own value, measured against every adjacent state in
+     * `theme.test.ts`, because the alpha that clears 1.10:1 on all of them
+     * depends on how far that block's own ground sits from its own
+     * `primary.main` -- one shared alpha cannot serve `#1f2426` and `#000000`
+     * at once.
+     */
+    hoverWash: string;
     /**
      * The muted-glyph color: section captions, counts, popover captions, and
      * disabled/neutral control text. FM-054: four independent feature-local
@@ -569,6 +690,16 @@ const greyColors: ThemeColors = {
         recessed: "#1c2224",
         hairline: "rgba(255, 255, 255, 0.1)",
         hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        // FM-161. On this page (`#1f2426`) a hovered unselected row has to
+        // clear both the page under it and the `primary.main`-at-0.12
+        // selected rest beside it, and the span between those two is only
+        // 1.21:1 -- too narrow to fit a state inside -- so the wash sits
+        // above the selected rest instead: 1.46:1 from the page, 1.21:1 from
+        // the selected rest, and 1.25:1 under the selected hover above it.
+        // Over the pills' and constraint chips' own `surfaces.bar`, 1.46:1.
+        // MUI's `action.hover` (`rgba(255, 255, 255, 0.08)`), which these
+        // controls used, reached 1.06:1 against that selected rest.
+        hoverWash: "rgba(255, 255, 255, 0.12)",
         // FM-156, ADR-0049: the mock's own `#6b7472` measured 3.26 / 2.95 /
         // 2.75:1 on this theme's three grounds -- under WCAG 1.4.3 for the
         // captions and counts it paints, and worst on `surfaces.control`,
@@ -692,6 +823,14 @@ const darkDyschromatopsiaColors: ThemeColors = {
         recessed: "#1c2224",
         hairline: "rgba(255, 255, 255, 0.1)",
         hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        // FM-161, and the tightest of the four: this variant's `#78909c`
+        // primary at 0.12 stands only 1.11:1 off its own black page, so the
+        // wash is authored a step under the grey block's alpha to leave the
+        // selected hover room above it -- 1.31:1 from the page, 1.18:1 from
+        // the selected rest, 1.21:1 under the selected hover, and 1.51:1
+        // over `surfaces.bar`, whose light tone this block keeps on a black
+        // page. `action.hover` reached 1.03:1 against the selected rest.
+        hoverWash: "rgba(255, 255, 255, 0.13)",
         // FM-156: the grey block's re-authored value, which this variant
         // shares as it shares the rest of that block's surfaces. The mock's
         // `#6b7472` measured 4.37 / 3.93 / 2.75:1 here; the binding ground is
@@ -793,6 +932,14 @@ const darkColors: ThemeColors = {
         recessed: "#0f1113",
         hairline: "rgba(255, 255, 255, 0.12)",
         hairlineFaint: "rgba(255, 255, 255, 0.07)",
+        // FM-161: the widest alpha of the four, because this theme's muted
+        // `#9aa6ac` primary at 0.12 is the faintest selected rest of any
+        // block (1.14:1 off its black page) and the wash still has to clear
+        // it -- 1.39:1 from the page, 1.23:1 from the selected rest, 1.28:1
+        // under the selected hover, 1.53:1 over `#111111`. `action.hover`
+        // reached 1.006:1 against the selected rest: the two states were one
+        // colour.
+        hoverWash: "rgba(255, 255, 255, 0.15)",
         mutedText: "#8a8a8a",
         barAccent: "#9aa6ac",
         // The same alpha as this block's `inputOutline`, so the theme states
@@ -892,6 +1039,13 @@ const brightColors: ThemeColors = {
         recessed: "#ffffff",
         hairline: "rgba(0, 0, 0, 0.18)",
         hairlineFaint: "rgba(0, 0, 0, 0.1)",
+        // FM-161, and the one block that darkens rather than lifts: on a
+        // light page a white wash has nowhere to go. Black at 0.16 -- four
+        // times MUI's light-mode `action.hover`, which moved this page by
+        // 1.09:1 and never cleared the floor at all -- reads 1.45:1 from the
+        // page, 1.20:1 from the selected rest, 1.21:1 under the selected
+        // hover, and 1.44:1 over `surfaces.bar`.
+        hoverWash: "rgba(0, 0, 0, 0.16)",
         mutedText: "#5f6b66",
         // The one theme whose app bar is `primary.main` rather than
         // `background.paper`, so its accent is the contrast text (legacy's own
@@ -1171,8 +1325,20 @@ export function createHydraTheme(
                             minHeight: 0,
                             minWidth: 0,
                             padding: "5px 10px",
+                            // FM-161: the hover moved from the border alone
+                            // (an alpha 0.16 edge, 1.06-1.19:1 off the
+                            // hairline it replaced, which the owner could not
+                            // see) onto the background, where the eye reads a
+                            // pill's state. It is laid *over* the pill's own
+                            // `surfaces.bar` rather than replacing it --
+                            // `background-image` paints above
+                            // `background-color` -- so the pill's hover is
+                            // measured against its own ground and is the same
+                            // step whatever page it sits on. The border shift
+                            // stays as the second, quieter half.
                             "&:hover": {
                                 backgroundColor: theme.palette.surfaces.bar,
+                                backgroundImage: hoverWash(theme),
                                 borderColor: theme.alpha(
                                     theme.palette.primary.main,
                                     0.16,
@@ -1188,11 +1354,43 @@ export function createHydraTheme(
                                     0.45,
                                 ),
                                 color: theme.palette.primary.light,
+                                // FM-161: this restated the pressed values
+                                // verbatim, so a selected pill answered a
+                                // pointer with nothing. It now deepens in the
+                                // selection's own hue, the same step the
+                                // refine rows' selected hover takes, while
+                                // the 0.45 border and `primary.light` label
+                                // that carry selected-vs-unselected stay put.
                                 "&:hover": {
                                     backgroundColor: theme.alpha(
                                         theme.palette.primary.main,
-                                        0.16,
+                                        refineSelectedHoverAlpha,
                                     ),
+                                    // Stated, not inherited. This block wins
+                                    // the `background-color` off the base
+                                    // `&:hover` above on specificity, but a
+                                    // `background-image` it never mentions
+                                    // would go on painting -- so without this
+                                    // line the browser renders the neutral
+                                    // wash *over* the deepened hue, which is
+                                    // neither of the two things the hover
+                                    // vocabulary says. The wash is the half
+                                    // that means "the pointer is here, and
+                                    // this one is not selected"; a selected
+                                    // pill answers in the selection's own
+                                    // hue alone, exactly as a selected refine
+                                    // row does (`refineRowBackgrounds`, which
+                                    // carries no wash on its selected hover).
+                                    // Clearing it also keeps the pressed
+                                    // *pair* on one ground: pressed rest and
+                                    // pressed hover both replace the pill's
+                                    // `surfaces.bar` with a `primary.main`
+                                    // alpha, so the step between them is the
+                                    // 0.16 -> `refineSelectedHoverAlpha` step
+                                    // and nothing else: 1.40 / 1.36 / 1.48 /
+                                    // 1.36:1 on grey, bright, dark and
+                                    // dark-dyschromatopsia.
+                                    backgroundImage: "none",
                                     borderColor: theme.alpha(
                                         theme.palette.primary.main,
                                         0.45,
@@ -1832,8 +2030,19 @@ export function createHydraTheme(
                             backgroundColor: theme.palette.surfaces.bar,
                             border: `1px solid ${theme.palette.surfaces.hairline}`,
                             color: theme.palette.text.secondary,
+                            // FM-161: the same border-only hover the refine
+                            // pill carried, with the same defect (1.06-1.19:1
+                            // of edge, nothing at all on the background), so
+                            // it takes the same correction in the same pass
+                            // -- one hover vocabulary across every refine
+                            // selection control. The chip's ground is
+                            // `surfaces.bar` too (the search workspace
+                            // `Paper` paints that token), so the wash it lays
+                            // over its own fill is exactly the step the eye
+                            // sees against the bar behind it.
                             "&:hover": {
                                 backgroundColor: theme.palette.surfaces.bar,
+                                backgroundImage: hoverWash(theme),
                                 borderColor: theme.alpha(
                                     theme.palette.primary.main,
                                     0.16,

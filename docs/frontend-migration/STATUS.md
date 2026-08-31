@@ -1286,6 +1286,40 @@ two prose ratios differ in the last digit from an independent recompute. Candida
 approval outstanding — including ADR-0052's deferred `info`-color call (frame 04) and the success-vs-primary green
 distinction (frame 05).
 
+FM-159 (Live Downloader Targets In Rendered Search Results, ADR-0017) made DownloadActions consume the live safe config
+(SearchResults passes `effectiveSafeConfig`) and reconciles the downloader selection by name on every render — 0→1 shows
+working send controls, a removed selection falls back to the first configured downloader, an explicit valid choice
+survives unrelated saves, and the category effect keys on primitives so unrelated saves don't refetch. Quick-filter preset
+reads stay deliberately static (commented; live presets proposed as a future packet needing a reconciliation decision).
+Passed 2026-08-31 with minor findings, not corrected (optional): the category fetch synthesizes a partial Downloader and
+has no stale-response guard, the fallback-refetch clause isn't pinned in-repo, and a re-added downloader resurrects an
+earlier explicit choice undocumented. Candidates for a future quickfix.
+
+FM-160 (Direct Download Anchors Open Off-App Like Legacy) restored legacy anchor semantics on the shared direct-download
+object — `target="_blank"` + `rel="noopener"`, no `download` attribute — so a redirect-mode or erroring `getnzb`/
+`gettorrent` response opens in a disposable tab instead of navigating the app away; both the results icon form and the
+history text form are pinned by component tests, the FM-150 registry note claiming `download` survived is corrected, and
+the two spec waits were adapted (context-level download event; popup+close where a route-mocked 500 can never fire one)
+with every url/filename/bytes assertion intact (reviewer-verified line by line). A mid-task designer refinement
+allowlisted results.spec.ts (spec defect, FM-153 precedent). Passed 2026-08-31 with minor findings, not corrected
+(optional): the results.spec.ts whole-file 30/30 survives only as a handoff exit code (later run overwrote the junit;
+reviewer's isolated rerun of the FM-160 test passed, the 17 unrelated failures were proven rig degradation), and the new
+popup gate could pin the popup's pathname for free. Candidates for a future quickfix.
+
+FM-161 (Distinct Hover States For Refine Selection Controls) gave every refine selection control a measured hover answer:
+row fills live behind the new `refineRowBackgrounds` theme export with a per-theme neutral `surfaces.hoverWash` (unselected
+hover) and a deepened `alpha(primary, 0.34)` (selected hover, above the pinned quiet resting fill because the
+ground→selected span is too narrow for an intermediate step), and the refineChip/constraint-chip hovers gained real
+background changes; all adjacent state pairs clear 1.10:1 on all four themes and both grounds, pinned red-first (baseline
+pairs measured 1.000–1.09). First review failed on a CSS-cascade defect (the pressed pill's hover inherited the base
+hover's wash gradient, so the test pinned an unrendered color) and a mislabeled bright strip frame — fixed by an explicit
+`backgroundImage: "none"` with cascade-aware measurement and a state-asserting recapture; the re-reviewer verified the
+rendered pixels against independent math. Passed 2026-08-31 (one fix cycle) with minor findings, not corrected (optional):
+the `surfaces?.hoverWash ?? action.hover` guard is unreachable-by-types with a defect-shaped fallback (five out-of-scope
+suites still mount rows under MUI's stock theme — follow-up candidate to wrap them in `createHydraTheme`), and the
+wash-leak regression is pinned only by a string equality. Candidates for a future quickfix. Owner strip approval
+outstanding.
+
 ## Active
 
 None.
@@ -1312,6 +1346,11 @@ None.
 None.
 
 ## Upcoming
+
+- FM-159 (Live Downloader Targets In Rendered Search Results) is next: the 2026-08-31 owner-reported bug — a saved
+  downloader config change never reaches the results bulk bar without a reload, because `SearchResults` passes the
+  bootstrap snapshot to `DownloadActions` and the selection is seeded once at mount (ADR-0017). FM-160 (direct
+  download anchors' legacy `target="_blank"`/no-`download` parity) follows only because both edit `DownloadActions.tsx`.
 
 - The 2026-08-31 follow-up work is complete: FM-156, FM-157, and FM-158 are done (entries above).
 

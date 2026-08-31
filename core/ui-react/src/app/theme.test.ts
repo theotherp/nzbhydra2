@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 
+import {chipClasses} from "@mui/material/Chip";
+
 import {readFileSync} from "node:fs";
 
 import {
@@ -7,6 +9,7 @@ import {
     createHydraTheme,
     monoFontFamily,
     pillRadius,
+    refineRowBackgrounds,
     resolveThemeName,
     selectAllRadius,
     themePreferenceOptions,
@@ -160,13 +163,39 @@ function contrastRatio(
  * composites to itself, so a token that regressed from `rgba()` to a hex still
  * arrives at the ratio assertions as a measurement rather than as `NaN`.
  */
+/**
+ * FM-161: `theme.alpha()`'s own output notation. Under this theme's
+ * `colorSpace: "oklch"` MUI does not return `rgba()` -- it returns CSS
+ * relative colour syntax, `oklch(from <token> l c h / <alpha>)`, keeping the
+ * token whole and stating only the alpha. So the values the refine controls
+ * actually render are readable as a base colour plus an alpha, and
+ * `compositeOver` below reads them rather than failing to parse the one
+ * notation this theme's translucent fills are written in.
+ */
+function parseRelativeAlpha(
+    value: string,
+): {alpha: number; base: string} | undefined {
+    const match = /^oklch\(from (.+) l c h \/ ([0-9.]+)\)$/.exec(value);
+    return match === null
+        ? undefined
+        : {alpha: Number(match[2]), base: match[1]};
+}
+
 function compositeOver(
     value: string,
     ground: [number, number, number],
 ): [number, number, number] {
-    const {alpha, rgb} = value.startsWith("rgb")
-        ? parseRgba(value)
-        : {alpha: 1, rgb: resolveColor(value)};
+    const relative = parseRelativeAlpha(value);
+    const {alpha, rgb} = relative
+        ? {alpha: relative.alpha, rgb: resolveColor(relative.base)}
+        : // FM-161: an unpainted state is its ground, so a row that renders
+          // no fill of its own arrives at the ratio assertions as that
+          // ground rather than as a parse failure.
+          value === "transparent"
+          ? {alpha: 0, rgb: ground}
+          : value.startsWith("rgb")
+            ? parseRgba(value)
+            : {alpha: 1, rgb: resolveColor(value)};
     return rgb.map((channel, index) => {
         const behind = ground[index];
         return alpha * channel + (1 - alpha) * behind;
@@ -236,6 +265,12 @@ describe("resolveThemeName", () => {
             recessed: "#1c2224",
             hairline: "rgba(255, 255, 255, 0.1)",
             hairlineFaint: "rgba(255, 255, 255, 0.06)",
+            // FM-161's addition: the neutral hover wash every refine
+            // selection control lifts by. Per-theme because the alpha that
+            // holds it apart from this block's own selected fill is a
+            // measurement against this block's own ground -- see the FM-161
+            // block at the end of this file, which measures all four.
+            hoverWash: "rgba(255, 255, 255, 0.12)",
             // FM-156 raised the mock's `#6b7472` (2.75-3.26:1 on this theme's
             // three grounds) by lightness alone, keeping the mock's neutral
             // green-grey hue and chroma.
@@ -344,6 +379,11 @@ describe("resolveThemeName", () => {
             // `...grey` so that a *drift* in this token still fails, and so
             // that the other seven staying shared remains asserted.
             selectAllOutline: "rgba(255, 255, 255, 0.42)",
+            // The third, since FM-161, and for the same reason: a hover step
+            // is a measurement against a ground, and against this variant's
+            // fainter `#78909c` selected fill on that same black page the
+            // grey block's 0.12 leaves the selected hover no room above it.
+            hoverWash: "rgba(255, 255, 255, 0.13)",
         });
     });
 });
@@ -782,8 +822,14 @@ describe("createHydraTheme typography and density", () => {
                 backgroundColor: "#232a2c",
                 border: "1px solid rgba(255, 255, 255, 0.1)",
                 color: "#9aa2a1",
+                // FM-161: the wash rides above the chip's own `surfaces.bar`
+                // fill rather than replacing it, so the hover step is the
+                // same one wherever the chip is rendered. The border shift
+                // this variant already had stays as its quieter half.
                 "&:hover": {
                     backgroundColor: "#232a2c",
+                    backgroundImage:
+                        "linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12))",
                     borderColor: theme.alpha(theme.palette.primary.main, 0.16),
                 },
                 "& .MuiChip-deleteIcon": {
@@ -1803,4 +1849,308 @@ describe("grey's brand-green primary family (FM-158, ADR-0052)", () => {
                 .main,
         ).toBe("#78909c");
     });
+});
+
+/*
+ * ---------------------------------------------------------------------------
+ * FM-161: every refine selection control's hover, measured.
+ * ---------------------------------------------------------------------------
+ *
+ * The owner reported (2026-08-31) that these controls give no usable hover
+ * feedback: a selected row's hover restated its resting fill, and an
+ * unselected row's `action.hover` landed within 1.006-1.104:1 of the selected
+ * resting fill, so a click's deselect result was invisible under the cursor.
+ * The pills and the constraint chips shared a border-only hover that never
+ * touched the background at all.
+ *
+ * "Visible" is stated here the way ADR-0035 and ADR-0036 state theirs -- as a
+ * ratio, not as a colour. The axis is the *composited background* of each
+ * state against the composited background of the state next to it, since
+ * these fills are translucent and it is the pair that has to be tellable
+ * apart, not the token. 1.10:1 is FM-161's floor: well under WCAG 1.4.11's
+ * 3:1 (which governs a control's *boundary* against its surroundings, a job
+ * these controls' hairlines and focus rings already do) and chosen instead as
+ * the point where a same-hue fill step stops reading as one flat colour.
+ *
+ * Every pair is measured on all four palettes, because a single alpha cannot
+ * serve them: `grey`'s `#1f2426`, `bright`'s `#f2f4f3` and the two black
+ * pages put their own `primary.main` at wildly different distances from their
+ * own ground, and `dark`/`dark-dyschromatopsia` are the tight ones -- the
+ * whole span from their page to their selected resting fill is 1.14:1 and
+ * 1.11:1, which is why a neutral hover has to sit *above* that fill rather
+ * than between it and the page.
+ */
+describe("the refine selection controls' hover states (FM-161)", () => {
+    /** The smallest step between two adjacent states that still reads. */
+    const hoverFloor = 1.1;
+    const themeNames: ThemeName[] = [
+        "grey",
+        "bright",
+        "dark",
+        "dark-dyschromatopsia",
+    ];
+
+    /**
+     * The background a control renders, as the browser paints it:
+     * `background-image` composites *over* `background-color`, which is how
+     * the pills and the constraint chips lay a translucent wash over their
+     * own opaque `surfaces.bar` instead of replacing it (and so keep their
+     * hover independent of whatever page ground they sit on).
+     *
+     * `inheritedImage` is the second half of that, and the half FM-161's
+     * first review round caught missing: a nested rule that restates
+     * `background-color` and says nothing about `background-image` does not
+     * *clear* the image -- the outer rule's keeps painting, and the pill's
+     * `&[aria-pressed="true"]:hover` sits inside exactly that situation
+     * (it out-specifies the base `&:hover` on colour, and would inherit its
+     * wash). So the caller passes down whatever image is already in force,
+     * and this models the cascade rather than the declaration block. `"none"`
+     * -- what the pressed hover now states explicitly -- clears it, which is
+     * the CSS meaning and is what makes the measured colour the rendered one.
+     */
+    function paintedBackground(
+        style: {backgroundColor?: unknown; backgroundImage?: unknown},
+        ground: [number, number, number],
+        inheritedImage?: unknown,
+    ): [number, number, number] {
+        const base =
+            typeof style.backgroundColor === "string"
+                ? compositeOver(style.backgroundColor, ground)
+                : ground;
+        const image =
+            typeof style.backgroundImage === "string"
+                ? style.backgroundImage
+                : inheritedImage;
+
+        if (typeof image !== "string" || image === "none") {
+            return base;
+        }
+        const wash = /rgba?\([^)]*\)/.exec(image);
+
+        expect(wash).not.toBeNull();
+        return compositeOver(wash?.[0] ?? "transparent", base);
+    }
+
+    function resolveVariant(
+        variants: readonly {props: unknown; style: unknown}[],
+        props: Record<string, unknown>,
+        theme: ReturnType<typeof createHydraTheme>,
+    ): Record<string, unknown> {
+        return Object.assign(
+            {},
+            ...variants
+                .filter((variant) =>
+                    Object.entries(
+                        variant.props as Record<string, unknown>,
+                    ).every(([key, value]) => props[key] === value),
+                )
+                .map((variant) =>
+                    typeof variant.style === "function"
+                        ? (
+                              variant.style as (props: {
+                                  theme: typeof theme;
+                              }) => Record<string, unknown>
+                          )({theme})
+                        : (variant.style as Record<string, unknown>),
+                ),
+        ) as Record<string, unknown>;
+    }
+
+    /** Each named pair's ratio, rounded to the three places this file reads. */
+    function measure(
+        pairs: Record<
+            string,
+            [[number, number, number], [number, number, number]]
+        >,
+    ): Record<string, number> {
+        return Object.fromEntries(
+            Object.entries(pairs).map(([name, [a, b]]) => [
+                name,
+                Math.round(contrastRatio(a, b) * 1000) / 1000,
+            ]),
+        );
+    }
+
+    /**
+     * The pairs that fail, by name and measured ratio. Asserted against `{}`
+     * rather than pair-by-pair so a failure names which state pair collapsed,
+     * on which ground, and by how much -- which is the whole report, and what
+     * made the red run before this fix readable.
+     */
+    function below(ratios: Record<string, number>): Record<string, number> {
+        return Object.fromEntries(
+            Object.entries(ratios).filter(([, ratio]) => ratio < hoverFloor),
+        );
+    }
+
+    for (const name of themeNames) {
+        describe(name, () => {
+            const theme = createHydraTheme(name, false);
+            // The ground these surfaces actually render on: `RefineSurface`'s
+            // docked `Paper` is `backgroundColor: "transparent"` and nothing
+            // between it and the page paints, so a row sits directly on
+            // `background.default`. Its compact branch is a `Drawer`, whose
+            // paper keeps `background.paper`, so both are measured -- the
+            // floor has to hold in the narrow viewport too.
+            const grounds: [string, [number, number, number]][] = [
+                [
+                    "background.default",
+                    resolveColor(theme.palette.background.default),
+                ],
+                [
+                    "background.paper",
+                    resolveColor(theme.palette.background.paper),
+                ],
+            ];
+
+            it("should hold every adjacent row state apart on both refine grounds", () => {
+                const rowBackground = refineRowBackgrounds(theme);
+
+                for (const [groundName, ground] of grounds) {
+                    const unselected = compositeOver(
+                        rowBackground.unselected,
+                        ground,
+                    );
+                    const unselectedHover = compositeOver(
+                        rowBackground.unselectedHover,
+                        ground,
+                    );
+                    const selected = compositeOver(
+                        rowBackground.selected,
+                        ground,
+                    );
+                    const selectedHover = compositeOver(
+                        rowBackground.selectedHover,
+                        ground,
+                    );
+                    const ratios = measure({
+                        // "The pointer is on this row."
+                        "unselected rest vs hover": [
+                            unselected,
+                            unselectedHover,
+                        ],
+                        // "...and clicking would turn this one off."
+                        "selected rest vs hover": [selected, selectedHover],
+                        // The pair the owner reported: a hovered unselected
+                        // row against the selected rest beside it.
+                        "unselected hover vs selected rest": [
+                            unselectedHover,
+                            selected,
+                        ],
+                        // ...and the two hovers themselves, so hovering says
+                        // which of the two states is under the cursor.
+                        "selected hover vs unselected hover": [
+                            selectedHover,
+                            unselectedHover,
+                        ],
+                    });
+
+                    expect({ground: groundName, ...below(ratios)}).toEqual({
+                        ground: groundName,
+                    });
+                }
+            });
+
+            it("should give the refine pill a hover in both its selected and unselected states", () => {
+                const pill = resolveVariant(
+                    (theme.components?.MuiButton?.variants ?? []) as readonly {
+                        props: unknown;
+                        style: unknown;
+                    }[],
+                    {variant: "refineChip"},
+                    theme,
+                );
+                const ground = resolveColor(theme.palette.background.default);
+                const pressed = pill['&[aria-pressed="true"]'] as Record<
+                    string,
+                    unknown
+                >;
+                const hover = pill["&:hover"] as Record<string, unknown>;
+                const pressedHover = pressed["&:hover"] as Record<
+                    string,
+                    unknown
+                >;
+                // The design decision, pinned where a rewrite would trip on
+                // it: a selected pill's hover answers in the selection's own
+                // hue *alone*, like a selected refine row's, so it clears the
+                // neutral wash the base `&:hover` above it is still painting.
+                // Deleting this line does not restore a plain wash-free hue
+                // -- it silently reinstates wash-over-hue, which is what the
+                // first review round found the tests measuring past.
+                expect(pressedHover.backgroundImage).toBe("none");
+                const restingBackground = paintedBackground(pill, ground);
+                const hoverBackground = paintedBackground(hover, ground);
+                const pressedBackground = paintedBackground(pressed, ground);
+                const pressedHoverBackground = paintedBackground(
+                    pressedHover,
+                    ground,
+                    // What the base hover leaves in force, so this measures
+                    // the rendered colour rather than the declaration block.
+                    hover.backgroundImage,
+                );
+                const ratios = measure({
+                    "unselected rest vs hover": [
+                        restingBackground,
+                        hoverBackground,
+                    ],
+                    "pressed rest vs hover": [
+                        pressedBackground,
+                        pressedHoverBackground,
+                    ],
+                });
+
+                expect(below(ratios)).toEqual({});
+            });
+
+            it("should give the constraint chip a hover its own background can carry", () => {
+                const chip = resolveVariant(
+                    (theme.components?.MuiChip?.variants ?? []) as readonly {
+                        props: unknown;
+                        style: unknown;
+                    }[],
+                    {variant: "constraint", color: "default"},
+                    theme,
+                );
+                // The chip's own ground is `surfaces.bar` -- the search
+                // workspace `Paper` it sits on paints the same token -- so
+                // this pair is the chip against itself, hovered.
+                const ground = resolveColor(theme.palette.surfaces.bar);
+                const ratios = measure({
+                    "rest vs hover": [
+                        paintedBackground(chip, ground),
+                        paintedBackground(
+                            chip["&:hover"] as Record<string, unknown>,
+                            ground,
+                        ),
+                    ],
+                });
+
+                expect(below(ratios)).toEqual({});
+                // The pill's inheritance trap, checked for here too. This
+                // variant has no pressed state, so nothing out-specifies its
+                // `&:hover`; its one nested rule is the delete icon's, which
+                // is a *descendant* selector and sets `color` only, so the
+                // chip's own painted background is the pair measured above
+                // and nothing re-composites it.
+                const nested = Object.entries(chip).filter(([key]) =>
+                    key.includes("&"),
+                );
+
+                expect(nested.map(([key]) => key)).toEqual([
+                    "&:hover",
+                    `& .${chipClasses.deleteIcon}`,
+                ]);
+                expect(
+                    Object.keys(
+                        (
+                            chip[`& .${chipClasses.deleteIcon}`] as Record<
+                                string,
+                                unknown
+                            >
+                        )["&:hover"] as Record<string, unknown>,
+                    ),
+                ).toEqual(["color"]);
+            });
+        });
+    }
 });

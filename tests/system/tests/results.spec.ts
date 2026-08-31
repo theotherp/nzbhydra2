@@ -786,11 +786,25 @@ test.describe("Search results", () => {
                     expect(noHeaderOverflow).toBe(true);
                 }
 
-                const [download] = await Promise.all([
-                    page.waitForEvent("download"),
+                // FM-160: the direct-download anchor carries `target="_blank"`
+                // (legacy parity), so the click opens a popup tab rather than
+                // transferring in this page. Unlike `downloads.spec.ts`
+                // (real backend content, observed via
+                // `page.context().waitForEvent("download")`), this test's
+                // search results are route-mocked with fake IDs
+                // (`searchResultId: "one"`/`"two"`/`"three"`) that the backend
+                // doesn't recognise, so `getnzb/user/<id>` answers a real 500
+                // error page here, not file content -- exactly the "errors
+                // open in a disposable tab instead of downloading" case the
+                // packet restores, so no `"download"` event ever fires. Wait
+                // for the popup instead and close it, the same disposal a real
+                // error tab gets; the `Downloaded` chip below is driven by the
+                // anchor's own `onClick`, independent of what the popup loads.
+                const [popup] = await Promise.all([
+                    page.waitForEvent("popup"),
                     directDownload.click(),
                 ]);
-                void download;
+                await popup.close();
                 const downloadedChip = page
                     .getByTestId("search-result-row")
                     .first()

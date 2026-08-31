@@ -2,7 +2,11 @@ import {Box, Button, Collapse, Stack} from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import {denseControlFontSize, monoFontFamily} from "../../app/theme";
+import {
+    denseControlFontSize,
+    monoFontFamily,
+    refineRowBackgrounds,
+} from "../../app/theme";
 
 // FM-129: the count beside a toggle row's label, one step under the row's own
 // `denseControlFontSize` text so the count reads as an annotation of the label
@@ -166,36 +170,45 @@ export function RefineMultiselect({
                                 // full selected language turns the sidebar into
                                 // a wall of teal -- verified on a live search
                                 // before settling here.
-                                sx={(theme) => ({
-                                    backgroundColor: active
-                                        ? theme.alpha(
-                                              theme.palette.primary.main,
-                                              0.12,
-                                          )
-                                        : "transparent",
-                                    borderRadius: 1,
-                                    color: active
-                                        ? "text.primary"
-                                        : "text.secondary",
-                                    fontSize: denseControlFontSize,
-                                    fontWeight: 400,
-                                    gap: 1,
-                                    justifyContent: "space-between",
-                                    lineHeight: 1.35,
-                                    minWidth: 0,
-                                    px: 1,
-                                    py: 0.75,
-                                    textAlign: "left",
-                                    width: "100%",
-                                    "&:hover": {
+                                //
+                                // FM-161 moved the four state fills behind
+                                // `refineRowBackgrounds`, which states the
+                                // resting pair unchanged and adds the two
+                                // hovers this row had been missing: an
+                                // unselected row now lifts neutrally and a
+                                // selected one deepens in the selection's own
+                                // hue, so what a click is about to do is
+                                // legible from the colour under the cursor.
+                                // The alphas live in `app/theme.ts` with the
+                                // per-theme measurements that justify them.
+                                sx={(theme) => {
+                                    const rowBackground =
+                                        refineRowBackgrounds(theme);
+                                    return {
                                         backgroundColor: active
-                                            ? theme.alpha(
-                                                  theme.palette.primary.main,
-                                                  0.12,
-                                              )
-                                            : "action.hover",
-                                    },
-                                })}
+                                            ? rowBackground.selected
+                                            : rowBackground.unselected,
+                                        borderRadius: 1,
+                                        color: active
+                                            ? "text.primary"
+                                            : "text.secondary",
+                                        fontSize: denseControlFontSize,
+                                        fontWeight: 400,
+                                        gap: 1,
+                                        justifyContent: "space-between",
+                                        lineHeight: 1.35,
+                                        minWidth: 0,
+                                        px: 1,
+                                        py: 0.75,
+                                        textAlign: "left",
+                                        width: "100%",
+                                        "&:hover": {
+                                            backgroundColor: active
+                                                ? rowBackground.selectedHover
+                                                : rowBackground.unselectedHover,
+                                        },
+                                    };
+                                }}
                             >
                                 <Box
                                     component="span"

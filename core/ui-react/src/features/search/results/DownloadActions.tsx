@@ -100,9 +100,20 @@ export function DownloadActions({
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
     const downloaders = configuredDownloaders(safeConfig);
     const settings = downloadSettings(safeConfig);
-    const [downloader, setDownloader] = useState<Downloader | undefined>(
-        downloaders[0],
-    );
+    // FM-159 (ADR-0017): only the user's *explicit* choice is state, and it is
+    // held by name rather than by object identity. The active downloader is
+    // then derived from the current list on every render, so a downloader
+    // added, removed, or edited in Config -> Downloading is reconciled
+    // immediately: an unset choice, or one naming a downloader that is gone,
+    // resolves to the first configured downloader (`undefined` when none is
+    // left), while a still-valid explicit choice is kept -- including across
+    // the referentially new config object every unrelated save hands down.
+    // Reconciling in an effect instead would paint one frame with the stale
+    // selection and re-run the category fetch spuriously.
+    const [selectedName, setSelectedName] = useState<string>();
+    const downloader: Downloader | undefined =
+        downloaders.find((value) => value.name === selectedName) ??
+        downloaders[0];
     const [downloaderCategories, setDownloaderCategories] = useState<string[]>(
         [],
     );
@@ -115,8 +126,16 @@ export function DownloadActions({
     const selectedTorrents = results.filter(
         (result) => result.downloadType === "TORRENT",
     );
+    // FM-159: the two values the category fetch actually depends on, as
+    // primitives. Keying the effect on the `downloader` *object* would refetch
+    // on every unrelated config save, because a save rebuilds the whole safe
+    // config and with it every downloader object, name-for-name identical.
+    const downloaderName = downloader?.name;
+    const downloaderDefault = downloader
+        ? configuredDefaultCategory(downloader)
+        : null;
     useEffect(() => {
-        if (!downloader) {
+        if (downloaderName === undefined) {
             return;
         }
         setCategoryError(undefined);
@@ -129,8 +148,8 @@ export function DownloadActions({
         // every default the downloader does not also *advertise* -- SABnzbd's
         // `get_cats` is a different set from Hydra's configured default -- into
         // a silent `null`, which reaches SABnzbd as no `cat` parameter.
-        setCategory(configuredDefaultCategory(downloader));
-        void categories(transport, downloader)
+        setCategory(downloaderDefault);
+        void categories(transport, {name: downloaderName})
             .then((values) => {
                 setDownloaderCategories(values);
             })
@@ -140,12 +159,9 @@ export function DownloadActions({
                     "Unable to load downloader categories. Choose another downloader or try again.",
                 );
             });
-    }, [downloader, transport]);
+    }, [downloaderDefault, downloaderName, transport]);
     // The configured default when the fetched list does not offer it; the
     // extra option the select renders for it (see below).
-    const downloaderDefault = downloader
-        ? configuredDefaultCategory(downloader)
-        : null;
     const outOfListDefault =
         downloaderDefault && !downloaderCategories.includes(downloaderDefault)
             ? downloaderDefault
@@ -315,13 +331,7 @@ export function DownloadActions({
                     size="small"
                     sx={{fontSize: denseControlFontSize}}
                     value={downloader?.name ?? ""}
-                    onChange={(event) =>
-                        setDownloader(
-                            downloaders.find(
-                                (value) => value.name === event.target.value,
-                            ),
-                        )
-                    }
+                    onChange={(event) => setSelectedName(event.target.value)}
                 >
                     {downloaders.map((value) => (
                         <MenuItem key={value.name} value={value.name}>
@@ -455,7 +465,17 @@ export function DownloadActions({
  * competing with. The history page's row is a free-flowing `Stack` with no such
  * pressure, so the text form stays the default and that page renders exactly
  * what it rendered before. Both forms are the same anchor with the same
- * `data-testid`, `href`, `download` and `onClick`.
+ * `data-testid`, `href` and `onClick`.
+ *
+ * FM-160 (2026-08-31): the anchor carries `target="_blank"` / `rel="noopener"`
+ * and no `download` attribute, matching legacy
+ * (`search-result.html:112`/`:124`). The backend's `getnzb`/`gettorrent`
+ * endpoint answers file content, a 302 redirect to the indexer
+ * (`nzbAccessType: REDIRECT`), or an error; a cross-origin redirect drops the
+ * `download` attribute, so with it set the browser navigated in-tab to the
+ * indexer link and destroyed the results view. `target="_blank"` opens
+ * redirects and errors in a disposable tab while content still downloads via
+ * the server's `Content-Disposition` header.
  */
 export function DirectDownloadActions({
     iconOnly = false,
@@ -473,12 +493,13 @@ export function DirectDownloadActions({
         "aria-label": label,
         component: "a" as const,
         "data-testid": type === "nzb" ? "download-nzb" : "download-torrent",
-        download: true,
         href: transport.browserTransferUrl(
             `get${type}/user/${downloadId(result)}`,
         ),
         onClick: onDownloaded,
+        rel: "noopener",
         size: "small" as const,
+        target: "_blank",
     };
     if (iconOnly) {
         return (

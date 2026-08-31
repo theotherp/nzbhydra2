@@ -1,6 +1,6 @@
 import {readFile} from "node:fs/promises";
 
-import type {Page} from "@playwright/test";
+import type {Locator, Page} from "@playwright/test";
 import {
     dismissWelcomeDialog,
     expect,
@@ -10,6 +10,29 @@ import {
     testEnvironment,
 } from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+
+/**
+ * FM-160: the direct-download anchor carries `target="_blank"` (legacy
+ * parity) rather than `download`, so Chromium opens the transfer in a popup
+ * tab instead of firing `download` directly on the originating page --
+ * `page.waitForEvent("download")` alone (the pre-FM-160 wait) never resolves
+ * once the transfer moves off the opener page like that; nor does awaiting it
+ * on the popup page Playwright hands back from the `"popup"` event, because
+ * Chromium's own download manager intercepts the popup's navigation before
+ * that page ever finishes loading, so no `"download"` fires *on* the popup
+ * page object either. The context-level event does still fire (Playwright
+ * attributes every context's downloads to it regardless of which page
+ * triggered them), so waiting there is what actually observes the transfer.
+ * The route/filename/bytes assertions the caller makes afterward are
+ * unaffected, only which object the `download` event is awaited on changes.
+ */
+async function clickAndAwaitPopupDownload(page: Page, control: Locator) {
+    const [download] = await Promise.all([
+        page.context().waitForEvent("download"),
+        control.click(),
+    ]);
+    return download;
+}
 
 test.describe("Downloads", () => {
     test.beforeEach(async ({hydra, page}) => {
@@ -209,15 +232,16 @@ test.describe("Downloads", () => {
         // suggested filename, and the delivered bytes. They are statements
         // about the server's NZB proxy, not about a shell, so they moved here
         // rather than disappearing with the legacy UI.
-        const downloadEvent = page.waitForEvent("download");
-        await resultRow.getByTestId("download-nzb").click();
-
-        const download = await downloadEvent;
+        const download = await clickAndAwaitPopupDownload(
+            page,
+            resultRow.getByTestId("download-nzb"),
+        );
         // The route the transfer really went through. Legacy's version of this
         // assertion watched the browser context for the matching request;
-        // React's row renders an `<a download href=...>`, whose fetch Chromium
-        // hands straight to its download manager, so the download's own `url()`
-        // is where the same fact is observable.
+        // React's row renders an `<a target="_blank" href=...>` (FM-160), whose
+        // fetch Chromium hands straight to its download manager in the popup
+        // tab it opens, so the download's own `url()` is where the same fact
+        // is observable.
         expect(new URL(download.url()).pathname).toMatch(
             /^\/getnzb\/user\/[^/]+$/,
         );
@@ -252,9 +276,11 @@ test.describe("Downloads", () => {
         const resultRow = page
             .getByTestId("search-result-row")
             .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
-        const firstDownloadEvent = page.waitForEvent("download");
-        await resultRow.getByTestId("download-nzb").click();
-        expect(await (await firstDownloadEvent).failure()).toBeNull();
+        const firstDownload = await clickAndAwaitPopupDownload(
+            page,
+            resultRow.getByTestId("download-nzb"),
+        );
+        expect(await firstDownload.failure()).toBeNull();
 
         const historyResponse = page.waitForResponse((response) =>
             isDownloadHistoryResponse(response),
@@ -327,9 +353,11 @@ test.describe("Downloads", () => {
             historyRow.getByTestId("download-history-status"),
         ).toContainText(/\S/);
 
-        const repeatDownloadEvent = page.waitForEvent("download");
-        await historyRow.getByTestId("download-nzb").click();
-        expect(await (await repeatDownloadEvent).failure()).toBeNull();
+        const repeatDownload = await clickAndAwaitPopupDownload(
+            page,
+            historyRow.getByTestId("download-nzb"),
+        );
+        expect(await repeatDownload.failure()).toBeNull();
 
         await page.setViewportSize({width: 390, height: 844});
         expect(

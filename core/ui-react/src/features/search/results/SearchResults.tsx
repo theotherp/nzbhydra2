@@ -157,6 +157,14 @@ export function SearchResults({
     savingSearch?: boolean;
     searchRequestId?: number;
 }) {
+    // FM-159: the mount-time snapshot. It is the seed the `SafeConfigContext`
+    // below falls back to when no provider is present, and -- deliberately --
+    // the source the quick-filter reads below keep using: `quickFilters` and
+    // `preselectedQuickFilters` seed per-search *selection* state, so making
+    // them live would clobber a user's quick-filter selections the moment any
+    // config is saved mid-session. That is a UX trade-off ADR-0017 does not
+    // settle; every read that feeds rendering rather than selection state
+    // uses `effectiveSafeConfig`.
     const safeConfig =
         window.__NZBHYDRA_BOOTSTRAP__ && isRecord(window.__NZBHYDRA_BOOTSTRAP__)
             ? window.__NZBHYDRA_BOOTSTRAP__.safeConfig
@@ -1016,7 +1024,14 @@ export function SearchResults({
                                         (result) =>
                                             selected.has(result.searchResultId),
                                     )}
-                                    safeConfig={safeConfig}
+                                    // FM-159 (ADR-0017): the *live* config,
+                                    // so a downloader added, removed, or
+                                    // edited in Config -> Downloading becomes
+                                    // (or stops being) a send target in
+                                    // already-rendered results without a
+                                    // reload. Falls back to the bootstrap
+                                    // seed with no provider above.
+                                    safeConfig={effectiveSafeConfig}
                                     savingSearch={savingSearch}
                                 />
                             ) : (

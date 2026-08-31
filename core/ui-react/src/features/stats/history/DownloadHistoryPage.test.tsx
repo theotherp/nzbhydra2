@@ -260,6 +260,12 @@ describe("DownloadHistoryPage", () => {
             "href",
             "http://localhost:3000/hydra/getnzb/user/42",
         );
+        // FM-160: same shared anchor as the results row's icon form — opens
+        // in a disposable tab instead of navigating the app in-tab when the
+        // backend answers with a cross-origin redirect to the indexer.
+        expect(nzbLink).toHaveAttribute("target", "_blank");
+        expect(nzbLink).toHaveAttribute("rel", "noopener");
+        expect(nzbLink).not.toHaveAttribute("download");
         expect(row).toHaveTextContent("Internal");
         expect(row).toHaveTextContent("user");
         expect(row).toHaveTextContent("127.0.0.1");

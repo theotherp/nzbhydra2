@@ -5,8 +5,10 @@ import {
     screen,
     within,
 } from "@testing-library/react";
+import type {MockedFunction} from "vitest";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
+import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {SearchResults} from "./SearchResults";
@@ -951,6 +953,103 @@ describe("SearchResults", () => {
             categorySelect!.compareDocumentPosition(send) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
+    });
+
+    // FM-159 (ADR-0017): a downloader added, removed, or edited in
+    // Config -> Downloading reaches already-rendered results through the live
+    // safe config, without a remount. Each case rerenders the same tree with a
+    // new `SafeConfigContext` value, which is exactly what a post-save query
+    // invalidation does.
+    it("should offer a downloader added to the live safe config after mount", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {downloaders: []}},
+        };
+        const fetchImplementation = vi.fn(liveDownloaderFetch());
+        vi.stubGlobal("fetch", fetchImplementation);
+        const rendered = render(liveDownloaderTree({downloaders: []}));
+        expect(
+            screen.getByText(
+                "No downloader is configured for selected-result sends.",
+            ),
+        ).toBeVisible();
+        expect(screen.queryByTestId("send-to-downloader")).toBeNull();
+
+        rendered.rerender(
+            liveDownloaderTree({
+                downloaders: [{name: "SAB", enabled: true}],
+            }),
+        );
+
+        expect(screen.getByTestId("send-to-downloader")).toBeVisible();
+        expect(
+            screen.queryByText(
+                "No downloader is configured for selected-result sends.",
+            ),
+        ).toBeNull();
+        expect(await sendToFirstDownloader(fetchImplementation)).toBe("SAB");
+    });
+
+    it("should fall back to the first downloader when the selected one is removed from the live safe config", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {downloaders: []}},
+        };
+        const fetchImplementation = vi.fn(liveDownloaderFetch());
+        vi.stubGlobal("fetch", fetchImplementation);
+        const rendered = render(
+            liveDownloaderTree({
+                downloaders: [
+                    {name: "SAB", enabled: true},
+                    {name: "NZBGet", enabled: true},
+                ],
+            }),
+        );
+        chooseDownloader("NZBGet");
+
+        rendered.rerender(
+            liveDownloaderTree({
+                downloaders: [{name: "SAB", enabled: true}],
+            }),
+        );
+
+        // The single-downloader layout: no downloader select at all.
+        expect(
+            screen
+                .getByTestId("results-bulk-actions")
+                .querySelector('[aria-label="Downloader"]'),
+        ).toBeNull();
+        expect(await sendToFirstDownloader(fetchImplementation)).toBe("SAB");
+    });
+
+    it("should keep an explicitly selected downloader across an unrelated live-config change", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {downloaders: []}},
+        };
+        const fetchImplementation = vi.fn(liveDownloaderFetch());
+        vi.stubGlobal("fetch", fetchImplementation);
+        const downloaders = [
+            {name: "SAB", enabled: true},
+            {name: "NZBGet", enabled: true},
+        ];
+        const rendered = render(liveDownloaderTree({downloaders}));
+        chooseDownloader("NZBGet");
+
+        // A save that touches something else entirely still hands down a
+        // freshly built config object, so the downloader list is referentially
+        // new while naming the same two downloaders.
+        rendered.rerender(
+            liveDownloaderTree(
+                {downloaders: downloaders.map((value) => ({...value}))},
+                {dereferer: "https://dereferer.test/?$s"},
+            ),
+        );
+
+        expect(screen.getByTestId("results-bulk-actions")).toHaveTextContent(
+            "NZBGet",
+        );
+        expect(await sendToFirstDownloader(fetchImplementation)).toBe("NZBGet");
     });
 
     // FM-055: the packet's exact phrase, including the `>` prefix the
@@ -3561,7 +3660,13 @@ describe("SearchResults", () => {
         expect(download.tagName).toBe("A");
         expect(download).toHaveClass("MuiIconButton-root");
         expect(download).toHaveAttribute("aria-label", "Download NZB");
-        expect(download).toHaveAttribute("download");
+        // FM-160: `target="_blank"`/no `download` so a cross-origin indexer
+        // redirect opens in a disposable tab instead of navigating the app
+        // in-tab (the `download` attribute is dropped on cross-origin
+        // redirects).
+        expect(download).toHaveAttribute("target", "_blank");
+        expect(download).toHaveAttribute("rel", "noopener");
+        expect(download).not.toHaveAttribute("download");
         expect(download).toHaveTextContent("");
         // Same Actions stack as the NFO/detail icons, which is what puts them
         // on one line.
@@ -3874,6 +3979,70 @@ async function bulkSendCategoryRequest({
             fetchImplementation.mock.calls[1][1],
         ),
     };
+}
+
+// FM-159: the shared parts of the three live-safe-config downloader cases.
+// The fetch stub answers by URL rather than in call order, because a
+// reconciled selection refetches the category list and would otherwise
+// consume the response the send expects.
+function liveDownloaderFetch(): (url: RequestInfo | URL) => Promise<Response> {
+    return (url) => {
+        const target = String(url);
+        if (target.includes("/categories")) {
+            return Promise.resolve(jsonResponse([]));
+        }
+        if (target.includes("checkDuplicateMovieDownload")) {
+            return Promise.resolve(jsonResponse({reasonRequired: false}));
+        }
+        return Promise.resolve(jsonResponse({successful: true, addedIds: [1]}));
+    };
+}
+
+function liveDownloaderTree(
+    downloading: Record<string, unknown>,
+    rest: Record<string, unknown> = {},
+): React.ReactElement {
+    return (
+        <DialogProvider>
+            <ToastProvider>
+                <SafeConfigContext.Provider value={{...rest, downloading}}>
+                    <SearchResults data={downloadActionResponse("NZB")} />
+                </SafeConfigContext.Provider>
+            </ToastProvider>
+        </DialogProvider>
+    );
+}
+
+function chooseDownloader(name: string): void {
+    const select = screen
+        .getByTestId("results-bulk-actions")
+        .querySelector('[aria-label="Downloader"] [role="combobox"]');
+    if (!select) {
+        throw new Error("No downloader select");
+    }
+    fireEvent.mouseDown(select);
+    fireEvent.click(screen.getByRole("option", {name}));
+}
+
+// Selects the single result, sends it, and reports which downloader the add
+// request named.
+async function sendToFirstDownloader(
+    fetchImplementation: MockedFunction<typeof fetch>,
+): Promise<unknown> {
+    fireEvent.click(screen.getByRole("checkbox", {name: "Select NZB result"}));
+    fireEvent.click(
+        screen.getByRole("button", {name: "Send selected to downloader"}),
+    );
+    const addRequest = await vi.waitFor(() => {
+        const call = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).includes("internalapi/downloader/addNzbs"),
+        );
+        if (!call) {
+            throw new Error("No add request");
+        }
+        return call[1] as RequestInit;
+    });
+    return JSON.parse(String(addRequest.body)).downloaderName;
 }
 
 // The bare `Select`'s `aria-label` sits on its `MuiInputBase-root` wrapper

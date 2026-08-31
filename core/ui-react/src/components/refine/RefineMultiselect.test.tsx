@@ -3,7 +3,7 @@ import {cleanup, fireEvent, render, screen} from "@testing-library/react";
 import {useState} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
-import {createHydraTheme} from "../../app/theme";
+import {createHydraTheme, refineRowBackgrounds} from "../../app/theme";
 import {
     RefineMultiselect,
     type RefineMultiselectEntry,
@@ -128,6 +128,54 @@ describe("RefineMultiselect", () => {
             "role",
             "group",
         );
+    });
+
+    // FM-161. The *values* are the theme's business and `theme.test.ts`
+    // measures them on all four palettes; what belongs here is that this
+    // component asks for all four of them and puts each one where it belongs,
+    // since before FM-161 the hover branch restated the resting fill and a
+    // selected row answered a pointer with nothing at all.
+    it("should paint all four row states from the theme's own row backgrounds", () => {
+        const rowBackground = refineRowBackgrounds(createHydraTheme());
+        renderMultiselect({open: true, selected: ["zeta"]});
+        const [selected, unselected] = screen.getAllByTestId("demo-option");
+        const emitted = [...document.querySelectorAll("style")]
+            .map((element) => element.textContent ?? "")
+            .join("");
+        const rule = (element: Element, suffix: string) => {
+            const emotionClass = [...element.classList].find((name) =>
+                name.startsWith("css-"),
+            );
+            // Every block emitted for that class and state, joined: MUI's own
+            // `MuiButton` root override contributes a `:hover` block of its
+            // own (the text-decoration reset) alongside the one this
+            // component's `sx` produces, and both are real rules.
+            return [
+                ...emitted.matchAll(
+                    new RegExp(
+                        `\\.${emotionClass ?? ""}${suffix}\\{([^}]*)\\}`,
+                        "g",
+                    ),
+                ),
+            ]
+                .map((match) => match[1])
+                .join("");
+        };
+
+        expect(rule(selected, "")).toContain(
+            `background-color:${rowBackground.selected}`,
+        );
+        expect(rule(selected, ":hover")).toContain(
+            `background-color:${rowBackground.selectedHover}`,
+        );
+        expect(rule(unselected, "")).toContain(
+            `background-color:${rowBackground.unselected}`,
+        );
+        expect(rule(unselected, ":hover")).toContain(
+            `background-color:${rowBackground.unselectedHover}`,
+        );
+        // The four are four: no state may restate the one beside it.
+        expect(new Set(Object.values(rowBackground)).size).toBe(4);
     });
 
     it("should carry a section test id only when a consumer supplies one", () => {
