@@ -304,6 +304,7 @@ test.describe("Downloads", () => {
             isDownloadHistoryResponse(response),
         );
         await page
+            .getByTestId("history-refine-bar")
             .getByLabel("Title")
             .fill(testEnvironment.downloaderIntegrationNzbTitle);
         const filtered = await filteredResponse;
@@ -506,7 +507,10 @@ test.describe("Downloads", () => {
 
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
-        await page.getByLabel("Title").fill("evidence");
+        await page
+            .getByTestId("history-refine-bar")
+            .getByLabel("Title")
+            .fill("evidence");
         await openRefineMultiselect(page, "result");
         await page
             .getByTestId("history-refine-result-option")
@@ -544,7 +548,10 @@ test.describe("Downloads", () => {
 
         await page.getByTestId("history-refine-toggle").click();
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
-        await page.getByLabel("Title").fill("evidence");
+        await page
+            .getByTestId("history-refine-bar")
+            .getByLabel("Title")
+            .fill("evidence");
         await openRefineMultiselect(page, "result");
         await page
             .getByTestId("history-refine-result-option")

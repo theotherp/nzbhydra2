@@ -180,7 +180,10 @@ test.describe("Search history", () => {
         const filteredResponse = page.waitForResponse((response) =>
             isSearchHistoryResponse(response),
         );
-        await page.getByLabel("Query").fill(query);
+        await page
+            .getByTestId("history-refine-bar")
+            .getByLabel("Query")
+            .fill(query);
         const filtered = await filteredResponse;
         expect(filtered.status()).toBe(200);
         expect(filtered.request().postDataJSON()).toMatchObject({
@@ -248,7 +251,9 @@ test.describe("Search history", () => {
             },
         });
         expect(page.url()).toBe(refinedUrl);
-        await expect(page.getByLabel("Query")).toHaveValue(query);
+        await expect(
+            page.getByTestId("history-refine-bar").getByLabel("Query"),
+        ).toHaveValue(query);
         await expect(page.getByTestId("history-refine-summary")).toHaveText(
             "2 active filters",
         );
@@ -412,7 +417,10 @@ test.describe("Search history", () => {
 
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
-        await page.getByLabel("Query").fill("evidence");
+        await page
+            .getByTestId("history-refine-bar")
+            .getByLabel("Query")
+            .fill("evidence");
         await openRefineMultiselect(page, "category");
         await page
             .getByTestId("history-refine-category-option")
@@ -460,7 +468,10 @@ test.describe("Search history", () => {
 
         await page.getByTestId("history-refine-toggle").click();
         await expect(page.getByTestId("history-refine-bar")).toBeVisible();
-        await page.getByLabel("Query").fill("evidence");
+        await page
+            .getByTestId("history-refine-bar")
+            .getByLabel("Query")
+            .fill("evidence");
         await openRefineMultiselect(page, "category");
         await page
             .getByTestId("history-refine-category-option")

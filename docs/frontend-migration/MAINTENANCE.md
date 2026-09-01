@@ -1372,6 +1372,13 @@ visibility.
   separate `QueryClient`s, so the hook point and the opt-outs need a design pass. Routed to **`/fm-orchestrate`**.
   Surfaced 2026-09-01 from issue #1080.
 
+- **`focus-indication.spec.ts:1046` still finds the search history refine input with `getByLabel("Query").first()`.**
+  Since FM-170's per-row "Copy query" buttons also match `getByLabel("Query")` (substring matching), that `.first()`
+  resolves to the refine input only because the refine bar precedes the table in DOM order. The test is green today;
+  scoping it through `getByTestId("history-refine-bar")` like the 2026-09-01 refine-locator quickfix did elsewhere is
+  a one-line **`/fm-quickfix`**, left unfixed there because one fix per invocation and this one was not failing.
+  Surfaced 2026-09-01 while fixing run 33494077066.
+
 - **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
   reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
   no `PUT /internalapi/genericstorage`, the `isGroupEpisodesHelpShown` flag stayed empty, and the dialog returned on
@@ -3356,3 +3363,11 @@ their text and relative order are unchanged.
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest across `src/features/config/indexers`, 152/152 green; `validate:migration` valid.
 - **Commit:** `b1d931e84`
 - **Note:** FM-167 follow-up candidate, scope-checked before starting and found to fit. FM-167 added "Stop waiting" to the progress dialog but withheld it where `IndexerDialog` raises it, because that check gates a commit and the resolver had only two outcomes — a result, or `null` meaning "the request failed", which reports an error and commits the entry anyway. Neither is what leaving means, so an admin who started a check from the editor had no way out of it at all. `CapsCheckOutcome` is now a result, `"failed"`, or `"left"`; `"left"` returns `null` from `checkCapsBeforeClose`, which is already what the close sequence means by "not committed" (the same answer the connection-check dialog's "Aahh, let me try again" gives), so the abandoned commit attempt puts the admin back in the still-open editor with fields intact, nothing written, and no acknowledgement of a failure that did not happen — the least surprising reading of an exit from a check that was *blocking* a commit. The in-box manual check just stops. The blast radius stayed inside `IndexerDialog` and its one `CapsCheckDialog` call site: `IndexersConfigTab`'s bulk-recheck path is untouched, and no other caller of the dialog exists. **Registry truth maintenance:** `FEATURES.yaml`'s "the caps-check exit is offered for the bulk recheck only" line was written by FM-167 to describe exactly this gap, and is corrected here rather than left to assert something the code no longer does — the same reason prior ledger entries have corrected registry lines. `CapsCheckDialog`'s own comment explaining why `IndexerDialog` had no `onLeave` is corrected with it; the prop stays optional, since it is what withholds the exit from a caller that has no answer for one.
+
+### 2026-09-01 — Scope the history refine locators past FM-170's copy buttons
+
+- **Why not a packet:** locator repair in tests only — no behavior, contract, or `data-testid` change; the fix consumes existing test ids.
+- **Paths:** `tests/system/tests/downloads.spec.ts`, `tests/system/tests/search-history.spec.ts`
+- **Gates:** `npx tsc --noEmit` in `tests/system` clean; full `downloads.spec.ts` + `search-history.spec.ts` run against a locally built real-backend stack (HEAD core jar + mockserver on alternate ports 15076/15080, user's dev services untouched): 10/10 green, including all 4 tests red in run 33494077066. `git diff --check` clean.
+- **Commit:** `e08aa3b87`
+- **Note:** both specs reached the refine surface's freetext inputs with page-wide `getByLabel("Title")` / `getByLabel("Query")`. FM-170 (`1ee9083f2`) added per-row copy buttons labeled "Copy title" / "Copy query", which `getByLabel`'s default substring matching also resolves, so every visible history row became an extra match and the locators failed strict mode. The lookups are now scoped through `getByTestId("history-refine-bar")`, keeping the accessible-label assertion while excluding the table rows. `focus-indication.spec.ts:1046`'s `getByLabel("Query").first()` survives on DOM order alone and is recorded under *Open candidates* rather than edited green.
