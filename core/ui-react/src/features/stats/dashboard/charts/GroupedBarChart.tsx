@@ -2,15 +2,9 @@ import {Box} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {BarChart} from "@mui/x-charts/BarChart";
 
-export type GroupedBarSeries = {label: string; data: number[]};
+import {GROUPED_BAR_CHART_HEIGHT} from "./chartSizing";
 
-/**
- * The total height this chart occupies, legend included. Exported for the
- * same reason as `horizontalBarChartHeight`: `ChartCard` reserves it while the
- * chart is still below the fold (FM-164), and a reservation that missed by the
- * legend's height would move everything below the card once the chart mounted.
- */
-export const GROUPED_BAR_CHART_HEIGHT = 300;
+export type GroupedBarSeries = {label: string; data: number[]};
 
 /**
  * Vertical grouped-bar chart for the Activity section: one or two series

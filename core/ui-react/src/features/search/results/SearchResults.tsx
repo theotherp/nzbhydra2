@@ -166,10 +166,26 @@ const STICKY_BACKGROUND = "background.default";
 const ESTIMATED_ROW_HEIGHT = 44;
 const ROW_OVERSCAN = 8;
 
+// The table's fixed `<colgroup>` track widths, single source for both the
+// rendered `<colgroup>` below and TABLE_COLUMN_COUNT, so the spacer rows'
+// colSpan can never drift from the actual track count under `tableLayout:
+// fixed`. The checkbox track is a fixed 40px; the rest are percentages that
+// sum to 100 (Checkbox/Title/Indexer/Category/Details/Age/Size/Actions).
+const TABLE_COLUMN_WIDTHS: Array<number | string> = [
+    40,
+    "39%",
+    "11%",
+    "11%",
+    "8%",
+    "11%",
+    "5%",
+    "15%",
+];
+
 // The table's fixed `<colgroup>` track count, which the spacer rows have to
 // span so the fixed layout is not disturbed by a row with a different cell
 // count.
-const TABLE_COLUMN_COUNT = 8;
+const TABLE_COLUMN_COUNT = TABLE_COLUMN_WIDTHS.length;
 
 // FM-162: above this many *available* results, "Load all results" asks first.
 // A single search legitimately reports tens of thousands of available results,
@@ -1562,14 +1578,9 @@ export function SearchResults({
                                         track -- see the header cell's own
                                         padding note below. */}
                                 <colgroup>
-                                    <col style={{width: 40}} />
-                                    <col style={{width: "39%"}} />
-                                    <col style={{width: "11%"}} />
-                                    <col style={{width: "11%"}} />
-                                    <col style={{width: "8%"}} />
-                                    <col style={{width: "11%"}} />
-                                    <col style={{width: "5%"}} />
-                                    <col style={{width: "15%"}} />
+                                    {TABLE_COLUMN_WIDTHS.map((width, index) => (
+                                        <col key={index} style={{width}} />
+                                    ))}
                                 </colgroup>
                                 <TableHead>
                                     {table

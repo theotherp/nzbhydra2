@@ -1,9 +1,9 @@
-import {CircularProgress, Stack, Typography} from "@mui/material";
 import {createRoute, type AnyRoute} from "@tanstack/react-router";
 import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
+import {AreaFallback} from "../../components/AreaFallback";
 import {
     createHistorySearchSchema,
     DOWNLOAD_HISTORY_SORT_COLUMNS,
@@ -53,26 +53,8 @@ const IndexerStatusesPage = lazy(() =>
     })),
 );
 
-/**
- * The area's `Suspense` fallback, used at two nested boundaries: one on the
- * parent route for the shell itself, and one per tab body inside it, so a tab
- * switch never takes the shell's tab strip down with it. It sits in the
- * content area — the application shell around it never unmounts — and reserves
- * height so nothing below it moves when the chunk lands. A tab switch is a
- * router transition, which React resolves by holding the outgoing body rather
- * than falling back to this at all.
- */
 const AREA_FALLBACK = (
-    <Stack
-        alignItems="center"
-        component="main"
-        role="status"
-        spacing={1}
-        sx={{minHeight: 320, pt: 8}}
-    >
-        <CircularProgress />
-        <Typography>Loading history and statistics…</Typography>
-    </Stack>
+    <AreaFallback message="Loading history and statistics…" />
 );
 
 /**
@@ -126,9 +108,17 @@ export function createStatsRoute<TParent extends AnyRoute>(
     //
     // `validateSearch` is declared here rather than inside the lazy chunk
     // because the router has to resolve a URL's parameters before the chunk it
-    // belongs to has loaded. It costs the entry bundle nothing beyond
-    // `historySearchParams.ts` itself: that module imports the sort-column
-    // *types* only, so no history page or API module is pulled in eagerly.
+    // belongs to has loaded. That is not free, and it is worth being exact
+    // about what it costs. `historySearchParams.ts` takes the three sort
+    // vocabularies as *types* -- erased, so no history page or API client
+    // follows them -- but it also imports runtime values: `zod`, this area's
+    // `shared/pageSize.ts`, and `HISTORY_BOOLEAN_ALL`/`isHistoryFilterActive`
+    // from `api/history/filters.ts`. Those join the eager entry closure. All
+    // three are small and dependency-free (`filters.ts` imports nothing at
+    // all), and the entry stays well under FM-163's 1,250,000-byte ceiling
+    // with them -- measured at 1,085,339 bytes. What is mechanically enforced
+    // is the narrower thing `validate:production-assets` checks: that no chart
+    // code rides along on the critical path.
     const child = (
         path: string,
         component: () => React.ReactNode,

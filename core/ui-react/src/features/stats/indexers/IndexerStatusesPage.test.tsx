@@ -4,7 +4,8 @@ import {cleanup, render, screen, within} from "@testing-library/react";
 import {afterEach, describe, expect, it} from "vitest";
 
 import {createHydraTheme} from "../../../app/theme";
-import {IndexerStatusesPage, vipWarning} from "./IndexerStatusesPage";
+import {IndexerStatusesPage} from "./IndexerStatusesPage";
+import {vipWarning} from "./vipWarning";
 
 const bootstrap = {
     baseUrl: "/",

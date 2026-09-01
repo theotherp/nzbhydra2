@@ -1,4 +1,4 @@
-import {Container, Stack, Typography} from "@mui/material";
+import {Container} from "@mui/material";
 import {
     createRootRoute,
     createRoute,
@@ -11,6 +11,7 @@ import {ApiTransport} from "./api/transport";
 
 import {AppShell} from "./app/AppShell";
 import {maySeeAdminArea, type BootstrapData} from "./bootstrap";
+import {MigrationPlaceholder} from "./components/MigrationPlaceholder";
 import {LoginPage} from "./features/auth/LoginPage";
 import {
     LOGIN_ROUTE,
@@ -134,25 +135,6 @@ function createLoginRedirectRoutes<TParent extends AnyRoute>(
                 throw redirect({to: LOGIN_ROUTE});
             },
         }),
-    );
-}
-
-/**
- * FM-095: with the legacy shell removed there is nothing left to switch to, so this is no longer a
- * migration placeholder offering a way out -- it is the notice for a route this application does not
- * have. It survives because the stats and system shells route their unknown `$tab` here rather than
- * rendering nothing.
- */
-export function MigrationPlaceholder() {
-    return (
-        <Stack component="main" spacing={3} sx={{py: 8}}>
-            <Typography component="h1" variant="h4">
-                Page not found
-            </Typography>
-            <Typography>
-                This address does not match any page of NZBHydra.
-            </Typography>
-        </Stack>
     );
 }
 

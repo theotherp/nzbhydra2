@@ -102,15 +102,49 @@ if (unhashedChunks.length > 0) {
 // Markers are string literals from the two package families that survive
 // minification: MUI's chart class-name prefixes, and one of `d3-color`'s named
 // colours for the d3 side (nothing else in this application ships a CSS colour
-// table).
+// table). The staleness self-check below is what keeps this list honest --
+// `MuiSparkLineChart` was listed here until it caught it: `@mui/x-charts`'s
+// `SparkLineChart` declares no utility class of its own, so that literal
+// existed in no build and never guarded anything. Nothing is lost with it
+// gone; a sparkline renders a `ChartsSurface` like every other chart does.
 const chartMarkers = [
     "MuiChartsSurface",
     "MuiChartsAxis",
     "MuiChartsTooltip",
     "MuiBarChart",
-    "MuiSparkLineChart",
     "rebeccapurple",
 ];
+
+// Every emitted script, read once, for the staleness self-check below: a
+// marker is stale if it is absent from the whole build, not just from the
+// critical path, so this has to look wider than the closure walk does.
+const emittedScripts = emittedAssets.filter((name) => name.endsWith(".js"));
+const chunkSources = new Map();
+for (const name of emittedScripts) {
+    chunkSources.set(
+        name,
+        await readFile(resolve(assetDirectory, name), "utf8"),
+    );
+}
+
+// The markers only guard for as long as they still exist upstream. A renamed
+// MUI class prefix or a `d3-color` that stops shipping its colour table would
+// leave a marker matching nothing anywhere in the build, and the critical-path
+// check below would then pass forever while guarding nothing -- a silent
+// false pass, the one failure mode this script must not have. So every marker
+// has to be found in at least one *emitted* chunk: the chart code does ship,
+// it just must not ship on the critical path. A marker found nowhere is stale,
+// not satisfied.
+const staleMarkers = chartMarkers.filter((marker) =>
+    [...chunkSources.values()].every((source) => !source.includes(marker)),
+);
+if (staleMarkers.length > 0) {
+    throw new Error(
+        `Chart marker stale: ${staleMarkers.join(", ")} appear in none of the ${emittedScripts.length} emitted JavaScript files in ${assetDirectory}. ` +
+            `These markers are the only thing keeping \`@mui/x-charts\` and its \`d3-*\` dependencies off the critical path (FM-163), and a marker that matches nothing guards nothing. ` +
+            `Either the chart code stopped being built at all, or upstream renamed the literal -- pick a new literal from the current \`@mui/x-charts\`/\`d3-*\` output and update \`chartMarkers\`.`,
+    );
+}
 
 // `import ... from "./chunk.js"`, `export ... from "./chunk.js"` and the
 // side-effect `import "./chunk.js"` are the static forms; `import("./chunk.js")`
@@ -120,24 +154,45 @@ const staticImportPatterns = [
     /(?:^|[;}\s])import\s*["']([^"']+\.js)["']/g,
 ];
 
+// Every chunk is matched by its base name, because a specifier is written
+// relative to the importer (`./chunk-hash.js`) while the sources are keyed by
+// file name. That only holds while everything the entry imports lives in
+// `assets/` -- which is what Vite emits, and what the loop asserts rather than
+// assumes: a specifier resolving anywhere else would otherwise be looked up
+// under a base name that happens not to exist and fail as a bare `ENOENT`
+// naming a path nobody wrote. It still fails (it must -- an unreadable import
+// means the closure below is incomplete, so the chart check would be scanning
+// less than the browser downloads), but with a diagnostic saying which chunk
+// asked for what.
 const criticalPathChunks = new Set();
-const pending = ["index.js"];
+const pending = [{name: "index.js", specifier: "index.js", importer: null}];
 while (pending.length > 0) {
-    const chunk = pending.pop();
-    if (criticalPathChunks.has(chunk)) {
+    const {name, specifier, importer} = pending.pop();
+    if (criticalPathChunks.has(name)) {
         continue;
     }
-    criticalPathChunks.add(chunk);
-    const source = await readFile(resolve(assetDirectory, chunk), "utf8");
+    const source = chunkSources.get(name);
+    if (source === undefined) {
+        throw new Error(
+            `React ${importer === null ? "entry" : `chunk ${importer}`} statically imports ${specifier}, which is not an emitted asset in ${assetDirectory}. ` +
+                `The critical-path walk resolves every static import by its base name (${name}) and so requires the whole entry closure to live in \`assets/\`; ` +
+                `an import from outside it leaves the closure incomplete, which would make the chart check below scan less than the browser actually downloads (FM-163).`,
+        );
+    }
+    criticalPathChunks.add(name);
     for (const pattern of staticImportPatterns) {
         for (const match of source.matchAll(pattern)) {
-            pending.push(basename(match[1]));
+            pending.push({
+                name: basename(match[1]),
+                specifier: match[1],
+                importer: name,
+            });
         }
     }
 }
 
 for (const chunk of [...criticalPathChunks].sort()) {
-    const source = await readFile(resolve(assetDirectory, chunk), "utf8");
+    const source = chunkSources.get(chunk);
     const found = chartMarkers.filter((marker) => source.includes(marker));
     if (found.length > 0) {
         throw new Error(

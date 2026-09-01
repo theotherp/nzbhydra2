@@ -12,10 +12,8 @@ import type {StatsResult} from "../../../../api/stats/mainStats";
 import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {dayOfWeekSeries, hourOfDaySeries} from "../derivations";
 import {ChartCard} from "../ChartCard";
-import {
-    GROUPED_BAR_CHART_HEIGHT,
-    GroupedBarChart,
-} from "../charts/GroupedBarChart";
+import {GROUPED_BAR_CHART_HEIGHT} from "../charts/chartSizing";
+import {GroupedBarChart} from "../charts/GroupedBarChart";
 
 /**
  * Presentation Structure item 4: searches/downloads per day of week as one

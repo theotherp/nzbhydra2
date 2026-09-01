@@ -285,6 +285,11 @@ features:
       - display-options-toggle
       - display-options
       - group-episodes-help-dialog
+      # 2026-09-01: shipped by FM-162, whose FEATURES edit was scoped to gap
+      # lines only. The virtualized table's spacer rows above/below the
+      # rendered window.
+      - results-virtual-spacer-top
+      - results-virtual-spacer-bottom
     parity: done
     gaps:
       # 2026-08-23: narrowed from the bare phrase "server-backed preferences",
@@ -424,6 +429,10 @@ features:
     selectors:
       - results-load-more
       - results-load-all
+      # 2026-09-01: shipped by FM-162, whose FEATURES edit was scoped to gap
+      # lines only. Above the load-all-confirm-threshold, "Load all results"
+      # asks for confirmation first before committing to the unbounded fetch.
+      - results-load-all-confirmation
     parity: partial
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse
@@ -1088,6 +1097,7 @@ features:
       - deliberate - leaving a running caps check discards that check's results; they are not applied when the abandoned request finally answers, because the form has moved on and the admin can check again
       - deliberate - the caps-check exit is offered for the bulk recheck only; the same dialog raised from inside an open indexer has none, because that commit transaction awaits the check's outcome to decide whether the entry may be committed
       - deliberate - the add surface is a filterable, grouped gallery with every preset a directly clickable item (FM-104), replacing legacy's two "Choose from presets" anchor menus; filtering is a substring match over the label and never reorders, and a group with no matches hides its own heading rather than showing an empty one
+      - deliberate - the backend's caps-check message multimap (`IndexerWeb.checkCaps`) is cleared only at the START of a new check, not on the previous one's completion, so a check abandoned via the FM-167 exit keeps its threads appending to that multimap; a subsequent check's message list can therefore carry the prior run's lines too and inflate the reported count, which the client's `Math.max` clamp absorbs by inflating `m` rather than surfacing the discrepancy (`tests/system/tests/config-indexers.spec.ts` ~:1058)
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
     routes:

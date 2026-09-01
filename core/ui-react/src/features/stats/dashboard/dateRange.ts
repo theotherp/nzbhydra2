@@ -74,3 +74,10 @@ export function toDateInputValue(date: Date): string {
     const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
+
+export function customDateInputsFor(
+    after: Date,
+    before: Date,
+): CustomDateInput {
+    return {after: toDateInputValue(after), before: toDateInputValue(before)};
+}

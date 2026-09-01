@@ -11,10 +11,8 @@ import {
 import type {StatsResult} from "../../../../api/stats/mainStats";
 import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {ChartCard} from "../ChartCard";
-import {
-    GROUPED_BAR_CHART_HEIGHT,
-    GroupedBarChart,
-} from "../charts/GroupedBarChart";
+import {GROUPED_BAR_CHART_HEIGHT} from "../charts/chartSizing";
+import {GroupedBarChart} from "../charts/GroupedBarChart";
 
 /**
  * Presentation Structure item 6: the per-age histogram as a bar chart plus

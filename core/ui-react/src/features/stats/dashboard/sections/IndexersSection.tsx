@@ -20,10 +20,8 @@ import {
     type IndexerRow,
 } from "../derivations";
 import {ChartCard} from "../ChartCard";
-import {
-    horizontalBarChartHeight,
-    HorizontalBarChart,
-} from "../charts/HorizontalBarChart";
+import {horizontalBarChartHeight} from "../charts/chartSizing";
+import {HorizontalBarChart} from "../charts/HorizontalBarChart";
 
 const SCORE_HELP =
     "Shows how valuable this indexer was for your downloads. A higher score means it often had downloads that fewer of your other indexers could provide.";

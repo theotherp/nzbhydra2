@@ -33,7 +33,7 @@ export const GROUP_EPISODES_HELP_MESSAGE =
  */
 export type SearchedCategory = {
     name: string;
-    searchType?: string;
+    searchType?: "BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH";
 };
 
 /**

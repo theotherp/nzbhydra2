@@ -20,7 +20,7 @@ import {
     type StatFamily,
     type StatFamilySelection,
 } from "../../../api/stats/mainStats";
-import {DATE_PRESETS, toDateInputValue, type DatePresetId} from "./dateRange";
+import {DATE_PRESETS, type DatePresetId} from "./dateRange";
 
 const FAMILY_GROUPS: {label: string; families: StatFamily[]}[] = [
     {
@@ -237,8 +237,4 @@ export function ControlsHeader({
             </Button>
         </Stack>
     );
-}
-
-export function customDateInputsFor(after: Date, before: Date) {
-    return {after: toDateInputValue(after), before: toDateInputValue(before)};
 }

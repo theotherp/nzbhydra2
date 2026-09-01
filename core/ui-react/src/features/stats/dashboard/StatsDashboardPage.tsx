@@ -26,8 +26,9 @@ import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
-import {ControlsHeader, customDateInputsFor} from "./ControlsHeader";
+import {ControlsHeader} from "./ControlsHeader";
 import {
+    customDateInputsFor,
     rangeForPreset,
     toDateInputValue,
     validateCustomRange,

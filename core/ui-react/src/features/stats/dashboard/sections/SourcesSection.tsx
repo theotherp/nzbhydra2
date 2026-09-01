@@ -16,10 +16,8 @@ import type {
 } from "../../../../api/stats/mainStats";
 import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {ChartCard} from "../ChartCard";
-import {
-    horizontalBarChartHeight,
-    HorizontalBarChart,
-} from "../charts/HorizontalBarChart";
+import {horizontalBarChartHeight} from "../charts/chartSizing";
+import {HorizontalBarChart} from "../charts/HorizontalBarChart";
 
 const USER_AGENT_HELP =
     "Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'.";

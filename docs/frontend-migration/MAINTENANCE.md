@@ -1814,6 +1814,22 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   unannotated-magnitude gate, which is red at base almost entirely on these sites. Routed to **FM-129** (2026-08-29),
   sequenced after FM-128, which touches the same results files.
 
+- **A cold config tab swap paints the incoming tab's heading over the outgoing tab's anchor entries.** Found
+  2026-09-01 while writing the cold-swap test recorded in the ledger below. `ConfigNav` heads the "on this page" list
+  from the router's pathname, which changes the instant the tab is clicked, while the entries under it come from the
+  fieldsets currently mounted, which do not change until the incoming tab body has rendered. On a *warm* swap both
+  land in the same commit and nothing is visible — that is the case FM-120 fixed and pins. On a *cold* first visit,
+  FM-163's `React.lazy` boundary holds the body back for as long as the chunk takes to arrive, so the mismatched
+  frame lasts a real module load rather than a scheduling gap. Measured shape, recorded by a `MutationObserver` over
+  a cold `main` → `auth` swap in `ConfigShell.test.tsx`: frame 1 is `config-main` still mounted with the heading
+  reading "Authorization" over Main's own five entries (Hosting, UI, Security, Updates, Other); frame 2 is the area
+  fallback; frame 3 is `config-auth` correctly headed. Only frame 1 is wrong, and it is the long one. FM-120 forbids
+  precisely this shape for the swap it covers, so this is the same defect on the path FM-120's fix does not reach.
+  Not a quickfix: it is a rendering change to a migrated feature (so it needs the screenshot strip), it spans
+  `ConfigNav` and the `routes.tsx` boundary placement, and the fix is a design question — hold the heading until the
+  incoming fieldsets register, drive both from one source, or render the whole list from the route rather than from
+  the registry. Routed to **`/fm-orchestrate`**. Surfaced 2026-09-01.
+
 ### Single-session fix
 
 - **Surefire's random run order cannot be replayed from its seed, so a failing order can be recorded but not
@@ -3160,3 +3176,99 @@ their text and relative order are unchanged.
 - **Gates:** `npx tsc --noEmit` in `tests/system` exit 0; real-backend run of the whole file via `python3 misc/run_gui_systemtest.py --runtime local --skip-install -- config.spec.ts` — 29/29 passed, exit 0; `git diff --check` clean.
 - **Commit:** `769708e37`
 - **Note:** `bd367ff32` put the save bar's Discard behind a `dialogs.confirm` step (`config-discard-changes`) but never touched this spec, so the real-backend run of the whole file against baseline `b436a32f1` showed 3 pre-existing failures, all clicking `config-discard` and then asserting the old immediate-reset behavior: "should summarize unsaved changes, badge their section, and undo them on Discard", and the config-shell visual-evidence test's dirty-summary and validation-error Discard branches. A `clickDiscardAndConfirm` helper now drives the dialog at the two sites where confirming is plumbing only; the first test, whose actual subject is the discard behavior itself, was extended rather than just patched — it now also asserts the dialog's unsaved-count text and that Cancel keeps the edit before asserting the confirmed reset.
+
+### 2026-09-01 — Tighten `SearchedCategory.searchType` to the API union
+
+- **Why not a packet:** mechanical type tightening in one file, no behavioral surface.
+- **Paths:** `core/ui-react/src/features/search/results/groupEpisodesHelp.ts`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `groupEpisodesHelp.test.ts` + `SearchResults.test.tsx` + `SearchPage` suite, 158 tests, all green.
+- **Commit:** `45f36d253`
+- **Note:** retained minor finding from the FM-162..FM-170 reviews. `searchType` was `string | undefined`, looser than every other declaration of the same field in the codebase; a misspelled literal at a future call site would have typechecked and silently disabled the group-episodes dialog. Tightened to the same `"BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH"` union used at every other site. No exported alias for the union exists anywhere to reuse — every site declares it inline — so this keeps that pattern rather than introducing a new one. `SearchPage.tsx`'s threading site already supplied a value of this type (via the zod enum in `domain/categories/catalog.ts`), so no other file needed changes.
+
+### 2026-09-01 — Tie `TABLE_COLUMN_COUNT` to the results `<colgroup>`
+
+- **Why not a packet:** single-file structural tie between two things restating the same fact, no behavior change.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`
+- **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `SearchResults.test.tsx`, 97/97 green.
+- **Commit:** `c02bc0d47`
+- **Note:** retained minor finding from the FM-162..FM-170 reviews. `TABLE_COLUMN_COUNT = 8` restated the `<colgroup>`'s `<col>` count with nothing tying them together; a future column change would leave the virtualization spacer rows' `colSpan` wrong under `tableLayout: fixed`. Extracted the per-column widths into a new `TABLE_COLUMN_WIDTHS` array that both the rendered `<colgroup>` (via `.map`) and `TABLE_COLUMN_COUNT` (its `.length`) now derive from. Rendered widths and `colSpan` values are unchanged.
+
+### 2026-09-01 — Register already-shipped selectors and one gap in `FEATURES.yaml`
+
+- **Why not a packet:** formally a `FEATURES.yaml` edit, which the quickfix gate normally refuses for that reason alone. Sanctioned exception: this records ALREADY-SHIPPED, ALREADY-REVIEWED reality rather than proposing new behavior, and changes no contract -- `results-virtual-spacer-top`/`-bottom` and `results-load-all-confirmation` are both testids that shipped in FM-162, whose own `FEATURES.yaml` edit was scoped to gap lines only and never registered them; the F-CONFIG-INDEXERS gap line documents an existing backend/client behavior that was previously recorded only in a test comment.
+- **Paths:** `docs/frontend-migration/FEATURES.yaml`
+- **Gates:** `npm run validate:migration` exit 0; `git diff --check` clean.
+- **Commit:** `1a196bace`
+- **Note:** retained minor finding from the FM-162..FM-170 reviews. F-SEARCH-SORT-FILTER's selectors gained `results-virtual-spacer-top`/`results-virtual-spacer-bottom`; F-SEARCH-PAGING's gained `results-load-all-confirmation` (mirroring `results-load-all`'s registration); F-CONFIG-INDEXERS' gaps gained one line recording that the backend's caps-check message multimap (`IndexerWeb.checkCaps`) is cleared only at the start of a new check, so an abandoned check's threads keep appending to it and a subsequent check's message list can carry the prior run's lines -- inflating the reported count, which the client's `Math.max` clamp absorbs by inflating the denominator rather than surfacing the discrepancy.
+
+### 2026-09-01 — Fail the production-asset validator on a stale chart marker
+
+- **Why not a packet:** single-file build-script repair; no application code, contract, or behavior touched.
+- **Paths:** `core/ui-react/scripts/validate-production-assets.mjs`
+- **Gates:** `typecheck`, `lint`, `format:check`, `build`, `validate:production-assets` exit 0. Red/green demonstrated: with a bogus `MuiChartsRenamedUpstream` marker temporarily added, `validate:production-assets` exits 1 with `Chart marker stale: MuiChartsRenamedUpstream appear in none of the 61 emitted JavaScript files`; with the marker removed it exits 0. The temporary edit was reverted before staging.
+- **Commit:** `c68bfe48c`
+- **Note:** retained minor finding from the FM-163 review. FM-163's chart-marker guard scans the entry's static import closure for string literals that survive minification; if upstream renames one, it matches nothing, the scan finds nothing, and the guard passes forever while guarding nothing — a silent false pass, the one failure mode this script must not have. Every marker must now also be found in at least one *emitted* chunk (the chart code does ship, it just must not ship on the critical path); a marker found nowhere fails with a "marker stale" diagnostic naming it. The check caught a real one on its first run: `MuiSparkLineChart` appears in no build and nowhere in `@mui/x-charts@9.11.1` — `SparkLineChart` declares no utility class of its own — so that marker had never guarded anything since it was written. Dropped rather than replaced: a sparkline renders a `ChartsSurface` like every other chart does, so `MuiChartsSurface` already covers it.
+
+### 2026-09-01 — Diagnose an out-of-`assets/` static import instead of a bare `ENOENT`
+
+- **Why not a packet:** single-file build-script diagnostic; no application code, contract, or behavior touched, and the pass/fail verdict is unchanged.
+- **Paths:** `core/ui-react/scripts/validate-production-assets.mjs`
+- **Gates:** `typecheck`, `lint`, `format:check`, `validate:production-assets` exit 0. Red/green demonstrated on scratch copies of the script seeded with an extra `vendor.js` walk entry: the pre-fix copy exits 1 with `Error: ENOENT: no such file or directory, open '.../dist/assets/vendor.js'`; the post-fix copy exits 1 with `React chunk index.js statically imports ../vendor/vendor.js, which is not an emitted asset in .../dist/assets. The critical-path walk resolves every static import by its base name (vendor.js) ...`. Both copies lived in the scratchpad; the committed script is unseeded.
+- **Commit:** `651159d23`
+- **Note:** retained minor finding from the FM-163 review. The closure walk resolved each static import by `basename()` and read it from `assets/` unconditionally, so an import resolving outside that directory crashed with an `ENOENT` naming a path nobody had written — loud, never a false pass, but useless. It still exits non-zero (an unreadable import means the walked closure is incomplete, which would leave the chart check scanning less than the browser downloads), now naming the importing chunk, the specifier, and the base name looked up. The walk reads from the emitted-source map the staleness check above it already builds, so an out-of-`assets/` chunk is simply absent from that map rather than a failed read.
+
+### 2026-09-01 — Share one area `Suspense` fallback across the three lazy areas
+
+- **Why not a packet:** mechanical de-duplication of an identical element into one module; rendered DOM unchanged, no contract, testid, or behavior touched.
+- **Paths:** new `core/ui-react/src/components/AreaFallback.tsx`; `core/ui-react/src/features/{config,system,stats}/routes.tsx`
+- **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check`, `build`, `validate:production-assets` exit 0; vitest across `src/features/{config,stats,system}`, 56 files / 898 tests green.
+- **Commit:** `097b8fdc5`
+- **Note:** retained minor finding from the FM-163 review. Each of the three areas' `routes.tsx` carried a near-identical `AREA_FALLBACK` element plus an eight-line doc comment restating the same reasoning, all three duplicating the anatomy of `features/stats/shared/Loading.tsx` (`Stack`/`CircularProgress`/`Typography`, `minHeight: 320`, `role="status"`, `component="main"`). The message is now the only thing each area supplies. Placed in `components/` rather than under `features/stats/` because `system` and `config` import it too, and kept deliberately light: these `routes.tsx` files are eagerly loaded — `router.tsx` builds the whole route tree synchronously — so everything they import lands in the entry chunk that FM-163 guards. Measured rather than assumed: the entry went from 1,085,529 to 1,085,339 bytes, and `validate:production-assets` still reports no chart code on the critical path.
+
+### 2026-09-01 — Correct what the stats area's eager search schema actually costs
+
+- **Why not a packet:** a source comment only; no code line changed, verified by diff.
+- **Paths:** `core/ui-react/src/features/stats/routes.tsx`
+- **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; vitest `src/features/stats`, 19 files / 168 tests green.
+- **Commit:** `2cbfef555`
+- **Note:** retained minor finding from the FM-163 review. The comment beside the area's `validateSearch` claimed `historySearchParams.ts` "imports the sort-column *types* only, so no history page or API module is pulled in eagerly" — false, not merely stale: it also imports runtime values (`zod`, `features/stats/shared/pageSize.ts`, and `HISTORY_BOOLEAN_ALL`/`isHistoryFilterActive` from `api/history/filters.ts`), which do join the eager entry closure because `routes.tsx` is loaded eagerly. The correction says so, names what it costs (all three small, `filters.ts` importing nothing at all, entry measured at 1,085,339 of FM-163's 1,250,000-byte ceiling), and distinguishes what is mechanically enforced — `validate:production-assets` guards only that no chart code is on the critical path — from what is measured but unenforced, so the next reader does not re-acquire the same false confidence about the byte figure.
+
+### 2026-09-01 — Take the lazy module load out of `ConfigShell.test.tsx`'s waits
+
+- **Why not a packet:** single test file, scaffolding only; no assertion, production module, or contract touched.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; `ConfigShell.test.tsx` run five times consecutively, 61/61 green each time; full `npm run test -- --run`, 131 files / 1815 tests green.
+- **Commit:** `55eef27b2`
+- **Note:** a full-suite run under load failed a ConfigShell `findByTestId` timeout on 2026-09-01 (seen by the FM-170 reviewer) that passes in isolation. Cause, as far as it can be established from a single non-reproducing observation: FM-163 put the shell and every tab body behind `React.lazy`, so the first render in this file resolves through a dynamic `import()` — a module load competing for CPU with every other suite in a parallel run, raced against Testing Library's default 1000ms `findBy*` window. Two changes: a `beforeAll` resolves the shell's lazy payload once up front, so `waitForShell()` (this file's most-used wait, ~90 call sites) waits for a config fetch and a render rather than for a module load as well; and `asyncUtilTimeout` is raised to 5000ms for this file, covering every wait rather than only the one observed failing. Nothing asserted changes — a wait that succeeds today succeeds at the same moment; only a genuinely broken assertion now takes longer to give up. The tab bodies are deliberately left cold: the FM-120 frame test reasons about their load timing explicitly with its own warm-up, and a blanket warm-up here would take that decision away from it. **Honest limit:** an intermittent failure that did not reproduce cannot be proven gone. Five consecutive isolated runs and one full run are evidence of no regression, not proof of a fix; the suite's known ~1-in-10-to-13 full-run flake rate (FM-123) means even a clean full run is weak evidence on its own.
+
+### 2026-09-01 — Pin the cold first-visit config tab swap
+
+- **Why not a packet:** one test file plus the doc comment it disproves; no production behavior changed.
+- **Paths:** `core/ui-react/src/features/config/ConfigShell.test.tsx`, `core/ui-react/src/components/AreaFallback.tsx` (doc comment only)
+- **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; `ConfigShell.test.tsx` run five times consecutively, 62/62 green each time; vitest across `src/features/{config,stats,system}`, 56 files / 899 tests green. Red/green demonstrated on both new assertions, each on a scratch edit reverted before staging: changing the config area's fallback message makes the occupancy assertion fail (`expected { outgoing: false, …(5) } to match object { occupied: true }`), and expecting `"Main"` instead of `"Authorization"` makes the swap-completeness assertion fail (`expected 'Authorization' to be 'Main'`) — so neither loop is vacuous.
+- **Commit:** `13624bcf9`
+- **Note:** retained minor finding from the FM-163 review. FM-120's frame test warms both lazy payloads before measuring, so it covers the warm swap only; the cold first visit — module load plus router transition, which FM-163 introduced — had no assertion. Recorded with a `MutationObserver`, whose callback is a microtask queued after each committed DOM batch, so every state a browser could have painted is inspected rather than one chosen frame. Two invariants hold across the whole sequence and are now asserted: the content area is always occupied, by a tab body or by the area's own labelled fallback; and whenever the incoming body is present it carries its own heading and never the outgoing tab's entries. Writing it corrected a claim all three areas' fallbacks had carried since FM-163 and that `AreaFallback` inherited — that a tab switch is a transition React resolves "by holding the outgoing body rather than falling back to this at all". True warm, false cold: React shows a newly mounted `Suspense` boundary's fallback even inside a transition, and each tab body mounts its own. It also surfaced a defect that is **not** fixed here — the first frame of a cold swap puts the incoming tab's heading over the outgoing tab's entries and holds it for the whole load — left unasserted rather than shipped red, documented at the test, and routed under *Open candidates* above.
+
+### 2026-09-01 — Remove HorizontalBarChart's dead `height` override prop
+
+- **Why not a packet:** mechanical dead-code removal; no caller, contract, or `data-testid` touched.
+- **Paths:** `core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.tsx`
+- **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; vitest `ChartCard.test.tsx` + `sections/IndexersSection.test.tsx`, 8/8 green.
+- **Commit:** `dc07c39e2`
+- **Note:** retained minor finding from the FM-164/FM-166 reviews. The optional `height` prop had no callers anywhere in `src` (grep confirmed, and typecheck proved it after removal). Left in place it was the one route by which the rendered chart height could silently diverge from the `chartHeight` its `ChartCard` reserves for the deferred-mount placeholder — exactly the layout shift FM-164 removed by introducing `horizontalBarChartHeight`. `chartHeight` is now always `horizontalBarChartHeight(sorted.length)`.
+
+### 2026-09-01 — Correct the height-carrier comment in `expectChartDrawn`
+
+- **Why not a packet:** a source comment only; no assertion or production code changed, verified by diff.
+- **Paths:** `tests/system/tests/stats.spec.ts`
+- **Gates:** `npx tsc --noEmit` (in `tests/system`) clean.
+- **Commit:** `a62ec68d9`
+- **Note:** retained minor finding from the FM-164/FM-166 reviews. The comment claimed "a grouped-bar card reserves its height on the wrapper" -- wrong carrier. `GroupedBarChart.tsx` sizes its own `Box` (nested inside the `-chart` wrapper the test asserts on) to `GROUPED_BAR_CHART_HEIGHT`; the wrapper itself carries no explicit height. The comment's conclusion — that the wrapper alone can't distinguish a drawn chart from an empty one — still holds, so only the mechanism is corrected.
+
+### 2026-09-01 — Extract non-component exports to clear `react-refresh` warnings
+
+- **Why not a packet:** mechanical moves of plain functions/constants into sibling modules; no behavior, contract, or `data-testid` touched, proven by an unchanged diff shape and green suites.
+- **Paths:** new `core/ui-react/src/features/stats/dashboard/charts/chartSizing.ts`, `core/ui-react/src/features/stats/indexers/vipWarning.ts`, `core/ui-react/src/components/MigrationPlaceholder.tsx`; edited `HorizontalBarChart.tsx`, `GroupedBarChart.tsx`, `ControlsHeader.tsx`, `StatsDashboardPage.tsx`, `dateRange.ts`, `IndexerStatusesPage.tsx` (+ its test), `router.tsx`, and the four dashboard sections that import the moved chart-sizing helpers (`ActivitySection.tsx`, `DownloadAgeSection.tsx`, `IndexersSection.tsx`, `SourcesSection.tsx`).
+- **Gates:** `typecheck`, `lint` (0 errors, warnings 19 → 15), `format:check` exit 0; vitest across `src/features/stats/dashboard`, `IndexerStatusesPage.test.tsx`, and `router.test.tsx`, all green (75 + 18 tests).
+- **Commit:** `2ae497b81`
+- **Note:** retained minor finding from the FM-164/FM-166 reviews. Four files mixed a component export with a plain function/constant export, tripping `react-refresh/only-export-components`: `HorizontalBarChart.tsx` (`horizontalBarChartHeight`, added by FM-164), `ControlsHeader.tsx` (`customDateInputsFor`), `IndexerStatusesPage.tsx` (`vipWarning`), and `router.tsx` (where the odd export out was the `MigrationPlaceholder` component sitting next to `createAppRouter`). Each was a mechanical relocation to a sibling module with no logic change; `GroupedBarChart.tsx`'s `GROUPED_BAR_CHART_HEIGHT` moved into the same new `chartSizing.ts` as `horizontalBarChartHeight` for consistency, though it wasn't itself warning (`allowConstantExport: true` covers a plain constant, not a function). `router.tsx:25`'s own export, `createAppRouter`, was left in place rather than moved: it is entangled with this file's private route-wiring helpers, and moving it risked touching route wiring beyond a mechanical move, whereas extracting the one component export it happened to share the file with cleared the same warning at far lower risk.

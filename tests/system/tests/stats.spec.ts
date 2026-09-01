@@ -734,9 +734,10 @@ test("should keep one stats shell and its cached tab across a tab switch", async
  * viewport. Asserting the card alone would therefore stay green for a chart
  * that never drew, so scroll the card into view and assert the chart arm --
  * the `-chart` wrapper, which the placeholder never carries -- down to the
- * plot it contains. The wrapper alone would not do: a grouped-bar card
- * reserves its height on the wrapper, so a chart that rendered nothing would
- * leave a wrapper of the right size and an empty card.
+ * plot it contains. The wrapper alone would not do: `GroupedBarChart` sizes
+ * its own `Box` (inside the wrapper) to `GROUPED_BAR_CHART_HEIGHT`, so a
+ * chart that rendered nothing would still leave a wrapper of the right size
+ * and an empty card.
  */
 async function expectChartDrawn(page: Page, testId: string): Promise<void> {
     const card = page.getByTestId(testId);

@@ -1,8 +1,8 @@
-import {CircularProgress, Stack, Typography} from "@mui/material";
 import {createRoute, redirect, type AnyRoute} from "@tanstack/react-router";
 import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
+import {AreaFallback} from "../../components/AreaFallback";
 import {
     CONFIG_TABS,
     configTabHref,
@@ -65,27 +65,7 @@ const SearchingConfigTab = lazy(() =>
     })),
 );
 
-/**
- * The area's `Suspense` fallback, used at two nested boundaries: one on the
- * parent route for the shell itself, and one per tab body inside it, so a tab
- * switch never takes the shell's tab strip down with it. It sits in the
- * content area — the application shell around it never unmounts — and reserves
- * height so nothing below it moves when the chunk lands. A tab switch is a
- * router transition, which React resolves by holding the outgoing body rather
- * than falling back to this at all.
- */
-const AREA_FALLBACK = (
-    <Stack
-        alignItems="center"
-        component="main"
-        role="status"
-        spacing={1}
-        sx={{minHeight: 320, pt: 8}}
-    >
-        <CircularProgress />
-        <Typography>Loading the configuration…</Typography>
-    </Stack>
-);
+const AREA_FALLBACK = <AreaFallback message="Loading the configuration…" />;
 
 /**
  * The configuration area's route subtree. The eight tabs are *children* of one

@@ -12,6 +12,7 @@ import {
 import {
     act,
     cleanup,
+    configure,
     fireEvent,
     render,
     screen,
@@ -21,6 +22,7 @@ import {
 import {useFormContext} from "react-hook-form";
 import {
     afterEach,
+    beforeAll,
     beforeEach,
     describe,
     expect,
@@ -344,6 +346,31 @@ function stubMobileViewport(): void {
         dispatchEvent: () => false,
     }));
 }
+
+// FM-163 put `ConfigShell` and every tab body behind `React.lazy`, so the
+// first render of one in this file resolves through a dynamic `import()` --
+// a module load that, in a full `vitest` run, competes for CPU with every
+// other suite running in parallel. Testing Library's default 1000ms `findBy*`
+// window is not reliably wide enough for that: a full-suite run under load
+// failed a `findByTestId` here on 2026-09-01 where the same test passes in
+// isolation. Two changes, one removing the race and one widening the window
+// it lived in.
+//
+// The window: every wait in this file, not just the one observed failing.
+// Nothing asserted changes -- a wait that succeeds today succeeds at the same
+// moment; only a genuinely broken assertion takes longer to give up.
+configure({asyncUtilTimeout: 5000});
+
+beforeAll(async () => {
+    // The race: resolve the shell's lazy payload once, before any test times
+    // anything. React caches a resolved payload on the shared `lazy` object,
+    // so from here on `waitForShell()` waits for a config fetch and a render
+    // rather than for a module load as well. Deliberately only the shell:
+    // the tab bodies' load timing is something the FM-120 frame test reasons
+    // about explicitly, with its own warm-up, and a blanket warm-up here
+    // would quietly take that decision away from it.
+    await import("./ConfigShell");
+});
 
 beforeEach(() => {
     stubWorkingLocalStorage();
@@ -1114,6 +1141,149 @@ describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
         for (const label of ["Hosting", "UI", "Updates"]) {
             expect(screen.queryByText(label)).toBeNull();
         }
+    });
+
+    it("should keep the content area occupied across a cold lazy tab load, and never commit the incoming body under the outgoing tab's entries (FM-163)", async () => {
+        renderConfigArea({backend: createValidBackend(), realTabBodies: true});
+        await waitForShell();
+        await screen.findByTestId("config-main");
+        expect(
+            await screen.findByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Main");
+
+        // The FM-120 test above deliberately warms both tab bodies first, so
+        // the frame it measures is a swap between two already-loaded
+        // modules. This one measures the swap FM-163 introduced and nothing
+        // else covers: the *cold* first visit, where the router has to wait
+        // out a real dynamic `import()` before it can commit anything. That
+        // wait is not one commit but a stretch of real time, so instead of
+        // inspecting a single frame this records every one of them.
+        //
+        // A `MutationObserver` callback is a microtask queued after the DOM
+        // batch React has just committed, so each record below is a state a
+        // browser could have painted -- including the gap between a commit
+        // and any passive effect it defers, which is exactly where FM-120's
+        // bug lived.
+        type Frame = {
+            outgoing: boolean;
+            incoming: boolean;
+            fallback: boolean;
+            heading: string | null;
+            entries: string[];
+        };
+        const snapshot = (): Frame => {
+            const nav = document.querySelector('[data-testid="config-nav"]');
+            const heading = nav?.querySelector(
+                '[data-testid="config-nav-anchor-list-heading"]',
+            );
+            return {
+                outgoing:
+                    document.querySelector('[data-testid="config-main"]') !==
+                    null,
+                incoming:
+                    document.querySelector('[data-testid="config-auth"]') !==
+                    null,
+                fallback:
+                    document.body.textContent?.includes(
+                        "Loading the configuration…",
+                    ) === true,
+                heading: heading ? heading.textContent : null,
+                entries: [
+                    ...(nav?.querySelectorAll<HTMLElement>(
+                        '[data-testid^="config-nav-anchor-"]',
+                    ) ?? []),
+                ]
+                    .filter(
+                        (el) =>
+                            el.dataset.testid !==
+                            "config-nav-anchor-list-heading",
+                    )
+                    .map((el) => el.textContent ?? ""),
+            };
+        };
+        const frames: Frame[] = [];
+        const observer = new MutationObserver(() => frames.push(snapshot()));
+        observer.observe(document.body, {
+            characterData: true,
+            childList: true,
+            subtree: true,
+        });
+        onTestFinished(() => observer.disconnect());
+
+        // `act()` folds the whole lazy resolution into one synchronous flush,
+        // which is precisely the sequence under test; disabling it restores
+        // the real scheduling a browser sees. See the FM-120 test above for
+        // the longer version of this argument.
+        const priorActEnvironment = getActEnvironment();
+        setActEnvironment(false);
+        let settled = false;
+        try {
+            fireEvent.click(screen.getByTestId("config-tab-auth"));
+            // `AuthConfigTab` has not been imported in this test, so this
+            // click crosses a genuine module load. Waiting in macrotasks (not
+            // the FM-120 test's microtask drain) is what makes that possible.
+            for (let tick = 0; tick < 200 && !settled; tick += 1) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                settled =
+                    document.querySelector('[data-testid="config-auth"]') !==
+                    null;
+            }
+        } finally {
+            setActEnvironment(priorActEnvironment);
+        }
+        expect(settled).toBe(true);
+
+        // Nothing here is asserted about *when* the swap happened -- only
+        // about what was on screen at every point along the way.
+        expect(frames.length).toBeGreaterThan(0);
+        for (const frame of frames) {
+            // The content area is occupied in every frame: either a tab body
+            // or, for the stretch where the chunk is in flight, the area's
+            // own labelled fallback. Never a blank panel between the two.
+            //
+            // Note what this does *not* say. A cold swap does fall back:
+            // React shows a newly mounted `Suspense` boundary's fallback even
+            // inside a transition, and each tab body in `routes.tsx` mounts
+            // its own. Holding the outgoing body -- what the FM-120 test sees
+            // -- is the *warm* swap's behaviour, where nothing suspends at
+            // all. `AreaFallback` reserving height is what keeps the cold
+            // case from jumping.
+            expect({
+                ...frame,
+                occupied: frame.outgoing || frame.incoming || frame.fallback,
+            }).toMatchObject({occupied: true});
+            // And when the incoming body does land, it lands with its own
+            // anchor list: no frame shows it under a missing heading, or
+            // under the outgoing tab's entries. This is FM-120's guarantee,
+            // now pinned on the cold path too.
+            if (frame.incoming) {
+                expect(frame.heading).toBe("Authorization");
+                expect(frame.entries).not.toEqual(
+                    expect.arrayContaining(["Hosting", "UI", "Updates"]),
+                );
+            }
+        }
+
+        // Deliberately not asserted, because it does not hold: writing this
+        // test found that the *first* frame of a cold swap puts the incoming
+        // tab's heading over the outgoing tab's entries -- "Authorization"
+        // above Hosting/UI/Security/Updates/Other -- and holds it there for
+        // as long as the chunk takes to load. `ConfigNav` heads the list from
+        // the router's pathname, which changes at once, while the entries
+        // come from the fieldsets currently mounted, which do not. FM-120
+        // forbids exactly that shape and its fix covers the warm swap, where
+        // both change in one commit. Fixing the cold case is a rendering
+        // change to a migrated feature, not a quickfix; it is recorded under
+        // *Open candidates* in `docs/frontend-migration/MAINTENANCE.md`
+        // (surfaced 2026-09-01). Asserting it here would only add a red test
+        // for a defect this file is not fixing.
+
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+        expect(
+            screen.getByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Authorization");
     });
 
     it("should head the list with the active tab's name and list only the mounted fieldsets, growing as advanced is turned on", async () => {
