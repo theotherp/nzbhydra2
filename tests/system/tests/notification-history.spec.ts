@@ -171,6 +171,76 @@ test.describe("Notification history", () => {
         expect(cleared.request().postDataJSON().filterModel).toEqual({});
     });
 
+    /**
+     * FM-166: the shared pager's jumps against the real backend. The page
+     * count is read off the status line rather than assumed -- this route's
+     * history accumulates across the suite, so how many pages there are is not
+     * fixed, only that there is more than one to jump between.
+     */
+    test("should jump to the last page and back through the shared pager", async ({
+        page,
+        request,
+    }) => {
+        // The default page size is 25, and `beforeEach` leaves two entries, so
+        // the pager has nowhere to go until there are more than 25.
+        for (let index = 0; index < 30; index += 1) {
+            await sendTestNotification(request, "INDEXER_DISABLED");
+        }
+        await page.goto("/stats/notifications");
+        await dismissWelcomeDialog(page);
+        const status = page.getByTestId("notification-history-page-status");
+        await expect(status).toContainText("Page 1 of");
+        const totalPages = Number(
+            /Page 1 of (\d+)/.exec((await status.textContent()) ?? "")?.[1],
+        );
+        expect(totalPages).toBeGreaterThan(1);
+        await expect(
+            page.getByRole("button", {name: "First page", exact: true}),
+        ).toBeDisabled();
+
+        const lastRead = waitForNotificationHistory(page);
+        await page.getByRole("button", {name: "Last page", exact: true}).click();
+        const lastResponse = await lastRead;
+        expect(lastResponse.status()).toBe(200);
+        expect(lastResponse.request().postDataJSON()).toMatchObject({
+            page: totalPages,
+            limit: 25,
+        });
+        await expect(status).toContainText(
+            `Page ${totalPages} of ${totalPages}`,
+        );
+        // The current page is the only one named without "Go to", and it is
+        // the one assistive technology is told is current.
+        await expect(
+            page.getByRole("button", {
+                name: `Page ${totalPages}`,
+                exact: true,
+            }),
+        ).toHaveAttribute("aria-current", "page");
+        await expect(
+            page.getByRole("button", {name: "Last page", exact: true}),
+        ).toBeDisabled();
+        expect(new URL(page.url()).searchParams.get("page")).toBe(
+            String(totalPages),
+        );
+
+        // No response to wait for on the way back: page 1 is still inside the
+        // 30s `DEFAULT_QUERY_STALE_TIME_MS`, so the jump back is served from
+        // the cache. What has to be true is what the reader sees.
+        await page
+            .getByRole("button", {name: "First page", exact: true})
+            .click();
+        await expect(status).toContainText(`Page 1 of ${totalPages}`);
+        await expect(
+            page.getByRole("button", {name: "First page", exact: true}),
+        ).toBeDisabled();
+        await expect(
+            page.getByTestId("notification-history-row").first(),
+        ).toBeVisible();
+        // Page 1 is the default, so the parameter leaves the URL again.
+        expect(new URL(page.url()).searchParams.get("page")).toBeNull();
+    });
+
     test("should show the empty state for a filter that matches nothing", async ({
         page,
     }) => {

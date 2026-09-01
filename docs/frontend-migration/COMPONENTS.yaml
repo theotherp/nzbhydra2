@@ -335,7 +335,8 @@ components:
       C-REFINE-MULTISELECT's groupLabel aria-label.
   - id: C-HISTORY-PAGER
     responsibility: Shared page navigation and page-size choice for the three paged history tables -- first/previous/numbered-with-ellipsis/next/last controls, the disabled-edge and aria-current="page" states, one "Page N of M / X entries"
-      status line, and the offered page sizes. It owns navigation only, never fetching, filter state, or the request itself; the chosen page and size are URL state (FM-165's schema), not component state
+      status line, and the offered page sizes (`features/stats/shared/pageSize.ts`). It owns navigation only, never fetching, filter state, or the request itself; the chosen page and size are URL state (FM-165's schema, extended by FM-166's
+      `size` parameter), not component state. It computes `totalPages` from the total and the size it is handed, which is why the three pages no longer each carry that expression
     legacy:
       - core/ui-src/html/dirPagination.tpl.html
       - core/ui-src/js/download-history-controller.js
@@ -345,8 +346,10 @@ components:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
-    state: planned
-    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implements it. Legacy paths are in git history only (core/ui-src was removed by a31df3aa2)
+    state: done
+    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implemented it. Legacy paths are in git history only (core/ui-src was removed by a31df3aa2). Built on MUI's `Pagination` at boundaryCount 1 and siblingCount 2, which
+      reproduces `dirPagination`'s own nine-slot windowing page for page; `getItemAriaLabel` keeps the "Previous page"/"Next page" names the three hand-rolled pagers carried, and `renderItem` adds the `aria-current="page"` MUI does not set.
+      The status line's test id is per route because `notification-history-page-status` is an existing spec contract
   - id: C-COPY-VALUE-BUTTON
     responsibility: One copy-to-clipboard icon button for a single table-cell value -- always in the DOM, revealed on row hover and on focus so it is keyboard-reachable, labelled per value, confirming and failing through C-TOAST-SERVICE, and
       rendering nothing at all where navigator.clipboard is unavailable (NZBHydra is routinely served over plain HTTP). It is offered only on free text or machine-generated identifiers a user pastes elsewhere and that no existing action

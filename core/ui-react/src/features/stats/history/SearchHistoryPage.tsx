@@ -21,7 +21,7 @@ import {
     useQuery,
     type UseQueryResult,
 } from "@tanstack/react-query";
-import {useNavigate} from "@tanstack/react-router";
+import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useMemo, useState, type ReactNode} from "react";
 
 import {
@@ -47,11 +47,20 @@ import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {recentSearchCriteria} from "../../search/history/recentSearchCriteria";
 import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
-import {PAGE_SIZE} from "../shared/pageSize";
+import {type HistoryPageSize} from "../shared/pageSize";
+import {HistoryPager} from "./HistoryPager";
+import {
+    defaultHistorySort,
+    historyPageSizeFromSearch,
+    historySortFromSearch,
+    withHistoryPageSize,
+    withHistorySort,
+    SEARCH_HISTORY_SORT_COLUMNS,
+} from "./historySearchParams";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
-const defaultSort: SearchHistorySort = {column: "time", sortMode: 2};
+const defaultSort: SearchHistorySort = defaultHistorySort("time");
 
 export function SearchHistoryPage({
     bootstrap,
@@ -61,6 +70,7 @@ export function SearchHistoryPage({
     transport: ApiTransport;
 }) {
     const navigate = useNavigate({from: "/stats/searches"});
+    const search = useSearch({strict: false});
     const safeConfig = useSafeConfig(bootstrap);
     const catalog = createCategoryCatalog(safeConfig);
     const {
@@ -72,7 +82,12 @@ export function SearchHistoryPage({
         values,
     } = useHistoryFilterCriteria();
     const page = criteria.page;
-    const [sort, setSort] = useState<SearchHistorySort>(defaultSort);
+    const pageSize = historyPageSizeFromSearch(search);
+    const sort = historySortFromSearch(
+        search,
+        SEARCH_HISTORY_SORT_COLUMNS,
+        defaultSort,
+    );
     const [showUserAgent, setShowUserAgent] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
     const userAgentFilter = values["user-agent"];
@@ -102,6 +117,7 @@ export function SearchHistoryPage({
         queryKey: [
             "search-history",
             criteria.page,
+            pageSize,
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
@@ -110,7 +126,7 @@ export function SearchHistoryPage({
                 dimensions,
                 values: criteria.values,
                 page: criteria.page,
-                limit: PAGE_SIZE,
+                limit: pageSize,
                 sort,
             }),
         // A committed filter edit is a new query key; keeping the previous
@@ -124,13 +140,18 @@ export function SearchHistoryPage({
         queryFn: () => getSearchHistoryDetails(transport, detailsId!),
         enabled: detailsId !== undefined,
     });
+    // One navigation, not two: `commitFilters` carries the new ordering into
+    // the same history entry as the filter edit it flushes, so a sort click
+    // during typing is a single Back step and the sort change cannot resolve
+    // against a search the filter commit has not written yet.
     const updateSort = (column: SearchHistorySort["column"]) => {
-        commitFilters();
-        setSort((current) => ({
+        const next: SearchHistorySort = {
             column,
-            sortMode:
-                current.column === column && current.sortMode === 1 ? 2 : 1,
-        }));
+            sortMode: sort.column === column && sort.sortMode === 1 ? 2 : 1,
+        };
+        commitFilters((previous) =>
+            withHistorySort(previous, next, defaultSort),
+        );
     };
     const repeat = (entry: SearchHistoryEntry) => {
         void navigate({
@@ -141,6 +162,16 @@ export function SearchHistoryPage({
             },
         });
     };
+    /*
+     * A page-size change is one navigation, not two: `commitFilters` already
+     * returns to page 1 (and flushes any filter edit still waiting), and
+     * `withHistoryPageSize` writes the new size into the same search object.
+     * Committing them separately would ask the server for a page that the new
+     * size may have put past the end.
+     */
+    const changePageSize = (size: HistoryPageSize) => {
+        commitFilters((previous) => withHistoryPageSize(previous, size));
+    };
     if (query.isPending) {
         return <Loading message="Loading search history…" />;
     }
@@ -148,7 +179,6 @@ export function SearchHistoryPage({
         return <Alert severity="error">Unable to load search history.</Alert>;
     }
     const {entries: searches, totalElements, malformedCount} = query.data;
-    const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     const activeFilterCount = activeHistoryFilterCount(
         dimensions,
         criteria.values,
@@ -415,23 +445,15 @@ export function SearchHistoryPage({
                     </Table>
                 </TableScrollAffordance>
             )}
-            <Stack direction="row" alignItems="center" spacing={1}>
-                <Button
-                    disabled={page === 1}
-                    onClick={() => goToPage(page - 1)}
-                >
-                    Previous page
-                </Button>
-                <Typography>
-                    Page {page} of {totalPages}
-                </Typography>
-                <Button
-                    disabled={page >= totalPages}
-                    onClick={() => goToPage(page + 1)}
-                >
-                    Next page
-                </Button>
-            </Stack>
+            <HistoryPager
+                entryNoun={{one: "search", many: "searches"}}
+                onPageChange={goToPage}
+                onPageSizeChange={changePageSize}
+                page={page}
+                pageSize={pageSize}
+                statusTestId="search-history-page-status"
+                totalElements={totalElements}
+            />
             <DetailsDialog
                 details={details}
                 onClose={() => setDetailsId(undefined)}

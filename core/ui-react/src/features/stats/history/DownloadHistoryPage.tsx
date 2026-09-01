@@ -17,7 +17,8 @@ import {
     Typography,
 } from "@mui/material";
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
-import {useMemo, useState, type ReactNode} from "react";
+import {useSearch} from "@tanstack/react-router";
+import {useMemo, type ReactNode} from "react";
 
 import {
     DOWNLOAD_STATUSES,
@@ -41,12 +42,21 @@ import {externalLink} from "../../../domain/links/externalLinks";
 import {DirectDownloadActions} from "../../search/results/DownloadActions";
 import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
-import {PAGE_SIZE} from "../shared/pageSize";
+import {type HistoryPageSize} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
+import {HistoryPager} from "./HistoryPager";
+import {
+    defaultHistorySort,
+    historyPageSizeFromSearch,
+    historySortFromSearch,
+    withHistoryPageSize,
+    withHistorySort,
+    DOWNLOAD_HISTORY_SORT_COLUMNS,
+} from "./historySearchParams";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
-const defaultSort: DownloadHistorySort = {column: "time", sortMode: 2};
+const defaultSort: DownloadHistorySort = defaultHistorySort("time");
 
 export function DownloadHistoryPage({
     bootstrap,
@@ -64,7 +74,13 @@ export function DownloadHistoryPage({
         values,
     } = useHistoryFilterCriteria();
     const page = criteria.page;
-    const [sort, setSort] = useState<DownloadHistorySort>(defaultSort);
+    const search = useSearch({strict: false});
+    const pageSize = historyPageSizeFromSearch(search);
+    const sort = historySortFromSearch(
+        search,
+        DOWNLOAD_HISTORY_SORT_COLUMNS,
+        defaultSort,
+    );
     const safeConfig = useSafeConfig(bootstrap);
     const userInfoType = historyUserInfoType(safeConfig);
     const dimensions = useMemo(
@@ -89,6 +105,7 @@ export function DownloadHistoryPage({
         queryKey: [
             "download-history",
             criteria.page,
+            pageSize,
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
@@ -97,7 +114,7 @@ export function DownloadHistoryPage({
                 dimensions,
                 values: criteria.values,
                 page: criteria.page,
-                limit: PAGE_SIZE,
+                limit: pageSize,
                 sort,
             }),
         // A committed filter edit is a new query key. Without this the page
@@ -107,13 +124,28 @@ export function DownloadHistoryPage({
         // reports the in-flight request instead.
         placeholderData: keepPreviousData,
     });
+    // One navigation, not two: `commitFilters` carries the new ordering into
+    // the same history entry as the filter edit it flushes, so a sort click
+    // during typing is a single Back step and the sort change cannot resolve
+    // against a search the filter commit has not written yet.
     const updateSort = (column: DownloadHistorySort["column"]) => {
-        commitFilters();
-        setSort((current) => ({
+        const next: DownloadHistorySort = {
             column,
-            sortMode:
-                current.column === column && current.sortMode === 1 ? 2 : 1,
-        }));
+            sortMode: sort.column === column && sort.sortMode === 1 ? 2 : 1,
+        };
+        commitFilters((previous) =>
+            withHistorySort(previous, next, defaultSort),
+        );
+    };
+    /*
+     * A page-size change is one navigation, not two: `commitFilters` already
+     * returns to page 1 (and flushes any filter edit still waiting), and
+     * `withHistoryPageSize` writes the new size into the same search object.
+     * Committing them separately would ask the server for a page that the new
+     * size may have put past the end.
+     */
+    const changePageSize = (size: HistoryPageSize) => {
+        commitFilters((previous) => withHistoryPageSize(previous, size));
     };
     if (query.isPending) {
         return <Loading message="Loading download history…" />;
@@ -122,7 +154,6 @@ export function DownloadHistoryPage({
         return <Alert severity="error">Unable to load download history.</Alert>;
     }
     const {entries: downloads, totalElements, malformedCount} = query.data;
-    const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     const activeFilterCount = activeHistoryFilterCount(
         dimensions,
         criteria.values,
@@ -321,23 +352,15 @@ export function DownloadHistoryPage({
                     </Table>
                 </TableScrollAffordance>
             )}
-            <Stack direction="row" alignItems="center" spacing={1}>
-                <Button
-                    disabled={page === 1}
-                    onClick={() => goToPage(page - 1)}
-                >
-                    Previous page
-                </Button>
-                <Typography>
-                    Page {page} of {totalPages}
-                </Typography>
-                <Button
-                    disabled={page >= totalPages}
-                    onClick={() => goToPage(page + 1)}
-                >
-                    Next page
-                </Button>
-            </Stack>
+            <HistoryPager
+                entryNoun={{one: "download", many: "downloads"}}
+                onPageChange={goToPage}
+                onPageSizeChange={changePageSize}
+                page={page}
+                pageSize={pageSize}
+                statusTestId="download-history-page-status"
+                totalElements={totalElements}
+            />
         </HistoryRefineLayout>
     );
 }

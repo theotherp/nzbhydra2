@@ -223,6 +223,36 @@ test.describe("Search history", () => {
             .getByTestId("search-history-row")
             .filter({hasText: query});
         await expect(historyRow).toHaveCount(1);
+
+        // FM-165: the refined view is a link. Both committed filters are in
+        // the URL, so reloading it re-issues the same filtered request and
+        // comes back to the same single row -- where before FM-165 a reload
+        // dropped the refinement and returned the unfiltered first page.
+        const refinedUrl = page.url();
+        expect(refinedUrl).toContain("ft.query=");
+        expect(refinedUrl).toContain("cb.category=");
+        const reloadedResponse = page.waitForResponse((response) =>
+            isSearchHistoryResponse(response),
+        );
+        await page.reload();
+        const reloaded = await reloadedResponse;
+        expect(reloaded.status()).toBe(200);
+        expect(reloaded.request().postDataJSON()).toMatchObject({
+            page: 1,
+            filterModel: {
+                query: {filterType: "freetext", filterValue: query},
+                category_name: {
+                    filterType: "checkboxes",
+                    filterValue: [category],
+                },
+            },
+        });
+        expect(page.url()).toBe(refinedUrl);
+        await expect(page.getByLabel("Query")).toHaveValue(query);
+        await expect(page.getByTestId("history-refine-summary")).toHaveText(
+            "2 active filters",
+        );
+        await expect(historyRow).toHaveCount(1);
     });
 
     /**
@@ -455,6 +485,49 @@ test.describe("Search history", () => {
             ),
         });
         expect(await pageFitsHorizontally(page)).toBe(true);
+    });
+
+    /**
+     * FM-166: the page size is URL state, so a reload is the whole test --
+     * nothing on the client remembers it, and if the parameter did not survive
+     * the round trip the reloaded request would ask for 25 again.
+     */
+    test("should keep a chosen page size in the URL across a reload", async ({
+        page,
+    }) => {
+        const firstRead = page.waitForResponse(isSearchHistoryResponse);
+        await page.goto("/stats/searches");
+        await dismissWelcomeDialog(page);
+        expect((await firstRead).request().postDataJSON()).toMatchObject({
+            page: 1,
+            limit: 25,
+        });
+        await expect(
+            page.getByTestId("search-history-page-status"),
+        ).toContainText("Page 1 of");
+
+        const resized = page.waitForResponse(isSearchHistoryResponse);
+        await page.getByRole("combobox", {name: "Rows per page"}).click();
+        await page.getByRole("option", {name: "100", exact: true}).click();
+        const resizedResponse = await resized;
+        expect(resizedResponse.status()).toBe(200);
+        // Page 1, not the page the reader was on: a resize cannot ask for a
+        // page the new size may have put past the end.
+        expect(resizedResponse.request().postDataJSON()).toMatchObject({
+            page: 1,
+            limit: 100,
+        });
+        expect(new URL(page.url()).searchParams.get("size")).toBe("100");
+
+        const reloaded = page.waitForResponse(isSearchHistoryResponse);
+        await page.reload();
+        expect((await reloaded).request().postDataJSON()).toMatchObject({
+            page: 1,
+            limit: 100,
+        });
+        await expect(
+            page.getByRole("combobox", {name: "Rows per page"}),
+        ).toHaveText("100");
     });
 });
 

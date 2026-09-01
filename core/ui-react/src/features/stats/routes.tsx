@@ -4,6 +4,13 @@ import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
+import {
+    createHistorySearchSchema,
+    DOWNLOAD_HISTORY_SORT_COLUMNS,
+    NOTIFICATION_HISTORY_SORT_COLUMNS,
+    SEARCH_HISTORY_SORT_COLUMNS,
+    type HistorySearchParams,
+} from "./history/historySearchParams";
 
 /**
  * FM-163: the whole area — shell and tab bodies — is behind `React.lazy`, so
@@ -116,10 +123,23 @@ export function createStatsRoute<TParent extends AnyRoute>(
     // Every tab body is behind its own boundary as well, nested inside the
     // parent's: a tab switch must not take the shell's tab strip down with it
     // while the incoming body's chunk is in flight.
-    const child = (path: string, component: () => React.ReactNode) =>
+    //
+    // `validateSearch` is declared here rather than inside the lazy chunk
+    // because the router has to resolve a URL's parameters before the chunk it
+    // belongs to has loaded. It costs the entry bundle nothing beyond
+    // `historySearchParams.ts` itself: that module imports the sort-column
+    // *types* only, so no history page or API module is pulled in eagerly.
+    const child = (
+        path: string,
+        component: () => React.ReactNode,
+        validateSearch?: (
+            input: Record<string, unknown>,
+        ) => HistorySearchParams,
+    ) =>
         createRoute({
             getParentRoute: () => statsRoute,
             path,
+            validateSearch,
             component: () => (
                 <Suspense fallback={AREA_FALLBACK}>{component()}</Suspense>
             ),
@@ -130,21 +150,43 @@ export function createStatsRoute<TParent extends AnyRoute>(
         child("stats", () => (
             <StatsDashboardPage bootstrap={bootstrap} transport={transport} />
         )),
-        child("searches", () => (
-            <SearchHistoryPage bootstrap={bootstrap} transport={transport} />
-        )),
+        // FM-165: the three history tabs carry their filter, sort and page in
+        // the URL, over one shared schema instantiated with each tab's own
+        // sort vocabulary. `SavedSearchesPage` has no such state and stays
+        // parameterless.
+        child(
+            "searches",
+            () => (
+                <SearchHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            ),
+            createHistorySearchSchema(SEARCH_HISTORY_SORT_COLUMNS),
+        ),
         child("saved-searches", () => (
             <SavedSearchesPage bootstrap={bootstrap} transport={transport} />
         )),
-        child("downloads", () => (
-            <DownloadHistoryPage bootstrap={bootstrap} transport={transport} />
-        )),
-        child("notifications", () => (
-            <NotificationHistoryPage
-                bootstrap={bootstrap}
-                transport={transport}
-            />
-        )),
+        child(
+            "downloads",
+            () => (
+                <DownloadHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            ),
+            createHistorySearchSchema(DOWNLOAD_HISTORY_SORT_COLUMNS),
+        ),
+        child(
+            "notifications",
+            () => (
+                <NotificationHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            ),
+            createHistorySearchSchema(NOTIFICATION_HISTORY_SORT_COLUMNS),
+        ),
         child("$tab", notFound),
     ]);
 }

@@ -1365,6 +1365,36 @@ chart. Real-backend stats.spec.ts 7/7; stats vitest 122/122. Passed 2026-09-01 w
 new react-refresh lint warning (three identical ones pre-date it; a sizing-helper module would clear all). Candidates
 for a future quickfix.
 
+FM-165 (Put History Filter, Sort, And Page In The URL) made a filtered, sorted, paged history view a shareable,
+bookmarkable, Back-restorable link: the three history routes validate one shared, total Zod schema
+(`historySearchParams.ts`, per-route sort vocabulary; params `ft./cb./bo./nr./tm.` keyed by dimension id; defaults never
+written so pristine URLs stay bare; malformed/unknown/out-of-range parameters fall back per-parameter and render — fuzz-
+pinned through the real route validator). `useHistoryFilterCriteria` keeps its six-member contract with byte-identical
+query keys and payloads (ADR-0005/ADR-0016 untouched); the 275ms debounce commits with `replace` while
+page/sort/clear/commit push (history-stack growth pinned against the memory router), a sort click flushes the pending
+draft in one navigation via a reducer resolved against the router's pending location. Round-trip and Back tests per
+page; the three page suites now render under `createHydraTheme` (discharging that slice of the standing candidate);
+`search-history.spec.ts` gained a reload-on-filtered-URL append; real-backend 13/13, full vitest 1762/1762. The
+reviewer also proved the entry bundle stays under FM-163's guard (1,085,291 of 1,250,000). Passed 2026-09-01 with minor
+findings, not corrected (optional): a routes.tsx comment falsely claims types-only imports from `api/history/filters.ts`,
+and the draft-rollback external-arrival test rests on search-object identity without a dedicated test. Candidates for a
+future quickfix.
+
+FM-166 (One Shared History Pager With Page Jumps And A Page-Size Choice) shipped `C-HISTORY-PAGER`
+(`HistoryPager.tsx`, MUI Pagination at boundaryCount 1 / siblingCount 2 — proven page-for-page identical to legacy
+`dirPagination`'s nine-slot window by re-running the actual `generatePagesArray` from git history over the pinned
+table): first/prev/numbered-run-with-ellipsis/next/last on all three history pages, edges disabled at edges,
+`aria-current="page"`, one "Page N of M · X <noun>" status per route (`notification-history-page-status` id and shape
+untouched), and a labeled Rows-per-page choice of 25/50/100 riding FM-165's URL schema (`size`, omitted at the default
+25 — the owner's deliberate keep vs legacy's hard-coded limit=100, recorded as gap lines; a size change resets to page
+1 in one navigation). First/last buttons and the kept single-page strip are recorded additions over legacy's defaults.
+Real-backend 15/15 incl. new last-page-and-back and size-survives-reload tests; full vitest 1787/1787. Passed
+2026-09-01 with minor findings, not corrected (optional): the deleted packet's header still said "reserved, planned"
+after the registry moved to done (moot with the packet's deletion), the 390px twelve-page strip wraps "Last page" onto
+its own line (cosmetic, owner's eye wanted — trade against nine-slot parity), and `size="small"` is set per instance
+with a justification comment rather than via a `MuiPagination` theme entry (theme.ts was outside the allowlist).
+Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -1392,9 +1422,9 @@ None.
 
 ## Upcoming
 
-- FM-165 (Put History Filter, Sort, And Page In The URL) is next, fourth of the 2026-08-31 UX/perf batch FM-162..FM-170
-  designed from that day's analysis (FM-162, FM-163, and FM-164 are done, entries above). Later batch members stay
-  planned packets in `tasks/` until dependency-ordered; FM-166 depends on FM-165, and FM-170 follows FM-166.
+- FM-167 (Let The Caps Check Be Left, And Show How Far It Has Got) is next, sixth of the 2026-08-31 UX/perf batch
+  FM-162..FM-170 designed from that day's analysis (FM-162 through FM-166 are done, entries above). FM-168, FM-169, and
+  FM-170 follow; all remaining dependencies are cleared.
 
 - FM-159 and FM-160 are done (entries above), as are the 2026-08-31 follow-ups FM-156, FM-157, FM-158.
 

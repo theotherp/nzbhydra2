@@ -1,4 +1,12 @@
+import {ThemeProvider} from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    createMemoryHistory,
+    createRootRoute,
+    createRoute,
+    createRouter,
+    RouterProvider,
+} from "@tanstack/react-router";
 import {
     cleanup,
     fireEvent,
@@ -7,9 +15,15 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
+import type {ReactNode} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
+import {createHydraTheme} from "../../../app/theme";
+import {
+    createHistorySearchSchema,
+    NOTIFICATION_HISTORY_SORT_COLUMNS,
+} from "./historySearchParams";
 import {NotificationHistoryPage} from "./NotificationHistoryPage";
 
 const bootstrap = {
@@ -30,21 +44,62 @@ const bootstrap = {
     safeConfig: {keepHistory: true} as Record<string, unknown> | null,
 };
 
+/**
+ * FM-165: the page reads its page, sort and filters out of the route's search
+ * parameters, so every case mounts it behind a real router at a real URL --
+ * which is also what lets a round trip be proven by reading the location back.
+ * `/` stands in for anywhere else in the application, which the Back case
+ * leaves through.
+ */
+function renderRouted(component: () => ReactNode, search?: string) {
+    const rootRoute = createRootRoute();
+    const elsewhereRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/",
+        component: () => <div data-testid="elsewhere">Elsewhere</div>,
+    });
+    const pageRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/stats/notifications",
+        validateSearch: createHistorySearchSchema(
+            NOTIFICATION_HISTORY_SORT_COLUMNS,
+        ),
+        component,
+    });
+    const router = createRouter({
+        basepath: "/hydra",
+        history: createMemoryHistory({
+            initialEntries: [`/hydra/stats/notifications${search ?? ""}`],
+        }),
+        routeTree: rootRoute.addChildren([elsewhereRoute, pageRoute]),
+    });
+    const result = render(
+        <ThemeProvider theme={createHydraTheme("grey")}>
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <RouterProvider router={router} />
+            </QueryClientProvider>
+        </ThemeProvider>,
+    );
+    return {...result, router};
+}
+
 function renderPage(
     fetchImplementation: typeof fetch,
     safeConfig: Record<string, unknown> | null = bootstrap.safeConfig,
+    search?: string,
 ) {
-    return render(
-        <QueryClientProvider
-            client={
-                new QueryClient({defaultOptions: {queries: {retry: false}}})
-            }
-        >
+    return renderRouted(
+        () => (
             <NotificationHistoryPage
                 bootstrap={{...bootstrap, safeConfig}}
                 transport={new ApiTransport("/hydra/", fetchImplementation)}
             />
-        </QueryClientProvider>,
+        ),
+        search,
     );
 }
 
@@ -338,5 +393,54 @@ describe("NotificationHistoryPage", () => {
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(8),
         );
+    });
+
+    it("should carry the filter, the sort, and the page in the URL and restore them on a fresh mount", async () => {
+        const requests: RequestInit[] = [];
+        const {router} = renderPage(
+            respondWith({content: [entry()], totalElements: 60}, requests),
+        );
+        await screen.findByTestId("notification-history-row");
+        fireEvent.click(screen.getByTestId("history-refine-event-type-toggle"));
+        fireEvent.click(screen.getByRole("button", {name: "Indexer disabled"}));
+        fireEvent.click(screen.getByRole("button", {name: "Type"}));
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("notification-history-page-status"),
+            ).toHaveTextContent("Page 2 of 3"),
+        );
+        const url = router.history.location.href;
+        const filtered = url.slice(url.indexOf("?"));
+        const before = JSON.parse(requests.at(-1)?.body as string);
+        expect(before).toMatchObject({
+            page: 2,
+            sortModel: {column: "NOTIFICATION_EVENT_TYPE", sortMode: 1},
+            filterModel: {
+                NOTIFICATION_EVENT_TYPE: {
+                    filterType: "checkboxes",
+                    filterValue: ["INDEXER_DISABLED"],
+                },
+            },
+        });
+
+        // The link on its own is the whole view: a fresh mount at that URL
+        // reads the same page, with the same request behind it.
+        cleanup();
+        const reloaded: RequestInit[] = [];
+        renderPage(
+            respondWith({content: [entry()], totalElements: 60}, reloaded),
+            bootstrap.safeConfig,
+            filtered,
+        );
+        await screen.findByTestId("notification-history-row");
+        expect(JSON.parse(reloaded[0]?.body as string)).toEqual(before);
+        expect(
+            screen.getByTestId("notification-history-page-status"),
+        ).toHaveTextContent("Page 2 of 3");
+        fireEvent.click(screen.getByTestId("history-refine-event-type-toggle"));
+        expect(
+            screen.getByRole("button", {name: "Indexer disabled"}),
+        ).toHaveAttribute("aria-pressed", "true");
     });
 });

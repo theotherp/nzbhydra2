@@ -12,7 +12,8 @@ import {
     Typography,
 } from "@mui/material";
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
-import {useMemo, useState} from "react";
+import {useSearch} from "@tanstack/react-router";
+import {useMemo} from "react";
 
 import {
     NOTIFICATION_EVENT_LABELS,
@@ -30,12 +31,21 @@ import {TableScrollAffordance} from "../../../components/table/TableScrollAfford
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
 import {Loading} from "../shared/Loading";
-import {PAGE_SIZE} from "../shared/pageSize";
+import {type HistoryPageSize} from "../shared/pageSize";
 import {SortHeader} from "../shared/SortHeader";
+import {HistoryPager} from "./HistoryPager";
+import {
+    defaultHistorySort,
+    historyPageSizeFromSearch,
+    historySortFromSearch,
+    withHistoryPageSize,
+    withHistorySort,
+    NOTIFICATION_HISTORY_SORT_COLUMNS,
+} from "./historySearchParams";
 import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
-const defaultSort: NotificationHistorySort = {column: "time", sortMode: 2};
+const defaultSort: NotificationHistorySort = defaultHistorySort("time");
 
 export function NotificationHistoryPage({
     bootstrap,
@@ -53,7 +63,13 @@ export function NotificationHistoryPage({
         values,
     } = useHistoryFilterCriteria();
     const page = criteria.page;
-    const [sort, setSort] = useState<NotificationHistorySort>(defaultSort);
+    const search = useSearch({strict: false});
+    const pageSize = historyPageSizeFromSearch(search);
+    const sort = historySortFromSearch(
+        search,
+        NOTIFICATION_HISTORY_SORT_COLUMNS,
+        defaultSort,
+    );
     const safeConfig = useSafeConfig(bootstrap);
     const dimensions = useMemo(() => notificationHistoryDimensions(), []);
     const query = useQuery({
@@ -69,6 +85,7 @@ export function NotificationHistoryPage({
         queryKey: [
             "notification-history",
             criteria.page,
+            pageSize,
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
@@ -77,7 +94,7 @@ export function NotificationHistoryPage({
                 dimensions,
                 values: criteria.values,
                 page: criteria.page,
-                limit: PAGE_SIZE,
+                limit: pageSize,
                 sort,
             }),
         // As on download history: a committed filter edit makes a new query
@@ -85,13 +102,28 @@ export function NotificationHistoryPage({
         // refine surface mid-edit and take keyboard focus with it.
         placeholderData: keepPreviousData,
     });
+    // One navigation, not two: `commitFilters` carries the new ordering into
+    // the same history entry as the filter edit it flushes, so a sort click
+    // during typing is a single Back step and the sort change cannot resolve
+    // against a search the filter commit has not written yet.
     const updateSort = (column: NotificationHistorySort["column"]) => {
-        commitFilters();
-        setSort((current) => ({
+        const next: NotificationHistorySort = {
             column,
-            sortMode:
-                current.column === column && current.sortMode === 1 ? 2 : 1,
-        }));
+            sortMode: sort.column === column && sort.sortMode === 1 ? 2 : 1,
+        };
+        commitFilters((previous) =>
+            withHistorySort(previous, next, defaultSort),
+        );
+    };
+    /*
+     * A page-size change is one navigation, not two: `commitFilters` already
+     * returns to page 1 (and flushes any filter edit still waiting), and
+     * `withHistoryPageSize` writes the new size into the same search object.
+     * Committing them separately would ask the server for a page that the new
+     * size may have put past the end.
+     */
+    const changePageSize = (size: HistoryPageSize) => {
+        commitFilters((previous) => withHistoryPageSize(previous, size));
     };
     if (query.isPending) {
         return <Loading message="Loading notification history…" />;
@@ -102,7 +134,6 @@ export function NotificationHistoryPage({
         );
     }
     const {entries: notifications, totalElements, malformedCount} = query.data;
-    const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     const activeFilterCount = activeHistoryFilterCount(
         dimensions,
         criteria.values,
@@ -269,24 +300,15 @@ export function NotificationHistoryPage({
                     </Table>
                 </TableScrollAffordance>
             )}
-            <Stack alignItems="center" direction="row" spacing={1}>
-                <Button
-                    disabled={page === 1}
-                    onClick={() => goToPage(page - 1)}
-                >
-                    Previous page
-                </Button>
-                <Typography data-testid="notification-history-page-status">
-                    Page {page} of {totalPages} · {totalElements}{" "}
-                    {totalElements === 1 ? "notification" : "notifications"}
-                </Typography>
-                <Button
-                    disabled={page >= totalPages}
-                    onClick={() => goToPage(page + 1)}
-                >
-                    Next page
-                </Button>
-            </Stack>
+            <HistoryPager
+                entryNoun={{one: "notification", many: "notifications"}}
+                onPageChange={goToPage}
+                onPageSizeChange={changePageSize}
+                page={page}
+                pageSize={pageSize}
+                statusTestId="notification-history-page-status"
+                totalElements={totalElements}
+            />
         </HistoryRefineLayout>
     );
 }

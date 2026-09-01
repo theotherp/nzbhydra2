@@ -1,4 +1,12 @@
+import {ThemeProvider} from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    createMemoryHistory,
+    createRootRoute,
+    createRoute,
+    createRouter,
+    RouterProvider,
+} from "@tanstack/react-router";
 import {
     cleanup,
     fireEvent,
@@ -7,10 +15,16 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
+import type {ReactNode} from "react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
+import {createHydraTheme} from "../../../app/theme";
 import {DownloadHistoryPage} from "./DownloadHistoryPage";
+import {
+    createHistorySearchSchema,
+    DOWNLOAD_HISTORY_SORT_COLUMNS,
+} from "./historySearchParams";
 
 const bootstrap = {
     username: "stats",
@@ -34,18 +48,61 @@ const bootstrap = {
     },
 };
 
-function renderPage(fetchImplementation: typeof fetch) {
-    return render(
-        <QueryClientProvider
-            client={
-                new QueryClient({defaultOptions: {queries: {retry: false}}})
-            }
-        >
+/**
+ * FM-165: the page reads its page, sort and filters out of the route's search
+ * parameters, so every case mounts it behind a real router at a real URL --
+ * which is also what lets a round trip be proven by reading the location back.
+ * `/` stands in for anywhere else in the application, which the Back case
+ * leaves through.
+ */
+function renderRouted(component: () => ReactNode, search?: string) {
+    const rootRoute = createRootRoute();
+    const elsewhereRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/",
+        component: () => <div data-testid="elsewhere">Elsewhere</div>,
+    });
+    const pageRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/stats/downloads",
+        validateSearch: createHistorySearchSchema(
+            DOWNLOAD_HISTORY_SORT_COLUMNS,
+        ),
+        component,
+    });
+    const router = createRouter({
+        basepath: "/hydra",
+        history: createMemoryHistory({
+            initialEntries: [`/hydra/stats/downloads${search ?? ""}`],
+        }),
+        routeTree: rootRoute.addChildren([elsewhereRoute, pageRoute]),
+    });
+    const result = render(
+        <ThemeProvider theme={createHydraTheme("grey")}>
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <RouterProvider router={router} />
+            </QueryClientProvider>
+        </ThemeProvider>,
+    );
+    return {...result, router};
+}
+
+function renderPage(
+    fetchImplementation: typeof fetch,
+    options: {bootstrap?: typeof bootstrap; search?: string} = {},
+) {
+    return renderRouted(
+        () => (
             <DownloadHistoryPage
-                bootstrap={bootstrap}
+                bootstrap={options.bootstrap ?? bootstrap}
                 transport={new ApiTransport("/hydra/", fetchImplementation)}
             />
-        </QueryClientProvider>,
+        ),
+        options.search,
     );
 }
 
@@ -119,13 +176,26 @@ describe("DownloadHistoryPage", () => {
         // own on a slow machine, and this case is about the commit the sort
         // click performs, not about the timer.
         fireEvent.click(screen.getByRole("button", {name: "Title"}));
-        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
-        // Three reads, not four: the typed "Title" edit is committed by the
+        // Two reads, not three: the typed "Title" edit is committed by the
         // sort click rather than racing it, so the sort and the filter reach
         // the server in one request (`useHistoryFilterCriteria`).
         await waitFor(() =>
+            expect(lastBody()).toMatchObject({
+                page: 1,
+                sortModel: {column: "title", sortMode: 1},
+                filterModel: {
+                    title: {filterType: "freetext", filterValue: "example"},
+                },
+            }),
+        );
+        expect(fetchImplementation).toHaveBeenCalledTimes(2);
+
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
+        // Paging carries the sort and the filter with it: they live in the URL
+        // now, and a page change rewrites only the page.
         expect(lastBody()).toMatchObject({
             page: 2,
             sortModel: {column: "title", sortMode: 1},
@@ -361,40 +431,25 @@ describe("DownloadHistoryPage", () => {
     });
 
     it("should hide the username and IP columns and their refine dimensions when history user info is disabled", async () => {
-        render(
-            <QueryClientProvider
-                client={
-                    new QueryClient({defaultOptions: {queries: {retry: false}}})
-                }
-            >
-                <DownloadHistoryPage
-                    bootstrap={{
-                        ...bootstrap,
-                        safeConfig: {
-                            indexers: [],
-                            logging: {historyUserInfoType: "NONE"},
-                        },
-                    }}
-                    transport={
-                        new ApiTransport(
-                            "/hydra/",
-                            vi.fn().mockResolvedValue(
-                                new Response(
-                                    JSON.stringify({
-                                        content: [entry()],
-                                        totalElements: 1,
-                                    }),
-                                    {
-                                        headers: {
-                                            "Content-Type": "application/json",
-                                        },
-                                    },
-                                ),
-                            ),
-                        )
-                    }
-                />
-            </QueryClientProvider>,
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+            {
+                bootstrap: {
+                    ...bootstrap,
+                    safeConfig: {
+                        ...bootstrap.safeConfig,
+                        indexers: [],
+                        logging: {historyUserInfoType: "NONE"},
+                    },
+                },
+            },
         );
         await screen.findByTestId("download-history-row");
         expect(
@@ -435,5 +490,63 @@ describe("DownloadHistoryPage", () => {
         expect(
             await screen.findByText("Unable to load download history."),
         ).toBeVisible();
+    });
+
+    it("should carry the filter, the sort, and the page in the URL and restore them on a fresh mount", async () => {
+        const respond = (collected: RequestInit[]) =>
+            vi.fn((_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) collected.push(init);
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 30}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            });
+        const requests: RequestInit[] = [];
+        const {router} = renderPage(respond(requests));
+        await screen.findByTestId("download-history-row");
+        fireEvent.change(screen.getByLabelText("Minimum age (days)"), {
+            target: {value: "10"},
+        });
+        fireEvent.click(screen.getByRole("button", {name: "Title"}));
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("download-history-page-status"),
+            ).toHaveTextContent("Page 2 of 2"),
+        );
+        const href = router.history.location.href;
+        const filtered = href.slice(href.indexOf("?"));
+        // Legible, and only what is not at its default: a range writes just
+        // the bound the reader filled in. The quotes around `10` are
+        // TanStack's serializer keeping a filter value that reads as a number
+        // a string, so it decodes back into a text field rather than a number.
+        expect(decodeURIComponent(filtered)).toBe(
+            '?sort=title&dir=asc&page=2&nr.age.min="10"',
+        );
+        const before = JSON.parse(requests.at(-1)?.body as string);
+        expect(before).toMatchObject({
+            page: 2,
+            sortModel: {column: "title", sortMode: 1},
+            filterModel: {
+                age: {filterType: "numberRange", filterValue: {min: "10"}},
+            },
+        });
+
+        // The link on its own is the whole view: a fresh mount at that URL
+        // reads the same page, with a byte-identical request behind it.
+        cleanup();
+        const reloaded: RequestInit[] = [];
+        renderPage(respond(reloaded), {search: filtered});
+        await screen.findByTestId("download-history-row");
+        expect(JSON.parse(reloaded[0]?.body as string)).toEqual(before);
+        expect(
+            screen.getByTestId("download-history-page-status"),
+        ).toHaveTextContent("Page 2 of 2");
+        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(10);
+        expect(
+            screen.getByRole("columnheader", {name: "Title"}),
+        ).toHaveAttribute("aria-sort", "ascending");
     });
 });

@@ -1,4 +1,12 @@
+import {ThemeProvider} from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    createMemoryHistory,
+    createRootRoute,
+    createRoute,
+    createRouter,
+    RouterProvider,
+} from "@tanstack/react-router";
 import {
     cleanup,
     fireEvent,
@@ -7,12 +15,17 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
+import type {ReactNode} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
-const navigate = vi.fn();
-vi.mock("@tanstack/react-router", () => ({useNavigate: () => navigate}));
-
 import {ApiTransport} from "../../../api/transport";
+import {createHydraTheme} from "../../../app/theme";
+import {
+    createHistorySearchSchema,
+    NOTIFICATION_HISTORY_SORT_COLUMNS,
+    SEARCH_HISTORY_SORT_COLUMNS,
+    type HistorySearchParams,
+} from "./historySearchParams";
 import {NotificationHistoryPage} from "./NotificationHistoryPage";
 import {SearchHistoryPage} from "./SearchHistoryPage";
 
@@ -42,19 +55,82 @@ const bootstrap = {
     },
 };
 
-function renderPage(fetchImplementation: typeof fetch) {
-    return render(
-        <QueryClientProvider
-            client={
-                new QueryClient({defaultOptions: {queries: {retry: false}}})
-            }
-        >
+/**
+ * FM-165: the page reads its page, sort and filters out of the route's search
+ * parameters, so every case mounts it behind a real router at a real URL --
+ * which is also what lets a round trip be proven by reading the location back.
+ * `/` stands in for anywhere else in the application: "Repeat" navigates to it,
+ * and the Back case leaves through it.
+ */
+function renderRouted(options: {
+    path: string;
+    search?: string;
+    validateSearch: (input: Record<string, unknown>) => HistorySearchParams;
+    component: () => ReactNode;
+}) {
+    const rootRoute = createRootRoute();
+    const elsewhereRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/",
+        component: () => <div data-testid="elsewhere">Elsewhere</div>,
+    });
+    const pageRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: options.path,
+        validateSearch: options.validateSearch,
+        component: options.component,
+    });
+    const router = createRouter({
+        basepath: "/hydra",
+        history: createMemoryHistory({
+            initialEntries: [`/hydra${options.path}${options.search ?? ""}`],
+        }),
+        routeTree: rootRoute.addChildren([elsewhereRoute, pageRoute]),
+    });
+    const result = render(
+        <ThemeProvider theme={createHydraTheme("grey")}>
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <RouterProvider router={router} />
+            </QueryClientProvider>
+        </ThemeProvider>,
+    );
+    return {...result, router};
+}
+
+function renderPage(
+    fetchImplementation: typeof fetch,
+    options: {bootstrap?: typeof bootstrap; search?: string} = {},
+) {
+    return renderRouted({
+        path: "/stats/searches",
+        search: options.search,
+        validateSearch: createHistorySearchSchema(SEARCH_HISTORY_SORT_COLUMNS),
+        component: () => (
             <SearchHistoryPage
+                bootstrap={options.bootstrap ?? bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+            />
+        ),
+    });
+}
+
+function renderNotificationPage(fetchImplementation: typeof fetch) {
+    return renderRouted({
+        path: "/stats/notifications",
+        validateSearch: createHistorySearchSchema(
+            NOTIFICATION_HISTORY_SORT_COLUMNS,
+        ),
+        component: () => (
+            <NotificationHistoryPage
                 bootstrap={bootstrap}
                 transport={new ApiTransport("/hydra/", fetchImplementation)}
             />
-        </QueryClientProvider>,
-    );
+        ),
+    });
 }
 
 // This project's jsdom environment configures no `url`, so its opaque origin
@@ -84,7 +160,6 @@ describe("SearchHistoryPage", () => {
         cleanup();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
-        navigate.mockReset();
     });
 
     it("should refine through the surface while paging, sorting, and refreshing", async () => {
@@ -119,13 +194,26 @@ describe("SearchHistoryPage", () => {
         // own on a slow machine, and this case is about the commit the sort
         // click performs, not about the timer.
         fireEvent.click(screen.getByRole("button", {name: "Query"}));
-        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
-        // Three reads, not four: the typed "Query" edit is committed by the
+        // Two reads, not three: the typed "Query" edit is committed by the
         // sort click rather than racing it, so the sort and the filter reach
         // the server in one request (`useHistoryFilterCriteria`).
         await waitFor(() =>
+            expect(lastBody()).toMatchObject({
+                page: 1,
+                sortModel: {column: "query", sortMode: 1},
+                filterModel: {
+                    query: {filterType: "freetext", filterValue: "query"},
+                },
+            }),
+        );
+        expect(fetchImplementation).toHaveBeenCalledTimes(2);
+
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
+        // Paging carries the sort and the filter with it: they live in the URL
+        // now, and a page change rewrites only the page.
         expect(lastBody()).toMatchObject({
             page: 2,
             sortModel: {column: "query", sortMode: 1},
@@ -404,40 +492,24 @@ describe("SearchHistoryPage", () => {
     });
 
     it("should hide the username and IP filter dimensions when history user info is disabled", async () => {
-        render(
-            <QueryClientProvider
-                client={
-                    new QueryClient({defaultOptions: {queries: {retry: false}}})
-                }
-            >
-                <SearchHistoryPage
-                    bootstrap={{
-                        ...bootstrap,
-                        safeConfig: {
-                            ...bootstrap.safeConfig,
-                            logging: {historyUserInfoType: "NONE"},
-                        },
-                    }}
-                    transport={
-                        new ApiTransport(
-                            "/hydra/",
-                            vi.fn().mockResolvedValue(
-                                new Response(
-                                    JSON.stringify({
-                                        content: [entry()],
-                                        totalElements: 1,
-                                    }),
-                                    {
-                                        headers: {
-                                            "Content-Type": "application/json",
-                                        },
-                                    },
-                                ),
-                            ),
-                        )
-                    }
-                />
-            </QueryClientProvider>,
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+            {
+                bootstrap: {
+                    ...bootstrap,
+                    safeConfig: {
+                        ...bootstrap.safeConfig,
+                        logging: {historyUserInfoType: "NONE"},
+                    },
+                },
+            },
         );
         await screen.findByTestId("search-history-row");
         expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
@@ -472,7 +544,7 @@ describe("SearchHistoryPage", () => {
                 ),
             ),
         );
-        renderPage(fetchImplementation);
+        const {router} = renderPage(fetchImplementation);
         const row = await screen.findByTestId("search-history-row");
         expect(
             screen.getByText(
@@ -514,18 +586,19 @@ describe("SearchHistoryPage", () => {
         // as the queries rather than as a column of "Repeat".
         expect(repeat.closest("td")).toHaveTextContent(/^queryRepeat$/);
         fireEvent.click(repeat);
-        expect(navigate).toHaveBeenCalledWith({
-            to: "/",
-            search: {
-                category: "All",
-                query: "query",
-                minage: "2",
-                maxage: "10",
-                minsize: "100",
-                maxsize: "500",
-                indexers: "Configured,Mock",
-                repeat: "history",
-            },
+        // The canonical criteria reach the search route through the URL now
+        // rather than through a mocked `navigate`, so this pins what a repeat
+        // link actually carries.
+        await screen.findByTestId("elsewhere");
+        expect(router.state.location.search).toEqual({
+            category: "All",
+            query: "query",
+            minage: "2",
+            maxage: "10",
+            minsize: "100",
+            maxsize: "500",
+            indexers: "Configured,Mock",
+            repeat: "history",
         });
     });
 
@@ -630,34 +703,16 @@ describe("SearchHistoryPage", () => {
         expect(store.get("hydra.history.refine")).toBe("collapsed");
         cleanup();
 
-        render(
-            <QueryClientProvider
-                client={
-                    new QueryClient({defaultOptions: {queries: {retry: false}}})
-                }
-            >
-                <NotificationHistoryPage
-                    bootstrap={bootstrap}
-                    transport={
-                        new ApiTransport(
-                            "/hydra/",
-                            vi.fn().mockResolvedValue(
-                                new Response(
-                                    JSON.stringify({
-                                        content: [notificationEntry()],
-                                        totalElements: 1,
-                                    }),
-                                    {
-                                        headers: {
-                                            "Content-Type": "application/json",
-                                        },
-                                    },
-                                ),
-                            ),
-                        )
-                    }
-                />
-            </QueryClientProvider>,
+        renderNotificationPage(
+            vi.fn().mockResolvedValue(
+                new Response(
+                    JSON.stringify({
+                        content: [notificationEntry()],
+                        totalElements: 1,
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
         );
         await screen.findByTestId("notification-history-row");
         expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
@@ -667,6 +722,191 @@ describe("SearchHistoryPage", () => {
         // One key, and only that one: the sub-768px drawer's open state is
         // never written, so nothing else was persisted along the way.
         expect([...store.keys()]).toEqual(["hydra.history.refine"]);
+    });
+
+    it("should carry the filter, the sort, and the page in the URL and restore them on a fresh mount", async () => {
+        const requests: RequestInit[] = [];
+        const respond = (collected: RequestInit[]) =>
+            vi.fn((_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) collected.push(init);
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 30}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            });
+        const {router} = renderPage(respond(requests));
+        await screen.findByTestId("search-history-row");
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "avengers"},
+        });
+        fireEvent.click(screen.getByRole("button", {name: "Query"}));
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("search-history-page-status"),
+            ).toHaveTextContent("Page 2 of 2"),
+        );
+        const href = router.history.location.href;
+        const filtered = href.slice(href.indexOf("?"));
+        // Legible, and only what is not at its default: no `limit`, no
+        // `dir=desc`, no `page=1`.
+        expect(decodeURIComponent(filtered)).toBe(
+            "?sort=query&dir=asc&page=2&ft.query=avengers",
+        );
+        const before = JSON.parse(requests.at(-1)?.body as string);
+        expect(before).toMatchObject({
+            page: 2,
+            sortModel: {column: "query", sortMode: 1},
+            filterModel: {
+                query: {filterType: "freetext", filterValue: "avengers"},
+            },
+        });
+
+        // The link on its own is the whole view: a fresh mount at that URL
+        // reads the same page, with a byte-identical request behind it.
+        cleanup();
+        const reloaded: RequestInit[] = [];
+        renderPage(respond(reloaded), {search: filtered});
+        await screen.findByTestId("search-history-row");
+        expect(JSON.parse(reloaded[0]?.body as string)).toEqual(before);
+        expect(
+            screen.getByTestId("search-history-page-status"),
+        ).toHaveTextContent("Page 2 of 2");
+        expect(screen.getByLabelText("Query")).toHaveValue("avengers");
+        expect(
+            screen.getByRole("columnheader", {name: "Query"}),
+        ).toHaveAttribute("aria-sort", "ascending");
+    });
+
+    it("should carry a chosen page size in the URL, resetting to page 1 in one navigation", async () => {
+        const requests: RequestInit[] = [];
+        const respond = (collected: RequestInit[]) =>
+            vi.fn((_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) collected.push(init);
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            content: [entry()],
+                            totalElements: 300,
+                        }),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            });
+        const {router} = renderPage(respond(requests), {search: "?page=4"});
+        await screen.findByTestId("search-history-row");
+        expect(
+            screen.getByTestId("search-history-page-status"),
+        ).toHaveTextContent("Page 4 of 12 · 300 searches");
+        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+            page: 4,
+            limit: 25,
+        });
+        const entriesBefore = router.history.length;
+
+        fireEvent.mouseDown(
+            screen.getByRole("combobox", {name: "Rows per page"}),
+        );
+        fireEvent.click(
+            within(await screen.findByRole("listbox")).getByRole("option", {
+                name: "100",
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("search-history-page-status"),
+            ).toHaveTextContent("Page 1 of 3 · 300 searches"),
+        );
+        // Page 4 of 25-row pages is past the end of the same history read 100
+        // at a time, so the size change returns to page 1 -- and does it in the
+        // one history entry the reader can go Back over.
+        const href = router.history.location.href;
+        expect(decodeURIComponent(href.slice(href.indexOf("?")))).toBe(
+            "?size=100",
+        );
+        expect(router.history.length).toBe(entriesBefore + 1);
+        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+            page: 1,
+            limit: 100,
+        });
+
+        // The link is the whole view: a fresh mount at that URL reads the same
+        // 100 rows without being told again.
+        cleanup();
+        const reloaded: RequestInit[] = [];
+        renderPage(respond(reloaded), {search: "?size=100"});
+        await screen.findByTestId("search-history-row");
+        expect(JSON.parse(reloaded[0]?.body as string)).toMatchObject({
+            page: 1,
+            limit: 100,
+        });
+        expect(
+            screen.getByRole("combobox", {name: "Rows per page"}),
+        ).toHaveTextContent("100");
+    });
+
+    it("should fall back to the default page size for a size the UI does not offer", async () => {
+        const requests: RequestInit[] = [];
+        renderPage(
+            vi.fn((_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) requests.push(init);
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            content: [entry()],
+                            totalElements: 300,
+                        }),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            }),
+            {search: "?size=75"},
+        );
+        await screen.findByTestId("search-history-row");
+        expect(JSON.parse(requests[0]?.body as string)).toMatchObject({
+            limit: 25,
+        });
+        expect(
+            screen.getByRole("combobox", {name: "Rows per page"}),
+        ).toHaveTextContent("25");
+    });
+
+    it("should restore the filtered view when the reader comes Back to it", async () => {
+        const {router} = renderPage(
+            vi.fn(() =>
+                Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 30}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+            ),
+        );
+        await screen.findByTestId("search-history-row");
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "avengers"},
+        });
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(
+                screen.getByTestId("search-history-page-status"),
+            ).toHaveTextContent("Page 2 of 2"),
+        );
+        const filtered = router.history.location.href;
+
+        // "Repeat" leaves for the search route; before FM-165 the whole
+        // filtered, paged view was gone the moment it did.
+        fireEvent.click(screen.getByTestId("search-history-repeat"));
+        await screen.findByTestId("elsewhere");
+        router.history.go(-1);
+        await screen.findByTestId("search-history-row");
+        expect(router.history.location.href).toBe(filtered);
+        expect(
+            screen.getByTestId("search-history-page-status"),
+        ).toHaveTextContent("Page 2 of 2");
+        expect(screen.getByLabelText("Query")).toHaveValue("avengers");
     });
 });
 

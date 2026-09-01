@@ -1247,6 +1247,9 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
       - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/features/search/SearchPage.test.tsx
       - core/ui-react/src/router.test.tsx
@@ -1298,7 +1301,17 @@ features:
       - history-refine-username-input
       - history-refine-ip
       - history-refine-ip-input
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
+      - search-history-page-status
     parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in SearchHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
     routes:
@@ -1327,6 +1340,9 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
       - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/domain/downloads/actions.test.ts
       - core/ui-react/src/router.test.tsx
@@ -1383,7 +1399,17 @@ features:
       - history-refine-username-input
       - history-refine-ip
       - history-refine-ip-input
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
+      - download-history-page-status
     parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in DownloadHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where DownloadHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
     routes:
@@ -1398,6 +1424,9 @@ features:
       - core/ui-react/src/api/history/filters.test.ts
       - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/NotificationHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
       - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
       - core/ui-react/src/domain/links/textLinks.test.ts
       - core/ui-react/src/router.test.tsx
@@ -1440,7 +1469,16 @@ features:
       - history-refine-event-type-toggle
       - history-refine-event-type-list
       - history-refine-event-type-option
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
     parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in NotificationHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where NotificationHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
   - id: F-SYSTEM-SHELL
     name: System administration tab shell
     routes:
