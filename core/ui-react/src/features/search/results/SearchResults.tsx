@@ -17,6 +17,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
+import {useWindowVirtualizer} from "@tanstack/react-virtual";
 import {
     useCallback,
     useContext,
@@ -41,6 +42,7 @@ import {RefineSidebar} from "./RefineSidebar";
 import {ResultRow} from "./ResultRow";
 import {DisplayOptionsMenu, RejectedResultsTrigger} from "./ResultsPopovers";
 import {SelectionMenu} from "./SelectionMenu";
+import type {SearchedCategory} from "./groupEpisodesHelp";
 import {
     GROUP_EPISODES_HELP_MESSAGE,
     GROUP_EPISODES_HELP_TITLE,
@@ -142,12 +144,50 @@ const HEADER_STICKY_Z_INDEX = 10;
 // here rather than restated as a new literal.
 const STICKY_BACKGROUND = "background.default";
 
+// FM-162. The table body is window-virtualized: only the rows near the
+// viewport (plus `ROW_OVERSCAN` on each side) are mounted, and the space the
+// unmounted rows would occupy is carried by two spacer `<tr>`s inside the
+// same `<tbody>`.
+//
+// Spacer rows rather than the usual absolutely-positioned/transformed window:
+// below 768px this exact `<tr>` is re-laid-out as a stacked card
+// (`display: block`, its `<td>`s `display: flex` -- see the table's own `sx`
+// below), and neither `position: absolute` nor a `transform` survives that
+// switch. Two in-flow rows whose only job is to be tall work identically in
+// both layouts, and they leave ADR-0011 intact: the document is still the only
+// scroller, so the `<th>`s below stay natively viewport-sticky and no new
+// scrolling ancestor is introduced.
+//
+// The estimate is only the seed for a row that has not been measured yet
+// (`measureRowHeight` below replaces it with the row's real height as soon as
+// it mounts); it is deliberately on the low side of a real default-density row
+// so the first paint errs towards rendering one row too many rather than
+// leaving a gap at the bottom of the viewport.
+const ESTIMATED_ROW_HEIGHT = 44;
+const ROW_OVERSCAN = 8;
+
+// The table's fixed `<colgroup>` track count, which the spacer rows have to
+// span so the fixed layout is not disturbed by a row with a different cell
+// count.
+const TABLE_COLUMN_COUNT = 8;
+
+// FM-162: above this many *available* results, "Load all results" asks first.
+// A single search legitimately reports tens of thousands of available results,
+// and loading them is an unbounded commitment on the server (every remaining
+// page fetched) as well as in this component's state -- unlike "Load more",
+// which is bounded by one page and therefore stays unguarded. The value is a
+// judgement call rather than a measurement: a few hundred rows is still an
+// ordinary, fast result set, so the prompt only appears once the request is
+// clearly beyond what the user could have meant by a single click.
+const LOAD_ALL_CONFIRMATION_THRESHOLD = 500;
+
 export function SearchResults({
     data,
     episodeRequested = false,
     onLoadMore,
     onSaveSearch,
     savingSearch = false,
+    searchedCategory,
     searchRequestId,
 }: {
     data: SearchResponse;
@@ -155,6 +195,10 @@ export function SearchResults({
     onLoadMore?: (loadAll: boolean) => Promise<void>;
     onSaveSearch?: () => Promise<void>;
     savingSearch?: boolean;
+    // FM-162: the category the search was actually submitted for, resolved
+    // against the category catalog by `SearchPage`. Only the group-episodes
+    // help dialog's eligibility reads it -- see the effect below.
+    searchedCategory?: SearchedCategory;
     searchRequestId?: number;
 }) {
     // FM-159: the mount-time snapshot. It is the seed the `SafeConfigContext`
@@ -398,6 +442,44 @@ export function SearchResults({
             ),
         [rowDescriptors],
     );
+    // FM-162: the window virtualizer over `rowDescriptors`. `count` is the
+    // whole visible row set -- selection, grouping, expansion and sorting all
+    // keep operating on that full list (see `visibleResultsRef` below), so
+    // scrolling a row out of the rendered window changes nothing about it
+    // except that its DOM node is gone.
+    //
+    // `scrollMargin` is where the `<tbody>` starts in the document; without it
+    // the virtualizer would treat the page's own scroll offset as an offset
+    // into the row list and render the wrong window. It is measured rather
+    // than assumed -- the alerts, the sticky toolbar and the search form above
+    // this table all change height -- by the `listOffset` layout effect below.
+    const resultsRootRef = useRef<HTMLDivElement | null>(null);
+    const tableBodyRef = useRef<HTMLTableSectionElement | null>(null);
+    const [listOffset, setListOffset] = useState(0);
+    const virtualizer = useWindowVirtualizer({
+        count: rowDescriptors.length,
+        estimateSize: () => ESTIMATED_ROW_HEIGHT,
+        // Keyed by result id, not index, so a row's measured height follows
+        // the row through a re-sort, a filter change or an expansion instead
+        // of staying with whatever now occupies that position.
+        getItemKey: (index) =>
+            rowDescriptors[index]?.result.searchResultId ?? index,
+        measureElement: measureRowHeight,
+        overscan: ROW_OVERSCAN,
+        scrollMargin: listOffset,
+    });
+    const virtualRows = virtualizer.getVirtualItems();
+    // The two spacer heights. `item.start` is measured from the document, so
+    // the top spacer is the distance from the `<tbody>`'s own start to the
+    // first rendered row; `getTotalSize()` is already relative to the same
+    // origin, so the bottom spacer is what is left after the last one.
+    const spacerHeightTop =
+        virtualRows.length > 0 ? virtualRows[0].start - listOffset : 0;
+    const spacerHeightBottom =
+        virtualRows.length > 0
+            ? virtualizer.getTotalSize() -
+              (virtualRows[virtualRows.length - 1].end - listOffset)
+            : 0;
     const visibleResultsRef = useRef(visibleResults);
     visibleResultsRef.current = visibleResults;
     // Drives the results table header's tri-state checkbox and its mobile
@@ -501,9 +583,9 @@ export function SearchResults({
         }
         if (
             !isGroupEpisodesHelpEligible({
-                categories: data.searchResults.map((result) => result.category),
                 episodeRequested,
                 groupEpisodes,
+                searchedCategory,
             })
         ) {
             return;
@@ -522,13 +604,7 @@ export function SearchResults({
                     })
                     .then(() => undefined),
         });
-    }, [
-        data.searchResults,
-        dialogs,
-        episodeRequested,
-        groupEpisodes,
-        transport,
-    ]);
+    }, [dialogs, episodeRequested, groupEpisodes, searchedCategory, transport]);
 
     const allIndexersFailed =
         data.indexerSearchMetaDatas.length > 0 &&
@@ -677,6 +753,41 @@ export function SearchResults({
     // ("Loaded all N results", `search-results.html:183-185`); the same rule
     // decides whether the "(N available)" clause renders here.
     const moreResultsAvailable = hasMoreResults || hasRemainingKnownResults;
+    // The count phrase the summary renders inside its "(N available)" clause,
+    // hoisted so the load-all confirmation below can name exactly the same
+    // number the user is looking at rather than recomputing it.
+    const availableResultsPhrase = `${totalResultsUnknown ? ">" : ""}${
+        data.numberOfAvailableResults
+    }`;
+    // FM-162: "Load all results" fetches every remaining page in one commit,
+    // which is the one paging action whose cost the user cannot see in
+    // advance. Above `LOAD_ALL_CONFIRMATION_THRESHOLD` it therefore asks
+    // first, through `C-DIALOG-SERVICE` (the same confirmation service the
+    // rest of the app confirms through), naming exactly the count the toolbar
+    // summary beside the button already shows -- ">"-prefixed when at least
+    // one indexer cannot count its remaining results. Dismissing leaves the
+    // table untouched: nothing is requested and no paging state changes.
+    // "Load more" stays unguarded -- it loads one bounded page.
+    const requestLoadAll = async () => {
+        if (!onLoadMore || pagingLoading || !pagingAvailable) {
+            return;
+        }
+        if (
+            dialogs !== null &&
+            data.numberOfAvailableResults > LOAD_ALL_CONFIRMATION_THRESHOLD
+        ) {
+            const answer = await dialogs.confirm({
+                confirmLabel: "Load all results",
+                message: `This search reports ${availableResultsPhrase} results. Loading all of them can take a while and makes the results table much longer.`,
+                testId: "results-load-all-confirmation",
+                title: "Load all results?",
+            });
+            if (answer !== "confirmed") {
+                return;
+            }
+        }
+        await requestContinuation(true);
+    };
     // Below `sm` the table's `thead` -- and so the header's tri-state
     // checkbox/caret menu -- is hidden by the responsive table styling; this
     // mobile-only copy keeps bulk selection reachable from the toolbar at
@@ -778,8 +889,105 @@ export function SearchResults({
         // a further dependency because the toolbar can mount with paging
         // controls only and gain both of its full rows afterwards.
     }, [hasResults, showToolbar]);
+    // FM-162: where the `<tbody>` sits in the document, which is the
+    // virtualizer's `scrollMargin`. Measured after layout and kept in sync
+    // through a `ResizeObserver` on the whole results region, because
+    // everything that can push the table down the page -- the indexer/paging
+    // alerts above it, the sticky toolbar's own wrapping at narrow widths,
+    // the refine sidebar's collapse -- lives inside it. A `ResizeObserver`
+    // also covers viewport resizes, since the region's width changes with
+    // them; it is unavailable in the jsdom component-test environment, where
+    // the initial measurement is enough (nothing resizes there).
+    useLayoutEffect(() => {
+        const body = tableBodyRef.current;
+        const root = resultsRootRef.current;
+        if (!body) {
+            return;
+        }
+        let cancelled = false;
+        const measure = () => {
+            if (cancelled) {
+                return;
+            }
+            const top = Math.round(
+                body.getBoundingClientRect().top +
+                    (typeof window === "undefined" ? 0 : window.scrollY),
+            );
+            // Only a real move re-renders: the observer below fires on every
+            // height change of the results region, including the ones this
+            // table's own row measurements cause.
+            setListOffset((current) => (current === top ? current : top));
+        };
+        measure();
+        if (typeof ResizeObserver === "undefined" || !root) {
+            return () => {
+                cancelled = true;
+            };
+        }
+        let frame = 0;
+        const scheduleMeasure = () => {
+            if (typeof requestAnimationFrame === "undefined") {
+                measure();
+                return;
+            }
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(measure);
+        };
+        const observer = new ResizeObserver(scheduleMeasure);
+        observer.observe(root);
+        return () => {
+            cancelled = true;
+            if (typeof cancelAnimationFrame !== "undefined") {
+                cancelAnimationFrame(frame);
+            }
+            observer.disconnect();
+        };
+        // Re-runs when the table first mounts (or unmounts), which is when
+        // `tableBodyRef` becomes observable at all.
+    }, [hasResults]);
+    // FM-162: hands every mounted row to the virtualizer for measurement.
+    //
+    // The usual shape -- `ref={virtualizer.measureElement}` on each rendered
+    // element -- is unavailable here: `ResultRow` is a `memo`ized component
+    // that this task must not change, and it renders the `<tr>` itself. So the
+    // rows are collected from the `<tbody>` after the commit instead, tagged
+    // with the `data-index` the virtualizer reads back, and handed over. This
+    // is the library's own public `measureElement` (its `ResizeObserver`, its
+    // scroll-offset compensation -- which is what keeps the scrollbar from
+    // jumping when an estimated row turns out to be taller), only called from
+    // the parent rather than through a ref.
+    //
+    // Deliberately without a dependency array: it must run after every commit
+    // that can change which rows are mounted or how tall they are, and the
+    // work is bounded by the rendered window (a few dozen nodes), not by the
+    // result count.
+    useLayoutEffect(() => {
+        const body = tableBodyRef.current;
+        if (!body) {
+            return;
+        }
+        const rows = body.querySelectorAll<HTMLTableRowElement>(
+            'tr[data-testid="search-result-row"]',
+        );
+        virtualRows.forEach((item, position) => {
+            const element = rows[position];
+            if (!element) {
+                return;
+            }
+            element.dataset.index = String(item.index);
+            virtualizer.measureElement(element);
+        });
+        // Drops rows that have since left the DOM from the virtualizer's own
+        // element cache.
+        virtualizer.measureElement(null);
+    });
     return (
-        <Stack data-testid="search-results" spacing={2} sx={{mt: 4}}>
+        <Stack
+            data-testid="search-results"
+            ref={resultsRootRef}
+            spacing={2}
+            sx={{mt: 4}}
+        >
             {data.indexerLimitWarnings.length > 0 && (
                 <Alert data-testid="indexer-limit-warnings" severity="warning">
                     <strong>Indexer quota warning</strong>
@@ -905,9 +1113,7 @@ export function SearchResults({
                                     {filteredResults.length} of{" "}
                                     {data.searchResults.length} loaded
                                     {moreResultsAvailable &&
-                                        ` (${totalResultsUnknown ? ">" : ""}${
-                                            data.numberOfAvailableResults
-                                        } available)`}
+                                        ` (${availableResultsPhrase} available)`}
                                     {filteredOutCount > 0 &&
                                         ` · ${filteredOutCount} filtered`}
                                     {data.numberOfRejectedResults > 0 && (
@@ -956,9 +1162,7 @@ export function SearchResults({
                                         disabled={
                                             !pagingAvailable || pagingLoading
                                         }
-                                        onClick={() =>
-                                            void requestContinuation(true)
-                                        }
+                                        onClick={() => void requestLoadAll()}
                                         size="small"
                                     >
                                         Load all results
@@ -1148,9 +1352,30 @@ export function SearchResults({
                                     compactRows ? "true" : "false"
                                 }
                                 data-testid="search-results-table"
+                                // FM-162: how many rows this table stands for,
+                                // as opposed to how many are currently
+                                // mounted. Since the body is virtualized, the
+                                // rendered `search-result-row` count is a
+                                // function of the viewport; this is the number
+                                // that used to be readable by counting them.
+                                data-row-count={rowDescriptors.length}
                                 sx={(theme) => ({
                                     tableLayout: "fixed",
                                     width: "100%",
+                                    // FM-162: the two virtualization spacer
+                                    // rows carry nothing but height -- no
+                                    // padding, no card separator at <768px.
+                                    // Declared here rather than on the rows
+                                    // themselves because the body-cell padding
+                                    // rule below is a descendant selector of
+                                    // this same `sx` and would otherwise win.
+                                    "& tbody > tr[data-virtual-spacer]": {
+                                        border: 0,
+                                    },
+                                    "& tbody > tr[data-virtual-spacer] > td": {
+                                        border: 0,
+                                        padding: 0,
+                                    },
                                     "& tbody > tr > td": {
                                         paddingBottom: compactRows
                                             ? COMPACT_ROW_PADDING_Y
@@ -1621,50 +1846,95 @@ export function SearchResults({
                                             </TableRow>
                                         ))}
                                 </TableHead>
-                                <TableBody>
-                                    {rowDescriptors.map((row) => (
-                                        <ResultRow
-                                            dereferer={dereferer}
-                                            downloaded={downloadedIds.has(
-                                                row.result.searchResultId,
-                                            )}
-                                            duplicateExpanded={
-                                                row.duplicateExpanded
-                                            }
-                                            duplicateKey={row.duplicateKey}
-                                            expandSlots={expandSlots}
-                                            indexerColors={indexerColors}
-                                            isNewGroup={row.isNewGroup}
-                                            key={row.result.searchResultId}
-                                            maySeeDetailsDl={maySeeDetailsDl}
-                                            nestingLevel={row.nestingLevel}
-                                            onDownloaded={handleDownloaded}
-                                            onSelectionChange={updateSelection}
-                                            onToggleDuplicateExpansion={
-                                                handleToggleDuplicateExpansion
-                                            }
-                                            onToggleTitleExpansion={
-                                                handleToggleTitleExpansion
-                                            }
-                                            recent={
-                                                highlightRecent &&
-                                                isRecentResult(row.result)
-                                            }
-                                            result={row.result}
-                                            selected={selected.has(
-                                                row.result.searchResultId,
-                                            )}
-                                            showDuplicateExpand={
-                                                row.showDuplicateExpand
-                                            }
-                                            showTitleExpand={
-                                                row.showTitleExpand
-                                            }
-                                            titleExpanded={row.titleExpanded}
-                                            titleGroupKey={row.titleGroupKey}
-                                            transport={transport}
-                                        />
-                                    ))}
+                                <TableBody ref={tableBodyRef}>
+                                    {/* FM-162: the space the rows above the
+                                        rendered window would occupy. An
+                                        in-flow row, so the fixed table layout
+                                        and the <768px card layout both handle
+                                        it without knowing it is there. */}
+                                    {spacerHeightTop > 0 && (
+                                        <TableRow
+                                            aria-hidden="true"
+                                            data-testid="results-virtual-spacer-top"
+                                            data-virtual-spacer="top"
+                                        >
+                                            <TableCell
+                                                colSpan={TABLE_COLUMN_COUNT}
+                                                style={{
+                                                    height: `${spacerHeightTop}px`,
+                                                }}
+                                            />
+                                        </TableRow>
+                                    )}
+                                    {virtualRows.map((virtualRow) => {
+                                        const row =
+                                            rowDescriptors[virtualRow.index];
+                                        return (
+                                            <ResultRow
+                                                dereferer={dereferer}
+                                                downloaded={downloadedIds.has(
+                                                    row.result.searchResultId,
+                                                )}
+                                                duplicateExpanded={
+                                                    row.duplicateExpanded
+                                                }
+                                                duplicateKey={row.duplicateKey}
+                                                expandSlots={expandSlots}
+                                                indexerColors={indexerColors}
+                                                isNewGroup={row.isNewGroup}
+                                                key={row.result.searchResultId}
+                                                maySeeDetailsDl={
+                                                    maySeeDetailsDl
+                                                }
+                                                nestingLevel={row.nestingLevel}
+                                                onDownloaded={handleDownloaded}
+                                                onSelectionChange={
+                                                    updateSelection
+                                                }
+                                                onToggleDuplicateExpansion={
+                                                    handleToggleDuplicateExpansion
+                                                }
+                                                onToggleTitleExpansion={
+                                                    handleToggleTitleExpansion
+                                                }
+                                                recent={
+                                                    highlightRecent &&
+                                                    isRecentResult(row.result)
+                                                }
+                                                result={row.result}
+                                                selected={selected.has(
+                                                    row.result.searchResultId,
+                                                )}
+                                                showDuplicateExpand={
+                                                    row.showDuplicateExpand
+                                                }
+                                                showTitleExpand={
+                                                    row.showTitleExpand
+                                                }
+                                                titleExpanded={
+                                                    row.titleExpanded
+                                                }
+                                                titleGroupKey={
+                                                    row.titleGroupKey
+                                                }
+                                                transport={transport}
+                                            />
+                                        );
+                                    })}
+                                    {spacerHeightBottom > 0 && (
+                                        <TableRow
+                                            aria-hidden="true"
+                                            data-testid="results-virtual-spacer-bottom"
+                                            data-virtual-spacer="bottom"
+                                        >
+                                            <TableCell
+                                                colSpan={TABLE_COLUMN_COUNT}
+                                                style={{
+                                                    height: `${spacerHeightBottom}px`,
+                                                }}
+                                            />
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </Box>
@@ -1673,6 +1943,34 @@ export function SearchResults({
             )}
         </Stack>
     );
+}
+
+/**
+ * FM-162: a mounted row's real height, for the virtualizer.
+ *
+ * The measurement itself is the library's own (the `ResizeObserver` entry's
+ * border box while scrolling/resizing, the element's `offsetHeight` on the
+ * first pass) -- rows here are genuinely variable-height, since the Title cell
+ * wraps and below 768px a row is a whole card, so an estimate is not good
+ * enough and none is used once a row has been seen.
+ *
+ * The one addition is the zero guard. A rendered table row cannot really be
+ * 0px tall; a zero reading means the environment cannot lay the row out at all
+ * -- jsdom, which reports 0 for every box and has no `ResizeObserver` -- and
+ * feeding those zeros back would collapse the whole list to offset 0 and mount
+ * every row, which is precisely the behaviour this task removes. Falling back
+ * to the estimate keeps the component's own tests measuring a bounded window
+ * without weakening anything a real browser does.
+ */
+function measureRowHeight(
+    element: Element,
+    entry: ResizeObserverEntry | undefined,
+): number {
+    const borderBox = entry?.borderBoxSize?.[0];
+    const measured = borderBox
+        ? Math.round(borderBox.blockSize)
+        : (element as HTMLElement).offsetHeight;
+    return measured > 0 ? measured : ESTIMATED_ROW_HEIGHT;
 }
 
 /** One rendered table-body row, with everything the grouping decides about it. */

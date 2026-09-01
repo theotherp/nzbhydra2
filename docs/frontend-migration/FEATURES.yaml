@@ -296,10 +296,17 @@ features:
         legacy's \"upper left\" locator phrase for the \"Display options\"
         control (`search-results-controller.js:186`), since the React
         layout does not fix that control to a corner"
-      - "deliberate - FM-091: legacy's predicate read the *searched*
-        category off `$stateParams`; the React results view is only handed
-        the results themselves, so eligibility is computed from the
-        returned results' own categories instead
+      # 2026-09-01 (FM-162): FM-091's results-derived eligibility is gone.
+      # It made the dialog appear for any broad search that happened to
+      # return TV-categorized results and never appear for a TV category an
+      # installation had renamed, which the owner saw live on 2026-08-31.
+      - "deliberate - FM-162: eligibility follows legacy's own predicate on
+        the *searched* category (`search-results-controller.js:178`, read
+        from git history: `groupEpisodes && categoryLower.indexOf(\"tv\") >
+        -1 && $stateParams.episode === undefined`), threaded from
+        `SearchPage.tsx`; it additionally accepts a category whose
+        configured `searchType` is `TVSEARCH` whatever its name, so a TV
+        category renamed \"Series\" or \"Anime\" behaves like the stock ones
         (`groupEpisodesHelp.ts:isGroupEpisodesHelpEligible`)"
       - "deliberate - FM-091: the server-backed
         `isGroupEpisodesHelpShown` flag is written only after the dialog

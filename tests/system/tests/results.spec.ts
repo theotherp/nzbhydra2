@@ -2156,7 +2156,17 @@ test.describe("Search results", () => {
                     page.getByTestId("search-results-table"),
                 ).toBeVisible();
             });
-            await expect(page.getByTestId("search-result-row")).toHaveCount(24);
+            // FM-162: the table body is window-virtualized, so how many rows
+            // are *mounted* is a function of the viewport, not of the result
+            // set. The assertion's meaning here -- this fixture's 24 results
+            // all reached the table -- is read off the table's own
+            // `data-row-count`, with rows confirmed to be rendered below it.
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toHaveAttribute("data-row-count", "24");
+            await expect(
+                page.getByTestId("search-result-row").first(),
+            ).toBeVisible();
 
             const toolbar = page.getByTestId("results-toolbar");
 
@@ -3377,8 +3387,10 @@ test.describe("Search results", () => {
     // per-user `isGroupEpisodesHelpShown` flag this shared instance already
     // carries across specs -- explicitly reset to "not shown" first, and its
     // end state asserted afterward, so this test neither depends on nor
-    // silently changes whatever another spec left behind.
-    test("should show the group-episodes help dialog once for an eligible TV search and record it as shown", async ({
+    // silently changes whatever another spec left behind. FM-162 additionally
+    // pins the eligibility source: the searched category, not the returned
+    // results' categories.
+    test("should show the group-episodes help dialog once for a searched TV category, never for an All search, and record it as shown", async ({
         page,
     }) => {
         await page.request.put(
@@ -3413,8 +3425,29 @@ test.describe("Search results", () => {
             }),
         );
 
+        // FM-162: eligibility follows the *searched* category, as legacy's
+        // own predicate did. So the same TV-categorized results reached
+        // through a plain "All" search must show nothing -- the defect the
+        // owner saw live on 2026-08-31 -- and the flag must stay unwritten.
+        await page.goto("/");
+        await page.getByTestId("search-query").fill("group episodes help");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await expect(page.getByTestId("search-results-table")).toBeVisible();
+        await expect(
+            page.getByTestId("group-episodes-help-dialog"),
+        ).toBeHidden();
+        const afterAllSearch = await page.request.get(
+            "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
+        );
+        expect((await afterAllSearch.text()).trim()).not.toBe("true");
+
+        // Searching the TV category itself is what makes the same results
+        // eligible.
         await prepareVisualEvidence(page, "desktop", async () => {
             await page.goto("/");
+            await page.getByTestId("search-category-control").click();
+            await page.getByTestId("search-category-option-TV").click();
             await page.getByTestId("search-query").fill("group episodes help");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();

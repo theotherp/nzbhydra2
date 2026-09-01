@@ -25,24 +25,55 @@ export const GROUP_EPISODES_HELP_MESSAGE =
     'When searching in the TV categories results are automatically grouped by episodes. This makes it easier to download one episode each. You can disable this feature any time using the "Display options" button.';
 
 /**
- * Legacy's predicate (`search-results-controller.js:178`): the group-episodes
- * display option on, the searched category containing "tv" case-insensitively,
- * and no specific episode already requested. Legacy read the category off
- * `$stateParams`; the React results view is only handed the results
- * themselves, so this checks the returned results' own categories instead --
- * deliberate deviation, `FEATURES.yaml` F-SEARCH-SORT-FILTER gap line.
+ * The category a search was actually submitted for: its configured name and,
+ * when the configuration knows one, its search type. `SearchPage` resolves
+ * both from the category catalog for the executed request and threads them
+ * here, so eligibility below reads the *searched* category the way legacy did
+ * rather than the categories the results happen to carry.
+ */
+export type SearchedCategory = {
+    name: string;
+    searchType?: string;
+};
+
+/**
+ * Legacy's predicate (`search-results-controller.js:178`, read from git
+ * history -- the AngularJS sources are gone from the working tree):
+ *
+ * ```js
+ * var categoryLower = ($stateParams.category || "").toLowerCase();
+ * isGroupEpisodes: $scope.foo.groupEpisodes
+ *     && categoryLower.indexOf("tv") > -1
+ *     && $stateParams.episode === undefined
+ * ```
+ *
+ * FM-162 restores that source of truth -- the *searched* category, not the
+ * returned results' categories -- and widens legacy's name test by one step:
+ * a category whose configured `searchType` is `TVSEARCH` counts as a TV
+ * category whatever it is named, so the TV categories an installation renamed
+ * to "Series" or "Anime" behave like the stock "TV" ones. The name test stays
+ * alongside it for a category that is named for TV but left at the default
+ * search type.
  */
 export function isGroupEpisodesHelpEligible(options: {
-    categories: readonly string[];
     episodeRequested: boolean;
     groupEpisodes: boolean;
+    searchedCategory: SearchedCategory | undefined;
 }): boolean {
     return (
         options.groupEpisodes &&
         !options.episodeRequested &&
-        options.categories.some((category) =>
-            category.toLowerCase().includes("tv"),
-        )
+        isTvCategory(options.searchedCategory)
+    );
+}
+
+function isTvCategory(category: SearchedCategory | undefined): boolean {
+    if (!category) {
+        return false;
+    }
+    return (
+        category.searchType === "TVSEARCH" ||
+        category.name.toLowerCase().includes("tv")
     );
 }
 

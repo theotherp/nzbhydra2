@@ -3448,7 +3448,7 @@ describe("SearchResults", () => {
         expect(storedChoices().sidebarCollapsed).toBe(false);
     });
 
-    describe("group-episodes help dialog (FM-091)", () => {
+    describe("group-episodes help dialog (FM-091, FM-162)", () => {
         function tvResultsData() {
             return {
                 ...response,
@@ -3499,7 +3499,12 @@ describe("SearchResults", () => {
 
         it("shows the help dialog for an eligible unraised search and writes the flag only after it closes", async () => {
             const {fetchImplementation, puts} = genericStorageFetch(false);
-            renderResults(<SearchResults data={tvResultsData()} />);
+            renderResults(
+                <SearchResults
+                    data={tvResultsData()}
+                    searchedCategory={{name: "TV SD", searchType: "TVSEARCH"}}
+                />,
+            );
 
             const dialog = await screen.findByTestId(
                 "group-episodes-help-dialog",
@@ -3525,7 +3530,12 @@ describe("SearchResults", () => {
 
         it("shows nothing and writes nothing when the flag is already raised", async () => {
             const {puts} = genericStorageFetch(true);
-            renderResults(<SearchResults data={tvResultsData()} />);
+            renderResults(
+                <SearchResults
+                    data={tvResultsData()}
+                    searchedCategory={{name: "TV SD", searchType: "TVSEARCH"}}
+                />,
+            );
 
             await vi.waitFor(() =>
                 expect(
@@ -3551,6 +3561,7 @@ describe("SearchResults", () => {
                             },
                         ],
                     }}
+                    searchedCategory={{name: "Movies", searchType: "MOVIE"}}
                 />,
             );
 
@@ -3559,6 +3570,420 @@ describe("SearchResults", () => {
                 screen.queryByTestId("group-episodes-help-dialog"),
             ).not.toBeInTheDocument();
             expect(puts).toEqual([]);
+        });
+
+        // FM-162: eligibility follows the *searched* category, as legacy's own
+        // predicate did, so incidental TV results in a broader search no
+        // longer trigger the dialog and a TV category the installation renamed
+        // still does.
+        it('shows nothing for an "All" search that merely returned TV results', async () => {
+            const {puts} = genericStorageFetch(false);
+            renderResults(
+                <SearchResults
+                    data={tvResultsData()}
+                    searchedCategory={{name: "All", searchType: "SEARCH"}}
+                />,
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            expect(
+                screen.queryByTestId("group-episodes-help-dialog"),
+            ).not.toBeInTheDocument();
+            expect(puts).toEqual([]);
+        });
+
+        it('shows the dialog for a renamed TV category whose name contains no "tv"', async () => {
+            genericStorageFetch(false);
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 1,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Anime Show 01",
+                                indexer: "Mock",
+                                category: "Anime",
+                            },
+                        ],
+                    }}
+                    searchedCategory={{name: "Anime", searchType: "TVSEARCH"}}
+                />,
+            );
+
+            expect(
+                await screen.findByTestId("group-episodes-help-dialog"),
+            ).toBeVisible();
+        });
+    });
+
+    // FM-162. The table body is window-virtualized, so the assertions here are
+    // about two things at once: that only a bounded window of rows is ever
+    // mounted, and that everything which is *not* per-row DOM -- selection,
+    // expansion, the counts in the toolbar -- is completely unaffected by a
+    // row having been unmounted.
+    describe("window virtualization (FM-162)", () => {
+        // jsdom lays nothing out (every box measures 0) and has no
+        // `ResizeObserver`, so a row's height here is the component's own
+        // `ESTIMATED_ROW_HEIGHT` fallback and the viewport is jsdom's fixed
+        // 768px-tall window. Both are stable, which is what makes a bounded
+        // rendered-row count assertable at all; the real heights are covered
+        // in the browser by `tests/system/tests/results.spec.ts`.
+        const JSDOM_WINDOW_HEIGHT = 768;
+
+        function manyResults(count: number, sharedTitleForFirstTwo = false) {
+            return Array.from({length: count}, (_, index) => ({
+                searchResultId: `result-${index}`,
+                title:
+                    sharedTitleForFirstTwo && index === 1
+                        ? "Result 000"
+                        : `Result ${String(index).padStart(3, "0")}`,
+                indexer: "Mock",
+                category: "All",
+                hash: index,
+            }));
+        }
+
+        function manyResultsData(count: number, sharedTitle = false) {
+            return {
+                ...response,
+                numberOfAvailableResults: count,
+                searchResults: manyResults(count, sharedTitle),
+            };
+        }
+
+        function scrollWindowTo(offset: number) {
+            Object.defineProperty(window, "scrollY", {
+                configurable: true,
+                value: offset,
+                writable: true,
+            });
+            Object.defineProperty(window, "pageYOffset", {
+                configurable: true,
+                value: offset,
+                writable: true,
+            });
+            act(() => {
+                fireEvent.scroll(window);
+            });
+        }
+
+        function renderedTitles(): string[] {
+            return screen
+                .getAllByTestId("search-result-row")
+                .map((row) => row.getAttribute("data-result-title") ?? "");
+        }
+
+        function selectedCount(): number {
+            const summary = screen.getByTestId(
+                "search-results-summary",
+            ).textContent;
+            return Number(/(\d+) selected/.exec(summary ?? "")?.[1] ?? 0);
+        }
+
+        afterEach(() => {
+            scrollWindowTo(0);
+        });
+
+        it("mounts only a bounded window of rows for a result set of ~2000", () => {
+            renderResults(<SearchResults data={manyResultsData(2000)} />);
+
+            const rendered = screen.getAllByTestId("search-result-row");
+            expect(rendered.length).toBeGreaterThan(0);
+            // The bound is a constant of the viewport and the overscan, not a
+            // function of the result count: at most one row per estimated row
+            // height across the window, plus overscan on both sides, with room
+            // to spare. 2000 rows unvirtualized would be 2000 nodes here.
+            expect(rendered.length).toBeLessThanOrEqual(
+                JSDOM_WINDOW_HEIGHT / 20,
+            );
+            // The full row set is still what the table stands for.
+            expect(screen.getByTestId("search-results-table")).toHaveAttribute(
+                "data-row-count",
+                "2000",
+            );
+            // The unrendered rows below are carried by a spacer row's height,
+            // inside `<tbody>` -- no transform, no absolute positioning, so
+            // the <768px card layout keeps working (asserted in the browser).
+            const spacer = screen.getByTestId("results-virtual-spacer-bottom");
+            expect(spacer.tagName).toBe("TR");
+            expect(spacer.parentElement?.tagName).toBe("TBODY");
+            const spacerHeight = parseFloat(
+                (spacer.firstElementChild as HTMLElement).style.height,
+            );
+            expect(spacerHeight).toBeGreaterThan((2000 - rendered.length) * 20);
+            // Nothing has scrolled yet, so there is no space above the window.
+            expect(
+                screen.queryByTestId("results-virtual-spacer-top"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("renders the window around the scroll position and keeps the row count bounded", () => {
+            renderResults(<SearchResults data={manyResultsData(2000)} />);
+            expect(renderedTitles()).toContain("Result 000");
+
+            scrollWindowTo(20000);
+
+            const scrolled = renderedTitles();
+            expect(scrolled).not.toContain("Result 000");
+            expect(scrolled.length).toBeGreaterThan(0);
+            expect(scrolled.length).toBeLessThanOrEqual(
+                JSDOM_WINDOW_HEIGHT / 20,
+            );
+            // Both spacers now carry the space above and below the window.
+            expect(
+                screen.getByTestId("results-virtual-spacer-top"),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByTestId("results-virtual-spacer-bottom"),
+            ).toBeInTheDocument();
+        });
+
+        it("keeps a shift-range selection anchored on a row that has since been unmounted", () => {
+            renderResults(<SearchResults data={manyResultsData(2000)} />);
+
+            const anchorRow = screen
+                .getAllByTestId("search-result-row")
+                .find(
+                    (row) =>
+                        row.getAttribute("data-result-title") === "Result 002",
+                );
+            expect(anchorRow).toBeDefined();
+            fireEvent.click(
+                within(anchorRow as HTMLElement).getByRole("checkbox"),
+            );
+            expect(selectedCount()).toBe(1);
+
+            // Scroll the anchor out of the rendered window entirely.
+            scrollWindowTo(2000);
+            expect(renderedTitles()).not.toContain("Result 002");
+
+            const rows = screen.getAllByTestId("search-result-row");
+            const target = rows[rows.length - 1];
+            const targetIndex = Number(
+                /Result (\d+)/.exec(
+                    target.getAttribute("data-result-title") ?? "",
+                )?.[1] ?? "0",
+            );
+            fireEvent.click(within(target).getByRole("checkbox"), {
+                shiftKey: true,
+            });
+
+            // The whole range from the unmounted anchor to the clicked row is
+            // selected, exactly as it would be with every row mounted.
+            expect(selectedCount()).toBe(targetIndex - 2 + 1);
+
+            // And the anchor itself comes back still selected.
+            scrollWindowTo(0);
+            const anchorAgain = screen
+                .getAllByTestId("search-result-row")
+                .find(
+                    (row) =>
+                        row.getAttribute("data-result-title") === "Result 002",
+                );
+            expect(
+                within(anchorAgain as HTMLElement).getByRole("checkbox"),
+            ).toBeChecked();
+        });
+
+        it("applies select-all, deselect-all and invert to every row, mounted or not", () => {
+            renderResults(<SearchResults data={manyResultsData(2000)} />);
+
+            scrollWindowTo(20000);
+            const headerMenu = screen.getByTestId("header-selection-menu");
+            const openSelectionMenu = () => {
+                fireEvent.click(
+                    within(headerMenu).getByRole("button", {
+                        name: "Selection options",
+                    }),
+                );
+            };
+
+            openSelectionMenu();
+            fireEvent.click(screen.getByRole("menuitem", {name: "Select all"}));
+            expect(selectedCount()).toBe(2000);
+            expect(
+                within(headerMenu).getByRole("checkbox", {
+                    name: "Select all visible results",
+                }),
+            ).toBeChecked();
+
+            openSelectionMenu();
+            fireEvent.click(
+                screen.getByRole("menuitem", {name: "Invert selection"}),
+            );
+            expect(selectedCount()).toBe(0);
+
+            // A single mounted row, then invert again: the 1999 unmounted rows
+            // flip too.
+            fireEvent.click(
+                within(screen.getAllByTestId("search-result-row")[0]).getByRole(
+                    "checkbox",
+                ),
+            );
+            expect(selectedCount()).toBe(1);
+            openSelectionMenu();
+            fireEvent.click(
+                screen.getByRole("menuitem", {name: "Invert selection"}),
+            );
+            expect(selectedCount()).toBe(1999);
+
+            openSelectionMenu();
+            fireEvent.click(
+                screen.getByRole("menuitem", {name: "Deselect all"}),
+            );
+            expect(selectedCount()).toBe(0);
+        });
+
+        it("keeps a title expansion open while its row is scrolled out of the window", () => {
+            renderResults(<SearchResults data={manyResultsData(2000, true)} />);
+            const table = screen.getByTestId("search-results-table");
+            // Two of the 2000 results share a title, so they collapse into one
+            // expandable row.
+            expect(table).toHaveAttribute("data-row-count", "1999");
+
+            fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+            expect(table).toHaveAttribute("data-row-count", "2000");
+
+            scrollWindowTo(20000);
+            expect(renderedTitles()).not.toContain("Result 000");
+            expect(table).toHaveAttribute("data-row-count", "2000");
+
+            scrollWindowTo(0);
+            expect(table).toHaveAttribute("data-row-count", "2000");
+            expect(
+                screen.getByRole("button", {name: "Collapse group"}),
+            ).toBeVisible();
+        });
+    });
+
+    // FM-162: "Load all results" commits to every remaining page in one go,
+    // so above a threshold it asks first. "Load more" never does.
+    describe("load-all confirmation (FM-162)", () => {
+        function pagingData(numberOfAvailableResults: number) {
+            return {
+                ...response,
+                pagingState: "ready" as const,
+                offset: 0,
+                limit: 1,
+                numberOfProcessedResults: 1,
+                numberOfAvailableResults,
+                searchResults: [
+                    {
+                        searchResultId: "1",
+                        title: "Result",
+                        indexer: "Mock",
+                        category: "All",
+                    },
+                ],
+                indexerSearchMetaDatas: [
+                    {
+                        indexerName: "Mock",
+                        wasSuccessful: true,
+                        hasMoreResults: true,
+                    },
+                ],
+            };
+        }
+
+        it("loads without asking below the threshold", async () => {
+            const loadMore = vi.fn().mockResolvedValue(undefined);
+            renderResults(
+                <SearchResults data={pagingData(200)} onLoadMore={loadMore} />,
+            );
+
+            fireEvent.click(screen.getByTestId("results-load-all"));
+
+            await vi.waitFor(() => expect(loadMore).toHaveBeenCalledWith(true));
+            expect(
+                screen.queryByTestId("results-load-all-confirmation"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("asks before loading everything above the threshold and names the available count", async () => {
+            const loadMore = vi.fn().mockResolvedValue(undefined);
+            renderResults(
+                <SearchResults data={pagingData(4200)} onLoadMore={loadMore} />,
+            );
+
+            fireEvent.click(screen.getByTestId("results-load-all"));
+
+            const dialog = await screen.findByTestId(
+                "results-load-all-confirmation",
+            );
+            expect(within(dialog).getByText(/4200 results/)).toBeVisible();
+            expect(loadMore).not.toHaveBeenCalled();
+
+            fireEvent.click(
+                within(dialog).getByRole("button", {name: "Load all results"}),
+            );
+            await vi.waitFor(() => expect(loadMore).toHaveBeenCalledWith(true));
+        });
+
+        it("leaves the table untouched when the confirmation is dismissed", async () => {
+            const loadMore = vi.fn().mockResolvedValue(undefined);
+            renderResults(
+                <SearchResults data={pagingData(4200)} onLoadMore={loadMore} />,
+            );
+
+            fireEvent.click(screen.getByTestId("results-load-all"));
+            const dialog = await screen.findByTestId(
+                "results-load-all-confirmation",
+            );
+            fireEvent.click(
+                within(dialog).getByRole("button", {name: "Cancel"}),
+            );
+
+            await vi.waitFor(() =>
+                expect(
+                    screen.queryByTestId("results-load-all-confirmation"),
+                ).not.toBeInTheDocument(),
+            );
+            expect(loadMore).not.toHaveBeenCalled();
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+            expect(screen.getByTestId("results-load-all")).toBeEnabled();
+        });
+
+        it('prefixes the named count with ">" when the total is a lower bound', async () => {
+            const loadMore = vi.fn().mockResolvedValue(undefined);
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...pagingData(4200),
+                        indexerSearchMetaDatas: [
+                            {
+                                indexerName: "Mock",
+                                wasSuccessful: true,
+                                hasMoreResults: true,
+                                totalResultsKnown: false,
+                            },
+                        ],
+                    }}
+                    onLoadMore={loadMore}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("results-load-all"));
+
+            const dialog = await screen.findByTestId(
+                "results-load-all-confirmation",
+            );
+            expect(within(dialog).getByText(/>4200 results/)).toBeVisible();
+        });
+
+        it('never asks for "Load more"', () => {
+            const loadMore = vi.fn().mockResolvedValue(undefined);
+            renderResults(
+                <SearchResults data={pagingData(4200)} onLoadMore={loadMore} />,
+            );
+
+            fireEvent.click(screen.getByTestId("results-load-more"));
+
+            expect(loadMore).toHaveBeenCalledWith(false);
+            expect(
+                screen.queryByTestId("results-load-all-confirmation"),
+            ).not.toBeInTheDocument();
         });
     });
 

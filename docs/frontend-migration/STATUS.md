@@ -1320,6 +1320,21 @@ suites still mount rows under MUI's stock theme — follow-up candidate to wrap 
 wash-leak regression is pinned only by a string equality. Candidates for a future quickfix. Owner strip approval
 outstanding.
 
+FM-162 (Window-Virtualize The Results Table And Guard "Load All Results") window-virtualized the results table with
+`@tanstack/react-virtual`'s `useWindowVirtualizer` (an ADR-0002 TanStack sibling): only near-viewport rows plus overscan
+mount (9–29 of 2000 measured live at both strip viewports), carried by spacer `<tr>`s inside the same `<tbody>` so
+ADR-0011's window-scroll model and the `<768px` card CSS survive untouched; heights come from `measureElement` invoked
+parent-side over `data-index`-tagged rows. `results-load-all` now confirms through `C-DIALOG-SERVICE` above
+`LOAD_ALL_CONFIRMATION_THRESHOLD` (500), naming the summary's own count. The folded-in group-episodes eligibility defect
+is fixed: eligibility takes the searched category threaded from `SearchPage` (legacy `search-results-controller.js:178`),
+plus a category whose configured `searchType` is `TVSEARCH` whatever its name; the `FEATURES.yaml` gap line is rewritten
+accordingly and the `MAINTENANCE.md` candidate discharged. Selection/expansion invariants are pinned by tests that first
+scroll rows out of the mounted window; real-backend `results.spec.ts` + `downloads.spec.ts` 35/35 against a rebuilt
+bundle. Passed 2026-09-01 with minor findings, not corrected (optional): `SearchedCategory.searchType` typed `string`
+instead of the search-type union, `TABLE_COLUMN_COUNT = 8` restates the `<colgroup>` track count as an untied literal,
+and the two spacer testids (plus `results-load-all-confirmation`, whose feature this packet could not edit) are
+unregistered in `FEATURES.yaml` selectors. Candidates for a future quickfix/packet.
+
 ## Active
 
 None.
@@ -1347,12 +1362,12 @@ None.
 
 ## Upcoming
 
-- FM-159 (Live Downloader Targets In Rendered Search Results) is next: the 2026-08-31 owner-reported bug — a saved
-  downloader config change never reaches the results bulk bar without a reload, because `SearchResults` passes the
-  bootstrap snapshot to `DownloadActions` and the selection is seeded once at mount (ADR-0017). FM-160 (direct
-  download anchors' legacy `target="_blank"`/no-`download` parity) follows only because both edit `DownloadActions.tsx`.
+- FM-163 (Lazy-Load The Chart And Non-Search Routes Out Of The Entry Bundle) is next, second of the 2026-08-31 UX/perf
+  batch FM-162..FM-170 designed from that day's analysis (FM-162 is done, entry above). Later batch members stay planned
+  packets in `tasks/` until dependency-ordered; FM-166 depends on FM-165, and FM-169/FM-170 follow FM-164/FM-166 for
+  file overlap only.
 
-- The 2026-08-31 follow-up work is complete: FM-156, FM-157, and FM-158 are done (entries above).
+- FM-159 and FM-160 are done (entries above), as are the 2026-08-31 follow-ups FM-156, FM-157, FM-158.
 
 - The 2026-08-31 owner-request batch (ADR-0049/0050/0051) is complete: FM-150 through FM-155 are all done (entries above).
 

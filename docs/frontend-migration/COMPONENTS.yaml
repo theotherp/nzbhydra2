@@ -333,6 +333,33 @@ components:
       semantics and the dimensions' declared option order are unchanged. The standalone history-refine-<id>-label caption element is gone for checkboxes
       sections (never listed as a selector, zero references repo-wide) -- the caption is now the -toggle button, and the sections' role="group" naming moved to
       C-REFINE-MULTISELECT's groupLabel aria-label.
+  - id: C-HISTORY-PAGER
+    responsibility: Shared page navigation and page-size choice for the three paged history tables -- first/previous/numbered-with-ellipsis/next/last controls, the disabled-edge and aria-current="page" states, one "Page N of M / X entries"
+      status line, and the offered page sizes. It owns navigation only, never fetching, filter state, or the request itself; the chosen page and size are URL state (FM-165's schema), not component state
+    legacy:
+      - core/ui-src/html/dirPagination.tpl.html
+      - core/ui-src/js/download-history-controller.js
+    target: core/ui-react/src/features/stats/history/HistoryPager.tsx
+    consumers:
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-NOTIFICATIONS
+    classification: shared_hydra
+    state: planned
+    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implements it. Legacy paths are in git history only (core/ui-src was removed by a31df3aa2)
+  - id: C-COPY-VALUE-BUTTON
+    responsibility: One copy-to-clipboard icon button for a single table-cell value -- always in the DOM, revealed on row hover and on focus so it is keyboard-reachable, labelled per value, confirming and failing through C-TOAST-SERVICE, and
+      rendering nothing at all where navigator.clipboard is unavailable (NZBHydra is routinely served over plain HTTP). It is offered only on free text or machine-generated identifiers a user pastes elsewhere and that no existing action
+      already yields; short enumerated columns (time, category, source, result, age, indexer, type, username) get none
+    legacy: []
+    target: core/ui-react/src/components/CopyValueButton.tsx
+    consumers:
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-NOTIFICATIONS
+    classification: shared_hydra
+    state: planned
+    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-170 implements it. DownloadActions' bulk "Copy selected links" button is deliberately not a consumer yet -- it copies a computed multi-line list with its own messages
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model

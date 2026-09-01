@@ -1360,16 +1360,6 @@ symbol — a rule the repository already states in packet prompts and does not e
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
-- **The group-episodes help dialog's eligibility is derived from the results, not from the searched category.**
-  `isGroupEpisodesHelpEligible` (`groupEpisodesHelp.ts`) tests the *returned results'* categories for a
-  case-insensitive `"tv"`, because `SearchResults` is handed only the results; legacy tested `$stateParams.category`.
-  Two consequences the owner saw live on 2026-08-31: a plain "All" search whose results merely include TV-categorized
-  items shows the dialog, and a search in a TV category whose configured *name* contains no `"tv"` ("Series", "Anime")
-  never shows it — the erratic "sometimes never shown" appearance. Threading the searched category from `SearchPage`
-  into `SearchResults` is small, but the current behavior is recorded as a deliberate deviation on `FEATURES.yaml`'s
-  `F-SEARCH-SORT-FILTER` gap line, so changing it edits that file. Routed to **`/fm-orchestrate`**. Surfaced
-  2026-08-31.
-
 - **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
   reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
   no `PUT /internalapi/genericstorage`, the `isGroupEpisodesHelpShown` flag stayed empty, and the dialog returned on

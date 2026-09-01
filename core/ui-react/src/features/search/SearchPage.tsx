@@ -155,6 +155,28 @@ export function SearchPage({
         request?: SearchRequest;
         loading: boolean;
     }>({loading: false});
+    // FM-162: the category the *executed* search was submitted for -- its
+    // configured name plus the search type the catalog records for it -- so
+    // the results view's group-episodes help can apply legacy's own predicate
+    // (`search-results-controller.js:178`, which read `$stateParams.category`)
+    // instead of inferring TV-ness from the categories the returned results
+    // happen to carry. Read off `state.request` rather than the form, so it
+    // always describes the results currently on screen and not an edited,
+    // unsubmitted form; memoized so the results view's help effect does not
+    // see a new object on every live-progress tick.
+    const searchedCategoryName = state.request?.category;
+    const searchedCategory = useMemo(
+        () =>
+            searchedCategoryName === undefined
+                ? undefined
+                : {
+                      name: searchedCategoryName,
+                      searchType: catalog.categories.find(
+                          (category) => category.name === searchedCategoryName,
+                      )?.searchType,
+                  },
+        [catalog, searchedCategoryName],
+    );
     const [progress, setProgress] = useState<SearchProgress>();
     const [liveUnavailable, setLiveUnavailable] = useState<string>();
     const [embyAvailability, setEmbyAvailability] = useState<
@@ -552,6 +574,7 @@ export function SearchPage({
                     onLoadMore={loadMore}
                     onSaveSearch={saveSearch}
                     savingSearch={savingSearch}
+                    searchedCategory={searchedCategory}
                     searchRequestId={state.request.searchRequestId}
                 />
             )}

@@ -24,32 +24,44 @@ function preferencesDouble(stored: Record<string, unknown> = {}): {
 }
 
 describe("isGroupEpisodesHelpEligible", () => {
-    it("is eligible for a TV category with grouping on and no episode requested", () => {
+    it("is eligible for a searched TV category with grouping on and no episode requested", () => {
         expect(
             isGroupEpisodesHelpEligible({
-                categories: ["Movies", "TV SD"],
                 episodeRequested: false,
                 groupEpisodes: true,
+                searchedCategory: {name: "TV SD", searchType: "TVSEARCH"},
             }),
         ).toBe(true);
     });
 
-    it("matches the category case-insensitively", () => {
+    it("matches the searched category's name case-insensitively", () => {
         expect(
             isGroupEpisodesHelpEligible({
-                categories: ["tv hd"],
                 episodeRequested: false,
                 groupEpisodes: true,
+                searchedCategory: {name: "tv hd"},
             }),
         ).toBe(true);
+    });
+
+    it('is eligible for a renamed TV category whose name contains no "tv"', () => {
+        for (const name of ["Series", "Anime"]) {
+            expect(
+                isGroupEpisodesHelpEligible({
+                    episodeRequested: false,
+                    groupEpisodes: true,
+                    searchedCategory: {name, searchType: "TVSEARCH"},
+                }),
+            ).toBe(true);
+        }
     });
 
     it("is not eligible when grouping is off", () => {
         expect(
             isGroupEpisodesHelpEligible({
-                categories: ["TV SD"],
                 episodeRequested: false,
                 groupEpisodes: false,
+                searchedCategory: {name: "TV SD", searchType: "TVSEARCH"},
             }),
         ).toBe(false);
     });
@@ -57,19 +69,39 @@ describe("isGroupEpisodesHelpEligible", () => {
     it("is not eligible when an episode was explicitly requested", () => {
         expect(
             isGroupEpisodesHelpEligible({
-                categories: ["TV SD"],
                 episodeRequested: true,
                 groupEpisodes: true,
+                searchedCategory: {name: "TV SD", searchType: "TVSEARCH"},
             }),
         ).toBe(false);
     });
 
-    it("is not eligible for a non-TV category", () => {
+    it("is not eligible for a non-TV searched category", () => {
         expect(
             isGroupEpisodesHelpEligible({
-                categories: ["Movies"],
                 episodeRequested: false,
                 groupEpisodes: true,
+                searchedCategory: {name: "Movies", searchType: "MOVIE"},
+            }),
+        ).toBe(false);
+    });
+
+    it('is not eligible for an "All" search that merely returned TV results', () => {
+        expect(
+            isGroupEpisodesHelpEligible({
+                episodeRequested: false,
+                groupEpisodes: true,
+                searchedCategory: {name: "All", searchType: "SEARCH"},
+            }),
+        ).toBe(false);
+    });
+
+    it("is not eligible when the searched category is unknown", () => {
+        expect(
+            isGroupEpisodesHelpEligible({
+                episodeRequested: false,
+                groupEpisodes: true,
+                searchedCategory: undefined,
             }),
         ).toBe(false);
     });
