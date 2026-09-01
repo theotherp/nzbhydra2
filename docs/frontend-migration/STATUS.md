@@ -1335,6 +1335,36 @@ instead of the search-type union, `TABLE_COLUMN_COUNT = 8` restates the `<colgro
 and the two spacer testids (plus `results-load-all-confirmation`, whose feature this packet could not edit) are
 unregistered in `FEATURES.yaml` selectors. Candidates for a future quickfix/packet.
 
+FM-163 (Lazy-Load The Chart And Non-Search Routes Out Of The Entry Bundle) moved the stats, system, and config route
+subtrees behind `React.lazy`/`Suspense` (search route and shell stay eager; non-jumping in-content fallbacks mirroring
+`stats/shared/Loading.tsx`) and deferred the footer's `SparkLineChart` into its own module with reserved space, cutting
+`dist/assets/index.js` from 1,773,381 to 1,079,935 bytes (61 emitted JS files, entry statically imports none; ceiling
+1,250,000). `validate-production-assets.mjs` gained a chart-marker + static-import-closure guard the reviewer
+independently proved red on both a re-static import and the `manualChunks` trap. ADR-0010 intact (`react.html`
+untouched, two unhashed entry assets). Mid-task designer refinement allowlisted `ConfigShell.test.tsx` (spec defect:
+the FM-120 frame test's 20-microtask drain cannot cross a first lazy load) — the fix is a pure-addition warm-up, every
+assertion untouched; a separate quickfix (769708e37) repaired `config.spec.ts`'s pre-existing Discard-dialog failures
+proven on baseline. Full vitest 1741/1741; real-backend smoke 11/11, stats 7/7, config 29/29 via the quickfix run.
+Passed 2026-09-01 with minor findings, not corrected (optional): the cold first-visit tab swap is argued but unasserted
+(the warmed test measures a cached render), three duplicated `AREA_FALLBACK` constants, minification-marker staleness
+undetected in the validator, and a bare ENOENT on an out-of-assets static import (fails loudly, cannot false-pass).
+Candidates for a future quickfix.
+
+FM-164 (Mount Stats Charts Only Once They Reach The Viewport) gated the chart arm of `ChartCard` behind an
+`IntersectionObserver` (400px rootMargin): below-fold cards render placeholders sized by the charts' own sizing rules
+(exported `horizontalBarChartHeight`; `GROUPED_BAR_CHART_HEIGHT` made the true container height because MUI lays the
+legend beside the plot — a two-series plot is ~29px shorter, the reviewer judged this the only faithful reading of the
+reserved-height criterion and within packet authority), so first-paint and fully-drawn page geometry are identical
+(strip: both desktop frames 1280x3075, headings at identical offsets, in-page scrollHeight assertion). Once mounted a
+chart never unmounts on scroll; the XOR toggle and `aria-expanded` are untouched; the table arm is never gated
+(ADR-0021); missing `IntersectionObserver` degrades to eager mounting (both branches pinned in new `ChartCard.test.tsx`).
+`stats.spec.ts` gained `expectChartDrawn` (scroll-then-assert down to the plot SVG), proven red against a disabled
+chart. Real-backend stats.spec.ts 7/7; stats vitest 122/122. Passed 2026-09-01 with minor findings, not corrected
+(optional): `HorizontalBarChart`'s dead `height` override prop could silently diverge from the reserved height, the
+~29px grouped-plot change awaits the owner's eye on the strip, one stale comment names the wrong height carrier, and one
+new react-refresh lint warning (three identical ones pre-date it; a sizing-helper module would clear all). Candidates
+for a future quickfix.
+
 ## Active
 
 None.
@@ -1362,10 +1392,9 @@ None.
 
 ## Upcoming
 
-- FM-163 (Lazy-Load The Chart And Non-Search Routes Out Of The Entry Bundle) is next, second of the 2026-08-31 UX/perf
-  batch FM-162..FM-170 designed from that day's analysis (FM-162 is done, entry above). Later batch members stay planned
-  packets in `tasks/` until dependency-ordered; FM-166 depends on FM-165, and FM-169/FM-170 follow FM-164/FM-166 for
-  file overlap only.
+- FM-165 (Put History Filter, Sort, And Page In The URL) is next, fourth of the 2026-08-31 UX/perf batch FM-162..FM-170
+  designed from that day's analysis (FM-162, FM-163, and FM-164 are done, entries above). Later batch members stay
+  planned packets in `tasks/` until dependency-ordered; FM-166 depends on FM-165, and FM-170 follows FM-166.
 
 - FM-159 and FM-160 are done (entries above), as are the 2026-08-31 follow-ups FM-156, FM-157, FM-158.
 

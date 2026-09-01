@@ -1,3 +1,5 @@
+import type {Page} from "@playwright/test";
+
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
 
@@ -234,23 +236,18 @@ test.describe("React aggregate statistics dashboard", () => {
             });
         });
         await page.goto(applicationUrl("/stats/stats"));
-        await expect(
-            page.getByTestId("stats-chart-response-times"),
-        ).toBeVisible();
-        await expect(
-            page.getByTestId("stats-chart-indexer-download-shares"),
-        ).toBeVisible();
+        await expectChartDrawn(page, "stats-chart-response-times");
+        await expectChartDrawn(page, "stats-chart-indexer-download-shares");
 
         await page.getByTestId("stats-family-menu-button").click();
         await page.getByTestId("stats-family-avgResponseTimes").click();
         await page.keyboard.press("Escape");
+        // Checked with the surviving card in view, so the deselected card's
+        // absence is a real absence and not merely a card below the fold.
+        await expectChartDrawn(page, "stats-chart-indexer-download-shares");
         await expect(
             page.getByTestId("stats-chart-response-times"),
         ).toHaveCount(0);
-        // The other family's chart survives the deselect.
-        await expect(
-            page.getByTestId("stats-chart-indexer-download-shares"),
-        ).toBeVisible();
 
         const singleFamilyRequest = page.waitForResponse(
             (response) =>
@@ -265,13 +262,9 @@ test.describe("React aggregate statistics dashboard", () => {
         expect(requestBody.avgResponseTimes).toBe(true);
         expect(requestBody.indexerDownloadShares).toBe(false);
         await page.keyboard.press("Escape");
-        await expect(
-            page.getByTestId("stats-chart-response-times"),
-        ).toBeVisible();
+        await expectChartDrawn(page, "stats-chart-response-times");
         // Re-enabling one family did not discard the previously held one.
-        await expect(
-            page.getByTestId("stats-chart-indexer-download-shares"),
-        ).toBeVisible();
+        await expectChartDrawn(page, "stats-chart-indexer-download-shares");
     });
 
     test("date presets and include-disabled apply immediately; custom range validates before sending", async ({
@@ -341,6 +334,9 @@ test.describe("React aggregate statistics dashboard", () => {
                     page.getByTestId("stats-overview-tiles"),
                 ).toBeVisible();
             });
+            // First paint: the below-fold cards hold placeholders of their
+            // charts' own heights (FM-164), so this frame is exactly as tall
+            // as the scrolled one below.
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-STATS-MAIN",
@@ -348,6 +344,40 @@ test.describe("React aggregate statistics dashboard", () => {
                 ),
                 fullPage: true,
             });
+            if (viewport !== "desktop") continue;
+            const heightAtFirstPaint = await page.evaluate(
+                () => document.body.scrollHeight,
+            );
+            // Walked in document order, the way a reader reaches them: every
+            // card's chart draws once it is reached, and the placeholder is
+            // gone by the time it does.
+            for (const testId of [
+                "stats-chart-indexer-download-shares",
+                "stats-chart-response-times",
+                "stats-chart-activity-day-of-week",
+                "stats-chart-activity-hour-of-day",
+                "stats-chart-search-agent",
+                "stats-chart-download-agent",
+                "stats-chart-downloads-per-age",
+            ]) {
+                await expectChartDrawn(page, testId);
+            }
+            await page.evaluate(() => {
+                globalThis.scrollTo(0, document.body.scrollHeight);
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-STATS-MAIN",
+                    "dashboard-desktop-scrolled",
+                ),
+                fullPage: true,
+            });
+            // The point of the reserved placeholders: the page is exactly as
+            // tall before any chart has mounted as it is once all of them
+            // have, so no card ever moves under the reader's pointer.
+            expect(await page.evaluate(() => document.body.scrollHeight)).toBe(
+                heightAtFirstPaint,
+            );
         }
     });
 });
@@ -405,3 +435,25 @@ test("should keep one stats shell and its cached tab across a tab switch", async
     await page.waitForTimeout(500);
     expect(indexerStatusRequests).toBe(1);
 });
+
+/**
+ * FM-164: a chart card is always in the layout (its placeholder reserves the
+ * chart's height), but the chart itself mounts only once the card reaches the
+ * viewport. Asserting the card alone would therefore stay green for a chart
+ * that never drew, so scroll the card into view and assert the chart arm --
+ * the `-chart` wrapper, which the placeholder never carries -- down to the
+ * plot it contains. The wrapper alone would not do: a grouped-bar card
+ * reserves its height on the wrapper, so a chart that rendered nothing would
+ * leave a wrapper of the right size and an empty card.
+ */
+async function expectChartDrawn(page: Page, testId: string): Promise<void> {
+    const card = page.getByTestId(testId);
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toBeVisible();
+    const chart = page.getByTestId(`${testId}-chart`);
+    await expect(chart).toBeVisible();
+    // The card's help icon is in the header, outside this wrapper, so the only
+    // SVG scoped to it is the plot itself.
+    await expect(chart.locator("svg").first()).toBeVisible();
+    await expect(page.getByTestId(`${testId}-placeholder`)).toHaveCount(0);
+}

@@ -20,7 +20,10 @@ import {
     type IndexerRow,
 } from "../derivations";
 import {ChartCard} from "../ChartCard";
-import {HorizontalBarChart} from "../charts/HorizontalBarChart";
+import {
+    horizontalBarChartHeight,
+    HorizontalBarChart,
+} from "../charts/HorizontalBarChart";
 
 const SCORE_HELP =
     "Shows how valuable this indexer was for your downloads. A higher score means it often had downloads that fewer of your other indexers could provide.";
@@ -280,6 +283,9 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
             </TableContainer>
             {columns.downloadShare && (
                 <ChartCard
+                    chartHeight={horizontalBarChartHeight(
+                        (stats.indexerDownloadShares ?? []).length,
+                    )}
                     chart={
                         <HorizontalBarChart
                             data={(stats.indexerDownloadShares ?? []).map(
@@ -300,6 +306,9 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
             )}
             {columns.responseTime && (
                 <ChartCard
+                    chartHeight={horizontalBarChartHeight(
+                        (stats.avgResponseTimes ?? []).length,
+                    )}
                     chart={
                         <HorizontalBarChart
                             data={(stats.avgResponseTimes ?? []).map(

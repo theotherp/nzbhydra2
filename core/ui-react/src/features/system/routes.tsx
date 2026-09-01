@@ -1,22 +1,86 @@
+import {CircularProgress, Stack, Typography} from "@mui/material";
 import {createRoute, redirect, type AnyRoute} from "@tanstack/react-router";
+import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
-import {SystemAboutTab} from "./about/SystemAboutTab";
-import {SystemBackupTab} from "./backups/SystemBackupTab";
-import {SystemBugreportTab} from "./bugreport/SystemBugreportTab";
-import {SystemControlTab} from "./control/SystemControlTab";
-import {SystemLogTab} from "./logs/SystemLogTab";
-import {NewsPage} from "./news/NewsPage";
-import {SystemShell} from "./SystemShell";
-import {SystemTasksTab} from "./tasks/SystemTasksTab";
-import {SystemUpdatesTab} from "./updates/SystemUpdatesTab";
 import {
     DEFAULT_SYSTEM_TAB,
     SYSTEM_TABS,
     systemTabHref,
     type SystemTab,
 } from "./systemTabs";
+
+/**
+ * FM-163: the whole area — shell and tab bodies — is behind `React.lazy`, so
+ * none of it (the Bugreport tab's CPU chart and the chart engine under it
+ * included) is in the entry chunk a search-only session downloads. The route
+ * *definitions* stay eager: `router.tsx` builds the full tree synchronously,
+ * so every path below still matches without loading a byte of this area.
+ */
+const SystemShell = lazy(() =>
+    import("./SystemShell").then((module) => ({default: module.SystemShell})),
+);
+const SystemAboutTab = lazy(() =>
+    import("./about/SystemAboutTab").then((module) => ({
+        default: module.SystemAboutTab,
+    })),
+);
+const SystemBackupTab = lazy(() =>
+    import("./backups/SystemBackupTab").then((module) => ({
+        default: module.SystemBackupTab,
+    })),
+);
+const SystemBugreportTab = lazy(() =>
+    import("./bugreport/SystemBugreportTab").then((module) => ({
+        default: module.SystemBugreportTab,
+    })),
+);
+const SystemControlTab = lazy(() =>
+    import("./control/SystemControlTab").then((module) => ({
+        default: module.SystemControlTab,
+    })),
+);
+const SystemLogTab = lazy(() =>
+    import("./logs/SystemLogTab").then((module) => ({
+        default: module.SystemLogTab,
+    })),
+);
+const NewsPage = lazy(() =>
+    import("./news/NewsPage").then((module) => ({default: module.NewsPage})),
+);
+const SystemTasksTab = lazy(() =>
+    import("./tasks/SystemTasksTab").then((module) => ({
+        default: module.SystemTasksTab,
+    })),
+);
+const SystemUpdatesTab = lazy(() =>
+    import("./updates/SystemUpdatesTab").then((module) => ({
+        default: module.SystemUpdatesTab,
+    })),
+);
+
+/**
+ * The area's `Suspense` fallback, used at two nested boundaries: one on the
+ * parent route for the shell itself, and one per tab body inside it, so a tab
+ * switch never takes the shell's tab strip down with it. It sits in the
+ * content area — the application shell around it never unmounts — and reserves
+ * height so nothing below it moves when the chunk lands. A tab switch is a
+ * router transition, which React resolves by holding the outgoing body rather
+ * than falling back to this at all.
+ */
+const AREA_FALLBACK = (
+    <Stack
+        alignItems="center"
+        component="main"
+        role="status"
+        spacing={1}
+        sx={{minHeight: 320, pt: 8}}
+    >
+        <CircularProgress />
+        <Typography>Loading the system area…</Typography>
+    </Stack>
+);
 
 /**
  * The system area's route subtree. The eight tabs are children of one
@@ -38,7 +102,11 @@ export function createSystemRoute<TParent extends AnyRoute>(
     const systemRoute = createRoute({
         getParentRoute: () => parentRoute,
         path: "system",
-        component: SystemShell,
+        component: () => (
+            <Suspense fallback={AREA_FALLBACK}>
+                <SystemShell />
+            </Suspense>
+        ),
     });
     const indexRoute = createRoute({
         getParentRoute: () => systemRoute,
@@ -89,7 +157,12 @@ export function createSystemRoute<TParent extends AnyRoute>(
         createRoute({
             getParentRoute: () => systemRoute,
             path: tab.path,
-            component: () => tabBody(tab),
+            // Nested inside the parent's boundary: a tab switch must not take
+            // the shell's tab strip down with it while the incoming body's
+            // chunk is in flight.
+            component: () => (
+                <Suspense fallback={AREA_FALLBACK}>{tabBody(tab)}</Suspense>
+            ),
         }),
     );
     return systemRoute.addChildren([indexRoute, ...tabRoutes]);

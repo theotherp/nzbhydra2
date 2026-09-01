@@ -1014,6 +1014,24 @@ describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
 
         const nav = screen.getByTestId("config-nav");
 
+        // FM-163 put every config tab body behind `React.lazy`, so the *first*
+        // render of one resolves through a module load and React's scheduler --
+        // macrotask work the microtask drain below deliberately does not cross.
+        // This visit to Auth and back resolves both `lazy` payloads; React
+        // caches a resolved payload on the shared `lazy` object, so the
+        // measured click further down renders Auth synchronously again and the
+        // frame it inspects is the very commit FM-120 pinned. Nothing about
+        // what is asserted changes: the scaffolding is restored to the timing
+        // it was written against, rather than the assertion being relaxed to
+        // the new one.
+        fireEvent.click(screen.getByTestId("config-tab-auth"));
+        await screen.findByTestId("config-auth");
+        fireEvent.click(screen.getByTestId("config-tab-main"));
+        await screen.findByTestId("config-main");
+        expect(
+            await screen.findByTestId("config-nav-anchor-list-heading"),
+        ).toHaveTextContent("Main");
+
         // RTL's `fireEvent` wraps every dispatch in `act()`, which -- by
         // design -- flushes pending passive effects synchronously so a test
         // never has to think about scheduling. That is exactly the gap this

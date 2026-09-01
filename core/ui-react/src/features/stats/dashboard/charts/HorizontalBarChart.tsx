@@ -25,6 +25,29 @@ const WIDE_LABEL_MARGIN = 140;
 const NARROW_LABEL_MARGIN = 84;
 
 /**
+ * Vertical room per bar, and the bounds the total is clamped to: a one-row
+ * chart still needs an axis, and a fifty-indexer chart stops growing before it
+ * becomes a page of its own.
+ */
+const ROW_HEIGHT = 34;
+const MIN_CHART_HEIGHT = 160;
+const MAX_CHART_HEIGHT = 900;
+
+/**
+ * The height this chart takes for a given number of rows. Exported because
+ * `ChartCard` reserves the same height for a chart it has not mounted yet
+ * (FM-164): a placeholder sized by a guess would move everything below it once
+ * the real chart arrived, which is exactly the shift the deferral is meant to
+ * avoid.
+ */
+export function horizontalBarChartHeight(rowCount: number): number {
+    return Math.min(
+        Math.max(rowCount * ROW_HEIGHT, MIN_CHART_HEIGHT),
+        MAX_CHART_HEIGHT,
+    );
+}
+
+/**
  * A value-labeled horizontal bar chart, sorted descending by value. Used for
  * every "share"/"proportion" family (ADR-0021: sorted bars, never
  * pie/donut) and for the Indexers section's download-share and
@@ -44,8 +67,7 @@ export function HorizontalBarChart({
     const theme = useTheme();
     const narrow = useMediaQuery(theme.breakpoints.down("sm"));
     const sorted = [...data].sort((left, right) => right.value - left.value);
-    const chartHeight =
-        height ?? Math.min(Math.max(sorted.length * 34, 160), 900);
+    const chartHeight = height ?? horizontalBarChartHeight(sorted.length);
     const longestLabel = sorted.reduce(
         (longest, entry) => Math.max(longest, entry.label.length),
         0,

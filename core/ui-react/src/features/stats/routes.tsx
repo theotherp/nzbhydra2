@@ -1,14 +1,72 @@
+import {CircularProgress, Stack, Typography} from "@mui/material";
 import {createRoute, type AnyRoute} from "@tanstack/react-router";
+import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
-import {StatsDashboardPage} from "./dashboard/StatsDashboardPage";
-import {DownloadHistoryPage} from "./history/DownloadHistoryPage";
-import {NotificationHistoryPage} from "./history/NotificationHistoryPage";
-import {SavedSearchesPage} from "./history/SavedSearchesPage";
-import {SearchHistoryPage} from "./history/SearchHistoryPage";
-import {IndexerStatusesPage} from "./indexers/IndexerStatusesPage";
-import {StatsShell} from "./StatsShell";
+
+/**
+ * FM-163: the whole area — shell and tab bodies — is behind `React.lazy`, so
+ * none of it (nor `@mui/x-charts` and the `d3-*` packages the dashboard draws
+ * with) is in the entry chunk a search-only session downloads. The route
+ * *definitions* stay eager: `router.tsx` builds the full tree synchronously,
+ * so every path below still matches without loading a byte of this area.
+ */
+const StatsShell = lazy(() =>
+    import("./StatsShell").then((module) => ({default: module.StatsShell})),
+);
+const StatsDashboardPage = lazy(() =>
+    import("./dashboard/StatsDashboardPage").then((module) => ({
+        default: module.StatsDashboardPage,
+    })),
+);
+const DownloadHistoryPage = lazy(() =>
+    import("./history/DownloadHistoryPage").then((module) => ({
+        default: module.DownloadHistoryPage,
+    })),
+);
+const NotificationHistoryPage = lazy(() =>
+    import("./history/NotificationHistoryPage").then((module) => ({
+        default: module.NotificationHistoryPage,
+    })),
+);
+const SavedSearchesPage = lazy(() =>
+    import("./history/SavedSearchesPage").then((module) => ({
+        default: module.SavedSearchesPage,
+    })),
+);
+const SearchHistoryPage = lazy(() =>
+    import("./history/SearchHistoryPage").then((module) => ({
+        default: module.SearchHistoryPage,
+    })),
+);
+const IndexerStatusesPage = lazy(() =>
+    import("./indexers/IndexerStatusesPage").then((module) => ({
+        default: module.IndexerStatusesPage,
+    })),
+);
+
+/**
+ * The area's `Suspense` fallback, used at two nested boundaries: one on the
+ * parent route for the shell itself, and one per tab body inside it, so a tab
+ * switch never takes the shell's tab strip down with it. It sits in the
+ * content area — the application shell around it never unmounts — and reserves
+ * height so nothing below it moves when the chunk lands. A tab switch is a
+ * router transition, which React resolves by holding the outgoing body rather
+ * than falling back to this at all.
+ */
+const AREA_FALLBACK = (
+    <Stack
+        alignItems="center"
+        component="main"
+        role="status"
+        spacing={1}
+        sx={{minHeight: 320, pt: 8}}
+    >
+        <CircularProgress />
+        <Typography>Loading history and statistics…</Typography>
+    </Stack>
+);
 
 /**
  * The history and statistics area's route subtree, in the same shape as
@@ -46,16 +104,25 @@ export function createStatsRoute<TParent extends AnyRoute>(
         getParentRoute: () => parentRoute,
         path: "stats",
         beforeLoad,
-        component: () => <StatsShell bootstrap={bootstrap} />,
+        component: () => (
+            <Suspense fallback={AREA_FALLBACK}>
+                <StatsShell bootstrap={bootstrap} />
+            </Suspense>
+        ),
     });
     const indexerStatuses = () => (
         <IndexerStatusesPage bootstrap={bootstrap} transport={transport} />
     );
+    // Every tab body is behind its own boundary as well, nested inside the
+    // parent's: a tab switch must not take the shell's tab strip down with it
+    // while the incoming body's chunk is in flight.
     const child = (path: string, component: () => React.ReactNode) =>
         createRoute({
             getParentRoute: () => statsRoute,
             path,
-            component,
+            component: () => (
+                <Suspense fallback={AREA_FALLBACK}>{component()}</Suspense>
+            ),
         });
     return statsRoute.addChildren([
         child("/", indexerStatuses),

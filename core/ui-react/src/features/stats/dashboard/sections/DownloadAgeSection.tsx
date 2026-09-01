@@ -11,7 +11,10 @@ import {
 
 import type {StatsResult} from "../../../../api/stats/mainStats";
 import {ChartCard} from "../ChartCard";
-import {GroupedBarChart} from "../charts/GroupedBarChart";
+import {
+    GROUPED_BAR_CHART_HEIGHT,
+    GroupedBarChart,
+} from "../charts/GroupedBarChart";
 
 /**
  * Presentation Structure item 6: the per-age histogram as a bar chart plus
@@ -58,6 +61,7 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
             </Stack>
             {entries.length > 0 && (
                 <ChartCard
+                    chartHeight={GROUPED_BAR_CHART_HEIGHT}
                     chart={
                         <GroupedBarChart
                             categories={entries.map((entry) =>

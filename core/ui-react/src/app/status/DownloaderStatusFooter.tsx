@@ -4,8 +4,15 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import {Box, Link, Stack, Tooltip, Typography} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
-import {SparkLineChart} from "@mui/x-charts/SparkLineChart";
-import {useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
+import {
+    lazy,
+    Suspense,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from "react";
 
 import type {
     DownloaderStatus,
@@ -46,6 +53,17 @@ const STATE_ICONS: Record<DownloaderStateKind, typeof PlayArrowIcon> = {
 const SELF_ADVANCE_INTERVAL_MS = 1_000;
 const CHART_HEIGHT = 34;
 const CHART_WIDTH = 220;
+
+/**
+ * FM-163: the graph is the only part of this footer that costs anything to
+ * load — `@mui/x-charts` and the `d3-*` packages under it — and the footer is
+ * mounted by the shell on every route, so a static import would hand that cost
+ * to every session including one that only searches. State, queue and title
+ * stay eager; only the graph is deferred, and its `Suspense` fallback below
+ * occupies exactly the box the chart will occupy, so nothing moves when the
+ * chunk arrives.
+ */
+const DownloaderRateSparkline = lazy(() => import("./DownloaderRateSparkline"));
 
 /**
  * `C-DOWNLOADER-STATUS`: legacy's `downloaderStatusFooter.js` and
@@ -359,13 +377,23 @@ export function DownloaderStatusFooter({
                             lineHeight: 0,
                         }}
                     >
-                        <SparkLineChart
-                            area
-                            color={theme.palette.charts.categorical[0]}
-                            data={rates}
-                            height={CHART_HEIGHT}
-                            width={CHART_WIDTH}
-                        />
+                        <Suspense
+                            fallback={
+                                <Box
+                                    sx={{
+                                        height: CHART_HEIGHT,
+                                        width: CHART_WIDTH,
+                                    }}
+                                />
+                            }
+                        >
+                            <DownloaderRateSparkline
+                                color={theme.palette.charts.categorical[0]}
+                                data={rates}
+                                height={CHART_HEIGHT}
+                                width={CHART_WIDTH}
+                            />
+                        </Suspense>
                     </Box>
                 )}
             </Stack>

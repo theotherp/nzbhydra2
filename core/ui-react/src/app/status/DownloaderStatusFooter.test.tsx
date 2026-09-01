@@ -114,8 +114,16 @@ function footer(
     );
 }
 
-function rateWindow(): string {
-    return screen.getByTestId("spark-line").getAttribute("data-rates") ?? "";
+/**
+ * FM-163 deferred the graph into its own module behind `React.lazy`, so the
+ * first read in this file resolves that module before asserting; React caches
+ * the resolved component on the shared `lazy` object, so every later read is
+ * already satisfied when `findBy*` first looks. The assertion itself is
+ * unchanged: the exact rolling window the component holds.
+ */
+async function rateWindow(): Promise<string> {
+    const chart = await screen.findByTestId("spark-line");
+    return chart.getAttribute("data-rates") ?? "";
 }
 
 function setHidden(hidden: boolean) {
@@ -212,6 +220,12 @@ describe("DownloaderStatusFooter", () => {
         expect(
             screen.queryByTestId("downloader-status-queue"),
         ).not.toBeInTheDocument();
+        // Both the graph and the box holding it are gone. The box is eager,
+        // so its absence is what makes this assertion non-vacuous now that the
+        // graph itself only appears once its module has loaded.
+        expect(
+            screen.queryByTestId("downloader-status-rates"),
+        ).not.toBeInTheDocument();
         expect(screen.queryByTestId("spark-line")).not.toBeInTheDocument();
         expect(screen.queryByText(/1\.2 MB\/s/)).not.toBeInTheDocument();
     });
@@ -253,11 +267,11 @@ describe("DownloaderStatusFooter", () => {
         );
 
         fake.deliver(status({downloadingRatesInKilobytes: [1, 2, 3]}));
-        expect(rateWindow()).toBe("1,2,3");
+        expect(await rateWindow()).toBe("1,2,3");
 
         // Still filling: the window follows the message's own history.
         fake.deliver(status({downloadingRatesInKilobytes: [1, 2, 3, 4]}));
-        expect(rateWindow()).toBe("1,2,3,4");
+        expect(await rateWindow()).toBe("1,2,3,4");
     });
 
     it("should self-advance once per second and stop when the window is uniform", async () => {
@@ -274,23 +288,23 @@ describe("DownloaderStatusFooter", () => {
                 lastUpdateForNow: true,
             }),
         );
-        expect(rateWindow()).toBe("1,2,3");
+        expect(await rateWindow()).toBe("1,2,3");
 
         await act(async () => {
             await vi.advanceTimersByTimeAsync(1_000);
         });
-        expect(rateWindow()).toBe("2,3,9");
+        expect(await rateWindow()).toBe("2,3,9");
         await act(async () => {
             await vi.advanceTimersByTimeAsync(2_000);
         });
-        expect(rateWindow()).toBe("9,9,9");
+        expect(await rateWindow()).toBe("9,9,9");
 
         // First stop condition: the window says nothing but the last known
         // rate, so no further tick may change it.
         await act(async () => {
             await vi.advanceTimersByTimeAsync(10_000);
         });
-        expect(rateWindow()).toBe("9,9,9");
+        expect(await rateWindow()).toBe("9,9,9");
         expect(vi.getTimerCount()).toBe(0);
     });
 
@@ -311,7 +325,7 @@ describe("DownloaderStatusFooter", () => {
         await act(async () => {
             await vi.advanceTimersByTimeAsync(1_000);
         });
-        expect(rateWindow()).toBe("2,3,9");
+        expect(await rateWindow()).toBe("2,3,9");
 
         // Second stop condition: a status that is no longer the last update
         // for now cancels the interval.
@@ -322,12 +336,12 @@ describe("DownloaderStatusFooter", () => {
             }),
         );
         expect(vi.getTimerCount()).toBe(0);
-        expect(rateWindow()).toBe("2,3,9,4");
+        expect(await rateWindow()).toBe("2,3,9,4");
 
         await act(async () => {
             await vi.advanceTimersByTimeAsync(5_000);
         });
-        expect(rateWindow()).toBe("2,3,9,4");
+        expect(await rateWindow()).toBe("2,3,9,4");
     });
 
     it("should buffer rates while the tab is hidden and apply them on becoming visible", async () => {
@@ -337,19 +351,19 @@ describe("DownloaderStatusFooter", () => {
             expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
         );
         fake.deliver(status({downloadingRatesInKilobytes: [1, 2, 3]}));
-        expect(rateWindow()).toBe("1,2,3");
+        expect(await rateWindow()).toBe("1,2,3");
 
         setHidden(true);
         fake.deliver(status({elementsInQueue: 99, lastDownloadRate: 7}));
         fake.deliver(status({elementsInQueue: 99, lastDownloadRate: 8}));
         // A hidden tab neither repaints nor grows the window.
-        expect(rateWindow()).toBe("1,2,3");
+        expect(await rateWindow()).toBe("1,2,3");
         expect(screen.getByTestId("downloader-status-queue")).toHaveTextContent(
             "3 in queue",
         );
 
         setHidden(false);
-        expect(rateWindow()).toBe("1,2,3,7,8");
+        expect(await rateWindow()).toBe("1,2,3,7,8");
         expect(screen.getByTestId("downloader-status-queue")).toHaveTextContent(
             "99 in queue",
         );

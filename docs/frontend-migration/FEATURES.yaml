@@ -1205,12 +1205,21 @@ features:
       - stats-age-older-2000
       - stats-age-older-3000
       - stats-chart-downloads-per-age
+      # FM-164: each chart card carries two further ids derived from its own:
+      # `<card-id>-chart` wraps the mounted chart and `<card-id>-placeholder`
+      # the reserved-height slot standing in for it before the card is
+      # reached. Exactly one of the two exists at a time, and the placeholder
+      # never carries the card's own id, so asserting the chart arm still
+      # fails when a chart does not draw.
+      - stats-chart-*-chart
+      - stats-chart-*-placeholder
     parity: done
     gaps:
       - deliberate - the presentation is redesigned per ADR-0021 (overview tiles, one consolidated indexer table, grouped activity bar charts, sorted horizontal-bar share lists, no pie/donut charts, legacy's inline switches replaced by a grouped "Statistics" selection menu); only the `POST /internalapi/stats` data/request contract is pinned to legacy
       - deliberate - the four user/host share families' default selection is gated on `historyUserInfoType` consistently for both search and download dimensions (username-or-both for the two user families, IP-or-both for the two host families), rather than reproducing legacy's `statsSwichState` default, which gated `searchSharesPerUser` on the IP flag instead of the user flag
       - deliberate - deselecting a family immediately clears its already-rendered cards/columns rather than leaving the last-fetched values on screen (matching the family's calculation being skipped from that point on)
       - deliberate - the date range is chosen from fixed presets (Last 7/30/90 days, Last year, All time) plus a validated Custom After/Before pair, replacing legacy's two free-standing date pickers with no preset shortcuts
+      - deliberate - a chart card below the fold mounts its chart only once it reaches the viewport (400px ahead), holding a placeholder of the chart's own computed height until then, so the page is the same height at first paint as it is fully drawn; legacy mounted every chart at once. Charts mount eagerly wherever `IntersectionObserver` is absent, and the accessible table arm behind "View data" is never gated, so no statistic is unreachable (ADR-0021)
   - id: F-STATS-INDEXERS
     name: Indexer status, errors, counters, and VIP expiry
     routes:

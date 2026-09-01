@@ -1,22 +1,91 @@
+import {CircularProgress, Stack, Typography} from "@mui/material";
 import {createRoute, redirect, type AnyRoute} from "@tanstack/react-router";
+import {lazy, Suspense} from "react";
 
 import {ApiTransport} from "../../api/transport";
-import {AuthConfigTab} from "./auth/AuthConfigTab";
-import {CategoriesConfigTab} from "./categories/CategoriesConfigTab";
-import {ConfigShell} from "./ConfigShell";
-import {ConfigTabPlaceholder} from "./ConfigTabPlaceholder";
 import {
     CONFIG_TABS,
     configTabHref,
     DEFAULT_CONFIG_TAB,
     type ConfigTab,
 } from "./configTabs";
-import {DownloadingConfigTab} from "./downloading/DownloadingConfigTab";
-import {ExternalToolsConfigTab} from "./external-tools/ExternalToolsConfigTab";
-import {IndexersConfigTab} from "./indexers/IndexersConfigTab";
-import {MainConfigTab} from "./main/MainConfigTab";
-import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
-import {SearchingConfigTab} from "./searching/SearchingConfigTab";
+
+/**
+ * FM-163: the whole area — shell and tab bodies — is behind `React.lazy`, so
+ * none of it is in the entry chunk a search-only session downloads. The route
+ * *definitions* stay eager: `router.tsx` builds the full tree synchronously,
+ * so every path below still matches without loading a byte of this area.
+ */
+const ConfigShell = lazy(() =>
+    import("./ConfigShell").then((module) => ({default: module.ConfigShell})),
+);
+const ConfigTabPlaceholder = lazy(() =>
+    import("./ConfigTabPlaceholder").then((module) => ({
+        default: module.ConfigTabPlaceholder,
+    })),
+);
+const AuthConfigTab = lazy(() =>
+    import("./auth/AuthConfigTab").then((module) => ({
+        default: module.AuthConfigTab,
+    })),
+);
+const CategoriesConfigTab = lazy(() =>
+    import("./categories/CategoriesConfigTab").then((module) => ({
+        default: module.CategoriesConfigTab,
+    })),
+);
+const DownloadingConfigTab = lazy(() =>
+    import("./downloading/DownloadingConfigTab").then((module) => ({
+        default: module.DownloadingConfigTab,
+    })),
+);
+const ExternalToolsConfigTab = lazy(() =>
+    import("./external-tools/ExternalToolsConfigTab").then((module) => ({
+        default: module.ExternalToolsConfigTab,
+    })),
+);
+const IndexersConfigTab = lazy(() =>
+    import("./indexers/IndexersConfigTab").then((module) => ({
+        default: module.IndexersConfigTab,
+    })),
+);
+const MainConfigTab = lazy(() =>
+    import("./main/MainConfigTab").then((module) => ({
+        default: module.MainConfigTab,
+    })),
+);
+const NotificationsConfigTab = lazy(() =>
+    import("./notifications/NotificationsConfigTab").then((module) => ({
+        default: module.NotificationsConfigTab,
+    })),
+);
+const SearchingConfigTab = lazy(() =>
+    import("./searching/SearchingConfigTab").then((module) => ({
+        default: module.SearchingConfigTab,
+    })),
+);
+
+/**
+ * The area's `Suspense` fallback, used at two nested boundaries: one on the
+ * parent route for the shell itself, and one per tab body inside it, so a tab
+ * switch never takes the shell's tab strip down with it. It sits in the
+ * content area — the application shell around it never unmounts — and reserves
+ * height so nothing below it moves when the chunk lands. A tab switch is a
+ * router transition, which React resolves by holding the outgoing body rather
+ * than falling back to this at all.
+ */
+const AREA_FALLBACK = (
+    <Stack
+        alignItems="center"
+        component="main"
+        role="status"
+        spacing={1}
+        sx={{minHeight: 320, pt: 8}}
+    >
+        <CircularProgress />
+        <Typography>Loading the configuration…</Typography>
+    </Stack>
+);
 
 /**
  * The configuration area's route subtree. The eight tabs are *children* of one
@@ -69,7 +138,11 @@ export function createConfigRoute<TParent extends AnyRoute>(
     const configRoute = createRoute({
         getParentRoute: () => parentRoute,
         path: "config",
-        component: () => <ConfigShell transport={transport} />,
+        component: () => (
+            <Suspense fallback={AREA_FALLBACK}>
+                <ConfigShell transport={transport} />
+            </Suspense>
+        ),
     });
     const indexRoute = createRoute({
         getParentRoute: () => configRoute,
@@ -82,7 +155,14 @@ export function createConfigRoute<TParent extends AnyRoute>(
         createRoute({
             getParentRoute: () => configRoute,
             path: tab.path,
-            component: () => tabComponent(tab),
+            // Nested inside the parent's boundary: a tab switch must not take
+            // the shell's tab strip and save bar down with it while the
+            // incoming body's chunk is in flight.
+            component: () => (
+                <Suspense fallback={AREA_FALLBACK}>
+                    {tabComponent(tab)}
+                </Suspense>
+            ),
         }),
     );
     return configRoute.addChildren([indexRoute, ...tabRoutes]);

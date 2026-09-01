@@ -16,7 +16,10 @@ import type {
     UserAgentShare,
 } from "../../../../api/stats/mainStats";
 import {ChartCard} from "../ChartCard";
-import {HorizontalBarChart} from "../charts/HorizontalBarChart";
+import {
+    horizontalBarChartHeight,
+    HorizontalBarChart,
+} from "../charts/HorizontalBarChart";
 
 const USER_AGENT_HELP =
     "Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'.";
@@ -118,6 +121,9 @@ export function SourcesSection({
             >
                 {cards.map((card) => (
                     <ChartCard
+                        chartHeight={horizontalBarChartHeight(
+                            card.entries.length,
+                        )}
                         chart={
                             <HorizontalBarChart
                                 data={card.entries.map((entry) => ({

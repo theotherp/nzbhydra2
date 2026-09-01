@@ -12,7 +12,10 @@ import {
 import type {StatsResult} from "../../../../api/stats/mainStats";
 import {dayOfWeekSeries, hourOfDaySeries} from "../derivations";
 import {ChartCard} from "../ChartCard";
-import {GroupedBarChart} from "../charts/GroupedBarChart";
+import {
+    GROUPED_BAR_CHART_HEIGHT,
+    GroupedBarChart,
+} from "../charts/GroupedBarChart";
 
 /**
  * Presentation Structure item 4: searches/downloads per day of week as one
@@ -43,6 +46,7 @@ export function ActivitySection({stats}: {stats: StatsResult}) {
             </Typography>
             {(searchesByDay || downloadsByDay) && (
                 <ChartCard
+                    chartHeight={GROUPED_BAR_CHART_HEIGHT}
                     chart={
                         <GroupedBarChart
                             categories={
@@ -82,6 +86,7 @@ export function ActivitySection({stats}: {stats: StatsResult}) {
             )}
             {(searchesByHour || downloadsByHour) && (
                 <ChartCard
+                    chartHeight={GROUPED_BAR_CHART_HEIGHT}
                     chart={
                         <GroupedBarChart
                             categories={
