@@ -3152,3 +3152,11 @@ their text and relative order are unchanged.
 - **Gates (batch-final set):** full vitest 1726/1726 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The two cases were also run three consecutive times in isolation.
 - **Commit:** `6020bb7aa`
 - **Note:** `ce3c315e4` gave a typed filter edit a 275ms commit delay, and both cases awaited an element *between* the typed edit and the sort click that commits it. On a loaded machine that await can outlast the debounce, so the timer commits first and the run sees four reads instead of three — seen once in a full-suite run and never in an isolated one, which is the signature. The three interactions are now issued synchronously so no timer can interleave; the counts and request bodies asserted are unchanged.
+
+### 2026-09-01 — Adapt `config.spec.ts` to the Discard confirmation dialog
+
+- **Why not a packet:** a locator/assertion repair in one existing spec file, adapting it to a control's already-shipped behavior change; no capability, contract, `data-testid`, or persisted-data change.
+- **Paths:** `tests/system/tests/config.spec.ts`
+- **Gates:** `npx tsc --noEmit` in `tests/system` exit 0; real-backend run of the whole file via `python3 misc/run_gui_systemtest.py --runtime local --skip-install -- config.spec.ts` — 29/29 passed, exit 0; `git diff --check` clean.
+- **Commit:** `769708e37`
+- **Note:** `bd367ff32` put the save bar's Discard behind a `dialogs.confirm` step (`config-discard-changes`) but never touched this spec, so the real-backend run of the whole file against baseline `b436a32f1` showed 3 pre-existing failures, all clicking `config-discard` and then asserting the old immediate-reset behavior: "should summarize unsaved changes, badge their section, and undo them on Discard", and the config-shell visual-evidence test's dirty-summary and validation-error Discard branches. A `clickDiscardAndConfirm` helper now drives the dialog at the two sites where confirming is plumbing only; the first test, whose actual subject is the discard behavior itself, was extended rather than just patched — it now also asserts the dialog's unsaved-count text and that Cancel keeps the edit before asserting the confirmed reset.

@@ -15,6 +15,22 @@ async function openConfig(page: Page): Promise<void> {
 }
 
 /**
+ * bd367ff32: the save bar's Discard no longer resets on click -- it asks
+ * through the shared `dialogs.confirm` service first, since it sat beside
+ * Save with nothing between them and threw away every edit on every tab
+ * irrecoverably. Tests whose actual subject is something else just need this
+ * confirmed; the one test whose subject is the confirmation itself drives the
+ * dialog directly instead.
+ */
+async function clickDiscardAndConfirm(page: Page): Promise<void> {
+    await page.getByTestId("config-discard").click();
+    const dialog = page.getByTestId("config-discard-changes");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Discard"}).click();
+    await expect(dialog).toBeHidden();
+}
+
+/**
  * FM-102: scrolls the named fieldset to sit just under the sticky bar --
  * deliberately overlapping where a naive scrollspy reading only the bar's own
  * edge, rather than a generous activation line below it, would miss the
@@ -177,7 +193,7 @@ test.describe("Config shell round trip", () => {
         await expect(dialog).toContainText("API key:");
     });
 
-    test("should summarize unsaved changes, badge their section, and undo them on Discard", async ({
+    test("should summarize unsaved changes, badge their section, and undo them on a confirmed Discard", async ({
         page,
         hydra,
     }) => {
@@ -209,7 +225,25 @@ test.describe("Config shell round trip", () => {
             page.getByTestId("config-nav-dirty-searching"),
         ).toBeHidden();
 
+        // bd367ff32: Discard sits beside Save with nothing between them and
+        // would throw away every edit on every tab on one click, so it asks
+        // first. Calling the confirmation off must keep the edit exactly as
+        // it was -- nothing reset, nothing written.
         await page.getByTestId("config-discard").click();
+        const discardDialog = page.getByTestId("config-discard-changes");
+        await expect(discardDialog).toBeVisible();
+        await expect(discardDialog).toContainText("1 unsaved setting");
+        await discardDialog.getByRole("button", {name: "Cancel"}).click();
+        await expect(discardDialog).toBeHidden();
+
+        await expect(host).toHaveValue("127.0.0.2");
+        await expect(page.getByTestId("config-dirty-summary")).toBeVisible();
+
+        // Confirming goes through with the reset.
+        await page.getByTestId("config-discard").click();
+        await expect(discardDialog).toBeVisible();
+        await discardDialog.getByRole("button", {name: "Discard"}).click();
+        await expect(discardDialog).toBeHidden();
 
         await expect(host).toHaveValue(loaded);
         await expect(page.getByTestId("config-dirty-summary")).toBeHidden();
@@ -891,7 +925,7 @@ test.describe("Config shell visual evidence", () => {
                         `shell-dirty-${viewport}`,
                     ),
                 });
-                await page.getByTestId("config-discard").click();
+                await clickDiscardAndConfirm(page);
                 await expect(
                     page.getByTestId("config-dirty-summary"),
                 ).toBeHidden();
@@ -925,7 +959,7 @@ test.describe("Config shell visual evidence", () => {
             });
             // Discarding resets the form, which clears the errors the report
             // was derived from.
-            await page.getByTestId("config-discard").click();
+            await clickDiscardAndConfirm(page);
             await expect(
                 page.getByTestId("config-validation-errors"),
             ).toBeHidden();
