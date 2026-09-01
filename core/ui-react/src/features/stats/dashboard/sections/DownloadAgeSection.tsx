@@ -3,13 +3,13 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
 } from "@mui/material";
 
 import type {StatsResult} from "../../../../api/stats/mainStats";
+import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {ChartCard} from "../ChartCard";
 import {
     GROUPED_BAR_CHART_HEIGHT,
@@ -79,8 +79,16 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
                         />
                     }
                     table={
-                        <TableContainer>
-                            <Table aria-label="Downloads per age" size="small">
+                        <TableScrollAffordance scrollerTestId="stats-downloads-per-age-scroller">
+                            <Table
+                                aria-label="Downloads per age"
+                                size="small"
+                                // Measured at 390x844 with the card toggled to
+                                // its table side: Age (days) and Downloads
+                                // need 204px so no header wraps. 210 keeps
+                                // them at that intrinsic width.
+                                sx={{minWidth: 210}}
+                            >
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Age (days)</TableCell>
@@ -100,7 +108,7 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
                                     ))}
                                 </TableBody>
                             </Table>
-                        </TableContainer>
+                        </TableScrollAffordance>
                     }
                     testId="stats-chart-downloads-per-age"
                     title="Downloads per age (100-day steps)"

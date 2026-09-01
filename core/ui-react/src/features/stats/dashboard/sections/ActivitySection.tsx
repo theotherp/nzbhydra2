@@ -3,13 +3,13 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
 } from "@mui/material";
 
 import type {StatsResult} from "../../../../api/stats/mainStats";
+import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {dayOfWeekSeries, hourOfDaySeries} from "../derivations";
 import {ChartCard} from "../ChartCard";
 import {
@@ -77,6 +77,7 @@ export function ActivitySection({stats}: {stats: StatsResult}) {
                         <CategoryTable
                             categoryLabel="Day of week"
                             downloads={downloadsByDay}
+                            scrollerTestId="stats-activity-day-of-week-scroller"
                             searches={searchesByDay}
                         />
                     }
@@ -117,6 +118,7 @@ export function ActivitySection({stats}: {stats: StatsResult}) {
                         <CategoryTable
                             categoryLabel="Hour of day"
                             downloads={downloadsByHour}
+                            scrollerTestId="stats-activity-hour-of-day-scroller"
                             searches={searchesByHour}
                         />
                     }
@@ -132,17 +134,25 @@ function CategoryTable({
     categoryLabel,
     searches,
     downloads,
+    scrollerTestId,
 }: {
     categoryLabel: string;
     searches?: {categories: string[]; values: number[]};
     downloads?: {categories: string[]; values: number[]};
+    scrollerTestId: string;
 }) {
     const categories = (searches ?? downloads)!.categories;
     return (
-        <TableContainer>
+        <TableScrollAffordance scrollerTestId={scrollerTestId}>
             <Table
                 aria-label={`Activity per ${categoryLabel.toLowerCase()}`}
                 size="small"
+                // Measured at 390x844 with the card toggled to its table
+                // side, both instances (day-of-week and hour-of-day share
+                // this component): the category column plus Searches and
+                // Downloads need 306px so no header wraps. 310 keeps them at
+                // that intrinsic width.
+                sx={{minWidth: 310}}
             >
                 <TableHead>
                     <TableRow>
@@ -165,6 +175,6 @@ function CategoryTable({
                     ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableScrollAffordance>
     );
 }

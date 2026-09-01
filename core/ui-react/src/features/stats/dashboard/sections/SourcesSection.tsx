@@ -3,7 +3,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Stack,
@@ -15,6 +14,7 @@ import type {
     StatsResult,
     UserAgentShare,
 } from "../../../../api/stats/mainStats";
+import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {ChartCard} from "../ChartCard";
 import {
     horizontalBarChartHeight,
@@ -156,8 +156,20 @@ function entryKey(entry: ShareEntry | UserAgentShare): string {
 
 function ShareTable({card}: {card: ShareCard}) {
     return (
-        <TableContainer>
-            <Table aria-label={card.title} size="small">
+        <TableScrollAffordance
+            scrollerTestId={`stats-chart-${card.key}-scroller`}
+        >
+            <Table
+                aria-label={card.title}
+                size="small"
+                // Measured at 390x844 with a card toggled to its table side:
+                // the widest column label this shared table renders,
+                // "User agent", plus Percentage and Count needs 346px so no
+                // header wraps. 350 keeps them at that intrinsic width; the
+                // "User"/"Host" variants are narrower and simply have room to
+                // spare.
+                sx={{minWidth: 350}}
+            >
                 <TableHead>
                     <TableRow>
                         <TableCell>{card.columnLabel}</TableCell>
@@ -179,6 +191,6 @@ function ShareTable({card}: {card: ShareCard}) {
                     ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableScrollAffordance>
     );
 }

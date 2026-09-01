@@ -20,6 +20,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
+import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {
     createHistorySearchSchema,
     NOTIFICATION_HISTORY_SORT_COLUMNS,
@@ -80,7 +81,16 @@ function renderRouted(component: () => ReactNode, search?: string) {
                     new QueryClient({defaultOptions: {queries: {retry: false}}})
                 }
             >
-                <RouterProvider router={router} />
+                {/*
+                 * FM-170: `CopyValueButton` calls `useToasts` unconditionally
+                 * (before deciding whether it renders anything), so the page
+                 * under test needs a real provider -- same as the production
+                 * tree, which mounts one once for the whole app in
+                 * `App.tsx`.
+                 */}
+                <ToastProvider>
+                    <RouterProvider router={router} />
+                </ToastProvider>
             </QueryClientProvider>
         </ThemeProvider>,
     );
@@ -275,6 +285,49 @@ describe("NotificationHistoryPage", () => {
         expect(
             within(row).getByTestId("notification-history-urls"),
         ).toHaveTextContent("json://localhost");
+    });
+
+    it("should copy title, body, and URLs verbatim, not the rendered/link-trimmed text SafeText shows", async () => {
+        const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
+        vi.stubGlobal("navigator", {clipboard});
+        // The trailing period is sentence punctuation, not part of the URL --
+        // `linkedTextSegments` trims it off the link it renders, so the link
+        // text on screen is "http://example.com/path" without it. Copying
+        // must still hand back the whole raw sentence, period included.
+        const body =
+            "Check http://example.com/path. for details.\nSecond line.";
+        renderPage(
+            respondWith({
+                content: [entry({body})],
+                totalElements: 1,
+            }),
+        );
+        const row = await screen.findByTestId("notification-history-row");
+        fireEvent.click(
+            within(row).getByRole("button", {name: "Copy notification title"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenCalledWith(
+                "Indexer disabled",
+            ),
+        );
+        fireEvent.click(
+            within(row).getByRole("button", {name: "Copy notification body"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith(body),
+        );
+        fireEvent.click(
+            within(row).getByRole("button", {name: "Copy notification URLs"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith(
+                "json://localhost",
+            ),
+        );
+        expect(
+            await screen.findByText("Copied notification URLs to clipboard."),
+        ).toBeVisible();
     });
 
     it("should send linked URLs through the configured dereferer", async () => {

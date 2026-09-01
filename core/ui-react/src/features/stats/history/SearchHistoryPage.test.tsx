@@ -20,6 +20,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
+import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {
     createHistorySearchSchema,
     NOTIFICATION_HISTORY_SORT_COLUMNS,
@@ -94,7 +95,16 @@ function renderRouted(options: {
                     new QueryClient({defaultOptions: {queries: {retry: false}}})
                 }
             >
-                <RouterProvider router={router} />
+                {/*
+                 * FM-170: `CopyValueButton` calls `useToasts` unconditionally
+                 * (before deciding whether it renders anything), so every
+                 * page under test needs a real provider -- same as the
+                 * production tree, which mounts one once for the whole app
+                 * in `App.tsx`.
+                 */}
+                <ToastProvider>
+                    <RouterProvider router={router} />
+                </ToastProvider>
             </QueryClientProvider>
         </ThemeProvider>,
     );
@@ -600,6 +610,118 @@ describe("SearchHistoryPage", () => {
             indexers: "Configured,Mock",
             repeat: "history",
         });
+    });
+
+    it("should copy each column's underlying value to the clipboard, and hide the query and additional-parameters buttons rather than copy a placeholder", async () => {
+        const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
+        vi.stubGlobal("navigator", {clipboard});
+        const bare = {
+            id: 2,
+            categoryName: "All",
+            source: "INTERNAL",
+            identifiers: [],
+        };
+        const fetchImplementation = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        content: [entry(), bare],
+                        totalElements: 2,
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        renderPage(fetchImplementation);
+        await screen.findAllByTestId("search-history-row");
+        fireEvent.click(screen.getByLabelText("Show user agents"));
+        const [populated, empty] = screen.getAllByTestId("search-history-row");
+        fireEvent.click(
+            within(populated).getByRole("button", {name: "Copy query"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenCalledWith("query"),
+        );
+        fireEvent.click(
+            within(populated).getByRole("button", {
+                name: "Copy additional parameters",
+            }),
+        );
+        // The assembled copy text, not the `<dt>`/`<dd>` pairs `Criteria`
+        // renders it as -- proof this reads the entry's own fields rather
+        // than the cell's DOM.
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith(
+                "Minimum age: 2 days\nMaximum age: 10 days\n" +
+                    "Minimum size: 100 MB\nMaximum size: 500 MB\n" +
+                    "Selected indexers: Configured, Mock",
+            ),
+        );
+        fireEvent.click(
+            within(populated).getByRole("button", {name: "Copy user agent"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith("agent"),
+        );
+        fireEvent.click(
+            within(populated).getByRole("button", {name: "Copy IP address"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith("127.0.0.1"),
+        );
+        expect(
+            await screen.findByText("Copied IP address to clipboard."),
+        ).toBeVisible();
+        // A row with no query, title, or criteria offers neither button --
+        // rather than copy "Update query" or an empty string, the fallback
+        // display text is not a real value.
+        expect(
+            within(empty).queryByRole("button", {name: "Copy query"}),
+        ).not.toBeInTheDocument();
+        expect(
+            within(empty).queryByRole("button", {
+                name: "Copy additional parameters",
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should copy the details dialog's Host and User agent values", async () => {
+        const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
+        vi.stubGlobal("navigator", {clipboard});
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("details")
+                            ? {
+                                  ip: "127.0.0.1",
+                                  userAgent: "agent",
+                                  indexerSearches: [],
+                              }
+                            : {content: [entry()], totalElements: 1},
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        renderPage(fetchImplementation);
+        const row = await screen.findByTestId("search-history-row");
+        fireEvent.click(within(row).getByTestId("search-history-details"));
+        const dialog = await screen.findByRole("table", {
+            name: "Search request details",
+        });
+        fireEvent.click(
+            within(dialog).getByRole("button", {name: "Copy host"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenCalledWith("127.0.0.1"),
+        );
+        fireEvent.click(
+            within(dialog).getByRole("button", {name: "Copy user agent"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith("agent"),
+        );
     });
 
     it("should provide accessible empty and failure states", async () => {

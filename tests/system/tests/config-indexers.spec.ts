@@ -906,8 +906,18 @@ test.describe("Config indexers bulk and import visual evidence", () => {
             const before = (await hydra.getConfig()) as Json;
             await hydra.saveConfig(
                 withIndexers(before, [
+                    // Two incomplete entries, so the progress readout has a
+                    // denominator worth showing (FM-167: a single indexer
+                    // gains no counter).
                     mockIndexer({
                         name: "Needs caps",
+                        allCapsChecked: false,
+                        supportedSearchIds: [],
+                        supportedSearchTypes: [],
+                    }),
+                    mockIndexer({
+                        name: "Needs caps too",
+                        apiKey: "3",
                         allCapsChecked: false,
                         supportedSearchIds: [],
                         supportedSearchTypes: [],
@@ -941,6 +951,9 @@ test.describe("Config indexers bulk and import visual evidence", () => {
             await expect(
                 page.getByTestId("config-indexer-caps-messages"),
             ).toContainText("Needs caps:", {timeout: 60_000});
+            await expect(
+                page.getByTestId("config-indexer-caps-progress"),
+            ).toContainText(/\d+ of \d+ indexers have reported/);
             await page.screenshot({
                 path: visualEvidencePath(
                     "F-CONFIG-INDEXERS",
@@ -948,12 +961,19 @@ test.describe("Config indexers bulk and import visual evidence", () => {
                 ),
             });
 
-            // Abandon the running check; the server finishes it on its own and
-            // nothing was committed.
-            await prepareVisualEvidence(page, viewport, async () => {
-                await page.reload();
-                await dismissWelcomeDialog(page);
-                await expect(page.getByTestId("config-indexers")).toBeVisible();
+            // FM-167: leaving the running check is a button now, not a page
+            // reload. The server finishes the check on its own, nothing is
+            // committed, and the tab is usable in the very next frame.
+            await page.getByTestId("config-indexer-caps-leave").click();
+            await expect(
+                page.getByTestId("config-indexer-caps-dialog"),
+            ).toBeHidden();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-INDEXERS",
+                    `indexers-caps-left-${viewport}`,
+                ),
+                fullPage: true,
             });
 
             // The add surface, now carrying the two importers alongside the
@@ -996,4 +1016,82 @@ test.describe("Config indexers bulk and import visual evidence", () => {
             });
         });
     }
+});
+
+test.describe("Config indexers caps check exit", () => {
+    // Deliberately last in the file: leaving a check does not stop it, and the
+    // messages it keeps publishing would otherwise turn up in a later test's
+    // dialog and its screenshots.
+    test.setTimeout(180_000);
+
+    test("should let the admin stop waiting for a running check and keep using the tab", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [
+                mockIndexer({
+                    name: "Slow one",
+                    allCapsChecked: false,
+                    supportedSearchIds: [],
+                    supportedSearchTypes: [],
+                }),
+                mockIndexer({
+                    name: "Slow two",
+                    apiKey: "2",
+                    allCapsChecked: false,
+                    supportedSearchIds: [],
+                    supportedSearchTypes: [],
+                }),
+            ]),
+        );
+        const stored = indexersOf((await hydra.getConfig()) as Json);
+        const first = stored.findIndex((x) => x.name === "Slow one");
+        expect(first).toBeGreaterThanOrEqual(0);
+
+        await openIndexersConfig(page);
+        await page.getByTestId("config-indexers-recheck-incomplete").click();
+        const capsDialog = page.getByTestId("config-indexer-caps-dialog");
+        await expect(capsDialog).toBeVisible();
+
+        // The progress readout counts the indexers that have reported. The
+        // exact pair is pinned by the unit tests: a check an earlier test left
+        // running keeps publishing into the multimap this one polls, so what
+        // is stable here is the shape of the readout, not its numbers.
+        await expect(
+            page.getByTestId("config-indexer-caps-messages"),
+        ).toContainText("Slow", {timeout: 90_000});
+        await expect(
+            page.getByTestId("config-indexer-caps-progress"),
+        ).toContainText(/\d+ of \d+ indexers have reported/);
+
+        // Leaving is the point of FM-167: the check runs on (there is no abort
+        // endpoint) and the admin gets the tab back immediately.
+        await page.getByTestId("config-indexer-caps-leave").click();
+        await expect(capsDialog).toBeHidden();
+        await expect(
+            page.getByTestId("config-indexers-recheck-incomplete"),
+        ).toBeEnabled();
+        await page
+            .getByTestId(`config-input-indexers-${first}-score`)
+            .fill("3");
+        await expect(
+            page.getByTestId(`config-input-indexers-${first}-score`),
+        ).toHaveValue("3");
+
+        // The abandoned request writes nothing back: no reopened dialog and no
+        // merge into the form while the server finishes the check.
+        await page.waitForTimeout(15_000);
+        await expect(capsDialog).toBeHidden();
+        await expect(
+            page.getByTestId("config-indexers-recheck-failed"),
+        ).toBeHidden();
+        await expect(
+            page.getByTestId(`config-input-indexers-${first}-score`),
+        ).toHaveValue("3");
+        await expect(
+            page.getByTestId(`config-indexer-caps-incomplete-${first}`),
+        ).toBeVisible();
+    });
 });

@@ -271,6 +271,8 @@ components:
       - F-HISTORY-NOTIFICATIONS
       - F-CONFIG-INDEXERS
       - F-CONFIG-CATEGORIES
+      - F-STATS-MAIN
+      - F-STATS-INDEXERS
     classification: shared_hydra
     state: done
   - id: C-EXTERNAL-LINKS
@@ -361,8 +363,12 @@ components:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
-    state: planned
-    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-170 implements it. DownloadActions' bulk "Copy selected links" button is deliberately not a consumer yet -- it copies a computed multi-line list with its own messages
+    state: done
+    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-170 implemented it. Selection rule as shipped -- search history's Query, Additional parameters, User agent, and IP address; the search details dialog's Host and User
+      agent; download history's Title and IP address; notification history's Title, Body, and URLs. Every other column (Time, Category, Source, Result, Age, Indexer, Type, Username) carries none. Reveal is `opacity` toggled by a
+      `rowRevealsCopyButtonsOnHover` sx spread onto the consuming row for hover, and by `&.Mui-focusVisible` on the button itself for focus -- always in the DOM either way. `value` is always the entry's own field (never DOM text read back
+      out of a rendered cell), which is what keeps the copied text intact where `SafeText` visually trims a link's trailing punctuation or breaks a body across lines. DownloadActions' bulk "Copy selected links" button is deliberately not a
+      consumer yet -- it copies a computed multi-line list with its own messages
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model

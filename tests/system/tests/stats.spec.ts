@@ -111,6 +111,126 @@ test("should render React indexer statuses and canonical history tabs responsive
     await expect(page.getByRole("tab", {name: "Saved searches"})).toBeVisible();
 });
 
+/**
+ * FM-169 (ADR-0038). Before this task the table had no scrolling ancestor of
+ * its own with a measured floor -- it either wrapped its headings or, absent
+ * a floor, table-layout:auto's own min-content sizing pushed rows to several
+ * lines each. It now scrolls inside its own container, and says so at
+ * whichever edge it is clipping, the same pattern `search-history.spec.ts`
+ * proves for the search history table.
+ */
+test("should scroll the indexer statuses table inside its container with a scroll-edge affordance at 390px", async ({
+    page,
+}, testInfo) => {
+    const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
+    const applicationUrl = (path: string) =>
+        new URL(path, applicationBaseUrl).toString();
+    await page.route("**/internalapi/indexerstatuses", async (route) => {
+        await route.fulfill({
+            contentType: "application/json",
+            body: JSON.stringify([
+                {
+                    indexer: "NZBGeek Premium Access",
+                    state: "DISABLED_SYSTEM_TEMPORARY",
+                    disabledUntil: "2030-01-02T00:00:00Z",
+                    lastError:
+                        "Connection to indexer timed out after 30 seconds",
+                    apiHits: 4500,
+                    apiHitLimit: 5000,
+                    downloadHits: 120,
+                    downloadHitLimit: 200,
+                    apiResetTime: "2030-01-03T00:00:00Z",
+                    downloadResetTime: "2030-01-03T00:00:00Z",
+                    vipExpirationDate: "2030-06-15",
+                },
+                {indexer: "Alpha", state: "ENABLED", apiHits: 0},
+            ]),
+        });
+    });
+
+    await prepareVisualEvidence(page, "mobile", async () => {
+        await page.goto(applicationUrl("/stats/indexers"));
+        await dismissWelcomeDialog(page);
+        await expect(
+            page.getByRole("table", {name: "Indexer statuses"}),
+        ).toBeVisible();
+    });
+
+    // ADR-0029: the page never scrolls sideways, at any point below.
+    expect(
+        await page
+            .locator("html")
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
+    ).toBe(true);
+
+    // The table keeps its measured floor and the container scrolls.
+    const scroller = page.getByTestId("indexer-statuses-scroller");
+    const geometry = await scroller.evaluate((element) => ({
+        client: element.clientWidth,
+        scrollable: element.scrollWidth,
+        table: (element.firstElementChild as HTMLElement).clientWidth,
+    }));
+    expect(geometry.table).toBeGreaterThanOrEqual(1580);
+    expect(geometry.scrollable).toBeGreaterThan(geometry.client);
+
+    // Clipped on the right only, so only that edge is marked.
+    await expect(page.getByTestId("table-scroll-affordance-end")).toBeVisible();
+    await expect(page.getByTestId("table-scroll-affordance-start")).toHaveCount(
+        0,
+    );
+    await page.screenshot({
+        path: visualEvidencePath(
+            "F-STATS-INDEXERS",
+            "table-scroll-affordance-mobile",
+        ),
+    });
+
+    // Scrolled to the end: that edge clips nothing any more, so its
+    // affordance clears and the opposite edge takes it over.
+    await scroller.evaluate((element) => {
+        element.scrollLeft = element.scrollWidth;
+    });
+    await expect(page.getByTestId("table-scroll-affordance-end")).toHaveCount(
+        0,
+    );
+    await expect(
+        page.getByTestId("table-scroll-affordance-start"),
+    ).toBeVisible();
+    expect(
+        await page
+            .locator("html")
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
+    ).toBe(true);
+    await page.screenshot({
+        path: visualEvidencePath(
+            "F-STATS-INDEXERS",
+            "table-scroll-affordance-scrolled-mobile",
+        ),
+    });
+
+    // 1280x800: the floor sits below the available width, so nothing
+    // changes from today's rendering.
+    await prepareVisualEvidence(page, "desktop", async () => {
+        await page.goto(applicationUrl("/stats/indexers"));
+        await dismissWelcomeDialog(page);
+        await expect(
+            page.getByRole("table", {name: "Indexer statuses"}),
+        ).toBeVisible();
+    });
+    expect(
+        await page
+            .locator("html")
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
+    ).toBe(true);
+    await page.screenshot({
+        path: visualEvidencePath(
+            "F-STATS-INDEXERS",
+            "indexer-statuses-desktop",
+        ),
+        fullPage: true,
+    });
+});
+
 function statsResponseFixture(overrides: Record<string, unknown> = {}) {
     return {
         after: "2026-01-01T00:00:00Z",
@@ -380,7 +500,179 @@ test.describe("React aggregate statistics dashboard", () => {
             );
         }
     });
+
+    /**
+     * FM-169 (ADR-0038). Every dashboard table now renders through
+     * `TableScrollAffordance` with its own measured `minWidth` floor: the
+     * consolidated indexer table plus every chart card's table arm. Every
+     * chart-card table only exists once its card is toggled to the table
+     * side, so each is captured in that state, not empty. One case for the
+     * whole route, looping every table, mirrors `search-history.spec.ts`'s
+     * single-table affordance proof.
+     */
+    test("should scroll every dashboard table inside its own container with a scroll-edge affordance at 390px", async ({
+        page,
+    }, testInfo) => {
+        const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
+        const applicationUrl = (path: string) =>
+            new URL(path, applicationBaseUrl).toString();
+        await page.route("**/internalapi/stats", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(statsResponseFixture()),
+            });
+        });
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto(applicationUrl("/stats/stats"));
+            await dismissWelcomeDialog(page);
+            await expect(page.getByTestId("stats-dashboard")).toBeVisible();
+        });
+        expect(await pageFitsHorizontally(page)).toBe(true);
+
+        // `overflowsAt390` is itself measured, not assumed: a chart card's
+        // available width at 390x844 is ~324px (390 minus the card's own
+        // padding and the page's outer gutters). The consolidated indexer
+        // table, the download-shares and response-time table arms, and both
+        // user-agent share tables all need more than that and genuinely
+        // scroll; the day-of-week/hour-of-day activity table and the
+        // downloads-per-age table fit inside it even at their measured
+        // no-wrap width, so they render exactly as today, no cue and no
+        // scrolling required -- the "measured and found not to need one"
+        // branch the acceptance criteria allow, short of dropping the floor
+        // that still protects them at narrower or longer-content renders.
+        const tables: {
+            scrollerTestId: string;
+            cardTestId?: string;
+            floor: number;
+            overflowsAt390: boolean;
+        }[] = [
+            {
+                scrollerTestId: "stats-indexers-scroller",
+                floor: 1420,
+                overflowsAt390: true,
+            },
+            {
+                scrollerTestId: "stats-indexer-download-shares-scroller",
+                cardTestId: "stats-chart-indexer-download-shares",
+                floor: 360,
+                overflowsAt390: true,
+            },
+            {
+                scrollerTestId: "stats-response-times-scroller",
+                cardTestId: "stats-chart-response-times",
+                floor: 430,
+                overflowsAt390: true,
+            },
+            {
+                scrollerTestId: "stats-activity-day-of-week-scroller",
+                cardTestId: "stats-chart-activity-day-of-week",
+                floor: 310,
+                overflowsAt390: false,
+            },
+            {
+                scrollerTestId: "stats-activity-hour-of-day-scroller",
+                cardTestId: "stats-chart-activity-hour-of-day",
+                floor: 310,
+                overflowsAt390: false,
+            },
+            {
+                scrollerTestId: "stats-chart-search-agent-scroller",
+                cardTestId: "stats-chart-search-agent",
+                floor: 350,
+                overflowsAt390: true,
+            },
+            {
+                scrollerTestId: "stats-chart-download-agent-scroller",
+                cardTestId: "stats-chart-download-agent",
+                floor: 350,
+                overflowsAt390: true,
+            },
+            {
+                scrollerTestId: "stats-downloads-per-age-scroller",
+                cardTestId: "stats-chart-downloads-per-age",
+                floor: 210,
+                overflowsAt390: false,
+            },
+        ];
+
+        for (const {
+            scrollerTestId,
+            cardTestId,
+            floor,
+            overflowsAt390,
+        } of tables) {
+            if (cardTestId) {
+                const card = page.getByTestId(cardTestId);
+                await card.scrollIntoViewIfNeeded();
+                await card.getByRole("button", {name: "View data"}).click();
+            }
+            const scroller = page.getByTestId(scrollerTestId);
+            // The affordance overlays are the scroller's own siblings (both
+            // children of `TableScrollAffordance`'s outer `Box`), not its
+            // descendants, so they are scoped through the shared parent --
+            // never through the bare, page-wide testid, which would match
+            // every other table's affordance still showing from an earlier
+            // iteration of this loop.
+            const wrapper = scroller.locator("xpath=..");
+            await scroller.scrollIntoViewIfNeeded();
+            const geometry = await scroller.evaluate((element) => ({
+                client: element.clientWidth,
+                scrollable: element.scrollWidth,
+                table: (element.firstElementChild as HTMLElement).clientWidth,
+            }));
+            expect(geometry.table, scrollerTestId).toBeGreaterThanOrEqual(
+                floor,
+            );
+            if (overflowsAt390) {
+                expect(geometry.scrollable, scrollerTestId).toBeGreaterThan(
+                    geometry.client,
+                );
+                await expect(
+                    wrapper.getByTestId("table-scroll-affordance-end"),
+                ).toBeVisible();
+            } else {
+                expect(geometry.scrollable, scrollerTestId).toBeLessThanOrEqual(
+                    geometry.client,
+                );
+                await expect(
+                    wrapper.getByTestId("table-scroll-affordance-end"),
+                ).toHaveCount(0);
+            }
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-STATS-MAIN",
+                    `${scrollerTestId}-mobile`,
+                ),
+            });
+
+            if (!overflowsAt390) continue;
+
+            await scroller.evaluate((element) => {
+                element.scrollLeft = element.scrollWidth;
+            });
+            await expect(
+                wrapper.getByTestId("table-scroll-affordance-end"),
+            ).toHaveCount(0);
+            await expect(
+                wrapper.getByTestId("table-scroll-affordance-start"),
+            ).toBeVisible();
+            expect(await pageFitsHorizontally(page)).toBe(true);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-STATS-MAIN",
+                    `${scrollerTestId}-scrolled-mobile`,
+                ),
+            });
+        }
+    });
 });
+
+async function pageFitsHorizontally(page: Page): Promise<boolean> {
+    return page
+        .locator("html")
+        .evaluate((element) => element.scrollWidth <= element.clientWidth);
+}
 
 // FM-121: the real-browser counterpart of `App.test.tsx`'s two unit tests. It
 // is deliberately not "a tab strip is visible after a switch" -- that passed

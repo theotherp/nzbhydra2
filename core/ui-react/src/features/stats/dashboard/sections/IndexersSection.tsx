@@ -4,7 +4,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     TableSortLabel,
@@ -14,6 +13,7 @@ import {
 import {useMemo, useState} from "react";
 
 import type {StatsResult} from "../../../../api/stats/mainStats";
+import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {
     indexerColumnsEnabled,
     joinIndexerRows,
@@ -114,11 +114,21 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
                         : "Show detail columns"}
                 </Button>
             </Stack>
-            <TableContainer>
+            <TableScrollAffordance scrollerTestId="stats-indexers-scroller">
                 <Table
                     aria-label="Indexer statistics"
                     data-testid="stats-indexers-table"
                     size="small"
+                    // Measured at 390x844 with the detail columns collapsed
+                    // (their default state): the always-on columns -- Indexer,
+                    // response time, API accesses/day plus its success %,
+                    // download share %, download success %, uniqueness score,
+                    // and coverage -- need 1409px laid out so no header wraps.
+                    // 1420 keeps them at that intrinsic width; the detail
+                    // columns `showDetails` reveals simply make the table
+                    // wider than the floor and scroll with it, the same
+                    // optional-column idiom `SearchHistoryPage` uses.
+                    sx={{minWidth: 1420}}
                 >
                     <TableHead>
                         <TableRow>
@@ -280,7 +290,7 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableScrollAffordance>
             {columns.downloadShare && (
                 <ChartCard
                     chartHeight={horizontalBarChartHeight(
@@ -441,8 +451,15 @@ function IndexerRowCells({
 
 function ShareTable({rows}: {rows: IndexerRow[]}) {
     return (
-        <TableContainer>
-            <Table aria-label="Downloads per indexer" size="small">
+        <TableScrollAffordance scrollerTestId="stats-indexer-download-shares-scroller">
+            <Table
+                aria-label="Downloads per indexer"
+                size="small"
+                // Measured at 390x844 with the card toggled to its table
+                // side: Indexer, Total, and "% of all enabled" need 351px so
+                // no header wraps. 360 keeps them at that intrinsic width.
+                sx={{minWidth: 360}}
+            >
                 <TableHead>
                     <TableRow>
                         <TableCell>Indexer</TableCell>
@@ -466,14 +483,22 @@ function ShareTable({rows}: {rows: IndexerRow[]}) {
                         ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableScrollAffordance>
     );
 }
 
 function ResponseTimeTable({rows}: {rows: IndexerRow[]}) {
     return (
-        <TableContainer>
-            <Table aria-label="Avg. response times" size="small">
+        <TableScrollAffordance scrollerTestId="stats-response-times-scroller">
+            <Table
+                aria-label="Avg. response times"
+                size="small"
+                // Measured at 390x844 with the card toggled to its table
+                // side: Indexer, "Avg. response time (ms)", and Delta need
+                // 428px so no header wraps. 430 keeps them at that intrinsic
+                // width.
+                sx={{minWidth: 430}}
+            >
                 <TableHead>
                     <TableRow>
                         <TableCell>Indexer</TableCell>
@@ -497,7 +522,7 @@ function ResponseTimeTable({rows}: {rows: IndexerRow[]}) {
                         ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableScrollAffordance>
     );
 }
 

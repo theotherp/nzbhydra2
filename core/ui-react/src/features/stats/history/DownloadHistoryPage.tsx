@@ -35,6 +35,10 @@ import {
 } from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {
+    CopyValueButton,
+    rowRevealsCopyButtonsOnHover,
+} from "../../../components/CopyValueButton";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
@@ -311,6 +315,7 @@ export function DownloadHistoryPage({
                                 <TableRow
                                     data-testid="download-history-row"
                                     key={entry.id}
+                                    sx={rowRevealsCopyButtonsOnHover}
                                 >
                                     <TableCell>
                                         {formatServerDateTime(
@@ -344,7 +349,21 @@ export function DownloadHistoryPage({
                                         </TableCell>
                                     )}
                                     {showsIp(userInfoType) && (
-                                        <TableCell>{entry.ip ?? ""}</TableCell>
+                                        <TableCell>
+                                            <Stack
+                                                alignItems="center"
+                                                direction="row"
+                                                justifyContent="space-between"
+                                                spacing={1}
+                                            >
+                                                <span>{entry.ip ?? ""}</span>
+                                                <CopyValueButton
+                                                    label="IP address"
+                                                    testId="download-history-copy-ip"
+                                                    value={entry.ip}
+                                                />
+                                            </Stack>
+                                        </TableCell>
                                     )}
                                 </TableRow>
                             ))}
@@ -395,6 +414,11 @@ function TitleCell({
             ) : (
                 searchResult.title
             )}
+            <CopyValueButton
+                label="title"
+                testId="download-history-copy-title"
+                value={searchResult.title}
+            />
         </Stack>
     );
 }

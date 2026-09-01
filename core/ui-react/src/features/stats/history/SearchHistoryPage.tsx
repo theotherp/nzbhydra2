@@ -40,6 +40,10 @@ import {
 } from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {
+    CopyValueButton,
+    rowRevealsCopyButtonsOnHover,
+} from "../../../components/CopyValueButton";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
@@ -370,6 +374,7 @@ export function SearchHistoryPage({
                                 <TableRow
                                     data-testid="search-history-row"
                                     key={entry.id}
+                                    sx={rowRevealsCopyButtonsOnHover}
                                 >
                                     <TableCell>
                                         {formatServerDateTime(
@@ -393,28 +398,71 @@ export function SearchHistoryPage({
                                             spacing={1}
                                         >
                                             <span>{queryLabel(entry)}</span>
-                                            <Button
-                                                data-testid="search-history-repeat"
-                                                onClick={() => repeat(entry)}
+                                            <Stack
+                                                alignItems="center"
+                                                direction="row"
+                                                spacing={0.5}
                                             >
-                                                Repeat
-                                            </Button>
+                                                <CopyValueButton
+                                                    label="query"
+                                                    testId="search-history-copy-query"
+                                                    value={copyableQueryValue(
+                                                        entry,
+                                                    )}
+                                                />
+                                                <Button
+                                                    data-testid="search-history-repeat"
+                                                    onClick={() =>
+                                                        repeat(entry)
+                                                    }
+                                                >
+                                                    Repeat
+                                                </Button>
+                                            </Stack>
                                         </Stack>
                                     </TableCell>
                                     {showUserAgent && (
                                         <TableCell>
-                                            {entry.userAgent ?? ""}
+                                            <Stack
+                                                alignItems="center"
+                                                direction="row"
+                                                justifyContent="space-between"
+                                                spacing={1}
+                                            >
+                                                <span>
+                                                    {entry.userAgent ?? ""}
+                                                </span>
+                                                <CopyValueButton
+                                                    label="user agent"
+                                                    testId="search-history-copy-user-agent"
+                                                    value={entry.userAgent}
+                                                />
+                                            </Stack>
                                         </TableCell>
                                     )}
                                     <TableCell data-testid="search-history-category">
                                         {entry.categoryName}
                                     </TableCell>
                                     <TableCell>
-                                        <Criteria
-                                            entry={entry}
-                                            bootstrap={bootstrap}
-                                            transport={transport}
-                                        />
+                                        <Stack
+                                            alignItems="flex-start"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            <Criteria
+                                                entry={entry}
+                                                bootstrap={bootstrap}
+                                                transport={transport}
+                                            />
+                                            <CopyValueButton
+                                                label="additional parameters"
+                                                testId="search-history-copy-additional-parameters"
+                                                value={additionalParametersText(
+                                                    entry,
+                                                )}
+                                            />
+                                        </Stack>
                                     </TableCell>
                                     <TableCell data-testid="search-history-source">
                                         {entry.source === "API"
@@ -427,7 +475,21 @@ export function SearchHistoryPage({
                                         </TableCell>
                                     )}
                                     {showsIp(userInfoType) && (
-                                        <TableCell>{entry.ip ?? ""}</TableCell>
+                                        <TableCell>
+                                            <Stack
+                                                alignItems="center"
+                                                direction="row"
+                                                justifyContent="space-between"
+                                                spacing={1}
+                                            >
+                                                <span>{entry.ip ?? ""}</span>
+                                                <CopyValueButton
+                                                    label="IP address"
+                                                    testId="search-history-copy-ip"
+                                                    value={entry.ip}
+                                                />
+                                            </Stack>
+                                        </TableCell>
                                     )}
                                     <TableCell>
                                         <Button
@@ -514,16 +576,42 @@ function DetailsDialog({
                     <Stack spacing={2}>
                         <Table aria-label="Search request details">
                             <TableBody>
-                                <TableRow>
+                                <TableRow sx={rowRevealsCopyButtonsOnHover}>
                                     <TableCell>Host</TableCell>
                                     <TableCell>
-                                        {details.data.ip ?? ""}
+                                        <Stack
+                                            alignItems="center"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            <span>{details.data.ip ?? ""}</span>
+                                            <CopyValueButton
+                                                label="host"
+                                                testId="search-history-details-copy-host"
+                                                value={details.data.ip}
+                                            />
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
-                                <TableRow>
+                                <TableRow sx={rowRevealsCopyButtonsOnHover}>
                                     <TableCell>User agent</TableCell>
                                     <TableCell>
-                                        {details.data.userAgent ?? ""}
+                                        <Stack
+                                            alignItems="center"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            <span>
+                                                {details.data.userAgent ?? ""}
+                                            </span>
+                                            <CopyValueButton
+                                                label="user agent"
+                                                testId="search-history-details-copy-user-agent"
+                                                value={details.data.userAgent}
+                                            />
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -582,6 +670,68 @@ function queryLabel(entry: SearchHistoryEntry) {
             ? "Update query"
             : "")
     );
+}
+
+/**
+ * `queryLabel` without its "Update query" placeholder: that string is UI
+ * chrome for an entry with no title, query, or identifiers, not a value to
+ * copy. `CopyValueButton` already hides itself on an empty/undefined value,
+ * so this falling through to `undefined` is what makes the button disappear
+ * on those rows instead of copying a label nobody typed.
+ */
+function copyableQueryValue(entry: SearchHistoryEntry): string | undefined {
+    return entry.title ?? entry.query;
+}
+
+/**
+ * The "Additional parameters" cell's `Criteria` component renders a list of
+ * label/value pairs (identifiers, season, episode, …); this builds the same
+ * pairs as one plain-text block for the column's copy button, independent of
+ * `Criteria`'s JSX (which turns some identifiers into links `Criteria` alone
+ * needs `transport`/`dereferer` for -- copying the link text is enough here).
+ * Returns `undefined` when the entry carries no such criteria at all, so the
+ * button does not appear over an empty cell.
+ */
+function additionalParametersText(
+    entry: SearchHistoryEntry,
+): string | undefined {
+    const lines: string[] = [];
+    for (const identifier of entry.identifiers) {
+        lines.push(
+            `${identifier.identifierKey} ID: ${identifier.identifierValue}`,
+        );
+    }
+    if (entry.season !== undefined) {
+        lines.push(`Season: ${entry.season}`);
+    }
+    if (entry.episode) {
+        lines.push(`Episode: ${entry.episode}`);
+    }
+    if (entry.author) {
+        lines.push(`Author: ${entry.author}`);
+    }
+    if (entry.minAge !== undefined) {
+        lines.push(`Minimum age: ${entry.minAge} days`);
+    }
+    if (entry.maxAge !== undefined) {
+        lines.push(`Maximum age: ${entry.maxAge} days`);
+    }
+    if (entry.minSize !== undefined) {
+        lines.push(`Minimum size: ${entry.minSize} MB`);
+    }
+    if (entry.maxSize !== undefined) {
+        lines.push(`Maximum size: ${entry.maxSize} MB`);
+    }
+    if (entry.selectedIndexers !== undefined) {
+        lines.push(
+            `Selected indexers: ${
+                entry.selectedIndexers.length > 0
+                    ? entry.selectedIndexers.join(", ")
+                    : "None"
+            }`,
+        );
+    }
+    return lines.length > 0 ? lines.join("\n") : undefined;
 }
 
 function Criteria({

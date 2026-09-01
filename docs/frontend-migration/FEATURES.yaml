@@ -998,7 +998,22 @@ features:
       - config-indexer-torznab-note
       - config-indexer-check-caps
       - config-indexer-connection-failed
+      # FM-167 additions to the caps-check progress dialog, all new and none
+      # replacing an existing one: `config-indexer-caps-leave` is the exit the
+      # bulk recheck offers (Escape runs the same path; a backdrop click still
+      # dismisses nothing), `config-indexer-caps-progress` is the status row
+      # holding either "n of m indexers have reported" or the plain
+      # "Checking capabilities…" a one-indexer check shows, and
+      # `config-indexer-caps-announcement` is the off-screen polite live region
+      # carrying only the lines the last poll added.
+      # `config-indexer-caps-messages` keeps its testid, order, and content and
+      # is no longer a live region itself. The exit is absent for the caps
+      # check `IndexerDialog` raises from inside an open entry, whose commit
+      # transaction awaits the check's outcome.
       - config-indexer-caps-dialog
+      - config-indexer-caps-leave
+      - config-indexer-caps-progress
+      - config-indexer-caps-announcement
       - config-indexer-caps-messages
       - config-indexer-caps-incomplete
       - config-indexer-caps-failed
@@ -1069,6 +1084,9 @@ features:
       - deliberate - the search-source select is on the list without being gated by the advanced toggle, though the same field is advanced inside the edit dialog; a column the toggle empties would leave a headed blank cell in every row
       - deliberate - neither the filter nor the sort is persisted; both are momentary view state, as the packet scopes them
       - deliberate - below sm the table keeps one column and each entry stacks, with sorting moved to a named "Sort by" select, because five columns need about 900px and even three overflow a 390px phone once a VIP-expiry chip or the search-source control is in one of them (ADR-0029; measured, not estimated)
+      - deliberate - the caps check cannot be cancelled and reports no completion count, so the dialog's progress counts reporting rather than completion (FM-167) - POST /internalapi/indexer/checkCaps is synchronous over IndexerChecker's executor.invokeAll, there is no abort endpoint, and CheckCapsResponse carries no counters, so FM-167's exit stops this browser's waiting only and its progress counts the indexers that have published a message rather than the ones that have finished
+      - deliberate - leaving a running caps check discards that check's results; they are not applied when the abandoned request finally answers, because the form has moved on and the admin can check again
+      - deliberate - the caps-check exit is offered for the bulk recheck only; the same dialog raised from inside an open indexer has none, because that commit transaction awaits the check's outcome to decide whether the entry may be committed
       - deliberate - the add surface is a filterable, grouped gallery with every preset a directly clickable item (FM-104), replacing legacy's two "Choose from presets" anchor menus; filtering is a substring match over the label and never reorders, and a group with no matches hides its own heading rather than showing an empty one
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
@@ -1213,6 +1231,20 @@ features:
       # fails when a chart does not draw.
       - stats-chart-*-chart
       - stats-chart-*-placeholder
+      # FM-169 (ADR-0038): each of these tables now renders through
+      # `TableScrollAffordance` with its own measured `minWidth` floor, so
+      # narrow viewports scroll the table's own container with a scroll-edge
+      # cue rather than wrapping a heading or pushing the page sideways.
+      - stats-indexers-scroller
+      - stats-indexer-download-shares-scroller
+      - stats-response-times-scroller
+      - stats-activity-day-of-week-scroller
+      - stats-activity-hour-of-day-scroller
+      # One scroller per source-share card, keyed the same way as its chart:
+      # stats-chart-<search-user|download-user|search-ip|download-ip|
+      # search-agent|download-agent>-scroller.
+      - stats-chart-*-scroller
+      - stats-downloads-per-age-scroller
     parity: done
     gaps:
       - deliberate - the presentation is redesigned per ADR-0021 (overview tiles, one consolidated indexer table, grouped activity bar charts, sorted horizontal-bar share lists, no pie/donut charts, legacy's inline switches replaced by a grouped "Statistics" selection menu); only the `POST /internalapi/stats` data/request contract is pinned to legacy
@@ -1231,7 +1263,12 @@ features:
     tests:
       - tests/system/tests/stats.spec.ts
       - tests/system/tests/search-history.spec.ts
-    selectors: []
+    # FM-169 (ADR-0038): the table renders through `TableScrollAffordance`
+    # with a measured `minWidth` floor, so a narrow viewport scrolls the
+    # table's own container with a scroll-edge cue rather than wrapping a
+    # heading or pushing the page sideways.
+    selectors:
+      - indexer-statuses-scroller
     parity: partial
   - id: F-HISTORY-SEARCHES
     name: Search-history paging, filtering, details, and repeat
@@ -1308,10 +1345,25 @@ features:
       - history-pager
       - history-page-size
       - search-history-page-status
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on the four free-text/
+      # identifier values this route offers a copy affordance on -- the
+      # Query and Additional-parameters columns, the row-level User agent
+      # column, and the IP address column -- plus the search-details
+      # dialog's Host and User agent rows. No `search-history-copy-*` id
+      # exists for Time, Category, Source, or Details: those columns are
+      # short/enumerated or already actionable, per the component's
+      # selection rule.
+      - search-history-copy-query
+      - search-history-copy-additional-parameters
+      - search-history-copy-user-agent
+      - search-history-copy-ip
+      - search-history-details-copy-host
+      - search-history-details-copy-user-agent
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in SearchHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
       - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - capability added - FM-170 gives Query, Additional parameters, User agent, and IP address (row and details-dialog) a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
     routes:
@@ -1406,10 +1458,18 @@ features:
       - history-pager
       - history-page-size
       - download-history-page-status
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on this route's two
+      # free-text/identifier values -- Title and IP address. No
+      # `download-history-copy-*` id exists for Time, Indexer, Result,
+      # Source, Age, or Username: those columns are short/enumerated or
+      # already actionable, per the component's selection rule.
+      - download-history-copy-title
+      - download-history-copy-ip
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in DownloadHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
       - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where DownloadHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - capability added - FM-170 gives Title and IP address a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
     routes:
@@ -1475,10 +1535,18 @@ features:
       # `notification-history-page-status` is an existing spec contract.
       - history-pager
       - history-page-size
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on this route's three
+      # free-text values -- Title, Body, and URLs. No
+      # `notification-history-copy-*` id exists for Time or Type: those
+      # columns are short/enumerated, per the component's selection rule.
+      - notification-history-copy-title
+      - notification-history-copy-body
+      - notification-history-copy-urls
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in NotificationHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
       - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where NotificationHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - capability added - FM-170 gives Title, Body, and URLs a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
   - id: F-SYSTEM-SHELL
     name: System administration tab shell
     routes:

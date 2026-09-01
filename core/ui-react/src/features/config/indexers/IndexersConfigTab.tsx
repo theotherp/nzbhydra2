@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import {Box, Button, Stack, Typography} from "@mui/material";
-import {useRef, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {
@@ -18,7 +18,7 @@ import {AddIndexerDialog} from "./AddIndexerDialog";
 import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
 import {IndexerDialog} from "./IndexerDialog";
 import {IndexerImportDialog} from "./IndexerImportDialog";
-import {IndexerTable} from "./IndexerTable";
+import {IndexerTable, type IndexerListEntry} from "./IndexerTable";
 import {
     importResultLines,
     importResultSummary,
@@ -53,6 +53,44 @@ const RECHECK_FAILED_TITLE = "Error checking capabilities";
 const RECHECK_FAILED_MESSAGE =
     "An error occurred while checking the capabilities of the indexers. Nothing was changed.";
 
+/**
+ * The bulk recheck the progress dialog is showing. `token` is FM-167's
+ * abandonment identity (`SearchPage`'s `activeSubmission` precedent): starting
+ * and leaving a check both bump the tab's counter, so a `checkCaps` promise
+ * that only resolves after the admin stopped waiting carries a stale token and
+ * its results are dropped instead of merged into the form.
+ */
+type ActiveRecheck = {
+    /** How many indexers the server is expected to check; see `recheckTargets`. */
+    indexerCount: number;
+    request: CapsCheckRequest;
+    token: number;
+};
+
+/**
+ * `IndexerChecker.checkCaps(CheckType)`'s own filter, applied to the entries
+ * the form holds: enabled newznab/torznab indexers with a complete
+ * configuration, and for an `INCOMPLETE` run only those whose capabilities are
+ * not fully known yet.
+ *
+ * It can only ever be an estimate — the server checks the *saved* indexers
+ * while this counts the edited ones — which is why it feeds a denominator the
+ * dialog clamps rather than any decision.
+ */
+function recheckTargets(
+    entries: readonly IndexerValues[],
+    checkType: "ALL" | "INCOMPLETE",
+): number {
+    return entries.filter(
+        (entry) =>
+            entry.state === "ENABLED" &&
+            (entry.searchModuleType === "NEWZNAB" ||
+                entry.searchModuleType === "TORZNAB") &&
+            entry.configComplete === true &&
+            (checkType === "ALL" || entry.allCapsChecked !== true),
+    ).length;
+}
+
 type Editing = {
     /** The picked preset's prose, shown while composing a new entry. */
     info?: readonly string[];
@@ -84,14 +122,43 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
     const {getValues, setValue} = useFormContext<ConfigValues>();
     const dialogs = useDialogs();
     const toasts = useToasts();
-    const entries = indexersOf(useWatch<ConfigValues>({name: INDEXERS_PATH}));
+    /**
+     * FM-168: the list surface's subscription, narrowed to the three fields it
+     * decides anything with (`IndexerListEntry`).
+     *
+     * `useWatch`'s `compute` is what makes this a narrowing and not just a
+     * projection: React Hook Form still wakes this subscription for every
+     * change under `indexers`, but re-renders the tab only when the computed
+     * value actually differs. So a keystroke in a priority cell — a `score`,
+     * one of the three — re-renders the tab, because the *order* may have
+     * changed and the table has to be able to resort on blur; a keystroke in
+     * any other cell re-renders nothing above the row it was typed in.
+     *
+     * Everything else this tab does reads the array through `currentEntries()`
+     * at the moment it acts, which is a stronger guarantee than a watched
+     * render value anyway (see `commit`, `remove`, `startRecheck`).
+     */
+    const listEntries = useWatch<
+        ConfigValues,
+        typeof INDEXERS_PATH,
+        ConfigValues,
+        IndexerListEntry[]
+    >({
+        compute: (value) =>
+            indexersOf(value).map((entry) => ({
+                name: entry.name,
+                score: entry.score,
+                state: entry.state,
+            })),
+        name: INDEXERS_PATH,
+    });
     const categoryOptions = indexerCategoryOptions(
         useWatch<ConfigValues>({name: "categoriesConfig.categories"}),
     );
     const [editing, setEditing] = useState<Editing | null>(null);
     const [adding, setAdding] = useState(false);
     /** The bulk recheck in flight, or `null`; drives the shared progress dialog. */
-    const [recheck, setRecheck] = useState<CapsCheckRequest | null>(null);
+    const [recheck, setRecheck] = useState<ActiveRecheck | null>(null);
     const [importing, setImporting] = useState<IndexerImportSource | null>(
         null,
     );
@@ -105,15 +172,23 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
      * the state it closes over — that started the check.
      */
     const transactionRef = useRef(0);
+    /**
+     * The same idea for the bulk capability check: the identity of the check
+     * whose outcome is currently allowed to be applied. See `ActiveRecheck`.
+     */
+    const capsCheckRef = useRef(0);
 
-    const openTransaction = (
-        index: number | null,
-        value: IndexerValues,
-        info?: readonly string[],
-    ) => {
-        transactionRef.current += 1;
-        setEditing({index, info, token: transactionRef.current, value});
-    };
+    const openTransaction = useCallback(
+        (
+            index: number | null,
+            value: IndexerValues,
+            info?: readonly string[],
+        ) => {
+            transactionRef.current += 1;
+            setEditing({index, info, token: transactionRef.current, value});
+        },
+        [],
+    );
 
     const closeTransaction = () => {
         transactionRef.current += 1;
@@ -124,7 +199,24 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         setValue(INDEXERS_PATH, next as never, {shouldDirty: true});
 
     /** The array as the form holds it *now*, never a value a render captured. */
-    const currentEntries = () => indexersOf(getValues(INDEXERS_PATH));
+    const currentEntries = useCallback(
+        () => indexersOf(getValues(INDEXERS_PATH)),
+        [getValues],
+    );
+
+    /**
+     * `IndexerTable`'s edit callback. Stable on purpose: it is handed down to
+     * every memoized `IndexerTableRow`, so a fresh closure per render would
+     * re-render the whole list on every keystroke and quietly undo FM-168.
+     * The entry is read from the form at the click rather than from the render
+     * that painted the row, which is what the rest of this tab does too.
+     */
+    const editEntry = useCallback(
+        (index: number) => {
+            openTransaction(index, asIndexer(currentEntries()[index]));
+        },
+        [currentEntries, openTransaction],
+    );
 
     const commit = (
         token: number,
@@ -192,7 +284,23 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
      * results are merged into.
      */
     const startRecheck = (checkType: "ALL" | "INCOMPLETE") => {
-        setRecheck({checkType, indexerConfig: null});
+        capsCheckRef.current += 1;
+        setRecheck({
+            indexerCount: recheckTargets(currentEntries(), checkType),
+            request: {checkType, indexerConfig: null},
+            token: capsCheckRef.current,
+        });
+    };
+
+    /**
+     * FM-167: the admin stops waiting for a check that keeps running on the
+     * server (`IndexerWeb` has no abort). Bumping the token is what makes the
+     * abandoned request harmless — its results, and its failure, are dropped —
+     * and the tab is usable again immediately, including for a second check.
+     */
+    const leaveRecheck = () => {
+        capsCheckRef.current += 1;
+        setRecheck(null);
     };
 
     /**
@@ -200,7 +308,14 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
      * form at this moment rather than from a captured render: the check runs
      * for tens of seconds and the admin can keep editing other tabs meanwhile.
      */
-    const finishRecheck = (results: IndexerCapsCheckResult[]) => {
+    const finishRecheck = (
+        token: number,
+        results: IndexerCapsCheckResult[],
+    ) => {
+        if (token !== capsCheckRef.current) {
+            return;
+        }
+        capsCheckRef.current += 1;
         setRecheck(null);
         if (results.length === 0) {
             toasts.showToast({
@@ -217,7 +332,11 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         }
     };
 
-    const failRecheck = () => {
+    const failRecheck = (token: number) => {
+        if (token !== capsCheckRef.current) {
+            return;
+        }
+        capsCheckRef.current += 1;
         setRecheck(null);
         void dialogs.confirm({
             title: RECHECK_FAILED_TITLE,
@@ -285,7 +404,7 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                 >
                     Add new indexer
                 </Button>
-                {entries.length === 0 ? (
+                {listEntries.length === 0 ? (
                     // §5's empty-state note: the message alone left the reader
                     // to work out that the button above is what fixes it.
                     <Box data-testid="config-indexers-empty">
@@ -299,10 +418,8 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                     </Box>
                 ) : (
                     <IndexerTable
-                        entries={entries}
-                        onEdit={(index) =>
-                            openTransaction(index, asIndexer(entries[index]))
-                        }
+                        entries={listEntries}
+                        onEdit={editEntry}
                         onSetStates={setStates}
                     />
                 )}
@@ -355,9 +472,13 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
             )}
             {recheck === null ? null : (
                 <CapsCheckDialog
-                    onFailed={failRecheck}
-                    onResolved={finishRecheck}
-                    request={recheck}
+                    indexerCount={recheck.indexerCount}
+                    onFailed={() => failRecheck(recheck.token)}
+                    onLeave={leaveRecheck}
+                    onResolved={(results) =>
+                        finishRecheck(recheck.token, results)
+                    }
+                    request={recheck.request}
                     transport={transport}
                 />
             )}
@@ -365,7 +486,11 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                 <IndexerDialog
                     categoryOptions={categoryOptions}
                     editedIndex={editing.index}
-                    entries={entries}
+                    // Read here rather than watched: the dialog is modal, so
+                    // nothing can change the array under it, and the names it
+                    // checks uniqueness against are the ones the form holds at
+                    // the moment it opened.
+                    entries={currentEntries()}
                     info={editing.info}
                     initialValue={editing.value}
                     isNew={editing.index === null}

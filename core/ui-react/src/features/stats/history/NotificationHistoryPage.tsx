@@ -1,5 +1,6 @@
 import {
     Alert,
+    Box,
     Button,
     CircularProgress,
     Link,
@@ -27,6 +28,10 @@ import {
 } from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
+import {
+    CopyValueButton,
+    rowRevealsCopyButtonsOnHover,
+} from "../../../components/CopyValueButton";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
@@ -262,6 +267,7 @@ export function NotificationHistoryPage({
                                 <TableRow
                                     data-testid="notification-history-row"
                                     key={entry.id}
+                                    sx={rowRevealsCopyButtonsOnHover}
                                 >
                                     <TableCell>
                                         {formatServerDateTime(
@@ -276,23 +282,76 @@ export function NotificationHistoryPage({
                                             ]
                                         }
                                     </TableCell>
-                                    <TableCell data-testid="notification-history-title">
-                                        <SafeText
-                                            dereferer={dereferer}
-                                            value={entry.title}
-                                        />
+                                    <TableCell>
+                                        <Stack
+                                            alignItems="flex-start"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            {/*
+                                             * The testid stays on a box
+                                             * around `SafeText`'s own output
+                                             * only, not the whole cell: its
+                                             * lines are direct-child `div`s
+                                             * (the "never markup" test walks
+                                             * them with `:scope > div`), and
+                                             * that shape has to survive this
+                                             * cell also holding a copy
+                                             * button now.
+                                             */}
+                                            <Box data-testid="notification-history-title">
+                                                <SafeText
+                                                    dereferer={dereferer}
+                                                    value={entry.title}
+                                                />
+                                            </Box>
+                                            <CopyValueButton
+                                                label="notification title"
+                                                testId="notification-history-copy-title"
+                                                value={entry.title}
+                                            />
+                                        </Stack>
                                     </TableCell>
-                                    <TableCell data-testid="notification-history-body">
-                                        <SafeText
-                                            dereferer={dereferer}
-                                            value={entry.body}
-                                        />
+                                    <TableCell>
+                                        <Stack
+                                            alignItems="flex-start"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            <Box data-testid="notification-history-body">
+                                                <SafeText
+                                                    dereferer={dereferer}
+                                                    value={entry.body}
+                                                />
+                                            </Box>
+                                            <CopyValueButton
+                                                label="notification body"
+                                                testId="notification-history-copy-body"
+                                                value={entry.body}
+                                            />
+                                        </Stack>
                                     </TableCell>
-                                    <TableCell data-testid="notification-history-urls">
-                                        <SafeText
-                                            dereferer={dereferer}
-                                            value={entry.urls}
-                                        />
+                                    <TableCell>
+                                        <Stack
+                                            alignItems="flex-start"
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            spacing={1}
+                                        >
+                                            <Box data-testid="notification-history-urls">
+                                                <SafeText
+                                                    dereferer={dereferer}
+                                                    value={entry.urls}
+                                                />
+                                            </Box>
+                                            <CopyValueButton
+                                                label="notification URLs"
+                                                testId="notification-history-copy-urls"
+                                                value={entry.urls}
+                                            />
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))}

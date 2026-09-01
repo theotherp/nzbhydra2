@@ -5,7 +5,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
     Typography,
@@ -17,6 +16,7 @@ import {
 } from "../../../api/stats/indexerStatuses";
 import {ApiTransport} from "../../../api/transport";
 import type {BootstrapData} from "../../../bootstrap";
+import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {
     formatServerDateTime,
     parseServerDateTime,
@@ -84,8 +84,17 @@ function StatusTable({
     timeZone: string | null;
 }) {
     return (
-        <TableContainer>
-            <Table aria-label="Indexer statuses">
+        <TableScrollAffordance scrollerTestId="indexer-statuses-scroller">
+            <Table
+                aria-label="Indexer statuses"
+                // Measured at 390x844 with realistic data (a long indexer
+                // name, a full-length error message, and a VIP-warning
+                // expiry): the eight columns -- Indexer, State, Disabled
+                // until, Last error, API hits, Downloads, Next hit allowed,
+                // VIP expiry -- need 1571px so no header or value wraps
+                // mid-word. 1580 keeps them at that intrinsic width.
+                sx={{minWidth: 1580}}
+            >
                 <caption>
                     Indexer statuses sorted by state, then name. Configure an
                     indexer to reenable it.
@@ -133,7 +142,7 @@ function StatusTable({
                     ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableScrollAffordance>
     );
 }
 

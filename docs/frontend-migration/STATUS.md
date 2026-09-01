@@ -1395,6 +1395,64 @@ its own line (cosmetic, owner's eye wanted — trade against nine-slot parity), 
 with a justification comment rather than via a `MuiPagination` theme entry (theme.ts was outside the allowlist).
 Candidates for a future quickfix.
 
+FM-167 (Let The Caps Check Be Left, And Show How Far It Has Got) turned the app's longest blocking interaction into a
+leavable wait: the bulk caps-check dialog gained a "Stop waiting" button (Escape runs the same path; backdrop still
+inert) with honest wording — the check keeps running server-side, its results are then not applied — under the FM-083
+abandonment pattern (`abandoned` ref in the dialog, `capsCheckRef` token in `IndexersConfigTab` compared before any
+form write; abandoned-resolve, abandoned-reject, and second-check-overlap all pinned). Progress reads "n of m indexers
+have reported" (m mirrors `IndexerChecker`'s filter over form entries, clamped so it never claims fewer than reported;
+single-indexer keeps plain wording), and announcements append: the visible list lost `aria-live` and stable keys stop
+per-tick remounts, while a new polite region carries only newly arrived lines plus progress changes (two-tick test).
+The no-abort/no-counter backend premise was verified first-hand in the Java source by implementer and reviewer; three
+gap lines record the constraints. Real-backend config-indexers 13/13; full vitest 1802/1802. Passed 2026-09-01 with
+minor findings, not corrected (optional): the handoff's lint count was off by one (nothing introduced), the
+server-side multimap-clear cross-run contamination is only in a test comment rather than a gap line, the
+single-indexer variant's "Checking capabilities…" is no longer in any live region, identical consecutive announcements
+stay silent, and the caps check raised from inside an open IndexerDialog still has no exit (faithful scope reading;
+candidate/packet proposals filed). Candidates for a future quickfix/packet.
+
+FM-168 (Confine An Indexer Keystroke To Its Own Row) stopped a keystroke in an indexer's inline cell from re-rendering
+the whole list: the tab's whole-array `useWatch` became a `compute` projection to `{name, score, state}` (exactly the
+sort/filter/count fields, deep-equality-guarded), `IndexerTableRow` is memoized with referentially stable props and
+reads its six painted fields through full leaf paths (avoiding RHF's `indexers.1`/`indexers.10` prefix collision —
+reviewer-verified against RHF 7.85.0's matcher and empirically). Red-first render-count test: before, all 11 untouched
+rows re-rendered per keystroke; after, zero — the reviewer independently reproduced both the pre-implementation red
+and the memo-removal red in an out-of-repo copy. The frozen-order invariant is preserved literally (sequence test plus
+the reviewer's hand-driven probe, identical at HEAD and here); every IndexersConfigTab assertion green unmodified; no
+visual, testid, or behavior change (real-backend config-indexers 13/13 with the spec untouched; full vitest
+1806/1806). Passed 2026-09-01 with minor findings, not corrected (optional): ADR-0040's search-source gating turns out
+to have never been implemented in IndexerTable at all (pre-existing gap, not a regression — FM-168's green is not
+evidence the ADR is honored; one-line gate candidate filed), the handoff's claim that restoring the whole-array watch
+alone re-reds the test is false (the narrowing is real but unpinned — a compute-revert would pass every gate), and the
+documented prefix-collision hazard is untested at the index-1-with-10+-rows boundary. Candidates for a future quickfix.
+
+FM-169 (Give The Stats Tables The Narrow-Viewport Scroll Treatment) put all seven bare stats `TableContainer`s behind
+`C-TABLE-SCROLL-AFFORDANCE` with unique scroller testids and measured `minWidth` floors (each derived from the
+browser's own max-content no-wrap width at 390x844 with realistic data, chart-card tables toggled to their table arm;
+the reviewer independently re-derived the two largest floors, 1420 and 1580). At 390x844 no heading or value wraps
+mid-word, tables scroll in their own containers with the edge cue clearing at the end; `IndexerStatusesPage.test.tsx`
+now renders under `createHydraTheme`; `stats.spec.ts` gained one 390x844 affordance case per route (real-backend 9/9;
+full vitest 1806/1806). One verified deviation, recorded rather than hidden: the consolidated indexers table and the
+indexer-statuses table genuinely need more than 1280's available width, so they now scroll with a cue at 1280x800 too —
+the reviewer reproduced that the pre-task bare tables already wrapped their headers across 2.5-3 lines at 1280, making
+the packet's "nothing changes at 1280" bullet jointly unsatisfiable with "no mid-word wrapping" under ADR-0038's
+no-column-changes constraint; scrolling is the only compliant outcome and an improvement over the silent wrap. Passed
+2026-09-01 with that spec-wording gap retained as the sole minor finding (owner's eye wanted on the two desktop
+captures). Candidates: none new beyond the wording note.
+
+FM-170 (Copy A History Value Without Selecting It By Hand) shipped `C-COPY-VALUE-BUTTON`: one stock-MUI icon button —
+always in the DOM, revealed on row hover or keyboard focus (opacity-based, focus ring intact), per-value `aria-label`,
+per-column testid — on exactly the packet's column set (search Query/Additional parameters/User agent/IP plus the
+details dialog's Host/User agent; download Title/IP; notification Title/Body/URLs), with success/failure toasts via
+`C-TOAST-SERVICE` and no button at all where `navigator.clipboard` is unavailable or the value is empty (both branches
+pinned). The copied text is always the entry's raw field, never rendered DOM — pinned against SafeText's link-trimming
+(no cell in scope literally truncates; the reviewer verified that equivalence deliberately). The registry record moved
+planned→done with the selection rule written in; eleven selectors registered; capability-added gap lines on all three
+records. Vitest components+history 138/138; the reviewer's full run was 1814/1815 with the one failure a pre-existing
+`ConfigShell.test.tsx` flake that reran green in isolation. Passed 2026-09-01 with one minor finding (the packet
+header's stale "reserved, planned" parenthetical, moot on deletion). The 2026-08-31 UX/perf batch FM-162..FM-170 is
+complete.
+
 ## Active
 
 None.
@@ -1422,9 +1480,9 @@ None.
 
 ## Upcoming
 
-- FM-167 (Let The Caps Check Be Left, And Show How Far It Has Got) is next, sixth of the 2026-08-31 UX/perf batch
-  FM-162..FM-170 designed from that day's analysis (FM-162 through FM-166 are done, entries above). FM-168, FM-169, and
-  FM-170 follow; all remaining dependencies are cleared.
+- The 2026-08-31 UX/perf batch FM-162..FM-170 is complete (all nine entries above, finished 2026-09-01). No task
+  packets are queued; retained minor findings and fix candidates live in the done entries above and in
+  `MAINTENANCE.md`'s open candidates.
 
 - FM-159 and FM-160 are done (entries above), as are the 2026-08-31 follow-ups FM-156, FM-157, FM-158.
 

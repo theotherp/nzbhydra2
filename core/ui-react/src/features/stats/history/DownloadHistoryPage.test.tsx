@@ -20,6 +20,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
+import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {DownloadHistoryPage} from "./DownloadHistoryPage";
 import {
     createHistorySearchSchema,
@@ -84,7 +85,16 @@ function renderRouted(component: () => ReactNode, search?: string) {
                     new QueryClient({defaultOptions: {queries: {retry: false}}})
                 }
             >
-                <RouterProvider router={router} />
+                {/*
+                 * FM-170: `CopyValueButton` calls `useToasts` unconditionally
+                 * (before deciding whether it renders anything), so the page
+                 * under test needs a real provider -- same as the production
+                 * tree, which mounts one once for the whole app in
+                 * `App.tsx`.
+                 */}
+                <ToastProvider>
+                    <RouterProvider router={router} />
+                </ToastProvider>
             </QueryClientProvider>
         </ThemeProvider>,
     );
@@ -347,6 +357,35 @@ describe("DownloadHistoryPage", () => {
         expect(row).toHaveTextContent("user");
         expect(row).toHaveTextContent("127.0.0.1");
         expect(row).toHaveTextContent("3 days");
+    });
+
+    it("should copy the title and IP address to the clipboard", async () => {
+        const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
+        vi.stubGlobal("navigator", {clipboard});
+        const fetchImplementation = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    content: [entry()],
+                    totalElements: 1,
+                }),
+                {headers: {"Content-Type": "application/json"}},
+            ),
+        );
+        renderPage(fetchImplementation);
+        const row = await screen.findByTestId("download-history-row");
+        fireEvent.click(within(row).getByRole("button", {name: "Copy title"}));
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenCalledWith("A title"),
+        );
+        fireEvent.click(
+            within(row).getByRole("button", {name: "Copy IP address"}),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith("127.0.0.1"),
+        );
+        expect(
+            await screen.findByText("Copied IP address to clipboard."),
+        ).toBeVisible();
     });
 
     it("should show accessible feedback instead of a repeat action when the entry is not eligible", async () => {

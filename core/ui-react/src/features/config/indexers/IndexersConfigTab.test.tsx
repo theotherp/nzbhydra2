@@ -1495,6 +1495,170 @@ describe("The bulk capability recheck", () => {
         expect(indexersOf(harness)[0].allCapsChecked).toBe(false);
         expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
     });
+
+    // ---- FM-167: stopping the wait for a check that cannot be aborted ------
+
+    /**
+     * A check the test finishes by hand, because `IndexerWeb` offers no abort:
+     * the interesting moment is what the *abandoned* request does when the
+     * server finally answers it.
+     */
+    function hangingBackend(messages: Record<string, string[]> = {}) {
+        const checks: {
+            reject: (error: Error) => void;
+            resolve: (value: Response) => void;
+        }[] = [];
+        const fetchMock = vi.fn<typeof fetch>((input) => {
+            const url = String(input);
+            if (url.includes("checkCapsMessages")) {
+                return Promise.resolve(jsonResponse(messages));
+            }
+            if (url.includes("checkCaps")) {
+                return new Promise<Response>((resolve, reject) => {
+                    checks.push({reject, resolve});
+                });
+            }
+            throw new Error(`unexpected request to ${url}`);
+        });
+        return {checks, fetchMock};
+    }
+
+    async function leaveCheck(): Promise<void> {
+        fireEvent.click(screen.getByTestId("config-indexer-caps-leave"));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+    }
+
+    /** Long enough for an abandoned promise's whole chain to run, or not. */
+    async function settle(): Promise<void> {
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        });
+    }
+
+    it("counts the indexers the server will check while the check runs", async () => {
+        const api = hangingBackend({Mock1: ["Checking caps of Mock1"]});
+        renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+                newznab({name: "Mock2", allCapsChecked: false}),
+                // Not `INCOMPLETE`-eligible, exactly as
+                // `IndexerChecker.checkCaps(CheckType)` filters them out.
+                newznab({
+                    name: "Mock3",
+                    allCapsChecked: false,
+                    state: "DISABLED_USER",
+                }),
+                newznab({
+                    name: "Mock4",
+                    allCapsChecked: false,
+                    configComplete: false,
+                }),
+                newznab({name: "Mock5"}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-incomplete");
+        await waitFor(
+            () =>
+                expect(
+                    screen.getByTestId("config-indexer-caps-progress"),
+                ).toHaveTextContent("1 of 2 indexers have reported"),
+            {timeout: 3000},
+        );
+    });
+
+    it("frees the tab immediately and applies nothing the abandoned check answers", async () => {
+        const api = hangingBackend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-incomplete");
+        await leaveCheck();
+
+        // The point of the packet: the tab is usable again at once.
+        expect(
+            screen.getByTestId("config-indexers-recheck-incomplete"),
+        ).toBeEnabled();
+        expect(screen.getByTestId("config-indexer-edit-0")).toBeEnabled();
+
+        // The server finishes the check nobody could tell it to stop.
+        api.checks[0].resolve(
+            jsonResponse([capsResult({indexerConfig: {name: "Mock1"}})]),
+        );
+        await settle();
+
+        expect(indexersOf(harness)[0].allCapsChecked).toBe(false);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("false");
+        expect(screen.queryByTestId("config-indexer-caps-dialog")).toBeNull();
+        expect(screen.queryByText("No indexers were checked")).toBeNull();
+    });
+
+    it("raises no failure dialog when the abandoned check fails", async () => {
+        const api = hangingBackend();
+        renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-all");
+        await leaveCheck();
+
+        api.checks[0].resolve(jsonResponse({error: "boom"}, 500));
+        await settle();
+
+        expect(
+            screen.queryByTestId("config-indexers-recheck-failed"),
+        ).toBeNull();
+        expect(screen.queryByTestId("config-indexer-caps-dialog")).toBeNull();
+    });
+
+    it("keeps a second check's results while dropping the abandoned one's", async () => {
+        const api = hangingBackend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({name: "Mock1", allCapsChecked: false}),
+            ]),
+        });
+
+        await recheck("config-indexers-recheck-incomplete");
+        await leaveCheck();
+        await recheck("config-indexers-recheck-all");
+
+        // The first check answers while the second one is still running.
+        api.checks[0].resolve(
+            jsonResponse([
+                capsResult({
+                    indexerConfig: {name: "Mock1", score: 99},
+                }),
+            ]),
+        );
+        await settle();
+        expect(indexersOf(harness)[0].allCapsChecked).toBe(false);
+        expect(indexersOf(harness)[0].score).toBe(0);
+        expect(screen.getByTestId("config-indexer-caps-dialog")).toBeVisible();
+
+        api.checks[1].resolve(
+            jsonResponse([capsResult({indexerConfig: {name: "Mock1"}})]),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+        expect(indexersOf(harness)[0].allCapsChecked).toBe(true);
+    });
 });
 
 describe("The Jackett and Prowlarr imports", () => {

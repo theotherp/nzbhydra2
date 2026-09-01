@@ -18,9 +18,11 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import {useMemo, useState, type ReactElement} from "react";
+import {memo, useMemo, useState, type ReactElement} from "react";
+import {useWatch} from "react-hook-form";
 
 import type {IndexerValues} from "../../../api/config/indexers";
+import type {ConfigValues} from "../../../api/config/schema";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {NumberSetting, SelectSetting} from "../components";
 import {SettingRowTableCellScope} from "../components/SettingRow";
@@ -45,6 +47,48 @@ import {
 
 const CONFIG_INCOMPLETE_MARKER = "Config incomplete";
 const CAPS_INCOMPLETE_MARKER = "Caps check incomplete";
+
+/**
+ * FM-168. What the *table* reads about an entry — which is everything the tab
+ * outside a row needs, and nothing else.
+ *
+ * The list surface asks exactly three questions of the configuration array:
+ * how many entries there are, what order they go in (`sortIndexers`: `state`,
+ * `score`, and `name` as the tie-break) and which of them a filter keeps
+ * (`filterIndexers`, on the name). Every *other* value a row paints or edits —
+ * its type, its markers, its search source, its switch, its priority field —
+ * is subscribed inside the row that renders it, so a keystroke in one cell
+ * cannot reach any other row.
+ *
+ * The fields are typed `unknown` because that is what they are: `IndexerValues`
+ * is an open record (ADR-0003) and the helpers this feeds coerce each value
+ * themselves.
+ */
+export type IndexerListEntry = {
+    name: unknown;
+    score: unknown;
+    state: unknown;
+};
+
+/**
+ * The entry fields a row *paints* — as opposed to the ones its controls bind
+ * to, which each subscribe themselves through `useController`.
+ *
+ * Named one path at a time rather than watching `indexers.<index>` whole for
+ * two reasons. React Hook Form matches a subscription to a changed field by
+ * string prefix, so a watch on `indexers.1` is also woken by every change under
+ * `indexers.10`; and a watch on the whole entry would be woken by the row's own
+ * priority keystrokes, which `NumberSetting` already owns and which change
+ * nothing this list of fields decides.
+ */
+const ROW_DISPLAY_FIELDS = [
+    "allCapsChecked",
+    "configComplete",
+    "name",
+    "searchModuleType",
+    "state",
+    "vipExpirationDate",
+] as const;
 
 /**
  * The columns, in painted order. `sortKey` marks the three that are sortable;
@@ -84,7 +128,17 @@ export function IndexerTable({
     onEdit,
     onSetStates,
 }: {
-    entries: readonly IndexerValues[];
+    /**
+     * The ordering projection, in configuration order. See
+     * `IndexerListEntry`: the table is deliberately not given the entries
+     * themselves, so that a change to a field only a row paints cannot
+     * re-render the table at all.
+     */
+    entries: readonly IndexerListEntry[];
+    /**
+     * Opens the editor for a configuration index. Must be referentially
+     * stable: it is a prop of the memoized rows.
+     */
     onEdit: (index: number) => void;
     /** One form write setting `state` on exactly the named config indices. */
     onSetStates: (indices: readonly number[], enabled: boolean) => void;
@@ -128,10 +182,14 @@ export function IndexerTable({
      * releasing on blur defers the re-sort to the moment the edit is finished,
      * which is also when a reader wants to see where the row ended up.
      *
-     * It is only ever a *permutation* of the live rows: entries are re-read
-     * from the form on every render, so a frozen order never shows a stale
-     * value, and any change to the number of entries drops the freeze outright
-     * (see `rows`).
+     * It is only ever a *permutation* of the live rows: it holds configuration
+     * indices and nothing else, and `rows` resolves each one against the live
+     * list on every render, dropping the freeze outright if the entry count
+     * changed or any held index stops resolving. A frozen order can therefore
+     * never show a stale value — the *values* are not held here at all. Since
+     * FM-168 that is true twice over: the order-deciding fields arrive in
+     * `entries` (which the tab recomputes whenever one of them changes) and
+     * every other value a row shows is read by that row's own subscription.
      */
     const [frozenOrder, setFrozenOrder] = useState<readonly number[] | null>(
         null,
@@ -335,13 +393,22 @@ export function IndexerTable({
                             );
                         }}
                     >
+                        {/*
+                            Every prop here is referentially stable across an
+                            unrelated row's edit -- two primitives and the
+                            caller's own stable callback -- which is what makes
+                            `IndexerTableRow`'s `memo` do anything. In
+                            particular `onEdit` is passed straight through
+                            rather than wrapped per row: a fresh closure would
+                            be a new prop on every render of this table and
+                            would defeat the memo silently.
+                        */}
                         {shown.map((row) => (
                             <IndexerTableRow
                                 compact={compact}
-                                entry={row.entry}
                                 index={row.index}
                                 key={row.index}
-                                onEdit={() => onEdit(row.index)}
+                                onEdit={onEdit}
                             />
                         ))}
                     </TableBody>
@@ -375,19 +442,27 @@ function indexerWord(count: number): string {
  * icon and a word — so none of the three status dimensions this row carries
  * (usable state, configuration completeness, VIP validity) is readable only to
  * someone who can distinguish the palette.
+ *
+ * FM-168: memoized, and given only values that survive an edit somewhere else
+ * in the list — `compact`, the entry's configuration index, and the tab's
+ * stable `onEdit`. The entry itself is not a prop: the row reads the fields it
+ * paints from the form directly (`ROW_DISPLAY_FIELDS`), which is what confines
+ * a keystroke in one cell to the row it was typed in. The two halves are one
+ * change: a memoized row handed a freshly-read array would still re-render,
+ * and a narrowed subscription without the memo would still re-render every row
+ * whenever the table above it did.
  */
-function IndexerTableRow({
+const IndexerTableRow = memo(function IndexerTableRow({
     compact,
-    entry,
     index,
     onEdit,
 }: {
     /** Below `sm`: Type and Used for are folded into the name cell. */
     compact: boolean;
-    entry: IndexerValues;
     index: number;
-    onEdit: () => void;
+    onEdit: (index: number) => void;
 }) {
+    const entry = useRowDisplayValues(index);
     const legend = indexerLegend(entry);
     const configComplete = entry.configComplete === true;
     const expiry = vipExpiryWarning(entry);
@@ -414,7 +489,7 @@ function IndexerTableRow({
     const nameButton = (
         <Button
             data-testid={`config-indexer-edit-${index}`}
-            onClick={onEdit}
+            onClick={() => onEdit(index)}
             sx={{
                 // A name is free text and a few of the presets' are long;
                 // past this the name column would push every control off a
@@ -554,5 +629,31 @@ function IndexerTableRow({
                 <SettingRowTableCellScope>{priority}</SettingRowTableCellScope>
             </TableCell>
         </TableRow>
+    );
+});
+
+/**
+ * The row's own view of its entry: `ROW_DISPLAY_FIELDS`, read from the form and
+ * re-read whenever one of them changes — and only then.
+ *
+ * The result is shaped as an `IndexerValues` because that is what
+ * `indexerLegend`, `vipExpiryWarning` and `indexerTypeLabel` take; it is a
+ * projection of the entry, not the entry, and deliberately carries nothing a
+ * row does not paint. A whole-array write (a bulk enable, an import, a caps
+ * merge, an add or a delete) signals the array path itself, which is a prefix
+ * of all six names, so those still reach every row.
+ */
+function useRowDisplayValues(index: number): IndexerValues {
+    const names = useMemo(
+        () => ROW_DISPLAY_FIELDS.map((field) => indexerFieldPath(index, field)),
+        [index],
+    );
+    const values = useWatch<ConfigValues>({name: names}) as readonly unknown[];
+    return useMemo(
+        () =>
+            Object.fromEntries(
+                ROW_DISPLAY_FIELDS.map((field, at) => [field, values[at]]),
+            ),
+        [values],
     );
 }

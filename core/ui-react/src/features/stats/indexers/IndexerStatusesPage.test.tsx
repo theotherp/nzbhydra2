@@ -1,7 +1,9 @@
+import {ThemeProvider} from "@mui/material/styles";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {cleanup, render, screen, within} from "@testing-library/react";
 import {afterEach, describe, expect, it} from "vitest";
 
+import {createHydraTheme} from "../../../app/theme";
 import {IndexerStatusesPage, vipWarning} from "./IndexerStatusesPage";
 
 const bootstrap = {
@@ -34,16 +36,18 @@ function renderPage(
     loadStatuses: Parameters<typeof IndexerStatusesPage>[0]["loadStatuses"],
 ) {
     return render(
-        <QueryClientProvider
-            client={
-                new QueryClient({defaultOptions: {queries: {retry: false}}})
-            }
-        >
-            <IndexerStatusesPage
-                bootstrap={bootstrap}
-                loadStatuses={loadStatuses}
-            />
-        </QueryClientProvider>,
+        <ThemeProvider theme={createHydraTheme()}>
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <IndexerStatusesPage
+                    bootstrap={bootstrap}
+                    loadStatuses={loadStatuses}
+                />
+            </QueryClientProvider>
+        </ThemeProvider>,
     );
 }
 
