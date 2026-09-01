@@ -1360,6 +1360,18 @@ symbol — a rule the repository already states in packet prompts and does not e
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
+- **The React UI has no session-expired recovery for the 401 an expired OIDC (or form) session now produces.** Issue
+  #1080's server half is fixed (`60a121aae`): in OIDC mode an expired-session background request to `/internalapi/**`
+  gets a plain 401 instead of a redirect into the cross-origin authorization flow the browser could not complete
+  (`status: -1`, plus the Authelia consent race between concurrent requests). What remains is the client half: a query
+  or mutation that fails with `UnauthorizedError` today surfaces as an ordinary error state, and the only recovery is
+  a manual reload — the full navigation that completes the OIDC flow. Wanted: one coalesced "your session has expired —
+  reload" affordance (or an automatic reload) shared across however many requests fail at once. **Why not a quickfix:**
+  a new user-observable capability, and not expressible as a blanket transport rule — the BASIC login flow
+  (`features/auth/session.ts`, `askForPassword`) *deliberately* provokes 401s, and `App.tsx` / `SearchPage.tsx` hold
+  separate `QueryClient`s, so the hook point and the opt-outs need a design pass. Routed to **`/fm-orchestrate`**.
+  Surfaced 2026-09-01 from issue #1080.
+
 - **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
   reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
   no `PUT /internalapi/genericstorage`, the `isGroupEpisodesHelpShown` flag stayed empty, and the dialog returned on

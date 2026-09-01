@@ -496,6 +496,14 @@
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
             <version>2.67.0</version>
+            <exclusions>
+                <!-- Jetty 9 client makes Spring's RestClient pick JettyClientHttpRequestFactory
+                     (compiled against Jetty 12) and breaks the OIDC token exchange -->
+                <exclusion>
+                    <groupId>org.eclipse.jetty.websocket</groupId>
+                    <artifactId>websocket-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 

@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +24,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenValidator;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -33,10 +36,14 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.converter.ClaimTypeConverter;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -45,10 +52,13 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.filter.UrlHandlerFilter;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("removal")
 @Configuration(proxyBeanMethods = false)
@@ -59,6 +69,7 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     private static final int SECONDS_PER_DAY = 60 * 60 * 24;
     private static final String OIDC_REGISTRATION_ID = "nzbhydra2";
+    private static final int JWKS_TIMEOUT_MS = 15_000;
     private static final String OIDC_AUTHORIZATION_REQUEST_NOT_FOUND = "authorization_request_not_found";
 
     @Autowired
@@ -141,7 +152,8 @@ public class SecurityConfig {
                             })
                             .userInfoEndpoint(endpoint -> endpoint
                                     .oidcUserService(getOidcUserService(baseConfig.getAuth()))));
-            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oidcAuthorizationUrl)));
+            //Background requests (XHR / fetch) must get a 401 instead of a redirect into the cross-origin OIDC flow, which the browser cannot complete for them (#1080)
+            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new OidcAuthenticationEntryPoint(oidcAuthorizationUrl)));
         }
         if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http
@@ -298,6 +310,32 @@ public class SecurityConfig {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
         builder.userDetailsService(hydraUserDetailsManager).passwordEncoder(passwordEncoder);
         return builder.build();
+    }
+
+    /**
+     * Spring Security 7's default ID token decoder fetches the JWK set with Nimbus's default timeouts of 500ms
+     * (connect and read), which real-world providers regularly exceed - the login then fails with a read timeout.
+     * This replicates {@link OidcIdTokenDecoderFactory}'s wiring but with generous timeouts.
+     */
+    @Bean
+    public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
+        OidcIdTokenDecoderFactory defaultFactory = new OidcIdTokenDecoderFactory();
+        Map<String, JwtDecoder> decoders = new ConcurrentHashMap<>();
+        return registration -> decoders.computeIfAbsent(registration.getRegistrationId(), registrationId -> {
+            String jwkSetUri = registration.getProviderDetails().getJwkSetUri();
+            if (!StringUtils.hasText(jwkSetUri)) {
+                return defaultFactory.createDecoder(registration);
+            }
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(JWKS_TIMEOUT_MS);
+            requestFactory.setReadTimeout(JWKS_TIMEOUT_MS);
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+                .restOperations(new RestTemplate(requestFactory))
+                .build();
+            decoder.setJwtValidator(JwtValidators.createDefaultWithValidators(new OidcIdTokenValidator(registration)));
+            decoder.setClaimSetConverter(new ClaimTypeConverter(OidcIdTokenDecoderFactory.createDefaultClaimTypeConverters()));
+            return decoder;
+        });
     }
 
     @Bean
