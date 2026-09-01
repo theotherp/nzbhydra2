@@ -1370,7 +1370,10 @@ visibility.
   a new user-observable capability, and not expressible as a blanket transport rule — the BASIC login flow
   (`features/auth/session.ts`, `askForPassword`) *deliberately* provokes 401s, and `App.tsx` / `SearchPage.tsx` hold
   separate `QueryClient`s, so the hook point and the opt-outs need a design pass. Routed to **`/fm-orchestrate`**.
-  Surfaced 2026-09-01 from issue #1080.
+  Surfaced 2026-09-01 from issue #1080. **Closed 2026-09-01 by FM-171** (`C-SESSION-EXPIRY`): one shell-mounted dialog
+  with a Reload action, fed by `QueryCache`/`MutationCache` `onError` on both clients through a latching notifier, with
+  the auth flows excluded by construction and a no-retry-on-401 query default. The affordance was built rather than the
+  automatic reload, for the reasons the packet records.
 
 - **`focus-indication.spec.ts:1046` still finds the search history refine input with `getByLabel("Query").first()`.**
   Since FM-170's per-row "Copy query" buttons also match `getByLabel("Query")` (substring matching), that `.first()`

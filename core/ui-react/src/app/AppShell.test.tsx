@@ -1,4 +1,5 @@
 import {
+    act,
     cleanup,
     fireEvent,
     render,
@@ -7,9 +8,10 @@ import {
 } from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
-import {ApiTransport} from "../api/transport";
+import {ApiTransport, UnauthorizedError} from "../api/transport";
 import {ToastProvider} from "../components/toasts/ToastProvider";
 import {AppShell} from "./AppShell";
+import {reportSessionError, resetSessionExpiryForTests} from "./sessionExpiry";
 import {ThemePreferenceProvider} from "./ThemePreferenceProvider";
 
 let mockPathname = "/hydra/";
@@ -101,6 +103,11 @@ beforeEach(() => {
     mockFooterBannerHeight = 0;
     mockDownloaderFooterHeight = 0;
     mockUpdateBannerBottomOffset = undefined;
+    // FM-171: the session-expiry latch is module-scoped and one-way, so a
+    // test that flips it would leave every later shell render in this file
+    // with the dialog open -- and an open MUI dialog puts the rest of the tree
+    // behind `aria-hidden`, where none of the role queries below can reach it.
+    resetSessionExpiryForTests();
 });
 
 const fetchImplementation = vi.fn();
@@ -412,6 +419,32 @@ describe("AppShell", () => {
         );
 
         expect(screen.queryByTestId("shell-loginout")).not.toBeInTheDocument();
+    });
+
+    /*
+     * FM-171 (`C-SESSION-EXPIRY`): the shell is the one place that stays
+     * mounted for the whole application load, which is what makes the
+     * session-expired dialog singular. Asserted through the real component
+     * rather than a mock, because what this test is for is the mount -- a
+     * mocked marker would pass with the subscription never wired.
+     */
+    it("should mount the session-expired dialog for the whole application", () => {
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        expect(screen.queryByTestId("session-expired-dialog")).toBeNull();
+
+        act(() => {
+            reportSessionError(
+                new UnauthorizedError("Unauthorized", 401, null),
+            );
+        });
+
+        expect(screen.getByTestId("session-expired-dialog")).toBeVisible();
+        expect(screen.getByTestId("session-expired-reload")).toBeVisible();
     });
 });
 

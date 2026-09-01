@@ -11,7 +11,12 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {
     useCallback,
@@ -40,7 +45,11 @@ import {
     shortcutSearch,
 } from "../../api/search";
 import {ApiTransport} from "../../api/transport";
-import {DEFAULT_QUERY_STALE_TIME_MS} from "../../app/queryDefaults";
+import {
+    DEFAULT_QUERY_STALE_TIME_MS,
+    retryUnlessUnauthorized,
+} from "../../app/queryDefaults";
+import {reportSessionError} from "../../app/sessionExpiry";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
@@ -88,9 +97,24 @@ export function SearchPage({
                 defaultOptions: {
                     queries: {
                         refetchOnWindowFocus: false,
+                        retry: retryUnlessUnauthorized,
                         staleTime: DEFAULT_QUERY_STALE_TIME_MS,
                     },
                 },
+                // FM-171 (`C-SESSION-EXPIRY`): this client is private to the
+                // recent-search menu, so the app-wide client's caches never
+                // see its failures -- an expired session refusing the recent
+                // list showed only the menu's own local error alert, which
+                // never names the session. Wired to the same module-scoped
+                // notifier as `App.tsx`'s client, which latches once, so a
+                // page whose page-level *and* recent-search queries both fail
+                // still shows one dialog.
+                mutationCache: new MutationCache({
+                    onError: (error) => reportSessionError(error),
+                }),
+                queryCache: new QueryCache({
+                    onError: (error) => reportSessionError(error),
+                }),
             }),
     );
     const liveTransport = useMemo(

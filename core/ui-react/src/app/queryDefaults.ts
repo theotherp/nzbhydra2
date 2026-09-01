@@ -6,9 +6,13 @@
  * the top of the import graph: `SearchPage` pinning the same `staleTime` had to
  * import it back out of `App`, closing an `App -> router -> SearchPage -> App`
  * cycle that only stayed harmless because the read happened lazily inside a
- * `useState` initializer. A leaf module with no imports of its own cannot form
- * that cycle from any consumer.
+ * `useState` initializer. A near-leaf module cannot form that cycle from any
+ * consumer: its one import, `../api/transport` (FM-171's retry predicate needs
+ * `UnauthorizedError`), imports nothing itself, so nothing here can reach back
+ * into `App`.
  */
+
+import {UnauthorizedError} from "../api/transport";
 
 /**
  * How long a query's data stays fresh before a remount refetches it (FM-121).
@@ -45,3 +49,41 @@ export const DEFAULT_QUERY_STALE_TIME_MS = 30_000;
  * pin `refetchOnWindowFocus` itself.
  */
 export const REFETCH_ON_WINDOW_FOCUS = false;
+
+/**
+ * react-query's own retry count for a query, restated here because
+ * `retryUnlessUnauthorized` replaces the number with a predicate and has to
+ * keep every non-401 error on exactly the behaviour it had.
+ *
+ * Measured against the installed `@tanstack/query-core` 5.90.20 rather than
+ * assumed: `retryer.js:85` reads `config.retry ?? (isServer ? 0 : 3)` and
+ * `:88` retries a numeric `retry` while `failureCount < retry`, so `3` and
+ * `failureCount < 3` are the same rule.
+ */
+const DEFAULT_QUERY_RETRY_COUNT = 3;
+
+/**
+ * The query `retry` default both `QueryClient`s adopt (FM-171).
+ *
+ * An `UnauthorizedError` is never retried. The 401 issue #1080's server half
+ * introduced is a *terminal* answer for this document — the session is gone
+ * and only a full navigation can get it back — so retrying it three times with
+ * exponential backoff would delay the session-expired dialog by seconds while
+ * issuing requests whose outcome is already known. Every other error keeps
+ * react-query's default count, because nothing about this predicate is a
+ * judgement on network flakiness or server errors; it only removes the one
+ * case where a retry cannot succeed.
+ *
+ * Deliberately *not* extended to `ForbiddenError`: a 403 is a live session
+ * being refused one thing, and whether that is worth retrying is react-query's
+ * default to decide, exactly as before.
+ */
+export function retryUnlessUnauthorized(
+    failureCount: number,
+    error: unknown,
+): boolean {
+    if (error instanceof UnauthorizedError) {
+        return false;
+    }
+    return failureCount < DEFAULT_QUERY_RETRY_COUNT;
+}

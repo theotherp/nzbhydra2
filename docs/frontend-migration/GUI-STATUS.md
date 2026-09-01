@@ -7,7 +7,9 @@ Currently available:
 
 - Form-auth login and logout: a `/login` page, a header login/logout affordance with legacy's visibility rules, and a
   redirect to `/login` for a FORM-restricted anonymous session. BASIC-auth login (the browser credential challenge) also
-  works; ending a BASIC session does not yet take effect (the browser replays its cached credentials).
+  works; ending a BASIC session does not yet take effect (the browser replays its cached credentials). When a session
+  expires mid-use (an OIDC or form session whose background requests start answering 401), one coalesced
+  session-expired dialog offers a Reload that re-runs the login flow (FM-171).
 - Startup checks and announcements: the first-start welcome dialog, sequential user news, the admin news dialog, VIP
   indexer-expiry warnings, and the admin-only show-once warnings (out-of-memory, outdated update wrapper, open-to-internet
   without auth, Java below 17, failed backup) all run once per app load.

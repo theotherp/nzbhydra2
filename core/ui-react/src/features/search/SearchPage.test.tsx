@@ -20,6 +20,11 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import {ApiTransport} from "../../api/transport";
+import {
+    isSessionExpired,
+    resetSessionExpiryForTests,
+    subscribeToSessionExpiry,
+} from "../../app/sessionExpiry";
 import {SafeConfigContext} from "../../bootstrap";
 import type {
     SearchLiveTransport,
@@ -143,6 +148,54 @@ describe("SearchPage", () => {
     beforeEach(() => {
         router.navigate.mockReset();
         router.search = {};
+        resetSessionExpiryForTests();
+    });
+
+    /*
+     * FM-171 (`C-SESSION-EXPIRY`): this page holds a *second* `QueryClient`,
+     * private to the recent-search menu, whose failures the app-wide client's
+     * caches never see. Without its own wiring, an expired session refusing
+     * this list showed only the menu's local "could not load" alert -- true
+     * but unhelpful, and never naming the session.
+     *
+     * The menu is opened first because that is what runs the query
+     * (`RecentSearches` pins `enabled: enabled && open`, so a closed menu
+     * issues nothing).
+     *
+     * Asserted at the notifier rather than on a dialog: this page does not
+     * render the dialog (the shell does), so what has to be true here is that
+     * the failure reaches the shared latch at all.
+     */
+    it("should report a 401 from the recent-search client to the session notifier", async () => {
+        const notified = vi.fn();
+        subscribeToSessionExpiry(notified);
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                String(url).includes("forsearching")
+                    ? new Response("Unauthorized", {status: 401})
+                    : searchResponse(),
+            ),
+        );
+
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
+
+        await waitFor(() => expect(notified).toHaveBeenCalledOnce());
+        expect(isSessionExpired()).toBe(true);
+        // One request, no retry storm: this query pins `retry: false` of its
+        // own, on top of the client's `retryUnlessUnauthorized` default.
+        expect(
+            fetchImplementation.mock.calls.filter(([url]) =>
+                String(url).includes("forsearching"),
+            ),
+        ).toHaveLength(1);
     });
 
     it("should provide accessible feedback when saving an executed search fails", async () => {

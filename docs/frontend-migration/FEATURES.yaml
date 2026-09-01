@@ -15,13 +15,18 @@ features:
       - core/ui-react/src/app/theme.test.ts
       - core/ui-react/src/app/ThemePreferenceProvider.test.tsx
       - core/ui-react/src/App.test.tsx
+      - core/ui-react/src/app/sessionExpiry.test.ts
+      - core/ui-react/src/app/status/SessionExpiredDialog.test.tsx
       - tests/system/tests/smoke.spec.ts
+      - tests/system/tests/session-expiry.spec.ts
     selectors:
       - app-shell-logo
       - app-shell-nav
       - app-shell-theme-selector
       - app-shell-theme-option-{{themePreference}}
       - shell-loginout
+      - session-expired-dialog
+      - session-expired-reload
     parity: partial
     gaps:
       # 2026-08-23: `navigation` and `live status` removed. They were never
@@ -35,6 +40,7 @@ features:
       # a forward reference that had already been discharged.
       - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
       - deliberate - FM-154/FM-155 (ADR-0049) put theme selection in the nav bar beside the login/logout control rather than in Config > Main, and offer Auto/Grey/Bright/Dark/Dark (Dyschromatopsia) rather than legacy's fixed four; the choice applies immediately and FM-155 persists it per user through C-THEME-PREFERENCE (server record, with a localStorage seed that only shortens the wrong-theme flash)
+      - deliberate - FM-171 mounts `C-SESSION-EXPIRY`'s session-expired dialog in the shell, a capability legacy has no counterpart for (`nzbhydra.js` and `header-controller.js` carry no 401 handling; issue #1080's server half, `60a121aae`, is what made an expired session answer a background request with a plain 401 rather than a redirect). Its action is a Reload button rather than an automatic reload, because the full navigation that completes the OIDC/form login also destroys unsaved form state, and no decision entry asks for the automatic behavior
       - "deliberate - the `bright` theme reuses the shell's `banner-grey-dark.png` masthead rather than legacy's separate `banner-bright.png`, because MUI paints the app bar `primary.main` under `palette.mode: \"light\"` and the white/green wordmark reads on that green ground; legacy switched the asset per theme"
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh

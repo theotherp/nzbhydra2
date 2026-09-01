@@ -574,3 +574,26 @@ components:
       anonymous.
       The deprecated Java MainConfig.theme field is not read or migrated (safe config does not expose it and full config reads are admin-only); the config UI's
       main.theme dropdown is removed by the same task."
+  - id: C-SESSION-EXPIRY
+    responsibility: Coalesced session-expired recovery -- a leaf notifier whose report function accepts only UnauthorizedError, latches once per page load, and
+      feeds the shell-mounted session-expired dialog with its Reload action; wired as QueryCache/MutationCache onError on both QueryClients. Direct-transport
+      call sites (the auth flows that deliberately provoke or locally handle 401s, search submission) are outside its path by construction and keep their own
+      error surfaces.
+    legacy: []
+    target: core/ui-react/src/app
+    consumers:
+      - F-PLATFORM-SHELL
+    classification: shared_hydra
+    state: done
+    note: "Delivered by FM-171 (2026-09-01, issue #1080's client half; the server half is 60a121aae). Three files: app/sessionExpiry.ts is the notifier (report,
+      subscribe, isSessionExpired, plus a test-only reset seam), app/status/SessionExpiredDialog.tsx is the shell-mounted surface, and app/queryDefaults.ts
+      carries retryUnlessUnauthorized so a 401 is not retried before the dialog appears. Both QueryClients -- App.tsx's application-wide one and SearchPage.tsx's
+      private recent-search one -- pass their QueryCache and MutationCache onError to reportSessionError; the module-scoped latch is what makes N concurrent
+      failures one dialog, and it is one-way for the life of the document, so a dismissal is not undone by the next failing refetch and only a full navigation
+      re-arms it.
+      Not C-DIALOG-SERVICE: that service is a React context whose confirm() a component awaits, and the caller here is a cache onError callback outside the React
+      tree with no context to reach; the justification is repeated at SessionExpiredDialog.tsx.
+      The exclusion boundary, proven in sessionExpiry.test.ts rather than assumed: features/auth/session.ts's loginWithForm, logout and askForPassword call
+      ApiTransport directly and never traverse react-query, so the cache hook cannot see their 401s -- which matters because askForPassword exists to provoke one
+      (AuthWeb answers 401 with a WWW-Authenticate challenge so the browser prompts for BASIC credentials). Search submission is direct-transport for the same
+      reason and keeps its own error surface. reportSessionError stays exported so a future packet can wire a chosen direct call site."

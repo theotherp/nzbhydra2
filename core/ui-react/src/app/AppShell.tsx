@@ -29,6 +29,7 @@ import {useThemePreference} from "./ThemePreferenceProvider";
 import {themePreferenceOptions, type ThemePreference} from "./theme";
 import {DownloaderStatusFooter} from "./status/DownloaderStatusFooter";
 import {NotificationToasts} from "./status/NotificationToasts";
+import {SessionExpiredDialog} from "./status/SessionExpiredDialog";
 import {StartupChecks} from "./status/StartupChecks";
 import {UpdateFooterBanners} from "./status/UpdateFooterBanners";
 
@@ -224,6 +225,14 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
                 bootstrap={bootstrap}
                 liveTransport={liveTransports.notifications}
             />
+            {/*
+             * FM-171 (`C-SESSION-EXPIRY`): mounted here for the same reason as
+             * everything above it -- the shell is the one place that stays
+             * mounted across navigation, and this affordance has to be
+             * singular no matter how many of the page's queries failed at
+             * once.
+             */}
+            <SessionExpiredDialog />
         </Box>
     );
 }

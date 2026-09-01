@@ -9,6 +9,7 @@ import {
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {App} from "./App";
+import {resetSessionExpiryForTests} from "./app/sessionExpiry";
 
 const bootstrap = {
     username: null,
@@ -121,6 +122,10 @@ afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    // FM-171: the session-expiry latch is module-scoped and deliberately
+    // one-way, so the 401 case below would otherwise leave every later test in
+    // this file rendering an open dialog over the application.
+    resetSessionExpiryForTests();
 });
 
 describe("App", () => {
@@ -345,6 +350,62 @@ describe("App", () => {
         expect(window.getComputedStyle(document.body).backgroundColor).toBe(
             "rgb(242, 244, 243)",
         );
+    });
+
+    /*
+     * FM-171 (`C-SESSION-EXPIRY`): the app-wide `QueryClient`'s `QueryCache`
+     * `onError` half, asserted from the application because what is being
+     * tested is the wiring -- a client built without the cache hook renders
+     * two ordinary error states and no dialog.
+     *
+     * `/stats/indexers` under an admin session is exactly two react-query
+     * queries on this client and no more: `IndexerStatusesPage`'s
+     * `indexer-statuses` and the shell's `update-footer-infos` (which
+     * `enabled: maySeeAdmin` gates, hence the admin bootstrap). Refusing both
+     * is the concurrent-failure case: two queries fail within the same tick,
+     * and the reader gets one dialog rather than one per failure. Every other
+     * request is answered normally, so the startup sequence still opens
+     * nothing and the 401s are the only thing under test.
+     */
+    it("should raise exactly one session-expired dialog for concurrent 401s", async () => {
+        stubWorkingLocalStorage();
+        const refused: string[] = [];
+        const backend = statsBackend();
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+                const url = typeof input === "string" ? input : String(input);
+                if (
+                    url.includes("internalapi/indexerstatuses") ||
+                    url.includes("internalapi/updates/infos")
+                ) {
+                    refused.push(new URL(url, "http://localhost").pathname);
+                    return new Response("Unauthorized", {status: 401});
+                }
+                return backend.fetch(input, init);
+            }),
+        );
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={{...statsBootstrap, maySeeAdmin: true}} />);
+
+        expect(
+            await screen.findByTestId("session-expired-dialog"),
+        ).toBeVisible();
+        await settle();
+
+        // Both queries really did fail -- otherwise "one dialog" would be
+        // trivially true because only one request was ever refused.
+        expect(new Set(refused)).toEqual(
+            new Set([
+                "/hydra/internalapi/indexerstatuses",
+                "/hydra/internalapi/updates/infos",
+            ]),
+        );
+        expect(screen.getAllByTestId("session-expired-dialog")).toHaveLength(1);
+        expect(screen.getByTestId("session-expired-reload")).toBeVisible();
+        // Neither 401 was retried: the predicate `queryDefaults.ts` supplies
+        // is in force on this client, so each endpoint was asked exactly once.
+        expect(refused).toHaveLength(2);
     });
 
     it("should render the loading branch under the theme as well", () => {

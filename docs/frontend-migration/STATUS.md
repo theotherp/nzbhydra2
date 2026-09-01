@@ -1453,6 +1453,15 @@ records. Vitest components+history 138/138; the reviewer's full run was 1814/181
 header's stale "reserved, planned" parenthetical, moot on deletion). The 2026-08-31 UX/perf batch FM-162..FM-170 is
 complete.
 
+FM-171 (Session-Expired Recovery Affordance) closed the client half of issue #1080: `C-SESSION-EXPIRY` is done — a
+latching notifier (`app/sessionExpiry.ts`), a shell-mounted `SessionExpiredDialog` with Reload/Dismiss,
+`QueryCache`/`MutationCache` `onError` on both `QueryClient`s, and `retryUnlessUnauthorized` as the query retry default
+so a dead session isn't re-hit through the 3-retry backoff. Auth's deliberate direct-transport 401s
+(`features/auth/session.ts`) are excluded by construction and pinned by test. Passed 2026-09-01 with two minor findings,
+not corrected (optional): the system spec's refused-request assertion is `>= 2` where `toHaveLength(2)` would match its
+own no-retry comment, and the `MutationCache` wiring on both clients is exercised by no mutation-driven test (every test
+drives a query). Candidates for a future quickfix.
+
 ## Active
 
 None.

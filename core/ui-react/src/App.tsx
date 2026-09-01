@@ -11,14 +11,21 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import {CircularProgress, Container, Stack, Typography} from "@mui/material";
 import {CssBaseline} from "@mui/material";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
 import {RouterProvider} from "@tanstack/react-router";
 import {useState} from "react";
 
 import {
     DEFAULT_QUERY_STALE_TIME_MS,
     REFETCH_ON_WINDOW_FOCUS,
+    retryUnlessUnauthorized,
 } from "./app/queryDefaults";
+import {reportSessionError} from "./app/sessionExpiry";
 import {SafeConfigProvider} from "./app/SafeConfigProvider";
 import {ThemePreferenceProvider} from "./app/ThemePreferenceProvider";
 import type {BootstrapData} from "./bootstrap";
@@ -38,9 +45,32 @@ export function App({bootstrap, isLoading = false}: AppProps) {
                 defaultOptions: {
                     queries: {
                         refetchOnWindowFocus: REFETCH_ON_WINDOW_FOCUS,
+                        retry: retryUnlessUnauthorized,
                         staleTime: DEFAULT_QUERY_STALE_TIME_MS,
                     },
                 },
+                /*
+                 * FM-171 (`C-SESSION-EXPIRY`): every feature query and
+                 * mutation in the application runs on this client, so its two
+                 * caches are the one hook point that sees an expired session's
+                 * 401 wherever it happens. `reportSessionError` ignores
+                 * everything that is not an `UnauthorizedError` and coalesces
+                 * the rest into one dialog.
+                 *
+                 * The caches rather than `ApiTransport`: the auth flows
+                 * (`features/auth/session.ts`) call the transport directly and
+                 * *deliberately* provoke 401s -- `askForPassword` exists to
+                 * get one -- so a transport-level hook would raise "your
+                 * session expired" during a login. Going through the caches
+                 * excludes those call sites by construction, because they
+                 * never traverse react-query.
+                 */
+                mutationCache: new MutationCache({
+                    onError: (error) => reportSessionError(error),
+                }),
+                queryCache: new QueryCache({
+                    onError: (error) => reportSessionError(error),
+                }),
             }),
     );
     const [router] = useState(() => createAppRouter(bootstrap));

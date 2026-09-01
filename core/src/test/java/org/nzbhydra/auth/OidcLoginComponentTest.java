@@ -143,6 +143,11 @@ class OidcLoginComponentTest {
             assertThat(securityContext.getAuthentication().getAuthorities())
                 .extracting(Object::toString)
                 .contains("ROLE_ADMIN");
+
+            //The login must lengthen the session beyond the server-wide 60s timeout: OIDC has no remember-me cookie
+            //and no per-request re-authentication, so an expired session means 401s for all background requests
+            assertThat(callbackResult.getRequest().getSession().getMaxInactiveInterval())
+                .isGreaterThanOrEqualTo(60 * 60 * 24);
         }
     }
 

@@ -44,6 +44,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -151,7 +153,8 @@ public class SecurityConfig {
                                 response.sendRedirect(request.getContextPath() + "/login?error");
                             })
                             .userInfoEndpoint(endpoint -> endpoint
-                                    .oidcUserService(getOidcUserService(baseConfig.getAuth()))));
+                                .oidcUserService(getOidcUserService(baseConfig.getAuth())))
+                        .successHandler(getOidcSuccessHandler(baseConfig.getAuth())));
             //Background requests (XHR / fetch) must get a 401 instead of a redirect into the cross-origin OIDC flow, which the browser cannot complete for them (#1080)
             http.exceptionHandling(handling -> handling.authenticationEntryPoint(new OidcAuthenticationEntryPoint(oidcAuthorizationUrl)));
         }
@@ -224,6 +227,23 @@ public class SecurityConfig {
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
         }
+    }
+
+    /**
+     * The server-wide session timeout is a deliberately short 60s to keep sessions created by API clients from piling
+     * up. Basic auth re-authenticates every request and form auth has the remember-me cookie, but an OIDC session has
+     * neither - with the short timeout every pause over a minute made all background requests fail with 401 until the
+     * next full page load. So an interactive OIDC login gets a long-lived session instead.
+     */
+    private AuthenticationSuccessHandler getOidcSuccessHandler(AuthConfig authConfig) {
+        SavedRequestAwareAuthenticationSuccessHandler delegate = new SavedRequestAwareAuthenticationSuccessHandler();
+        return (request, response, authentication) -> {
+            int validityDays = authConfig.isRememberUsers() && authConfig.getRememberMeValidityDays() > 0
+                ? authConfig.getRememberMeValidityDays()
+                : 1;
+            request.getSession().setMaxInactiveInterval(validityDays * SECONDS_PER_DAY);
+            delegate.onAuthenticationSuccess(request, response, authentication);
+        };
     }
 
     private boolean isAuthorizationRequestNotFound(AuthenticationException exception) {
