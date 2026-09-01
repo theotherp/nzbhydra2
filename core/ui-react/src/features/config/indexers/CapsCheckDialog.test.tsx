@@ -116,8 +116,17 @@ function messageList(): HTMLElement {
     return screen.getByTestId("config-indexer-caps-messages");
 }
 
+function announcementRegion(): HTMLElement {
+    return screen.getByTestId("config-indexer-caps-announcement");
+}
+
+/**
+ * What the region *says*. The dialog alternates an invisible zero-width space
+ * onto each announcement so that a repeat is still a DOM change; it is not
+ * spoken, so it is not part of what these cases assert.
+ */
 function announcement(): string {
-    return screen.getByTestId("config-indexer-caps-announcement").textContent;
+    return announcementRegion().textContent.replaceAll("\u200B", "");
 }
 
 beforeEach(() => {
@@ -423,6 +432,23 @@ describe("CapsCheckDialog", () => {
     });
 
     describe("announcements", () => {
+        it("announces the waiting state a single-indexer check opens on", async () => {
+            // The live region otherwise carries only what a tick *added*, and
+            // a single indexer reports no progress count -- so a check with no
+            // message yet would say nothing at all past the dialog title.
+            setup([{Mock: ["Checking caps"]}], {indexerCount: 1});
+
+            await vi.advanceTimersByTimeAsync(0);
+            expect(announcement()).toBe("Checking capabilities…");
+        });
+
+        it("opens a bulk check on the count it paints", async () => {
+            setup([{First: ["a"]}], {indexerCount: 3, request: BULK_CHECK});
+
+            await vi.advanceTimersByTimeAsync(0);
+            expect(announcement()).toBe("0 of 3 indexers have reported");
+        });
+
         it("announces only what the last tick added", async () => {
             setup([
                 {Mock: ["first line"]},
@@ -458,6 +484,22 @@ describe("CapsCheckDialog", () => {
             expect(announcement()).toBe(
                 "Second: b. 2 of 2 indexers have reported",
             );
+        });
+
+        it("re-announces a line that repeats the previous announcement", async () => {
+            // The server's multimap holds a line per indexer and a check's own
+            // lines repeat, so two ticks can genuinely add the same sentence.
+            // Announcing it as the same string is announcing nothing: a live
+            // region is read when its content *changes*.
+            setup([{Mock: ["same line"]}, {Mock: ["same line", "same line"]}]);
+
+            await tick();
+            expect(announcement()).toBe("same line");
+            const first = announcementRegion().textContent;
+
+            await tick();
+            expect(announcement()).toBe("same line");
+            expect(announcementRegion().textContent).not.toBe(first);
         });
 
         it("keeps the rendered lines mounted across polls", async () => {

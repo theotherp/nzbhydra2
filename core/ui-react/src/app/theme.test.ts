@@ -741,6 +741,12 @@ describe("createHydraTheme typography and density", () => {
         expect(theme.components?.MuiTextField?.defaultProps).toEqual({
             size: "small",
         });
+        // The mock's compact control density, extended to `Pagination`:
+        // `HistoryPager` used to set `size="small"` per instance with its own
+        // justification comment; this is now the one place that states it.
+        expect(theme.components?.MuiPagination?.defaultProps).toEqual({
+            size: "small",
+        });
         // FM-090's notch invariant, pinned as a pair: an outlined field's
         // label is rendered twice at two independently declared sizes -- the
         // visible `InputLabel` (this entry, painted at `fontSize x 0.75` by

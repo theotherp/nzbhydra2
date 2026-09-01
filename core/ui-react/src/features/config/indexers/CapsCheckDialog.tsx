@@ -12,7 +12,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 import {
     capsCheckMessageLines,
@@ -52,6 +52,23 @@ const LEAVE_FOOTER =
  */
 const PROGRESS_CAPTION =
     "An indexer is counted once it has sent its first message, not when its check is finished.";
+
+/** The waiting line a check with nothing to count yet shows and announces. */
+const WAITING_TEXT = "Checking capabilities…";
+
+/**
+ * Alternated onto the end of each announcement so two consecutive ones can
+ * never be the same string.
+ *
+ * A live region is read when its content *changes*, and identical content is
+ * no change at all — but two ticks can legitimately produce the same sentence,
+ * because the server's multimap holds a line per indexer and a check's own
+ * lines repeat ("Checking caps of ..." from two indexers, a retried step). A
+ * zero-width space is the smallest edit that makes the second one a change:
+ * it is invisible, it is not spoken, and it does not affect the accessible
+ * name of anything.
+ */
+const REPEAT_MARKER = "\u200B";
 
 /**
  * The request one open dialog runs; held in the parent's state, never rebuilt.
@@ -130,6 +147,18 @@ function progressText(reported: number, expected: number): string {
 }
 
 /**
+ * What the dialog says the moment it opens, before any indexer has reported:
+ * exactly the line it paints beside the spinner at that point.
+ */
+function openingText(
+    checkType: CapsCheckType,
+    indexerCount: number | undefined,
+): string {
+    const expected = expectedIndexers(checkType, indexerCount, 0);
+    return expected > 1 ? progressText(0, expected) : WAITING_TEXT;
+}
+
+/**
  * `CheckCapsModalInstanceCtrl` + `checker-state.html`: the progress dialog that
  * runs one capability check and shows what the server reports while it runs.
  *
@@ -150,12 +179,15 @@ function progressText(reported: number, expected: number): string {
  *   so a long check is not lost to a stray click.
  * - The visible message list is not itself a live region. It is re-rendered
  *   every 500ms, and an `aria-live` list re-reads *every* line each tick; the
- *   off-screen region beside it carries only what this tick added.
+ *   off-screen region beside it carries only what this tick added — plus the
+ *   waiting line it is seeded with on open, which is all a single-indexer
+ *   check has to say until it finishes.
  *
- * `onLeave` is optional because `IndexerDialog`'s own caps check awaits this
- * dialog's outcome to decide whether the entry may be committed — there is
- * nothing for it to fall back to if the admin walks away mid-transaction — and
- * that dialog is out of FM-167's scope.
+ * `onLeave` stays optional — a caller with no answer for an abandoned check
+ * gets a dialog with no exit — but both call sites now pass one. FM-167 left
+ * `IndexerDialog` without one because its commit transaction awaits this
+ * dialog's outcome; it now has a third outcome for that, and stopping the wait
+ * there abandons the commit attempt rather than the editor.
  */
 export function CapsCheckDialog({
     indexerCount,
@@ -182,6 +214,8 @@ export function CapsCheckDialog({
     const [reported, setReported] = useState(0);
     /** Only what the last tick added; see the live-region note above. */
     const [announcement, setAnnouncement] = useState("");
+    /** How many announcements have been made, for `REPEAT_MARKER`'s parity. */
+    const announcements = useRef(0);
     // The in-flight check, paired with the request it belongs to. A ref so
     // React 19 StrictMode's dev-only mount -> unmount -> remount cannot post a
     // second check to the indexer, and paired so a *new* request cannot be
@@ -199,6 +233,18 @@ export function CapsCheckDialog({
     const onResolvedRef = useRef(onResolved);
     const onFailedRef = useRef(onFailed);
     const indexerCountRef = useRef(indexerCount);
+
+    /**
+     * Say `text`, including when it is what the region already says. See
+     * `REPEAT_MARKER`: without the alternating suffix an identical repeat is
+     * not a DOM change and is therefore not announced at all.
+     */
+    const announce = useCallback((text: string) => {
+        announcements.current += 1;
+        setAnnouncement(
+            announcements.current % 2 === 0 ? `${text}${REPEAT_MARKER}` : text,
+        );
+    }, []);
 
     // What the poll and the check's continuation read; kept out of the check
     // effect's dependencies so a re-render cannot restart the check, and
@@ -244,7 +290,7 @@ export function CapsCheckDialog({
                 setMessages(lines);
                 setReported(reporting);
                 if (announced.length > 0) {
-                    setAnnouncement(announced.join(". "));
+                    announce(announced.join(". "));
                 }
             })();
         }, CAPS_MESSAGE_POLL_INTERVAL_MS);
@@ -287,7 +333,28 @@ export function CapsCheckDialog({
                 stopPolling.current = null;
             }
         };
-    }, [request, transport]);
+    }, [announce, request, transport]);
+
+    /**
+     * The waiting state, announced once.
+     *
+     * Without it a `SINGLE` check is silent past the dialog title: the live
+     * region carries only what a tick *added*, and a single indexer's check
+     * reports no progress count and may add no line at all before it resolves.
+     * It is an effect rather than the state's initial value because a live
+     * region is only heard when its content changes — text already present
+     * when the region enters the document is not announced — so the seed has
+     * to arrive after the first render, and the region has to be mounted (it
+     * always is) rather than conditional on there being something to say.
+     */
+    const seeded = useRef(false);
+    useEffect(() => {
+        if (seeded.current) {
+            return;
+        }
+        seeded.current = true;
+        announce(openingText(request.checkType, indexerCountRef.current));
+    }, [announce, request.checkType]);
 
     /**
      * Stop waiting. The check itself cannot be stopped, so this only closes
@@ -369,7 +436,7 @@ export function CapsCheckDialog({
                         <Typography variant="body2">
                             {showsProgress
                                 ? progressText(reported, expected)
-                                : "Checking capabilities…"}
+                                : WAITING_TEXT}
                         </Typography>
                     </Stack>
                     {showsProgress ? (

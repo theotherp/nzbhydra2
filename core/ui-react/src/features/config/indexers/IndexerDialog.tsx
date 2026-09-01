@@ -103,6 +103,18 @@ const DELETE_WARNING =
     "Deleting an indexer will remove its stats and related downloads and search results from the database";
 
 /**
+ * How one capability check run from inside this dialog ended.
+ *
+ * A result is the check answering. `"failed"` is the request not answering at
+ * all, which legacy reports and then commits through anyway. `"left"` is the
+ * admin stopping the wait (`CapsCheckDialog`'s "Stop waiting"): the check was
+ * gating a commit, so abandoning the wait abandons that commit attempt and
+ * returns the admin to the editor they were in — with nothing said, because
+ * nothing failed and they chose it.
+ */
+type CapsCheckOutcome = IndexerCapsCheckResult | "failed" | "left";
+
+/**
  * `F-CONFIG-INDEXERS`' indexer editor — legacy's `indexer-config-box.html`,
  * `IndexerConfigBoxInstanceController`, and `IndexerCheckBeforeCloseService`.
  *
@@ -163,9 +175,9 @@ export function IndexerDialog({
     const [capsRequest, setCapsRequest] = useState<CapsCheckRequest | null>(
         null,
     );
-    const capsResolver = useRef<
-        ((result: IndexerCapsCheckResult | null) => void) | null
-    >(null);
+    const capsResolver = useRef<((outcome: CapsCheckOutcome) => void) | null>(
+        null,
+    );
     /**
      * Legacy's `form.capsChecked`: once the admin has run the capability check
      * from inside the box, closing it does not test the connection again — the
@@ -210,21 +222,18 @@ export function IndexerDialog({
 
     // ---- the capability check ---------------------------------------------
 
-    /**
-     * Opens the progress dialog and answers with the check's single result, or
-     * `null` when the check could not be run at all.
-     */
+    /** Opens the progress dialog and answers with how the check ended. */
     const runCapsCheck = (entry: IndexerValues) =>
-        new Promise<IndexerCapsCheckResult | null>((resolve) => {
+        new Promise<CapsCheckOutcome>((resolve) => {
             capsResolver.current = resolve;
             setCapsRequest({checkType: "SINGLE", indexerConfig: entry});
         });
 
-    const finishCapsCheck = (result: IndexerCapsCheckResult | null) => {
+    const finishCapsCheck = (outcome: CapsCheckOutcome) => {
         setCapsRequest(null);
         const resolve = capsResolver.current;
         capsResolver.current = null;
-        resolve?.(result);
+        resolve?.(outcome);
     };
 
     /**
@@ -269,15 +278,25 @@ export function IndexerDialog({
             testId: "config-indexer-caps-failed",
         });
 
-    /** `checkCapsWhenClosing`: only run at all when capabilities are unknown. */
+    /**
+     * `checkCapsWhenClosing`: only run at all when capabilities are unknown.
+     * `null` — as everywhere in the close sequence — means "not committed":
+     * here, because the admin stopped waiting for the check that was gating
+     * the commit.
+     */
     const checkCapsBeforeClose = async (
         entry: IndexerValues,
-    ): Promise<IndexerValues> => {
+    ): Promise<IndexerValues | null> => {
         if (!needsCapsCheck(entry)) {
             return entry;
         }
         const result = await runCapsCheck(entry);
-        if (result === null) {
+        if (result === "left") {
+            // Nothing to tell the admin: they chose this, and the editor they
+            // are returned to still holds everything they typed.
+            return null;
+        }
+        if (result === "failed") {
             await reportCapsRequestFailed();
             // Legacy clears both capability lists so the next Submit checks
             // again, and still commits the entry.
@@ -294,7 +313,10 @@ export function IndexerDialog({
      */
     const checkCapsNow = async () => {
         const result = await runCapsCheck(draftValues());
-        if (result === null) {
+        if (result === "left") {
+            return;
+        }
+        if (result === "failed") {
             await reportCapsRequestFailed();
             return;
         }
@@ -802,9 +824,10 @@ export function IndexerDialog({
             </Dialog>
             {capsRequest === null ? null : (
                 <CapsCheckDialog
-                    onFailed={() => finishCapsCheck(null)}
+                    onFailed={() => finishCapsCheck("failed")}
+                    onLeave={() => finishCapsCheck("left")}
                     onResolved={(results) =>
-                        finishCapsCheck(results[0] ?? null)
+                        finishCapsCheck(results[0] ?? "failed")
                     }
                     request={capsRequest}
                     transport={transport}

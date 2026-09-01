@@ -40,6 +40,7 @@ import {
     SEARCH_SOURCE_OPTIONS,
     sortIndexers,
     vipExpiryWarning,
+    visibleIndexerFields,
     type IndexerSort,
     type IndexerSortKey,
     type OrderedIndexer,
@@ -474,7 +475,15 @@ const IndexerTableRow = memo(function IndexerTableRow({
             {indexerTypeLabel(entry.searchModuleType)}
         </Typography>
     );
-    const searchSource = (
+    // ADR-0040: the cell is offered exactly where the editor offers the field.
+    // `visibleIndexerFields` withholds it for TORBOX, whose search source is
+    // not the admin's to choose, so the list must not offer it either. The
+    // column stays — the cell is simply empty for such a row, as the dialog
+    // leaves the field out of its own layout rather than rearranging it.
+    const showsSearchSource = visibleIndexerFields(
+        entry.searchModuleType,
+    ).includes("enabledForSearchSource");
+    const searchSource = !showsSearchSource ? null : (
         <SelectSetting
             // The dialog's own "Enable for..." field, brought onto the list
             // because it decides whether an *enabled* indexer is actually
@@ -605,7 +614,9 @@ const IndexerTableRow = memo(function IndexerTableRow({
                          * than it would be a design decision with nothing
                          * behind it.
                          */}
-                        <Box sx={{width: "100%"}}>{searchSource}</Box>
+                        {searchSource === null ? null : (
+                            <Box sx={{width: "100%"}}>{searchSource}</Box>
+                        )}
                         <Box sx={{width: "100%"}}>{state}</Box>
                         <Box sx={{width: "100%"}}>{priority}</Box>
                     </Stack>

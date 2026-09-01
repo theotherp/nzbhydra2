@@ -431,6 +431,35 @@ describe("The indexer table", () => {
         ).toBeVisible();
     });
 
+    it("withholds the search-source cell for a type whose editor withholds the field", () => {
+        renderIndexers({
+            values: configWith([
+                newznab({name: "Mock1"}),
+                newznab({name: "Box", searchModuleType: "TORBOX"}),
+            ]),
+        });
+
+        // ADR-0040: the list cell is offered exactly where the edit dialog
+        // offers the field, and `visibleIndexerFields` withholds it for TORBOX.
+        expect(
+            screen.getByTestId(
+                "config-input-indexers-0-enabledForSearchSource",
+            ),
+        ).toBeVisible();
+        expect(
+            screen.queryByTestId(
+                "config-input-indexers-1-enabledForSearchSource",
+            ),
+        ).toBeNull();
+        // The column itself stays — the gated row keeps all five cells, so the
+        // header and every other row still line up.
+        expect(
+            within(screen.getByTestId("config-indexer-entry-1")).getAllByRole(
+                "cell",
+            ),
+        ).toHaveLength(5);
+    });
+
     it("edits the search source straight into the configuration", async () => {
         const harness = renderIndexers({
             values: configWith([newznab({name: "Mock1"})]),
@@ -1106,6 +1135,40 @@ describe("The close sequence", () => {
             state: "DISABLED_SYSTEM",
         });
         expect(screen.getByTestId("config-indexer-incomplete-0")).toBeVisible();
+    });
+
+    it("returns to the open editor when the admin stops waiting for the check", async () => {
+        const api = backend();
+        // A check that never answers: the point is the exit, not the result.
+        const pending = new Promise<Response>(() => undefined);
+        const fetchMock = vi.fn<typeof fetch>((input, init) => {
+            const url = String(input);
+            return url.includes("checkCaps") &&
+                !url.includes("checkCapsMessages")
+                ? pending
+                : (api.fetchMock as unknown as typeof fetch)(input, init);
+        });
+        const harness = renderIndexers({fetchMock});
+
+        await addPreset("newznab", "nzbgeek");
+        await screen.findByTestId("config-indexer-dialog");
+        submitDialog();
+        await screen.findByTestId("config-indexer-caps-dialog");
+
+        fireEvent.click(screen.getByTestId("config-indexer-caps-leave"));
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+
+        // The commit the check was gating is abandoned, not completed: the
+        // editor is still open with its fields intact, nothing was written to
+        // the configuration, and leaving is not a failure to acknowledge.
+        expect(screen.getByTestId("config-indexer-dialog")).toBeVisible();
+        expect(draftField("host")).toHaveValue("https://api.nzbgeek.info");
+        expect(screen.queryByTestId("config-indexer-caps-failed")).toBeNull();
+        expect(indexersOf(harness)).toHaveLength(0);
     });
 
     it("leaves the capabilities unknown when the check itself fails", async () => {

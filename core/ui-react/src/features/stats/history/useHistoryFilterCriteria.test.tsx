@@ -259,6 +259,75 @@ describe("history search parameters", () => {
         expect(screen.getByLabelText("Query")).toHaveValue("avengers");
     });
 
+    /*
+     * FM-165's draft/arrival guard, pinned branch by branch. `external` is
+     * `search !== draft.from && !historySearchEqual(committedParams,
+     * draft.base)`, and each half decides a different render:
+     *
+     *   - the identity half owns the render *between* a commit and the router
+     *     answering it, where the search has not moved yet but the draft's
+     *     base already names what was written;
+     *   - the content half owns a real arrival, where the search moved to
+     *     filters this hook did not write.
+     */
+    it("should keep a just-committed edit while the router catches up", async () => {
+        const {router} = renderProbe();
+        await screen.findByTestId("criteria");
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "avengers"},
+        });
+
+        // No await, deliberately. `commit` writes the draft's new base
+        // synchronously while its navigation is still in flight, so the render
+        // this click produces reads a search object that still carries the
+        // *previous* (empty) filters against a base that names the new ones.
+        // Only `external`'s identity clause tells that render apart from an
+        // arrival -- on content alone the edit would be rolled back to nothing
+        // for as long as the router took to answer.
+        fireEvent.click(screen.getByRole("button", {name: "Commit"}));
+        expect(screen.getByLabelText("Query")).toHaveValue("avengers");
+
+        await waitFor(() => expect(urlOf(router)).toBe("?ft.query=avengers"));
+        expect(screen.getByLabelText("Query")).toHaveValue("avengers");
+    });
+
+    it("should roll a pending edit back when the reader arrives from outside", async () => {
+        const {router} = renderProbe();
+        await screen.findByTestId("criteria");
+        await typeQuery("avengers");
+        // Clearing is a *push*, so Back from here returns to filters this hook
+        // is no longer holding -- which is what makes the arrival external in
+        // the sense `external` means: the URL's filters are not the ones the
+        // draft was written against.
+        fireEvent.click(screen.getByRole("button", {name: "Clear"}));
+        await waitFor(() => expect(criteriaOf().values).toEqual({}));
+
+        // Typed but not committed: the debounce is still running when the
+        // reader goes Back.
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "batman"},
+        });
+        expect(screen.getByLabelText("Query")).toHaveValue("batman");
+        router.history.go(-1);
+
+        // The URL that arrived wins over the edit in progress.
+        await waitFor(() =>
+            expect(criteriaOf().values).toEqual({
+                query: {kind: "freetext", text: "avengers"},
+            }),
+        );
+        expect(screen.getByLabelText("Query")).toHaveValue("avengers");
+
+        // And the keystroke left behind does not carry the reader forward
+        // again once its debounce would have elapsed (275ms; waited out twice
+        // over, since the claim is that nothing happens).
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        expect(criteriaOf().values).toEqual({
+            query: {kind: "freetext", text: "avengers"},
+        });
+        expect(urlOf(router)).toBe("?ft.query=avengers");
+    });
+
     it("should flush a pending edit into the page change rather than racing it", async () => {
         const {router} = renderProbe();
         await screen.findByTestId("criteria");

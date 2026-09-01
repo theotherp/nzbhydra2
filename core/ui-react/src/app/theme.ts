@@ -1556,6 +1556,14 @@ export function createHydraTheme(
             MuiTextField: {
                 defaultProps: {size: "small"},
             },
+            // The mock's compact control size, applied to `Pagination` the
+            // same way `MuiTextField` above applies it to text inputs.
+            // `HistoryPager` (the one pager the app has) used to set this
+            // per instance; centralizing it here means any future
+            // `Pagination` gets the same density without restating it.
+            MuiPagination: {
+                defaultProps: {size: "small"},
+            },
             // The mock's input text size (`font-size:14px` on every text
             // input and select). MUI's `InputBase` root spreads
             // `typography.body1` (1rem = 16px), which is what made every

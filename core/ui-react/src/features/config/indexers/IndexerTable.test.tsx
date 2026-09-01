@@ -37,10 +37,26 @@ import {IndexersConfigTab} from "./IndexersConfigTab";
  */
 const rowRenders = vi.hoisted(() => new Map<string, number>());
 
+/**
+ * The tab's render counter, and the other half of FM-168's narrowing.
+ *
+ * `IndexersConfigTab` calls `indexerCategoryOptions` once, unconditionally, in
+ * its own body, and nothing else in the mounted tree calls it at all — so
+ * counting calls to the module's exported binding counts executions of the tab
+ * function itself. That is what the `compute` projection on its `useWatch` is
+ * for: rows are memoized, so a tab that re-rendered on every keystroke anywhere
+ * under `indexers` would leave every row-level assertion in this file green.
+ */
+const tabRenders = vi.hoisted(() => ({count: 0}));
+
 vi.mock("./indexerSettings", async (importOriginal) => {
     const actual = await importOriginal<typeof import("./indexerSettings")>();
     return {
         ...actual,
+        indexerCategoryOptions: (categories: unknown) => {
+            tabRenders.count += 1;
+            return actual.indexerCategoryOptions(categories);
+        },
         indexerLegend: (entry: IndexerValues) => {
             const legend = actual.indexerLegend(entry);
             rowRenders.set(legend, (rowRenders.get(legend) ?? 0) + 1);
@@ -141,6 +157,7 @@ function indexersOf(harness: Harness): IndexerValues[] {
 describe("IndexerTable render isolation", () => {
     beforeEach(() => {
         rowRenders.clear();
+        tabRenders.count = 0;
     });
 
     afterEach(() => {
@@ -175,6 +192,80 @@ describe("IndexerTable render isolation", () => {
         // The edited row may re-render for its own value; it must not do so
         // more than a small, constant number of times.
         expect(delta.get("Indexer 03") ?? 0).toBeLessThanOrEqual(2);
+    });
+
+    it("does not wake the row at index 1 when index 10 is edited", async () => {
+        // The hazard `ROW_DISPLAY_FIELDS` names: React Hook Form matches a
+        // subscription to a signal when *either* name is a prefix of the
+        // other, so a row watching `indexers.1` whole is woken by every change
+        // under `indexers.10` and `indexers.11`. Naming full leaf paths breaks
+        // the collision — `indexers.1.name` is not a prefix of
+        // `indexers.10.score`, and vice versa — and this is the case that
+        // proves it, at the only pair of indices where it can be proven.
+        const harness = renderTab(indexerList(12));
+
+        const edited = screen.getByTestId("config-input-indexers-10-score");
+        fireEvent.focus(edited);
+        await act(async () => {});
+
+        const before = snapshotRenders();
+        fireEvent.change(edited, {target: {value: "42"}});
+        await waitFor(() => {
+            expect(indexersOf(harness)[10].score).toBe(42);
+        });
+        await act(async () => {});
+        const delta = rendersSince(before);
+
+        expect(delta.get("Indexer 01") ?? 0).toBe(0);
+        for (const [name, count] of delta) {
+            if (name !== "Indexer 10") {
+                expect([name, count]).toEqual([name, 0]);
+            }
+        }
+    });
+
+    it("does not re-render the tab when a cell outside its projection is edited", async () => {
+        const harness = renderTab(indexerList(12));
+
+        // `enabledForSearchSource` is the one editable cell that is in neither
+        // `IndexerListEntry` (the tab's projection) nor `ROW_DISPLAY_FIELDS`
+        // (the row's), so writing it must wake nothing above the control.
+        const pickSearchSource = async (index: number, option: string) => {
+            fireEvent.mouseDown(
+                within(
+                    screen.getByTestId(
+                        `config-input-indexers-${String(index)}-enabledForSearchSource`,
+                    ),
+                ).getByRole("combobox"),
+            );
+            fireEvent.click(await screen.findByRole("option", {name: option}));
+            await act(async () => {});
+        };
+
+        // One warm-up write first. `useWatch`'s computed value starts as
+        // `undefined` rather than as the projection of the mounted values, so
+        // the very first signal of any kind is unequal to it and re-renders
+        // once whatever changed — an initialization, not a subscription width.
+        await pickSearchSource(4, "API searches only");
+        await waitFor(() => {
+            expect(indexersOf(harness)[4].enabledForSearchSource).toBe("API");
+        });
+
+        const before = tabRenders.count;
+        await pickSearchSource(5, "Internal searches only");
+        await waitFor(() => {
+            expect(indexersOf(harness)[5].enabledForSearchSource).toBe(
+                "INTERNAL",
+            );
+        });
+        await act(async () => {});
+
+        // Without the `compute` projection on the tab's `useWatch`, React Hook
+        // Form hands back the whole array — a fresh object every signal — and
+        // this is non-zero, while every row-level case in this file stays
+        // green, because the rows are memoized on props the tab does not
+        // change. The projection is what makes the difference observable.
+        expect(tabRenders.count - before).toBe(0);
     });
 
     it("re-renders only the switched row when a state switch is flipped", async () => {

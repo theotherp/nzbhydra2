@@ -87,6 +87,25 @@ export function HistoryPager({
                                 ? "page"
                                 : undefined
                         }
+                        // At ten-plus pages the strip renders 13 items
+                        // (First, Previous, nine page/ellipsis slots, Next,
+                        // Last). Each is 26px wide (`MuiPaginationItem`'s
+                        // `small` `minWidth`) plus MUI's own 1px each-side
+                        // margin -- 28px per item, 364px total -- which does
+                        // not reliably fit a 390px viewport once the
+                        // surrounding page's own padding is subtracted: the
+                        // last-in-source-order "Last page" button is what
+                        // wraps. `mx: 0` removes the per-item margin (each
+                        // item's 26px tap target is untouched) on the 11
+                        // page/first/prev/next/last items this reaches --
+                        // MUI's own ellipsis item ("…") does not forward `sx`
+                        // (`PaginationItem.js` renders it from a branch that
+                        // never spreads the rest props), so the two ellipsis
+                        // slots keep their 1px margin. 11 x 26px + 2 x 28px =
+                        // 342px, recovering 22 of the 26px this strip was
+                        // short by; `HistoryPager.test.tsx` pins both the
+                        // zeroed and the unreachable margins.
+                        sx={{mx: 0}}
                     />
                 )}
                 showFirstButton
@@ -97,16 +116,10 @@ export function HistoryPager({
                  * default `maxSize` of 9 -- `HistoryPager.test.tsx` pins the
                  * runs against that function's own output page by page.
                  *
-                 * `small` at every width rather than a `useMediaQuery` branch:
-                 * eleven small slots are ~350px, so the widest strip this can
-                 * render still fits a 390px viewport (ADR-0038's rule for
-                 * tables, applied to the control under them), and the size
-                 * cannot be caught mid-resize at a width the viewport no
-                 * longer has. It also matches the theme's small-by-default
-                 * density.
+                 * Density comes from the theme's `MuiPagination` default
+                 * (`small` at every width, never a `useMediaQuery` branch).
                  */
                 siblingCount={2}
-                size="small"
             />
             <Typography data-testid={statusTestId}>
                 Page {page} of {totalPages} · {totalElements}{" "}

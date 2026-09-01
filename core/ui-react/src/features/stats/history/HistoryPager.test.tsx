@@ -260,3 +260,54 @@ describe("HistoryPager page size", () => {
         ).toHaveTextContent("Page 1 of 5 · 500 searches");
     });
 });
+
+/**
+ * A conservative CSS-only attempt at a 390px wrap: at ten-plus pages the
+ * strip renders 13 items (First, Previous, nine page/ellipsis slots, Next,
+ * Last), each 26px wide (`MuiPaginationItem`'s `small` `minWidth`) plus
+ * MUI's own 1px each-side margin -- 28px per item, 364px total -- which does
+ * not reliably fit a 390px viewport once the page's own padding is
+ * subtracted, and the last-in-source-order "Last page" button is what wraps.
+ * `HistoryPager` zeroes the per-item margin via `sx` on its `renderItem`.
+ *
+ * jsdom performs no layout, so this cannot observe the wrap itself -- it
+ * pins the computed style the fix depends on: the margin is genuinely zero
+ * (an `sx` selector mismatch would silently no-op, which an earlier attempt
+ * here did), and the 26px tap target is untouched. Real-browser wrap
+ * behavior at 390px is unverified; the ledger entry for this fix says so.
+ */
+describe("HistoryPager item density at 390px", () => {
+    it("zeroes the margin on every first/previous/page/next/last item without touching its tap target", () => {
+        renderPager({page: 10, pageSize: 25, totalElements: 500});
+        const pageAndEdgeButtons = screen
+            .getByRole("navigation")
+            .querySelectorAll("li > button.MuiPaginationItem-root");
+        expect(pageAndEdgeButtons.length).toBe(11);
+        for (const button of pageAndEdgeButtons) {
+            const style = getComputedStyle(button);
+            expect(style.marginLeft).toBe("0px");
+            expect(style.marginRight).toBe("0px");
+            expect(style.minWidth).toBe("26px");
+            expect(style.height).toBe("26px");
+        }
+    });
+
+    it("cannot reach the ellipsis items' margin, a documented MUI limitation", () => {
+        // `PaginationItem.js` renders `start-ellipsis`/`end-ellipsis` from a
+        // branch that never spreads the rest props (including `sx`) onto the
+        // element it returns, unlike every other item type -- so the two
+        // ellipsis slots keep MUI's stock 1px each-side margin regardless of
+        // what `HistoryPager` asks for. Documented here rather than silently
+        // left unexplained by a smaller-than-expected margin recovery.
+        renderPager({page: 10, pageSize: 25, totalElements: 500});
+        const ellipses = screen
+            .getByRole("navigation")
+            .querySelectorAll("li > div.MuiPaginationItem-root");
+        expect(ellipses.length).toBe(2);
+        for (const ellipsis of ellipses) {
+            const style = getComputedStyle(ellipsis);
+            expect(style.marginLeft).toBe("1px");
+            expect(style.marginRight).toBe("1px");
+        }
+    });
+});
