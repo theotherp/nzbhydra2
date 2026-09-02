@@ -1,3 +1,5 @@
+import * as path from "node:path";
+
 import {
     dismissWelcomeDialog,
     expect,
@@ -825,6 +827,10 @@ test.describe("Search results", () => {
         await page.setViewportSize(visualViewports.desktop);
         const rows = page.getByTestId("search-result-row");
         await expect(rows).toHaveCount(2);
+        // FM-176: the duplicate control is opt-in ("Show duplicate expand
+        // controls", off by default), so it has to be enabled before a
+        // duplicate group can be expanded at all.
+        await toggleDisplayOption(page, "Show duplicate expand controls");
         await page.getByRole("button", {name: "Expand duplicates"}).click();
         await expect(rows).toHaveCount(3);
 
@@ -842,7 +848,36 @@ test.describe("Search results", () => {
                     parseFloat(getComputedStyle(element).paddingLeft),
                 ),
         ]);
-        expect(childPaddingLeft).toBeGreaterThan(parentPaddingLeft);
+        // FM-175: the title cell's expand controls are the same 16px glyph in
+        // a 24px button as the Actions cell's icons, so a group's chevron no
+        // longer sets the row's height on its own. Measured on the parent's
+        // control and on the spacer the collapsed sibling reserves, which has
+        // to keep the identical box for titles to share a start x.
+        expect(
+            await rows
+                .nth(0)
+                .getByTestId("search-result-title")
+                .evaluate((cell) =>
+                    [...cell.querySelectorAll(".MuiIconButton-root")].map(
+                        (button) => [
+                            Math.round(button.getBoundingClientRect().width),
+                            Math.round(
+                                button
+                                    .querySelector("svg")
+                                    ?.getBoundingClientRect().width ?? 0,
+                            ),
+                        ],
+                    ),
+                ),
+        ).toEqual([[24, 16]]);
+
+        // FM-175 re-based both numbers: a nesting-0 title cell now starts at
+        // the 8px every body cell got, not MUI's 16px, so its first child
+        // lines up with the "TITLE" header label above it. One nesting level
+        // is still 16px, which is the property this pin was written for and
+        // the one a `toBeGreaterThan` alone would have let drift to 1px.
+        expect(parentPaddingLeft).toBe(8);
+        expect(childPaddingLeft - parentPaddingLeft).toBe(16);
 
         const [parentBackground, childBackground] = await Promise.all([
             rows
@@ -1873,6 +1908,7 @@ test.describe("Search results", () => {
             ["Group TV episodes", true],
             ["Compact rows", false],
             ["Highlight recent", false],
+            ["Show duplicate expand controls", false],
             ["Show refine sidebar", true],
         ] as Array<[string, boolean]>) {
             const entry = page.getByRole("checkbox", {name, exact: true});
@@ -1941,6 +1977,26 @@ test.describe("Search results", () => {
         });
         const defaultTableHeight = await tableHeight(page);
         await expectNoTitleCellOverflow(page);
+
+        // FM-175's row density, measured here because every one of its
+        // numbers is a rendered geometry a jsdom test cannot resolve: the
+        // `<colgroup>` tracks, the 8px body padding, and the two x
+        // alignments between the header row and the rows beneath it. This is
+        // the 1280x800 docked-sidebar basis the tracks were sized against.
+        const density = await rowDensityGeometry(page);
+        // The Title column's usable width is the whole point of the pass, and
+        // 340px is the floor it was given; the exact value depends on the
+        // sidebar's own width, so it is a floor here rather than an equality.
+        expect(density.titleContentWidth).toBeGreaterThanOrEqual(340);
+        expect({...density, titleContentWidth: undefined}).toEqual({
+            actionIconBox: 24,
+            actionIconGlyph: 16,
+            // Both alignments the owner asked for, as offsets from the header
+            // element each row element has to line up with.
+            checkboxOffset: 0,
+            titleContentWidth: undefined,
+            titleStartOffset: 0,
+        });
 
         await toggleDisplayOption(page, "Compact rows");
         await expect(table).toHaveAttribute("data-compact-rows", "true");
@@ -2110,10 +2166,22 @@ test.describe("Search results", () => {
     }) => {
         await hydra.configureSabnzbdMock();
         const now = Math.floor(Date.now() / 1_000);
+        // FM-175 raised this fixture from 24 results to 40. Nothing about
+        // what the test asserts changed; what changed is the row height it
+        // buys its scrollable content with. FM-175's density took ~22px off
+        // every row (the checkbox and the action icons stopped being the
+        // tallest things in it), which took this fixture's desktop page from
+        // 1945px to 1421px against an 800px viewport -- so the 40% scroll
+        // below landed at 91% of the available scroll, where the docked
+        // sidebar has legitimately reached the bottom of its own sticky
+        // container and is no longer pinned to the toolbar. 40 results
+        // restore the headroom the "scroll proportionally" note below
+        // assumes, and denser rows can only make more of them necessary, not
+        // fewer.
         await page.route("**/internalapi/search", (route) =>
             route.fulfill({
                 json: {
-                    searchResults: Array.from({length: 24}, (_, index) => ({
+                    searchResults: Array.from({length: 40}, (_, index) => ({
                         searchResultId: `sticky-${index}`,
                         title: `Sticky Evidence Result ${String(
                             index + 1,
@@ -2133,7 +2201,7 @@ test.describe("Search results", () => {
                     indexerLimitWarnings: [],
                     rejectedReasonsMap: {},
                     notPickedIndexersWithReason: {},
-                    numberOfAvailableResults: 24,
+                    numberOfAvailableResults: 40,
                     numberOfRejectedResults: 0,
                 },
             }),
@@ -2158,12 +2226,12 @@ test.describe("Search results", () => {
             });
             // FM-162: the table body is window-virtualized, so how many rows
             // are *mounted* is a function of the viewport, not of the result
-            // set. The assertion's meaning here -- this fixture's 24 results
+            // set. The assertion's meaning here -- this fixture's 40 results
             // all reached the table -- is read off the table's own
             // `data-row-count`, with rows confirmed to be rendered below it.
             await expect(
                 page.getByTestId("search-results-table"),
-            ).toHaveAttribute("data-row-count", "24");
+            ).toHaveAttribute("data-row-count", "40");
             await expect(
                 page.getByTestId("search-result-row").first(),
             ).toBeVisible();
@@ -3700,7 +3768,460 @@ test.describe("Search results", () => {
 
         await page.unrouteAll({behavior: "ignoreErrors"});
     });
+
+    // FM-176: the duplicate expand control is opt-in and the two controls sit
+    // in fixed slots. Three title groups make both rules observable at once:
+    // one that can only expand its title group, one that can only expand
+    // duplicates, and one that can do both.
+    test("should gate the duplicate expand control behind its display option and keep both controls in fixed slots", async ({
+        page,
+    }) => {
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "alpha-one",
+                            title: "Slot Alpha Release",
+                            indexer: "One",
+                            category: "TV",
+                            hash: 1,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "alpha-two",
+                            title: "Slot Alpha Release",
+                            indexer: "Two",
+                            category: "TV",
+                            hash: 2,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "bravo-one",
+                            title: "Slot Bravo Release",
+                            indexer: "Three",
+                            category: "TV",
+                            hash: 3,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "bravo-two",
+                            title: "Slot Bravo Release",
+                            indexer: "Four",
+                            category: "TV",
+                            hash: 3,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "charlie-one",
+                            title: "Slot Charlie Release",
+                            indexer: "Five",
+                            category: "TV",
+                            hash: 4,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "charlie-two",
+                            title: "Slot Charlie Release",
+                            indexer: "Six",
+                            category: "TV",
+                            hash: 4,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "charlie-three",
+                            title: "Slot Charlie Release",
+                            indexer: "Seven",
+                            category: "TV",
+                            hash: 5,
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "One", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 7,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("duplicate slots");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        // Option off: no duplicate control exists anywhere in the document,
+        // the duplicate groups stay folded into their first row, and only the
+        // title-group slot is reserved.
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+        await expect(
+            page.getByRole("button", {name: /(Expand|Collapse) duplicates/}),
+        ).toHaveCount(0);
+        expect(await expandSlotsOf(page, "Slot Alpha Release")).toEqual([
+            "Expand group",
+        ]);
+        expect(await expandSlotsOf(page, "Slot Bravo Release")).toEqual([
+            "spacer",
+        ]);
+        await captureVisualRegion(
+            page.getByTestId("search-results-table"),
+            "F-SEARCH-GROUP-SELECTION",
+            "duplicate-controls-off-desktop",
+        );
+
+        // Option on: the second slot appears, and it is always the right-hand
+        // one -- the duplicate-only row spends a spacer on the group slot
+        // rather than sliding its control under the group control above it.
+        await toggleDisplayOption(page, "Show duplicate expand controls");
+        expect(await expandSlotsOf(page, "Slot Alpha Release")).toEqual([
+            "Expand group",
+            "spacer",
+        ]);
+        expect(await expandSlotsOf(page, "Slot Bravo Release")).toEqual([
+            "spacer",
+            "Expand duplicates",
+        ]);
+        expect(await expandSlotsOf(page, "Slot Charlie Release")).toEqual([
+            "Expand group",
+            "Expand duplicates",
+        ]);
+        // The same slot occupies the same x on every row, which is the
+        // property the spacers exist for (FM-150).
+        const [alphaSlotX, bravoSlotX, charlieSlotX] = await Promise.all([
+            expandSlotOffsets(page, "Slot Alpha Release"),
+            expandSlotOffsets(page, "Slot Bravo Release"),
+            expandSlotOffsets(page, "Slot Charlie Release"),
+        ]);
+        expect(bravoSlotX).toEqual(alphaSlotX);
+        expect(charlieSlotX).toEqual(alphaSlotX);
+        await captureVisualRegion(
+            page.getByTestId("search-results-table"),
+            "F-SEARCH-GROUP-SELECTION",
+            "duplicate-controls-on-desktop",
+        );
+
+        // The duplicate control works, and switching the option back off
+        // collapses the group it expanded rather than stranding it open with
+        // no control to close it again.
+        await page
+            .getByRole("button", {name: "Expand duplicates"})
+            .first()
+            .click();
+        await expect(page.getByTestId("search-result-row")).toHaveCount(4);
+        await toggleDisplayOption(page, "Show duplicate expand controls");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+        await expect(
+            page.getByRole("button", {name: /(Expand|Collapse) duplicates/}),
+        ).toHaveCount(0);
+
+        // The popover entry itself: this exact label, unchecked by default,
+        // between "Highlight recent" and the refine-surface entry.
+        await openDisplayOptions(page);
+        expect(
+            await page
+                .getByTestId("display-options")
+                .getByRole("checkbox")
+                .evaluateAll((entries) =>
+                    entries.map(
+                        (entry) =>
+                            entry.getAttribute("aria-label") ??
+                            entry.closest("label")?.textContent ??
+                            "",
+                    ),
+                ),
+        ).toEqual([
+            "Group torrent and Usenet results",
+            "Group TV episodes",
+            "Compact rows",
+            "Highlight recent",
+            "Show duplicate expand controls",
+            "Show covers",
+            "Show refine sidebar",
+        ]);
+        await expect(
+            page.getByRole("checkbox", {
+                name: "Show duplicate expand controls",
+                exact: true,
+            }),
+        ).not.toBeChecked();
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-GROUP-SELECTION",
+            "duplicate-controls-menu-desktop",
+        );
+        await closeDisplayOptions(page);
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("duplicate slots");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+        await openDisplayOptions(page);
+        await expect(
+            page.getByRole("checkbox", {
+                name: "Show duplicate expand controls",
+                exact: true,
+            }),
+        ).toBeVisible();
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-GROUP-SELECTION",
+            "duplicate-controls-menu-mobile",
+        );
+        await closeDisplayOptions(page);
+
+        await page.unrouteAll({behavior: "ignoreErrors"});
+    });
+
+    // FM-177: the optional cover. The mockserver answers a `movies` query with
+    // a `coverurl` on every item (`MockNewznab.java:348-357`), and the
+    // baseline leaves `main.proxyImages` off, so what reaches the row is the
+    // indexer's own absolute URL and the *browser* fetches it -- which is what
+    // makes `page.route` able to stand in for that host at all. With
+    // `proxyImages` on the server would fetch it instead and this route would
+    // never fire.
+    test("should render optional covers only when the display option is on, at the configured width", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        const main = config.main as Record<string, unknown>;
+        const searching = config.searching as Record<string, unknown>;
+        expect(main.proxyImages).toBe(false);
+        const coverSize = searching.coverSize as number;
+        expect(coverSize).toBeGreaterThan(0);
+
+        const coverFixture = coverFixturePath();
+        await page.route("**artworks.thetvdb.com/**", (route) =>
+            route.fulfill({path: coverFixture, contentType: "image/png"}),
+        );
+        // Half of the real response's covers are dropped on the way in, so the
+        // rendering shows both cases at once: a row that has a cover and a row
+        // that does not. Everything else about these results -- including the
+        // covers that survive -- is what the backend actually sent.
+        await page.route("**/internalapi/search", async (route) => {
+            const response = await route.fetch();
+            const body = (await response.json()) as {
+                searchResults: Array<{cover: string | null}>;
+            };
+            body.searchResults.forEach((result, index) => {
+                if (index % 2 === 1) {
+                    result.cover = null;
+                }
+            });
+            await route.fulfill({response, json: body});
+        });
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("movies");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const rows = page.getByTestId("search-result-row");
+        const covers = page.getByTestId("search-result-cover");
+        await expect(rows.first()).toBeVisible();
+
+        // Off by default: no image anywhere, and no width reserved for one.
+        await expect(covers).toHaveCount(0);
+        const withoutCovers = await rowHeights(page);
+        await captureResultsViewport(page, "covers-off-desktop");
+
+        await toggleDisplayOption(page, "Show covers");
+        // Exactly the results that carry a cover render one.
+        await expect(covers).toHaveCount(Math.ceil((await rows.count()) / 2));
+        const firstCover = covers.first();
+        await expect(firstCover).toHaveAttribute(
+            "src",
+            "https://artworks.thetvdb.com/banners/v4/movie/358180/posters/698143e3d4a3f.jpg",
+        );
+        await expect(firstCover).toHaveAttribute("alt", "");
+        await expect(firstCover).toHaveAttribute("loading", "lazy");
+        // The rendered box is `searching.coverSize` wide, and the image really
+        // decoded -- a broken image would report `naturalWidth: 0`.
+        const rendered = await firstCover.evaluate((image) => ({
+            width: Math.round(image.getBoundingClientRect().width),
+            naturalWidth: (image as HTMLImageElement).naturalWidth,
+            complete: (image as HTMLImageElement).complete,
+        }));
+        expect(rendered.width).toBe(coverSize);
+        expect(rendered.complete).toBe(true);
+        expect(rendered.naturalWidth).toBeGreaterThan(0);
+
+        // The row grows to the image: a row with a cover is taller than it was
+        // without one, and taller than its coverless neighbour. This is the
+        // virtualizer's `measureElement` observer taking the new height --
+        // including for an image that finished loading after mount.
+        const withCovers = await rowHeights(page);
+        expect(withCovers[0]).toBeGreaterThan(withoutCovers[0]);
+        expect(withCovers[0]).toBeGreaterThan(withCovers[1]);
+        expect(withoutCovers[1]).toBe(withCovers[1]);
+        await captureResultsViewport(page, "covers-on-desktop");
+
+        // The popover entry itself: this exact label, directly after the
+        // duplicate-controls entry.
+        await openDisplayOptions(page);
+        expect(
+            await page
+                .getByTestId("display-options")
+                .getByRole("checkbox")
+                .evaluateAll((entries) =>
+                    entries.map(
+                        (entry) =>
+                            entry.getAttribute("aria-label") ??
+                            entry.closest("label")?.textContent ??
+                            "",
+                    ),
+                ),
+        ).toEqual([
+            "Group torrent and Usenet results",
+            "Group TV episodes",
+            "Compact rows",
+            "Highlight recent",
+            "Show duplicate expand controls",
+            "Show covers",
+            "Show refine sidebar",
+        ]);
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-RESULTS",
+            "covers-menu-desktop",
+        );
+        await closeDisplayOptions(page);
+
+        // Switching it back off removes every image again.
+        await toggleDisplayOption(page, "Show covers");
+        await expect(covers).toHaveCount(0);
+        await toggleDisplayOption(page, "Show covers");
+        await expect(covers.first()).toBeVisible();
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("movies");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+        // The suite clears `localStorage` on every navigation (`fixtures.ts`'s
+        // `addInitScript`), so this reload starts from the default -- off --
+        // and the option is switched on the way a user would.
+        await expect(covers).toHaveCount(0);
+        await toggleDisplayOption(page, "Show covers");
+        await expect(covers.first()).toBeVisible();
+        await captureResultsViewport(page, "covers-on-mobile");
+
+        await page.unrouteAll({behavior: "ignoreErrors"});
+    });
 });
+
+// FM-177: the checked-in cover image every routed `artworks.thetvdb.com`
+// request is answered with, so the rendering never depends on reaching that
+// host. Resolved from the spec's own location rather than the working
+// directory, which Playwright would otherwise resolve a relative path against.
+function coverFixturePath(): string {
+    return path.join(path.dirname(test.info().file), "fixtures", "cover.png");
+}
+
+// FM-177: the results table clipped to what is actually on screen. A `movies`
+// search returns a hundred rows, so an element screenshot of the whole table
+// is a strip tens of thousands of pixels tall that shows nothing a reviewer
+// can read; this is the same viewport clip `captureCompactRows` takes, for the
+// same reason.
+async function captureResultsViewport(
+    page: import("@playwright/test").Page,
+    region: string,
+): Promise<void> {
+    const table = page.getByTestId("search-results-table");
+    const box = await table.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!box || !viewport) {
+        throw new Error("Table requires deterministic geometry");
+    }
+    await page.screenshot({
+        clip: {
+            height: Math.min(box.height, viewport.height - box.y),
+            width: Math.min(box.width, viewport.width - box.x),
+            x: box.x,
+            y: box.y,
+        },
+        path: visualEvidencePath("F-SEARCH-RESULTS", region),
+    });
+}
+
+// FM-177: the rendered height of every currently mounted result row.
+async function rowHeights(
+    page: import("@playwright/test").Page,
+): Promise<number[]> {
+    return page
+        .getByTestId("search-result-row")
+        .evaluateAll((rows) =>
+            rows.map((row) => Math.round(row.getBoundingClientRect().height)),
+        );
+}
+
+// FM-176: what occupies one row's expand slots, in render order -- a
+// control's accessible name, or "spacer" for the invisible placeholder that
+// reserves the same box.
+async function expandSlotsOf(
+    page: import("@playwright/test").Page,
+    title: string,
+): Promise<string[]> {
+    return resultRow(page, title)
+        .first()
+        .getByTestId("search-result-title")
+        .evaluate((cell) =>
+            [...cell.querySelectorAll(".MuiIconButton-root")].map((button) =>
+                button.getAttribute("data-testid") ===
+                "search-result-expand-spacer"
+                    ? "spacer"
+                    : (button.getAttribute("aria-label") ?? ""),
+            ),
+        );
+}
+
+// The x of each of one row's expand slots, relative to its own title cell, so
+// the numbers are comparable across rows at different nesting levels.
+async function expandSlotOffsets(
+    page: import("@playwright/test").Page,
+    title: string,
+): Promise<number[]> {
+    return resultRow(page, title)
+        .first()
+        .getByTestId("search-result-title")
+        .evaluate((cell) =>
+            [...cell.querySelectorAll(".MuiIconButton-root")].map((button) =>
+                Math.round(
+                    button.getBoundingClientRect().x -
+                        cell.getBoundingClientRect().x,
+                ),
+            ),
+        );
+}
 
 async function expectNfoState(
     page: import("@playwright/test").Page,
@@ -3993,6 +4514,108 @@ async function tableHeight(
     return await page
         .getByTestId("search-results-table")
         .evaluate((element) => element.getBoundingClientRect().height);
+}
+
+/**
+ * FM-175's rendered row density, read off the first result row and the header
+ * row it has to align with.
+ *
+ * `checkboxOffset` and `titleStartOffset` are distances, not positions: the
+ * row checkbox's box against the header checkbox's, and the title cell's
+ * first child (an expand control, its hidden spacer, or the title text)
+ * against the left edge of the "TITLE" label's own text. Both round to whole
+ * pixels because sub-pixel drift on either side is not what this pins.
+ */
+async function rowDensityGeometry(
+    page: import("@playwright/test").Page,
+): Promise<{
+    actionIconBox: number;
+    actionIconGlyph: number;
+    checkboxOffset: number;
+    titleContentWidth: number;
+    titleStartOffset: number;
+}> {
+    return await page
+        .getByTestId("search-results-table")
+        .evaluate((table: HTMLElement) => {
+            const need = <T>(value: T | null, what: string): T => {
+                if (value === null) {
+                    throw new Error(`${what} is required for this measurement`);
+                }
+                return value;
+            };
+            const headerRow = need(
+                table.querySelector("thead tr"),
+                "the header row",
+            );
+            const headerCheckbox = need(
+                headerRow.querySelector(".MuiCheckbox-root"),
+                "the header checkbox",
+            );
+            const titleHeaderButton = need(
+                headerRow.querySelector<HTMLElement>(
+                    '[data-testid="sort-title"]',
+                ),
+                "the Title sort button",
+            );
+            const row = need(
+                table.querySelector('[data-testid="search-result-row"]'),
+                "a result row",
+            );
+            const rowCheckbox = need(
+                row.querySelector('td[data-label="Select"] .MuiCheckbox-root'),
+                "the row checkbox",
+            );
+            const titleCell = need(
+                row.querySelector<HTMLElement>(
+                    '[data-testid="search-result-title"]',
+                ),
+                "the title cell",
+            );
+            const titleFirstChild = need(
+                need(
+                    titleCell.querySelector(".MuiStack-root"),
+                    "the title cell's stack",
+                ).firstElementChild,
+                "the title cell's first child",
+            );
+            const actionIcon = need(
+                row.querySelector(
+                    'td[data-label="Actions"] .MuiIconButton-root',
+                ),
+                "an action icon button",
+            );
+            const glyphWidth = (button: Element): number =>
+                Math.round(
+                    need(
+                        button.querySelector("svg"),
+                        "an icon glyph",
+                    ).getBoundingClientRect().width,
+                );
+            const titleStyle = getComputedStyle(titleCell);
+            return {
+                actionIconBox: Math.round(
+                    actionIcon.getBoundingClientRect().width,
+                ),
+                actionIconGlyph: glyphWidth(actionIcon),
+                checkboxOffset: Math.round(
+                    rowCheckbox.getBoundingClientRect().x -
+                        headerCheckbox.getBoundingClientRect().x,
+                ),
+                titleContentWidth: Math.round(
+                    titleCell.getBoundingClientRect().width -
+                        parseFloat(titleStyle.paddingLeft) -
+                        parseFloat(titleStyle.paddingRight),
+                ),
+                titleStartOffset: Math.round(
+                    titleFirstChild.getBoundingClientRect().x -
+                        (titleHeaderButton.getBoundingClientRect().x +
+                            parseFloat(
+                                getComputedStyle(titleHeaderButton).paddingLeft,
+                            )),
+                ),
+            };
+        });
 }
 
 async function expectNoTitleCellOverflow(
@@ -4315,6 +4938,10 @@ async function assertGroupExpansionAndBulkSelection(
 ): Promise<void> {
     const rows = page.getByTestId("search-result-row");
     await expect(rows).toHaveCount(2);
+    // FM-176: "Show duplicate expand controls" gates the duplicate control
+    // and defaults off, so this capability is reached through the display
+    // option a user would flip first.
+    await toggleDisplayOption(page, "Show duplicate expand controls");
     await page.getByRole("button", {name: "Expand duplicates"}).click();
     await expect(rows).toHaveCount(3);
     // FM-040 replaced the flat "Select all"/"Deselect all"/"Invert

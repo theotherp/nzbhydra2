@@ -39,6 +39,7 @@ import {writeItem} from "../../../domain/storage/browserStorage";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase, DownloadActions} from "./DownloadActions";
 import {RefineSidebar} from "./RefineSidebar";
+import type {ExpandSlots} from "./ResultRow";
 import {ResultRow} from "./ResultRow";
 import {DisplayOptionsMenu, RejectedResultsTrigger} from "./ResultsPopovers";
 import {SelectionMenu} from "./SelectionMenu";
@@ -71,12 +72,7 @@ import {
     visibleGroupedResults,
 } from "./resultTable";
 import type {StoredChoices} from "./storedChoices";
-import {
-    isRecord,
-    loadChoices,
-    STORAGE_KEY,
-    withoutSearchScopedFilters,
-} from "./storedChoices";
+import {isRecord, loadChoices, STORAGE_KEY} from "./storedChoices";
 
 // Header cells carry MUI's default 16px vertical `TableCell` padding, which
 // -- together with the tallest control each cell held -- set the pre-FM-045
@@ -91,6 +87,13 @@ import {
 // the re-proportioned `<colgroup>` plus the label typography below already
 // satisfy that without also re-tuning row height.
 const HEADER_CELL_PADDING_Y = 0.75;
+
+// FM-150's header inset, named by FM-175 so the Actions header (which sits
+// outside the sorted-column loop and needs the same left inset with no right
+// one) states the same value rather than a second literal. The `epoch` header
+// halves it -- see the header cell's own note below.
+const HEADER_CELL_PADDING_X = 1;
+const AGE_HEADER_CELL_PADDING_X = 0.5;
 
 // FM-042 (ADR-0011): the mock's own header-row label typography
 // (`uimock/NZBHydra Search.dc.html:258`), which ADR-0009 already makes
@@ -113,6 +116,18 @@ const HEADER_LABEL_COLOR = "text.secondary";
 // color, font, or radius value.
 const ROW_PADDING_Y = 0.75;
 const COMPACT_ROW_PADDING_Y = 0.5;
+
+// FM-175: the body cells' horizontal padding, in theme spacing units -- 8px,
+// half MUI's stock `MuiTableCell` 16px. Not density-switched: "compact rows"
+// is a *vertical* preference, and this table is horizontally tight at every
+// density because ADR-0011 denies it a scrollbar.
+const ROW_PADDING_X = 1;
+
+// FM-175: the size of the glyph inside the row's icon buttons (Actions, and
+// the title cell's expand controls), down from `fontSize="small"`'s 20px.
+// A number, not a `fontSize` token, because it is a measured relationship to
+// this table's 12-13px cell text rather than a step on the type ramp.
+const ROW_ICON_GLYPH_SIZE = 16;
 
 // FM-129: the compact table's own type ladder, one step under the default
 // row treatment at each of the three places compact mode tightens. These stay
@@ -169,18 +184,90 @@ const ROW_OVERSCAN = 8;
 // The table's fixed `<colgroup>` track widths, single source for both the
 // rendered `<colgroup>` below and TABLE_COLUMN_COUNT, so the spacer rows'
 // colSpan can never drift from the actual track count under `tableLayout:
-// fixed`. The checkbox track is a fixed 40px; the rest are percentages that
-// sum to 100 (Checkbox/Title/Indexer/Category/Details/Age/Size/Actions).
-const TABLE_COLUMN_WIDTHS: Array<number | string> = [
+// fixed`. In rendered order:
+// Checkbox/Title/Indexer/Category/Size/Details/Age/Actions -- which is the
+// order `resultColumns` in `ResultRow.tsx` declares, not the one this
+// comment claimed before FM-175.
+//
+// FM-175 (owner request, 2026-09-02) replaces the percentages with fixed
+// pixel tracks and leaves Title alone with no width at all. Under
+// `tableLayout: fixed` a percentage Title is starved twice over -- it is
+// sized *before* the surplus is known, and any width the other columns do
+// not need is redistributed to every track pro rata rather than to the one
+// column that can use it. A track with no declared width is the only one
+// that absorbs the whole remainder, which is exactly the "Title takes what
+// the others leave" behaviour ADR-0011 asks for. The px values are the
+// measured worst case of each column's own header label (uppercase 11px
+// plus the sort glyph, plus the header cell's 8px paddings) rounded up:
+// Indexer 88 -> 90, Category 96 -> 98, Size 64 -> 65, Details 87 -> 90,
+// Age 51 -> 52; Actions 140 and Details 90 are the owner's own numbers.
+// See the `<colgroup>` note below for the resulting Title measurement.
+//
+// `undefined` means "declare no width for this track"; the entry still
+// exists so TABLE_COLUMN_COUNT and the rendered `<col>` list stay in step.
+const TABLE_COLUMN_WIDTHS: Array<number | string | undefined> = [
     40,
-    "39%",
-    "11%",
-    "11%",
-    "8%",
-    "11%",
-    "5%",
-    "15%",
+    undefined,
+    90,
+    98,
+    65,
+    90,
+    52,
+    140,
 ];
+
+// The same tracks below the basis width, as percentages of the table.
+//
+// Pixel tracks have no give: their sum (575px including the checkbox) is a
+// floor the table cannot go under, and a fixed-layout table simply overflows
+// its box rather than scaling them -- measured, and exactly the horizontal
+// scroll ADR-0011 forbids. Every percentage here is its pixel track over the
+// 936px basis table, so at the basis the two sets are the same table to the
+// pixel and below it every track (Title included) shrinks in proportion
+// instead of Title alone being crushed to nothing. Headers clip with an
+// ellipsis at the narrow end, as they did before FM-175; the "every header
+// fits" criterion is a criterion at the 1280x800 basis, not below it.
+const NARROW_TABLE_COLUMN_WIDTHS: Array<number | string | undefined> = [
+    40,
+    undefined,
+    "9.62%",
+    "10.47%",
+    "6.94%",
+    "9.62%",
+    "5.56%",
+    "14.96%",
+];
+
+// The viewport width the pixel tracks above are measured at, and the width
+// at or above which they are used. It is deliberately the same 1280 as the
+// visual-evidence desktop viewport rather than a `theme.ts` breakpoint
+// token: the two sets of tracks are equal *at* this width by construction,
+// so switching anywhere else would put a visible step in the layout. Below
+// it the percentage set is not a compromise but the better of the two --
+// with the tracks scaling, Title keeps a proportional share instead of
+// being handed a remainder that reaches zero at a 575px table.
+const TABLE_PIXEL_TRACK_BREAKPOINT = 1280;
+
+/**
+ * The `<colgroup>` track widths as CSS rules against the rendered `<col>`
+ * elements, rather than as inline `style` attributes on them.
+ *
+ * Inline styles cannot be overridden by a media query, and FM-175 needs
+ * exactly that: one set of tracks at and above the basis width, another
+ * below it. Tracks with no declared width are skipped so they stay `auto`
+ * in both sets -- that is what makes Title absorb the remainder.
+ */
+function columnTrackRules(
+    widths: Array<number | string | undefined>,
+): Record<string, {width: number | string}> {
+    return Object.fromEntries(
+        widths.flatMap((width, index) =>
+            width === undefined
+                ? []
+                : [[`& colgroup > col:nth-of-type(${index + 1})`, {width}]],
+        ),
+    );
+}
 
 // The table's fixed `<colgroup>` track count, which the spacer rows have to
 // span so the fixed layout is not disturbed by a row with a different cell
@@ -261,13 +348,22 @@ export function SearchResults({
         () => indexerColorsFromSafeConfig(effectiveSafeConfig),
         [effectiveSafeConfig],
     );
+    // FM-177 (ADR-0054): covers render at `searching.coverSize`, the width
+    // Config -> Searching already owns ("Cover width", help text "when
+    // enabled in display options"), read from the *live* config for the same
+    // reason as `dereferer` above (ADR-0017). The fallback stands in for an
+    // absent or nonsensical value, not for the YAML default, which stays 128.
+    const coverWidth = useMemo(
+        () => coverWidthFromSafeConfig(effectiveSafeConfig),
+        [effectiveSafeConfig],
+    );
     // One transport for every row's `API-SEARCH-NFO` request, rather than one
     // per rendered row.
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
     const [choices] = useState(() => loadChoices());
     // Recomputed from whatever results are currently loaded, so the
-    // `SearchScopedFilter` reset below always selects every value of the
-    // search it is resetting for.
+    // per-search reset below always selects every value of the search it is
+    // resetting for.
     const filterDefaults = useMemo(
         () => defaultFilters(data.searchResults, quickFilters),
         [data.searchResults, quickFilters],
@@ -275,36 +371,33 @@ export function SearchResults({
     const [sorting, setSorting] = useState<SortingState>(
         choices.sorting ?? [{id: "epoch", desc: true}],
     );
+    // FM-178: every `ResultFilters` field -- title, ranges, quick filters,
+    // and the indexer/category/download-type selections -- is scoped to one
+    // search's own results (a value typed or picked for one search's result
+    // set is meaningless, or actively hides results, in the next one) and so
+    // is never read from `choices`; this is the exact shape `clearAllFilters`
+    // produces.
     const [filters, setFilters] = useState<ResultFilters>(() => ({
         ...filterDefaults,
-        ...choices.filters,
-        size: choices.filters?.size ?? {min: "", max: ""},
-        grabs: choices.filters?.grabs ?? {min: "", max: ""},
-        age: choices.filters?.age ?? {min: "", max: ""},
-        quickFilters: {
-            ...preselectedQuickFilters(safeConfig, quickFilters),
-            ...choices.filters?.quickFilters,
-        },
+        quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
     }));
-    // A new search's results carry their own indexer, category, and
-    // download-type values, so the previous search's selection cannot be
-    // kept: it would silently hide every result from an indexer, category, or
-    // download type that search did not return.
+    // A new search's results carry their own values for every filter, so the
+    // previous search's filters cannot be kept: a title or range typed for
+    // one result set, or a selection scoped to it, is meaningless -- or
+    // actively hides results -- against a different one.
     // This adjusts state during render -- React's documented pattern for
     // deriving state from a changed prop -- rather than in an effect, which
     // keeps it off the load-more path (paging keeps the same
-    // `searchRequestId`, and a deliberate deselection must survive it) and
-    // avoids painting one frame of results filtered by the stale selection.
+    // `searchRequestId`, and a deliberate change must survive it) and avoids
+    // painting one frame of results filtered by the stale values.
     const [lastSearchRequestId, setLastSearchRequestId] =
         useState(searchRequestId);
     if (lastSearchRequestId !== searchRequestId) {
         setLastSearchRequestId(searchRequestId);
-        setFilters((current) => ({
-            ...current,
-            categories: filterDefaults.categories,
-            downloadTypes: filterDefaults.downloadTypes,
-            indexers: filterDefaults.indexers,
-        }));
+        setFilters({
+            ...filterDefaults,
+            quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
+        });
     }
     // Below `sm` the sidebar starts collapsed by default; at `sm` and up it
     // starts expanded, matching the "persistent left column ... at sm and
@@ -349,6 +442,20 @@ export function SearchResults({
     );
     const [highlightRecent, setHighlightRecent] = useState(
         () => choices.highlightRecent ?? false,
+    );
+    // FM-176: legacy's "Show duplicate display triggers"
+    // (`search-results-controller.js:162,205`), off by default there and here.
+    // With it off the duplicate expand control does not render, reserves no
+    // width, and duplicates stay collapsed under their first row.
+    const [showDuplicateControls, setShowDuplicateControls] = useState(
+        () => choices.showDuplicateControls ?? false,
+    );
+    // FM-177: legacy's "Show movie covers in results"
+    // (`search-results-controller.js:197`), which defaulted *on* there; the
+    // owner asked for off, so a result's cover reserves no width until the
+    // option is switched on.
+    const [showCovers, setShowCovers] = useState(
+        () => choices.showCovers ?? false,
     );
     // Lifted from `RefineSidebar.tsx` by this task (FM-089), matching the
     // `sidebarCollapsed`/`drawerOpen` precedent above: `RefineSidebar` stays
@@ -429,34 +536,52 @@ export function SearchResults({
             }),
         [episodeRequested, groupEpisodes, groupTorrentAndUsenet, sortedResults],
     );
+    // FM-176: with the option off there is no control that could collapse an
+    // expanded duplicate group again, so no group may stay expanded. The
+    // effect below clears the state itself; this keeps the very render in
+    // which the option is switched off consistent with it.
+    const effectiveExpandedDuplicates = showDuplicateControls
+        ? expandedDuplicates
+        : NO_EXPANDED_DUPLICATES;
     const visibleResults = useMemo(
-        () => visibleGroupedResults(groups, expandedTitles, expandedDuplicates),
-        [expandedDuplicates, expandedTitles, groups],
+        () =>
+            visibleGroupedResults(
+                groups,
+                expandedTitles,
+                effectiveExpandedDuplicates,
+            ),
+        [effectiveExpandedDuplicates, expandedTitles, groups],
     );
     // FM-150: the shape of every row the table body is about to render,
     // derived once instead of inside the JSX, because the expand-control width
     // each row reserves is a property of the whole rendered set (see
     // `expandSlots` below) and cannot be decided row by row.
     const rowDescriptors = useMemo(
-        () => visibleRowDescriptors(groups, expandedTitles, expandedDuplicates),
-        [expandedDuplicates, expandedTitles, groups],
-    );
-    // The largest number of expand controls any one visible row carries. Rows
-    // with fewer pad to it with invisible spacers, so a title at a given
-    // nesting level always starts at the same x; when no row can expand
-    // anything this is 0 and nothing is reserved at all.
-    const expandSlots = useMemo(
         () =>
-            rowDescriptors.reduce(
-                (widest, row) =>
-                    Math.max(
-                        widest,
-                        (row.showTitleExpand ? 1 : 0) +
-                            (row.showDuplicateExpand ? 1 : 0),
-                    ),
-                0,
+            visibleRowDescriptors(
+                groups,
+                expandedTitles,
+                effectiveExpandedDuplicates,
+                showDuplicateControls,
             ),
-        [rowDescriptors],
+        [
+            effectiveExpandedDuplicates,
+            expandedTitles,
+            groups,
+            showDuplicateControls,
+        ],
+    );
+    // FM-150/FM-176: which of the two positional expand-control slots the
+    // current render reserves -- a slot exists as soon as one visible row
+    // carries that control, and every other row spends a spacer on it, so a
+    // title at a given nesting level always starts at the same x. When no row
+    // can expand anything neither slot exists and nothing is reserved at all.
+    // Computed here, once, because only the parent sees every rendered row.
+    const titleSlot = rowDescriptors.some((row) => row.showTitleExpand);
+    const duplicateSlot = rowDescriptors.some((row) => row.showDuplicateExpand);
+    const expandSlots = useMemo<ExpandSlots>(
+        () => ({duplicate: duplicateSlot, title: titleSlot}),
+        [duplicateSlot, titleSlot],
     );
     // FM-162: the window virtualizer over `rowDescriptors`. `count` is the
     // whole visible row set -- selection, grouping, expansion and sorting all
@@ -548,15 +673,28 @@ export function SearchResults({
         setExpandedDuplicates((current) => toggleSet(current, key));
     }, []);
 
+    // FM-176: switching the option off drops every duplicate expansion, so no
+    // group is left expanded without a control to collapse it again. Switching
+    // it back on therefore starts from the collapsed state, matching legacy,
+    // where the triggers simply were not rendered.
+    useEffect(() => {
+        if (!showDuplicateControls) {
+            setExpandedDuplicates((current) =>
+                current.size === 0 ? current : new Set(),
+            );
+        }
+    }, [showDuplicateControls]);
+
     useEffect(() => {
         writeItem(
             STORAGE_KEY,
             JSON.stringify({
                 compactRows,
-                filters: withoutSearchScopedFilters(filters),
                 highlightRecent,
                 refineCategoryOpen: categoryOpen,
                 refineIndexerOpen: indexerOpen,
+                showCovers,
+                showDuplicateControls,
                 sidebarCollapsed,
                 sorting,
             } satisfies StoredChoices),
@@ -564,9 +702,10 @@ export function SearchResults({
     }, [
         categoryOpen,
         compactRows,
-        filters,
         highlightRecent,
         indexerOpen,
+        showCovers,
+        showDuplicateControls,
         sidebarCollapsed,
         sorting,
     ]);
@@ -1220,7 +1359,19 @@ export function SearchResults({
                                         onToggleRefineSurface={
                                             toggleRefineSurface
                                         }
+                                        onToggleShowCovers={() =>
+                                            setShowCovers((current) => !current)
+                                        }
+                                        onToggleShowDuplicateControls={() =>
+                                            setShowDuplicateControls(
+                                                (current) => !current,
+                                            )
+                                        }
                                         refineSurfaceShown={refineSurfaceShown}
+                                        showCovers={showCovers}
+                                        showDuplicateControls={
+                                            showDuplicateControls
+                                        }
                                     />
                                 </Box>
                             )}
@@ -1378,6 +1529,12 @@ export function SearchResults({
                                 sx={(theme) => ({
                                     tableLayout: "fixed",
                                     width: "100%",
+                                    ...columnTrackRules(
+                                        NARROW_TABLE_COLUMN_WIDTHS,
+                                    ),
+                                    [theme.breakpoints.up(
+                                        TABLE_PIXEL_TRACK_BREAKPOINT,
+                                    )]: columnTrackRules(TABLE_COLUMN_WIDTHS),
                                     // FM-162: the two virtualization spacer
                                     // rows carry nothing but height -- no
                                     // padding, no card separator at <768px.
@@ -1399,7 +1556,116 @@ export function SearchResults({
                                         paddingTop: compactRows
                                             ? COMPACT_ROW_PADDING_Y
                                             : ROW_PADDING_Y,
+                                        // FM-175: top, not the table default
+                                        // `middle`. A wrapped title makes its
+                                        // row two or three lines tall while
+                                        // every other cell still holds one
+                                        // line, and a vertically centred row
+                                        // then floats Indexer/Category/Size
+                                        // halfway down the block with nothing
+                                        // to read them against. Aligned to
+                                        // the top, each cell's first line box
+                                        // starts at the same y as the title's
+                                        // first line, which is the "a title's
+                                        // first line sits level with the
+                                        // Indexer text" the owner asked for
+                                        // and the only reading of it that
+                                        // survives wrapping (the block's
+                                        // centre cannot: the taller the
+                                        // title, the further its first line
+                                        // is from it).
+                                        verticalAlign: "top",
                                     },
+                                    // FM-175 (owner request, 2026-09-02): 8px
+                                    // horizontal body padding, half MUI's
+                                    // stock 16px, so the width the table
+                                    // spends on gutters goes to the title
+                                    // instead -- 8 cells' worth is ~112px, a
+                                    // third of the Title column. A deviation
+                                    // from stock `MuiTableCell` density, and
+                                    // deliberately authored here rather than
+                                    // in `theme.ts`: this is the one table in
+                                    // the application whose content is
+                                    // squeezed (ADR-0011 forbids it a
+                                    // horizontal scrollbar), so every other
+                                    // table keeps the stock padding.
+                                    //
+                                    // Three cells are excluded, each for its
+                                    // own reason: the checkbox cell keeps
+                                    // MUI's `padding="checkbox"` box
+                                    // (`0 0 0 4px`), which is already tighter
+                                    // than 8px and is what the header
+                                    // checkbox is positioned against; Title
+                                    // sets its own left padding in
+                                    // `ResultRow` because it also carries the
+                                    // per-level nesting indent, and this
+                                    // descendant selector would outrank it;
+                                    // and Actions is handled just below.
+                                    '& tbody > tr > td:not([data-label="Select"]):not([data-label="Title"]):not([data-label="Actions"])':
+                                        {
+                                            paddingLeft: ROW_PADDING_X,
+                                            paddingRight: ROW_PADDING_X,
+                                        },
+                                    // FM-175: the Actions cell spends its
+                                    // right padding too. It is the last cell
+                                    // in the row, its content is
+                                    // right-aligned icon buttons that already
+                                    // carry 4px of their own padding, and the
+                                    // 8px would otherwise sit between the
+                                    // last icon and the table's edge doing
+                                    // nothing. The header cell above drops
+                                    // the same padding so the "ACTIONS" label
+                                    // stays flush with the icons beneath it.
+                                    '& tbody > tr > td[data-label="Actions"]': {
+                                        paddingLeft: ROW_PADDING_X,
+                                        paddingRight: 0,
+                                    },
+                                    // FM-175: the row checkbox's visible
+                                    // square lines up with the header's.
+                                    // Both cells carry MUI's
+                                    // `padding="checkbox"` 4px left inset, so
+                                    // the two boxes share an x only if the
+                                    // row's `Checkbox` adds nothing of its
+                                    // own -- its stock 9px padding is exactly
+                                    // the 9px offset the header's flat 17x17
+                                    // `p: 0` square (`SelectionMenu.tsx`)
+                                    // does not have. Removing the padding
+                                    // rather than pulling the control left
+                                    // with a negative margin keeps it inside
+                                    // its cell, clear of the recency stripe
+                                    // the same cell draws as an inset shadow
+                                    // on its left edge. The control keeps its
+                                    // 20px `size="small"` box, its ripple and
+                                    // ADR-0013's focus ring, all of which are
+                                    // drawn on this root; only the dead space
+                                    // around it goes. Authored here rather
+                                    // than in `ResultRow` because the compact
+                                    // branch below reaches every
+                                    // `.MuiCheckbox-root` in the body as a
+                                    // descendant of this same `sx` and would
+                                    // outrank a per-instance `sx` -- at this
+                                    // specificity the alignment holds at both
+                                    // densities instead of drifting 2px when
+                                    // compact rows are on.
+                                    '& tbody > tr > td[data-label="Select"] .MuiCheckbox-root':
+                                        {padding: 0},
+                                    // FM-175: the row's icons drop from a
+                                    // 20px glyph in a 28px button to a 16px
+                                    // glyph in a 24px one (the theme's
+                                    // `MuiIconButton` 4px padding is
+                                    // untouched, so the box follows the
+                                    // glyph). At 16px they are the scale of
+                                    // the 12-13px text beside them instead of
+                                    // half again as tall, which is what stops
+                                    // the Actions cell and the title's expand
+                                    // controls from setting every row's
+                                    // height. Scoped to this table's body by
+                                    // descendant selector: `MuiSvgIcon`'s own
+                                    // `fontSize="small"` step is a
+                                    // theme-level token and every other icon
+                                    // in the application keeps it.
+                                    '& tbody > tr > td[data-label="Title"] .MuiIconButton-root .MuiSvgIcon-root, & tbody > tr > td[data-label="Actions"] .MuiSvgIcon-root':
+                                        {fontSize: ROW_ICON_GLYPH_SIZE},
                                     // "Compact rows" tightens the row's own
                                     // controls proportionally as well as its
                                     // padding: the row checkbox and the
@@ -1525,61 +1791,75 @@ export function SearchResults({
                                         another gets.
 
                                         FM-150 (owner request, 2026-08-31)
-                                        sets the current basis, and it is not
-                                        the previous one. Age and Size used to
-                                        be sized so their *mathematical* worst
-                                        case fit; they are now sized for the
-                                        values users actually see, and the
-                                        surplus goes to Title. At the 1280x800
-                                        basis these percentages are measured
-                                        against (a ~896px table beside the
-                                        docked refine sidebar), 1% is ~9px:
+                                        traded Age's and Size's *mathematical*
+                                        worst case for the values users
+                                        actually see and gave the surplus to
+                                        Title, as percentages of the ~896px a
+                                        1280x800 viewport leaves beside the
+                                        docked refine sidebar. FM-175 (owner
+                                        request, 2026-09-02) keeps that trade
+                                        and changes how it is expressed: every
+                                        column except Title is now a fixed
+                                        pixel track sized for its own header
+                                        label, and Title carries no width at
+                                        all, so it is the single track the
+                                        remainder falls into. Measured at that
+                                        same basis, with the body cells'
+                                        8px horizontal padding (below):
 
-                                        - Age 8% -> 5% (45px measured). This
-                                          deliberately gives up the `9999d`
-                                          (~27 year) worst case the previous
-                                          pass sized for. `999d` measures 28px
-                                          and sits inside the cell; `9999d`
-                                          measures 35px against the 13px this
-                                          track leaves between the cell's own
-                                          16px paddings, so it spends that
-                                          padding and (these cells are
-                                          right-aligned) ends ~6px past the
-                                          cell's left edge, into the Details
-                                          column's right padding. It stays
-                                          fully legible and
-                                          collides with no neighbouring text
-                                          (these cells are `nowrap`, so
-                                          nothing reflows), but the guarantee
-                                          that it fits is gone -- accepted,
-                                          not overlooked.
-                                        - Size 9% -> 8% (72px measured). Same
-                                          trade: `999.99 GB` -- the
-                                          mathematical maximum, since
-                                          `formatResultSize` never reaches
-                                          four digits -- measures 57px and
-                                          ends ~2px past the cell's left
-                                          edge, into the Category column's
-                                          right padding, while
-                                          real values (`51.2 GB`, `780 MB`,
-                                          ~43px) sit inside it.
-                                        - Title 35% -> 39% (349px measured),
-                                          the sum of what the two gave up.
-                                          Title is the column whose overflow
-                                          actually costs something: it is the
-                                          one cell that wraps, and every extra
-                                          line makes the whole row taller.
+                                        - Table 936px, of which the 40px
+                                          checkbox track plus
+                                          90+98+65+90+52+140 = 535px of named
+                                          tracks leaves Title 361px, i.e. a
+                                          345px content box -- up from
+                                          FM-150's 349px track / 317px box,
+                                          and clear of the 340px this task
+                                          was given as its floor.
+                                        - The named tracks each clear their
+                                          own header label's measured width
+                                          (uppercase 11px plus the sort glyph
+                                          plus the cell's 8px paddings):
+                                          Indexer 88/90, Category 96/98, Size
+                                          64/65, Details 87/90, Age 51/52.
+                                          Age keeps the halved header padding
+                                          FM-150 gave it (see the header
+                                          cell's own note below); without it
+                                          "AGE (glyph)" would need 59px.
+                                        - Age and Size keep FM-150's accepted
+                                          exposure: `9999d` and `999.99 GB`
+                                          are wider than their tracks and
+                                          spill left into the neighbouring
+                                          column's padding. These cells are
+                                          `nowrap`, so nothing reflows and
+                                          the value stays legible -- accepted
+                                          there, unchanged here.
+                                        - Actions is 140px because it holds a
+                                          fixed inventory: four 24px detail
+                                          icons plus the 24px download, 5x24
+                                          plus four 4px gaps = 136px, so the
+                                          icon group never wraps and the
+                                          "Downloaded" chip still has a line
+                                          to drop to.
 
-                                        The checkbox track stays a fixed 40px
-                                        and Indexer/Category/Details/Actions
-                                        are untouched; the percentages still
-                                        sum to 100. The Age *header* is the
-                                        one label that no longer fits its
-                                        track -- see the header cell's own
-                                        padding note below. */}
+                                        These `<col>` elements carry no width
+                                        of their own: both sets of tracks are
+                                        CSS rules in the `sx` above, because
+                                        an inline width could not be swapped
+                                        at a breakpoint. Between the 768px
+                                        stacking breakpoint (below which the
+                                        `<colgroup>` stops applying at all --
+                                        the cells become blocks) and the
+                                        1280px basis, the pixel tracks would
+                                        add up to more table than there is:
+                                        a fixed layout does not scale them
+                                        down, it overflows, so
+                                        `NARROW_TABLE_COLUMN_WIDTHS` holds
+                                        the same shape as percentages there
+                                        and ADR-0011's "no horizontal scroll"
+                                        stays true at every width. */}
                                 <colgroup>
-                                    {TABLE_COLUMN_WIDTHS.map((width, index) => (
-                                        <col key={index} style={{width}} />
+                                    {TABLE_COLUMN_WIDTHS.map((_, index) => (
+                                        <col key={index} />
                                     ))}
                                 </colgroup>
                                 <TableHead>
@@ -1709,8 +1989,8 @@ export function SearchResults({
                                                                             .column
                                                                             .id ===
                                                                         "epoch"
-                                                                            ? 0.5
-                                                                            : 1,
+                                                                            ? AGE_HEADER_CELL_PADDING_X
+                                                                            : HEADER_CELL_PADDING_X,
                                                                     py: HEADER_CELL_PADDING_Y,
                                                                     textOverflow:
                                                                         "ellipsis",
@@ -1779,14 +2059,39 @@ export function SearchResults({
                                                                             minWidth: 0,
                                                                             overflow:
                                                                                 "hidden",
-                                                                            // The mock's Title sort
-                                                                            // button is `padding:0
-                                                                            // 6px`; every other
-                                                                            // column's is `0 4px`
+                                                                            // The mock gives the Title
+                                                                            // sort button `padding:0
+                                                                            // 6px` and every other
+                                                                            // column's `0 4px`
                                                                             // (`uimock/NZBHydra
                                                                             // Search.dc.html:270-277`).
+                                                                            // FM-175 drops Title's to
+                                                                            // zero -- a mock-pixel
+                                                                            // deviation, which
+                                                                            // ADR-0014 allows freely.
+                                                                            // Title is the one
+                                                                            // left-aligned header, so
+                                                                            // its own padding is what
+                                                                            // decides where the word
+                                                                            // "TITLE" starts, and the
+                                                                            // owner asked for the
+                                                                            // titles beneath it to
+                                                                            // start at the same x.
+                                                                            // The body cell can only
+                                                                            // offer its 8px padding
+                                                                            // edge; 6px of button
+                                                                            // padding on top of the
+                                                                            // header's own 8px would
+                                                                            // leave the label 6px
+                                                                            // adrift of every title
+                                                                            // in the column. The
+                                                                            // right-aligned headers
+                                                                            // keep their 4px, which
+                                                                            // is what holds them off
+                                                                            // their cell's right
+                                                                            // edge.
                                                                             px: isTitle
-                                                                                ? 0.75
+                                                                                ? 0
                                                                                 : 0.5,
                                                                             textOverflow:
                                                                                 "ellipsis",
@@ -1841,7 +2146,29 @@ export function SearchResults({
                                                         letterSpacing:
                                                             HEADER_LABEL_LETTER_SPACING,
                                                         overflow: "hidden",
+                                                        // FM-175: the one
+                                                        // header cell that
+                                                        // does not take the
+                                                        // `px: 1` above,
+                                                        // because the Actions
+                                                        // *body* cell drops
+                                                        // its right padding
+                                                        // entirely. A label
+                                                        // right-aligned 16px
+                                                        // -- or even 8px --
+                                                        // inside the column
+                                                        // whose icons sit
+                                                        // flush against the
+                                                        // table's edge reads
+                                                        // as a misaligned
+                                                        // header, so this
+                                                        // cell matches the
+                                                        // body cell's box
+                                                        // rather than the
+                                                        // other headers'.
+                                                        pl: HEADER_CELL_PADDING_X,
                                                         position: "sticky",
+                                                        pr: 0,
                                                         py: HEADER_CELL_PADDING_Y,
                                                         textOverflow:
                                                             "ellipsis",
@@ -1882,6 +2209,11 @@ export function SearchResults({
                                             rowDescriptors[virtualRow.index];
                                         return (
                                             <ResultRow
+                                                coverWidth={
+                                                    showCovers
+                                                        ? coverWidth
+                                                        : undefined
+                                                }
                                                 dereferer={dereferer}
                                                 downloaded={downloadedIds.has(
                                                     row.result.searchResultId,
@@ -1984,6 +2316,33 @@ function measureRowHeight(
     return measured > 0 ? measured : ESTIMATED_ROW_HEIGHT;
 }
 
+/**
+ * FM-177 (ADR-0054): the width one cover renders at, from the safe config's
+ * `searching.coverSize` (`SafeSearchingConfig.java`, `baseConfig.yml`'s 128).
+ *
+ * The 100px fallback covers a config that carries no value at all, or one that
+ * could not produce a visible image (0, negative, non-numeric) -- neither is a
+ * reason to break the row, and neither should silently become the YAML
+ * default, which this frontend does not restate.
+ */
+function coverWidthFromSafeConfig(value: unknown): number {
+    const configured =
+        isRecord(value) && isRecord(value.searching)
+            ? value.searching.coverSize
+            : undefined;
+    return typeof configured === "number" &&
+        Number.isFinite(configured) &&
+        configured > 0
+        ? configured
+        : DEFAULT_COVER_WIDTH;
+}
+
+const DEFAULT_COVER_WIDTH = 100;
+
+// FM-176: the empty set every render with the duplicate-controls option off
+// uses, so that render's memos keep a stable dependency identity.
+const NO_EXPANDED_DUPLICATES: ReadonlySet<string> = new Set<string>();
+
 /** One rendered table-body row, with everything the grouping decides about it. */
 type VisibleRowDescriptor = {
     duplicateExpanded: boolean;
@@ -2008,6 +2367,10 @@ function visibleRowDescriptors(
     groups: ResultGroup[],
     expandedTitles: ReadonlySet<string>,
     expandedDuplicates: ReadonlySet<string>,
+    // FM-176: the "Show duplicate expand controls" display option. False keeps
+    // `showDuplicateExpand` false on every row, which is what makes both the
+    // control and the width it would reserve disappear together.
+    showDuplicateControls: boolean,
 ): VisibleRowDescriptor[] {
     return groups.flatMap((group, groupIndex) =>
         group.duplicateGroups.flatMap((duplicates, duplicateIndex) => {
@@ -2027,7 +2390,10 @@ function visibleRowDescriptors(
                     nestingLevel:
                         (duplicateIndex > 0 ? 1 : 0) + (index > 0 ? 1 : 0),
                     result,
-                    showDuplicateExpand: index === 0 && duplicates.length > 1,
+                    showDuplicateExpand:
+                        showDuplicateControls &&
+                        index === 0 &&
+                        duplicates.length > 1,
                     showTitleExpand:
                         index === 0 &&
                         duplicateIndex === 0 &&

@@ -1498,10 +1498,62 @@ the page mid-dialog would drop its criteria (unreachable while modal), and `dere
 signatures untyped (inherited looseness, widened). Candidates for a future quickfix. The 2026-09-01 owner-request batch
 FM-172..FM-174 is complete.
 
+FM-175 (Results Row Density) turned every results column but Title into a fixed pixel `<col>` track (checkbox 40,
+Indexer 90, Category 98, Size 65, Details 90, Age 52, Actions 140) so Title takes the remainder — 345px of content at
+1280x800 docked, from 317px; body cells dropped from 16px to 8px horizontal padding and the Actions cell to none on its
+right; the row checkbox and the title now start at the header's own x (both offsets measured 0); action and expand icons
+are a 16px glyph in a 24px button; cells are top-aligned so a title's first line sits level with the Indexer text on one-,
+two- and three-line titles. Pixel tracks alone overflowed the table below the 936px basis (ADR-0011), so the same shape
+applies as percentages under 1280px. The sticky-toolbar fixture grew 24→40 results because the denser rows shrank the
+page; no assertion was relaxed. Vitest 1879/1879, real-backend `results.spec.ts` 30/30 against a freshly packaged jar
+and again by the reviewer; four captures reviewed. Passed 2026-09-02 first cycle with no findings. One single-session fix
+candidate from the handoff: the Select header cell reports `scrollWidth` 20 vs `clientWidth` 19 at every viewport
+(pre-existing, `SelectionMenu.tsx` caret button, clips nothing).
+
+FM-176 (Duplicate Expand Controls Behind A Display Option, With Fixed Group/Duplicate Slots) added the "Show duplicate
+expand controls" display option (after "Highlight recent", default off, persisted as `showDuplicateControls` in
+`hydra.search-results.table`, restored on mount — legacy's `duplicatesDisplayed` parity) and made the Title cell's expand
+slots positional: `expandSlots` is a per-slot descriptor computed once over the visible rows, slot 1 is always the
+title-group control, slot 2 always the duplicate control, each held open by a spacer on rows that lack it, so a
+duplicate-only row renders [spacer][duplicate] instead of putting its control where neighbours show the group chevron.
+Off: no duplicate control exists anywhere in the document, no width is reserved, and switching off collapses
+already-expanded duplicate groups. The FM-150 slot cases now assert slot sequences, not spacer counts. Vitest 1882/1882,
+real-backend `results.spec.ts` 31/31 against a repackaged jar; four captures reviewed. Passed 2026-09-02 first cycle with
+two minor findings, not corrected (optional): the test helper `enableDuplicateControls()` is really a toggle and is called
+three times in the collapse-on-off case, and the system spec's option-off block asserts slot sequences for two of the
+three rows (the both-controls row is covered by the unit suite). Candidates for a future quickfix.
+
+FM-177 (Optional Result Covers Behind A Display Option) let `SearchResultWebTO.cover` reach the React row for the first
+time: `resultSchema` keeps an absolute `http(s)` URL or the proxied `cache/<base64>` shape and drops anything else
+(`javascript:`, `data:`, root-relative) to `undefined` without invalidating the result (ADR-0003); a "Show covers" display
+option (after "Show duplicate expand controls", default off, persisted as `showCovers` in `hydra.search-results.table`)
+renders `<img data-testid="search-result-cover">` between the expand slots and the title at `searching.coverSize` px
+(fallback 100, ADR-0054), `alt=""`, lazy, with the proxied shape resolved through `browserTransferUrl`; the virtualizer
+re-measures a row whose image lands late (the reviewer held the image response 4s on the live rig and watched rows
+re-flow 38→206px with no gaps). Legacy's click-to-enlarge modal is a recorded deliberate gap. Vitest 1886/1886,
+real-backend `results.spec.ts` 32/32 against a repackaged jar; four captures reviewed. Passed 2026-09-02 first cycle with
+three minor findings, not corrected (optional): the system spec ties the expected cover count to response-order parity
+and to how many rows the virtualizer mounted; the 390x844 capture is a clip showing one row with the cover cut off; and
+the Active/Upcoming wording drift fixed in this reconcile. Candidates for a future quickfix. Reconcile note: `## Active`
+had lost its `None.` line, leaving the old FM-140 paragraph reading as the active entry — restored.
+
+FM-178 (Refine Filters Reset On Every New Search) generalized the render-time `lastSearchRequestId` reset from three
+keys to every `ResultFilters` field: on mount and whenever `searchRequestId` changes, `filters` becomes exactly the shape
+`clearAllFilters` produces (defaults plus the configured quick-filter preselection), while `onLoadMore` with the same id
+keeps the user's filters. The `filters` key left the persisted `hydra.search-results.table` payload —
+`StoredChoices.filters`, `SearchScopedFilter`, and `withoutSearchScopedFilters` are gone, a stale stored key is ignored —
+which is legacy parity (column filters lived in the per-search controller; only `sorting` was stored) and supersedes the
+two per-key scoping ledger entries. `RefineSidebar.tsx` and `results.spec.ts` have zero diff; no rendering change.
+Red/green pinned by a new test (title + size range + quick filter reset on a new search, kept across `onLoadMore`) that
+fails against the pre-change sources. Vitest 1887/1887, real-backend `results.spec.ts` 32/32 against a repackaged jar.
+Passed 2026-09-02 first cycle with two minor findings, not corrected (optional): `F-SEARCH-SORT-FILTER`'s persisted-keys
+comment still omits `showCovers`, and its FM-178 gap line cites the two superseded ledger entries by pre-rebase shas
+(`100b5dd00`/`41e4dc59e`) where `MAINTENANCE.md` records them as `24329c640`/`27efd28f5`. Candidates for a future
+quickfix. The 2026-09-02 owner-request batch FM-175..FM-178 is complete.
+
 ## Active
 
 None.
-
 FM-140 (Java Suite Per-Class Precondition Establishment) moved the system-test baseline off `BeforeAll.@PostConstruct`
 (one write per JVM fork) onto `BaselineExtension`, bundled with the Spring context as `@SystemTest` on all 27 classes;
 each named leaker now restores or namespaces what it touches, `HistoryTest` is marker-based (and strictly stronger —
@@ -1524,6 +1576,11 @@ None.
 None.
 
 ## Upcoming
+
+- The 2026-09-02 owner-request batch FM-175..FM-178 (results density; duplicate-control display option with fixed
+  group/duplicate slots; optional covers; refine filters reset per search) is complete (all four entries above, finished
+  2026-09-02). No task packets are queued; retained minor findings live in the done entries above. ADR-0054 records the
+  two batch decisions (display options stay in `localStorage`; covers honour `searching.coverSize`).
 
 - The 2026-09-01 owner-request batch FM-172..FM-174 (stats polish; indexer chip placement; search-history row declutter
   with a 24h `C-DATE-TIME` time format) is complete (all three entries above, finished 2026-09-02). No task packets are

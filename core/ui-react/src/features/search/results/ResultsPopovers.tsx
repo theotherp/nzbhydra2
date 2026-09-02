@@ -190,7 +190,11 @@ export function DisplayOptionsMenu({
     onToggleGroupTorrentAndUsenet,
     onToggleHighlightRecent,
     onToggleRefineSurface,
+    onToggleShowCovers,
+    onToggleShowDuplicateControls,
     refineSurfaceShown,
+    showCovers,
+    showDuplicateControls,
 }: {
     compactRows: boolean;
     groupEpisodes: boolean;
@@ -201,11 +205,20 @@ export function DisplayOptionsMenu({
     onToggleGroupTorrentAndUsenet: () => void;
     onToggleHighlightRecent: () => void;
     onToggleRefineSurface: () => void;
+    onToggleShowCovers: () => void;
+    onToggleShowDuplicateControls: () => void;
     // "Is the refine surface currently shown", resolved by the parent from
     // whichever per-viewport mechanism is live, so this entry's checked state
     // can never disagree with the live `refine-sidebar-toggle`'s
     // `aria-expanded`.
     refineSurfaceShown: boolean;
+    // FM-177: legacy's "Show movie covers in results"
+    // (`search-results-controller.js:197`), which defaulted on there; the
+    // owner asked for off.
+    showCovers: boolean;
+    // FM-176: legacy's "Show duplicate display triggers"
+    // (`search-results-controller.js:162,205`), off by default there too.
+    showDuplicateControls: boolean;
 }) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
@@ -229,6 +242,16 @@ export function DisplayOptionsMenu({
             checked: highlightRecent,
             label: "Highlight recent",
             onToggle: onToggleHighlightRecent,
+        },
+        {
+            checked: showDuplicateControls,
+            label: "Show duplicate expand controls",
+            onToggle: onToggleShowDuplicateControls,
+        },
+        {
+            checked: showCovers,
+            label: "Show covers",
+            onToggle: onToggleShowCovers,
         },
     ];
     return (

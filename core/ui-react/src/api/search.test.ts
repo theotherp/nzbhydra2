@@ -2,6 +2,7 @@ import {describe, expect, it, vi} from "vitest";
 
 import {
     executeSearch,
+    isAbsoluteCoverUrl,
     MalformedSearchResponseError,
     mergeSearchResponses,
     parseSearchResponse,
@@ -273,6 +274,77 @@ describe("search API", () => {
                 downloadedAt: undefined,
             }),
         ]);
+    });
+
+    it("should keep both backend cover shapes, drop any other cover, and keep the result either way", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "absolute",
+                    title: "Indexer cover",
+                    cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                },
+                {
+                    // `main.proxyImages` on: Hydra serves the image itself
+                    // from a base-relative path.
+                    searchResultId: "proxied",
+                    title: "Proxied cover",
+                    cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                },
+                {
+                    searchResultId: "absent",
+                    title: "No cover",
+                    cover: null,
+                },
+                {
+                    searchResultId: "missing",
+                    title: "Cover field absent",
+                },
+                {
+                    // The boundary case (ADR-0003): an indexer-supplied string
+                    // that would execute if it reached an `<img src>`. The
+                    // cover is dropped; the result itself still displays.
+                    searchResultId: "hostile",
+                    title: "Hostile cover",
+                    cover: "javascript:alert(1)",
+                },
+                {
+                    searchResultId: "data-url",
+                    title: "Data cover",
+                    cover: "data:image/svg+xml,<svg onload='alert(1)'/>",
+                },
+                {
+                    // Neither shape: a root-relative path the transport would
+                    // refuse anyway.
+                    searchResultId: "root-relative",
+                    title: "Root relative cover",
+                    cover: "/cache/aGk=",
+                },
+            ],
+        });
+        expect(response.malformedResultCount).toBe(0);
+        expect(
+            response.searchResults.map((result) => [
+                result.searchResultId,
+                result.cover,
+            ]),
+        ).toEqual([
+            ["absolute", "https://artworks.thetvdb.com/banners/poster.jpg"],
+            ["proxied", "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw=="],
+            ["absent", undefined],
+            ["missing", undefined],
+            ["hostile", undefined],
+            ["data-url", undefined],
+            ["root-relative", undefined],
+        ]);
+    });
+
+    it("should classify only the absolute cover shape as an absolute URL", () => {
+        expect(isAbsoluteCoverUrl("http://example.com/p.jpg")).toBe(true);
+        expect(isAbsoluteCoverUrl("https://example.com/p.jpg")).toBe(true);
+        expect(isAbsoluteCoverUrl("cache/aGk=")).toBe(false);
+        expect(isAbsoluteCoverUrl("javascript:alert(1)")).toBe(false);
     });
 
     it("should preserve paging metadata and replace duplicate result identities with newer data", () => {

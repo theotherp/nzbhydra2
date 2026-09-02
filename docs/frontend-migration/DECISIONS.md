@@ -904,3 +904,16 @@ owner-relaxed for `bright`. Not exercised by FM-172; the narrowed `categorical[0
 pre-measurement proposal, not part of the owner's decision (which was: per-theme colour, asserted where labels paint).
 Measured against the sRGB-clamped rendering of `bright`'s `categorical[0]` (`rgb(0,135,129)`), white reaches only
 4.40:1; the label is `#000000` (4.77:1). The per-theme principle and the `categorical[0]` narrowing are unchanged.
+
+## ADR-0054 — Results display options stay in `localStorage`; covers honour `searching.coverSize` (accepted 2026-09-02)
+
+The FM-175..FM-178 batch design raised two questions. **Persistence:** the owner asked for the new duplicate-controls
+and covers display options to "persist per user", but every existing results display option (`compactRows`,
+`highlightRecent`, sidebar and section state, sorting) lives in browser `localStorage` under
+`hydra.search-results.table` (`storedChoices.ts`), and only the theme (ADR-0049) uses `C-SERVER-PREFERENCES`.
+Decision: the new keys join the existing ones in `localStorage` (per browser). Moving *all* display options to
+server-side per-user storage remains a possible future packet with its own decision entry; adding only the new keys
+server-side is rejected as inconsistent. **Cover width:** the owner said 100px, but `searching.coverSize` already exists
+(`baseConfig.yml`, default 128; Config → Searching "Cover width", help text "when enabled in display options").
+Decision: React honours `searching.coverSize` (fallback 100 when absent) and the default stays 128; no Java change.
+Binding on FM-176 and FM-177. Owner decided 2026-09-02.

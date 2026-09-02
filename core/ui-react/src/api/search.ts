@@ -43,6 +43,15 @@ export type SearchResult = {
     /** The usenet poster/source string a Binsearch query is built from. */
     source?: string;
     hasNfo?: HasNfo;
+    /**
+     * FM-177: the indexer's cover image for this result, in one of the two
+     * shapes the backend emits (`InternalSearchResultProcessor.transformSearchResults`):
+     * the indexer's own absolute `http(s)` URL, or -- with `main.proxyImages`
+     * on -- the base-relative `cache/<base64 of that URL>` path served by
+     * Hydra itself. Present only when the result carried a cover and the
+     * value passed the boundary check below (`isSupportedCoverUrl`).
+     */
+    cover?: string;
     hash?: number;
     downloadType?: string;
     showtitle?: string;
@@ -220,6 +229,21 @@ const resultSchema = z.object({
         .finite()
         .nullish()
         .transform((value) => value ?? undefined),
+    // FM-177 (ADR-0003): the cover is an indexer-supplied string that ends up
+    // in an `<img src>`, so it is checked here rather than at the render site,
+    // and anything that is not one of the backend's own two shapes is dropped
+    // (`cover: undefined`) instead of invalidating the whole result -- a
+    // result whose cover cannot be trusted still displays, just without an
+    // image. `z.string().url()` cannot express this: it rejects the relative
+    // `cache/...` shape and accepts `javascript:`/`data:` URLs.
+    cover: z
+        .string()
+        .nullish()
+        .transform((value) =>
+            typeof value === "string" && isSupportedCoverUrl(value)
+                ? value
+                : undefined,
+        ),
     downloadType: z
         .string()
         .min(1)
@@ -256,6 +280,36 @@ const resultSchema = z.object({
         .nullish()
         .transform((value) => value ?? undefined),
 });
+
+/**
+ * FM-177: the backend's proxied cover shape -- `cache/` plus the standard
+ * (not URL-safe) Base64 of the indexer's own URL, which is exactly this
+ * alphabet. A base-relative path with no scheme, no leading `/` and no `.`,
+ * so it can neither name another origin nor climb out of the application
+ * base; `ApiTransport.browserTransferUrl` re-checks the containment anyway.
+ */
+const PROXIED_COVER_PATH = /^cache\/[A-Za-z0-9+/=]+$/;
+
+/**
+ * Whether a validated `SearchResult.cover` is the indexer's own absolute URL
+ * (used as `src` verbatim) rather than the proxied `cache/...` path (which
+ * has to be resolved against the application base first).
+ */
+export function isAbsoluteCoverUrl(cover: string): boolean {
+    let parsed: URL;
+    try {
+        parsed = new URL(cover);
+    } catch {
+        return false;
+    }
+    // Only the two web schemes: an indexer that hands back `javascript:` or a
+    // `data:` payload must never reach an `<img src>`.
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+}
+
+function isSupportedCoverUrl(cover: string): boolean {
+    return isAbsoluteCoverUrl(cover) || PROXIED_COVER_PATH.test(cover);
+}
 
 const metadataSchema = z.object({
     indexerName: z.string().min(1),

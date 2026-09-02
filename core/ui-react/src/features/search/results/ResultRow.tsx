@@ -15,11 +15,24 @@ import {
 import type {ReactNode} from "react";
 import {memo} from "react";
 
-import type {SearchResult} from "../../../api/search";
+import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
 import {DirectDownloadActions} from "./DownloadActions";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {formatResultDetails, formatResultSize} from "./resultTable";
+
+/**
+ * FM-176: the two expand-control slots the current render reserves in every
+ * row's title cell, in render order -- `title` (left) then `duplicate`
+ * (right). A slot is reserved as soon as one visible row carries that control;
+ * rows without it render an `ExpandSpacer` there. `duplicate` is additionally
+ * gated by the "Show duplicate expand controls" display option, so with the
+ * option off no duplicate control and no slot for one exists at all.
+ */
+export type ExpandSlots = {
+    duplicate: boolean;
+    title: boolean;
+};
 
 type ResultColumn = {
     align: "left" | "right";
@@ -28,6 +41,12 @@ type ResultColumn = {
     testId?: string;
     value: (result: SearchResult) => ReactNode;
 };
+
+// FM-175: the title cell's horizontal padding, in theme spacing units. The
+// same 8px `SearchResults.tsx` gives every other body cell (`ROW_PADDING_X`
+// there), restated here because this is the one cell whose left padding also
+// carries the nesting indent and therefore cannot be set from the table.
+const TITLE_CELL_PADDING_X = 1;
 
 const resultColumns: ResultColumn[] = [
     {
@@ -75,6 +94,7 @@ const resultColumns: ResultColumn[] = [
 ];
 
 export const ResultRow = memo(function ResultRow({
+    coverWidth,
     dereferer,
     downloaded,
     duplicateExpanded,
@@ -97,18 +117,31 @@ export const ResultRow = memo(function ResultRow({
     titleGroupKey,
     transport,
 }: {
+    // FM-177: the width, in px, one cover is rendered at -- `undefined` while
+    // the "Show covers" display option is off, which is what makes the option
+    // reserve no width at all rather than render a zero-width image. A
+    // primitive rather than the whole safe config, so the memoized row keeps
+    // its `memo` comparison (the same reason `recent` and `indexerColors` are
+    // resolved by the parent).
+    coverWidth?: number;
     dereferer: unknown;
     downloaded: boolean;
     duplicateExpanded: boolean;
     duplicateKey: string;
-    // FM-150: how many expand-control slots every row of the current render
-    // reserves -- the largest number of expand controls any single visible row
-    // carries (0, 1, or both). A row renders its own controls and then pads the
-    // rest with same-sized invisible spacers, so the title text of every row at
-    // one nesting level starts at the same x whether or not that row can expand
-    // anything. The parent computes it because only the parent can see every
-    // rendered row.
-    expandSlots: number;
+    // FM-150/FM-176: which expand-control slots every row of the current
+    // render reserves. The parent computes it because only the parent can see
+    // every rendered row: a slot exists as soon as *any* visible row carries
+    // that control, and every row then renders either its own control or a
+    // same-sized invisible spacer in it, so the title text of every row at one
+    // nesting level starts at the same x whether or not that row can expand
+    // anything.
+    //
+    // FM-176 made the slots positional (they were a plain count before, padded
+    // after the row's own controls): the left slot is always the title-group
+    // control and the right slot always the duplicate control, so a
+    // duplicate-only row renders [spacer][duplicate] and never puts its
+    // duplicate control where a neighbouring row shows its group control.
+    expandSlots: ExpandSlots;
     // FM-096: indexer name -> validated `rgb(r,g,b)` colour, built once per
     // config change in the parent (`indexerColorsFromSafeConfig`) and passed
     // down as this stable reference -- looking it up here rather than
@@ -137,10 +170,16 @@ export const ResultRow = memo(function ResultRow({
     titleGroupKey: string;
     transport: ApiTransport;
 }) {
-    const reservedSpacers = Math.max(
-        0,
-        expandSlots - (showTitleExpand ? 1 : 0) - (showDuplicateExpand ? 1 : 0),
-    );
+    // FM-177: the two cover shapes the backend emits (see `SearchResult.cover`).
+    // The absolute one is used verbatim; the proxied `cache/...` one is
+    // resolved against the application base through the transport, so it keeps
+    // working under a non-root base URL -- a hardcoded root path would not.
+    const coverSrc =
+        coverWidth !== undefined && result.cover !== undefined
+            ? isAbsoluteCoverUrl(result.cover)
+                ? result.cover
+                : transport.browserTransferUrl(result.cover)
+            : undefined;
     return (
         <TableRow
             data-result-id={result.searchResultId}
@@ -247,7 +286,19 @@ export const ResultRow = memo(function ResultRow({
                             // affordance anywhere, so hiding a title's tail
                             // would have no way back.
                             overflowWrap: isTitle ? "anywhere" : undefined,
-                            pl: isTitle ? 2 + nestingLevel * 2 : undefined,
+                            // FM-175: the title cell's own horizontal padding
+                            // is 8px, the same as every other body cell, but
+                            // it is authored here rather than in the table's
+                            // `sx` because only this cell adds the nesting
+                            // indent on top of it -- a descendant selector on
+                            // the table would outrank a per-cell `pl` and
+                            // flatten the hierarchy. One nesting level is
+                            // still 16px, unchanged; only the level-0 base
+                            // moved from 16px to 8px.
+                            pl: isTitle
+                                ? TITLE_CELL_PADDING_X + nestingLevel * 2
+                                : undefined,
+                            pr: isTitle ? TITLE_CELL_PADDING_X : undefined,
                             whiteSpace: isTitle ? "normal" : "nowrap",
                         }}
                     >
@@ -266,53 +317,83 @@ export const ResultRow = memo(function ResultRow({
                                 flexWrap="nowrap"
                                 gap={0.5}
                             >
-                                {showTitleExpand && (
-                                    <ExpandControl
-                                        expanded={titleExpanded}
-                                        collapsedIcon={
-                                            <KeyboardArrowRightIcon fontSize="small" />
-                                        }
-                                        expandedIcon={
-                                            <KeyboardArrowDownIcon fontSize="small" />
-                                        }
-                                        label={
-                                            titleExpanded
-                                                ? "Collapse group"
-                                                : "Expand group"
-                                        }
-                                        onToggle={() =>
-                                            onToggleTitleExpansion(
-                                                titleGroupKey,
-                                            )
-                                        }
+                                {/* Slot 1 (left) is always the title-group
+                                    control, slot 2 (right) always the
+                                    duplicate one: whichever a row cannot
+                                    offer, it reserves with a spacer instead of
+                                    sliding the other control leftwards. */}
+                                {expandSlots.title &&
+                                    (showTitleExpand ? (
+                                        <ExpandControl
+                                            expanded={titleExpanded}
+                                            collapsedIcon={
+                                                <KeyboardArrowRightIcon fontSize="small" />
+                                            }
+                                            expandedIcon={
+                                                <KeyboardArrowDownIcon fontSize="small" />
+                                            }
+                                            label={
+                                                titleExpanded
+                                                    ? "Collapse group"
+                                                    : "Expand group"
+                                            }
+                                            onToggle={() =>
+                                                onToggleTitleExpansion(
+                                                    titleGroupKey,
+                                                )
+                                            }
+                                        />
+                                    ) : (
+                                        <ExpandSpacer />
+                                    ))}
+                                {expandSlots.duplicate &&
+                                    (showDuplicateExpand ? (
+                                        <ExpandControl
+                                            expanded={duplicateExpanded}
+                                            collapsedIcon={
+                                                <UnfoldMoreIcon fontSize="small" />
+                                            }
+                                            expandedIcon={
+                                                <UnfoldLessIcon fontSize="small" />
+                                            }
+                                            label={
+                                                duplicateExpanded
+                                                    ? "Collapse duplicates"
+                                                    : "Expand duplicates"
+                                            }
+                                            onToggle={() =>
+                                                onToggleDuplicateExpansion(
+                                                    duplicateKey,
+                                                )
+                                            }
+                                        />
+                                    ) : (
+                                        <ExpandSpacer />
+                                    ))}
+                                {/* FM-177: the cover, between the expand
+                                    slots and the title text (legacy's
+                                    position, `search-result.html:23-24`).
+                                    `alt=""` because the title beside it is
+                                    already the row's accessible content --
+                                    the image adds nothing a screen reader
+                                    needs -- and the row's height simply grows
+                                    to it, which the virtualizer's existing
+                                    `measureElement` observer picks up when a
+                                    late-loading image changes it. */}
+                                {coverSrc !== undefined && (
+                                    <Box
+                                        alt=""
+                                        component="img"
+                                        data-testid="search-result-cover"
+                                        loading="lazy"
+                                        src={coverSrc}
+                                        sx={{
+                                            display: "block",
+                                            flexShrink: 0,
+                                            height: "auto",
+                                            width: coverWidth,
+                                        }}
                                     />
-                                )}
-                                {showDuplicateExpand && (
-                                    <ExpandControl
-                                        expanded={duplicateExpanded}
-                                        collapsedIcon={
-                                            <UnfoldMoreIcon fontSize="small" />
-                                        }
-                                        expandedIcon={
-                                            <UnfoldLessIcon fontSize="small" />
-                                        }
-                                        label={
-                                            duplicateExpanded
-                                                ? "Collapse duplicates"
-                                                : "Expand duplicates"
-                                        }
-                                        onToggle={() =>
-                                            onToggleDuplicateExpansion(
-                                                duplicateKey,
-                                            )
-                                        }
-                                    />
-                                )}
-                                {Array.from(
-                                    {length: reservedSpacers},
-                                    (_, index) => (
-                                        <ExpandSpacer key={index} />
-                                    ),
                                 )}
                                 <Box>{column.value(result)}</Box>
                             </Stack>

@@ -714,6 +714,7 @@ describe("SearchResults", () => {
             />,
         );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        enableDuplicateControls();
         const expandDuplicates = screen.getByRole("button", {
             name: "Expand duplicates",
         });
@@ -1183,6 +1184,7 @@ describe("SearchResults", () => {
             target: {value: "Alpha"},
         });
         await settleFilterCommits();
+        enableDuplicateControls();
         fireEvent.click(
             screen.getByRole("button", {name: "Expand duplicates"}),
         );
@@ -1868,6 +1870,14 @@ describe("SearchResults", () => {
     });
 
     it("should indent and mark nested duplicate rows distinctly from their parent", () => {
+        // FM-176: the one case that pins the persisted option instead of
+        // clicking it, which also proves `showDuplicateControls` is restored
+        // on mount the way `compactRows` is.
+        stubWorkingLocalStorage();
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({showDuplicateControls: true}),
+        );
         renderResults(
             <SearchResults
                 data={{
@@ -2598,7 +2608,151 @@ describe("SearchResults", () => {
         expect(displayOption("Group TV episodes")).not.toBeChecked();
     });
 
-    it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting and filters", async () => {
+    it("should reset a typed title filter, a size range, and a toggled quick filter on a new search while keeping them across onLoadMore", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            safeConfig: {searching: {showQuickFilterButtons: true}},
+        };
+        const {rerender: rerenderRoot} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB-DL",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 2 * 1024 * 1024,
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        // `renderResults`' own `rerender` would replace the provider wrapper
+        // and so remount `SearchResults`; a new search instead re-renders the
+        // mounted component with new props.
+        const rerenderResults = (ui: React.ReactNode) =>
+            rerenderRoot(
+                <DialogProvider>
+                    <ToastProvider>{ui}</ToastProvider>
+                </DialogProvider>,
+            );
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "zulu"},
+        });
+        fireEvent.change(screen.getByTestId("number-filter-min-refine-size"), {
+            target: {value: "4"},
+        });
+        fireEvent.click(screen.getByRole("button", {name: "WEB"}));
+        await settleFilterCommits();
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("zulu");
+        expect(screen.getByTestId("number-filter-min-refine-size")).toHaveValue(
+            4,
+        );
+        expect(screen.getByRole("button", {name: "WEB"})).toHaveAttribute(
+            "aria-pressed",
+            "true",
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Zulu WEB-DL",
+        );
+
+        // `onLoadMore` keeps the same `searchRequestId`: every pinned filter
+        // survives it.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB-DL",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 2 * 1024 * 1024,
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Zulu Extra",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("zulu");
+        expect(screen.getByTestId("number-filter-min-refine-size")).toHaveValue(
+            4,
+        );
+        expect(screen.getByRole("button", {name: "WEB"})).toHaveAttribute(
+            "aria-pressed",
+            "true",
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Zulu WEB-DL",
+        );
+
+        // A new search (a new `searchRequestId`) resets every one of them.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "4",
+                            title: "Charlie WEB-DL",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 3 * 1024 * 1024,
+                        },
+                        {
+                            searchResultId: "5",
+                            title: "Delta BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 1 * 1024 * 1024,
+                        },
+                    ],
+                }}
+                searchRequestId={2}
+            />,
+        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeDisabled();
+        expect(screen.getByRole("button", {name: "WEB"})).toHaveAttribute(
+            "aria-pressed",
+            "false",
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting, while the title filter does not survive a fresh mount", async () => {
         // See `stubWorkingLocalStorage`: this environment's `window.localStorage`
         // is otherwise unavailable, so a genuine unmount/remount persistence
         // round trip needs a real, working `Storage` installed first.
@@ -2633,6 +2787,8 @@ describe("SearchResults", () => {
         fireEvent.click(toggle);
         expect(toggle).toHaveAttribute("aria-expanded", "true");
         fireEvent.click(screen.getByTestId("sort-title"));
+        // FM-178: a typed title filter is scoped to this search's results and
+        // is never written to the persisted payload.
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
@@ -2643,8 +2799,9 @@ describe("SearchResults", () => {
         unmount();
 
         // A fresh mount reads the same `hydra.search-results.table`
-        // localStorage payload the sidebar's collapsed state now shares with
-        // sorting and filters -- all three come back together.
+        // localStorage payload the sidebar's collapsed state shares with
+        // sorting -- both come back -- but starts with a clean title filter,
+        // since `filters` is no longer part of that payload.
         renderResults(
             <SearchResults
                 data={{
@@ -2662,10 +2819,8 @@ describe("SearchResults", () => {
             "data-sort-direction",
             "asc",
         );
-        expect(screen.getByTestId("refine-filter-title")).toHaveValue("alpha");
-        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
-            "Alpha Result",
-        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
 
     it("should persist the refine sidebar's Category/Indexer collapse state in the existing search-results-table payload, independently of each other", () => {
@@ -2814,15 +2969,15 @@ describe("SearchResults", () => {
         );
     });
 
-    it("should never persist the refine indexer and category selection, ignoring a stale stored one and reselecting everything on a fresh mount", () => {
+    it("should never persist any refine filter, ignoring a stale stored one and resetting everything -- including the title filter -- on a fresh mount", () => {
         // See `stubWorkingLocalStorage`: a genuine persistence round trip
         // needs a real, working `Storage` installed first.
         stubWorkingLocalStorage();
         // A payload written by an older build (or by a hand-edited
-        // localStorage entry) still carries an indexer/category selection.
-        // Both are scoped to the results of the search they were made in and
-        // must be ignored, while everything else in the same payload is
-        // still restored.
+        // localStorage entry) still carries a `filters` key -- including an
+        // indexer/category selection and a title, both scoped to the results
+        // of the search they were made in -- which must be ignored entirely
+        // on mount; only the collapse state below is restored.
         window.localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify({
@@ -2857,8 +3012,9 @@ describe("SearchResults", () => {
             />,
         );
         fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
-        // The rest of the stored payload still applies.
-        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        // The stale stored title and selection are entirely ignored: every
+        // filter starts at its own default, not the stored one.
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
         expect(selectedFilterValues("refine-indexer-option")).toEqual([
             "Mock",
             "Other",
@@ -2869,8 +3025,11 @@ describe("SearchResults", () => {
         ]);
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
-        // Deselecting within this search still filters, but is never written
-        // to the persisted payload.
+        // Typing a title and deselecting within this search still filters,
+        // but none of it is ever written to the persisted payload.
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "result"},
+        });
         fireEvent.click(
             screen
                 .getAllByTestId("refine-indexer-option")
@@ -2888,17 +3047,15 @@ describe("SearchResults", () => {
                 )[0],
         );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
-        const stored: {filters?: Record<string, unknown>} = JSON.parse(
+        const stored: Record<string, unknown> = JSON.parse(
             window.localStorage.getItem(STORAGE_KEY) ?? "{}",
         );
-        expect(stored.filters).toBeDefined();
-        expect(stored.filters).not.toHaveProperty("indexers");
-        expect(stored.filters).not.toHaveProperty("categories");
-        expect(stored.filters?.title).toBe("result");
+        expect(stored).not.toHaveProperty("filters");
         unmount();
 
-        // A fresh mount restores the title filter and starts with every
-        // indexer and category selected again.
+        // A fresh mount starts every filter at its default again -- no
+        // title, every indexer and category selected -- since `filters` is
+        // no longer part of the persisted payload.
         renderResults(
             <SearchResults
                 data={{
@@ -2914,7 +3071,7 @@ describe("SearchResults", () => {
             "aria-expanded",
             "true",
         );
-        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
         expect(selectedFilterValues("refine-indexer-option")).toEqual([
             "Mock",
             "Other",
@@ -3059,14 +3216,15 @@ describe("SearchResults", () => {
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
 
-    it("should never persist the refine download-type selection and reselect every type a new search returns", () => {
+    it("should never persist the refine download-type selection or title filter, and reselect every type -- while resetting the title -- on a new search", async () => {
         // See `stubWorkingLocalStorage`: a genuine persistence round trip
         // needs a real, working `Storage` installed first.
         stubWorkingLocalStorage();
         // The download-type chips are derived from the loaded results exactly
         // like the indexer and category lists, so a stored selection has the
         // same failure mode: a search that returned only NZBs would hide
-        // every torrent of the next search.
+        // every torrent of the next search. The stored title is likewise
+        // ignored: FM-178 scopes every refine filter to one search.
         window.localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify({
@@ -3108,28 +3266,68 @@ describe("SearchResults", () => {
                 </DialogProvider>,
             );
         fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
-        // The stored title filter still applies; the stored download-type
-        // selection is ignored.
-        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        // The stored title and download-type selection are both ignored.
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
         expect(selectedTypeChips()).toEqual(["NZB", "TORRENT"]);
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
-        // Deselecting within this search still filters, but is never written
-        // to the persisted payload.
+        // Typing a title and deselecting within this search still filters,
+        // but neither is ever written to the persisted payload.
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        await settleFilterCommits();
         fireEvent.click(typeChip("TORRENT"));
         expect(selectedTypeChips()).toEqual(["NZB"]);
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha Result",
         );
-        const stored: {filters?: Record<string, unknown>} = JSON.parse(
+        const stored: Record<string, unknown> = JSON.parse(
             window.localStorage.getItem(STORAGE_KEY) ?? "{}",
         );
-        expect(stored.filters).toBeDefined();
-        expect(stored.filters).not.toHaveProperty("downloadTypes");
-        expect(stored.filters?.title).toBe("result");
+        expect(stored).not.toHaveProperty("filters");
+
+        // Loading more into the *same* search keeps both the typed title and
+        // the deselected type.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "TORRENT",
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Alpha Charlie",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("alpha");
+        expect(selectedTypeChips()).toEqual(["NZB"]);
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
         // A new search selects every download type of the new results,
-        // including one the previous search never returned.
+        // including one the previous search never returned, and clears the
+        // typed title.
         rerenderResults(
             <SearchResults
                 data={{
@@ -3137,14 +3335,14 @@ describe("SearchResults", () => {
                     numberOfAvailableResults: 2,
                     searchResults: [
                         {
-                            searchResultId: "3",
+                            searchResultId: "4",
                             title: "Charlie Result",
                             indexer: "Mock",
                             category: "Movies",
                             downloadType: "TORRENT",
                         },
                         {
-                            searchResultId: "4",
+                            searchResultId: "5",
                             title: "Delta Result",
                             indexer: "Mock",
                             category: "Movies",
@@ -3155,6 +3353,7 @@ describe("SearchResults", () => {
                 searchRequestId={2}
             />,
         );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
         expect(selectedTypeChips()).toEqual(["TORBOX", "TORRENT"]);
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
@@ -3192,6 +3391,8 @@ describe("SearchResults", () => {
             ["Group TV episodes", true],
             ["Compact rows", false],
             ["Highlight recent", false],
+            ["Show duplicate expand controls", false],
+            ["Show covers", false],
             ["Show refine sidebar", false],
         ]);
     });
@@ -3294,7 +3495,124 @@ describe("SearchResults", () => {
         expect(ageColor("Ageless release")).toBe(ageColor("Older release"));
     });
 
-    it("should persist compact rows and highlight recent in the existing search-results-table payload without persisting the mobile drawer", () => {
+    it("should render a cover only while show covers is enabled, at the configured width and resolved against the application base", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/hydra/",
+            safeConfig: {searching: {coverSize: 140}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Absolute cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Proxied cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Coverless result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                    ],
+                }}
+            />,
+        );
+        // Off by default (the owner's choice; legacy defaulted this on), so
+        // no image renders even for the two results that carry a cover.
+        closeDisplayOptions();
+        expect(screen.queryAllByTestId("search-result-cover")).toHaveLength(0);
+
+        fireEvent.click(displayOption("Show covers"));
+        expect(displayOption("Show covers")).toBeChecked();
+        closeDisplayOptions();
+
+        expect(screen.getAllByTestId("search-result-cover")).toHaveLength(2);
+        const absolute = within(resultRow("Absolute cover")).getByTestId(
+            "search-result-cover",
+        );
+        // The indexer's own URL is used verbatim; the proxied path is resolved
+        // through the transport, so it stays under a non-root application base
+        // instead of becoming a root path.
+        expect(absolute).toHaveAttribute(
+            "src",
+            "https://artworks.thetvdb.com/banners/poster.jpg",
+        );
+        expect(absolute).toHaveAttribute("alt", "");
+        expect(absolute).toHaveAttribute("loading", "lazy");
+        expect(getComputedStyle(absolute).width).toBe("140px");
+        expect(getComputedStyle(absolute).height).toBe("auto");
+        expect(
+            within(resultRow("Proxied cover")).getByTestId(
+                "search-result-cover",
+            ),
+        ).toHaveAttribute(
+            "src",
+            "http://localhost:3000/hydra/cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+        );
+        // A result without a cover renders no image and reserves nothing.
+        expect(
+            within(resultRow("Coverless result")).queryByTestId(
+                "search-result-cover",
+            ),
+        ).not.toBeInTheDocument();
+
+        // The image sits between the expand slots and the title text, in the
+        // title cell's own row stack, so the title still follows it.
+        expect(
+            [...absolute.parentElement!.children].map(
+                (element) =>
+                    element.getAttribute("data-testid") ?? element.textContent,
+            ),
+        ).toEqual(["search-result-cover", "Absolute cover"]);
+
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+        expect(screen.queryAllByTestId("search-result-cover")).toHaveLength(0);
+    });
+
+    it("should fall back to a 100px cover when the configuration carries no usable cover size", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {searching: {coverSize: 0}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Absolute cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+        expect(
+            getComputedStyle(screen.getByTestId("search-result-cover")).width,
+        ).toBe("100px");
+    });
+
+    it("should persist compact rows, highlight recent, and the duplicate-controls option in the existing search-results-table payload without persisting the mobile drawer", () => {
         stubWorkingLocalStorage();
         const searchResults = [
             {
@@ -3315,20 +3633,25 @@ describe("SearchResults", () => {
         );
         fireEvent.click(displayOption("Compact rows"));
         fireEvent.click(displayOption("Highlight recent"));
+        fireEvent.click(displayOption("Show duplicate expand controls"));
+        fireEvent.click(displayOption("Show covers"));
         closeDisplayOptions();
         const stored = storedChoices();
         expect(stored).toMatchObject({
             compactRows: true,
             highlightRecent: true,
+            showCovers: true,
+            showDuplicateControls: true,
         });
         // The sidebar shortcut adds no key of its own, and the below-`sm`
         // drawer's transient open state is deliberately not persisted.
         expect(Object.keys(stored).sort()).toEqual([
             "compactRows",
-            "filters",
             "highlightRecent",
             "refineCategoryOpen",
             "refineIndexerOpen",
+            "showCovers",
+            "showDuplicateControls",
             "sidebarCollapsed",
             "sorting",
         ]);
@@ -3345,6 +3668,8 @@ describe("SearchResults", () => {
         );
         expect(displayOption("Compact rows")).toBeChecked();
         expect(displayOption("Highlight recent")).toBeChecked();
+        expect(displayOption("Show duplicate expand controls")).toBeChecked();
+        expect(displayOption("Show covers")).toBeChecked();
     });
 
     it("should drive the persisted docked-sidebar preference from the display-options shortcut at sm and up", () => {
@@ -4079,18 +4404,43 @@ describe("SearchResults", () => {
             ).toHaveLength(0);
         });
 
-        it("should reserve one slot on the bare rows when the widest row carries one control", () => {
+        // FM-176: with the option off the duplicate control is not merely
+        // hidden -- it does not exist, reserves no width, and its group stays
+        // collapsed under its first row, which is exactly legacy's behavior
+        // when `duplicatesDisplayed` was false.
+        it("should render no duplicate control and reserve no width for one while the option is off", () => {
             renderResults(
                 <SearchResults data={mixedExpandData(["duplicate"])} />,
             );
 
             expect(
-                screen.getByRole("button", {name: "Expand duplicates"}),
-            ).toBeInTheDocument();
-            expect(spacersByRowTitle()).toEqual({
-                "Alpha release": 0,
-                "Zulu release": 1,
-            });
+                screen.queryAllByTestId("search-result-expand-spacer"),
+            ).toHaveLength(0);
+            expect(
+                screen.queryAllByRole("button", {
+                    name: /^(Expand|Collapse) duplicates$/,
+                }),
+            ).toHaveLength(0);
+            expect(document.body.textContent).not.toContain(
+                "Expand duplicates",
+            );
+            expect(document.body.textContent).not.toContain(
+                "Collapse duplicates",
+            );
+            // Both duplicates of "Alpha release" stay folded into one row.
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        });
+
+        it("should reserve one slot on the bare rows when the widest row carries one control", () => {
+            renderResults(
+                <SearchResults data={mixedExpandData(["duplicate"])} />,
+            );
+            enableDuplicateControls();
+
+            expect(expandSlotsByRow()).toEqual([
+                ["Alpha release", ["Expand duplicates"]],
+                ["Zulu release", ["spacer"]],
+            ]);
         });
 
         it("should reserve two slots when the widest row carries both controls", () => {
@@ -4099,17 +4449,26 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
+            enableDuplicateControls();
 
-            expect(
-                screen.getByRole("button", {name: "Expand group"}),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("button", {name: "Expand duplicates"}),
-            ).toBeInTheDocument();
-            expect(spacersByRowTitle()).toEqual({
-                "Alpha release": 0,
-                "Zulu release": 2,
-            });
+            expect(expandSlotsByRow()).toEqual([
+                ["Alpha release", ["Expand group", "Expand duplicates"]],
+                ["Zulu release", ["spacer", "spacer"]],
+            ]);
+        });
+
+        // FM-176: the slots are positional, so a row that can only expand
+        // duplicates leaves the group slot empty rather than sliding its
+        // duplicate control into the x where the neighbouring row shows its
+        // group control.
+        it("should keep the group slot left and the duplicate slot right on a duplicate-only row", () => {
+            renderResults(<SearchResults data={groupAndDuplicateOnlyRows()} />);
+            enableDuplicateControls();
+
+            expect(expandSlotsByRow()).toEqual([
+                ["Alpha release", ["Expand group", "spacer"]],
+                ["Bravo release", ["spacer", "Expand duplicates"]],
+            ]);
         });
 
         it("should keep every row's reservation equal while a group is expanded", () => {
@@ -4118,15 +4477,49 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
+            enableDuplicateControls();
 
             fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
 
-            // The revealed row carries no control of its own, so it pads to
-            // the same two slots the expanded row spends on real controls.
-            expect(spacersByRowTitle()).toEqual({
-                "Alpha release": [0, 2],
-                "Zulu release": 2,
-            });
+            // The revealed row carries no control of its own, so it spends
+            // both slots on spacers -- in the same positions.
+            expect(expandSlotsByRow()).toEqual([
+                ["Alpha release", ["Collapse group", "Expand duplicates"]],
+                ["Alpha release", ["spacer", "spacer"]],
+                ["Zulu release", ["spacer", "spacer"]],
+            ]);
+        });
+
+        // FM-176: turning the option off while a duplicate group is expanded
+        // must not leave that group expanded with no control to collapse it.
+        it("should collapse an expanded duplicate group when the option is switched off", () => {
+            renderResults(
+                <SearchResults data={mixedExpandData(["duplicate"])} />,
+            );
+            enableDuplicateControls();
+            fireEvent.click(
+                screen.getByRole("button", {name: "Expand duplicates"}),
+            );
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
+
+            enableDuplicateControls();
+
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+            expect(
+                screen.queryAllByRole("button", {
+                    name: /^(Expand|Collapse) duplicates$/,
+                }),
+            ).toHaveLength(0);
+            expect(
+                screen.queryAllByTestId("search-result-expand-spacer"),
+            ).toHaveLength(0);
+
+            // Switching it back on starts from the collapsed state.
+            enableDuplicateControls();
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+            expect(
+                screen.getByRole("button", {name: "Expand duplicates"}),
+            ).toBeInTheDocument();
         });
 
         it("should render both expand controls as icon buttons that keep their accessible names", () => {
@@ -4135,6 +4528,7 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
+            enableDuplicateControls();
 
             const group = screen.getByRole("button", {name: "Expand group"});
             const duplicates = screen.getByRole("button", {
@@ -4250,24 +4644,71 @@ function mixedExpandData(controls: ("duplicate" | "title")[]) {
 }
 
 /**
- * Spacers rendered per row title: a number for a title with one rendered row,
- * an array in render order for a title with several.
+ * FM-176 fixture: a title-group-only row ("Alpha release", two differently
+ * hashed results under one title) above a duplicate-only row ("Bravo
+ * release", two same-hash results). The pair is what makes a positional slot
+ * observable -- with the slots padded rather than positional, Bravo's
+ * duplicate control renders in the x Alpha spends on its group control.
  */
-function spacersByRowTitle(): Record<string, number | number[]> {
-    const counts: Record<string, number[]> = {};
-    for (const row of screen.getAllByTestId("search-result-row")) {
+function groupAndDuplicateOnlyRows() {
+    const searchResults = [
+        {
+            searchResultId: "alpha-one",
+            title: "Alpha release",
+            indexer: "One",
+            category: "TV",
+            hash: 1,
+        },
+        {
+            searchResultId: "alpha-two",
+            title: "Alpha release",
+            indexer: "Two",
+            category: "TV",
+            hash: 2,
+        },
+        {
+            searchResultId: "bravo-one",
+            title: "Bravo release",
+            indexer: "Three",
+            category: "TV",
+            hash: 3,
+        },
+        {
+            searchResultId: "bravo-two",
+            title: "Bravo release",
+            indexer: "Four",
+            category: "TV",
+            hash: 3,
+        },
+    ];
+    return {
+        ...response,
+        numberOfAvailableResults: searchResults.length,
+        searchResults,
+    };
+}
+
+/**
+ * Every rendered row's title paired with what occupies its expand slots, both
+ * in render order: a control's accessible name, or "spacer" for the invisible
+ * placeholder that reserves the same box. Asserting the sequence (not a
+ * count) is what pins FM-176's rule that slot 1 is always the title-group
+ * control and slot 2 always the duplicate one.
+ */
+function expandSlotsByRow(): [string, string[]][] {
+    return screen.getAllByTestId("search-result-row").map((row) => {
         const title = row.getAttribute("data-result-title") ?? "";
-        counts[title] = [
-            ...(counts[title] ?? []),
-            within(row).queryAllByTestId("search-result-expand-spacer").length,
-        ];
-    }
-    return Object.fromEntries(
-        Object.entries(counts).map(([title, values]) => [
-            title,
-            values.length === 1 ? values[0] : values,
-        ]),
-    );
+        const slots = [
+            ...(row
+                .querySelector('td[data-label="Title"]')
+                ?.querySelectorAll(".MuiIconButton-root") ?? []),
+        ].map((button) =>
+            button.getAttribute("data-testid") === "search-result-expand-spacer"
+                ? "spacer"
+                : (button.getAttribute("aria-label") ?? ""),
+        );
+        return [title, slots];
+    });
 }
 
 const STORAGE_KEY = "hydra.search-results.table";
@@ -4400,6 +4841,14 @@ function closeDisplayOptions(): void {
 
 function displayOption(label: string): HTMLElement {
     return within(openDisplayOptions()).getByRole("checkbox", {name: label});
+}
+
+// FM-176: the duplicate expand control is opt-in and off by default, so every
+// case that addresses it flips "Show duplicate expand controls" the way a user
+// would. Calling this again turns the option back off.
+function enableDuplicateControls(): void {
+    fireEvent.click(displayOption("Show duplicate expand controls"));
+    closeDisplayOptions();
 }
 
 // The sidebar defaults collapsed in this non-browser test environment
