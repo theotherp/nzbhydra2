@@ -391,6 +391,91 @@ test.describe("Search history", () => {
     });
 
     /**
+     * The half of FM-174's declutter the case above cannot prove: that a row
+     * whose search *carried* an identifier prints no `<key> ID` line, and
+     * that the identifier is still reachable -- as a link -- in the details
+     * dialog. The sibling above searches by plain text, so its "no ID line"
+     * assertion holds vacuously; this one searches by TMDB identifier through
+     * the real backend's movie autocomplete (the same route `search.spec.ts`
+     * drives), which is what writes `TMDB` into the history entry.
+     *
+     * The query is the deterministic movie's fixed title, so unlike the
+     * UUID-tagged searches above this row may have older siblings from
+     * earlier runs; the newest is first under the default time-descending
+     * sort, the same way the repeat case at the top of this file finds its
+     * row.
+     */
+    test("should keep an identifier out of the row and reachable as a link in the details dialog", async ({
+        page,
+    }) => {
+        const movieQuery = "Hydra Browser Movie";
+        await page.getByTestId("search-category-control").click();
+        await page.getByTestId("search-category-option-Movies").click();
+        const searchQuery = page.getByTestId("search-query");
+        const autocompleteResponse = page.waitForResponse(
+            (response) =>
+                response.request().method() === "GET" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/autocomplete/MOVIE",
+        );
+        await searchQuery.fill(movieQuery);
+        expect((await autocompleteResponse).status()).toBe(200);
+        const movieOption = page.locator(
+            '[data-testid="autocomplete-option"][data-tmdb-id="424242"]',
+        );
+        await expect(movieOption).toBeVisible();
+        await movieOption.click();
+        await expect(searchQuery).toHaveValue(movieQuery);
+
+        const searchResponse = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        const searchRequest = (await searchResponse).request();
+        // The identifier really travelled with the search; without this the
+        // row assertions below would hold for the same vacuous reason the
+        // sibling case's does.
+        expect(searchRequest.postData()).toContain('"tmdbId":"424242"');
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+
+        await page
+            .getByRole("link", {name: "History & Stats", exact: true})
+            .click();
+        await page
+            .getByRole("tab", {name: "Search history", exact: true})
+            .click();
+        const historyRow = page
+            .getByTestId("search-history-table")
+            .getByTestId("search-history-row")
+            .filter({hasText: movieQuery})
+            .first();
+        await refreshUntilHistoryRowIsVisible(page, historyRow);
+
+        await expect(historyRow).not.toContainText("TMDB");
+        await expect(historyRow).not.toContainText("424242");
+        await expect(historyRow).not.toContainText(" ID:");
+
+        await historyRow.getByTestId("search-history-details").click();
+        const requestDetails = page.getByRole("table", {
+            name: "Search request details",
+        });
+        await expect(requestDetails).toBeVisible();
+        await expect(requestDetails).toContainText("TMDB ID");
+        const identifierLink = requestDetails.getByRole("link", {
+            name: "424242",
+        });
+        await expect(identifierLink).toHaveAttribute(
+            "href",
+            "https://www.themoviedb.org/movie/424242",
+        );
+        await expect(identifierLink).toHaveAttribute("target", "_blank");
+        await page.keyboard.press("Escape");
+        await expect(
+            page.getByRole("dialog", {name: "Search details"}),
+        ).toBeHidden();
+    });
+
+    /**
      * FM-126 (ADR-0038). This table is the one the decision asked to confirm
      * first, and the before-state is worth recording: it had no scrolling
      * ancestor at all, so at 390x844 the *document* measured 687px against a

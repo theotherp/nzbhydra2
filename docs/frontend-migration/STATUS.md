@@ -1576,11 +1576,6 @@ None.
   hand-back was correct behaviour on evidence that later proved wrong: a controlled idle-machine A/B reproduces the
   flake at 5/50 and 6/50, matching FM-122's 12/100. Packet archived at `8164a8d06`.
 
-- FM-125: Autocomplete Close Flake — Mechanism And Fix. Planned, dependency-ready, next — re-opens FM-123's undelivered
-  third concern with the missing ingredient: a verified reproduction recipe (plain idle full-suite `npx vitest run`
-  loop, ~22.5s wall/run, 10–12% per-run yield across three independent measurements). The packet requires red on
-  demand, an observed mechanism, no suppression, and 50/50 green by the identical route (0.89⁵⁰ ≈ 0.3% at p ≈ 0.11).
-
 - FM-124 (System Suite Server-State Restoration) is **done** — `ddc0dff58`, accepted 2026-08-28 on a fresh
   independent review with no required findings. A `sensitiveDataLogging` fixture restores the setting in teardown
   regardless of outcome, so a mid-test failure can no longer poison the shared instance and make the *next* run fail

@@ -88,16 +88,19 @@ test.describe("Session expiry", () => {
         await expect(reload).toHaveText("Reload");
 
         // The premise of the "one dialog" claim: more than one request really
-        // was refused. Both endpoints, and no retry storm behind them --
-        // `retryUnlessUnauthorized` stops react-query from re-asking a
-        // question whose answer is 401.
-        expect(new Set(refused)).toEqual(
-            new Set([
-                "/internalapi/updates/infos",
-                "/internalapi/updates/versionHistory",
-            ]),
-        );
-        expect(refused.length).toBeGreaterThanOrEqual(2);
+        // was refused. Exactly one request per consumer and no retry storm
+        // behind them: the Updates tab asks for the infos and the version
+        // history, and the shell's update footer (`UpdateFooterBanners`, its
+        // own query key) asks for the infos again -- three requests, each
+        // refused once, because `retryUnlessUnauthorized` stops react-query
+        // from re-asking a question whose answer is 401. Asserted as the
+        // exact multiset: a `>= 2` here once hid the third request, and a
+        // plain count of two would have called the second consumer a retry.
+        expect([...refused].sort()).toEqual([
+            "/internalapi/updates/infos",
+            "/internalapi/updates/infos",
+            "/internalapi/updates/versionHistory",
+        ]);
     });
 
     /*

@@ -456,15 +456,22 @@ test.describe("Search", () => {
 
         await page.setViewportSize(visualViewports.desktop);
         await page.getByTestId("search-query").fill("visual recent history");
+        const visualSearch = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        expect((await visualSearch).status()).toBe(200);
+        // Since 0617f05b1 the recent list is fetched only while its menu is
+        // open, so the request to wait for is the one the click below
+        // issues, not one the submit above would have triggered.
         const recentSearches = page.waitForResponse(
             (response) =>
                 new URL(response.url()).pathname ===
                     "/internalapi/history/searches/forsearching" &&
                 response.request().method() === "POST",
         );
-        await page.getByTestId("search-submit").click();
-        expect((await recentSearches).status()).toBe(200);
         await page.getByTestId("recent-searches-trigger").click();
+        expect((await recentSearches).status()).toBe(200);
         const historyMenu = page.getByRole("menu", {name: "Recent searches"});
         await expect(historyMenu).toBeVisible();
         await expectVisualGeometry(page, {
@@ -910,15 +917,8 @@ test.describe("Search", () => {
         (config.main as Record<string, unknown>).keepHistory = true;
         (config.searching as Record<string, unknown>).historyForSearching = 5;
         await hydra.saveConfig(config);
-        const initialRecentSearches = page.waitForResponse(
-            (response) =>
-                response.request().method() === "POST" &&
-                new URL(response.url()).pathname ===
-                    "/internalapi/history/searches/forsearching",
-        );
         await page.goto("/");
         await expect(page).toHaveURL(/\/$/);
-        await initialRecentSearches;
         // FM-044 relocated the age/size ranges into the collapsed `Advanced`
         // disclosure and FM-087 moved the indexer selection in beside them;
         // the criteria, their bindings, and the indexer semantics are
@@ -939,7 +939,16 @@ test.describe("Search", () => {
             maxsize: 50,
             indexers: ["Mock2"],
         });
+        // Since 0617f05b1 the recent list is fetched on open, not on page
+        // load: this click is what issues the request the refill reads.
+        const recentSearches = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/history/searches/forsearching",
+        );
         await page.getByTestId("recent-searches-trigger").click();
+        expect((await recentSearches).status()).toBe(200);
         await expect(
             page.getByText(/Query: recent criteria/).first(),
         ).toBeVisible();

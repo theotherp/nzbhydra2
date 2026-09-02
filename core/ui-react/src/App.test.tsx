@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
@@ -406,6 +407,61 @@ describe("App", () => {
         // Neither 401 was retried: the predicate `queryDefaults.ts` supplies
         // is in force on this client, so each endpoint was asked exactly once.
         expect(refused).toHaveLength(2);
+    });
+
+    /*
+     * The `MutationCache` half of the same wiring, which the query case above
+     * cannot reach: every request that test refuses is a query. A saved-search
+     * deletion is the one mutation the app-wide client owns, so it is the one
+     * that can prove a 401 answered to a *write* raises the dialog too. The
+     * read of the list is answered normally, so the page renders and the
+     * refused request is the `DELETE` alone.
+     */
+    it("should raise the session-expired dialog for a 401 answered to a mutation", async () => {
+        stubWorkingLocalStorage();
+        const refused: string[] = [];
+        const backend = statsBackend();
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+                const url = typeof input === "string" ? input : String(input);
+                if (url.includes("internalapi/savedsearches")) {
+                    if (init?.method === "DELETE") {
+                        refused.push(new URL(url, "http://localhost").pathname);
+                        return new Response("Unauthorized", {status: 401});
+                    }
+                    return new Response(
+                        JSON.stringify([{categoryName: "All", query: "stale"}]),
+                        {
+                            status: 200,
+                            headers: {"Content-Type": "application/json"},
+                        },
+                    );
+                }
+                return backend.fetch(input, init);
+            }),
+        );
+        window.history.pushState({}, "", "/hydra/stats/saved-searches");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const row = await screen.findByRole("row", {name: /stale/});
+        expect(screen.queryByTestId("session-expired-dialog")).toBeNull();
+        fireEvent.click(within(row).getByRole("button", {name: "Delete"}));
+        fireEvent.click(
+            within(screen.getByRole("dialog", {name: /delete/i})).getByRole(
+                "button",
+                {name: "Delete"},
+            ),
+        );
+
+        expect(
+            await screen.findByTestId("session-expired-dialog"),
+        ).toBeVisible();
+        await settle();
+        expect(screen.getAllByTestId("session-expired-dialog")).toHaveLength(1);
+        // The write was refused exactly once, and it was the write: the
+        // dialog is not a side effect of some query failing alongside it.
+        expect(refused).toEqual(["/hydra/internalapi/savedsearches/0"]);
     });
 
     it("should render the loading branch under the theme as well", () => {

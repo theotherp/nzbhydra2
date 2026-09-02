@@ -1041,9 +1041,16 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await page.goto("/stats/searches");
         await expect(page.getByTestId("search-history-table")).toBeVisible();
 
+        // Scoped through the refine bar: FM-170's per-row "Copy query"
+        // buttons also match `getByLabel("Query")` (substring matching), and
+        // `.first()` only ever found the refine input because the bar
+        // precedes the table in DOM order.
         await expectFocusedOutlinedInput(
             page,
-            page.getByLabel("Query").first().locator(inputRoot),
+            page
+                .getByTestId("history-refine-bar")
+                .getByLabel("Query")
+                .locator(inputRoot),
             "stats-history-text-input",
         );
 

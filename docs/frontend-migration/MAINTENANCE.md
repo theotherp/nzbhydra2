@@ -1380,7 +1380,7 @@ visibility.
   resolves to the refine input only because the refine bar precedes the table in DOM order. The test is green today;
   scoping it through `getByTestId("history-refine-bar")` like the 2026-09-01 refine-locator quickfix did elsewhere is
   a one-line **`/fm-quickfix`**, left unfixed there because one fix per invocation and this one was not failing.
-  Surfaced 2026-09-01 while fixing run 33494077066.
+  Surfaced 2026-09-01 while fixing run 33494077066. **Fixed 2026-09-02 (`5c459ad47`),** see the ledger entry below.
 
 - **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
   reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
@@ -3374,3 +3374,51 @@ their text and relative order are unchanged.
 - **Gates:** `npx tsc --noEmit` in `tests/system` clean; full `downloads.spec.ts` + `search-history.spec.ts` run against a locally built real-backend stack (HEAD core jar + mockserver on alternate ports 15076/15080, user's dev services untouched): 10/10 green, including all 4 tests red in run 33494077066. `git diff --check` clean.
 - **Commit:** `e08aa3b87`
 - **Note:** both specs reached the refine surface's freetext inputs with page-wide `getByLabel("Title")` / `getByLabel("Query")`. FM-170 (`1ee9083f2`) added per-row copy buttons labeled "Copy title" / "Copy query", which `getByLabel`'s default substring matching also resolves, so every visible history row became an extra match and the locators failed strict mode. The lookups are now scoped through `getByTestId("history-refine-bar")`, keeping the accessible-label assertion while excluding the table rows. `focus-indication.spec.ts:1046`'s `getByLabel("Query").first()` survives on DOM order alone and is recorded under *Open candidates* rather than edited green.
+
+### 2026-09-02 — Drop the stale FM-125 "planned, next" bullet from `STATUS.md` Upcoming
+
+- **Why not a packet:** documentation text only; no code, contract, or behavior touched.
+- **Paths:** `docs/frontend-migration/STATUS.md`
+- **Gates:** `validate:migration` valid; `git diff --check` clean.
+- **Commit:** `36a832472`
+- **Note:** retained minor finding from the FM-172 review. FM-125 was done at `2b1930517` (2026-08-28) and its done bullet already sat three entries above, but the pre-implementation bullet survived every later reconcile because reconciles add to the top of Upcoming and rarely reread its tail.
+
+### 2026-09-02 — Drive the app-wide `MutationCache` session-expiry hook with a real mutation
+
+- **Why not a packet:** a test-only addition inside an existing suite; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
+- **Paths:** `core/ui-react/src/App.test.tsx`
+- **Gates:** `typecheck`, `lint` (0 errors, 15 pre-existing warnings), `format:check`, `build`, `check:api`, `validate:migration` exit 0; full vitest 137 files / 1879 tests green; `git diff --check` clean.
+- **Commit:** `d4fbf6dba`
+- **Note:** retained minor finding from the FM-171 review: both `QueryClient`s got a `MutationCache` `onError` and no test ever drove a mutation through either. The app-wide client owns exactly one mutation, `SavedSearchesPage`'s deletion, so the case renders `/stats/saved-searches`, confirms a row's Delete, answers the `DELETE` with 401 and asserts one dialog and exactly one refused write (the list read is answered normally, so nothing else can have raised it). Red with `App.tsx`'s `onError` removed, green restored. **Left uncovered by construction:** `SearchPage.tsx`'s private recent-search client also carries the hook but owns no mutation at all, so there is nothing to drive it with; its query half is pinned in `SearchPage.test.tsx`.
+
+### 2026-09-02 — Scope the focus-indication history Query locator through the refine bar
+
+- **Why not a packet:** locator repair in a test only; no behavior, contract, or `data-testid` change.
+- **Paths:** `tests/system/tests/focus-indication.spec.ts`
+- **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `focus-indication.spec.ts` 10/10 green via `misc/run_gui_systemtest.py --runtime local`; `git diff --check` clean.
+- **Commit:** `5c459ad47`
+- **Note:** the *Open candidates* entry above, closed. Same repair as `e08aa3b87`'s, applied to the one site that was green on DOM order alone.
+
+### 2026-09-02 — Pin the session-expiry refusal count as the exact three-request multiset
+
+- **Why not a packet:** test-only assertion change; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
+- **Paths:** `tests/system/tests/session-expiry.spec.ts`
+- **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `session-expiry.spec.ts` against a local real backend: red at `toHaveLength(2)` (received 3), green 3/3 with the multiset; `git diff --check` clean.
+- **Commit:** `17aae3242`
+- **Note:** retained minor finding from the FM-171 review, **and the finding's proposed fix was wrong.** `toHaveLength(2)` fails: `/internalapi/updates/infos` is refused twice, by two consumers with their own query keys — `SystemUpdatesTab` (`update-infos`) and the shell's `UpdateFooterBanners` (`update-footer-infos`) — alongside one `versionHistory`. The `>= 2` hid the third request; a count of two would have called the second consumer a retry storm. The sorted multiset of all three paths fails on either a genuine retry or a lost consumer, which is what the comment always claimed.
+
+### 2026-09-02 — Search by TMDB identifier so the history row's "no ID line" pin is load-bearing
+
+- **Why not a packet:** a test-only addition inside an existing system spec; no production file, contract, or `data-testid` touched.
+- **Paths:** `tests/system/tests/search-history.spec.ts`
+- **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `search-history.spec.ts` 7/7 green via `misc/run_gui_systemtest.py --runtime existing` against the local real backend; `git diff --check` clean.
+- **Commit:** `0f23341be`
+- **Note:** retained minor finding from the FM-174 review. The sibling case's `not.toContainText(" ID:")` searched by plain text, so nothing it asserted could regress. The new case selects the deterministic movie from the real `/internalapi/autocomplete/MOVIE`, pins `"tmdbId":"424242"` in the search body, then asserts the row prints neither `TMDB` nor the value and the details dialog links `424242` to `https://www.themoviedb.org/movie/424242` with `target="_blank"`. The query is the fixture's fixed title rather than a UUID, so the row is the first match under the default time-descending sort, as the file's repeat case already does. **Not red/green-proven here:** a mutation that puts identifiers back in the row needs a rebuilt jar behind the rig; the same behaviour is red/green-pinned in `SearchHistoryPage.test.tsx`, and this case adds the real-backend half.
+
+### 2026-09-02 — Wait for the recent-searches request on menu open, not on submit or page load
+
+- **Why not a packet:** test-expectation repair only; no behavior, contract, or `data-testid` change — the behavior it follows is the owner's own `0617f05b1`.
+- **Paths:** `tests/system/tests/search.spec.ts`
+- **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `search.spec.ts` 17/17 green against the local real backend (the runner's `--runtime existing` was stopped twice mid-container-recreate, so Playwright was run directly with the runner's environment); `git diff --check` clean.
+- **Commit:** `0d6c390ca`
+- **Note:** CI runs 33494077066 and 33524653525 failed `search.spec.ts:256` and `:905` on both Linux jobs (JVM coverage included; Windows green) with `page.waitForResponse` timeouts on `POST /internalapi/history/searches/forsearching`. The last green run, `c0a1d9ae2` (2026-08-31 17:38), predates `0617f05b1` (21:40), which gates the recent-search query on the menu being open; the two tests still expected the request from a search submit and from page load. The 2026-09-01 refine-locator quickfix (`e08aa3b87`) fixed the other four failures of run 33494077066 and left these two, so run 33524653525 was the same pair again on a later commit. Both waits now surround the trigger click that issues the request.
