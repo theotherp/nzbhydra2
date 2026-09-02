@@ -20,6 +20,7 @@ import {
     type IndexerRow,
 } from "../derivations";
 import {ChartCard} from "../ChartCard";
+import {formatNumber, formatPercent} from "../formatting";
 import {horizontalBarChartHeight} from "../charts/chartSizing";
 import {HorizontalBarChart} from "../charts/HorizontalBarChart";
 
@@ -303,7 +304,7 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
                                 }),
                             )}
                             seriesLabel="Download share %"
-                            valueFormatter={(value) => `${value.toFixed(1)}%`}
+                            valueFormatter={formatPercent}
                         />
                     }
                     help={DOWNLOAD_SHARE_HELP}
@@ -392,20 +393,20 @@ function IndexerRowCells({
                 <TableCell>{formatNumber(row.apiAccessesPerDay, 0)}</TableCell>
             )}
             {columns.apiAccess && (
-                <TableCell>{formatNumber(row.apiSuccessPercent, 0)}</TableCell>
+                <TableCell>{formatPercent(row.apiSuccessPercent)}</TableCell>
             )}
             {columns.apiAccess && showDetails && (
-                <TableCell>{formatNumber(row.apiFailurePercent, 0)}</TableCell>
+                <TableCell>{formatPercent(row.apiFailurePercent)}</TableCell>
             )}
             {columns.downloadShare && (
-                <TableCell>{formatNumber(row.downloadShare, 0)}</TableCell>
+                <TableCell>{formatPercent(row.downloadShare)}</TableCell>
             )}
             {columns.downloadShare && showDetails && (
                 <TableCell>{formatNumber(row.downloadShareTotal, 0)}</TableCell>
             )}
             {columns.downloadSuccess && (
                 <TableCell>
-                    {formatNumber(row.downloadSuccessPercent, 1)}
+                    {formatPercent(row.downloadSuccessPercent)}
                 </TableCell>
             )}
             {columns.downloadSuccess && showDetails && (
@@ -420,7 +421,7 @@ function IndexerRowCells({
                 </>
             )}
             {columns.uniqueness && (
-                <TableCell>{row.uniquenessScore ?? ""}</TableCell>
+                <TableCell>{formatNumber(row.uniquenessScore, 1)}</TableCell>
             )}
             {columns.uniqueness && (
                 <TableCell>
@@ -475,7 +476,7 @@ function ShareTable({rows}: {rows: IndexerRow[]}) {
                                     {row.downloadShareTotal ?? ""}
                                 </TableCell>
                                 <TableCell>
-                                    {formatNumber(row.downloadShare, 0)}
+                                    {formatPercent(row.downloadShare)}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -524,10 +525,6 @@ function ResponseTimeTable({rows}: {rows: IndexerRow[]}) {
     );
 }
 
-function formatNumber(value: number | undefined, digits: number): string {
-    return value === undefined ? "" : value.toFixed(digits);
-}
-
 /**
  * A composite "X/Y" cell where either half may be missing independently
  * (e.g. one family reported a count but not its total). Never renders a
@@ -555,7 +552,8 @@ function formatCoverage(
     numerator: number | undefined,
     denominator: number | undefined,
 ): string {
-    const percentText = percent === undefined ? undefined : `${percent}%`;
+    const percentText =
+        percent === undefined ? undefined : formatPercent(percent);
     const fractionText =
         numerator === undefined && denominator === undefined
             ? undefined
@@ -573,7 +571,8 @@ function formatSharedContribution(
     percent: number | undefined,
 ): string {
     const valueText = value === undefined ? undefined : formatNumber(value, 2);
-    const percentText = percent === undefined ? undefined : `${percent}%`;
+    const percentText =
+        percent === undefined ? undefined : formatPercent(percent);
     if (valueText && percentText) return `${valueText} (${percentText})`;
     return valueText ?? percentText ?? "—";
 }

@@ -991,11 +991,17 @@ features:
       # state, and priority cells wrap their `C-CONFIG-FIELDS` control in
       # `SettingRowTableCellScope` so the shared `SettingRow` drops its
       # reserved bottom margin and renders help/error text out of flow
-      # (`position: absolute`) instead of adding to the cell's box height;
-      # the name cell's status chips are similarly lifted below the edit
-      # button. No selector changed -- every control keeps its help text,
-      # error wiring, and `aria-describedby`, and the compact (< sm) stacked
-      # layout is untouched.
+      # (`position: absolute`) instead of adding to the cell's box height.
+      # FM-151 also lifted the name cell's status chips below the edit
+      # button the same way, but nothing reserved the space they still
+      # occupied visually, so a chip-bearing row's chips crossed into the
+      # row below; FM-173 (owner report 2026-09-01) reverses that lift --
+      # the name cell now stacks the button and its chips in normal flow,
+      # same as the compact branch always has, so a chip-bearing wide row
+      # grows instead of overlapping the divider. No selector changed --
+      # every control keeps its help text, error wiring, and
+      # `aria-describedby`, and the compact (< sm) stacked layout is
+      # untouched.
       - config-indexers
       - config-indexers-empty
       - config-indexer-add
@@ -1196,7 +1202,22 @@ features:
       - core/ui-react/src/features/stats/dashboard/dateRange.test.ts
       - core/ui-react/src/features/stats/dashboard/persistence.test.ts
       - core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx
+      - core/ui-react/src/features/stats/dashboard/formatting.test.ts
+      - core/ui-react/src/features/stats/dashboard/charts/chartSizing.test.ts
+      - core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.test.tsx
+      - core/ui-react/src/features/stats/dashboard/sections/IndexersSection.test.tsx
+      - core/ui-react/src/features/stats/dashboard/sections/DownloadAgeSection.test.tsx
       - core/ui-react/src/router.test.tsx
+    # 2026-09-02 (FM-172, ADR-0053): three readability fixes, no contract
+    # change. A horizontal bar chart derives its category-label margin from
+    # the width the card gives it (capped at half that width) instead of a
+    # flat 140px, so an indexer name is elided only where it does not fit;
+    # every percentage the feature renders goes through `formatPercent` --
+    # one decimal and a trailing `%` -- and `averageAge`/`uniquenessScore`
+    # stop rendering raw doubles; the bar value label's fill is a per-theme
+    # palette token (`palette.charts.barLabel`) measured at >= 4.5:1 against
+    # that theme's `charts.categorical[0]`, the only colour a bar label ever
+    # paints on.
     # 2026-08-27 (FM-121): the dashboard holds its `StatsResult` in react-query
     # instead of `useState`, so re-entering `/stats/stats` within the
     # application's default `staleTime` shows the held reading instead of
@@ -1380,6 +1401,7 @@ features:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in SearchHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
       - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
       - capability added - FM-170 gives Query, Additional parameters, User agent, and IP address (row and details-dialog) a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
+      - 'deliberate - FM-174 (owner request 2026-09-01) declutters the row: the `<key> ID` identifier lines left the Additional-parameters cell and its copy text, and the Details dialog gained the entry''s full criteria instead (each identifier as the same external link the row used to render, season/episode/author, the size and age lines, and the selected indexers), so no value the row dropped became unreachable. This is a deliberate delta from legacy, which printed exactly one linked identifier inline in the row (`search-history-controller.js:150-217`) and offered none of them in its details modal. The same task gave size and age one line each (`Size: 100 MB - 200 MB`, `Age: up to 10 days`) instead of separate Minimum/Maximum rows, dropped the misleading `Selected indexers: None` line for the ordinary empty selection, and moved Repeat out of the Query column into an icon-only button beside Details carrying legacy''s own tooltip sentence (`search-history.html:76-92`).'
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
     routes:

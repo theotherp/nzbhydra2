@@ -117,7 +117,7 @@ describe("IndexerStatusesPage", () => {
         );
         expect(
             within(statusRow(table, "Bravo")).getAllByRole("cell")[2],
-        ).toHaveTextContent(/^Jan 2, 2025, 12:00 AM$/);
+        ).toHaveTextContent(/^Jan 2, 2025, 00:00$/);
         expect(
             within(statusRow(table, "Charlie")).getAllByRole("cell")[2],
         ).toBeEmptyDOMElement();
@@ -175,15 +175,15 @@ describe("IndexerStatusesPage", () => {
 
         expect(
             within(statusRow(table, "Both resets")).getAllByRole("cell")[6],
-        ).toHaveTextContent(/^Jan 3, 2025, 12:00 AM\/Jan 4, 2025, 12:00 AM$/);
+        ).toHaveTextContent(/^Jan 3, 2025, 00:00\/Jan 4, 2025, 00:00$/);
         expect(
             within(statusRow(table, "API reset only")).getAllByRole("cell")[6],
-        ).toHaveTextContent(/^Jan 5, 2025, 12:00 AM$/);
+        ).toHaveTextContent(/^Jan 5, 2025, 00:00$/);
         expect(
             within(statusRow(table, "Download reset only")).getAllByRole(
                 "cell",
             )[6],
-        ).toHaveTextContent(/^Jan 6, 2025, 12:00 AM$/);
+        ).toHaveTextContent(/^Jan 6, 2025, 00:00$/);
     });
 
     it("should render the backend's explicit nulls as empty cells", async () => {

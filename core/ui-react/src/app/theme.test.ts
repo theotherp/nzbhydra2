@@ -96,10 +96,21 @@ function oklchToRgb([l, c, h]: [number, number, number]): [
     const long = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
     const medium = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
     const short = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
-    const toSrgb = (linear: number) =>
-        linear <= 0.0031308
-            ? 12.92 * linear
-            : 1.055 * linear ** (1 / 2.4) - 0.055;
+    // Clamped to the display gamut *before* the transfer function, because a
+    // ratio is only worth asserting against the colour the browser paints.
+    // Some authored `oklch()` tokens sit outside sRGB -- `bright`'s
+    // `charts[0]` resolves to a linear red of -0.04 and its `charts[1]` to a
+    // linear blue of -0.02 -- and a browser renders those as rgb(0, 135, 129)
+    // and rgb(165, 110, 0). Feeding the negative channel through `toSrgb`
+    // instead yields an imaginary darker colour (rgb(-133, 135, 129)) and so
+    // understates the ground's luminance: the bar-label assertion below read
+    // 4.57:1 that way and 4.40:1 against what is actually on screen.
+    const toSrgb = (linear: number) => {
+        const inGamut = Math.min(1, Math.max(0, linear));
+        return inGamut <= 0.0031308
+            ? 12.92 * inGamut
+            : 1.055 * inGamut ** (1 / 2.4) - 0.055;
+    };
     return [
         toSrgb(
             4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short,
@@ -1595,6 +1606,37 @@ describe("every theme's measured contrast (ADR-0049)", () => {
                         contrastRatio(compositeOver(series, ground), ground),
                     ).toBeGreaterThanOrEqual(3);
                 }
+            });
+
+            it("should print a bar's value label legibly on the bar it sits inside", () => {
+                // FM-172/ADR-0053. The ground is `categorical[0]` and only
+                // `categorical[0]`: bar value labels exist solely in
+                // `HorizontalBarChart`, which always builds exactly one
+                // series (pinned by `HorizontalBarChart.test.tsx`), so no
+                // label can ever be printed on a later entry of the sequence.
+                const bar = resolveColor(theme.palette.charts.categorical[0]);
+
+                expect(
+                    contrastRatio(
+                        resolveColor(theme.palette.charts.barLabel),
+                        bar,
+                    ),
+                ).toBeGreaterThanOrEqual(4.5);
+                // The inverse, so this cannot pass by accident once x-charts'
+                // own default would do: its default fill is `text.primary`,
+                // which is authored for the page ground and is exactly what
+                // the owner reported as unreadable on a bar.
+                expect(
+                    contrastRatio(
+                        resolveColor(theme.palette.text.primary),
+                        bar,
+                    ),
+                ).toBeLessThan(4.5);
+                // And the token reaches the chart: the label fill is themed
+                // from here (ADR-0014), never stated in the stats feature.
+                expect(
+                    theme.components?.MuiBarLabel?.styleOverrides?.root,
+                ).toEqual({fill: theme.palette.charts.barLabel});
             });
         });
     }

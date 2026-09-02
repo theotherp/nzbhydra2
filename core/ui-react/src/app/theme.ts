@@ -1,6 +1,7 @@
 import {chipClasses} from "@mui/material/Chip";
 import {
     createTheme,
+    type CSSObject,
     type Theme,
     type TypographyStyle,
 } from "@mui/material/styles";
@@ -55,6 +56,38 @@ declare module "@mui/material/styles" {
     // to "which series is this" in a chart legend.
     interface ChartTokens {
         categorical: string[];
+        /**
+         * FM-172 (ADR-0053): the fill of a bar's own value label. Stated per
+         * theme rather than shared, because it sits on `categorical[0]` --
+         * the only series colour a bar value label ever paints on, since
+         * `HorizontalBarChart` is this application's one labelled chart and
+         * always builds exactly one series -- and that colour is light in the
+         * three dark themes and darker in `bright`. Each theme block below
+         * states its measured ratio; `theme.test.ts` re-measures them, against
+         * the sRGB-clamped rendering rather than the raw oklch arithmetic,
+         * because `bright`'s `categorical[0]` is outside the display gamut.
+         */
+        barLabel: string;
+    }
+
+    /**
+     * `@mui/x-charts@9.11.1` styles the bar value label as
+     * `styled('text', {name: 'MuiBarLabel', slot: 'Root'})`, so
+     * `components.MuiBarLabel.styleOverrides.root` reaches it -- but the
+     * package declares `MuiBarLabel` only in its props augmentation
+     * (`themeAugmentation/props.d.ts`), never in the `Components` map that
+     * types `styleOverrides`. Declare the one slot it has, so the override
+     * below is a typed theme entry rather than a cast. The slot takes MUI's
+     * usual pair -- a style object, or the callback form that receives the
+     * theme -- so the declaration must carry `Components`' own type
+     * parameter.
+     */
+    interface Components<Theme = unknown> {
+        MuiBarLabel?: {
+            styleOverrides?: {
+                root?: CSSObject | ((props: {theme: Theme}) => CSSObject);
+            };
+        };
     }
 }
 
@@ -559,6 +592,8 @@ type ThemeColors = {
     background: {default: string; paper: string};
     /** The dashboard's categorical chart sequence (see `ChartTokens`). */
     charts: string[];
+    /** The bar value label's fill, on `charts[0]` (see `ChartTokens`). */
+    chartBarLabel: string;
     error: RoleColors;
     info: RoleColors;
     /** The outlined-input notch border (ADR-0036). */
@@ -778,6 +813,13 @@ const greyColors: ThemeColors = {
         "oklch(0.75 0.1 250)",
         "oklch(0.78 0.11 140)",
     ],
+    // FM-172/ADR-0053: the value label printed inside a bar, on this theme's
+    // `charts[0]` teal. x-charts fills it with `text.primary`, which here is
+    // the light body grey `#d6dad9` -- 1.51:1 on that teal, one of the two
+    // themes the owner reported as unreadable. The warm near-black this
+    // application already uses as its light-ground text (`bright`'s
+    // `text.primary`) reads 8.63:1 on the same teal.
+    chartBarLabel: "#111514",
 };
 
 /**
@@ -862,6 +904,11 @@ const darkDyschromatopsiaColors: ThemeColors = {
         "oklch(0.75 0.1 250)",
         "oklch(0.78 0.11 140)",
     ],
+    // FM-172/ADR-0053, as in `grey`, whose `charts[0]` and `text.primary`
+    // this variant shares: the default label fill measures 1.51:1 on the
+    // teal, and this near-black 8.63:1. No red/green axis is involved, so
+    // this variant needs no value of its own.
+    chartBarLabel: "#111514",
 };
 
 /**
@@ -976,6 +1023,11 @@ const darkColors: ThemeColors = {
         "oklch(0.75 0.1 250)",
         "oklch(0.78 0.11 140)",
     ],
+    // FM-172/ADR-0053: the same near-black as the other two dark themes, and
+    // the worst starting point of the four -- this theme's `text.primary` is
+    // legacy's muted `#9c9c9c`, 1.29:1 on `charts[0]`, which is the reading
+    // the owner called unreadable. The near-black reads 8.63:1 there.
+    chartBarLabel: "#111514",
 };
 
 /**
@@ -1094,6 +1146,23 @@ const brightColors: ThemeColors = {
         "oklch(0.55 0.14 250)",
         "oklch(0.58 0.14 140)",
     ],
+    // FM-172/ADR-0053, and the reason that decision exists: this theme's
+    // `charts[0]` is authored two-thirds of a lightness step below the three
+    // dark themes' teal, so the label is measured against a different ground
+    // and is stated separately here.
+    //
+    // Pure black rather than the `#111514` the dark themes use, and rather
+    // than the white this token first carried. `charts[0]`'s
+    // `oklch(0.55 0.12 190)` is outside sRGB -- its linear red is negative --
+    // so a browser renders it as rgb(0, 135, 129), a good deal lighter than
+    // the out-of-gamut value the arithmetic alone suggests. Against what is
+    // actually painted, white reads 4.40:1 and `text.primary`'s warm
+    // near-black 4.18:1, both short of 1.4.3; black reads 4.77:1. The
+    // categorical sequence stays as authored (ADR-0052; ADR-0053's addendum
+    // would allow re-authoring it for `bright`, but this packet's scope keeps
+    // `theme.ts` to the bar-label token, and moving the label clears 1.4.3
+    // without disturbing every other `bright` chart).
+    chartBarLabel: "#000000",
 };
 
 const themeColors: Record<ThemeName, ThemeColors> = {
@@ -1214,7 +1283,10 @@ export function createHydraTheme(
             background: colors.background,
             text: colors.text,
             surfaces: colors.surfaces,
-            charts: {categorical: colors.charts},
+            charts: {
+                categorical: colors.charts,
+                barLabel: colors.chartBarLabel,
+            },
             // Every role spells out its own `contrastText` in its block: under
             // `colorSpace` MUI would otherwise derive it as `oklch(from <main>
             // var(--__l) 0 h / var(--__a))`, whose custom properties only exist
@@ -1276,6 +1348,18 @@ export function createHydraTheme(
                         background: colors.scrollbar.thumbHover,
                     },
                 }),
+            },
+            // FM-172 (ADR-0053): the stats charts' bar value labels. x-charts
+            // fills them with `text.primary`, which is authored for the page
+            // ground and not for the bar the label is printed on -- in the
+            // three dark themes that put light grey text on a light teal bar.
+            // The fill moves here, per theme, so no chart component states a
+            // colour of its own (ADR-0014) and the bars themselves are
+            // untouched (ADR-0052).
+            MuiBarLabel: {
+                styleOverrides: {
+                    root: {fill: colors.chartBarLabel},
+                },
             },
             MuiButton: {
                 styleOverrides: {

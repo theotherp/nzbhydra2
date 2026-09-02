@@ -7,6 +7,7 @@ import {
     totalDownloads,
     totalSearches,
 } from "../derivations";
+import {formatPercent} from "../formatting";
 
 type Tile = {key: string; label: string; value: string; testId: string};
 
@@ -40,7 +41,7 @@ export function OverviewTiles({stats}: {stats: StatsResult}) {
         tiles.push({
             key: "success-rate",
             label: "Overall download success rate",
-            value: `${successRate.toFixed(1)}%`,
+            value: formatPercent(successRate),
             testId: "stats-tile-download-success-rate",
         });
     }

@@ -261,6 +261,136 @@ test.describe("Search history", () => {
     });
 
     /**
+     * FM-174 (owner request 2026-09-01). The row redesign against real data:
+     * the Query column carries the query alone, repeating is an icon beside
+     * "Details", size and age are one line each, and every value the row
+     * stopped printing is in the details dialog. The timestamp is also the
+     * only place a real backend can prove `C-DATE-TIME`'s 24-hour clock --
+     * the vitest pin formats a fixed instant, this reads whatever the server
+     * recorded a moment ago.
+     */
+    test("should show a decluttered row whose dropped values live in the details dialog", async ({
+        page,
+    }) => {
+        const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await expect(page.getByTestId("search-query")).toBeVisible();
+        });
+        // Bounded on both dimensions, which is what makes the row's two range
+        // lines real rather than a fixture: the bounds travel with the search
+        // request and come back out of the history table. Deliberately narrow
+        // -- narrow enough that the mock indexers' results may all be filtered
+        // out -- so this submits and waits for the search itself rather than
+        // for a result, unlike the sibling tests above: the claim here is
+        // about the history row the search writes, not about what it found.
+        await page.getByTestId("search-advanced-toggle").click();
+        for (const [label, value] of [
+            ["Min size", "100"],
+            ["Max size", "500"],
+            ["Min age", "2"],
+            ["Max age", "10"],
+        ]) {
+            await page.getByLabel(label).fill(value);
+        }
+        await page.getByTestId("search-query").fill(query);
+        const searchResponse = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        expect((await searchResponse).status()).toBe(200);
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+
+        await page
+            .getByRole("link", {name: "History & Stats", exact: true})
+            .click();
+        await page
+            .getByRole("tab", {name: "Search history", exact: true})
+            .click();
+        const historyRow = page
+            .getByTestId("search-history-table")
+            .getByTestId("search-history-row")
+            .filter({hasText: query});
+        await refreshUntilHistoryRowIsVisible(page, historyRow);
+
+        const cells = historyRow.getByRole("cell");
+        // 24-hour, and never an AM/PM string: legacy `reformatDate`'s fixed
+        // `HH:mm`, restored in `C-DATE-TIME` for every consumer.
+        await expect(cells.nth(0)).toHaveText(/, ([01]\d|2[0-3]):[0-5]\d$/);
+        // The Query column holds the query and its copy button, nothing else.
+        await expect(cells.nth(1)).toHaveText(query);
+        // One line per dimension, and no `<key> ID` line anywhere in the row.
+        await expect(cells.nth(3)).toContainText(/Size:\s*100 MB - 500 MB/);
+        await expect(cells.nth(3)).toContainText(/Age:\s*2 days - 10 days/);
+        await expect(historyRow).not.toContainText(" ID:");
+
+        const repeat = historyRow.getByTestId("search-history-repeat");
+        await expect(repeat).toHaveAccessibleName(
+            "Repeat this search with all currently enabled indexers.",
+        );
+        await expect(repeat).toHaveText("");
+        // Beside "Details" in the last column, not in the Query cell.
+        await expect(
+            historyRow
+                .locator("td")
+                .filter({has: page.getByTestId("search-history-details")})
+                .getByTestId("search-history-repeat"),
+        ).toBeVisible();
+        expect(await pageFitsHorizontally(page)).toBe(true);
+        await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath("F-HISTORY-SEARCHES", "row-desktop"),
+        });
+
+        await historyRow.getByTestId("search-history-details").click();
+        const requestDetails = page.getByRole("table", {
+            name: "Search request details",
+        });
+        await expect(requestDetails).toBeVisible();
+        await expect(requestDetails).toContainText("100 MB - 500 MB");
+        await expect(requestDetails).toContainText("2 days - 10 days");
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "details-dialog-criteria-desktop",
+            ),
+        });
+        await page.keyboard.press("Escape");
+        await expect(
+            page.getByRole("dialog", {name: "Search details"}),
+        ).toBeHidden();
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/stats/searches");
+            await expect(
+                page.getByTestId("search-history-table"),
+            ).toBeVisible();
+        });
+        await expect(historyRow.first()).toBeVisible();
+        expect(await pageFitsHorizontally(page)).toBe(true);
+        await page.getByTestId("search-history-table").scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath("F-HISTORY-SEARCHES", "row-mobile"),
+        });
+        // At 390px the table's right-hand columns are behind its own
+        // horizontal scroll, so the capture above shows the Time and Query
+        // columns and this one shows the criteria and the repeat icon -- the
+        // two halves of the same row.
+        await page
+            .getByTestId("search-history-scroller")
+            .evaluate((element) => {
+                element.scrollLeft = element.scrollWidth;
+            });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-HISTORY-SEARCHES",
+                "row-scrolled-mobile",
+            ),
+        });
+    });
+
+    /**
      * FM-126 (ADR-0038). This table is the one the decision asked to confirm
      * first, and the before-state is worth recording: it had no scrolling
      * ancestor at all, so at 390x844 the *document* measured 687px against a
@@ -289,7 +419,11 @@ test.describe("Search history", () => {
             scrollable: element.scrollWidth,
             table: (element.firstElementChild as HTMLElement).clientWidth,
         }));
-        expect(geometry.table).toBeGreaterThanOrEqual(700);
+        // FM-174 re-measured the floor for the new column set (the timestamp
+        // no longer wraps, Details holds the repeat icon, Query lost "Repeat"
+        // and Additional parameters lost the identifier lines): 752px
+        // intrinsic, 760 declared.
+        expect(geometry.table).toBeGreaterThanOrEqual(760);
         expect(geometry.scrollable).toBeGreaterThan(geometry.client);
 
         // Clipped on the right only, so only that edge is marked.

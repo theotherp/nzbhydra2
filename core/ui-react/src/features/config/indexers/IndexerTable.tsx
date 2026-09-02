@@ -555,30 +555,23 @@ const IndexerTableRow = memo(function IndexerTableRow({
             />
         ),
     ].filter((chip): chip is ReactElement => chip !== null);
-    // The compact stack: chips flow normally below the button, exactly as
-    // the single-column layout always rendered them.
+    // The name cell's one arrangement, wide or compact alike: chips flow
+    // normally below the button. FM-151 lifted the wide row's chips out of
+    // flow (`position: absolute; top: 100%`) so a chip-bearing name never
+    // grew past the button's own height, keeping this cell's control exactly
+    // on the row's shared centerline with the other four. Nothing reserved
+    // the space the lifted chips still occupied visually, so they crossed
+    // the `TableCell`'s bottom border into the row below — the owner
+    // reported that overlap (2026-09-01) and judged it worse than letting a
+    // chip-bearing row grow. This reverses the lift: a chip-bearing wide row
+    // now sits taller than a chipless one, and the name button in that row
+    // sits above — not on — the row's vertical center, same as the compact
+    // branch has always rendered it.
     const name = (
         <Stack alignItems="flex-start" spacing={0.5}>
             {nameButton}
             {nameChips}
         </Stack>
-    );
-    // The wide row: chips are lifted out of flow so a chip-bearing name
-    // never grows past the button's own height — the box the row centers
-    // this cell's control on stays exactly the button, and the chips hang
-    // below it instead of dragging it off the row's shared centerline.
-    const wideName = (
-        <Box sx={{position: "relative"}}>
-            {nameButton}
-            {nameChips.length === 0 ? null : (
-                <Stack
-                    spacing={0.5}
-                    sx={{left: 0, position: "absolute", top: "100%"}}
-                >
-                    {nameChips}
-                </Stack>
-            )}
-        </Box>
     );
     const state = (
         <IndexerStateSwitch
@@ -599,8 +592,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
         // The same five pieces, stacked in one cell instead of spread across
         // five columns. `type`, `searchSource`, `state` and `priority` are
         // each built once above and placed once, in exactly one of the two
-        // branches; only `name` has a second, wide-only arrangement
-        // (`wideName`, used below) that lifts its chips out of flow —
+        // branches; `name` (below) is shared by both branches unchanged —
         // `nameButton` and each chip are still each built exactly once.
         return (
             <TableRow data-testid={`config-indexer-entry-${index}`}>
@@ -626,7 +618,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
     }
     return (
         <TableRow data-testid={`config-indexer-entry-${index}`}>
-            <TableCell>{wideName}</TableCell>
+            <TableCell>{name}</TableCell>
             <TableCell>{type}</TableCell>
             <TableCell>
                 <SettingRowTableCellScope>

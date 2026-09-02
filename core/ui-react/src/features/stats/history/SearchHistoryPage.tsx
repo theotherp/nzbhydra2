@@ -1,3 +1,4 @@
+import RepeatIcon from "@mui/icons-material/Repeat";
 import {
     Alert,
     Button,
@@ -7,6 +8,7 @@ import {
     DialogContent,
     DialogTitle,
     FormControlLabel,
+    IconButton,
     Link,
     Stack,
     Table,
@@ -14,6 +16,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import {
@@ -65,6 +68,14 @@ import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
 import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
 
 const defaultSort: SearchHistorySort = defaultHistorySort("time");
+
+/**
+ * Legacy's tooltip on the repeat control, verbatim
+ * (`search-history.html:76-92`): a repeat runs the search again against
+ * whatever is enabled now, not against the indexers it originally used.
+ */
+const REPEAT_SEARCH_HINT =
+    "Repeat this search with all currently enabled indexers.";
 
 export function SearchHistoryPage({
     bootstrap,
@@ -183,6 +194,7 @@ export function SearchHistoryPage({
         return <Alert severity="error">Unable to load search history.</Alert>;
     }
     const {entries: searches, totalElements, malformedCount} = query.data;
+    const detailsEntry = searches.find((entry) => entry.id === detailsId);
     const activeFilterCount = activeHistoryFilterCount(
         dimensions,
         criteria.values,
@@ -306,14 +318,19 @@ export function SearchHistoryPage({
                         // against a 390px viewport -- the ADR-0029 violation
                         // ADR-0038 asked to confirm here first. The container
                         // above owns the scroll now, and this is its floor:
-                        // measured at 390x844, laid out so no cell has to
-                        // break a word, the six always-on columns need 691px
-                        // (Time 96, Query 122, Category 106, Additional
-                        // parameters 175, Source 96, Details 96). 700 keeps
-                        // them at that intrinsic width; the three optional
-                        // columns (user agent, username, IP) simply make the
-                        // table wider than the floor and scroll with it.
-                        sx={{minWidth: 700}}
+                        // re-measured for FM-174's column set at 390x844, laid
+                        // out so no cell has to break a word, the six
+                        // always-on columns need 752px (Time 157, Query 123,
+                        // Category 106, Additional parameters 142, Source 96,
+                        // Details 128) -- Time grew because the timestamp no
+                        // longer wraps and now carries a 24-hour clock, and
+                        // Details because it holds the repeat icon beside the
+                        // button, while Query lost "Repeat" and Additional
+                        // parameters lost the identifier lines. 760 keeps them
+                        // at that intrinsic width; the three optional columns
+                        // (user agent, username, IP) simply make the table
+                        // wider than the floor and scroll with it.
+                        sx={{minWidth: 760}}
                     >
                         <TableHead>
                             <TableRow>
@@ -376,21 +393,28 @@ export function SearchHistoryPage({
                                     key={entry.id}
                                     sx={rowRevealsCopyButtonsOnHover}
                                 >
-                                    <TableCell>
+                                    {/*
+                                     * FM-174: the whole timestamp on one line.
+                                     * "Sep 10, 2026, 23:00" is the widest
+                                     * value this column ever holds and it has
+                                     * to fit; left to wrap it broke after the
+                                     * year in the narrow layout.
+                                     */}
+                                    <TableCell sx={{whiteSpace: "nowrap"}}>
                                         {formatServerDateTime(
                                             entry.time,
                                             bootstrap.serverTimeZone,
                                         )}
                                     </TableCell>
+                                    {/*
+                                     * FM-174 (owner request 2026-09-01): the
+                                     * query and its copy affordance, nothing
+                                     * else. "Repeat" was a text button in this
+                                     * cell and pushed every query off the
+                                     * column a reader scans; it is an icon
+                                     * beside "Details" now.
+                                     */}
                                     <TableCell>
-                                        {/*
-                                         * The query first, its action after:
-                                         * with the button leading, every cell
-                                         * in the column began "Repeat" and the
-                                         * queries themselves started at a
-                                         * different offset in every row, which
-                                         * is the one column a reader scans.
-                                         */}
                                         <Stack
                                             alignItems="center"
                                             direction="row"
@@ -398,27 +422,13 @@ export function SearchHistoryPage({
                                             spacing={1}
                                         >
                                             <span>{queryLabel(entry)}</span>
-                                            <Stack
-                                                alignItems="center"
-                                                direction="row"
-                                                spacing={0.5}
-                                            >
-                                                <CopyValueButton
-                                                    label="query"
-                                                    testId="search-history-copy-query"
-                                                    value={copyableQueryValue(
-                                                        entry,
-                                                    )}
-                                                />
-                                                <Button
-                                                    data-testid="search-history-repeat"
-                                                    onClick={() =>
-                                                        repeat(entry)
-                                                    }
-                                                >
-                                                    Repeat
-                                                </Button>
-                                            </Stack>
+                                            <CopyValueButton
+                                                label="query"
+                                                testId="search-history-copy-query"
+                                                value={copyableQueryValue(
+                                                    entry,
+                                                )}
+                                            />
                                         </Stack>
                                     </TableCell>
                                     {showUserAgent && (
@@ -451,8 +461,12 @@ export function SearchHistoryPage({
                                             spacing={1}
                                         >
                                             <Criteria
-                                                entry={entry}
-                                                bootstrap={bootstrap}
+                                                dereferer={
+                                                    safeConfig?.dereferer
+                                                }
+                                                items={searchCriteria(entry, {
+                                                    includeIdentifiers: false,
+                                                })}
                                                 transport={transport}
                                             />
                                             <CopyValueButton
@@ -492,14 +506,44 @@ export function SearchHistoryPage({
                                         </TableCell>
                                     )}
                                     <TableCell>
-                                        <Button
-                                            data-testid="search-history-details"
-                                            onClick={() =>
-                                                setDetailsId(entry.id)
-                                            }
+                                        <Stack
+                                            alignItems="center"
+                                            direction="row"
+                                            spacing={0.5}
                                         >
-                                            Details
-                                        </Button>
+                                            <Button
+                                                data-testid="search-history-details"
+                                                onClick={() =>
+                                                    setDetailsId(entry.id)
+                                                }
+                                            >
+                                                Details
+                                            </Button>
+                                            {/*
+                                             * Legacy parity
+                                             * (search-history.html:76-92):
+                                             * repeating a search was an
+                                             * icon-only control carrying this
+                                             * sentence as its tooltip. It is
+                                             * the row's secondary action, so
+                                             * it sits beside "Details" rather
+                                             * than in the Query column.
+                                             */}
+                                            <Tooltip title={REPEAT_SEARCH_HINT}>
+                                                <IconButton
+                                                    aria-label={
+                                                        REPEAT_SEARCH_HINT
+                                                    }
+                                                    data-testid="search-history-repeat"
+                                                    onClick={() =>
+                                                        repeat(entry)
+                                                    }
+                                                    size="small"
+                                                >
+                                                    <RepeatIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -517,8 +561,21 @@ export function SearchHistoryPage({
                 totalElements={totalElements}
             />
             <DetailsDialog
+                // FM-174: the row no longer prints the entry's identifiers, so
+                // the dialog carries the search's full criteria -- the row's
+                // own entry, since the details endpoint answers with the
+                // request metadata and the indexer searches only.
+                criteria={
+                    detailsEntry
+                        ? searchCriteria(detailsEntry, {
+                              includeIdentifiers: true,
+                          })
+                        : []
+                }
+                dereferer={safeConfig?.dereferer}
                 details={details}
                 onClose={() => setDetailsId(undefined)}
+                transport={transport}
             />
         </HistoryRefineLayout>
     );
@@ -551,11 +608,17 @@ function SortHeader({
 }
 
 function DetailsDialog({
+    criteria,
+    dereferer,
     details,
     onClose,
+    transport,
 }: {
+    criteria: SearchCriterion[];
+    dereferer: unknown;
     details: UseQueryResult<SearchHistoryDetails, Error>;
     onClose(): void;
+    transport: ApiTransport;
 }) {
     return (
         <Dialog
@@ -614,6 +677,26 @@ function DetailsDialog({
                                         </Stack>
                                     </TableCell>
                                 </TableRow>
+                                {/*
+                                 * FM-174: everything the row's Additional-
+                                 * parameters cell stopped printing -- the
+                                 * identifiers, with the same external links
+                                 * the row used to carry -- plus the criteria
+                                 * it still shows, so one place holds the whole
+                                 * search request.
+                                 */}
+                                {criteria.map((criterion) => (
+                                    <TableRow key={criterion.key}>
+                                        <TableCell>{criterion.label}</TableCell>
+                                        <TableCell>
+                                            {criterionValue(
+                                                criterion,
+                                                dereferer,
+                                                transport,
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
                         <Table aria-label="Related indexer searches">
@@ -684,138 +767,167 @@ function copyableQueryValue(entry: SearchHistoryEntry): string | undefined {
 }
 
 /**
- * The "Additional parameters" cell's `Criteria` component renders a list of
- * label/value pairs (identifiers, season, episode, …); this builds the same
- * pairs as one plain-text block for the column's copy button, independent of
- * `Criteria`'s JSX (which turns some identifiers into links `Criteria` alone
- * needs `transport`/`dereferer` for -- copying the link text is enough here).
+ * One ordered list of the entry's search criteria, shared by the row's
+ * "Additional parameters" cell, that cell's copy text, and the details
+ * dialog -- so the three can never drift apart.
+ *
+ * FM-174 (owner request 2026-09-01): `includeIdentifiers` is the whole
+ * difference between the row and the dialog. The row stopped printing the
+ * `<key> ID` lines (they made every identifier search a three-line cell for
+ * values a reader rarely reads); the dialog prints them, with the same
+ * external links, so nothing the row dropped became unreachable.
+ */
+function searchCriteria(
+    entry: SearchHistoryEntry,
+    {includeIdentifiers}: {includeIdentifiers: boolean},
+): SearchCriterion[] {
+    const criteria: SearchCriterion[] = [];
+    if (includeIdentifiers) {
+        for (const [index, identifier] of entry.identifiers.entries()) {
+            criteria.push({
+                key: `identifier-${index}`,
+                label: `${identifier.identifierKey} ID`,
+                text: identifier.identifierValue,
+                identifier,
+            });
+        }
+    }
+    if (entry.season !== undefined) {
+        criteria.push({
+            key: "season",
+            label: "Season",
+            text: String(entry.season),
+        });
+    }
+    if (entry.episode) {
+        criteria.push({key: "episode", label: "Episode", text: entry.episode});
+    }
+    if (entry.author) {
+        criteria.push({key: "author", label: "Author", text: entry.author});
+    }
+    /*
+     * One line per dimension rather than legacy's separate Minimum/Maximum
+     * rows: a bounded search wrote four of the row's lines for two facts.
+     */
+    const size = rangeText(
+        entry.minSize,
+        entry.maxSize,
+        (value) => `${value} MB`,
+    );
+    if (size !== undefined) {
+        criteria.push({key: "size", label: "Size", text: size});
+    }
+    const age = rangeText(
+        entry.minAge,
+        entry.maxAge,
+        (value) => `${value} days`,
+    );
+    if (age !== undefined) {
+        criteria.push({key: "age", label: "Age", text: age});
+    }
+    // Only when indexers were actually chosen: an empty array is the ordinary
+    // "searched everything enabled" case, and rendering it as "None" claimed
+    // the opposite of what happened.
+    if (
+        entry.selectedIndexers !== undefined &&
+        entry.selectedIndexers.length > 0
+    ) {
+        criteria.push({
+            key: "selected-indexers",
+            label: "Selected indexers",
+            text: entry.selectedIndexers.join(", "),
+        });
+    }
+    return criteria;
+}
+
+function rangeText(
+    minimum: number | undefined,
+    maximum: number | undefined,
+    unit: (value: number) => string,
+): string | undefined {
+    if (minimum !== undefined && maximum !== undefined) {
+        return `${unit(minimum)} - ${unit(maximum)}`;
+    }
+    if (minimum !== undefined) return `at least ${unit(minimum)}`;
+    if (maximum !== undefined) return `up to ${unit(maximum)}`;
+    return undefined;
+}
+
+interface SearchCriterion {
+    key: string;
+    label: string;
+    /** The value as plain text -- what the copy button writes. */
+    text: string;
+    /** Set on an identifier, which renders as an external link. */
+    identifier?: {identifierKey: string; identifierValue: string};
+}
+
+/**
+ * The row's criteria as one plain-text block for the column's copy button:
+ * the same labels and values the cell renders, assembled from the entry
+ * rather than read back out of the cell's DOM.
  * Returns `undefined` when the entry carries no such criteria at all, so the
  * button does not appear over an empty cell.
  */
 function additionalParametersText(
     entry: SearchHistoryEntry,
 ): string | undefined {
-    const lines: string[] = [];
-    for (const identifier of entry.identifiers) {
-        lines.push(
-            `${identifier.identifierKey} ID: ${identifier.identifierValue}`,
-        );
-    }
-    if (entry.season !== undefined) {
-        lines.push(`Season: ${entry.season}`);
-    }
-    if (entry.episode) {
-        lines.push(`Episode: ${entry.episode}`);
-    }
-    if (entry.author) {
-        lines.push(`Author: ${entry.author}`);
-    }
-    if (entry.minAge !== undefined) {
-        lines.push(`Minimum age: ${entry.minAge} days`);
-    }
-    if (entry.maxAge !== undefined) {
-        lines.push(`Maximum age: ${entry.maxAge} days`);
-    }
-    if (entry.minSize !== undefined) {
-        lines.push(`Minimum size: ${entry.minSize} MB`);
-    }
-    if (entry.maxSize !== undefined) {
-        lines.push(`Maximum size: ${entry.maxSize} MB`);
-    }
-    if (entry.selectedIndexers !== undefined) {
-        lines.push(
-            `Selected indexers: ${
-                entry.selectedIndexers.length > 0
-                    ? entry.selectedIndexers.join(", ")
-                    : "None"
-            }`,
-        );
-    }
+    const lines = searchCriteria(entry, {includeIdentifiers: false}).map(
+        (criterion) => `${criterion.label}: ${criterion.text}`,
+    );
     return lines.length > 0 ? lines.join("\n") : undefined;
 }
 
 function Criteria({
-    entry,
-    bootstrap,
+    dereferer,
+    items,
     transport,
 }: {
-    entry: SearchHistoryEntry;
-    bootstrap: BootstrapData;
+    dereferer: unknown;
+    items: SearchCriterion[];
     transport: ApiTransport;
 }) {
-    const safeConfig = useSafeConfig(bootstrap);
-    const criteria: Array<{label: string; value: ReactNode}> = [];
-    for (const identifier of entry.identifiers) {
-        const href = identifierHref(
-            identifier.identifierKey,
-            identifier.identifierValue,
-            safeConfig?.dereferer,
-            transport,
-        );
-        criteria.push({
-            label: `${identifier.identifierKey} ID`,
-            value: href ? (
-                <Link
-                    href={href}
-                    key={`${identifier.identifierKey}-${identifier.identifierValue}`}
-                    rel="noreferrer"
-                    target="_blank"
-                >
-                    {identifier.identifierValue}
-                </Link>
-            ) : (
-                identifier.identifierValue
-            ),
-        });
-    }
-    if (entry.season !== undefined) {
-        criteria.push({label: "Season", value: entry.season});
-    }
-    if (entry.episode) {
-        criteria.push({label: "Episode", value: entry.episode});
-    }
-    if (entry.author) {
-        criteria.push({label: "Author", value: entry.author});
-    }
-    if (entry.minAge !== undefined) {
-        criteria.push({label: "Minimum age", value: `${entry.minAge} days`});
-    }
-    if (entry.maxAge !== undefined) {
-        criteria.push({label: "Maximum age", value: `${entry.maxAge} days`});
-    }
-    if (entry.minSize !== undefined) {
-        criteria.push({label: "Minimum size", value: `${entry.minSize} MB`});
-    }
-    if (entry.maxSize !== undefined) {
-        criteria.push({label: "Maximum size", value: `${entry.maxSize} MB`});
-    }
-    if (entry.selectedIndexers !== undefined) {
-        criteria.push({
-            label: "Selected indexers",
-            value:
-                entry.selectedIndexers.length > 0
-                    ? entry.selectedIndexers.join(", ")
-                    : "None",
-        });
-    }
     return (
         <Stack component="dl" spacing={0.5} sx={{m: 0}}>
-            {criteria.map(({label, value}) => (
+            {items.map((criterion) => (
                 <Stack
                     component="div"
                     direction="row"
-                    key={label}
+                    key={criterion.key}
                     spacing={0.5}
                 >
                     <Typography component="dt" fontWeight="medium">
-                        {label}:
+                        {criterion.label}:
                     </Typography>
                     <Typography component="dd" sx={{m: 0}}>
-                        {value}
+                        {criterionValue(criterion, dereferer, transport)}
                     </Typography>
                 </Stack>
             ))}
         </Stack>
+    );
+}
+
+function criterionValue(
+    criterion: SearchCriterion,
+    dereferer: unknown,
+    transport: ApiTransport,
+): ReactNode {
+    const href = criterion.identifier
+        ? identifierHref(
+              criterion.identifier.identifierKey,
+              criterion.identifier.identifierValue,
+              dereferer,
+              transport,
+          )
+        : undefined;
+    return href ? (
+        <Link href={href} rel="noreferrer" target="_blank">
+            {criterion.text}
+        </Link>
+    ) : (
+        criterion.text
     );
 }
 

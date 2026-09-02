@@ -885,3 +885,22 @@ the primary family only: `info` (#398da5) and the categorical chart sequence sta
 not brand, and the owner will judge whether `info` needs a follow-up after seeing the result (strip must include a stats
 capture for that call). Dark, bright, and dark-dyschromatopsia are untouched. FM-154's grey invariance pins move for
 exactly the primary-family tokens, superseded by measured assertions, per the FM-156 precedent. Owner decided 2026-08-31.
+
+## ADR-0053 — Stats bar-label colour is per-theme, asserted where labels actually paint (accepted 2026-09-02)
+
+FM-172's bar-label contrast criterion as written (≥4.5:1 against every `palette.charts.categorical` entry, palette
+untouched) is unsatisfiable for `bright`: entry 4 and entry 6 force disjoint label luminances. The owner's direction:
+the label colour is defined per theme, not shared. Bar value labels exist only in `HorizontalBarChart`, which always
+builds exactly one series, so a label only ever paints on `categorical[0]`; the measured ≥4.5:1 assertion is therefore
+narrowed to `categorical[0]` per theme (near-black family on the three dark themes, white on `bright`), and a test pins
+`HorizontalBarChart` to a single series so a future second labelled series cannot silently fall below 4.5:1. The
+categorical palettes themselves stay untouched (ADR-0052). Owner decided 2026-09-02.
+
+**Addendum (owner, 2026-09-02):** re-authoring `bright`'s categorical chart palette is also acceptable if label
+legibility ever requires it (e.g. a future second labelled series) — the ADR-0052 "palettes stay untouched" boundary is
+owner-relaxed for `bright`. Not exercised by FM-172; the narrowed `categorical[0]` assertion stands.
+
+**Correction (coordinator, 2026-09-02):** "white on `bright`" above was an implementation detail carried from the
+pre-measurement proposal, not part of the owner's decision (which was: per-theme colour, asserted where labels paint).
+Measured against the sRGB-clamped rendering of `bright`'s `categorical[0]` (`rgb(0,135,129)`), white reaches only
+4.40:1; the label is `#000000` (4.77:1). The per-theme principle and the `categorical[0]` narrowing are unchanged.

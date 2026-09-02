@@ -564,11 +564,10 @@ describe("SearchHistoryPage", () => {
         expect(
             screen.getByRole("columnheader", {name: "Username"}),
         ).toBeVisible();
+        // FM-174: one line per dimension, not a Minimum/Maximum pair each.
         for (const [label, value] of [
-            ["Minimum age:", "2 days"],
-            ["Maximum age:", "10 days"],
-            ["Minimum size:", "100 MB"],
-            ["Maximum size:", "500 MB"],
+            ["Size:", "100 MB - 500 MB"],
+            ["Age:", "2 days - 10 days"],
             ["Selected indexers:", "Configured, Mock"],
         ]) {
             const term = within(row).getByText(label);
@@ -592,9 +591,19 @@ describe("SearchHistoryPage", () => {
             ),
         ).toBeVisible();
         const repeat = within(row).getByTestId("search-history-repeat");
-        // The query leads its cell and its action follows, so the column reads
-        // as the queries rather than as a column of "Repeat".
-        expect(repeat.closest("td")).toHaveTextContent(/^queryRepeat$/);
+        // FM-174: the Query column holds the query and nothing else, and
+        // repeating is an icon-only control beside "Details" carrying legacy's
+        // own tooltip sentence as its accessible name.
+        expect(within(row).getByText("query").closest("td")).toHaveTextContent(
+            /^query$/,
+        );
+        expect(repeat.closest("td")).toBe(
+            within(row).getByTestId("search-history-details").closest("td"),
+        );
+        expect(repeat).toHaveAccessibleName(
+            "Repeat this search with all currently enabled indexers.",
+        );
+        expect(repeat).toHaveTextContent("");
         fireEvent.click(repeat);
         // The canonical criteria reach the search route through the URL now
         // rather than through a mocked `navigate`, so this pins what a repeat
@@ -652,8 +661,7 @@ describe("SearchHistoryPage", () => {
         // than the cell's DOM.
         await vi.waitFor(() =>
             expect(clipboard.writeText).toHaveBeenLastCalledWith(
-                "Minimum age: 2 days\nMaximum age: 10 days\n" +
-                    "Minimum size: 100 MB\nMaximum size: 500 MB\n" +
+                "Size: 100 MB - 500 MB\nAge: 2 days - 10 days\n" +
                     "Selected indexers: Configured, Mock",
             ),
         );
@@ -721,6 +729,137 @@ describe("SearchHistoryPage", () => {
         );
         await vi.waitFor(() =>
             expect(clipboard.writeText).toHaveBeenLastCalledWith("agent"),
+        );
+    });
+
+    /*
+     * FM-174 (owner request 2026-09-01): the `<key> ID` lines left the row --
+     * they made every identifier search a multi-line cell for values a reader
+     * rarely needs. They are not lost: the details dialog carries the whole
+     * search request, identifiers included, with the same external links the
+     * row used to render.
+     */
+    it("should keep identifiers out of the row and reachable, still linked, in the details dialog", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("details")
+                            ? {
+                                  ip: "127.0.0.1",
+                                  userAgent: "agent",
+                                  indexerSearches: [],
+                              }
+                            : {
+                                  content: [
+                                      {
+                                          ...entry(),
+                                          query: undefined,
+                                          title: "Trading Places",
+                                          identifiers: [
+                                              {
+                                                  identifierKey: "IMDB",
+                                                  identifierValue: "0086190",
+                                              },
+                                          ],
+                                      },
+                                  ],
+                                  totalElements: 1,
+                              },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        renderPage(fetchImplementation);
+        const row = await screen.findByTestId("search-history-row");
+        expect(within(row).queryByText("IMDB ID:")).not.toBeInTheDocument();
+        expect(within(row).queryByText("0086190")).not.toBeInTheDocument();
+
+        fireEvent.click(within(row).getByTestId("search-history-details"));
+        const requestDetails = await screen.findByRole("table", {
+            name: "Search request details",
+        });
+        expect(within(requestDetails).getByText("IMDB ID")).toBeVisible();
+        expect(
+            within(requestDetails).getByRole("link", {name: "0086190"}),
+        ).toHaveAttribute("href", "https://www.imdb.com/title/tt0086190");
+        // And the criteria the row does still show are in the dialog too, so
+        // one surface holds the entire request.
+        for (const [label, value] of [
+            ["Size", "100 MB - 500 MB"],
+            ["Age", "2 days - 10 days"],
+            ["Selected indexers", "Configured, Mock"],
+        ]) {
+            const cell = within(requestDetails).getByText(label);
+            expect(cell.closest("tr")).toHaveTextContent(value);
+        }
+    });
+
+    /*
+     * FM-174: a bounded search used to write four row lines for two facts
+     * ("Minimum size", "Maximum size", "Minimum age", "Maximum age"), and an
+     * empty `selectedIndexers` -- the ordinary "searched everything enabled"
+     * case -- claimed "Selected indexers: None", the opposite of what
+     * happened.
+     */
+    it("should render size and age as one line each and omit selected indexers when none were chosen", async () => {
+        const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
+        vi.stubGlobal("navigator", {clipboard});
+        renderPage(
+            vi.fn().mockResolvedValue(
+                new Response(
+                    JSON.stringify({
+                        content: [
+                            {
+                                ...entry(),
+                                id: 1,
+                                maxSize: undefined,
+                                minAge: undefined,
+                                selectedIndexers: [],
+                            },
+                            {
+                                ...entry(),
+                                id: 2,
+                                minSize: undefined,
+                                maxAge: undefined,
+                                selectedIndexers: undefined,
+                            },
+                        ],
+                        totalElements: 2,
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        await screen.findAllByTestId("search-history-row");
+        const [openEnded, closedEnded] =
+            screen.getAllByTestId("search-history-row");
+
+        expect(within(openEnded).getByText("Size:")).toBeVisible();
+        expect(within(openEnded).getByText("at least 100 MB")).toBeVisible();
+        expect(within(openEnded).getByText("up to 10 days")).toBeVisible();
+        expect(
+            within(openEnded).queryByText("Selected indexers:"),
+        ).not.toBeInTheDocument();
+        expect(within(openEnded).queryByText("None")).not.toBeInTheDocument();
+
+        expect(within(closedEnded).getByText("up to 500 MB")).toBeVisible();
+        expect(within(closedEnded).getByText("at least 2 days")).toBeVisible();
+        expect(
+            within(closedEnded).queryByText("Selected indexers:"),
+        ).not.toBeInTheDocument();
+
+        // The copy text says exactly what the cell says.
+        fireEvent.click(
+            within(openEnded).getByRole("button", {
+                name: "Copy additional parameters",
+            }),
+        );
+        await vi.waitFor(() =>
+            expect(clipboard.writeText).toHaveBeenLastCalledWith(
+                "Size: at least 100 MB\nAge: up to 10 days",
+            ),
         );
     });
 

@@ -1,30 +1,11 @@
-import {useMediaQuery} from "@mui/material";
+import {Box, useMediaQuery} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {BarChart} from "@mui/x-charts/BarChart";
+import {useEffect, useRef, useState} from "react";
 
-import {horizontalBarChartHeight} from "./chartSizing";
+import {categoryAxisWidth, horizontalBarChartHeight} from "./chartSizing";
 
 export type HorizontalBarDatum = {label: string; value: number};
-
-/**
- * How much room one character of a category label needs, and the padding
- * between the longest label and its axis. Approximations rather than
- * measurements: the exact advance width depends on the glyphs, and the point
- * of deriving the margin at all is that a chart of short labels should not
- * reserve room for long ones.
- */
-const LABEL_CHARACTER_WIDTH = 7;
-const LABEL_GUTTER = 16;
-
-/**
- * The most the labels may take from the plot. The wide ceiling is the value
- * this chart used to reserve unconditionally; the narrow one keeps the bars
- * themselves legible on a phone, where 140px of a 390px viewport left roughly
- * 200px of plot -- a "share" chart whose bars are too short to compare is not
- * showing anything.
- */
-const WIDE_LABEL_MARGIN = 140;
-const NARROW_LABEL_MARGIN = 84;
 
 /**
  * A value-labeled horizontal bar chart, sorted descending by value. Used for
@@ -43,56 +24,71 @@ export function HorizontalBarChart({
 }) {
     const theme = useTheme();
     const narrow = useMediaQuery(theme.breakpoints.down("sm"));
+    // FM-172: the category axis is sized from the width the card actually
+    // gives this chart, so an indexer name is elided only where it genuinely
+    // does not fit. `ResizeObserver` is the `ConfigNav`/`SearchResults` idiom;
+    // where it is absent (jsdom, older embedded browsers) the one-shot
+    // measurement below still runs and the chart falls back to a fixed
+    // ceiling rather than to no chart.
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [chartWidth, setChartWidth] = useState<number | undefined>(undefined);
+    useEffect(() => {
+        const element = containerRef.current;
+        if (!element) return;
+        const measure = () =>
+            setChartWidth(
+                element.clientWidth > 0 ? element.clientWidth : undefined,
+            );
+        measure();
+        if (typeof ResizeObserver === "undefined") return;
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
     const sorted = [...data].sort((left, right) => right.value - left.value);
     const chartHeight = horizontalBarChartHeight(sorted.length);
     const longestLabel = sorted.reduce(
         (longest, entry) => Math.max(longest, entry.label.length),
         0,
     );
-    const labelMargin = Math.min(
-        longestLabel * LABEL_CHARACTER_WIDTH + LABEL_GUTTER,
-        narrow ? NARROW_LABEL_MARGIN : WIDE_LABEL_MARGIN,
-    );
-    // A label that no longer fits its margin is elided rather than clipped
-    // mid-glyph. Ticks only: the tooltip keeps the whole label, so nothing is
-    // unreachable.
-    const tickCharacters = Math.floor(
-        (labelMargin - LABEL_GUTTER) / LABEL_CHARACTER_WIDTH,
-    );
+    const axisWidth = categoryAxisWidth(longestLabel, chartWidth, narrow);
+    const format = (value: number) => valueFormatter?.(value) ?? String(value);
     return (
-        <BarChart
-            colors={theme.palette.charts.categorical}
-            height={chartHeight}
-            hideLegend
-            layout="horizontal"
-            margin={{left: labelMargin}}
-            series={[
-                {
-                    barLabel: "value",
-                    data: sorted.map((entry) => entry.value),
-                    label: seriesLabel,
-                    valueFormatter: (value) =>
-                        value === null
-                            ? ""
-                            : (valueFormatter?.(value) ?? String(value)),
-                },
-            ]}
-            yAxis={[
-                {
-                    data: sorted.map((entry) => entry.label),
-                    scaleType: "band",
-                    valueFormatter: (label: string, context) =>
-                        context.location === "tick"
-                            ? elide(label, tickCharacters)
-                            : label,
-                },
-            ]}
-        />
+        <Box ref={containerRef} sx={{width: "100%"}}>
+            <BarChart
+                colors={theme.palette.charts.categorical}
+                height={chartHeight}
+                hideLegend
+                layout="horizontal"
+                series={[
+                    {
+                        // A function, not the `"value"` shorthand: the
+                        // shorthand prints `String(value)` and never consults
+                        // `valueFormatter`, which is what put `55.714287`
+                        // inside a bar labelled "Download share %". Returning
+                        // `null` for a zero-length bar keeps the shorthand's
+                        // one good habit -- a label with no bar to sit in.
+                        barLabel: (item) =>
+                            item.value ? format(item.value) : null,
+                        data: sorted.map((entry) => entry.value),
+                        label: seriesLabel,
+                        valueFormatter: (value) =>
+                            value === null ? "" : format(value),
+                    },
+                ]}
+                yAxis={[
+                    {
+                        data: sorted.map((entry) => entry.label),
+                        scaleType: "band",
+                        // x-charts ellipsizes each tick to this width against
+                        // the glyphs it is drawing, and the tooltip keeps the
+                        // whole label, so nothing is unreachable.
+                        width: axisWidth,
+                    },
+                ]}
+            />
+        </Box>
     );
-}
-
-function elide(label: string, characters: number): string {
-    return label.length <= characters
-        ? label
-        : `${label.slice(0, Math.max(characters - 1, 1))}…`;
 }

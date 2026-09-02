@@ -18,6 +18,7 @@ import {TableScrollAffordance} from "../../../../components/table/TableScrollAff
 import {ChartCard} from "../ChartCard";
 import {horizontalBarChartHeight} from "../charts/chartSizing";
 import {HorizontalBarChart} from "../charts/HorizontalBarChart";
+import {formatPercent} from "../formatting";
 
 const USER_AGENT_HELP =
     "Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'.";
@@ -129,9 +130,7 @@ export function SourcesSection({
                                     value: entry.percentage ?? 0,
                                 }))}
                                 seriesLabel="Percentage"
-                                valueFormatter={(value) =>
-                                    `${value.toFixed(1)}%`
-                                }
+                                valueFormatter={formatPercent}
                             />
                         }
                         help={card.help}
@@ -180,9 +179,7 @@ function ShareTable({card}: {card: ShareCard}) {
                         <TableRow key={`${entryKey(entry)}-${index}`}>
                             <TableCell>{entryKey(entry)}</TableCell>
                             <TableCell>
-                                {entry.percentage !== undefined
-                                    ? `${entry.percentage.toFixed(1)}%`
-                                    : ""}
+                                {formatPercent(entry.percentage)}
                             </TableCell>
                             <TableCell>{entry.count ?? ""}</TableCell>
                         </TableRow>

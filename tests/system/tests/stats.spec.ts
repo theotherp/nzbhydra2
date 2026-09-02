@@ -304,6 +304,97 @@ function statsResponseFixture(overrides: Record<string, unknown> = {}) {
     };
 }
 
+/**
+ * Exactly 30 characters, which is the length FM-172's acceptance names: long
+ * enough that the pre-FM-172 flat 140px label margin cut it (at 17), short
+ * enough to fit half of a 1280px card's chart with room to spare.
+ */
+const LONG_INDEXER_NAME = "NZBIndexerWithAVeryLongName123";
+
+/**
+ * The same shape as `statsResponseFixture`, with the two things the readable
+ * rendering has to survive: a name long enough to be elided, and ratios the
+ * backend really does send as raw doubles (`55.714287`).
+ */
+function readabilityFixture() {
+    return statsResponseFixture({
+        avgResponseTimes: [
+            {indexer: LONG_INDEXER_NAME, avgResponseTime: 120.4, delta: 5.25},
+            {indexer: "Beta", avgResponseTime: 340, delta: -2},
+        ],
+        indexerDownloadShares: [
+            {indexerName: LONG_INDEXER_NAME, total: 39, share: 55.714287},
+            {indexerName: "Beta", total: 31, share: 44.285713},
+        ],
+        indexerApiAccessStats: [
+            {
+                indexerName: LONG_INDEXER_NAME,
+                percentSuccessful: 95.238095,
+                percentConnectionError: 4.761905,
+                averageAccessesPerDay: 12,
+            },
+        ],
+        downloadsPerAgeStats: {
+            averageAge: 45.284,
+            percentOlder1000: 2.5,
+            percentOlder2000: 1.25,
+            percentOlder3000: 0,
+            downloadsPerAge: [{age: 100, count: 3}],
+        },
+    });
+}
+
+/**
+ * ADR-0053's per-theme bar-label fill, as the browser reports it: the warm
+ * near-black `#111514` on the three dark themes' light `charts[0]`, pure black
+ * on `bright`'s darker one, where neither white (4.40:1) nor the warm
+ * near-black (4.18:1) clears 1.4.3. `theme.test.ts` measures the ratios; this
+ * pins that the token actually reaches a drawn label in each theme.
+ */
+const barLabelFills = [
+    {value: "grey", fill: "rgb(17, 21, 20)"},
+    {value: "dark", fill: "rgb(17, 21, 20)"},
+    {value: "dark-dyschromatopsia", fill: "rgb(17, 21, 20)"},
+    {value: "bright", fill: "rgb(0, 0, 0)"},
+] as const;
+
+/** Every chart card on the dashboard, in document order. */
+const dashboardChartCards = [
+    "stats-chart-indexer-download-shares",
+    "stats-chart-response-times",
+    "stats-chart-activity-day-of-week",
+    "stats-chart-activity-hour-of-day",
+    "stats-chart-search-agent",
+    "stats-chart-download-agent",
+    "stats-chart-downloads-per-age",
+];
+
+async function chooseTheme(page: Page, value: string): Promise<void> {
+    await page.getByTestId("app-shell-theme-selector").click();
+    await page.getByTestId(`app-shell-theme-option-${value}`).click();
+    // Unmounted, not merely fading: a capture taken during MUI's exit
+    // transition photographs a translucent menu over the page (smoke.spec.ts
+    // documents the FM-154 strip that caught this).
+    await expect(page.getByRole("menu")).toHaveCount(0);
+}
+
+/**
+ * Restores "no preference" rather than writing today's default, the way
+ * `smoke.spec.ts` does: `GenericStorageWeb` has no delete, and the empty
+ * string is what `C-THEME-PREFERENCE`'s read boundary rejects into
+ * `undefined` -- the state a fresh instance has.
+ */
+async function clearThemePreference(page: Page): Promise<void> {
+    const response = await page.request.put(
+        "/internalapi/genericstorage/themePreference?forUser=true",
+        {
+            data: JSON.stringify(""),
+            headers: {"content-type": "application/json"},
+        },
+    );
+    expect(response.ok()).toBe(true);
+}
+
 test.describe("React aggregate statistics dashboard", () => {
     test("renders overview tiles, the indexer table, and representative values", async ({
         page,
@@ -498,6 +589,138 @@ test.describe("React aggregate statistics dashboard", () => {
             expect(await page.evaluate(() => document.body.scrollHeight)).toBe(
                 heightAtFirstPaint,
             );
+        }
+    });
+
+    /**
+     * FM-172, and the one case that can prove all three of its readability
+     * fixes at once, because all three only exist at real size: the label
+     * margin is derived from the width the card actually has, the value
+     * labels are drawn by x-charts' own layout, and the label colour comes
+     * from the theme the shell is wearing. jsdom answers none of those.
+     *
+     * The per-theme loop is not decoration. ADR-0053 made the bar-label
+     * colour per-theme, so a fix that only helps `grey` is the failure mode
+     * to catch, and the fill is asserted in each theme rather than eyeballed
+     * off the strip.
+     */
+    test("shows full indexer names, one-decimal percentages, and a legible bar label in every theme", async ({
+        page,
+    }, testInfo) => {
+        const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
+        const applicationUrl = (path: string) =>
+            new URL(path, applicationBaseUrl).toString();
+        await page.route("**/internalapi/stats", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(readabilityFixture()),
+            });
+        });
+        try {
+            for (const {value, fill} of barLabelFills) {
+                await prepareVisualEvidence(page, "desktop", async () => {
+                    await page.goto(applicationUrl("/stats/stats"));
+                    await dismissWelcomeDialog(page);
+                    await chooseTheme(page, value);
+                    await expect(
+                        page.getByTestId("stats-dashboard"),
+                    ).toBeVisible();
+                });
+                await expectChartDrawn(
+                    page,
+                    "stats-chart-indexer-download-shares",
+                );
+                const chart = page.getByTestId(
+                    "stats-chart-indexer-download-shares-chart",
+                );
+
+                // The whole 30-character name, in the tick itself -- before
+                // FM-172 every one of these was cut at 17 characters.
+                expect(
+                    await chart
+                        .locator(".MuiChartsAxis-tickLabel")
+                        .allTextContents(),
+                ).toContain(LONG_INDEXER_NAME);
+
+                // The value labels: one decimal and a unit, on a fill that is
+                // the theme's rather than x-charts' `text.primary` default.
+                const barLabels = chart.locator(".MuiBarChart-label");
+                expect(await barLabels.allTextContents()).toContain("55.7%");
+                const fills = await barLabels.evaluateAll((labels) =>
+                    labels.map((label) => getComputedStyle(label).fill),
+                );
+                expect(fills.length).toBeGreaterThan(0);
+                expect([...new Set(fills)]).toEqual([fill]);
+
+                // Every card walked into view before the capture, so the
+                // strip shows drawn charts rather than FM-164's reserved
+                // placeholders, and then back to the top so each theme's
+                // frame is the same frame.
+                for (const testId of dashboardChartCards) {
+                    await expectChartDrawn(page, testId);
+                }
+                await page.evaluate(() => {
+                    globalThis.scrollTo(0, 0);
+                });
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-STATS-MAIN",
+                        `dashboard-readability-${value}-desktop`,
+                    ),
+                    fullPage: true,
+                });
+            }
+
+            // The table renderings of the same numbers, once: no raw double
+            // survives anywhere on the route.
+            const indexerTable = page.getByRole("table", {
+                name: "Indexer statistics",
+            });
+            await expect(indexerTable).toContainText("55.7%");
+            await expect(indexerTable).toContainText("95.2%");
+            await expect(page.getByTestId("stats-age-older-1000")).toContainText(
+                "2.5%",
+            );
+            await expect(page.getByTestId("stats-age-average")).toContainText(
+                "45.3",
+            );
+            // Cell by cell rather than over the section's whole text: two
+            // adjacent one-decimal cells ("4.0" beside "80.0%") read as a raw
+            // double once their text is concatenated, and that is the
+            // rendering being asserted, not a defect.
+            for (const cell of await indexerTable
+                .locator("tbody td")
+                .allTextContents()) {
+                expect(cell).not.toMatch(/\d\.\d{2,}/);
+            }
+
+            // 390x844, where the label ceiling is deliberately tighter: the
+            // strip shows what the elision looks like when it is honest.
+            // Back in the default theme first, so the one frame that is about
+            // layout rather than colour is not read as a fifth theme.
+            await clearThemePreference(page);
+            await prepareVisualEvidence(page, "mobile", async () => {
+                await page.goto(applicationUrl("/stats/stats"));
+                await expect(page.getByTestId("stats-dashboard")).toBeVisible();
+            });
+            for (const testId of dashboardChartCards) {
+                await expectChartDrawn(page, testId);
+            }
+            await page.evaluate(() => {
+                globalThis.scrollTo(0, 0);
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-STATS-MAIN",
+                    "dashboard-readability-mobile",
+                ),
+                fullPage: true,
+            });
+        } finally {
+            // FM-124 restoration discipline: the preference is per user and
+            // this runs against a shared instance, so the theme this case
+            // wore must not outlive it.
+            await clearThemePreference(page);
         }
     });
 

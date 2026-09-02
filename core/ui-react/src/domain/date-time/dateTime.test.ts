@@ -82,6 +82,25 @@ describe("parseServerDateTime", () => {
             formatServerDateTime("2025-01-01T00:00:00", "Not/A_Timezone"),
         ).toBe("");
     });
+
+    /*
+     * FM-174 (owner request 2026-09-01): a 24-hour clock for every consumer,
+     * restoring legacy `reformatDate`'s fixed `HH:mm`. Under this suite's
+     * en-US default locale the same instant used to render "11:00 PM", and
+     * midnight -- the value the indexer-statuses table shows most -- used to
+     * render "12:00 AM". The medium date style is unchanged.
+     */
+    it("should render the time on a 24-hour clock whatever the locale would default to", () => {
+        expect(formatServerDateTime("2026-09-10T23:00:00", "UTC")).toBe(
+            "Sep 10, 2026, 23:00",
+        );
+        expect(formatServerDateTime("2026-09-10T00:00:00", "UTC")).toBe(
+            "Sep 10, 2026, 00:00",
+        );
+        expect(formatLogTimestamp("2026-09-10T23:00:00", "UTC")).toBe(
+            "Sep 10, 2026, 23:00",
+        );
+    });
 });
 
 describe("parseLogTimestamp", () => {

@@ -95,10 +95,69 @@ describe("IndexersSection", () => {
         const alphaCells = within(rows[0]).getAllByRole("cell");
         const betaCells = within(rows[1]).getAllByRole("cell");
         // Columns for indexerScores-only: Indexer, Avg. uniqueness score, Coverage.
-        expect(alphaCells[2].textContent).toBe("50%");
+        expect(alphaCells[2].textContent).toBe("50.0%");
         expect(betaCells[2].textContent).toBe("4");
         expect(alphaCells[2].textContent).not.toContain("(");
         expect(betaCells[2].textContent).not.toMatch(/^\s*\//);
+    });
+
+    it("rounds every percentage the table renders to one decimal with its unit", () => {
+        renderSection({
+            indexerApiAccessStats: [
+                {
+                    indexerName: "Alpha",
+                    percentSuccessful: 95.238095,
+                    percentConnectionError: 4.761905,
+                    averageAccessesPerDay: 12.4,
+                },
+            ],
+            indexerDownloadShares: [
+                {indexerName: "Alpha", total: 30, share: 55.714287},
+            ],
+            successfulDownloadsPerIndexer: [
+                {indexerName: "Alpha", percentSuccessful: 90.909091},
+            ],
+            indexerScores: [
+                {
+                    indexerName: "Alpha",
+                    averageUniquenessScore: 4.6666,
+                    coveragePercent: 79.999999,
+                    providedDownloads: 80,
+                    involvedSearches: 100,
+                    sharedContribution: 1.5,
+                    sharedContributionPercent: 20.454545,
+                },
+            ],
+        });
+        fireEvent.click(screen.getByTestId("stats-indexers-details-toggle"));
+        const cells = within(screen.getByTestId("stats-indexer-row"))
+            .getAllByRole("cell")
+            .map((cell) => cell.textContent ?? "");
+        expect(cells).toContain("95.2%");
+        expect(cells).toContain("4.8%");
+        expect(cells).toContain("55.7%");
+        expect(cells).toContain("90.9%");
+        // The uniqueness score is a raw double in the response, not a
+        // percentage: one decimal, no unit.
+        expect(cells).toContain("4.7");
+        expect(cells).toContain("80.0% (80/100)");
+        expect(cells).toContain("1.50 (20.5%)");
+        // No cell keeps a raw double.
+        expect(cells.join(" ")).not.toMatch(/\d\.\d{3}/);
+    });
+
+    it("rounds the download-share card's own table", () => {
+        renderSection({
+            indexerDownloadShares: [
+                {indexerName: "Alpha", total: 30, share: 55.714287},
+            ],
+        });
+        fireEvent.click(screen.getByRole("button", {name: "View data"}));
+        expect(
+            within(
+                screen.getByRole("table", {name: "Downloads per indexer"}),
+            ).getByText("55.7%"),
+        ).toBeInTheDocument();
     });
 
     it("shows an em dash when a composite cell has neither sub-value, never a bare fraction or parenthetical", () => {

@@ -1453,6 +1453,17 @@ records. Vitest components+history 138/138; the reviewer's full run was 1814/181
 header's stale "reserved, planned" parenthetical, moot on deletion). The 2026-08-31 UX/perf batch FM-162..FM-170 is
 complete.
 
+FM-172 (Stats Readability) fixed three owner complaints in the stats dashboard: indexer names were cut to ~4 characters
+because x-charts sizes its y-axis from `yAxis.width` (default 45px), not the chart margin — the axis now sizes from the
+longest label, capped at 50% of measured chart width (30-char names render whole at 1280x800, honest elision at 390px);
+every rendered percentage goes through the new feature-local `formatPercent` (one decimal + `%`, closing the additional
+live defect that `barLabel: "value"` printed raw floats on the bars); and bar value labels use a per-theme
+`palette.charts.barLabel` token (ADR-0053: `#111514` on the three dark themes at 8.6:1, `#000000` on bright at 4.77:1
+against the sRGB-clamped rendering — the test instrument's oklch→sRGB now clamps to gamut, a latent-defect fix caught in
+review cycle 1). Passed 2026-09-02 after one fix cycle with three minor findings, not corrected (optional): the handoff
+calls the pre-existing `chartSizing.ts` "new", its ADR-correction follow-up line is stale (already done), and the older
+`dashboard-desktop.png` capture still photographs FM-164 placeholder cards. Candidates for a future quickfix.
+
 FM-171 (Session-Expired Recovery Affordance) closed the client half of issue #1080: `C-SESSION-EXPIRY` is done — a
 latching notifier (`app/sessionExpiry.ts`), a shell-mounted `SessionExpiredDialog` with Reload/Dismiss,
 `QueryCache`/`MutationCache` `onError` on both `QueryClient`s, and `retryUnlessUnauthorized` as the query retry default
@@ -1461,6 +1472,31 @@ so a dead session isn't re-hit through the 3-retry backoff. Auth's deliberate di
 not corrected (optional): the system spec's refused-request assertion is `>= 2` where `toHaveLength(2)` would match its
 own no-retry comment, and the `MutationCache` wiring on both clients is exercised by no mutation-driven test (every test
 drives a query). Candidates for a future quickfix.
+
+FM-173 (Indexer Status Chips Stop Overlapping The Row Divider) reversed FM-151's lifted-chips trade-off in the wide
+indexer table: the `wideName` arrangement (`position: absolute; top: 100%` chip stack hanging below the name cell and
+across the row divider) is gone and the wide branch now uses the compact branch's normal-flow `Stack`, so a
+chip-bearing row grows instead of its chips overlapping the next row. The compact branch and every
+`SettingRowTableCellScope` control cell are byte-for-byte untouched (FM-151's alignment survives); the FM-151 site
+comment and `FEATURES.yaml` note now record the owner's 2026-09-01 judgement (overlap worse than growth). Pinned by
+extending the name-cell wrapper test to walk every chip ancestor and assert none is absolutely positioned. Vitest
+1875/1875, real-backend `config-indexers.spec.ts` 13/13; 1280x800 and 390x844 captures reviewed. Passed 2026-09-02
+first cycle with one minor finding, not corrected: the Upcoming bullet describing FM-172 as Active was stale (fixed in
+this reconcile).
+
+FM-174 (Search-History Row Declutter And A 24-Hour Time Column) landed the owner's 2026-09-01 row requests: Repeat is an
+icon-only button beside Details carrying legacy's tooltip/`aria-label` (testid and `repeat()` payload unchanged); identifier
+lines left the row and reappear in the Details dialog as the same `identifierHref` links (`F-HISTORY-SEARCHES.gaps` records
+the delta from legacy's one inline linked ID); size and age render as single range lines, "Selected indexers" only for a
+non-empty array — one `searchCriteria` model feeds row cell, copy text, and dialog, so they cannot drift. `C-DATE-TIME`'s
+`formatParsed` now uses `hourCycle: "h23"` (legacy `reformatDate` parity, medium date style kept), the two 12h consumer pins
+were rewritten to 24h, the Time cell never wraps, and the table's min-width floor was re-measured 700→760. Vitest 1878/1878,
+real-backend `search-history.spec.ts` 6/6 with the e08aa3b87-scoped refine locators; four captures reviewed. Passed 2026-09-02
+first cycle with three minor findings, not corrected (optional): the system spec's `" ID:"` absence assertion runs against a
+search that never carried identifiers (not load-bearing), `detailsEntry` is resolved from the current page so a row leaving
+the page mid-dialog would drop its criteria (unreachable while modal), and `dereferer: unknown` is threaded through three
+signatures untyped (inherited looseness, widened). Candidates for a future quickfix. The 2026-09-01 owner-request batch
+FM-172..FM-174 is complete.
 
 ## Active
 
@@ -1488,6 +1524,10 @@ None.
 None.
 
 ## Upcoming
+
+- The 2026-09-01 owner-request batch FM-172..FM-174 (stats polish; indexer chip placement; search-history row declutter
+  with a 24h `C-DATE-TIME` time format) is complete (all three entries above, finished 2026-09-02). No task packets are
+  queued.
 
 - The 2026-08-31 UX/perf batch FM-162..FM-170 is complete (all nine entries above, finished 2026-09-01). No task
   packets are queued; retained minor findings and fix candidates live in the done entries above and in

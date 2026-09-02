@@ -130,8 +130,9 @@ describe("SystemBackupTab", () => {
         expect(
             screen.getByTestId("system-backup-download-0"),
         ).toHaveTextContent("nzbhydra-newer.zip");
-        // The server's timezone, not the browser's.
-        expect(screen.getByText("Aug 20, 2026, 8:30 AM")).toBeVisible();
+        // The server's timezone, not the browser's -- and FM-174's 24-hour
+        // clock, which used to read "8:30 AM" here.
+        expect(screen.getByText("Aug 20, 2026, 08:30")).toBeVisible();
         expect(screen.getByTestId("system-backup-restore-1")).toBeVisible();
     });
 

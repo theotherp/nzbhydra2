@@ -2009,10 +2009,19 @@ describe("SettingRow's table-cell opt-in", () => {
         ).toHaveStyle({marginBottom: "0px"});
 
         // The caps-incomplete chip lives in the name cell, which is built by
-        // `IndexerTable` itself rather than `SettingRow` and carries no such
-        // wrapper at all.
-        expect(
-            screen.getByTestId("config-indexer-caps-incomplete-0"),
-        ).toBeVisible();
+        // `IndexerTable` itself rather than `SettingRow`. FM-173 dropped the
+        // out-of-flow chip stack that cell used to carry in the wide branch —
+        // the chip now sits in the same normal-flow stack as every other
+        // arrangement, so no ancestor between the chip and the cell is
+        // absolutely positioned.
+        const chip = screen.getByTestId("config-indexer-caps-incomplete-0");
+        expect(chip).toBeVisible();
+        for (
+            let ancestor = chip.parentElement;
+            ancestor !== null && ancestor !== document.body;
+            ancestor = ancestor.parentElement
+        ) {
+            expect(ancestor).not.toHaveStyle({position: "absolute"});
+        }
     });
 });

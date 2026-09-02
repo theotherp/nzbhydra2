@@ -11,6 +11,7 @@ import {
 import type {StatsResult} from "../../../../api/stats/mainStats";
 import {TableScrollAffordance} from "../../../../components/table/TableScrollAffordance";
 import {ChartCard} from "../ChartCard";
+import {formatNumber, formatPercent} from "../formatting";
 import {GROUPED_BAR_CHART_HEIGHT} from "../charts/chartSizing";
 import {GroupedBarChart} from "../charts/GroupedBarChart";
 
@@ -36,25 +37,22 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
                 <SummaryStat
                     label="Average age (days)"
                     testId="stats-age-average"
-                    value={data.averageAge}
+                    value={formatNumber(data.averageAge, 1)}
                 />
                 <SummaryStat
                     label="% older than 1000 days"
                     testId="stats-age-older-1000"
-                    value={data.percentOlder1000}
-                    suffix="%"
+                    value={formatPercent(data.percentOlder1000)}
                 />
                 <SummaryStat
                     label="% older than 2000 days"
                     testId="stats-age-older-2000"
-                    value={data.percentOlder2000}
-                    suffix="%"
+                    value={formatPercent(data.percentOlder2000)}
                 />
                 <SummaryStat
                     label="% older than 3000 days"
                     testId="stats-age-older-3000"
-                    value={data.percentOlder3000}
-                    suffix="%"
+                    value={formatPercent(data.percentOlder3000)}
                 />
             </Stack>
             {entries.length > 0 && (
@@ -116,15 +114,18 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
     );
 }
 
+/**
+ * One summary value. `value` arrives already formatted (FM-172: the stats
+ * feature states every ratio through `formatPercent`), and an absent value
+ * arrives as the empty string that `formatNumber`/`formatPercent` return.
+ */
 function SummaryStat({
     label,
     value,
-    suffix,
     testId,
 }: {
     label: string;
-    value: number | undefined;
-    suffix?: string;
+    value: string;
     testId: string;
 }) {
     return (
@@ -133,7 +134,7 @@ function SummaryStat({
                 {label}
             </Typography>
             <Typography component="p" variant="h5">
-                {value !== undefined ? `${value}${suffix ?? ""}` : "—"}
+                {value === "" ? "—" : value}
             </Typography>
         </Stack>
     );

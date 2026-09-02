@@ -82,6 +82,16 @@ function formatParsed(
         return new Intl.DateTimeFormat(undefined, {
             dateStyle: "medium",
             timeStyle: "short",
+            /*
+             * FM-174 (owner request 2026-09-01): the clock is 24-hour for
+             * every consumer, whatever the reader's locale would default to --
+             * legacy formatted every timestamp with a fixed `YYYY-MM-DD HH:mm`
+             * (`reformatDate`, indexer-statuses-controller.js:78-89), and an
+             * en-US reader lost that to "8:30 AM". `hourCycle: "h23"` rather
+             * than `hour12: false`, which resolves to h24 ("24:00") in some
+             * locales; the medium date style is kept as it was.
+             */
+            hourCycle: "h23",
             timeZone: serverTimeZone ?? undefined,
         }).format(parsed);
     } catch {
