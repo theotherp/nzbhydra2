@@ -115,6 +115,9 @@ function Harness({
                 }
                 collapsed={collapsed}
                 drawerOpen={drawerOpen}
+                filteredCount={
+                    filterResults(loadedResults, filters, quickFilters).length
+                }
                 filters={filters}
                 indexerOpen={indexerOpen}
                 onClearAll={onClearAll}
@@ -147,6 +150,17 @@ function Harness({
                     }))
                 }
             />
+            {/* FM-181: the results page's compact trigger is no longer the
+                shell's own (it lives in the sticky toolbar row, with the
+                active-filter badge), so this harness stands in for it the
+                same way it already stands in for the drawer state's owner. */}
+            <button
+                data-testid="harness-refine-trigger"
+                onClick={() => setDrawerOpen((open) => !open)}
+                type="button"
+            >
+                Refine
+            </button>
             {/* The filtered outcome of the bound state, so a test can prove a
                 sidebar control actually narrows results rather than only
                 flipping a visual state. */}
@@ -213,12 +227,10 @@ describe("RefineSidebar", () => {
         },
     );
 
-    it("leaves the below-`sm` drawer branch unpinned", () => {
+    it("leaves the below-`sm` sheet branch unpinned", () => {
         stubMobileViewport();
         render(<Harness />);
-        fireEvent.click(
-            screen.getByRole("button", {name: "Expand refine sidebar"}),
-        );
+        fireEvent.click(screen.getByTestId("harness-refine-trigger"));
         const style = getComputedStyle(screen.getByTestId("refine-sidebar"));
         expect(style.position).not.toBe("sticky");
         expect(style.overflowY).not.toBe("auto");
@@ -501,19 +513,25 @@ describe("RefineSidebar", () => {
         ).toBeDisabled();
     });
 
-    it("keeps every filter section reachable below sm through the drawer the sidebar toggle opens", async () => {
+    it("keeps every filter section reachable below sm through the sheet its external trigger opens", async () => {
         stubMobileViewport();
         render(<Harness quickFilters={oneQualityFilter} />);
 
-        // Nothing competes with the table for width until the drawer is
-        // opened: only the toggle renders.
-        const toggle = screen.getByTestId("refine-sidebar-toggle");
-        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        // Nothing competes with the table for width until the sheet is
+        // opened, and the shell emits no trigger of its own -- FM-181 moved
+        // the results page's trigger into the sticky toolbar row, so
+        // `refine-sidebar-toggle` exists there and only there.
+        expect(
+            screen.queryByTestId("refine-sidebar-toggle"),
+        ).not.toBeInTheDocument();
         expect(screen.queryByTestId("refine-sidebar")).not.toBeInTheDocument();
 
-        fireEvent.click(toggle);
-        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        fireEvent.click(screen.getByTestId("harness-refine-trigger"));
         const sidebar = within(screen.getByTestId("refine-sidebar"));
+        // The sheet's footer counts what the current filters leave, live.
+        expect(screen.getByTestId("refine-sidebar-done")).toHaveTextContent(
+            "Show 3 results",
+        );
         for (const testId of [
             "refine-clear-all",
             "refine-quality-filters",
@@ -552,6 +570,12 @@ describe("RefineSidebar", () => {
         fireEvent.click(
             sidebar.getByRole("button", {name: "Close refine sidebar"}),
         );
-        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        // The sheet unmounts after its own exit transition, so "closed" is
+        // awaited rather than asserted on the next line.
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("refine-sidebar"),
+            ).not.toBeInTheDocument(),
+        );
     });
 });

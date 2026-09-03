@@ -245,6 +245,62 @@ export function defaultFilters(
     };
 }
 
+/**
+ * FM-181: how many of the refine surface's eight filter dimensions -- title,
+ * categories, indexers, download types, size, age, grabs, quick filters --
+ * currently differ from `defaultFilters(results, quickFilters)`.
+ *
+ * It exists because the phone toolbar's refine trigger is an icon with a
+ * badge: with the sections behind a sheet, the count is the only thing that
+ * tells the reader a filter is on at all. It is also the *single* answer to
+ * "is anything active" -- `RefineSidebar` derives its "Clear all" disabled
+ * state from `activeFilterCount(...) === 0` rather than from a second
+ * comparison, so the badge and the button can never disagree about it.
+ *
+ * A dimension counts once however many of its values changed: "indexers" is
+ * one active filter whether the reader deselected one indexer or five. The
+ * array-valued dimensions are compared order-independently, because
+ * `defaultFilters` derives their order by scanning the loaded results while a
+ * user's own toggling produces whatever order they clicked in.
+ */
+export function activeFilterCount(
+    filters: ResultFilters,
+    results: SearchResult[],
+    quickFilters: QuickFilter[],
+): number {
+    const defaults = defaultFilters(results, quickFilters);
+    const changed = [
+        filters.title !== defaults.title,
+        ...(["categories", "downloadTypes", "indexers"] as const).map(
+            (key) => !sameValues(filters[key], defaults[key]),
+        ),
+        ...(["age", "grabs", "size"] as const).map(
+            (key) =>
+                filters[key].min !== defaults[key].min ||
+                filters[key].max !== defaults[key].max,
+        ),
+        !sameQuickFilterSelection(filters.quickFilters, defaults.quickFilters),
+    ];
+    return changed.filter(Boolean).length;
+}
+
+function sameValues(left: string[], right: string[]): boolean {
+    return (
+        left.length === right.length &&
+        [...left].sort().join(" ") === [...right].sort().join(" ")
+    );
+}
+
+function sameQuickFilterSelection(
+    left: Record<string, boolean>,
+    right: Record<string, boolean>,
+): boolean {
+    const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+    return [...keys].every(
+        (key) => (left[key] ?? false) === (right[key] ?? false),
+    );
+}
+
 export function quickFiltersFromSafeConfig(value: unknown): QuickFilter[] {
     if (
         !isRecord(value) ||

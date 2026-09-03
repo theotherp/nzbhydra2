@@ -1,6 +1,7 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {
+    activeFilterCount,
     ageInDays,
     defaultFilters,
     formatResultDetails,
@@ -19,6 +20,7 @@ import {
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
+import type {QuickFilter} from "./resultTable";
 
 const results = [
     {
@@ -40,6 +42,73 @@ const results = [
         epoch: 1_600_000_000,
     },
 ];
+
+// FM-181: the phone toolbar's refine badge, and the single answer to "is any
+// filter active" that `refine-clear-all`'s disabled state is derived from.
+describe("activeFilterCount", () => {
+    const quickFilters: QuickFilter[] = [
+        {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
+    ];
+    const base = () => defaultFilters(results, quickFilters);
+
+    it("should count nothing for the defaults the sidebar clears back to", () => {
+        expect(activeFilterCount(base(), results, quickFilters)).toBe(0);
+    });
+
+    it("should ignore the order of a derived multi-select's own default", () => {
+        const reversed = base();
+        reversed.indexers = [...reversed.indexers].reverse();
+        reversed.categories = [...reversed.categories].reverse();
+        expect(activeFilterCount(reversed, results, quickFilters)).toBe(0);
+    });
+
+    it("should count each changed dimension once, however many values changed", () => {
+        expect(
+            activeFilterCount(
+                {...base(), title: "movie"},
+                results,
+                quickFilters,
+            ),
+        ).toBe(1);
+        // Both indexers deselected is still one active dimension.
+        expect(
+            activeFilterCount({...base(), indexers: []}, results, quickFilters),
+        ).toBe(1);
+        expect(
+            activeFilterCount(
+                {...base(), size: {min: "100", max: "900"}},
+                results,
+                quickFilters,
+            ),
+        ).toBe(1);
+        expect(
+            activeFilterCount(
+                {...base(), quickFilters: {"quality|q1080p": true}},
+                results,
+                quickFilters,
+            ),
+        ).toBe(1);
+    });
+
+    it("should count every one of the eight dimensions it covers", () => {
+        expect(
+            activeFilterCount(
+                {
+                    age: {min: "1", max: ""},
+                    categories: ["Movies"],
+                    downloadTypes: ["NZB"],
+                    grabs: {min: "2", max: ""},
+                    indexers: ["One"],
+                    quickFilters: {"quality|q1080p": true},
+                    size: {min: "", max: "3"},
+                    title: "movie",
+                },
+                results,
+                quickFilters,
+            ),
+        ).toBe(8);
+    });
+});
 
 describe("result table transformations", () => {
     it("should parse only enabled safe-config quick filters and preserve valid preselection", () => {

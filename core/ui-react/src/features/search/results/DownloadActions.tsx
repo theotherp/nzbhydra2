@@ -1,14 +1,20 @@
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
     Alert,
     Button,
+    ButtonGroup,
     IconButton,
+    ListSubheader,
+    Menu,
     MenuItem,
     Select,
     Stack,
     Tooltip,
+    Typography,
 } from "@mui/material";
-import type {ReactNode} from "react";
+import type {MenuListProps} from "@mui/material";
 import {useEffect, useMemo, useState} from "react";
 
 import type {SearchResult} from "../../../api/search";
@@ -77,18 +83,23 @@ const primaryActionSx = {
 // raised, which is the contrast that tells the two apart in this one row.
 
 export function DownloadActions({
-    leading,
+    compact = false,
     results,
     safeConfig,
     onDownloaded,
     onSaveSearch,
     savingSearch = false,
 }: {
-    // FM-055: rendered at the start of the merged action row. The one
-    // current caller passes the `sm`-down `SelectionMenu` copy, which the
-    // toolbar owns (it drives the parent's selection state) but which the
-    // packet's row-2 layout places inside this row.
-    leading?: ReactNode;
+    /**
+     * FM-181: the below-768px rendering of the same state. A phone cannot
+     * carry seven controls and two selects on one line, so the row becomes a
+     * selection count, one split send button whose menu holds the downloader
+     * and category choices the desktop `Select`s bind, and an overflow menu
+     * for the three secondary actions -- each keeping its desktop gating,
+     * disabled rule and wording. One component, one set of state: which form
+     * renders is a JavaScript branch, so no control exists twice.
+     */
+    compact?: boolean;
     results: SearchResult[];
     safeConfig: unknown;
     onDownloaded: (ids: number[]) => void;
@@ -120,6 +131,14 @@ export function DownloadActions({
     const [categoryError, setCategoryError] = useState<string>();
     const [category, setCategory] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
+    // FM-181: the compact row's two menus. Declared unconditionally, like
+    // every other hook here, because which row renders is decided below.
+    const [sendMenuAnchor, setSendMenuAnchor] = useState<HTMLElement | null>(
+        null,
+    );
+    const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement | null>(
+        null,
+    );
     const selectedNzbs = results.filter(
         (result) => result.downloadType === "NZB",
     );
@@ -290,6 +309,25 @@ export function DownloadActions({
             });
         }
     };
+    // Extracted from the desktop button's own `onClick` by FM-181 so the
+    // compact overflow menu's entry runs the identical operation rather than a
+    // second copy of it.
+    const saveToBlackHole = () =>
+        Promise.all([
+            selectedNzbs.length && settings.saveNzbs
+                ? execute(
+                      () => saveNzbs(transport, selectedNzbs),
+                      "Successfully saved NZBs.",
+                  )
+                : undefined,
+            selectedTorrents.length &&
+            (settings.saveTorrents || settings.sendMagnets)
+                ? execute(
+                      () => saveOrSendTorrents(transport, selectedTorrents),
+                      "Successfully saved or sent torrents.",
+                  )
+                : undefined,
+        ]);
     const zip = async () =>
         execute(async () => {
             const response = await prepareZip(transport, selectedNzbs);
@@ -303,6 +341,196 @@ export function DownloadActions({
             }
             return response;
         }, "Prepared NZB ZIP download.");
+    if (compact) {
+        const sendDisabled =
+            busy || Boolean(categoryError) || results.length === 0;
+        const closeSendMenu = () => setSendMenuAnchor(null);
+        const closeMoreMenu = () => setMoreMenuAnchor(null);
+        // The category options the desktop `Select` renders, in its order:
+        // "use the downloader's default", the fetched list, and -- when the
+        // configured default is not in that list -- the default itself
+        // (FM-114). `null` is the same "unset" value the `Select`'s empty
+        // string maps to, so both forms drive one piece of state.
+        const categoryOptions: {label: string; value: string | null}[] = [
+            {label: "Use downloader default", value: null},
+            ...downloaderCategories.map((value) => ({label: value, value})),
+            ...(outOfListDefault
+                ? [{label: outOfListDefault, value: outOfListDefault}]
+                : []),
+        ];
+        return (
+            <Stack
+                alignItems="center"
+                aria-label="Selected result actions"
+                data-testid="results-bulk-actions"
+                direction="row"
+                gap={1}
+            >
+                {/* The count the desktop summary carries as a `· N selected`
+                    fragment. On a phone the summary is down to `{filtered} /
+                    {total}`, and this row exists only while something is
+                    selected, so the number belongs here instead. */}
+                <Typography
+                    component="div"
+                    data-testid="results-selection-count"
+                    sx={{
+                        color: "primary.main",
+                        fontSize: denseControlFontSize,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {results.length} selected
+                </Typography>
+                {downloaders.length === 0 && (
+                    <Alert severity="info">
+                        No downloader is configured for selected-result sends.
+                    </Alert>
+                )}
+                {categoryError && (
+                    <Alert severity="error">{categoryError}</Alert>
+                )}
+                {downloaders.length > 0 && (
+                    <ButtonGroup
+                        size="small"
+                        sx={{ml: "auto"}}
+                        variant="contained"
+                    >
+                        <Button
+                            data-testid="send-to-downloader"
+                            disabled={sendDisabled}
+                            onClick={send}
+                            sx={primaryActionSx}
+                        >
+                            Send to downloader
+                        </Button>
+                        <Button
+                            aria-expanded={sendMenuAnchor ? "true" : undefined}
+                            aria-haspopup="menu"
+                            aria-label="Send options"
+                            data-testid="send-to-downloader-options"
+                            disabled={sendDisabled}
+                            onClick={(event) =>
+                                setSendMenuAnchor(event.currentTarget)
+                            }
+                            sx={{...primaryActionSx, px: 0.5}}
+                        >
+                            <ArrowDropDownIcon fontSize="small" />
+                        </Button>
+                    </ButtonGroup>
+                )}
+                <IconButton
+                    aria-expanded={moreMenuAnchor ? "true" : undefined}
+                    aria-haspopup="menu"
+                    aria-label="More actions"
+                    data-testid="results-more-actions"
+                    onClick={(event) => setMoreMenuAnchor(event.currentTarget)}
+                    size="small"
+                >
+                    <MoreVertIcon fontSize="small" />
+                </IconButton>
+                {/* The two `Select`s' options as one menu. `menuitemradio`
+                    rather than `menuitem`: each group is a single-choice
+                    setting, which is exactly what the selects it replaces
+                    announce, and `aria-checked` is what carries the current
+                    value once the closed select's own text is gone. */}
+                <Menu
+                    anchorEl={sendMenuAnchor}
+                    onClose={closeSendMenu}
+                    open={Boolean(sendMenuAnchor)}
+                    slotProps={{
+                        // MUI types the list slot as `MenuListProps`. Unlike a
+                        // JSX intrinsic element it carries no index signature
+                        // for `data-*`, so the one attribute this menu is
+                        // queried by needs the assertion.
+                        list: {
+                            "data-testid": "send-to-downloader-menu",
+                        } as MenuListProps,
+                    }}
+                >
+                    {downloaders.length > 1 && (
+                        <ListSubheader>Downloader</ListSubheader>
+                    )}
+                    {downloaders.length > 1 &&
+                        downloaders.map((value) => (
+                            <MenuItem
+                                aria-checked={value.name === downloader?.name}
+                                key={value.name}
+                                onClick={() => {
+                                    setSelectedName(value.name);
+                                    closeSendMenu();
+                                }}
+                                role="menuitemradio"
+                                // `aria-checked` alone is announced but not
+                                // drawn; `selected` is MUI's own visible
+                                // "this is the current one", which is what
+                                // the closed `Select`'s text used to say.
+                                selected={value.name === downloader?.name}
+                            >
+                                {value.name}
+                            </MenuItem>
+                        ))}
+                    <ListSubheader>Category</ListSubheader>
+                    {categoryOptions.map((option) => (
+                        <MenuItem
+                            aria-checked={option.value === category}
+                            key={option.label}
+                            onClick={() => {
+                                setCategory(option.value);
+                                closeSendMenu();
+                            }}
+                            role="menuitemradio"
+                            selected={option.value === category}
+                        >
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </Menu>
+                <Menu
+                    anchorEl={moreMenuAnchor}
+                    onClose={closeMoreMenu}
+                    open={Boolean(moreMenuAnchor)}
+                    slotProps={{
+                        list: {
+                            "data-testid": "results-more-actions-menu",
+                        } as MenuListProps,
+                    }}
+                >
+                    {settings.zip && (
+                        <MenuItem
+                            disabled={busy || selectedNzbs.length === 0}
+                            onClick={() => {
+                                closeMoreMenu();
+                                void zip();
+                            }}
+                        >
+                            Download selected NZBs as ZIP
+                        </MenuItem>
+                    )}
+                    {(settings.saveNzbs ||
+                        settings.saveTorrents ||
+                        settings.sendMagnets) && (
+                        <MenuItem
+                            disabled={busy}
+                            onClick={() => {
+                                closeMoreMenu();
+                                void saveToBlackHole();
+                            }}
+                        >
+                            Send selected to black hole
+                        </MenuItem>
+                    )}
+                    <MenuItem
+                        onClick={() => {
+                            closeMoreMenu();
+                            void copy();
+                        }}
+                    >
+                        Copy selected links
+                    </MenuItem>
+                </Menu>
+            </Stack>
+        );
+    }
     return (
         // FM-055 (row 2 of the consolidated `results-toolbar`): the single
         // wrapping action row. It keeps FM-040's `results-bulk-actions`
@@ -324,7 +552,6 @@ export function DownloadActions({
             flexWrap="wrap"
             gap={1}
         >
-            {leading}
             {downloaders.length > 1 && (
                 <Select
                     aria-label="Downloader"
@@ -409,27 +636,7 @@ export function DownloadActions({
                 settings.sendMagnets) && (
                 <Button
                     disabled={busy}
-                    onClick={() =>
-                        Promise.all([
-                            selectedNzbs.length && settings.saveNzbs
-                                ? execute(
-                                      () => saveNzbs(transport, selectedNzbs),
-                                      "Successfully saved NZBs.",
-                                  )
-                                : undefined,
-                            selectedTorrents.length &&
-                            (settings.saveTorrents || settings.sendMagnets)
-                                ? execute(
-                                      () =>
-                                          saveOrSendTorrents(
-                                              transport,
-                                              selectedTorrents,
-                                          ),
-                                      "Successfully saved or sent torrents.",
-                                  )
-                                : undefined,
-                        ])
-                    }
+                    onClick={saveToBlackHole}
                     size="small"
                     variant="control"
                 >

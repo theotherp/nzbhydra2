@@ -1,4 +1,4 @@
-import {cleanup, render, screen} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import type {RefineSurfaceLabels, RefineSurfaceTestIds} from "./RefineSurface";
@@ -10,6 +10,7 @@ import {RefineSurface} from "./RefineSurface";
 const labels: RefineSurfaceLabels = {
     close: "Close probe filters",
     collapse: "Collapse probe filters",
+    done: "Show 7 probes",
     expand: "Expand probe filters",
     heading: "Probe",
     surface: "Probe filters",
@@ -17,6 +18,7 @@ const labels: RefineSurfaceLabels = {
 const testIds: RefineSurfaceTestIds = {
     clearAll: "probe-clear-all",
     close: "probe-close",
+    done: "probe-done",
     drawer: "probe-drawer",
     surface: "probe-surface",
     toggle: "probe-toggle",
@@ -41,13 +43,17 @@ function stubCompactViewport(): void {
 function Surface({
     collapsed = false,
     drawerOpen = false,
+    onDrawerOpenChange = vi.fn(),
     stickyOffset,
     summary,
+    trigger,
 }: {
     collapsed?: boolean;
     drawerOpen?: boolean;
+    onDrawerOpenChange?: (open: boolean) => void;
     stickyOffset?: number;
     summary?: string;
+    trigger?: "inline" | "external";
 }) {
     return (
         <RefineSurface
@@ -56,11 +62,12 @@ function Surface({
             drawerOpen={drawerOpen}
             labels={labels}
             onClearAll={vi.fn()}
-            onDrawerOpenChange={vi.fn()}
+            onDrawerOpenChange={onDrawerOpenChange}
             onToggleCollapsed={vi.fn()}
             stickyOffset={stickyOffset}
             summary={summary}
             testIds={testIds}
+            trigger={trigger}
         >
             <div data-testid="probe-sections">sections</div>
         </RefineSurface>
@@ -114,10 +121,63 @@ describe("RefineSurface", () => {
         );
     });
 
+    // FM-181: the sheet is a three-part column, and the two controls a thumb
+    // reaches for are pinned in its footer rather than left at the top of a
+    // list that scrolls. The header keeps the summary and the close control.
+    it("pins clear-all and done in the compact sheet's footer", () => {
+        const onDrawerOpenChange = vi.fn();
+        stubCompactViewport();
+        render(
+            <Surface
+                drawerOpen
+                onDrawerOpenChange={onDrawerOpenChange}
+                summary="2 active filters"
+            />,
+        );
+        const surface = screen.getByTestId(testIds.surface);
+        const clearAll = screen.getByTestId(testIds.clearAll);
+        // Named exactly as it has always been, and now saying so on screen
+        // too -- the docked column's 216px header is what forced the icon.
+        expect(clearAll).toHaveAccessibleName("Clear all filters");
+        expect(clearAll).toHaveTextContent("Clear all");
+        const done = screen.getByTestId(testIds.done);
+        expect(done).toHaveTextContent(labels.done);
+        // Header first, footer last, sections in between.
+        const order = [...surface.children];
+        expect(order).toHaveLength(3);
+        expect(order[0]).toContainElement(
+            screen.getByRole("button", {name: labels.close}),
+        );
+        expect(order[1]).toContainElement(screen.getByTestId("probe-sections"));
+        expect(order[2]).toContainElement(done);
+        expect(order[2]).toContainElement(clearAll);
+        // The sheet's own body is what scrolls, so the footer cannot be
+        // pushed off it however long the sections are.
+        expect(getComputedStyle(order[1]).overflowY).toBe("auto");
+
+        fireEvent.click(done);
+        expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    // The results page renders its own badge-carrying trigger inside its one
+    // sticky toolbar row, so the shell must emit none -- otherwise
+    // `refine-sidebar-toggle` would exist twice at the same width.
+    it("renders no trigger of its own when the consumer places one", () => {
+        stubCompactViewport();
+        const {rerender} = render(<Surface trigger="external" />);
+        expect(screen.queryByTestId(testIds.toggle)).not.toBeInTheDocument();
+        expect(screen.queryByText(labels.heading)).not.toBeInTheDocument();
+        // The sheet itself is unaffected: the consumer drives `drawerOpen`.
+        rerender(<Surface drawerOpen trigger="external" />);
+        expect(screen.getByTestId(testIds.surface)).toBeInTheDocument();
+        expect(screen.queryByTestId(testIds.toggle)).not.toBeInTheDocument();
+    });
+
     // FM-142: the header row cannot hold a text button beside the summary and
-    // the toggle at the 248px docked width, so clear-all is icon-only in every
-    // branch that shows it -- named for assistive technology, silent on screen,
-    // and still the same `data-testid` and disabled rule its consumers query.
+    // the toggle at the 248px docked width, so clear-all is icon-only in the
+    // docked branch -- named for assistive technology, silent on screen, and
+    // still the same `data-testid` and disabled rule its consumers query.
+    // (FM-181's sheet has room for the word and says it; see above.)
     it("offers clear-all as a named icon-only control", () => {
         const onClearAll = vi.fn();
         const {rerender} = render(

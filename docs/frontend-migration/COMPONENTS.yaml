@@ -221,6 +221,9 @@ components:
       - F-HISTORY-DOWNLOADS
     classification: shared_hydra
     state: partial
+    note: FM-181 gave the bulk row a second rendering below 768px over the same state -- a selection count, one split send button whose menu carries the downloader and category choices the desktop Selects bind (menuitemradio,
+      aria-checked), and an overflow menu holding ZIP, black hole and copy links under their unchanged gating and disabled rules. It is a JavaScript branch inside the one component, not a second component and not a CSS-hidden copy, so
+      every control exists exactly once at any width; the domain operations in domain/downloads are untouched. Row 2 renders only while something is selected there, which is why Save search moved to the toolbar's row 1.
   - id: C-DOWNLOADER-STATUS
     responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
     legacy:
@@ -309,6 +312,12 @@ components:
       - F-SEARCH-DOWNLOADS
     classification: feature_specific
     state: partial
+    note: FM-181 (owner request 2026-09-03) gave the region a phone chrome below the same 768px stacking breakpoint the card layout already used, decided by C-REFINE-SURFACE's useCompactRefineSurface rather than by CSS display -- one
+      sticky toolbar row (select-all, a "{filtered} / {total}" summary, and icon controls for display options, refine and save search), a selection row that exists only while something is selected, and a results-paging-footer under the
+      last card. Nothing at or above 768px changed; the refine-sidebar's rendered outerHTML at 1280x800 is identical before and after (FM-136's method). FM-182 (owner report 2026-09-03) added results-sort-toggle to that same row 1, between
+      the summary and display-options-toggle, on the phone branch only (no hidden desktop copy) -- a MUI Menu of the six sortable columns (menuitemradio, one checked from sorting[0].id) plus an Ascending/Descending pair (checked from
+      sorting[0].desc, disabled while sorting is empty), writing the same sorting state and setSorting the desktop headers' sort-{{column}} buttons write, so a phone pick and the matching header's aria-sort never disagree after a
+      viewport change.
   - id: C-HISTORY-REFINE-BAR
     responsibility: Shared stats-history refine sections and filter state -- the single filter surface beside every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select
       checkboxes, boolean, number range) with active-filter count and clear-all. It owns state and options only -- HistoryFilterValues filtered server-side through C-HISTORY-REQUEST rather than over already-loaded rows, and options each
@@ -384,7 +393,7 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-REFINE-SURFACE
-    responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px drawer switching, header row (the consumer's optional summary in the left slot, an icon-only clear-all and the
+    responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px bottom sheet switching, header row (the consumer's optional summary in the left slot, an icon-only clear-all and the
       collapse/close toggle at the end, and no caption), widths, paddings, transitions, and
       stickiness, taken from RefineSidebar.tsx; it takes sections, clear-all wiring, an optional sticky offset, an optional header summary, and per-consumer test ids as props and owns no filter state -- ResultFilters stays with the
       results feature and HistoryFilterValues with the history features
@@ -404,6 +413,10 @@ components:
       became an icon-only ClearAllIcon control named "Clear all filters" (the clearAll/close/drawer/surface/toggle test ids, the disabled rule and the onClearAll wiring all unchanged), and the summary took the header's left slot on a
       single line. That closes FM-137's recorded cramped-header finding -- at 248px minus the px 2 padding the old caption + summary + text button + toggle overflowed 216px, wrapping "No active filters" over two lines and "Clear all"
       inside its own button in the drawer -- pinned now by a geometry assertion in search-history.spec.ts's visual-evidence test. theme.ts's refineSurfaceLabel typography variant left with the caption, its last consumer.
+      FM-181 (owner request 2026-09-03) rebuilt the compact branch for every consumer. The left Drawer is a bottom SwipeableDrawer (disableSwipeToOpen, 85vh, 12px top corners, keepMounted off so one branch is still one copy) laid out
+      as header (summary + close) / scrolling body / pinned footer. The footer carries clearAll as a text button -- visible "Clear all", accessible name and test id unchanged -- and a new contained done button (labels.done,
+      testIds.done) that dismisses the sheet; filters still apply live, with no draft state. A new trigger prop ("inline" by default, "external" for the results page) lets a consumer place the opener itself, which is how the results
+      toolbar can carry it with an active-filter badge without the shell emitting a second control of the same id. The docked branch is untouched.
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach

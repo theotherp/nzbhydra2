@@ -1,10 +1,10 @@
 import {
     Box,
     Button,
-    Drawer,
     IconButton,
     Paper,
     Stack,
+    SwipeableDrawer,
     useMediaQuery,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -32,6 +32,26 @@ import type {ReactNode} from "react";
 // state the refine surface's geometry once for every consumer.
 const SIDEBAR_PADDING = {pb: 5, pt: 2.25, px: 2} as const;
 const COLLAPSED_SIDEBAR_PADDING = {pb: 2.25, pt: 2.25, px: 1} as const;
+
+// FM-181: the bottom sheet's own box. It keeps the docked column's horizontal
+// padding (so a section renders identically in both branches) but not its
+// 40px foot, which existed to clear the docked column's bottom edge; the
+// sheet's footer is a real element and states its own.
+const SHEET_PADDING_X = 2;
+
+// FM-181: the sheet's top corners. A raised MUI surface is 12px in this theme
+// (`MuiPaper`'s `styleOverrides.root`, "the mock's results card is
+// border-radius:12px"), but a `Drawer`'s paper renders `square`, so the value
+// has to be restated here to round the two edges that are no longer flush
+// with the viewport. Deliberately a *string*: `sx`'s `borderRadius` key is
+// theme-multiplied (see `pillRadius`'s note in `app/theme.ts`), so the number
+// 12 would resolve to 96px.
+const SHEET_CORNER_RADIUS = "12px";
+
+// FM-181: how much of the viewport the sheet may claim before its body starts
+// scrolling inside it. Leaves the sheet visibly short of the top edge, so what
+// is behind it stays recognisable as the page it filters.
+const SHEET_MAX_HEIGHT = "85vh";
 
 // The expanded width is the mock's own `<aside style="flex:0 0 248px">`; the
 // collapsed rail is wide enough for the chevron toggle alone. Module-local:
@@ -80,6 +100,14 @@ export type RefineSurfaceLabels = {
     close: string;
     /** The docked branch's toggle while the column is expanded. */
     collapse: string;
+    /**
+     * FM-181: the compact sheet's own primary footer button, which dismisses
+     * the sheet. It names the consumer's outcome rather than the action --
+     * the results page counts what is about to be shown ("Show 12 results"),
+     * the history views simply say "Done" -- so, like every other label here,
+     * the shell states none of it.
+     */
+    done: string;
     /** The docked branch's toggle while the rail is collapsed, and the
      *  compact branch's trigger while the drawer is closed. */
     expand: string;
@@ -101,6 +129,8 @@ export type RefineSurfaceLabels = {
 export type RefineSurfaceTestIds = {
     clearAll: string;
     close: string;
+    /** FM-181: the compact sheet's footer "done" button. */
+    done: string;
     drawer: string;
     surface: string;
     toggle: string;
@@ -108,8 +138,9 @@ export type RefineSurfaceTestIds = {
 
 /**
  * ADR-0046's one refine-surface concept: a docked, collapsible left column
- * beside the table it filters, replaced below 768px by a temporary `Drawer`
- * opened by a small "Refine" trigger.
+ * beside the table it filters, replaced below 768px by a temporary bottom
+ * sheet (FM-181) opened either by this shell's own "Refine" trigger or, with
+ * `trigger="external"`, by a control the consumer places itself.
  *
  * This is chrome only. The shell owns no filter state and imports nothing from
  * `features/`: its sections arrive as `children`, its clear-all as an
@@ -134,6 +165,7 @@ export function RefineSurface({
     stickyOffset = 0,
     summary,
     testIds,
+    trigger = "inline",
 }: {
     children: ReactNode;
     /** Disables "Clear all"; a consumer passes "no filter is active". */
@@ -170,6 +202,17 @@ export function RefineSurface({
      */
     summary?: ReactNode;
     testIds: RefineSurfaceTestIds;
+    /**
+     * FM-181: where the compact branch's opener lives. `inline` (the default)
+     * keeps the shell's own "Refine" text button in the consumer's flow, which
+     * is what the history views render. `external` renders no trigger at all:
+     * the results page puts its own icon trigger -- with an active-filter
+     * badge -- into its one sticky toolbar row and drives `drawerOpen` from
+     * there, so the shell must not emit a second control with the same
+     * `data-testid`. The docked branch is unaffected; its toggle is part of
+     * the column.
+     */
+    trigger?: "inline" | "external";
 }) {
     const compact = useCompactRefineSurface();
     // FM-142: icon-only, following `filterControls.tsx`'s numeric-range clear
@@ -194,34 +237,61 @@ export function RefineSurface({
     if (compact) {
         return (
             <>
-                <Button
-                    aria-expanded={drawerOpen}
-                    aria-haspopup="dialog"
-                    aria-label={drawerOpen ? labels.collapse : labels.expand}
-                    data-testid={testIds.toggle}
-                    onClick={() => onDrawerOpenChange(!drawerOpen)}
-                    size="small"
-                    // The shared neutral-secondary action; only the layout
-                    // rule is local. This trigger opens a `Drawer`, so it
-                    // carries a caret like every other menu/panel opener.
-                    endIcon={<ExpandMoreIcon />}
-                    sx={{alignSelf: "flex-start"}}
-                    variant="control"
-                >
-                    {labels.heading}
-                </Button>
-                <Drawer
-                    anchor="left"
+                {trigger === "inline" && (
+                    <Button
+                        aria-expanded={drawerOpen}
+                        aria-haspopup="dialog"
+                        aria-label={
+                            drawerOpen ? labels.collapse : labels.expand
+                        }
+                        data-testid={testIds.toggle}
+                        onClick={() => onDrawerOpenChange(!drawerOpen)}
+                        size="small"
+                        // The shared neutral-secondary action; only the layout
+                        // rule is local. This trigger opens a sheet, so it
+                        // carries a caret like every other menu/panel opener.
+                        endIcon={<ExpandMoreIcon />}
+                        sx={{alignSelf: "flex-start"}}
+                        variant="control"
+                    >
+                        {labels.heading}
+                    </Button>
+                )}
+                {/* FM-181: a bottom sheet rather than the left drawer this
+                    branch used to open. A phone's filter surface is reached
+                    with the thumb that is already at the bottom of the
+                    screen, and a sheet leaves the page it filters visible
+                    above it; `disableSwipeToOpen` because the surface is
+                    opened by a named control, never by an undiscoverable
+                    edge swipe (which on this page would also fight the
+                    results list's own scrolling). */}
+                <SwipeableDrawer
+                    anchor="bottom"
                     data-testid={testIds.drawer}
+                    disableSwipeToOpen
                     onClose={() => onDrawerOpenChange(false)}
+                    onOpen={() => onDrawerOpenChange(true)}
                     open={drawerOpen}
                     slotProps={{
+                        // `SwipeableDrawer` keeps its paper mounted while
+                        // closed so a swipe can find it; with the swipe
+                        // disabled that would only leave a whole second copy
+                        // of every section, clear-all and toggle in the DOM
+                        // for a query to find. One branch, one copy -- the
+                        // contract this shell has carried since FM-136.
+                        root: {keepMounted: false},
                         paper: {
                             sx: {
                                 backgroundImage: "none",
-                                maxWidth: "100%",
-                                ...SIDEBAR_PADDING,
-                                width: `min(${EXPANDED_WIDTH + 32}px, 88vw)`,
+                                borderTopLeftRadius: SHEET_CORNER_RADIUS,
+                                borderTopRightRadius: SHEET_CORNER_RADIUS,
+                                // The sheet is a three-part column -- header,
+                                // scrolling body, pinned footer -- so the
+                                // clear-all and done controls stay reachable
+                                // however long the sections are.
+                                display: "flex",
+                                flexDirection: "column",
+                                maxHeight: SHEET_MAX_HEIGHT,
                             },
                         },
                     }}
@@ -230,11 +300,19 @@ export function RefineSurface({
                         aria-label={labels.surface}
                         component="nav"
                         data-testid={testIds.surface}
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            // Without this a flex child refuses to shrink
+                            // below its content height, and the body below
+                            // would push the footer off the sheet instead of
+                            // scrolling.
+                            minHeight: 0,
+                        }}
                     >
-                        <RefineHeader
-                            actions={
-                                <>
-                                    {clearAll}
+                        <Box sx={{pt: 2.25, px: SHEET_PADDING_X}}>
+                            <RefineHeader
+                                actions={
                                     <Button
                                         aria-label={labels.close}
                                         data-testid={testIds.close}
@@ -246,13 +324,60 @@ export function RefineSurface({
                                     >
                                         <CloseIcon fontSize="small" />
                                     </Button>
-                                </>
-                            }
-                            summary={summary}
-                        />
-                        {children}
+                                }
+                                summary={summary}
+                            />
+                        </Box>
+                        <Box
+                            sx={{
+                                minHeight: 0,
+                                overflowY: "auto",
+                                pb: 2,
+                                px: SHEET_PADDING_X,
+                            }}
+                        >
+                            {children}
+                        </Box>
+                        <Stack
+                            alignItems="center"
+                            direction="row"
+                            sx={{
+                                borderTop: "1px solid",
+                                borderTopColor: "surfaces.hairlineFaint",
+                                gap: 1,
+                                pb: 2.25,
+                                pt: 1.5,
+                                px: SHEET_PADDING_X,
+                            }}
+                        >
+                            {/* The sheet has room for the words the 216px
+                                docked header did not (FM-142), and a footer
+                                action a thumb has to hit deserves them: the
+                                accessible name is unchanged, so every
+                                existing query still resolves. */}
+                            <Button
+                                aria-label="Clear all filters"
+                                data-testid={testIds.clearAll}
+                                disabled={clearAllDisabled}
+                                onClick={onClearAll}
+                                size="small"
+                                startIcon={<ClearAllIcon />}
+                                variant="control"
+                            >
+                                Clear all
+                            </Button>
+                            <Button
+                                data-testid={testIds.done}
+                                onClick={() => onDrawerOpenChange(false)}
+                                size="small"
+                                sx={{ml: "auto"}}
+                                variant="contained"
+                            >
+                                {labels.done}
+                            </Button>
+                        </Stack>
                     </Box>
-                </Drawer>
+                </SwipeableDrawer>
             </>
         );
     }

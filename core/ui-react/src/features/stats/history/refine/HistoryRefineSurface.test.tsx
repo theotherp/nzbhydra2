@@ -317,7 +317,7 @@ describe("HistoryRefineSurface", () => {
         );
     });
 
-    it("should open the sections in a drawer below 768px and never persist that it is open", () => {
+    it("should open the sections in a bottom sheet below 768px and never persist that it is open", () => {
         const store = stubWorkingLocalStorage();
         stubCompactViewport();
         renderSurface({title: {kind: "freetext", text: "example"}});
@@ -345,7 +345,20 @@ describe("HistoryRefineSurface", () => {
         );
         expect(screen.getByTestId("history-refine-bar")).toBeVisible();
         expect(screen.getByLabelText("Title")).toBeVisible();
+        // FM-181: the sheet's footer. A history view has no client-side count
+        // to promise, so its done button is the plain verb; clear-all keeps
+        // its id and accessible name and gains the word on screen.
+        expect(screen.getByTestId("history-refine-done")).toHaveTextContent(
+            "Done",
+        );
+        const clearAll = screen.getByTestId("history-refine-clear-all");
+        expect(clearAll).toHaveAccessibleName("Clear all filters");
+        expect(clearAll).toHaveTextContent("Clear all");
         expect(store.size).toBe(0);
+
+        fireEvent.click(screen.getByTestId("history-refine-done"));
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        fireEvent.click(toggle);
 
         fireEvent.click(screen.getByTestId("history-refine-close"));
         expect(toggle).toHaveAttribute("aria-expanded", "false");

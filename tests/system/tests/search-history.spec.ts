@@ -701,13 +701,30 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("history-refine-toggle")).toContainText(
             "2 active filters",
         );
-        // FM-142: the drawer's own header carries no summary (the trigger
-        // above holds the count), so what FM-137 recorded wrapping inside the
-        // drawer was the "Clear all" text button. It is icon-only now, with no
-        // text left to break over a second line.
-        const drawerClearAll = page.getByTestId("history-refine-clear-all");
-        await expect(drawerClearAll).toHaveAccessibleName("Clear all filters");
-        await expect(drawerClearAll).toHaveText("");
+        // FM-142 made "Clear all" icon-only because it wrapped inside its own
+        // button in the 216px drawer header FM-137 measured. FM-181 moved it
+        // out of that header entirely: the bottom sheet's pinned footer is a
+        // full-width row, so the word is back on screen beside a "Done"
+        // button, with the accessible name and the test id unchanged.
+        const sheetClearAll = page.getByTestId("history-refine-clear-all");
+        await expect(sheetClearAll).toHaveAccessibleName("Clear all filters");
+        await expect(sheetClearAll).toHaveText("Clear all");
+        await expect(page.getByTestId("history-refine-done")).toHaveText(
+            "Done",
+        );
+        // The footer stays on screen however far the sections scroll.
+        const [footerBox, sheetViewport] = [
+            await sheetClearAll.boundingBox(),
+            page.viewportSize(),
+        ];
+        expect(footerBox).not.toBeNull();
+        expect(sheetViewport).not.toBeNull();
+        if (!footerBox || !sheetViewport) {
+            throw new Error("Sheet footer requires deterministic geometry");
+        }
+        expect(footerBox.y + footerBox.height).toBeLessThanOrEqual(
+            sheetViewport.height + 1,
+        );
         await page.screenshot({
             path: visualEvidencePath(
                 "F-HISTORY-SEARCHES",

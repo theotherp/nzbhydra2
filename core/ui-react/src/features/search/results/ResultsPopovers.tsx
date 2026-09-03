@@ -7,18 +7,27 @@ import {
     Box,
     Button,
     Checkbox,
+    Divider,
     FormControlLabel,
     FormGroup,
+    IconButton,
     Link,
+    Menu,
+    MenuItem,
     Popover,
     Stack,
     Typography,
 } from "@mui/material";
+import type {MenuListProps} from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import TuneIcon from "@mui/icons-material/Tune";
+import SortIcon from "@mui/icons-material/Sort";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import type {Column, SortingState} from "@tanstack/react-table";
+import type {MouseEvent} from "react";
 import {useMemo, useState} from "react";
 
+import type {SearchResult} from "../../../api/search";
 import {denseControlFontSize} from "../../../app/theme";
 
 // FM-041/FM-054: the Display popover's own density constants -- again local,
@@ -181,6 +190,7 @@ export function RejectedResultsTrigger({
 // correctly, where `menuitem` would not. The toggle still advertises the
 // popover with `aria-haspopup`/`aria-expanded`.
 export function DisplayOptionsMenu({
+    compact = false,
     compactRows,
     groupEpisodes,
     groupTorrentAndUsenet,
@@ -196,6 +206,15 @@ export function DisplayOptionsMenu({
     showCovers,
     showDuplicateControls,
 }: {
+    /**
+     * FM-181: below 768px the whole results chrome is one sticky row, which
+     * has no width for a labelled button, so this toggle renders as its icon
+     * alone -- same `data-testid`, same `aria-label`, same popover and
+     * entries. The two forms are one JavaScript branch rather than two
+     * CSS-hidden copies, so `display-options-toggle` exists exactly once at
+     * every width.
+     */
+    compact?: boolean;
     compactRows: boolean;
     groupEpisodes: boolean;
     groupTorrentAndUsenet: boolean;
@@ -254,31 +273,46 @@ export function DisplayOptionsMenu({
             onToggle: onToggleShowCovers,
         },
     ];
+    const toggleProps = {
+        "aria-expanded": open ? ("true" as const) : ("false" as const),
+        "aria-haspopup": "true" as const,
+        "aria-label": "Display options",
+        "data-testid": "display-options-toggle",
+        onClick: (event: MouseEvent<HTMLElement>) =>
+            setAnchorEl(anchorEl ? null : event.currentTarget),
+        size: "small" as const,
+    };
     return (
         <>
-            <Button
-                aria-expanded={open ? "true" : "false"}
-                aria-haspopup="true"
-                aria-label="Display options"
-                data-testid="display-options-toggle"
-                // The shared neutral-secondary action (`app/theme.ts`'s
-                // `variant="control"`), which is where this button's surface,
-                // hairline, radius, and 13px type now come from -- it used to
-                // author the same four rules itself, one of six such copies.
-                // The gear and caret are real icons rather than the `⚙`/`▼`
-                // text glyphs that stood here: those did not scale with the
-                // label, sat on a different baseline, and matched nothing
-                // else in the icon set.
-                endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                onClick={(event) =>
-                    setAnchorEl(anchorEl ? null : event.currentTarget)
-                }
-                size="small"
-                startIcon={<TuneIcon />}
-                variant="control"
-            >
-                Display
-            </Button>
+            {compact ? (
+                <IconButton {...toggleProps}>
+                    {/* Owner (2026-09-03): the eye rather than `Tune`'s
+                        sliders -- every entry in this menu is about what is
+                        *shown* (density, covers, duplicate controls,
+                        highlighting), and sliders read as settings or filters
+                        beside the funnel and the sort bars. Same glyph on
+                        the desktop button below, so the two viewports agree. */}
+                    <VisibilityOutlinedIcon fontSize="small" />
+                </IconButton>
+            ) : (
+                <Button
+                    {...toggleProps}
+                    // The shared neutral-secondary action (`app/theme.ts`'s
+                    // `variant="control"`), which is where this button's surface,
+                    // hairline, radius, and 13px type now come from -- it used to
+                    // author the same four rules itself, one of six such copies.
+                    // The eye and caret are real icons rather than the `⚙`/`▼`
+                    // text glyphs that stood here: those did not scale with the
+                    // label, sat on a different baseline, and matched nothing
+                    // else in the icon set. (The eye replaced `Tune`'s sliders
+                    // on 2026-09-03; see the compact branch above.)
+                    endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    startIcon={<VisibilityOutlinedIcon />}
+                    variant="control"
+                >
+                    Display
+                </Button>
+            )}
             {/* FM-054 (ADR-0014): the paper surface, border, radius, and
                 shadow are the `MuiPopover` theme default now
                 (`app/theme.ts`); only the non-token responsive `maxWidth`
@@ -345,6 +379,134 @@ export function DisplayOptionsMenu({
                     </FormGroup>
                 </Box>
             </Popover>
+        </>
+    );
+}
+
+// FM-182: below 768px `thead` is hidden and with it the only sort control, so
+// this icon button and its menu are the phone's entry point to the same
+// `sorting` state the desktop headers write (`onSortingChange: setSorting` in
+// `SearchResults.tsx`). It renders on the phone branch only -- there is no
+// hidden desktop copy, which would break a strict-mode locator for
+// `results-sort-toggle` at every width.
+//
+// The six column entries and the two direction entries are `menuitemradio`s
+// (`aria-checked`, not MUI's paint-only `selected`), the same non-stock-but-
+// precedented shape `AppShell.tsx`'s theme selector and `DownloadActions.tsx`'s
+// send menu already use for "one of several mutually exclusive values". Rows
+// share `SelectionMenu.tsx`'s density (`borderRadius: 1`, `denseControlFontSize`,
+// `py: 1`) rather than restating it.
+export function ResultsSortMenu({
+    columns,
+    onSortingChange,
+    sorting,
+}: {
+    // `table.getAllLeafColumns()` -- column *instances*, not the column defs
+    // `useReactTable` was given. `getAutoSortDir()` lives only on the
+    // instance; reading it off a plain `ColumnDef` does not compile.
+    columns: Column<SearchResult, unknown>[];
+    onSortingChange: (next: SortingState) => void;
+    sorting: SortingState;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchorEl);
+    const close = () => setAnchorEl(null);
+    const activeId = sorting[0]?.id;
+    const activeDesc = sorting[0]?.desc;
+
+    const chooseColumn = (column: Column<SearchResult, unknown>) => {
+        const desc =
+            sorting.length > 0
+                ? activeDesc === true
+                : column.getAutoSortDir() === "desc";
+        onSortingChange([{id: column.id, desc}]);
+        close();
+    };
+    const chooseDirection = (desc: boolean) => {
+        if (activeId === undefined) {
+            return;
+        }
+        onSortingChange([{id: activeId, desc}]);
+        close();
+    };
+
+    return (
+        <>
+            <IconButton
+                aria-expanded={open ? "true" : "false"}
+                aria-haspopup="menu"
+                aria-label="Sort results"
+                data-testid="results-sort-toggle"
+                onClick={(event) => setAnchorEl(event.currentTarget)}
+                size="small"
+            >
+                {/* Owner (2026-09-03): the conventional sort bars rather
+                    than `SwapVert`'s arrows, which read as "swap"; the bars
+                    are unambiguous now that Refine is a funnel. */}
+                <SortIcon fontSize="small" />
+            </IconButton>
+            <Menu
+                anchorEl={anchorEl}
+                onClose={close}
+                open={open}
+                slotProps={{
+                    // See `DownloadActions.tsx`'s identical cast: the list
+                    // slot is typed as `MenuListProps`, which carries no
+                    // index signature for `data-*`.
+                    list: {
+                        "data-testid": "results-sort-menu",
+                        sx: {
+                            "& .MuiMenuItem-root": {
+                                borderRadius: 1,
+                                fontSize: denseControlFontSize,
+                                mx: 0.5,
+                                py: 1,
+                            },
+                        },
+                    } as MenuListProps,
+                }}
+            >
+                {columns.map((column) => {
+                    const label =
+                        typeof column.columnDef.header === "string"
+                            ? column.columnDef.header
+                            : column.id;
+                    const checked = column.id === activeId;
+                    return (
+                        <MenuItem
+                            aria-checked={checked}
+                            data-testid={`results-sort-column-${column.id}`}
+                            key={column.id}
+                            onClick={() => chooseColumn(column)}
+                            role="menuitemradio"
+                            selected={checked}
+                        >
+                            {label}
+                        </MenuItem>
+                    );
+                })}
+                <Divider />
+                <MenuItem
+                    aria-checked={activeDesc === false}
+                    data-testid="results-sort-direction-asc"
+                    disabled={sorting.length === 0}
+                    onClick={() => chooseDirection(false)}
+                    role="menuitemradio"
+                    selected={activeDesc === false}
+                >
+                    Ascending
+                </MenuItem>
+                <MenuItem
+                    aria-checked={activeDesc === true}
+                    data-testid="results-sort-direction-desc"
+                    disabled={sorting.length === 0}
+                    onClick={() => chooseDirection(true)}
+                    role="menuitemradio"
+                    selected={activeDesc === true}
+                >
+                    Descending
+                </MenuItem>
+            </Menu>
         </>
     );
 }

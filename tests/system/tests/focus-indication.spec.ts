@@ -1287,28 +1287,35 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 OUTSET_OFFSET,
             );
 
-            const placement = await page.evaluate(() => {
-                const toolbar = document.querySelector(
-                    "[data-testid='results-toolbar']",
+            // FM-055: the paging controls moved from their own row above the
+            // toolbar into the toolbar's first row, so the placement contract
+            // is containment rather than "above". FM-181: which region
+            // contains them is viewport-dependent -- below 768px they sit in
+            // `results-paging-footer` under the last card instead, because a
+            // 390px sticky bar cannot afford a permanent line for a control
+            // that only matters once the reader reaches the end of the list.
+            const placementContainer =
+                viewport === "mobile"
+                    ? "results-paging-footer"
+                    : "results-toolbar";
+            const placement = await page.evaluate((containerTestId) => {
+                const container = document.querySelector(
+                    `[data-testid='${containerTestId}']`,
                 );
                 const button = document.querySelector(
                     "[data-testid='results-load-more']",
                 );
                 return {
-                    // FM-055: the paging controls moved from their own row
-                    // above the toolbar into the toolbar's first row, so the
-                    // placement contract is now containment rather than
-                    // "above".
-                    insideToolbar:
-                        toolbar && button ? toolbar.contains(button) : null,
+                    insideContainer:
+                        container && button ? container.contains(button) : null,
                     pageOverflow:
                         document.documentElement.scrollWidth >
                         document.documentElement.clientWidth,
                 };
-            });
+            }, placementContainer);
             expect(
-                placement.insideToolbar,
-                `paging controls render inside the results toolbar (${viewport})`,
+                placement.insideContainer,
+                `paging controls render inside ${placementContainer} (${viewport})`,
             ).toBe(true);
             expect(
                 placement.pageOverflow,

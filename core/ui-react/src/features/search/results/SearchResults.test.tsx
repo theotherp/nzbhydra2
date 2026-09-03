@@ -831,6 +831,7 @@ describe("SearchResults", () => {
     });
 
     it("should also select visible rows from the toolbar's mobile-reachable selection menu", () => {
+        stubMobileViewport();
         renderResults(
             <SearchResults
                 data={{
@@ -847,19 +848,16 @@ describe("SearchResults", () => {
                 }}
             />,
         );
-        // Below `sm` the responsive table styling hides `thead` entirely
-        // (see the table's `sx` in SearchResults.tsx), so the header's
-        // selection menu is unreachable there; the toolbar's merged
-        // `results-bulk-actions` row (FM-055; `results-selection-actions`
-        // before it) carries a second, functionally-identical copy at its
-        // start so bulk selection stays reachable at that viewport. jsdom does not
-        // evaluate the CSS media query that keeps only one copy visible at a
-        // time in a real browser (asserted for real in
-        // tests/system/tests/results.spec.ts); this test only exercises that
-        // the toolbar copy is functionally wired to the same selection
-        // state, regardless of jsdom's lack of layout.
+        // Below 768px the responsive card layout hides `thead` entirely (see
+        // the table's `sx` in SearchResults.tsx), so the header's selection
+        // menu is unreachable there; the toolbar carries a second,
+        // functionally-identical copy so bulk selection stays reachable at
+        // that viewport. FM-181 moved it from row 2 (which now exists only
+        // while something is selected -- it could not have been the way to
+        // make the first selection) into row 1, and put it on the same
+        // JavaScript branch as the card layout instead of a CSS switch.
         const toolbarMenu = within(
-            screen.getByTestId("results-bulk-actions"),
+            screen.getByTestId("results-toolbar"),
         ).getByTestId("toolbar-selection-menu");
         fireEvent.click(
             within(toolbarMenu).getByRole("button", {
@@ -4892,6 +4890,654 @@ describe("SearchResults", () => {
     });
 });
 
+// --- FM-181: the phone chrome ------------------------------------------
+//
+// Every difference between the phone and desktop renderings is one
+// JavaScript branch (`useCompactRefineSurface`, below 768px), so these cases
+// state a viewport width rather than relying on a CSS media query jsdom does
+// not evaluate. The geometry itself -- bar heights, the footer sitting under
+// the last card -- is asserted in a real browser by
+// `tests/system/tests/results.spec.ts`.
+describe("SearchResults phone chrome", () => {
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+    });
+
+    const phoneData = {
+        ...response,
+        numberOfAvailableResults: 2,
+        searchResults: [
+            {
+                searchResultId: "1",
+                title: "Phone One",
+                indexer: "Alpha",
+                category: "Movies",
+                downloadType: "NZB",
+            },
+            {
+                searchResultId: "2",
+                title: "Phone Two",
+                indexer: "Beta",
+                category: "TV",
+                downloadType: "NZB",
+            },
+        ],
+    };
+
+    function renderPhone(
+        node: React.ReactNode = <SearchResults data={phoneData} />,
+        width = 390,
+    ) {
+        stubViewportWidth(width);
+        return renderResults(node);
+    }
+
+    function selectFirstRow(): void {
+        fireEvent.click(
+            within(screen.getAllByTestId("search-result-row")[0]).getByRole(
+                "checkbox",
+            ),
+        );
+    }
+
+    it("should carry every row-1 control exactly once, in order, with no paging button", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+        renderPhone(
+            <SearchResults
+                data={phoneData}
+                onLoadMore={vi.fn()}
+                onSaveSearch={vi.fn()}
+            />,
+        );
+        const row = screen.getByTestId("results-toolbar").firstElementChild
+            ?.firstElementChild as HTMLElement;
+        // `save-search` is an `id`, not a `data-testid` -- the compatibility
+        // contract `search.spec.ts` and `focus-indication.spec.ts` query.
+        const selectors = [
+            '[data-testid="toolbar-selection-menu"]',
+            '[data-testid="search-results-summary"]',
+            '[data-testid="results-sort-toggle"]',
+            '[data-testid="display-options-toggle"]',
+            '[data-testid="refine-sidebar-toggle"]',
+            "#save-search",
+        ];
+        for (const selector of selectors) {
+            expect(document.querySelectorAll(selector)).toHaveLength(1);
+            expect(row).toContainElement(
+                document.querySelector(selector) as HTMLElement,
+            );
+        }
+        // Row order, left to right. FM-182: the Sort toggle sits between the
+        // count and Display, same as the mock orders the equivalent controls.
+        expect(
+            [...row.querySelectorAll(selectors.join(", "))].map(
+                (element) => element.getAttribute("data-testid") ?? element.id,
+            ),
+        ).toEqual([
+            "toolbar-selection-menu",
+            "search-results-summary",
+            "results-sort-toggle",
+            "display-options-toggle",
+            "refine-sidebar-toggle",
+            "save-search",
+        ]);
+        // The two-number count, and nothing else the desktop phrase carries.
+        const summary = screen.getByTestId("search-results-summary");
+        expect(summary).toHaveTextContent(/^2 \/ 2$/);
+        // Paging is in the footer, not the sticky bar.
+        expect(row).not.toContainElement(
+            screen.getByTestId("results-load-more"),
+        );
+        expect(screen.getAllByTestId("results-load-more")).toHaveLength(1);
+    });
+
+    it("should render the row-1 icon controls with their labels and states", () => {
+        renderPhone(
+            <SearchResults
+                data={phoneData}
+                onSaveSearch={vi.fn()}
+                savingSearch
+            />,
+        );
+        const display = screen.getByTestId("display-options-toggle");
+        expect(display).toHaveClass("MuiIconButton-root");
+        expect(display).toHaveAccessibleName("Display options");
+        // The same popover, with the same entries.
+        fireEvent.click(display);
+        expect(
+            within(screen.getByTestId("display-options")).getByRole(
+                "checkbox",
+                {
+                    name: "Show refine sidebar",
+                },
+            ),
+        ).toBeInTheDocument();
+        fireEvent.click(display);
+
+        const refine = screen.getByTestId("refine-sidebar-toggle");
+        expect(refine).toHaveAccessibleName("Expand refine sidebar");
+        expect(refine).toHaveAttribute("aria-expanded", "false");
+        expect(refine).toHaveAttribute("aria-haspopup", "dialog");
+
+        const save = document.querySelector("#save-search") as HTMLElement;
+        expect(save).toHaveClass("MuiIconButton-root");
+        expect(save).toHaveAccessibleName("Save search");
+        expect(save).toHaveAttribute("aria-busy", "true");
+        expect(save).toBeDisabled();
+    });
+
+    it("should badge the refine trigger with the active-filter count and open the sheet", async () => {
+        renderPhone();
+        const refine = screen.getByTestId("refine-sidebar-toggle");
+        // Nothing active: MUI hides a zero badge.
+        expect(
+            refine.parentElement?.querySelector(".MuiBadge-badge"),
+        ).toHaveClass("MuiBadge-invisible");
+
+        fireEvent.click(refine);
+        expect(refine).toHaveAttribute("aria-expanded", "true");
+        const sheet = within(screen.getByTestId("refine-sidebar"));
+        expect(sheet.getByTestId("refine-clear-all")).toBeDisabled();
+        expect(screen.getByTestId("refine-sidebar-done")).toHaveTextContent(
+            "Show 2 results",
+        );
+
+        // "two", not "one": every title here contains "Phone", which
+        // contains "one".
+        fireEvent.change(sheet.getByTestId("refine-filter-title"), {
+            target: {value: "two"},
+        });
+        await settleFilterCommits();
+        // The filters apply live -- no draft state -- so the footer's count
+        // and the badge both move before the sheet is dismissed.
+        expect(screen.getByTestId("refine-sidebar-done")).toHaveTextContent(
+            "Show 1 result",
+        );
+        expect(sheet.getByTestId("refine-clear-all")).toBeEnabled();
+        expect(
+            refine.parentElement?.querySelector(".MuiBadge-badge"),
+        ).toHaveTextContent("1");
+
+        fireEvent.click(screen.getByTestId("refine-sidebar-done"));
+        expect(refine).toHaveAttribute("aria-expanded", "false");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("refine-sidebar"),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
+    it("should render row 2 only while something is selected", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {downloaders: [{name: "SAB", enabled: true}]},
+            },
+        };
+        renderPhone();
+        const toolbarRows = () =>
+            screen.getByTestId("results-toolbar").firstElementChild
+                ?.childElementCount;
+        expect(toolbarRows()).toBe(1);
+        expect(
+            screen.queryByTestId("results-bulk-actions"),
+        ).not.toBeInTheDocument();
+
+        selectFirstRow();
+        expect(toolbarRows()).toBe(2);
+        const bar = within(screen.getByTestId("results-bulk-actions"));
+        expect(bar.getByTestId("results-selection-count")).toHaveTextContent(
+            "1 selected",
+        );
+        // The desktop summary's `· N selected` fragment does not also render.
+        expect(
+            screen.getByTestId("search-results-summary"),
+        ).not.toHaveTextContent("selected");
+
+        fireEvent.click(
+            within(screen.getAllByTestId("search-result-row")[0]).getByRole(
+                "checkbox",
+            ),
+        );
+        expect(toolbarRows()).toBe(1);
+    });
+
+    it("should offer the desktop row's downloader, category, and secondary actions through row 2's two menus", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {name: "SAB", enabled: true},
+                        {name: "NZBGet", enabled: true},
+                    ],
+                    saveTorrentsTo: "/tmp",
+                },
+                searching: {showResultsAsZipButton: true},
+            },
+        };
+        renderPhone();
+        selectFirstRow();
+        const bar = within(screen.getByTestId("results-bulk-actions"));
+        const send = bar.getByTestId("send-to-downloader");
+        expect(send).toHaveTextContent("Send to downloader");
+        expect(send).toBeEnabled();
+        // No `Select` survives into this row: the two selects' values are the
+        // menu's own radio groups.
+        expect(bar.queryByRole("combobox")).not.toBeInTheDocument();
+
+        const options = bar.getByTestId("send-to-downloader-options");
+        expect(options).toHaveAccessibleName("Send options");
+        expect(options).toHaveAttribute("aria-haspopup", "menu");
+        fireEvent.click(options);
+        const menu = within(screen.getByTestId("send-to-downloader-menu"));
+        expect(menu.getByText("Downloader")).toBeInTheDocument();
+        expect(menu.getByText("Category")).toBeInTheDocument();
+        const sab = menu.getByRole("menuitemradio", {name: "SAB"});
+        expect(sab).toHaveAttribute("aria-checked", "true");
+        expect(
+            menu.getByRole("menuitemradio", {name: "NZBGet"}),
+        ).toHaveAttribute("aria-checked", "false");
+        expect(
+            menu.getByRole("menuitemradio", {name: "Use downloader default"}),
+        ).toHaveAttribute("aria-checked", "true");
+        fireEvent.click(menu.getByRole("menuitemradio", {name: "NZBGet"}));
+        fireEvent.click(bar.getByTestId("send-to-downloader-options"));
+        expect(
+            within(screen.getByTestId("send-to-downloader-menu")).getByRole(
+                "menuitemradio",
+                {name: "NZBGet"},
+            ),
+        ).toHaveAttribute("aria-checked", "true");
+        fireEvent.keyDown(screen.getByTestId("send-to-downloader-menu"), {
+            key: "Escape",
+        });
+
+        const more = bar.getByTestId("results-more-actions");
+        expect(more).toHaveAccessibleName("More actions");
+        fireEvent.click(more);
+        const overflow = within(
+            screen.getByTestId("results-more-actions-menu"),
+        );
+        for (const name of [
+            "Download selected NZBs as ZIP",
+            "Send selected to black hole",
+            "Copy selected links",
+        ]) {
+            expect(overflow.getByRole("menuitem", {name})).toBeInTheDocument();
+        }
+        // The ZIP entry keeps the desktop button's own gating: enabled here
+        // because the selected result is an NZB.
+        expect(
+            overflow.getByRole("menuitem", {
+                name: "Download selected NZBs as ZIP",
+            }),
+        ).not.toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("should render the paging footer under the table, even with nothing loaded", () => {
+        const {rerender} = renderPhone(
+            <SearchResults data={phoneData} onLoadMore={vi.fn()} />,
+        );
+        const footer = screen.getByTestId("results-paging-footer");
+        const results = screen.getByTestId("search-results");
+        // Last child of the results region -- after the table, not inside the
+        // sticky toolbar.
+        expect(results.lastElementChild).toBe(footer);
+        expect(screen.getByTestId("results-toolbar").contains(footer)).toBe(
+            false,
+        );
+        expect(
+            within(footer).getByTestId("results-load-more"),
+        ).toBeInTheDocument();
+        expect(
+            within(footer).getByTestId("results-load-all"),
+        ).toBeInTheDocument();
+
+        // The available-results phrase the desktop summary carries instead.
+        rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SearchResults
+                        data={{
+                            ...phoneData,
+                            searchResults: [],
+                            numberOfAvailableResults: 500,
+                            numberOfProcessedResults: 0,
+                            pagingState: "ready" as const,
+                            indexerSearchMetaDatas: [
+                                {
+                                    indexerName: "Alpha",
+                                    wasSuccessful: true,
+                                    hasMoreResults: true,
+                                    totalResultsKnown: false,
+                                },
+                            ],
+                        }}
+                        onLoadMore={vi.fn()}
+                    />
+                </ToastProvider>
+            </DialogProvider>,
+        );
+        expect(screen.getByTestId("results-paging-footer")).toHaveTextContent(
+            ">500 available",
+        );
+    });
+
+    it("should keep select-all reachable between 600px and the 768px stacking breakpoint", () => {
+        renderPhone(<SearchResults data={phoneData} />, 700);
+        // The gap FM-181 closes: `thead` is already hidden at 700px while the
+        // toolbar copy used to be hidden from 600px up, leaving no select-all
+        // at all between the two.
+        expect(screen.getAllByTestId("toolbar-selection-menu")).toHaveLength(1);
+        fireEvent.click(
+            within(screen.getByTestId("toolbar-selection-menu")).getByRole(
+                "button",
+                {name: "Selection options (mobile)"},
+            ),
+        );
+        fireEvent.click(screen.getByRole("menuitem", {name: "Select all"}));
+        expect(
+            within(screen.getByTestId("toolbar-selection-menu")).getByRole(
+                "checkbox",
+                {name: "Select all visible results (mobile)"},
+            ),
+        ).toBeChecked();
+    });
+
+    it("should render none of the phone controls at desktop width", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+        stubViewportWidth(1280);
+        renderResults(
+            <SearchResults
+                data={phoneData}
+                onLoadMore={vi.fn()}
+                onSaveSearch={vi.fn()}
+            />,
+        );
+        for (const testId of [
+            "toolbar-selection-menu",
+            "results-paging-footer",
+            "results-selection-count",
+            "results-more-actions",
+            "send-to-downloader-options",
+            // FM-182: no hidden desktop copy of the phone's sort menu.
+            "results-sort-toggle",
+            "results-sort-menu",
+        ]) {
+            expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
+        }
+        // And the desktop chrome is what it always was.
+        expect(screen.getByTestId("display-options-toggle")).toHaveTextContent(
+            "Display",
+        );
+        expect(screen.getByTestId("search-results-summary")).toHaveTextContent(
+            "2 of 2 loaded",
+        );
+        expect(
+            screen
+                .getByTestId("results-toolbar")
+                .contains(screen.getByTestId("results-load-more")),
+        ).toBe(true);
+    });
+});
+
+// FM-182: the phone Sort menu writes the same `sorting` state the desktop
+// headers write (`onSortingChange: setSorting` in `SearchResults.tsx`), so a
+// pick made here is exactly the same state change a header click makes --
+// there is no parallel state to keep in sync by hand.
+describe("SearchResults phone sort menu", () => {
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+    });
+
+    const sortData = {
+        ...response,
+        numberOfAvailableResults: 2,
+        searchResults: [
+            {
+                searchResultId: "1",
+                title: "Bravo release",
+                indexer: "Beta",
+                category: "Movies",
+                size: 200,
+                grabs: 2,
+                age: "2d",
+                epoch: 200,
+                downloadType: "NZB",
+            },
+            {
+                searchResultId: "2",
+                title: "Alpha release",
+                indexer: "Alpha",
+                category: "TV",
+                size: 100,
+                grabs: 1,
+                age: "1d",
+                epoch: 100,
+                downloadType: "NZB",
+            },
+        ],
+    };
+
+    function renderSortPhone(choices?: Record<string, unknown>) {
+        stubWorkingLocalStorage();
+        if (choices) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(choices));
+        }
+        stubViewportWidth(390);
+        return renderResults(<SearchResults data={sortData} />);
+    }
+
+    function openMenu(): void {
+        fireEvent.click(screen.getByTestId("results-sort-toggle"));
+    }
+
+    it("should list the six sortable columns in table order with none checked while sorting is empty", () => {
+        renderSortPhone({sorting: []});
+        openMenu();
+        const menu = within(screen.getByTestId("results-sort-menu"));
+        const items = menu.getAllByRole("menuitemradio");
+        expect(items.map((item) => item.textContent)).toEqual([
+            "Title",
+            "Indexer",
+            "Category",
+            "Size",
+            "Details",
+            "Age",
+            "Ascending",
+            "Descending",
+        ]);
+        for (const label of [
+            "Title",
+            "Indexer",
+            "Category",
+            "Size",
+            "Details",
+            "Age",
+        ]) {
+            expect(
+                menu.getByRole("menuitemradio", {name: label}),
+            ).toHaveAttribute("aria-checked", "false");
+        }
+        const ascending = menu.getByRole("menuitemradio", {
+            name: "Ascending",
+        });
+        const descending = menu.getByRole("menuitemradio", {
+            name: "Descending",
+        });
+        expect(ascending).toHaveAttribute("aria-checked", "false");
+        expect(descending).toHaveAttribute("aria-checked", "false");
+        // `MenuItem` renders an `<li>`, which carries no native `disabled`
+        // attribute -- MUI expresses it as `aria-disabled` instead.
+        expect(ascending).toHaveAttribute("aria-disabled", "true");
+        expect(descending).toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("should check the active column and its direction, both enabled, when a sort is active", () => {
+        renderSortPhone({sorting: [{id: "size", desc: true}]});
+        openMenu();
+        const menu = within(screen.getByTestId("results-sort-menu"));
+        expect(menu.getByRole("menuitemradio", {name: "Size"})).toHaveAttribute(
+            "aria-checked",
+            "true",
+        );
+        for (const label of [
+            "Title",
+            "Indexer",
+            "Category",
+            "Details",
+            "Age",
+        ]) {
+            expect(
+                menu.getByRole("menuitemradio", {name: label}),
+            ).toHaveAttribute("aria-checked", "false");
+        }
+        const ascending = menu.getByRole("menuitemradio", {
+            name: "Ascending",
+        });
+        const descending = menu.getByRole("menuitemradio", {
+            name: "Descending",
+        });
+        expect(ascending).toHaveAttribute("aria-checked", "false");
+        expect(descending).toHaveAttribute("aria-checked", "true");
+        expect(ascending).not.toHaveAttribute("aria-disabled");
+        expect(descending).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("should sort by a column's own auto direction when picked with no sort active, and close the menu", () => {
+        const {rerender} = renderSortPhone({sorting: []});
+        openMenu();
+        // Size is numeric: `column.getAutoSortDir()` is "desc".
+        fireEvent.click(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Size"},
+            ),
+        );
+        // Every pick closes the menu (the toggle no longer reports it open).
+        expect(screen.getByTestId("results-sort-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+
+        openMenu();
+        expect(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Size"},
+            ),
+        ).toHaveAttribute("aria-checked", "true");
+        expect(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Descending"},
+            ),
+        ).toHaveAttribute("aria-checked", "true");
+        fireEvent.keyDown(screen.getByTestId("results-sort-menu"), {
+            key: "Escape",
+        });
+
+        // Trap: `column.getAutoSortDir()` reads off the column instance
+        // (`table.getColumn(id)`), not the column def -- a string column's
+        // instance reports "asc".
+        stubWorkingLocalStorage();
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({sorting: []}));
+        rerender(<SearchResults data={sortData} />);
+        openMenu();
+        fireEvent.click(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Indexer"},
+            ),
+        );
+        openMenu();
+        expect(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Ascending"},
+            ),
+        ).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("should keep the current sort's direction when picking a different column while a sort is active", () => {
+        renderSortPhone({sorting: [{id: "size", desc: true}]});
+        openMenu();
+        // Title is a string column (auto direction "asc"), but a sort is
+        // already active -- the current descending direction survives.
+        fireEvent.click(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Title"},
+            ),
+        );
+        openMenu();
+        const menu = within(screen.getByTestId("results-sort-menu"));
+        expect(
+            menu.getByRole("menuitemradio", {name: "Title"}),
+        ).toHaveAttribute("aria-checked", "true");
+        expect(
+            menu.getByRole("menuitemradio", {name: "Descending"}),
+        ).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("should keep the column and change only the direction when a direction is picked, and close the menu", () => {
+        renderSortPhone({sorting: [{id: "title", desc: false}]});
+        openMenu();
+        fireEvent.click(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Descending"},
+            ),
+        );
+        // Every pick closes the menu (the toggle no longer reports it open).
+        expect(screen.getByTestId("results-sort-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+
+        openMenu();
+        const menu = within(screen.getByTestId("results-sort-menu"));
+        expect(
+            menu.getByRole("menuitemradio", {name: "Title"}),
+        ).toHaveAttribute("aria-checked", "true");
+        expect(
+            menu.getByRole("menuitemradio", {name: "Ascending"}),
+        ).toHaveAttribute("aria-checked", "false");
+        expect(
+            menu.getByRole("menuitemradio", {name: "Descending"}),
+        ).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("should write the same `sorting` state the desktop header reads, agreeing after a viewport change", () => {
+        const {rerender} = renderSortPhone({sorting: []});
+        openMenu();
+        fireEvent.click(
+            within(screen.getByTestId("results-sort-menu")).getByRole(
+                "menuitemradio",
+                {name: "Indexer"},
+            ),
+        );
+
+        // Unstub to a desktop width and re-render the same tree: this is the
+        // same `SearchResults` instance and the same `sorting` state the pick
+        // just wrote, not a fresh mount reading persisted storage back.
+        stubViewportWidth(1280);
+        rerender(<SearchResults data={sortData} />);
+        expect(
+            screen.queryByTestId("results-sort-toggle"),
+        ).not.toBeInTheDocument();
+        const indexerSort = screen.getByTestId("sort-indexer");
+        expect(indexerSort).toHaveAttribute("data-sort-direction", "asc");
+        expect(indexerSort.closest("th")).toHaveAttribute(
+            "aria-sort",
+            "ascending",
+        );
+    });
+});
+
 /**
  * FM-150 fixture: "Alpha release" plus an unrelated "Zulu release" that can
  * never expand anything, with the alpha group shaped to carry the requested
@@ -5129,6 +5775,29 @@ function stubMobileViewport(): void {
         removeListener: () => {},
         dispatchEvent: () => false,
     }));
+}
+
+// FM-181: the same stub, but width-aware, because two of the phone chrome's
+// cases turn on *which* width is compact rather than merely that one is: the
+// 600-767px band (where the table already stacks but the old CSS switch had
+// already hidden the toolbar's select-all) and the 1280px desktop control.
+function stubViewportWidth(width: number): void {
+    vi.stubGlobal("matchMedia", (query: string) => {
+        const max = /max-width:\s*([\d.]+)px/.exec(query);
+        const min = /min-width:\s*([\d.]+)px/.exec(query);
+        return {
+            matches:
+                (max === null || width <= Number(max[1])) &&
+                (min === null || width >= Number(min[1])),
+            media: query,
+            onchange: null,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+            addListener: () => {},
+            removeListener: () => {},
+            dispatchEvent: () => false,
+        };
+    });
 }
 
 // The display-options popover is a MUI `Modal`, so while it is open the rest

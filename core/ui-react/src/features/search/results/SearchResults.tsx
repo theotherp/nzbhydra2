@@ -1,7 +1,11 @@
+import BookmarkAddOutlinedIcon from "@mui/icons-material/BookmarkAddOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import {
     Alert,
+    Badge,
     Box,
     Button,
+    IconButton,
     Stack,
     Table,
     TableBody,
@@ -38,10 +42,14 @@ import {ToastContext} from "../../../components/toasts/toasts";
 import {writeItem} from "../../../domain/storage/browserStorage";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase, DownloadActions} from "./DownloadActions";
-import {RefineSidebar} from "./RefineSidebar";
+import {REFINE_LABELS, RefineSidebar} from "./RefineSidebar";
 import type {ExpandSlots} from "./ResultRow";
 import {ResultRow} from "./ResultRow";
-import {DisplayOptionsMenu, RejectedResultsTrigger} from "./ResultsPopovers";
+import {
+    DisplayOptionsMenu,
+    RejectedResultsTrigger,
+    ResultsSortMenu,
+} from "./ResultsPopovers";
 import {SelectionMenu} from "./SelectionMenu";
 import type {SearchedCategory} from "./groupEpisodesHelp";
 import {
@@ -57,6 +65,7 @@ import type {
     ResultGroup,
 } from "./resultTable";
 import {
+    activeFilterCount,
     defaultFilters,
     duplicateGroupKey,
     filterResults,
@@ -943,21 +952,31 @@ export function SearchResults({
         }
         await requestContinuation(true);
     };
-    // Below `sm` the table's `thead` -- and so the header's tri-state
-    // checkbox/caret menu -- is hidden by the responsive table styling; this
-    // mobile-only copy keeps bulk selection reachable from the toolbar at
-    // that viewport. Both copies share the same selection state and
-    // callbacks. FM-055 moves it to the start of the merged action row.
+    // Below 768px the table's `thead` -- and so the header's tri-state
+    // checkbox/caret menu -- is hidden by the responsive card layout; this
+    // copy keeps bulk selection reachable from the toolbar at that viewport.
+    // Both copies share the same selection state and callbacks.
+    //
+    // FM-181: rendered on the same JavaScript branch the card layout and the
+    // refine sheet switch on, not on the `display: {xs, sm}` CSS switch it
+    // used to carry. That switch hid this copy from 600px up while `thead`
+    // was already hidden from 767px down, so between 600 and 767px the page
+    // had no select-all at all. FM-181 also moves it to the start of row 1,
+    // where it is reachable without a selection.
     const mobileSelectionMenu = (
-        <Box sx={{display: {xs: "flex", sm: "none"}}}>
-            <SelectionMenu
-                idPrefix="toolbar"
-                onDeselectAll={deselectAllVisible}
-                onInvertSelection={invertVisibleSelection}
-                onSelectAll={selectAllVisible}
-                status={currentSelectionStatus}
-            />
-        </Box>
+        <SelectionMenu
+            idPrefix="toolbar"
+            onDeselectAll={deselectAllVisible}
+            onInvertSelection={invertVisibleSelection}
+            onSelectAll={selectAllVisible}
+            status={currentSelectionStatus}
+        />
+    );
+    // FM-181: how many refine dimensions are active, for the phone toolbar's
+    // badge. The same function `RefineSidebar` disables its "Clear all" on.
+    const activeFilters = useMemo(
+        () => activeFilterCount(filters, data.searchResults, quickFilters),
+        [data.searchResults, filters, quickFilters],
     );
     useLayoutEffect(() => {
         const node = toolbarRef.current;
@@ -1223,7 +1242,9 @@ export function SearchResults({
                     ref={toolbarRef}
                     sx={{
                         backgroundColor: STICKY_BACKGROUND,
-                        padding: "16px 0 14px",
+                        // FM-181: a phone's sticky region is paid for in rows
+                        // of results it hides, so it takes the tighter box.
+                        padding: refineSurfaceCompact ? "8px 0" : "16px 0 14px",
                         position: "sticky",
                         top: 0,
                         zIndex: TOOLBAR_STICKY_Z_INDEX,
@@ -1233,14 +1254,18 @@ export function SearchResults({
                         count phrase, the paging controls that used to sit in
                         their own non-sticky row above this region, and the
                         "⚙ Display" popover at the row's right end. Row 2 is
-                        the one wrapping action row. */}
-                    <Stack spacing={1.5}>
+                        the one wrapping action row.
+                        FM-181: below 768px row 1 is one line -- select-all,
+                        a two-number count, three icon controls -- and row 2
+                        renders only while something is selected. */}
+                    <Stack spacing={refineSurfaceCompact ? 1 : 1.5}>
                         <Stack
                             alignItems="center"
                             direction="row"
-                            flexWrap="wrap"
-                            gap={1.5}
+                            flexWrap={refineSurfaceCompact ? "nowrap" : "wrap"}
+                            gap={refineSurfaceCompact ? 1 : 1.5}
                         >
+                            {refineSurfaceCompact && mobileSelectionMenu}
                             {(hasResults || hasRejectedResults) && (
                                 <Typography
                                     // A `div`, not `subtitle2`'s default
@@ -1263,14 +1288,40 @@ export function SearchResults({
                                     // special-casing it away.
                                     component="div"
                                     data-testid="search-results-summary"
+                                    sx={
+                                        refineSurfaceCompact
+                                            ? {whiteSpace: "nowrap"}
+                                            : undefined
+                                    }
                                     variant="subtitle2"
                                 >
-                                    {filteredResults.length} of{" "}
-                                    {data.searchResults.length} loaded
-                                    {moreResultsAvailable &&
-                                        ` (${availableResultsPhrase} available)`}
-                                    {filteredOutCount > 0 &&
-                                        ` · ${filteredOutCount} filtered`}
+                                    {/* FM-181: on a phone the phrase is two
+                                        numbers. "loaded", "available" and
+                                        "filtered" are all inferable from
+                                        them (or, for available, from the
+                                        paging footer that names the same
+                                        count beside the button that acts on
+                                        it), the selected count moved to row
+                                        2 beside the actions it gates, and
+                                        the full sentence is what made this
+                                        row wrap. The rejection trigger stays:
+                                        it is a control, and nothing else
+                                        reaches the breakdown. */}
+                                    {refineSurfaceCompact ? (
+                                        <>
+                                            {filteredResults.length} /{" "}
+                                            {data.searchResults.length}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {filteredResults.length} of{" "}
+                                            {data.searchResults.length} loaded
+                                            {moreResultsAvailable &&
+                                                ` (${availableResultsPhrase} available)`}
+                                            {filteredOutCount > 0 &&
+                                                ` · ${filteredOutCount} filtered`}
+                                        </>
+                                    )}
                                     {data.numberOfRejectedResults > 0 && (
                                         <>
                                             {" · "}
@@ -1284,18 +1335,36 @@ export function SearchResults({
                                             />
                                         </>
                                     )}
-                                    {selected.size > 0 && (
-                                        <Box
-                                            component="span"
-                                            sx={{color: "primary.main"}}
-                                        >
-                                            {" · "}
-                                            {selected.size} selected
-                                        </Box>
-                                    )}
+                                    {!refineSurfaceCompact &&
+                                        selected.size > 0 && (
+                                            <Box
+                                                component="span"
+                                                sx={{color: "primary.main"}}
+                                            >
+                                                {" · "}
+                                                {selected.size} selected
+                                            </Box>
+                                        )}
                                 </Typography>
                             )}
-                            {onLoadMore && (
+                            {/* FM-182: below 768px `thead` is hidden and with
+                                it the header's `sort-{column}` buttons -- this
+                                is the phone's only sort control, sitting
+                                between the count and Display just as the mock
+                                orders the equivalent controls. It writes the
+                                same `sorting` state the desktop headers write,
+                                so a viewport change never disagrees with the
+                                header's own `aria-sort`. No hidden desktop
+                                copy exists: `results-sort-toggle` is absent
+                                from the DOM entirely at >= 768px. */}
+                            {refineSurfaceCompact && hasResults && (
+                                <ResultsSortMenu
+                                    columns={table.getAllLeafColumns()}
+                                    onSortingChange={setSorting}
+                                    sorting={sorting}
+                                />
+                            )}
+                            {!refineSurfaceCompact && onLoadMore && (
                                 <>
                                     <Button
                                         aria-busy={pagingLoading}
@@ -1328,8 +1397,25 @@ export function SearchResults({
                                 right end of the toolbar's first row
                                 (`margin-left:auto`). */}
                             {hasResults && (
-                                <Box sx={{ml: "auto"}}>
+                                <Box
+                                    // FM-181: the phone's row-1 control
+                                    // cluster is three icon buttons, so this
+                                    // wrapper becomes a flex row there. The
+                                    // desktop branch resolves to exactly the
+                                    // `{ml: "auto"}` it has always carried,
+                                    // holding its one Display button.
+                                    sx={{
+                                        ml: "auto",
+                                        ...(refineSurfaceCompact
+                                            ? {
+                                                  alignItems: "center",
+                                                  display: "flex",
+                                              }
+                                            : {}),
+                                    }}
+                                >
                                     <DisplayOptionsMenu
+                                        compact={refineSurfaceCompact}
                                         compactRows={compactRows}
                                         groupEpisodes={groupEpisodes}
                                         groupTorrentAndUsenet={
@@ -1373,13 +1459,71 @@ export function SearchResults({
                                             showDuplicateControls
                                         }
                                     />
+                                    {/* FM-181: below 768px the refine
+                                        surface's trigger lives here rather
+                                        than above the table, where it
+                                        scrolled away with the results it
+                                        filters. The badge is the only thing
+                                        that can say a filter is on once the
+                                        sections are behind a sheet; it counts
+                                        the same dimensions `refine-clear-all`
+                                        enables on, and MUI hides it at 0. */}
+                                    {refineSurfaceCompact && (
+                                        <Badge
+                                            badgeContent={activeFilters}
+                                            color="primary"
+                                        >
+                                            <IconButton
+                                                aria-expanded={
+                                                    refineSurfaceShown
+                                                }
+                                                aria-haspopup="dialog"
+                                                aria-label={
+                                                    refineSurfaceShown
+                                                        ? REFINE_LABELS.collapse
+                                                        : REFINE_LABELS.expand
+                                                }
+                                                data-testid="refine-sidebar-toggle"
+                                                onClick={toggleRefineSurface}
+                                                size="small"
+                                            >
+                                                {/* Owner (2026-09-03): the funnel, not `FilterList` --
+                                                    whose three shrinking bars are the glyph most apps
+                                                    use for *sort*, and sat next to a real Sort button. */}
+                                                <FilterAltOutlinedIcon fontSize="small" />
+                                            </IconButton>
+                                        </Badge>
+                                    )}
+                                    {/* Row 2 holds this on the desktop
+                                        branch, but row 2 does not exist on a
+                                        phone until something is selected --
+                                        and saving a search has nothing to do
+                                        with a selection. */}
+                                    {refineSurfaceCompact && onSaveSearch && (
+                                        <IconButton
+                                            aria-busy={savingSearch}
+                                            aria-label="Save search"
+                                            disabled={savingSearch}
+                                            id="save-search"
+                                            onClick={() => void onSaveSearch()}
+                                            size="small"
+                                        >
+                                            <BookmarkAddOutlinedIcon fontSize="small" />
+                                        </IconButton>
+                                    )}
                                 </Box>
                             )}
                         </Stack>
+                        {/* FM-181: on a phone the action row is a selection
+                            row -- it appears with the first selected result
+                            and goes again with the last, so an idle sticky
+                            bar costs one line instead of two. At 768px and up
+                            it renders exactly as before. */}
                         {hasResults &&
+                            (!refineSurfaceCompact || selected.size > 0) &&
                             (dialogs !== null && toasts !== null ? (
                                 <DownloadActions
-                                    leading={mobileSelectionMenu}
+                                    compact={refineSurfaceCompact}
                                     onDownloaded={(ids) => {
                                         const affected = data.searchResults
                                             .filter((result) =>
@@ -1438,6 +1582,10 @@ export function SearchResults({
                                 // keeps rendering on its own, exactly as
                                 // before this task, instead of disappearing
                                 // along with the download-actions region.
+                                // FM-181: never on the compact branch, where
+                                // row 1 already carries Save search and a
+                                // second `save-search` would exist.
+                                !refineSurfaceCompact &&
                                 onSaveSearch && (
                                     <Stack
                                         alignItems="center"
@@ -1446,7 +1594,6 @@ export function SearchResults({
                                         flexWrap="wrap"
                                         gap={1}
                                     >
-                                        {mobileSelectionMenu}
                                         <Button
                                             disabled={savingSearch}
                                             id="save-search"
@@ -1476,6 +1623,7 @@ export function SearchResults({
                             clearRange={clearRange}
                             collapsed={sidebarCollapsed}
                             drawerOpen={refineDrawerOpen}
+                            filteredCount={filteredResults.length}
                             filters={filters}
                             indexerOpen={indexerOpen}
                             onClearAll={clearAllFilters}
@@ -2300,6 +2448,49 @@ export function SearchResults({
                         </Box>
                     </Stack>
                 </>
+            )}
+            {/* FM-181: the phone's paging controls, under the last card
+                rather than in the sticky bar. Paging is the one thing a
+                reader asks for *after* reaching the end of the list, so it
+                belongs where that ending is; keeping it pinned spent a
+                permanent line of a 390px viewport on a control that is
+                irrelevant until then. Rendered whenever the page owns paging
+                at all -- including with nothing loaded, the state FM-055's
+                row 1 already covered for the same reason. */}
+            {refineSurfaceCompact && onLoadMore && (
+                <Stack
+                    data-testid="results-paging-footer"
+                    sx={{gap: 1, padding: "16px 0"}}
+                >
+                    {moreResultsAvailable && (
+                        <Typography component="div" variant="subtitle2">
+                            {availableResultsPhrase} available
+                        </Typography>
+                    )}
+                    <Stack direction="row" sx={{gap: 1}}>
+                        <Button
+                            aria-busy={pagingLoading}
+                            data-testid="results-load-more"
+                            disabled={!pagingAvailable || pagingLoading}
+                            onClick={() => void requestContinuation(false)}
+                            size="small"
+                            sx={{flex: 1}}
+                        >
+                            {pagingLoading
+                                ? "Loading more results…"
+                                : "Load more"}
+                        </Button>
+                        <Button
+                            data-testid="results-load-all"
+                            disabled={!pagingAvailable || pagingLoading}
+                            onClick={() => void requestLoadAll()}
+                            size="small"
+                            sx={{flex: 1}}
+                        >
+                            Load all results
+                        </Button>
+                    </Stack>
+                </Stack>
             )}
         </Stack>
     );

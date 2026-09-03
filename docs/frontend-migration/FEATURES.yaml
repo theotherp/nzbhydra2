@@ -236,6 +236,16 @@ features:
       - search-result-cover
       - search-result-cover-tile
       - search-result-cover-popover
+      # 2026-09-03 (FM-181, owner request): below the 768px stacking
+      # breakpoint the toolbar is one sticky row and paging moves under the
+      # last card into this footer, which also names the available count.
+      # `results-load-more`/`results-load-all` keep their ids, labels and
+      # disabled/aria-busy rules; they are inside `results-toolbar` at 768px
+      # and up and inside `results-paging-footer` below it -- exactly one
+      # copy either way. `search-results-summary` reads `{filtered} /
+      # {total}` there, plus `results-rejected-trigger` when anything was
+      # rejected; the desktop phrase is unchanged.
+      - results-paging-footer
       # 2026-08-31 (FM-150, owner request): the table's width budget moved --
       # Age 8% -> 5% and Size 9% -> 8%, both surrendered to Title (35% -> 39%)
       # -- so those two columns are now sized for the values users see, not for
@@ -298,6 +308,15 @@ features:
       - refine-sidebar-toggle
       - refine-sidebar-drawer
       - refine-sidebar-close
+      # 2026-09-03 (FM-181, owner request): below 768px the shared shell's
+      # branch is a bottom sheet whose footer carries clear-all as a text
+      # button (same id, same "Clear all filters" name) beside this new done
+      # control, which counts what the live filters leave ("Show N results")
+      # and dismisses the sheet. `refine-sidebar-toggle` is rendered by the
+      # toolbar there, not by the shell (`trigger="external"`): an icon in a
+      # MUI Badge showing `activeFilterCount` (`resultTable.ts`), the same
+      # comparison `refine-clear-all`'s disabled state is derived from.
+      - refine-sidebar-done
       - refine-clear-all
       - refine-filter-title
       - refine-quality-filters
@@ -313,6 +332,16 @@ features:
       - filter-toggle-refine-grabs
       - display-options-toggle
       - display-options
+      # 2026-09-03 (FM-182, ADR-0054): below 768px `thead` is hidden and with
+      # it the only sort control, so this icon button (row 1, between the
+      # count and Display) and its menu are the phone's entry point to the
+      # same `sorting` state the desktop headers write -- no separate
+      # persistence path, no hidden desktop copy.
+      - results-sort-toggle
+      - results-sort-menu
+      - results-sort-column-{{column}}
+      - results-sort-direction-asc
+      - results-sort-direction-desc
       # 2026-09-02 (FM-176/FM-178, ADR-0054): the `hydra.search-results.table`
       # payload's persisted keys are `sorting`, `sidebarCollapsed`,
       # `refineCategoryOpen`, `refineIndexerOpen`, `compactRows`,
@@ -388,7 +417,16 @@ features:
       - search-result-row
       - results-bulk-actions
       - header-selection-menu
+      # 2026-09-03 (FM-181, owner request): `toolbar-selection-menu` renders
+      # on the same JavaScript branch as the stacked card layout (below
+      # 768px) instead of a `display: {xs, sm}` CSS switch, which had hidden
+      # it from 600px up while `thead` was already hidden from 767px down --
+      # leaving no select-all at all between the two. It sits at the start of
+      # row 1 now, reachable before anything is selected;
+      # `results-bulk-actions` is row 2 and exists only while
+      # `selected.size > 0`, carrying `results-selection-count`.
       - toolbar-selection-menu
+      - results-selection-count
       - display-options-toggle
       - display-options
       # 2026-08-31 (FM-150): the "Expand group"/"Expand duplicates" toggles are
@@ -457,7 +495,21 @@ features:
       # destroying the results view. `target="_blank"` sends redirects and
       # errors to a disposable tab while content still downloads via the
       # server's `Content-Disposition` header.
+      # 2026-09-03 (FM-181, owner request): below 768px the bulk row is a
+      # split send button plus an overflow menu. `send-to-downloader` keeps
+      # its id and disabled rule (its text is "Send to downloader" there);
+      # `send-to-downloader-options` opens `send-to-downloader-menu`, whose
+      # `menuitemradio` groups bind the same downloader and category state
+      # the desktop `Select`s do; `results-more-actions` opens
+      # `results-more-actions-menu` with ZIP, black hole and copy links under
+      # their unchanged gating and disabled rules. `save-search` moves to
+      # toolbar row 1 as an icon there, keeping its `#save-search` id, so it
+      # stays reachable without a selection.
       - send-to-downloader
+      - send-to-downloader-options
+      - send-to-downloader-menu
+      - results-more-actions
+      - results-more-actions-menu
       - download-nzb
       - download-torrent
       - results-bulk-actions

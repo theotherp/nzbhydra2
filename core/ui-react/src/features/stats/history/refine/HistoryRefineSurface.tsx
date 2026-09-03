@@ -25,6 +25,8 @@ import {useHistoryRefineCollapsed} from "./historyRefineCollapsed";
 const TEST_IDS: RefineSurfaceTestIds = {
     clearAll: "history-refine-clear-all",
     close: "history-refine-close",
+    // FM-181: the compact sheet's footer button.
+    done: "history-refine-done",
     drawer: "history-refine-drawer",
     // The container id every history spec and page test has always queried.
     // The shell puts it on whichever branch is live, so it keeps resolving
@@ -197,6 +199,11 @@ function refineLabels(compact: boolean, summary: string): RefineSurfaceLabels {
     return {
         close: "Close history filters",
         collapse: compact ? "Hide history filters" : "Collapse history filters",
+        // FM-181: a history view's rows are filtered server-side, page by
+        // page, so there is no client-side count to promise here the way the
+        // results sheet counts what it is about to show. The plain verb is
+        // the honest label.
+        done: "Done",
         expand: compact ? trigger : `Expand history filters, ${summary}`,
         heading: trigger,
         surface: "Refine history",

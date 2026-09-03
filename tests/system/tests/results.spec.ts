@@ -1483,23 +1483,22 @@ test.describe("Search results", () => {
             ).toBeVisible();
         });
 
-        const mobileBar = page.getByTestId("results-bulk-actions");
-        await expect(page.getByTestId("send-to-downloader")).toBeDisabled();
+        // FM-181: below 768px `results-bulk-actions` is a *selection* row --
+        // with nothing selected it does not exist at all, so neither does the
+        // send button whose disabled state the desktop half above asserts.
+        // The idle sticky bar is row 1 alone.
+        const mobileToolbar = page.getByTestId("results-toolbar");
+        await expect(page.getByTestId("results-bulk-actions")).toHaveCount(0);
+        await expect(page.getByTestId("send-to-downloader")).toHaveCount(0);
         await expectVisualGeometry(page, {
             region: "bulk-actions-no-selection-mobile",
-            locator: mobileBar,
+            locator: mobileToolbar,
         });
-        await captureVisualRegion(
-            mobileBar,
-            "F-SEARCH-GROUP-SELECTION",
-            "bulk-actions-mobile",
-        );
 
-        // Below `sm` the responsive table styling hides `thead` entirely,
-        // so the header's selection menu is unreachable there; the
-        // toolbar's merged `results-bulk-actions` row (FM-055) carries a
-        // second, functionally-identical copy at its start so bulk selection
-        // stays reachable at mobile -- asserted here, not merely assumed.
+        // Below 768px the responsive card layout hides `thead` entirely, so
+        // the header's selection menu is unreachable there; row 1 carries a
+        // second, functionally-identical copy -- reachable *before* anything
+        // is selected, which row 2 could not have been.
         await expect(
             page.getByTestId("header-selection-menu"),
         ).not.toBeVisible();
@@ -1531,7 +1530,26 @@ test.describe("Search results", () => {
         await page
             .getByRole("menuitem", {name: "Select all", exact: true})
             .click();
-        await expect(page.getByTestId("send-to-downloader")).toBeEnabled();
+        // Selecting brings row 2 with it, carrying the count and the primary
+        // action -- enabled, because something is selected.
+        const mobileBar = page.getByTestId("results-bulk-actions");
+        await expect(mobileBar).toBeVisible();
+        await expect(
+            mobileBar.getByTestId("results-selection-count"),
+        ).toHaveText("2 selected");
+        await expect(mobileBar.getByTestId("send-to-downloader")).toBeEnabled();
+        await expect(mobileBar.getByTestId("send-to-downloader")).toHaveText(
+            "Send to downloader",
+        );
+        await expectVisualGeometry(page, {
+            region: "bulk-actions-all-selected-mobile",
+            locator: mobileBar,
+        });
+        await captureVisualRegion(
+            mobileToolbar,
+            "F-SEARCH-GROUP-SELECTION",
+            "bulk-actions-mobile",
+        );
         await expect(
             toolbarMenu.getByRole("checkbox", {
                 name: "Select all visible results (mobile)",
@@ -1745,6 +1763,18 @@ test.describe("Search results", () => {
             region: "toolbar-mock-density-mobile",
             locator: mobileToolbar,
         });
+        // FM-181: the phone's own box -- 8px above and below, against the
+        // desktop 16/14 asserted at the top of this test. A sticky region is
+        // paid for in rows of results it covers.
+        const mobileToolbarStyle = await mobileToolbar.evaluate((element) => {
+            const style = getComputedStyle(element);
+            return {
+                paddingBottom: style.paddingBottom,
+                paddingTop: style.paddingTop,
+            };
+        });
+        expect(mobileToolbarStyle.paddingTop).toBe("8px");
+        expect(mobileToolbarStyle.paddingBottom).toBe("8px");
         await captureVisualRegion(
             mobileToolbar,
             "F-SEARCH-GROUP-SELECTION",
@@ -2277,13 +2307,19 @@ test.describe("Search results", () => {
             // Every region inside the pinned toolbar renders within the
             // pinned box, not scrolled away underneath it. Since FM-055 that
             // is exactly the two rows: the summary (with its paging and
-            // display controls) and the merged action row.
-            for (const testId of [
-                "search-results-summary",
-                "results-bulk-actions",
-                "results-load-more",
-                "results-load-all",
-            ]) {
+            // display controls) and the merged action row. FM-181: below
+            // 768px the paging controls are in a footer under the last card
+            // instead (asserted in that branch below), and the action row
+            // does not exist while nothing is selected, so only the summary
+            // is pinned there.
+            for (const testId of viewport === "mobile"
+                ? ["search-results-summary"]
+                : [
+                      "search-results-summary",
+                      "results-bulk-actions",
+                      "results-load-more",
+                      "results-load-all",
+                  ]) {
                 const box = await page.getByTestId(testId).boundingBox();
                 expect(box).not.toBeNull();
                 if (box) {
@@ -2512,15 +2548,66 @@ test.describe("Search results", () => {
                 // whose box straddles that edge (hidden behind the opaque
                 // sticky toolbar, not actually visible) is excluded rather
                 // than failing a separate assertion.
-                const rowRects = await visibleRowRects(page);
-                const visibleRows = rowRects.filter(
-                    (rect) =>
-                        rect.top >= stickyRegionBottom - 1 &&
-                        rect.top < (page.viewportSize()?.height ?? 0),
-                );
-                expect(visibleRows.length).toBeGreaterThanOrEqual(2);
+                //
+                // Polled rather than read once: FM-162's virtualizer seeds
+                // every unmounted row with a 44px estimate and replaces it
+                // with the measured height as the row mounts, and at 390px a
+                // stacked card is nearer 250px. The document therefore grows
+                // under the scroll offset that was computed from the
+                // estimate, and the first reading after `scrollTo` can catch
+                // the list mid-settle with a single row below the bar.
+                await expect
+                    .poll(
+                        async () =>
+                            (await visibleRowRects(page)).filter(
+                                (rect) =>
+                                    rect.top >= stickyRegionBottom - 1 &&
+                                    rect.top <
+                                        (page.viewportSize()?.height ?? 0),
+                            ).length,
+                    )
+                    .toBeGreaterThanOrEqual(2);
 
-                // The display-options menu (reachable below `sm`, since the
+                // FM-181: the paging controls are under the last card, not
+                // in the sticky region -- so they scroll with the results
+                // instead of costing a permanent line of a 390px viewport.
+                const footer = page.getByTestId("results-paging-footer");
+                await expect(footer).toHaveCount(1);
+                expect(
+                    await page.evaluate(() => {
+                        const toolbar = document.querySelector(
+                            "[data-testid='results-toolbar']",
+                        );
+                        const paging = document.querySelector(
+                            "[data-testid='results-paging-footer']",
+                        );
+                        const table = document.querySelector(
+                            "[data-testid='search-results-table']",
+                        );
+                        return {
+                            insideToolbar:
+                                toolbar && paging
+                                    ? toolbar.contains(paging)
+                                    : null,
+                            afterTable:
+                                table && paging
+                                    ? Boolean(
+                                          table.compareDocumentPosition(
+                                              paging,
+                                          ) & Node.DOCUMENT_POSITION_FOLLOWING,
+                                      )
+                                    : null,
+                        };
+                    }),
+                ).toEqual({insideToolbar: false, afterTable: true});
+                for (const testId of [
+                    "results-load-more",
+                    "results-load-all",
+                ]) {
+                    await expect(footer.getByTestId(testId)).toHaveCount(1);
+                }
+
+                // The display-options menu (reachable below 768px, since the
                 // header and its caret menu are hidden entirely) stays
                 // clickable and within the viewport while scrolled.
                 await openDisplayOptions(page);
@@ -2961,48 +3048,138 @@ test.describe("Search results", () => {
             // --- consolidated toolbar, with rejected results ---------------
             await search(viewport, {rejected: true});
 
-            // Exactly two rows, in the packet's order.
+            // Two rows at desktop, in FM-055's order; one on a phone, where
+            // FM-181 made row 2 a selection row.
             const rowCount = await toolbar.evaluate(
                 (element) => element.firstElementChild?.childElementCount ?? 0,
             );
-            expect(rowCount).toBe(2);
+            expect(rowCount).toBe(viewport === "mobile" ? 1 : 2);
             await expect(summary).toContainText(
-                "28 of 28 loaded (>500 available) · 98 rejected",
+                viewport === "mobile"
+                    ? "28 / 28 · 98 rejected"
+                    : "28 of 28 loaded (>500 available) · 98 rejected",
             );
-            await expect(page.getByTestId("results-load-more")).toBeVisible();
-            await expect(page.getByTestId("results-load-all")).toBeVisible();
             await expect(
                 page.getByTestId("display-options-toggle"),
             ).toBeVisible();
-            // Every merged row-2 capability stays reachable, none behind an
-            // overflow menu.
-            const actions = page.getByTestId("results-bulk-actions");
-            await expect(
-                actions.getByTestId("send-to-downloader"),
-            ).toBeVisible();
-            // Both `Select`s moved into this row -- except the downloader
-            // select itself, which this instance's single configured
-            // downloader (`Deterministic SABnzbd`) makes redundant: it's
-            // already the only option, so it's hidden entirely, leaving just
-            // the downloader-category select. It's addressed by its rendered
-            // input root rather than by accessible name: MUI applies a
-            // `Select`'s `aria-label` to the hidden native input, not to the
-            // visible `role="combobox"` node, so it carries no queryable name
-            // (a pre-existing gap this task does not touch --
-            // `focus-indication.spec.ts` addresses the same control the same
-            // way).
-            const selects = actions.locator(".MuiInputBase-root");
-            await expect(selects).toHaveCount(1);
-            // The ZIP button is config-gated (`showResultsAsZipButton`, off in
-            // this instance) and covered by the component test instead; every
-            // capability this instance's configuration does render is asserted
-            // present in the merged row.
-            for (const name of [
-                "Send selected to black hole",
-                "Copy selected links",
-                "Save search",
-            ]) {
-                await expect(actions.getByRole("button", {name})).toBeVisible();
+            if (viewport === "mobile") {
+                // FM-181: paging is under the last card, and the phrase the
+                // desktop summary carries in its "(N available)" clause is
+                // beside the buttons that act on it.
+                const footer = page.getByTestId("results-paging-footer");
+                await expect(footer).toContainText(">500 available");
+                await expect(
+                    footer.getByTestId("results-load-more"),
+                ).toBeVisible();
+                await expect(
+                    footer.getByTestId("results-load-all"),
+                ).toBeVisible();
+                await expect(
+                    page.getByTestId("results-bulk-actions"),
+                ).toHaveCount(0);
+                // Selecting brings the action row, whose two menus hold every
+                // capability the desktop row spreads across the bar.
+                await page
+                    .getByTestId("search-result-row")
+                    .first()
+                    .getByRole("checkbox")
+                    .check();
+                const mobileActions = page.getByTestId("results-bulk-actions");
+                await expect(
+                    mobileActions.getByTestId("results-selection-count"),
+                ).toHaveText("1 selected");
+                await expect(
+                    mobileActions.getByTestId("send-to-downloader"),
+                ).toBeVisible();
+                // One configured downloader, so the send menu offers the
+                // category group alone -- the same reduction the desktop row
+                // makes by hiding the downloader `Select`.
+                await mobileActions
+                    .getByTestId("send-to-downloader-options")
+                    .click();
+                const sendMenu = page.getByTestId("send-to-downloader-menu");
+                await expect(sendMenu).toBeVisible();
+                await expect(sendMenu).toContainText("Category");
+                await expect(sendMenu).not.toContainText("Downloader");
+                // Exactly one category is current, whichever it is: this
+                // instance's SABnzbd mock carries a configured
+                // `defaultCategory`, which FM-114 preselects over "Use
+                // downloader default", so naming the expected option here
+                // would assert the fixture rather than the radio semantics.
+                await expect(
+                    sendMenu.locator(
+                        '[role="menuitemradio"][aria-checked="true"]',
+                    ),
+                ).toHaveCount(1);
+                await expect(
+                    sendMenu.getByRole("menuitemradio", {
+                        name: "Use downloader default",
+                    }),
+                ).toBeVisible();
+                await page.keyboard.press("Escape");
+                await mobileActions.getByTestId("results-more-actions").click();
+                const moreMenu = page.getByTestId("results-more-actions-menu");
+                for (const name of [
+                    "Send selected to black hole",
+                    "Copy selected links",
+                ]) {
+                    await expect(
+                        moreMenu.getByRole("menuitem", {name}),
+                    ).toBeVisible();
+                }
+                await page.keyboard.press("Escape");
+                // Save search is in row 1, reachable without a selection.
+                await expect(
+                    toolbar.locator("#save-search"),
+                ).toHaveAccessibleName("Save search");
+                await page
+                    .getByTestId("search-result-row")
+                    .first()
+                    .getByRole("checkbox")
+                    .uncheck();
+                await expect(
+                    page.getByTestId("results-bulk-actions"),
+                ).toHaveCount(0);
+            }
+            if (viewport !== "mobile") {
+                await expect(
+                    page.getByTestId("results-load-more"),
+                ).toBeVisible();
+                await expect(
+                    page.getByTestId("results-load-all"),
+                ).toBeVisible();
+                // Every merged row-2 capability stays reachable, none behind an
+                // overflow menu.
+                const actions = page.getByTestId("results-bulk-actions");
+                await expect(
+                    actions.getByTestId("send-to-downloader"),
+                ).toBeVisible();
+                // Both `Select`s moved into this row -- except the downloader
+                // select itself, which this instance's single configured
+                // downloader (`Deterministic SABnzbd`) makes redundant: it's
+                // already the only option, so it's hidden entirely, leaving just
+                // the downloader-category select. It's addressed by its rendered
+                // input root rather than by accessible name: MUI applies a
+                // `Select`'s `aria-label` to the hidden native input, not to the
+                // visible `role="combobox"` node, so it carries no queryable name
+                // (a pre-existing gap this task does not touch --
+                // `focus-indication.spec.ts` addresses the same control the same
+                // way).
+                const selects = actions.locator(".MuiInputBase-root");
+                await expect(selects).toHaveCount(1);
+                // The ZIP button is config-gated (`showResultsAsZipButton`, off in
+                // this instance) and covered by the component test instead; every
+                // capability this instance's configuration does render is asserted
+                // present in the merged row.
+                for (const name of [
+                    "Send selected to black hole",
+                    "Copy selected links",
+                    "Save search",
+                ]) {
+                    await expect(
+                        actions.getByRole("button", {name}),
+                    ).toBeVisible();
+                }
             }
             // The removed ids are gone everywhere in the document.
             for (const removed of [
@@ -3167,7 +3344,9 @@ test.describe("Search results", () => {
 
             // --- consolidated toolbar, without rejected results ------------
             await search(viewport, {rejected: false});
-            await expect(summary).toContainText("28 of 28 loaded");
+            await expect(summary).toContainText(
+                viewport === "mobile" ? "28 / 28" : "28 of 28 loaded",
+            );
             await expect(summary).not.toContainText("rejected");
             await expect(
                 page.getByTestId("results-rejected-trigger"),
@@ -3182,6 +3361,323 @@ test.describe("Search results", () => {
                 `fm055-toolbar-no-rejected-${viewport}`,
             );
         }
+    });
+
+    // FM-181 (owner request 2026-09-03): the phone chrome, measured. The
+    // owner's 390px screenshot showed the desktop toolbar wrapped into seven
+    // rows with "Refine" scrolled away below the sticky region; this pins
+    // what replaced it -- one sticky row idle, a second only while something
+    // is selected, both bars bounded, and paging under the last card rather
+    // than above the first. Also the visual-gate strip for that state.
+    test("should render the phone results chrome as one sticky bar, a selection row, and a paging footer", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock();
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: Array.from({length: 6}, (_, index) => ({
+                        searchResultId: `phone-${index}`,
+                        title: `Phone Chrome Result ${String(
+                            index + 1,
+                        ).padStart(2, "0")}`,
+                        indexer: index % 2 === 0 ? "Alpha" : "Beta",
+                        category: index % 2 === 0 ? "Movies" : "TV",
+                        size: (index + 1) * 1024 * 1024,
+                        seeders: index + 1,
+                        epoch: now - index * 86_400,
+                        age: `${index} days`,
+                        downloadType: "NZB",
+                    })),
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Alpha",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: false,
+                        },
+                        {indexerName: "Beta", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 500,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 6,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 6,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/");
+            await page.getByTestId("search-query").fill("phone chrome");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const toolbar = page.getByTestId("results-toolbar");
+        const summary = page.getByTestId("search-results-summary");
+
+        // --- idle: one row, one line, and every phone control on it -------
+        await expect(summary).toHaveText("6 / 6");
+        await expect(page.getByTestId("results-bulk-actions")).toHaveCount(0);
+        for (const testId of [
+            "toolbar-selection-menu",
+            // FM-182: the phone's only sort control, between the count and
+            // Display.
+            "results-sort-toggle",
+            "display-options-toggle",
+            "refine-sidebar-toggle",
+        ]) {
+            await expect(toolbar.getByTestId(testId)).toHaveCount(1);
+            await expect(page.getByTestId(testId)).toHaveCount(1);
+        }
+        await expect(toolbar.locator("#save-search")).toHaveCount(1);
+        await expect(page.locator("#save-search")).toHaveCount(1);
+        // No paging control in the sticky region.
+        await expect(toolbar.getByTestId("results-load-more")).toHaveCount(0);
+        const idleBox = await toolbar.boundingBox();
+        expect(idleBox).not.toBeNull();
+        if (!idleBox) {
+            throw new Error("Toolbar requires deterministic geometry");
+        }
+        expect(idleBox.height).toBeLessThanOrEqual(56);
+        await expectVisualGeometry(page, {
+            region: "fm181-phone-bar-idle",
+            locator: toolbar,
+        });
+        await captureVisualRegion(
+            toolbar,
+            "F-SEARCH-RESULTS",
+            "fm181-phone-bar-idle",
+        );
+
+        // --- the paging footer, under the last card -----------------------
+        const footer = page.getByTestId("results-paging-footer");
+        await expect(footer).toContainText(">500 available");
+        const lastCard = page.getByTestId("search-result-row").last();
+        const [footerBox, lastCardBox] = await Promise.all([
+            footer.boundingBox(),
+            lastCard.boundingBox(),
+        ]);
+        expect(footerBox).not.toBeNull();
+        expect(lastCardBox).not.toBeNull();
+        if (!footerBox || !lastCardBox) {
+            throw new Error("Footer requires deterministic geometry");
+        }
+        expect(footerBox.y).toBeGreaterThanOrEqual(
+            lastCardBox.y + lastCardBox.height - 1,
+        );
+        // Both buttons share the row equally, so neither is the small target.
+        const [loadMoreBox, loadAllBox] = await Promise.all([
+            footer.getByTestId("results-load-more").boundingBox(),
+            footer.getByTestId("results-load-all").boundingBox(),
+        ]);
+        expect(loadMoreBox).not.toBeNull();
+        expect(loadAllBox).not.toBeNull();
+        if (!loadMoreBox || !loadAllBox) {
+            throw new Error("Paging buttons require deterministic geometry");
+        }
+        expect(Math.abs(loadMoreBox.width - loadAllBox.width)).toBeLessThan(2);
+        await footer.scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-RESULTS",
+                "fm181-phone-paging-footer",
+            ),
+        });
+        await page.evaluate(() => window.scrollTo(0, 0));
+
+        // --- selecting: the second row appears, both bars bounded ---------
+        await page
+            .getByTestId("search-result-row")
+            .first()
+            .getByRole("checkbox")
+            .check();
+        const bar = page.getByTestId("results-bulk-actions");
+        await expect(bar.getByTestId("results-selection-count")).toHaveText(
+            "1 selected",
+        );
+        const selectedBox = await toolbar.boundingBox();
+        expect(selectedBox).not.toBeNull();
+        if (!selectedBox) {
+            throw new Error("Toolbar requires deterministic geometry");
+        }
+        expect(selectedBox.height).toBeLessThanOrEqual(104);
+        await expectVisualGeometry(page, {
+            region: "fm181-phone-bar-selected",
+            locator: toolbar,
+        });
+        await captureVisualRegion(
+            toolbar,
+            "F-SEARCH-RESULTS",
+            "fm181-phone-bar-selected",
+        );
+
+        // The send menu carries what the desktop row's two selects do.
+        await bar.getByTestId("send-to-downloader-options").click();
+        const sendMenu = page.getByTestId("send-to-downloader-menu");
+        await expect(sendMenu).toBeVisible();
+        await expectMenuFullyInViewport(page, sendMenu);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "fm181-phone-send-menu",
+            ),
+        });
+        await page.keyboard.press("Escape");
+        await expect(sendMenu).toBeHidden();
+        await expectNoPageOverflow(page);
+
+        // --- the refine sheet, with a badge -------------------------------
+        const refineToggle = page.getByTestId("refine-sidebar-toggle");
+        await expect(refineToggle).toHaveAttribute("aria-haspopup", "dialog");
+        await refineToggle.click();
+        const sheet = page.getByTestId("refine-sidebar");
+        await expect(sheet).toBeVisible();
+        await sheet.getByTestId("refine-filter-title").fill("Result 01");
+        await expect(page.getByTestId("refine-sidebar-done")).toHaveText(
+            "Show 1 result",
+        );
+        await expect(page.getByTestId("refine-clear-all")).toBeEnabled();
+        // The sheet is anchored to the bottom and leaves the page visible.
+        const [sheetBox, viewport] = [
+            await sheet.boundingBox(),
+            page.viewportSize(),
+        ];
+        expect(sheetBox).not.toBeNull();
+        expect(viewport).not.toBeNull();
+        if (!sheetBox || !viewport) {
+            throw new Error("Sheet requires deterministic geometry");
+        }
+        expect(sheetBox.y + sheetBox.height).toBeLessThanOrEqual(
+            viewport.height + 1,
+        );
+        expect(sheetBox.height).toBeLessThanOrEqual(viewport.height * 0.85 + 1);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-SORT-FILTER",
+                "fm181-phone-refine-sheet",
+            ),
+        });
+        await page.getByTestId("refine-sidebar-done").click();
+        await expect(sheet).toHaveCount(0);
+        // One active filter, on the trigger's badge.
+        await expect(
+            refineToggle.locator("xpath=ancestor::span[1]"),
+        ).toContainText("1");
+        await expectNoPageOverflow(page);
+    });
+
+    // FM-182: below 768px `thead` is hidden and with it the only sort
+    // control, so `results-sort-toggle` is the phone's entry point to the
+    // same `sorting` state the desktop headers write. A pick here has to
+    // reorder the cards immediately and agree with the matching desktop
+    // header's `aria-sort` once the viewport widens back past 768px.
+    test("should sort the phone card layout from the Sort menu, agreeing with the desktop header after a viewport change", async ({
+        page,
+    }) => {
+        await page.setViewportSize(visualViewports.mobile);
+        // Disables the Menu's fade/grow transition so a screenshot taken
+        // right after a click never catches it mid-animation.
+        await page.emulateMedia({reducedMotion: "reduce"});
+        await searchForUiTestResults(page);
+
+        const sortToggle = page.getByTestId("results-sort-toggle");
+        await expect(sortToggle).toHaveAttribute("aria-haspopup", "menu");
+        await sortToggle.click();
+        const sortMenu = page.getByTestId("results-sort-menu");
+        await expect(sortMenu).toBeVisible();
+        await expect(sortMenu.getByRole("menuitemradio")).toHaveText([
+            "Title",
+            "Indexer",
+            "Category",
+            "Size",
+            "Details",
+            "Age",
+            "Ascending",
+            "Descending",
+        ]);
+        // A brief settle window: the Menu's own enter transition can still
+        // be mid-fade the instant its content becomes queryable, which would
+        // leave a screenshot taken immediately after capturing it partially
+        // transparent.
+        await page.waitForTimeout(300);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-SORT-FILTER",
+                "fm182-phone-sort-menu",
+            ),
+        });
+
+        // The default sort (Age, descending) is already active, so picking
+        // Size keeps that direction -- the column-pick rule the component
+        // tests also cover directly, including the no-sort-active branch
+        // that falls back to `column.getAutoSortDir()`.
+        await sortMenu.getByRole("menuitemradio", {name: "Size"}).click();
+        await expect(sortMenu).toBeHidden();
+        await expectVisibleResultTitles(page, [
+            "indexer2-result2",
+            "indexer2-result1",
+            "indexer1-result3",
+            "indexer1-result2",
+            "indexer1-result1",
+        ]);
+        await expect(sortToggle).toHaveAttribute("aria-expanded", "false");
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-SORT-FILTER",
+                "fm182-phone-cards-size-sorted",
+            ),
+        });
+
+        // Picking Title while a sort is active keeps the current (descending)
+        // direction; picking Ascending afterward keeps Title and only flips
+        // the direction. Both pick rules go through the same `setSorting`.
+        await sortToggle.click();
+        await expect(
+            sortMenu.getByRole("menuitemradio", {name: "Size"}),
+        ).toHaveAttribute("aria-checked", "true");
+        await expect(
+            sortMenu.getByRole("menuitemradio", {name: "Descending"}),
+        ).toHaveAttribute("aria-checked", "true");
+        await sortMenu.getByRole("menuitemradio", {name: "Title"}).click();
+        await sortToggle.click();
+        await expect(
+            sortMenu.getByRole("menuitemradio", {name: "Title"}),
+        ).toHaveAttribute("aria-checked", "true");
+        await expect(
+            sortMenu.getByRole("menuitemradio", {name: "Descending"}),
+        ).toHaveAttribute("aria-checked", "true");
+        await sortMenu.getByRole("menuitemradio", {name: "Ascending"}).click();
+        await expectVisibleResultTitles(
+            page,
+            testEnvironment.uiTestResultTitles,
+        );
+
+        // The desktop header, after widening past 768px, carries the exact
+        // same choice -- the phone menu never disagrees with it.
+        await page.setViewportSize(visualViewports.desktop);
+        await expect(sortToggle).toHaveCount(0);
+        const titleSort = page.getByTestId("sort-title");
+        await expect(titleSort).toHaveAttribute("data-sort-direction", "asc");
+        await expect(
+            titleSort.locator("xpath=ancestor::*[self::th or self::td][1]"),
+        ).toHaveAttribute("aria-sort", "ascending");
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-SORT-FILTER",
+                "fm182-desktop-unchanged-headers",
+            ),
+        });
     });
 
     // --- FM-082: per-result detail links, Details cell, and NFO viewer -----

@@ -1582,6 +1582,39 @@ stale "this variant's page is pure black" sentence in `theme.test.ts`'s dys surf
 line in this file's Active section (fixed in this reconcile), and a wrong edit timestamp in the handoff's Verification
 Basis (the run of record still postdates every source edit). Candidates for a future quickfix.
 
+FM-181 (Phone Results Chrome — One Sticky Bar, Selection Row, Paging Footer, Refine Bottom Sheet) answered the owner's
+390px screenshot: below 768px (decided in JS by `useCompactRefineSurface`, never by CSS `display`, so every control exists
+exactly once at any width and select-all is reachable at 600–767px for the first time) the results toolbar is one 46px
+sticky row — select-all, `{filtered} / {total}` with the rejected trigger, Display, a Refine icon button badged with the new
+pure `activeFilterCount`, and Save search as an icon — a second row only while something is selected (count, a split Send
+button whose menu binds the desktop selects' state, an overflow with black hole / copy links / ZIP), and paging in a
+footer under the last card. The shared refine shell's compact branch is a bottom `SwipeableDrawer` (85vh, 12px corners,
+header / scrolling body / pinned `Clear all` + live `Show N results`) for every consumer under ADR-0046; the history views
+keep their inline trigger and ids. Desktop is byte-identical in outerHTML and md5-identical in captures except two named
+deviations: `refine-clear-all` is now correctly disabled on a fresh search (a pre-existing `hasActiveFilters` false
+positive the shared count corrects) and `useId` suffixes shift by one. One mid-task packet refinement: the
+`focus-indication.spec.ts` paging-placement check needed a per-viewport container. Vitest 1907/1907, real-backend
+results / search-history / downloads / notification-history / focus-indication 61/61 on a rebuilt jar; five phone
+captures and four desktop pairs reviewed. Passed 2026-09-03 first cycle with five minor findings, not corrected
+(optional): unreindented `if` bodies and a double blank line in `results.spec.ts`; `sameValues` joins with a space so
+values containing spaces could collide (badge under-reports, both consumers still agree); the new `history-refine-done`
+id is registered only in `C-REFINE-SURFACE`'s note, not per history feature; `F-SEARCH-PAGING` lacks a cross-reference to
+the footer; and the FM-055 consolidation test leaves `showQuickFilterButtons=false` on the live instance. Candidates for
+a future quickfix.
+
+FM-182 (Sort Menu For The Phone Card Layout) closed the owner's "no way to sort on a phone" report: below 768px
+`results-sort-toggle` sits in FM-181's row 1 between the count and Display (phone branch only — no hidden desktop copy)
+and opens `results-sort-menu`, six `menuitemradio` entries built from `table.getAllLeafColumns()` (Title, Indexer,
+Category, Size, Details, Age — so the ids cannot drift from the column defs) plus an Ascending/Descending pair; a column
+pick keeps the active direction or falls back to the column's `getAutoSortDir()`, every pick closes the menu, and all of
+it goes through the same `setSorting` the desktop headers write, so the choice persists under the existing `sorting`
+stored key (ADR-0054) and the matching header's `aria-sort` agrees after a viewport change (asserted in the browser). The
+empty-`sorting` case is guarded and pinned. Vitest 1913/1913, real-backend `results.spec.ts` 35/35 on a rebuilt jar;
+four captures reviewed. Passed 2026-09-03 first cycle with two minor findings, not corrected (optional): the spec diff
+carries ~140 lines of whitespace-only reformatting of unrelated blocks, and the persistence claim rests on the shared
+`setSorting` path's existing unit round-trip rather than a `page.reload()` in the new e2e case. Candidates for a future
+quickfix. The 2026-09-03 owner-request batch FM-181..FM-182 is complete.
+
 ## Active
 
 None.
@@ -1609,11 +1642,8 @@ None.
 
 ## Upcoming
 
-- FM-181 (Phone Results Chrome — One Sticky Bar, Selection Row, Paging Footer, Refine Bottom Sheet), first of the
-  2026-09-03 owner-request batch FM-181..FM-182 (390px screenshot: the toolbar wraps into seven rows, Refine scrolls away, and
-  the card layout has no sort control). Below 768px: one sticky row (select-all, `720 / 720`, Display/Refine icon buttons with
-  an active-filter badge), a selection row only while something is selected, a paging footer, and the shared refine shell as a
-  bottom sheet (ADR-0046, every consumer). FM-182 (the Sort menu in that bar) stays planned until FM-181 is done.
+- The 2026-09-03 owner-request batch FM-181..FM-182 (phone results chrome with the refine bottom sheet; the phone sort
+  menu) and FM-180 (dark themes re-grounded, ADR-0055) are complete (entries above). No task packets are queued.
 
 - The 2026-09-02 owner-request batch FM-175..FM-178 (results density; duplicate-control display option with fixed
   group/duplicate slots; optional covers; refine filters reset per search) and its 2026-09-03 follow-up FM-179 (cover

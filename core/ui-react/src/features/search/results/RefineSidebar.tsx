@@ -16,21 +16,7 @@ import type {
 import {RefineSurface} from "../../../components/refine/RefineSurface";
 import {NumericFilter, useDebouncedFilterValue} from "./filterControls";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
-import {defaultFilters, quickFilterKey} from "./resultTable";
-
-// Order-independent for the array-valued fields (`categories`/`indexers`/
-// `downloadTypes`), which the UI never reorders but whose default value
-// (`defaultFilters`, `resultTable.ts`) is derived by scanning `results` and
-// so is not guaranteed to land in the same order the user's own toggling
-// produced.
-function canonicalFilters(value: ResultFilters): string {
-    return JSON.stringify({
-        ...value,
-        categories: [...value.categories].sort(),
-        downloadTypes: [...value.downloadTypes].sort(),
-        indexers: [...value.indexers].sort(),
-    });
-}
+import {activeFilterCount, quickFilterKey} from "./resultTable";
 
 // The results page's own chrome vocabulary for ADR-0046's shared refine
 // surface. Both objects are compatibility contracts of this feature, not of
@@ -38,7 +24,12 @@ function canonicalFilters(value: ResultFilters): string {
 // `refine-clear-all` are the ids `SearchResults.test.tsx` and
 // `tests/system/tests/results.spec.ts` have always queried, and the accessible
 // names are the ones this page's controls have always announced.
-const REFINE_LABELS: RefineSurfaceLabels = {
+//
+// FM-181 exports the labels because the compact branch's trigger is no longer
+// the shell's own: below 768px `SearchResults.tsx` renders
+// `refine-sidebar-toggle` itself, inside the single sticky toolbar row, and it
+// has to announce the same two names the docked column's toggle does.
+export const REFINE_LABELS: Omit<RefineSurfaceLabels, "done"> = {
     close: "Close refine sidebar",
     collapse: "Collapse refine sidebar",
     expand: "Expand refine sidebar",
@@ -50,6 +41,7 @@ const REFINE_LABELS: RefineSurfaceLabels = {
 const REFINE_TEST_IDS: RefineSurfaceTestIds = {
     clearAll: "refine-clear-all",
     close: "refine-sidebar-close",
+    done: "refine-sidebar-done",
     drawer: "refine-sidebar-drawer",
     surface: "refine-sidebar",
     toggle: "refine-sidebar-toggle",
@@ -89,6 +81,7 @@ export function RefineSidebar({
     clearRange,
     collapsed,
     drawerOpen,
+    filteredCount,
     filters,
     indexerOpen,
     onClearAll,
@@ -117,6 +110,14 @@ export function RefineSidebar({
     // unpersisted (the rationale lives with the shell that renders the drawer):
     // only the state's owner moved, its lifecycle did not change.
     drawerOpen: boolean;
+    /**
+     * FM-181: how many results the current filters leave. The compact sheet's
+     * footer button counts them ("Show 12 results"), so a reader adjusting
+     * filters with the results hidden behind the sheet can see the effect of
+     * each change before dismissing it. Live, not a draft: the filters apply
+     * as they are set, exactly as they do in the docked column.
+     */
+    filteredCount: number;
     filters: ResultFilters;
     indexerOpen: boolean;
     onClearAll: () => void;
@@ -168,10 +169,11 @@ export function RefineSidebar({
             ].sort((first, second) => first.localeCompare(second)),
         [results],
     );
-    const hasActiveFilters = useMemo(
-        () =>
-            canonicalFilters(filters) !==
-            canonicalFilters(defaultFilters(results, quickFilters)),
+    // FM-181: the one comparison. The phone toolbar's badge counts the same
+    // dimensions this disables "Clear all" on, so the two cannot disagree
+    // about whether anything is active.
+    const activeCount = useMemo(
+        () => activeFilterCount(filters, results, quickFilters),
         [filters, results, quickFilters],
     );
     // FM maintenance: the field is debounced (`useDebouncedFilterValue`) so a
@@ -316,15 +318,24 @@ export function RefineSidebar({
 
     return (
         <RefineSurface
-            clearAllDisabled={!hasActiveFilters}
+            clearAllDisabled={activeCount === 0}
             collapsed={collapsed}
             drawerOpen={drawerOpen}
-            labels={REFINE_LABELS}
+            labels={{
+                ...REFINE_LABELS,
+                done:
+                    filteredCount === 1
+                        ? "Show 1 result"
+                        : `Show ${filteredCount} results`,
+            }}
             onClearAll={onClearAll}
             onDrawerOpenChange={onDrawerOpenChange}
             onToggleCollapsed={onToggleCollapsed}
             stickyOffset={toolbarHeight}
             testIds={REFINE_TEST_IDS}
+            // FM-181: the compact trigger is `SearchResults.tsx`'s, in the
+            // sticky toolbar row, so the shell renders none of its own.
+            trigger="external"
         >
             {sections}
         </RefineSurface>
