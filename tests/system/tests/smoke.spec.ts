@@ -454,8 +454,9 @@ test.describe("Theme selection", () => {
             "choosing a theme must not reload the document",
         ).toBe(1);
         // Each theme's own `background.default`, named rather than merely
-        // counted: `dark` and `dark-dyschromatopsia` deliberately share a pure
-        // black page (legacy's `@body-bg` for both), so a "four distinct
+        // counted: `dark` and `dark-dyschromatopsia` deliberately share one
+        // page ground -- ADR-0055's `#101010`, which replaced the pure black
+        // both carried from legacy's `@body-bg` -- so a "four distinct
         // values" assertion would be wrong about the palettes rather than
         // about the switching. What each of the four *is* is the real claim --
         // and it covers the two a screenshot would not pin, that the light
@@ -464,8 +465,8 @@ test.describe("Theme selection", () => {
         expect(Object.fromEntries(grounds)).toEqual({
             grey: "rgb(31, 36, 38)",
             bright: "rgb(242, 244, 243)",
-            dark: "rgb(0, 0, 0)",
-            "dark-dyschromatopsia": "rgb(0, 0, 0)",
+            dark: "rgb(16, 16, 16)",
+            "dark-dyschromatopsia": "rgb(16, 16, 16)",
         });
     });
 
@@ -630,9 +631,34 @@ test.describe("Theme selection", () => {
             "F-PLATFORM-SHELL",
             "theme-selector-open-mobile",
         );
+        await page.keyboard.press("Escape");
+
+        // FM-180 (ADR-0055): the two near-black themes' results list at the
+        // mobile viewport, where the row dividers the owner reported missing
+        // carry the whole separation between rows -- at 390px there is no
+        // card gutter left to do it instead. Only the two themes that decision
+        // moved are captured here; `grey` and `bright` did not change.
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await searchForResult(page, "uitest", "indexer1-result1");
+        });
+        for (const theme of ["dark", "dark-dyschromatopsia"] as const) {
+            await chooseTheme(page, theme);
+            await expect(
+                page.getByTestId("app-shell-theme-selector"),
+            ).toHaveText(
+                theme === "dark"
+                    ? "Theme: Dark"
+                    : "Theme: Dark (Dyschromatopsia)",
+            );
+            await captureVisualRegion(
+                page.locator("body"),
+                "F-PLATFORM-SHELL",
+                `theme-${theme}-results-mobile`,
+            );
+        }
+
         // Back to the default before this test's own teardown capture-proofing;
         // the afterEach restore below covers the server record either way.
-        await page.keyboard.press("Escape");
         await chooseTheme(page, "grey");
     });
 });

@@ -3988,14 +3988,15 @@ test.describe("Search results", () => {
         await page.unrouteAll({behavior: "ignoreErrors"});
     });
 
-    // FM-177: the optional cover. The mockserver answers a `movies` query with
-    // a `coverurl` on every item (`MockNewznab.java:348-357`), and the
-    // baseline leaves `main.proxyImages` off, so what reaches the row is the
-    // indexer's own absolute URL and the *browser* fetches it -- which is what
-    // makes `page.route` able to stand in for that host at all. With
+    // FM-177/FM-179: the optional cover. The mockserver answers a `movies`
+    // query with a `coverurl` on every item (`MockNewznab.java:348-357`), and
+    // the baseline leaves `main.proxyImages` off, so what reaches the row is
+    // the indexer's own absolute URL and the *browser* fetches it -- which is
+    // what makes `page.route` able to stand in for that host at all. With
     // `proxyImages` on the server would fetch it instead and this route would
-    // never fire.
-    test("should render optional covers only when the display option is on, at the configured width", async ({
+    // never fire, and neither the held-response nor the aborted-response case
+    // below would be reachable from the browser at all.
+    test("should render optional covers only when the display option is on, as a fixed-height tile that neither reflows nor breaks", async ({
         hydra,
         page,
     }) => {
@@ -4007,13 +4008,27 @@ test.describe("Search results", () => {
         expect(coverSize).toBeGreaterThan(0);
 
         const coverFixture = coverFixturePath();
-        await page.route("**artworks.thetvdb.com/**", (route) =>
-            route.fulfill({path: coverFixture, contentType: "image/png"}),
-        );
+        // FM-179: every cover response is *held* until this resolves, so the
+        // rows can be measured in their `loading` state and again once the
+        // images have really decoded. That comparison is the whole claim the
+        // tile makes -- a reserved footprint -- and it cannot be made against
+        // a response that has already arrived.
+        let releaseCovers = (): void => {};
+        const coversReleased = new Promise<void>((resolve) => {
+            releaseCovers = resolve;
+        });
+        await page.route("**artworks.thetvdb.com/**", async (route) => {
+            await coversReleased;
+            await route.fulfill({path: coverFixture, contentType: "image/png"});
+        });
+        // Registered second, so it wins: Playwright matches routes in reverse
+        // registration order, and this one URL must fail rather than wait.
+        await page.route("**/broken-cover.jpg", (route) => route.abort());
         // Half of the real response's covers are dropped on the way in, so the
         // rendering shows both cases at once: a row that has a cover and a row
-        // that does not. Everything else about these results -- including the
-        // covers that survive -- is what the backend actually sent.
+        // that does not. One surviving cover is repointed at a URL that will
+        // never answer, which is the third case. Everything else about these
+        // results is what the backend actually sent.
         await page.route("**/internalapi/search", async (route) => {
             const response = await route.fetch();
             const body = (await response.json()) as {
@@ -4022,6 +4037,9 @@ test.describe("Search results", () => {
             body.searchResults.forEach((result, index) => {
                 if (index % 2 === 1) {
                     result.cover = null;
+                } else if (index === 2) {
+                    result.cover =
+                        "https://artworks.thetvdb.com/banners/broken-cover.jpg";
                 }
             });
             await route.fulfill({response, json: body});
@@ -4039,17 +4057,20 @@ test.describe("Search results", () => {
         });
 
         const rows = page.getByTestId("search-result-row");
+        const tiles = page.getByTestId("search-result-cover-tile");
         const covers = page.getByTestId("search-result-cover");
         await expect(rows.first()).toBeVisible();
 
-        // Off by default: no image anywhere, and no width reserved for one.
+        // Off by default: no tile, no image anywhere, and no width reserved.
+        await expect(tiles).toHaveCount(0);
         await expect(covers).toHaveCount(0);
         const withoutCovers = await rowHeights(page);
         await captureResultsViewport(page, "covers-off-desktop");
 
         await toggleDisplayOption(page, "Show covers");
-        // Exactly the results that carry a cover render one.
-        await expect(covers).toHaveCount(Math.ceil((await rows.count()) / 2));
+        // Exactly the results that carry a cover render a tile.
+        await expect(tiles).toHaveCount(Math.ceil((await rows.count()) / 2));
+        const firstTile = tiles.first();
         const firstCover = covers.first();
         await expect(firstCover).toHaveAttribute(
             "src",
@@ -4057,26 +4078,110 @@ test.describe("Search results", () => {
         );
         await expect(firstCover).toHaveAttribute("alt", "");
         await expect(firstCover).toHaveAttribute("loading", "lazy");
-        // The rendered box is `searching.coverSize` wide, and the image really
-        // decoded -- a broken image would report `naturalWidth: 0`.
+
+        // FM-179, the reflow claim, measured rather than asserted: the cover
+        // responses are still held, so these are the heights of rows whose
+        // images do not exist yet.
+        await expect(firstTile).toHaveAttribute("data-cover-state", "loading");
+        const heldHeights = await rowHeights(page);
+        const heldTileBox = await firstTile.boundingBox();
+        expect(heldTileBox).not.toBeNull();
+        expect(Math.round(heldTileBox!.height)).toBe(56);
+
+        releaseCovers();
+        await expect(firstTile).toHaveAttribute("data-cover-state", "loaded");
+        // The image really decoded -- a broken image would report
+        // `naturalWidth: 0` -- and it is rendered inside the tile, never wider
+        // than the configured full-size width (ADR-0054).
         const rendered = await firstCover.evaluate((image) => ({
             width: Math.round(image.getBoundingClientRect().width),
+            height: Math.round(image.getBoundingClientRect().height),
             naturalWidth: (image as HTMLImageElement).naturalWidth,
             complete: (image as HTMLImageElement).complete,
         }));
-        expect(rendered.width).toBe(coverSize);
         expect(rendered.complete).toBe(true);
         expect(rendered.naturalWidth).toBeGreaterThan(0);
+        expect(rendered.width).toBeLessThanOrEqual(coverSize);
+        expect(rendered.height).toBe(54);
+        // Every mounted row is exactly as tall as it was before its cover
+        // arrived: the footprint was reserved, so nothing reflowed under the
+        // user.
+        expect(await rowHeights(page)).toEqual(heldHeights);
+        const loadedTileBox = await firstTile.boundingBox();
+        expect(loadedTileBox).not.toBeNull();
+        expect(Math.round(loadedTileBox!.height)).toBe(56);
 
-        // The row grows to the image: a row with a cover is taller than it was
-        // without one, and taller than its coverless neighbour. This is the
-        // virtualizer's `measureElement` observer taking the new height --
-        // including for an image that finished loading after mount.
-        const withCovers = await rowHeights(page);
-        expect(withCovers[0]).toBeGreaterThan(withoutCovers[0]);
-        expect(withCovers[0]).toBeGreaterThan(withCovers[1]);
-        expect(withoutCovers[1]).toBe(withCovers[1]);
+        // The row still grows to the tile: a row with a cover is taller than
+        // the same row without one, and taller than its coverless neighbour.
+        expect(heldHeights[0]).toBeGreaterThan(withoutCovers[0]);
+        expect(heldHeights[0]).toBeGreaterThan(heldHeights[1]);
+        expect(withoutCovers[1]).toBe(heldHeights[1]);
+        // FM-179: and only covered rows change their alignment.
+        await expect(rows.first()).toHaveAttribute("data-has-cover", "");
+        await expect(rows.nth(1)).not.toHaveAttribute("data-has-cover", "");
         await captureResultsViewport(page, "covers-on-desktop");
+
+        // A cover that cannot be fetched leaves the tile in place, empty and
+        // inert: no image element, so no broken-image glyph, and no trigger.
+        const failedTile = page.locator(
+            '[data-testid="search-result-cover-tile"][data-cover-state="failed"]',
+        );
+        await expect(failedTile).toHaveCount(1);
+        await expect(failedTile.locator("img")).toHaveCount(0);
+        await expect(failedTile).toHaveAttribute("aria-hidden", "true");
+        expect(await failedTile.evaluate((tile) => tile.tagName)).toBe("DIV");
+        const failedBox = await failedTile.boundingBox();
+        expect(failedBox).not.toBeNull();
+        expect(Math.round(failedBox!.height)).toBe(56);
+        expect(Math.round(failedBox!.width)).toBe(38);
+        await captureVisualRegion(
+            failedTile.locator("xpath=ancestor::tr[1]"),
+            "F-SEARCH-RESULTS",
+            "covers-broken-desktop",
+        );
+
+        // Hovering a tile opens the full-size preview, at the configured
+        // width, and moving off it closes it again.
+        const popover = page.getByTestId("search-result-cover-popover");
+        await firstTile.hover();
+        await expect(popover).toBeVisible();
+        const preview = popover.locator("img");
+        await expect(preview).toHaveAttribute(
+            "src",
+            "https://artworks.thetvdb.com/banners/v4/movie/358180/posters/698143e3d4a3f.jpg",
+        );
+        const previewBox = await preview.boundingBox();
+        expect(previewBox).not.toBeNull();
+        expect(Math.round(previewBox!.width)).toBe(coverSize);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-RESULTS",
+                "covers-popover-desktop",
+            ),
+        });
+        await page.mouse.move(0, 0);
+        await expect(popover).toBeHidden();
+
+        // The keyboard path: tabbing to the tile opens the preview, Escape
+        // closes it, and focus never leaves the trigger.
+        await rows.first().getByRole("checkbox").focus();
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+            await page.keyboard.press("Tab");
+            if (
+                await firstTile.evaluate(
+                    (tile) => tile === document.activeElement,
+                )
+            ) {
+                break;
+            }
+        }
+        await expect(firstTile).toBeFocused();
+        await expect(popover).toBeVisible();
+        await expect(firstTile).toHaveAttribute("aria-expanded", "true");
+        await page.keyboard.press("Escape");
+        await expect(popover).toBeHidden();
+        await expect(firstTile).toBeFocused();
+        await expect(firstTile).toHaveAttribute("aria-expanded", "false");
 
         // The popover entry itself: this exact label, directly after the
         // duplicate-controls entry.
@@ -4109,11 +4214,11 @@ test.describe("Search results", () => {
         );
         await closeDisplayOptions(page);
 
-        // Switching it back off removes every image again.
+        // Switching it back off removes every tile again.
         await toggleDisplayOption(page, "Show covers");
-        await expect(covers).toHaveCount(0);
+        await expect(tiles).toHaveCount(0);
         await toggleDisplayOption(page, "Show covers");
-        await expect(covers.first()).toBeVisible();
+        await expect(tiles.first()).toBeVisible();
 
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
@@ -4128,12 +4233,73 @@ test.describe("Search results", () => {
         // The suite clears `localStorage` on every navigation (`fixtures.ts`'s
         // `addInitScript`), so this reload starts from the default -- off --
         // and the option is switched on the way a user would.
-        await expect(covers).toHaveCount(0);
+        await expect(tiles).toHaveCount(0);
         await toggleDisplayOption(page, "Show covers");
-        await expect(covers.first()).toBeVisible();
+        await expect(tiles.first()).toBeVisible();
         await captureResultsViewport(page, "covers-on-mobile");
 
         await page.unrouteAll({behavior: "ignoreErrors"});
+    });
+
+    // FM-179: the tap path, in a context that really has touch. A tap is not a
+    // click by another name -- Chromium emits `pointerenter:touch ->
+    // pointerleave:touch -> mouseenter -> focus -> click`, so the browser has
+    // focused the trigger (and the preview has opened) before the click
+    // arrives. A trigger that toggled on its current state therefore closed on
+    // the first tap what focus had opened a moment earlier, and only the
+    // second tap showed anything; a synthetic pointer-enter plus a click, the
+    // sequence the component test used to replay, never reproduces it.
+    // `hasTouch` is a context option, so this runs in its own context rather
+    // than as another leg of the covers test above.
+    test("should open the cover preview on the first tap in a touch context", async ({
+        browser,
+        hydra,
+    }) => {
+        const config = await hydra.getConfig();
+        expect((config.main as Record<string, unknown>).proxyImages).toBe(
+            false,
+        );
+        const context = await browser.newContext({
+            baseURL: testEnvironment.playwrightBaseUrl,
+            hasTouch: true,
+            viewport: visualViewports.desktop,
+        });
+        try {
+            await context.addInitScript(() => window.localStorage.clear());
+            const page = await context.newPage();
+            const coverFixture = coverFixturePath();
+            await page.route("**artworks.thetvdb.com/**", (route) =>
+                route.fulfill({path: coverFixture, contentType: "image/png"}),
+            );
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("movies");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+            await toggleDisplayOption(page, "Show covers");
+
+            const tile = page.getByTestId("search-result-cover-tile").first();
+            const popover = page.getByTestId("search-result-cover-popover");
+            await expect(tile).toBeVisible();
+            await expect(tile).toHaveAttribute("aria-expanded", "false");
+
+            // The first tap opens it -- legacy's tap-to-enlarge.
+            await tile.tap();
+            await expect(popover).toBeVisible();
+            await expect(tile).toHaveAttribute("aria-expanded", "true");
+            await expect(popover.locator("img")).toBeVisible();
+
+            // And the second one closes it: that tap brings no new focus, so
+            // the click it ends with is an ordinary toggle.
+            await tile.tap();
+            await expect(popover).toBeHidden();
+            await expect(tile).toHaveAttribute("aria-expanded", "false");
+        } finally {
+            await context.close();
+        }
     });
 });
 

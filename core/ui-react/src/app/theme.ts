@@ -332,8 +332,8 @@ export const refineSectionGap = "22px";
  * *both* of them on all four palettes at once, in the same step. It has to
  * reach that far: the hovered-unselected state has to be tellable from the
  * *selected resting* fill too, and on `dark` and `dark-dyschromatopsia` the
- * whole span from the page ground to that resting fill is only 1.14:1 and
- * 1.11:1 wide, so a neutral hover cannot fit *underneath* it and must sit
+ * whole span from the page ground to that resting fill is only 1.19:1 and
+ * 1.15:1 wide, so a neutral hover cannot fit *underneath* it and must sit
  * above it -- which in turn pushes the selected hover above that again.
  * `theme.test.ts` measures every pair.
  *
@@ -491,14 +491,14 @@ type SurfaceTokens = {
      *
      * A per-theme token rather than MUI's `action.hover`, which is what these
      * controls used and is where the defect lived: at
-     * `rgba(255, 255, 255, 0.08)` it lands within 1.006-1.056:1 of the
+     * `rgba(255, 255, 255, 0.08)` it lands within 1.02-1.06:1 of the
      * *selected resting* fill on the three dark palettes, so a click's
      * deselect result was invisible under the cursor, and its light-mode
      * `rgba(0, 0, 0, 0.04)` is 1.09:1 from the page it sits on. Each block
      * states its own value, measured against every adjacent state in
      * `theme.test.ts`, because the alpha that clears 1.10:1 on all of them
      * depends on how far that block's own ground sits from its own
-     * `primary.main` -- one shared alpha cannot serve `#1f2426` and `#000000`
+     * `primary.main` -- one shared alpha cannot serve `#1f2426` and `#101010`
      * at once.
      */
     hoverWash: string;
@@ -538,20 +538,21 @@ type SurfaceTokens = {
      * same square gets inside a raised results card):
      *   - `bright` `rgba(0, 0, 0, 0.45)` -- **3.30:1** on `#f2f4f3` (3.33:1).
      *     (The 0.25 white the call site used reached 1.03:1 here.)
-     *   - `dark` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on `#000000`
-     *     (3.79:1), and the same alpha as this block's own `inputOutline`, so
+     *   - `dark` `rgba(255, 255, 255, 0.42)` -- **4.09:1** on `#101010`
+     *     (4.02:1), and the same alpha as this block's own `inputOutline`, so
      *     the theme states one neutral-edge strength rather than two.
      *   - `grey` `rgba(255, 255, 255, 0.35)` -- **3.17:1** on `#1f2426`
      *     (3.08:1), likewise this block's own `inputOutline` alpha.
-     *   - `dark-dyschromatopsia` `rgba(255, 255, 255, 0.42)` -- **3.95:1** on
-     *     `#000000` (4.09:1). It takes `dark`'s alpha rather than the grey
-     *     block's it shares its other surfaces with, for the reason the `dark`
-     *     block states: 0.35 reaches only 3.01:1 on a pure black page, which
-     *     clears 1.4.11 by too little to be worth stating.
+     *   - `dark-dyschromatopsia` `rgba(255, 255, 255, 0.42)` -- **4.09:1** on
+     *     `#101010` (4.02:1). It took `dark`'s alpha rather than the grey
+     *     block's for the reason FM-156 recorded -- 0.35 reached only 3.01:1
+     *     on the pure black page both themes had then -- and keeps it under
+     *     ADR-0055, which re-authors only where a floor is lost (on `#101010`
+     *     that alpha would now reach 3.20:1).
      *
      * FM-154 authored only the first two: `grey` and `dark-dyschromatopsia`
      * were pinned byte-identical and kept the call site's own
-     * `rgba(255, 255, 255, 0.25)`, at 2.28:1 and 2.02:1. FM-156 redeems that
+     * `rgba(255, 255, 255, 0.25)`, at 2.28:1 and 2.21:1. FM-156 redeems that
      * follow-up, and `theme.test.ts` now measures all four themes on the one
      * bar instead of pinning two of them to the remnant.
      */
@@ -567,8 +568,8 @@ type SurfaceTokens = {
      * `alpha(common.black, 0.45)`, the last of ADR-0014's call-site-colour
      * remnants in `src`: a value authored when every theme had a dark ground,
      * where -- on the two grounds a scrolling table sits on,
-     * `background.paper` and `surfaces.control` -- it darkens by 1.05-1.31:1
-     * and leaves the text it crosses at 6.90-14.10:1. On `bright` the same
+     * `background.paper` and `surfaces.control` -- it darkens by 1.14-1.31:1
+     * and leaves the text it crosses at 7.42-13.44:1. On `bright` the same
      * scrim is a 3.33:1 black smear over a
      * white card that takes `text.primary` from 17.75:1 down to 5.33:1.
      *
@@ -747,9 +748,10 @@ const greyColors: ThemeColors = {
         // L was not pushed further because this token has a second job: it
         // must still read *muted* beside `text.secondary` `#9aa2a1`, which
         // measures 6.02 / 5.44 / 5.08:1. The gap left here on the binding
-        // ground is 0.49, against the 0.46 the `dark` block's own pair holds
-        // there (5.29 against 4.83:1) -- so this theme's two muted tones stand
-        // as far apart as that theme's already do.
+        // ground is 0.49; the `dark` block's own pair sits level there since
+        // FM-180 re-authored both against ADR-0055's grounds (4.56 against
+        // 4.54:1) and is told apart by hue, so this theme's two muted tones
+        // stand further apart than that theme's, not less far.
         mutedText: "#919a98",
         // A dark theme's app bar is `background.paper`, so the accent on it is
         // the brand green itself -- the value `AppShell` read as
@@ -823,30 +825,47 @@ const greyColors: ThemeColors = {
 };
 
 /**
- * `dark-dyschromatopsia` -- the accessibility variant, unchanged in effect.
+ * `dark-dyschromatopsia` -- the accessibility variant. Its role colours are
+ * unchanged in effect; its grounds moved with `dark`'s under ADR-0055.
  *
  * Legacy source: `core/ui-src/less/themes/theme-dark-dyschromatopsia.less`,
  * which is `vars-grey.less` plus a black ground and a set of role colours
  * chosen so the roles stay distinguishable without relying on the red/green
  * axis. ADR-0007 carried those role colours into this file; before FM-154 they
  * lived as a six-key spread over the grey palette, and this block is that
- * merge written out. Its effective palette is byte-for-byte what the spread
+ * merge written out. The role colours are still byte-for-byte what the spread
  * produced, which `theme.test.ts` pins -- including the deliberate absence of
  * `primary.light`/`primary.dark`, which MUI derives from `main` here (the
  * spread replaced the whole `primary` object, so it always did).
  *
- * The exceptions are the two tokens FM-156 re-authored against measured
- * contrast under ADR-0049 (`surfaces.mutedText`, `surfaces.selectAllOutline`),
- * and `selectAllOutline` is the one surface token this block no longer shares
- * with `grey`: it is measured against this variant's own black page.
+ * The exceptions are the tokens re-authored against measured contrast since:
+ * `surfaces.mutedText` and `surfaces.selectAllOutline` (FM-156, ADR-0049),
+ * `surfaces.hoverWash` (FM-161), and -- as of FM-180 -- ADR-0055's six
+ * grounds, which this variant states in its own right rather than taking from
+ * `grey`. It stops sharing `grey`'s bar, control, recessed and faint hairline
+ * with that block and states `dark`'s: page `#101010`, paper `#1e1e1e`, raised
+ * controls `#262626`, the app bar level with the cards, the input fill
+ * `#141414`, row dividers at 10% white. Its `surfaces.hairline` is untouched
+ * at 0.1, which ADR-0055 leaves alone and which is also `grey`'s -- so on this
+ * variant the two hairlines coincide, both reading 1.35:1 on
+ * `background.paper`.
+ *
+ * Measured on those grounds (`background.default` `#101010` /
+ * `background.paper` `#1e1e1e` / `surfaces.control` `#262626`), every value
+ * this variant keeps stays clear of its floor: `text.primary` `#d6dad9` at
+ * 13.49 / 11.82 / 10.73:1, `text.secondary` `#9aa2a1` at 7.30 / 6.40 / 5.81:1,
+ * `primary.main` `#78909c` at 5.68 / 4.98 / 4.52:1 (its axis is the 3:1 focus
+ * ring), `inputOutline` at 0.35 at 3.20:1 on the page and 3.22:1 on the
+ * recessed fill, and the four accents at 7.54 / 9.38 / 7.23 / 6.95:1 on the
+ * page. Nothing here lost a recorded floor, so ADR-0055 keeps every one.
  */
 const darkDyschromatopsiaColors: ThemeColors = {
     mode: "dark",
-    // Legacy `@body-bg: #000000`, with the paper tone ADR-0007 chose for it.
-    background: {default: "#000000", paper: "#0f1113"},
+    background: {default: "#101010", paper: "#1e1e1e"},
     // Unchanged from `grey`: the variant never re-authored its text colours,
     // and the mock's pair clears 4.5:1 on this darker ground by a wider margin
-    // than on the grey one.
+    // than on the grey one -- 13.49 / 11.82 / 10.73:1 and 7.30 / 6.40 /
+    // 5.81:1 on the page, the paper and the raised control.
     text: {primary: "#d6dad9", secondary: "#9aa2a1"},
     // Legacy `@brand-primary` for this theme was `#303437`, a near-invisible
     // near-black; ADR-0007 lifted it to the blue-grey `#78909c` it still is.
@@ -860,38 +879,43 @@ const darkDyschromatopsiaColors: ThemeColors = {
     // "error" off the red/green axis.
     error: {main: "#b090c8", contrastText: darkContrastText},
     surfaces: {
-        bar: "#232a2c",
-        control: "#2a3133",
-        recessed: "#1c2224",
+        // FM-180: ADR-0055's six, stated here rather than inherited from
+        // `grey` -- the decision binds both near-black themes alike, so these
+        // are byte-identical to the `dark` block's.
+        bar: "#1e1e1e",
+        control: "#262626",
+        recessed: "#141414",
+        // Left at 0.1, which ADR-0055 does not move; the faint hairline joins
+        // it there, so this variant draws its control borders and its row
+        // dividers at one strength, 1.35:1 on `background.paper`.
         hairline: "rgba(255, 255, 255, 0.1)",
-        hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        hairlineFaint: "rgba(255, 255, 255, 0.1)",
         // FM-161, and the tightest of the four: this variant's `#78909c`
-        // primary at 0.12 stands only 1.11:1 off its own black page, so the
-        // wash is authored a step under the grey block's alpha to leave the
-        // selected hover room above it -- 1.31:1 from the page, 1.18:1 from
-        // the selected rest, 1.21:1 under the selected hover, and 1.51:1
-        // over `surfaces.bar`, whose light tone this block keeps on a black
-        // page. `action.hover` reached 1.03:1 against the selected rest.
+        // primary at 0.12 stands only 1.15:1 off its own page, so the wash is
+        // authored a step under the grey block's alpha to leave the selected
+        // hover room above it -- 1.42:1 from the page, 1.23:1 from the
+        // selected rest, 1.18:1 under the selected hover, and 1.49:1 over
+        // `surfaces.bar`. `action.hover` reaches 1.05:1 against the selected
+        // rest.
         hoverWash: "rgba(255, 255, 255, 0.13)",
         // FM-156: the grey block's re-authored value, which this variant
-        // shares as it shares the rest of that block's surfaces. The mock's
-        // `#6b7472` measured 4.37 / 3.93 / 2.75:1 here; the binding ground is
-        // `surfaces.control`, the one surface this variant does not darken
-        // along with its page. `#919a98` reads 7.28 / 6.56 / 4.59:1.
+        // still shares. On ADR-0055's grounds the mock's `#6b7472` measures
+        // 3.96 / 3.47 / 3.15:1 here, well under WCAG 1.4.3; `#919a98` reads
+        // 6.60 / 5.78 / 5.25:1, so no floor is lost and FM-180 keeps it.
         mutedText: "#919a98",
         barAccent: "#78909c",
-        // FM-156, and the one surface token this variant states differently
-        // from `grey`: measured on its own pure-black page rather than on the
-        // grey block's `#1f2426`, where 0.35 reaches only 3.01:1. At 0.42 --
-        // the alpha the `dark` block chose for the same black ground -- this
-        // edge reads 3.95:1 on the page and 4.09:1 on the paper. The
-        // `rgba(255, 255, 255, 0.25)` FM-154 carried across reached 2.02:1,
-        // the worst of the four themes after `bright`'s.
+        // FM-156: measured against this variant's own page rather than the
+        // grey block's `#1f2426`, where 0.42 was needed because 0.35 reached
+        // only 3.01:1 on the pure black this theme had then. On `#101010`
+        // that argument no longer holds (0.35 reaches 3.20:1), but ADR-0055
+        // re-authors only where a floor is lost, so the alpha stays: this
+        // edge reads 4.09:1 on the page and 4.02:1 on the paper. The
+        // `rgba(255, 255, 255, 0.25)` FM-154 carried across reaches 2.21:1.
         selectAllOutline: "rgba(255, 255, 255, 0.42)",
         // FM-156: as in `grey`, the colour `TableScrollAffordance` composited
-        // before the token existed, so this variant's scrolled tables render
-        // unchanged -- 1.05:1 of darkening on `background.paper` and 1.31:1 on
-        // `surfaces.control`, leaving `text.primary` at 14.10 / 12.31:1.
+        // before the token existed -- 1.14:1 of darkening on
+        // `background.paper` and 1.21:1 on `surfaces.control`, leaving
+        // `text.primary` at 13.44 / 12.96:1.
         tableScrollFade: "rgba(0, 0, 0, 0.45)",
     },
     inputOutline: "rgba(255, 255, 255, 0.35)",
@@ -912,56 +936,72 @@ const darkDyschromatopsiaColors: ThemeColors = {
 };
 
 /**
- * `dark` -- legacy's near-black theme.
+ * `dark` -- legacy's near-black theme, on ADR-0055's layered ground.
  *
  * Legacy source: `core/ui-src/less/themes/theme-dark.less`, which is
  * `vars-grey.less` with `@body-bg: rgb(0, 0, 0)`, `@text-color:
- * rgb(156, 156, 156)` and `@input-bg: rgb(15, 17, 19)`. That is the character
- * ADR-0049 asks to keep: a black page, a barely-lifted set of surfaces, and
- * light text that is muted rather than white. The two values legacy states
- * exactly are carried across exactly (`#000000`, `#0f1113`); the rest are
- * authored to sit between them.
+ * rgb(156, 156, 156)` and `@input-bg: rgb(15, 17, 19)`. The character ADR-0049
+ * asks to keep is what stays: a near-black page, a barely-lifted set of
+ * surfaces, and light text that is muted rather than white. What ADR-0055
+ * deliberately gives up is legacy's `@body-bg`/`@input-bg` parity. An owner
+ * report (2026-09-03) found the pure-black page, its cards and its tables
+ * reading as one flat surface with no row dividers -- with elevation overlays
+ * off (FM-117) nothing lifted a card off the page, and a 7% hairline vanished
+ * on black -- so the grounds below are the layered set that decision names:
+ * page `#101010`, paper (cards and tables) `#1e1e1e`, raised controls
+ * `#262626`, the app bar level with the cards rather than under them, the
+ * input fill `#141414`, and row dividers at 10% white. Overlays stay off; the
+ * layering is these tokens. `dark-dyschromatopsia` states the same six.
  *
- * Every colour below was measured against this theme's own grounds while it
- * was authored (`background.default` `#000000` / `background.paper` `#1a1a1a`
- * / `surfaces.control` `#1e1e1e`, the darkest and the two lightest surfaces a
- * glyph lands on):
+ * Every colour below is measured against those grounds (`background.default`
+ * `#101010` / `background.paper` `#1e1e1e` / `surfaces.control` `#262626`, the
+ * darkest and the two lightest surfaces a glyph lands on):
  *
- *   - `text.primary` `#9c9c9c` -- legacy's own muted grey -- 7.65:1 / 6.34:1 /
- *     6.07:1;
- *   - `text.secondary` `#7e868d` -- legacy's `@gray-light: rgb(122, 130, 136)`
- *     lifted for the black ground -- 5.68:1 / 4.71:1 / 4.51:1. The legacy value
- *     itself measured 4.27:1 on `surfaces.control`, under WCAG 1.4.3. First
- *     authored as `#8b9299` (6.67 / 5.53 / 5.29:1), which sat only 1.15:1
- *     from `text.primary` -- field labels and values read as one colour
- *     (owner report 2026-08-31); this value keeps the hue and separates the
- *     roles at 1.35:1 while staying at 1.4.3 on all three grounds. It now
- *     sits a step *under* `surfaces.mutedText` `#8a8a8a`, an accepted
- *     inversion: both stay mid-grey annotations, and pushing muted below it
- *     would break muted's own 4.5:1 floor on `surfaces.control`;
- *   - `surfaces.mutedText` `#8a8a8a` -- 6.08:1 / 5.04:1 / 4.83:1;
+ *   - `text.primary` `#a5a5a5` -- 7.72:1 / 6.77:1 / 6.14:1. Legacy's own muted
+ *     `#9c9c9c` stood here until FM-180 and still clears every floor on the
+ *     new grounds (6.93 / 6.07 / 5.51:1); it is lifted not for a floor of its
+ *     own but to hold the role separation the secondary entry below records;
+ *   - `text.secondary` `#858e95` -- 5.71:1 / 5.00:1 / 4.54:1 -- legacy's
+ *     `@gray-light: rgb(122, 130, 136)` lifted for a near-black ground.
+ *     FM-180 re-authored it: on the raised control surface the previous
+ *     `#7e868d` reads 4.09:1, under WCAG 1.4.3, and this is the smallest lift
+ *     of that same blue-grey that clears 4.5 there. The owner report of
+ *     2026-08-31 -- secondary must read as a visibly separate role from
+ *     primary, which was authored at 1.35:1 -- is kept: lifted, secondary
+ *     stands only 1.21:1 off the old `#9c9c9c`, so `text.primary` was lifted
+ *     with it (ADR-0049) and the pair is back at 1.35:1;
+ *   - `surfaces.mutedText` `#8d8d8d` -- 5.73:1 / 5.02:1 / 4.56:1, re-authored
+ *     by FM-180 for the same reason and by the same rule: `#8a8a8a` reads
+ *     4.38:1 on `#262626`. It still sits a step *above* `text.secondary` on
+ *     that binding ground (4.56 against 4.54:1), the accepted arrangement this
+ *     block already carried; the two are now level in luminance and told apart
+ *     by hue, and pushing either further would spend contrast neither role
+ *     needs;
  *   - `primary.main` `#9aa6ac`, legacy's `@brand-primary: @gray-light` in the
- *     same blue-grey family, lifted the same way -- 8.42:1 / 6.98:1 / 6.69:1,
+ *     same blue-grey family, lifted the same way -- 7.63:1 / 6.69:1 / 6.07:1,
  *     which is also the ADR-0013 focus ring's contrast (its axis is 3:1);
- *   - `inputOutline` at alpha 0.42 -- 3.95:1 on the black page and 4.09:1 on
- *     the recessed field fill, clearing WCAG 1.4.11's 3:1 from both sides. The
- *     grey theme's 0.35 reaches only 3.01:1 on a pure black ground.
+ *   - `inputOutline` at alpha 0.42 -- 4.09:1 on the page and 4.10:1 on the
+ *     recessed field fill, clearing WCAG 1.4.11's 3:1 from both sides. Kept at
+ *     0.42 rather than dropped to the grey theme's 0.35 (which reaches 3.20:1
+ *     on this page now that it is `#101010` rather than black): ADR-0055
+ *     re-authors only where a recorded floor is lost, and this one is not.
  *
  * The four accent roles are the grey theme's (`success`, `warning`, `info`,
  * `error`), which is what legacy does too -- `theme-dark.less` imports
  * `vars-grey.less` and overrides only the ground and the text. Measured on the
- * black page they read 9.86 / 9.63 / 5.53 / 7.39:1.
+ * page they read 8.93 / 8.72 / 5.01 / 6.70:1.
  */
 const darkColors: ThemeColors = {
     mode: "dark",
-    background: {default: "#000000", paper: "#1a1a1a"},
-    // Owner report (2026-08-31): secondary was #8b9299, only 1.15:1 apart
-    // from primary -- field labels and field values read as the same
-    // colour. #7e868d is the same legacy blue-grey darkened until the two
-    // roles separate (1.35:1 vs primary) while staying at WCAG 1.4.3 on
-    // every ground it paints: 5.68:1 on the page, 4.71:1 on paper, 4.51:1
-    // on surfaces.control.
-    text: {primary: "#9c9c9c", secondary: "#7e868d"},
+    background: {default: "#101010", paper: "#1e1e1e"},
+    // Owner report (2026-08-31): the two roles must not read as one colour.
+    // FM-180 lifts the pair onto ADR-0055's grounds -- #858e95 is the
+    // smallest lift of the legacy blue-grey that holds WCAG 1.4.3 on the
+    // raised control surface (5.71:1 on the page, 5.00:1 on paper, 4.54:1 on
+    // surfaces.control, where its predecessor #7e868d reads 4.09:1), and
+    // #a5a5a5 is the smallest lift of legacy's own muted grey that restores
+    // the recorded 1.35:1 separation above it.
+    text: {primary: "#a5a5a5", secondary: "#858e95"},
     primary: {
         main: "#9aa6ac",
         light: "#b4bfc4",
@@ -982,34 +1022,38 @@ const darkColors: ThemeColors = {
     info: {main: "#398da5", contrastText: darkContrastText},
     error: {main: "oklch(0.7 0.14 24.3)", contrastText: darkContrastText},
     surfaces: {
-        bar: "#111111",
-        // Legacy's `@navbar-default-bg`/`@btn-default-bg`
-        // `rgb(40, 40, 40)` family, a step under it so that a raised control
-        // still reads as raised against `background.paper` without becoming
-        // the lightest thing on the page.
-        control: "#1e1e1e",
-        // Legacy `@input-bg: rgb(15, 17, 19)`, verbatim.
-        recessed: "#0f1113",
+        // ADR-0055's six, stated identically in `darkDyschromatopsiaColors`:
+        // the app bar level with the cards rather than darker than them, a
+        // raised control a step above the card (1.10:1), the input fill
+        // between the page and the card it sits on, and the row divider at
+        // 10% white -- 1.35:1 against `background.paper`, which is the ground
+        // a table row is drawn on.
+        bar: "#1e1e1e",
+        control: "#262626",
+        recessed: "#141414",
+        // Unchanged at 0.12: ADR-0055 moves the faint hairline only, so this
+        // block's control border stays a step above the row divider (1.44:1
+        // against `background.paper`, to the divider's 1.35:1).
         hairline: "rgba(255, 255, 255, 0.12)",
-        hairlineFaint: "rgba(255, 255, 255, 0.07)",
+        hairlineFaint: "rgba(255, 255, 255, 0.1)",
         // FM-161: the widest alpha of the four, because this theme's muted
         // `#9aa6ac` primary at 0.12 is the faintest selected rest of any
-        // block (1.14:1 off its black page) and the wash still has to clear
-        // it -- 1.39:1 from the page, 1.23:1 from the selected rest, 1.28:1
-        // under the selected hover, 1.53:1 over `#111111`. `action.hover`
-        // reached 1.006:1 against the selected rest: the two states were one
-        // colour.
+        // block (1.19:1 off its page) and the wash still has to clear it --
+        // 1.53:1 from the page, 1.28:1 from the selected rest, 1.25:1 under
+        // the selected hover, 1.60:1 over `surfaces.bar`. `action.hover`
+        // reaches 1.02:1 against the selected rest: the two states would be
+        // one colour.
         hoverWash: "rgba(255, 255, 255, 0.15)",
-        mutedText: "#8a8a8a",
+        mutedText: "#8d8d8d",
         barAccent: "#9aa6ac",
         // The same alpha as this block's `inputOutline`, so the theme states
-        // one neutral-edge strength: 3.95:1 on the black page.
+        // one neutral-edge strength: 4.09:1 on the page.
         selectAllOutline: "rgba(255, 255, 255, 0.42)",
         // FM-156: the colour `TableScrollAffordance` composited before the
-        // token existed, kept, so this theme's scrolled tables render
-        // unchanged -- 1.11:1 of darkening on `background.paper` and 1.14:1 on
-        // `surfaces.control`. This theme's `text.primary` is legacy's own
-        // muted grey, so it reads through the fade at 7.02 / 6.90:1, the
+        // token existed, and kept under ADR-0055 -- decoration, with no floor
+        // to lose -- at 1.14:1 of darkening on `background.paper` and 1.21:1 on
+        // `surfaces.control`. This theme's `text.primary` is the most muted of
+        // the four, so it reads through the fade at 7.70 / 7.42:1, the
         // narrowest of the four and still well clear of body-text contrast.
         tableScrollFade: "rgba(0, 0, 0, 0.45)",
     },
@@ -1025,8 +1069,8 @@ const darkColors: ThemeColors = {
     ],
     // FM-172/ADR-0053: the same near-black as the other two dark themes, and
     // the worst starting point of the four -- this theme's `text.primary` is
-    // legacy's muted `#9c9c9c`, 1.29:1 on `charts[0]`, which is the reading
-    // the owner called unreadable. The near-black reads 8.63:1 there.
+    // the most muted of them, 1.16:1 on `charts[0]`, which is the reading the
+    // owner called unreadable. The near-black reads 8.63:1 there.
     chartBarLabel: "#111514",
 };
 

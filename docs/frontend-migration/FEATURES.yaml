@@ -41,6 +41,7 @@ features:
       - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
       - deliberate - FM-154/FM-155 (ADR-0049) put theme selection in the nav bar beside the login/logout control rather than in Config > Main, and offer Auto/Grey/Bright/Dark/Dark (Dyschromatopsia) rather than legacy's fixed four; the choice applies immediately and FM-155 persists it per user through C-THEME-PREFERENCE (server record, with a localStorage seed that only shortens the wrong-theme flash)
       - deliberate - FM-171 mounts `C-SESSION-EXPIRY`'s session-expired dialog in the shell, a capability legacy has no counterpart for (`nzbhydra.js` and `header-controller.js` carry no 401 handling; issue #1080's server half, `60a121aae`, is what made an expired session answer a background request with a plain 401 rather than a redirect). Its action is a Reload button rather than an automatic reload, because the full navigation that completes the OIDC/form login also destroys unsaved form state, and no decision entry asks for the automatic behavior
+      - deliberate - FM-180 (ADR-0055) gives up legacy's `@body-bg: #000000` / `@input-bg: rgb(15, 17, 19)` parity for both near-black themes after an owner report (2026-09-03) that page, cards and tables read as one flat black with no row dividers: `dark` and `dark-dyschromatopsia` share one layered ground (page `#101010`, cards/tables `#1e1e1e`, raised controls `#262626`, app bar level with the cards, input fill `#141414`, row dividers at 10% white), with elevation overlays still off per FM-117, and `dark`'s `text.secondary`/`surfaces.mutedText`/`text.primary` re-authored where the lighter control surface cost a recorded 4.5:1 floor
       - "deliberate - the `bright` theme reuses the shell's `banner-grey-dark.png` masthead rather than legacy's separate `banner-bright.png`, because MUI paints the app bar `primary.main` under `palette.mode: \"light\"` and the white/green wordmark reads on that green ground; legacy switched the asset per theme"
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -233,11 +234,20 @@ features:
       - display-options
       - search-result-indexer-swatch
       - search-result-cover
+      - search-result-cover-tile
+      - search-result-cover-popover
       # 2026-08-31 (FM-150, owner request): the table's width budget moved --
       # Age 8% -> 5% and Size 9% -> 8%, both surrendered to Title (35% -> 39%)
       # -- so those two columns are now sized for the values users see, not for
       # `9999d`/`999.99 GB`. The expand controls that share the Title cell are
       # icon buttons from the same request; see F-SEARCH-GROUP-SELECTION.
+      # 2026-09-03 (FM-179, owner request): the cover is a 56px-tall framed
+      # tile (`search-result-cover-tile`) with a footprint reserved before the
+      # image loads, so a covered row no longer reflows; the full-size image
+      # opens in `search-result-cover-popover` on hover, focus and tap, which
+      # is what closes FM-177's enlarge gap. Rows that render a tile carry
+      # `data-has-cover` and middle-align; every other row keeps FM-175's top
+      # alignment.
       # 2026-09-02 (FM-175, owner request): the same budget is now pixel
       # tracks -- every column but Title has a fixed width sized for its own
       # header label, and Title has none, so it takes the whole remainder
@@ -250,8 +260,8 @@ features:
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
-        that is off by default, where legacy defaulted it on (`search-results-controller.js:153`); legacy's click-to-enlarge
-        cover modal (`search-result.js:275-292`) and the separate `poster` field are not built
+        that is off by default, where legacy defaulted it on (`search-results-controller.js:153`); the separate `poster` field
+        is not built
       - deliberate - FM-096 (owner decision 2026-08-23) replaces legacy's whole-`tbody` `rgba(colour,0.5)` row tint with a bounded, outlined swatch beside the indexer name; an arbitrary user colour at 0.5 alpha behind row text cannot meet WCAG contrast on the dark palette and collides with the FM-054 recency stripe, the nested-row `action.hover` background, and the Downloaded chip
   - id: F-SEARCH-SORT-FILTER
     name: Result sorting, column filters, quick filters, and persisted choices

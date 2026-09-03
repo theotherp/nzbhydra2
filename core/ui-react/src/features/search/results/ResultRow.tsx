@@ -7,13 +7,20 @@ import {
     Checkbox,
     Chip,
     IconButton,
+    Popover,
     Stack,
     TableCell,
     TableRow,
     Tooltip,
 } from "@mui/material";
-import type {ReactNode} from "react";
-import {memo} from "react";
+import type {
+    FocusEvent as ReactFocusEvent,
+    KeyboardEvent as ReactKeyboardEvent,
+    MouseEvent as ReactMouseEvent,
+    PointerEvent as ReactPointerEvent,
+    ReactNode,
+} from "react";
+import {memo, useRef, useState} from "react";
 
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
@@ -47,6 +54,25 @@ type ResultColumn = {
 // there), restated here because this is the one cell whose left padding also
 // carries the nesting indent and therefore cannot be set from the table.
 const TITLE_CELL_PADDING_X = 1;
+
+// FM-179: the cover thumbnail's fixed box, in px.
+//
+// `COVER_TILE_HEIGHT` is three lines of the title cell's own text: body cells
+// inherit MUI's `body2` 1.43 line-height and the title renders the shared
+// `denseControlFontSize` 13px role, so one line is 18.59px and three are
+// 55.77px. 56px is that, rounded -- a thumbnail as tall as the tallest row
+// this table produces without one, so a covered row is not taller than a
+// three-line coverless neighbour.
+//
+// `COVER_TILE_MIN_WIDTH` is what a 2:3 poster -- the shape every cover the
+// backend serves has -- occupies at the tile's 54px inner height: 36px, plus
+// the 1px border on each side. It is a *minimum*, not a width, and it is the
+// whole point of the tile: the row reserves this footprint the moment it
+// renders, before the image has loaded, so a late image lands inside a box
+// that already has its final geometry instead of growing the row under the
+// user's cursor.
+const COVER_TILE_HEIGHT = 56;
+const COVER_TILE_MIN_WIDTH = 38;
 
 const resultColumns: ResultColumn[] = [
     {
@@ -182,6 +208,15 @@ export const ResultRow = memo(function ResultRow({
             : undefined;
     return (
         <TableRow
+            // FM-179: "this row renders a cover tile", which is what the
+            // table's `sx` keys its one middle-align rule on (`SearchResults.
+            // tsx`). An attribute rather than a per-row `sx` prop: the rule
+            // has to reach every *cell* of this row, and a descendant selector
+            // authored once on the table is both cheaper than eight cell-level
+            // overrides and the shape FM-175's `verticalAlign: top` rule
+            // already has. Absent, not `"false"`, when there is no tile, so
+            // the selector is a plain attribute presence test.
+            {...(coverSrc !== undefined ? {"data-has-cover": ""} : {})}
             data-result-id={result.searchResultId}
             data-result-title={result.title}
             data-nesting-level={nestingLevel}
@@ -312,7 +347,18 @@ export const ResultRow = memo(function ResultRow({
                             // cell now guarantees. The title itself still
                             // wraps inside its own box.
                             <Stack
-                                alignItems="flex-start"
+                                // FM-179: a row with a cover tile centres its
+                                // title's first line, indexer, size and
+                                // actions on the 56px tile (the table's
+                                // `data-has-cover` rule does the other cells;
+                                // this does the title cell's own stack).
+                                // Without a tile the row is unchanged FM-175
+                                // top alignment.
+                                alignItems={
+                                    coverSrc !== undefined
+                                        ? "center"
+                                        : "flex-start"
+                                }
                                 direction="row"
                                 flexWrap="nowrap"
                                 gap={0.5}
@@ -370,31 +416,20 @@ export const ResultRow = memo(function ResultRow({
                                     ) : (
                                         <ExpandSpacer />
                                     ))}
-                                {/* FM-177: the cover, between the expand
-                                    slots and the title text (legacy's
-                                    position, `search-result.html:23-24`).
-                                    `alt=""` because the title beside it is
-                                    already the row's accessible content --
-                                    the image adds nothing a screen reader
-                                    needs -- and the row's height simply grows
-                                    to it, which the virtualizer's existing
-                                    `measureElement` observer picks up when a
-                                    late-loading image changes it. */}
-                                {coverSrc !== undefined && (
-                                    <Box
-                                        alt=""
-                                        component="img"
-                                        data-testid="search-result-cover"
-                                        loading="lazy"
-                                        src={coverSrc}
-                                        sx={{
-                                            display: "block",
-                                            flexShrink: 0,
-                                            height: "auto",
-                                            width: coverWidth,
-                                        }}
-                                    />
-                                )}
+                                {/* FM-177/FM-179: the cover, between the
+                                    expand slots and the title text (legacy's
+                                    position, `search-result.html:23-24`), as
+                                    a fixed-height framed thumbnail that
+                                    opens the full-size image on hover, focus
+                                    or tap. */}
+                                {coverSrc !== undefined &&
+                                    coverWidth !== undefined && (
+                                        <CoverThumbnail
+                                            coverWidth={coverWidth}
+                                            src={coverSrc}
+                                            title={result.title}
+                                        />
+                                    )}
                                 <Box>{column.value(result)}</Box>
                             </Stack>
                         ) : isIndexer ? (
@@ -492,6 +527,234 @@ export const ResultRow = memo(function ResultRow({
         </TableRow>
     );
 });
+
+/**
+ * FM-179: one row's cover, as a fixed-height framed thumbnail that shows the
+ * full-size image in a `Popover` on hover, focus and tap.
+ *
+ * **Why a tile at all.** FM-177 rendered the raw poster at `searching.
+ * coverSize` px wide: at 2:3 that is a ~190px row, and it only became that
+ * tall once the image arrived, so every covered row reflowed under the
+ * cursor. The tile fixes the height (`COVER_TILE_HEIGHT`) and reserves the
+ * footprint (`COVER_TILE_MIN_WIDTH`) before the first byte of the image, so
+ * the row's height is settled at mount. The virtualizer's `measureElement`
+ * path stays exactly as it was: an image wider than the reserved minimum
+ * still takes width from the title and can change how many lines it wraps to,
+ * and FM-162 needs that observer for every other late height change anyway.
+ *
+ * **Why a `Box`, not a MUI component.** MUI has no thumbnail/framed-image
+ * component (`Avatar` is a fixed square/circle with its own fallback
+ * behaviour, `Card` a surface with elevation and its own padding), so the
+ * frame is authored here (ADR-0014's "deviation from stock MUI needs a
+ * justification at the site"). Every value it uses is a theme token --
+ * `shape.borderRadius`, `palette.divider`, `palette.action.hover` -- and no
+ * colour or radius literal appears.
+ *
+ * **Why a `Popover`, not a `Tooltip`.** A `Tooltip`'s `title` becomes the
+ * child's accessible name or description, which would overwrite the trigger's
+ * own "Show cover for ..." name with the image element; and its paper is a
+ * 300px-capped text surface, so putting a poster in one means restyling
+ * component internals. The popover is non-interactive by construction
+ * (`pointerEvents: none`, and the three `disable*Focus` props), so it can
+ * never take focus off the row -- which is what keeps `Escape` handled on the
+ * trigger and the trigger still focused afterwards.
+ */
+function CoverThumbnail({
+    coverWidth,
+    src,
+    title,
+}: {
+    coverWidth: number;
+    src: string;
+    title: string;
+}) {
+    const [state, setState] = useState<"loading" | "loaded" | "failed">(
+        "loading",
+    );
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    // Set when a `focus` opened the preview, and consumed by the click that
+    // same interaction produces. A tap and an Enter/Space press both reach the
+    // trigger as `focus` *then* `click`, so a click that toggles on the
+    // current state would close what the focus a few milliseconds earlier had
+    // just opened. See the comment on the click handler.
+    const openedByFocus = useRef(false);
+    const failed = state === "failed";
+    const open = anchorEl !== null;
+    // The frame. Identical in all three states -- that is what makes a broken
+    // cover a quiet empty tile rather than a hole in the row.
+    const tileSx = {
+        bgcolor: "action.hover",
+        borderColor: "divider",
+        borderRadius: 1,
+        borderStyle: "solid",
+        borderWidth: "1px",
+        boxSizing: "border-box",
+        display: "block",
+        flexShrink: 0,
+        height: COVER_TILE_HEIGHT,
+        // The image is clipped, never letterboxed: `max-width` is the
+        // configured full-size width (ADR-0054), so an unusually wide cover
+        // cannot eat the title column.
+        maxWidth: coverWidth,
+        minWidth: COVER_TILE_MIN_WIDTH,
+        overflow: "hidden",
+        p: 0,
+    } as const;
+    if (failed) {
+        // No `<img>` at all, rather than a hidden one: `display: none` still
+        // leaves a broken-image element in the row, and a hidden element with
+        // a failed `src` is exactly what paints the browser's broken-image
+        // glyph in some engines. Not a button either -- there is nothing to
+        // show -- and out of the accessibility tree entirely.
+        return (
+            <Box
+                aria-hidden
+                data-cover-state="failed"
+                data-testid="search-result-cover-tile"
+                sx={tileSx}
+            />
+        );
+    }
+    const close = () => {
+        openedByFocus.current = false;
+        setAnchorEl(null);
+    };
+    return (
+        <>
+            <Box
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                // The trigger's only text. The row's title is already the
+                // row's accessible content and the thumbnail keeps `alt=""`,
+                // so this name is what makes the control announce as an
+                // action on *this* row rather than as a second copy of it.
+                aria-label={`Show cover for ${title}`}
+                component="button"
+                data-cover-state={state}
+                data-testid="search-result-cover-tile"
+                onBlur={close}
+                // The toggle is decided by the interaction that produced the
+                // click, not by whether the preview happens to be open when it
+                // arrives. A real tap reaches this element as
+                // `pointerenter:touch -> pointerleave:touch -> mouseenter ->
+                // focus -> click` (measured in Chromium touch emulation), and
+                // Enter/Space on a focused trigger fire a click too: in both
+                // cases `focus` has already opened the preview a moment
+                // earlier, so a state toggle here would shut it again and the
+                // first tap would appear to do nothing. That click is the tail
+                // of the opening interaction, so it is consumed. Any later
+                // click -- a second tap, a second Enter, a mouse click on a
+                // thumbnail hover already opened -- toggles as usual, which is
+                // what closes the preview.
+                onClick={(event: ReactMouseEvent<HTMLElement>) => {
+                    if (openedByFocus.current) {
+                        openedByFocus.current = false;
+                        setAnchorEl(event.currentTarget);
+                        return;
+                    }
+                    setAnchorEl(open ? null : event.currentTarget);
+                }}
+                onKeyDown={(event: ReactKeyboardEvent) => {
+                    if (event.key === "Escape" && open) {
+                        // Handled here, not by the popover's `onClose`: the
+                        // popover is `pointerEvents: none` and never holds
+                        // focus, so nothing else would see the key -- and
+                        // closing from the trigger leaves focus on the
+                        // trigger, where the keyboard user still is.
+                        event.preventDefault();
+                        event.stopPropagation();
+                        close();
+                    }
+                }}
+                // Pointer events rather than `mouseenter`/`mouseleave` for
+                // exactly one reason: a touch tap synthesizes a whole hover
+                // sequence around its click -- `pointerenter:touch` and,
+                // immediately after it, `pointerleave:touch` -- and neither is
+                // a hover a finger can hold. Both branches are therefore
+                // guarded on the pointer type: touch neither opens the preview
+                // by "hovering" nor closes it by "leaving" a moment later, and
+                // tap-to-enlarge is left to focus and click, which is the
+                // affordance legacy's `$uibModal` had
+                // (`search-result.js:222-238`). An unknown pointer type is
+                // treated as a mouse.
+                onPointerEnter={(event: ReactPointerEvent<HTMLElement>) => {
+                    if (event.pointerType !== "touch") {
+                        setAnchorEl(event.currentTarget);
+                    }
+                }}
+                onPointerLeave={(event: ReactPointerEvent<HTMLElement>) => {
+                    if (event.pointerType !== "touch") {
+                        close();
+                    }
+                }}
+                onFocus={(event: ReactFocusEvent<HTMLElement>) => {
+                    // Only a focus that *opens* the preview arms the click
+                    // guard; focus landing on an already-open preview (the
+                    // mouse-down of a click on a hovered thumbnail) leaves the
+                    // following click free to close it.
+                    openedByFocus.current = !open;
+                    setAnchorEl(event.currentTarget);
+                }}
+                sx={{...tileSx, cursor: "pointer"}}
+                type="button"
+            >
+                <Box
+                    alt=""
+                    component="img"
+                    data-testid="search-result-cover"
+                    // FM-177's rules, unchanged: `alt=""` because the title
+                    // beside it is already the row's accessible content, and
+                    // the browser decides when to fetch it.
+                    loading="lazy"
+                    onError={() => {
+                        setAnchorEl(null);
+                        setState("failed");
+                    }}
+                    onLoad={() => setState("loaded")}
+                    src={src}
+                    // Height-driven: the tile's inner height decides the
+                    // rendered size and the aspect ratio decides the width, so
+                    // a 2:3 poster lands exactly in the width the tile already
+                    // reserved and the row does not move.
+                    sx={{display: "block", height: "100%", width: "auto"}}
+                />
+            </Box>
+            <Popover
+                anchorEl={anchorEl}
+                anchorOrigin={{horizontal: "right", vertical: "center"}}
+                data-testid="search-result-cover-popover"
+                // The three that keep focus where it is: the popover must
+                // never become the focused element, or tabbing to a thumbnail
+                // would move the keyboard user out of the table.
+                disableAutoFocus
+                disableEnforceFocus
+                disableRestoreFocus
+                // And the fourth: `Modal`'s scroll lock would take the
+                // document's scrollbar away and compensate with body padding
+                // the instant a cursor crossed a thumbnail -- a page-wide
+                // reflow, on hover, in the one task whose subject is not
+                // reflowing. A preview that opens on hover must leave the
+                // page it floats over exactly as it was.
+                disableScrollLock
+                onClose={close}
+                open={open}
+                // The paper's surface, border and radius are the `MuiPopover`
+                // theme default (`app/theme.ts`); only its padding is stated,
+                // to zero, so the image reaches the frame's edge.
+                slotProps={{paper: {sx: {p: 0}}}}
+                sx={{pointerEvents: "none"}}
+                transformOrigin={{horizontal: "left", vertical: "center"}}
+            >
+                <Box
+                    alt=""
+                    component="img"
+                    src={src}
+                    sx={{display: "block", height: "auto", width: coverWidth}}
+                />
+            </Popover>
+        </>
+    );
+}
 
 /**
  * One of the title cell's two expand toggles, in the icon-button anatomy

@@ -1551,9 +1551,41 @@ comment still omits `showCovers`, and its FM-178 gap line cites the two supersed
 (`100b5dd00`/`41e4dc59e`) where `MAINTENANCE.md` records them as `24329c640`/`27efd28f5`. Candidates for a future
 quickfix. The 2026-09-02 owner-request batch FM-175..FM-178 is complete.
 
+FM-179 (Cover Thumbnails — Fixed-Height Framed Tile, Middle-Aligned Rows, Hover/Focus Full-Size Preview) reshaped
+FM-177's raw poster into a 56px-tall framed tile (three text lines; `shape.borderRadius`, `palette.divider` border,
+`palette.action.hover` ground, 38px footprint reserved before the image loads, `max-width` = `searching.coverSize`), with
+a quiet `aria-hidden` empty tile on a failed image; rows that render one carry `data-has-cover` and middle-align every
+cell while coverless rows keep FM-175's top alignment; the tile is a button whose `Popover` shows the full
+`searching.coverSize` image on hover, focus, and tap (`disableScrollLock`, so hovering never strips the scrollbar),
+closing FM-177's enlarge-modal gap. Measured against a held cover response: a covered row is 70px before and after the
+image arrives, its neighbour 38px either way — no reflow. Passed 2026-09-03 after one fix cycle: the first review found
+that a real tap focused the button (opening the preview) and then clicked (closing it), so the first tap did nothing;
+the fix arms an `openedByFocus` flag the same interaction's click consumes and ignores `pointerleave:touch`, pinned by
+an order-faithful unit case and a `hasTouch` system test, and the re-review reproduced tap/hover/keyboard paths live.
+Vitest 1890/1890, real-backend `results.spec.ts` 33/33 against a repackaged jar; six captures reviewed. Four minor
+findings, not corrected (optional): the FM-179 `FEATURES.yaml` note sits out of chronological order; `aria-haspopup`
+advertises a dialog the focus-inert `Popover` never is (proposed packet); after a keyboard focus-open the first *mouse*
+click is consumed rather than closing (Tab-then-click without moving); and the Review bullet said 32/33 (moot here).
+Candidates for a future quickfix.
+
+FM-180 (Dark Themes Leave Pure Black For A Layered Near-Black, ADR-0055) answered a user's eye-strain report: both
+near-black palettes now state the same six grounds — page `#101010`, paper and app bar `#1e1e1e` (the bar was darker
+than the cards, inverting the hierarchy), controls `#262626`, input fill `#141414`, faint hairline / row dividers 10%
+white — with `dark-dyschromatopsia` no longer spreading grey's surfaces and elevation overlays still off. Every FM-156 /
+FM-161 figure measured on black was re-measured with the test file's own instrument; only two `dark` tokens lost a
+recorded floor on the new `#262626` control (`text.secondary` `#7e868d` 4.09:1 → `#858e95`, `mutedText` `#8a8a8a`
+4.38:1 → `#8d8d8d`) and `text.primary` was lifted to `#a5a5a5` to keep the 2026-08-31 1.35:1 role separation. Pins
+rewritten, none deleted; grey/bright zero token diff; the reviewer independently recomputed ~40 figures and all
+matched. Vitest 1893/1893, real-backend `smoke.spec.ts` + `stats.spec.ts` 21/21 on a rebuilt jar; six captures plus
+before/after pairs reviewed. Passed 2026-09-03 first cycle with three minor findings, not corrected (optional): a
+stale "this variant's page is pure black" sentence in `theme.test.ts`'s dys surface-spread comment, a stray blank
+line in this file's Active section (fixed in this reconcile), and a wrong edit timestamp in the handoff's Verification
+Basis (the run of record still postdates every source edit). Candidates for a future quickfix.
+
 ## Active
 
 None.
+
 FM-140 (Java Suite Per-Class Precondition Establishment) moved the system-test baseline off `BeforeAll.@PostConstruct`
 (one write per JVM fork) onto `BaselineExtension`, bundled with the Spring context as `@SystemTest` on all 27 classes;
 each named leaker now restores or namespaces what it touches, `HistoryTest` is marker-based (and strictly stronger —
@@ -1577,10 +1609,17 @@ None.
 
 ## Upcoming
 
+- FM-181 (Phone Results Chrome — One Sticky Bar, Selection Row, Paging Footer, Refine Bottom Sheet), first of the
+  2026-09-03 owner-request batch FM-181..FM-182 (390px screenshot: the toolbar wraps into seven rows, Refine scrolls away, and
+  the card layout has no sort control). Below 768px: one sticky row (select-all, `720 / 720`, Display/Refine icon buttons with
+  an active-filter badge), a selection row only while something is selected, a paging footer, and the shared refine shell as a
+  bottom sheet (ADR-0046, every consumer). FM-182 (the Sort menu in that bar) stays planned until FM-181 is done.
+
 - The 2026-09-02 owner-request batch FM-175..FM-178 (results density; duplicate-control display option with fixed
-  group/duplicate slots; optional covers; refine filters reset per search) is complete (all four entries above, finished
-  2026-09-02). No task packets are queued; retained minor findings live in the done entries above. ADR-0054 records the
-  two batch decisions (display options stay in `localStorage`; covers honour `searching.coverSize`).
+  group/duplicate slots; optional covers; refine filters reset per search) and its 2026-09-03 follow-up FM-179 (cover
+  thumbnails with a hover/focus/tap preview) are complete (all five entries above). No task packets are queued; retained
+  minor findings live in the done entries above. ADR-0054 records the two batch decisions (display options stay in
+  `localStorage`; covers honour `searching.coverSize`).
 
 - The 2026-09-01 owner-request batch FM-172..FM-174 (stats polish; indexer chip placement; search-history row declutter
   with a 24h `C-DATE-TIME` time format) is complete (all three entries above, finished 2026-09-02). No task packets are

@@ -917,3 +917,18 @@ server-side is rejected as inconsistent. **Cover width:** the owner said 100px, 
 (`baseConfig.yml`, default 128; Config → Searching "Cover width", help text "when enabled in display options").
 Decision: React honours `searching.coverSize` (fallback 100 when absent) and the default stays 128; no Java change.
 Binding on FM-176 and FM-177. Owner decided 2026-09-02.
+
+## ADR-0055 — The two dark themes leave pure black for a layered near-black (accepted 2026-09-03)
+
+A user reported (2026-09-03) that the `dark` theme causes eye strain: the page is pure `#000000`, cards and tables sit
+one flat step above it with elevation overlays off (FM-117), and the faint hairline (7% white) disappears on black, so
+page, card and table read as one undifferentiated surface with no row dividers. Material's dark-theme guidance avoids
+`#000` for exactly this reason. The owner keeps "Dark" clearly darker than "Grey" (`#1f2426`, a tinted L*≈14 ground)
+and chose a base of **`#101010`** (L*≈4) over the reporter's `#121212`. Decision, binding on `dark` and
+`dark-dyschromatopsia` alike: page `#101010`; paper/cards/tables `#1e1e1e`; raised controls `#262626`; the app bar
+level with cards at `#1e1e1e` (today it is darker than the cards, inverting the hierarchy); input fill `#141414`; the
+faint hairline (row dividers) 10% white, the hairline unchanged at 12%. Elevation overlays stay off — layering comes
+from these tokens, not from `Paper` elevation. Every dark-theme contrast figure measured against `#000000` (FM-156,
+FM-161: hover wash, select-all outline, input outline, muted text, the four-ground floors) is re-measured on the new
+grounds and tokens re-authored only where a recorded floor is lost. Legacy's `@body-bg: #000000` parity (ADR-0049,
+FM-154) is deliberately given up for this theme. Owner decided 2026-09-03.

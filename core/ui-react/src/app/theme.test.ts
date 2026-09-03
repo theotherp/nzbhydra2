@@ -258,8 +258,10 @@ describe("resolveThemeName", () => {
     it("should provide the dyschromatopsia severity palette", () => {
         const theme = createHydraTheme("dark-dyschromatopsia", false);
 
-        expect(theme.palette.background.default).toBe("#000000");
-        expect(theme.palette.background.paper).toBe("#0f1113");
+        // ADR-0055's grounds since FM-180; the six role colours below are the
+        // ones this variant exists for and none of them moved with the page.
+        expect(theme.palette.background.default).toBe("#101010");
+        expect(theme.palette.background.paper).toBe("#1e1e1e");
         expect(theme.palette.error.main).toBe("#b090c8");
         expect(theme.palette.info.main).toBe("#3aaccf");
         expect(theme.palette.primary.main).toBe("#78909c");
@@ -366,7 +368,11 @@ describe("resolveThemeName", () => {
     // rather than by statement: the variant never restated `primary.light` /
     // `primary.dark` (its spread replaced the whole role object, so MUI derives
     // both from `main`), and it never restated the surface tokens.
-    it("should keep the dyschromatopsia palette exactly as the pre-FM-154 override spread produced it", () => {
+    //
+    // ADR-0055 (FM-180) is the first decision to take four of those shared
+    // surfaces away from `grey`, and they are listed below one by one for the
+    // reason the older exceptions are: what stays shared has to stay asserted.
+    it("should keep the dyschromatopsia role colours as the pre-FM-154 override spread produced them, on ADR-0055's grounds", () => {
         const theme = createHydraTheme("dark-dyschromatopsia", false);
 
         expect(theme.palette.primary.light).toBe(
@@ -392,10 +398,31 @@ describe("resolveThemeName", () => {
             selectAllOutline: "rgba(255, 255, 255, 0.42)",
             // The third, since FM-161, and for the same reason: a hover step
             // is a measurement against a ground, and against this variant's
-            // fainter `#78909c` selected fill on that same black page the
-            // grey block's 0.12 leaves the selected hover no room above it.
+            // fainter `#78909c` selected fill on its own page the grey
+            // block's 0.12 leaves the selected hover no room above it.
             hoverWash: "rgba(255, 255, 255, 0.13)",
+            // The fourth, fifth, sixth and seventh, since FM-180: ADR-0055
+            // binds both near-black themes alike, so this variant states
+            // `dark`'s layered grounds instead of grey's tinted ones. The
+            // rest still coincide with grey's and stay inside the spread
+            // above -- `surfaces.hairline` (0.1 in both blocks, which
+            // ADR-0055 does not move), `mutedText` and `tableScrollFade`.
+            bar: "#1e1e1e",
+            control: "#262626",
+            recessed: "#141414",
+            hairlineFaint: "rgba(255, 255, 255, 0.1)",
         });
+        // The inverse of that list: the four are asserted to have *left*
+        // grey's values, so a revert of the block fails here rather than
+        // quietly re-sharing them.
+        for (const [token, greyValue] of [
+            ["bar", grey.bar],
+            ["control", grey.control],
+            ["recessed", grey.recessed],
+            ["hairlineFaint", grey.hairlineFaint],
+        ] as const) {
+            expect(theme.palette.surfaces[token]).not.toBe(greyValue);
+        }
     });
 });
 
@@ -1169,8 +1196,8 @@ describe("the select-all square's border (FM-154, raised by FM-156)", () => {
             const outline = palette.surfaces.selectAllOutline;
 
             // Measured on `background.default` (and on `background.paper`):
-            // grey 3.17 (3.08), bright 3.30 (3.33), dark 3.95 (3.79),
-            // dyschromatopsia 3.95 (4.09).
+            // grey 3.17 (3.08), bright 3.30 (3.33), dark 4.09 (4.02),
+            // dyschromatopsia 4.09 (4.02).
             expect(
                 contrastRatio(compositeOver(outline, ground), ground),
             ).toBeGreaterThanOrEqual(3);
@@ -1181,7 +1208,7 @@ describe("the select-all square's border (FM-154, raised by FM-156)", () => {
                 ),
             ).toBeGreaterThanOrEqual(3);
             // The value replaced, on the same ground: 1.03:1 on bright,
-            // 2.02:1 on dark and dyschromatopsia, 2.28:1 on grey. Asserted
+            // 2.21:1 on dark and dyschromatopsia, 2.28:1 on grey. Asserted
             // alongside so no case can go green on a token that was never
             // re-authored -- which is what the byte-identical pin FM-156
             // removed used to guarantee for the two older themes.
@@ -1204,7 +1231,7 @@ describe("the select-all square's border (FM-154, raised by FM-156)", () => {
  * tables, `surfaces.control` for the config ones). It has to darken its ground
  * to read as an edge at all, and it must not take the text it crosses down
  * with it. The three dark themes render the composited colour they always did
- * -- 1.05-1.31:1 of darkening, leaving their `text.primary` at 6.90-14.10:1 --
+ * -- 1.14-1.31:1 of darkening, leaving their `text.primary` at 7.42-13.44:1 --
  * and `bright`'s value is authored against those two ends, because the scrim
  * it inherited fails the second one outright: black at 0.45 on a white card is
  * a 3.33:1 wall that drops `text.primary` from 17.75:1 to 5.33:1.
@@ -1266,8 +1293,8 @@ describe("the table scroll-edge fade (FM-156)", () => {
     /*
      * The band `bright`'s value was authored against, taken from the themes
      * themselves rather than restated: the faintest darkening any dark theme
-     * renders (1.05:1) and the least legible text any of them leaves through
-     * the fade (6.90:1). The light theme's fade may not be weaker than the
+     * renders (1.14:1) and the least legible text any of them leaves through
+     * the fade (7.42:1). The light theme's fade may not be weaker than the
      * first, and may not be harsher than the second -- which is precisely what
      * the inherited scrim was on a white card.
      */
@@ -1670,22 +1697,129 @@ describe("every theme's measured contrast (ADR-0049)", () => {
         }
     });
 
-    // The `dark` theme's character per ADR-0049 and `theme-dark.less`: a pure
-    // black page with a lifted -- but only just lifted -- paper, and text that
-    // is muted rather than white.
+    // The `dark` theme's character per ADR-0049, `theme-dark.less` and -- for
+    // the grounds -- ADR-0055: a near-black page with a lifted, but only just
+    // lifted, paper, and text that is muted rather than white.
     it("should render dark as legacy's near-black theme", () => {
         const dark = createHydraTheme("dark", false).palette;
 
-        expect(dark.background.default).toBe("#000000");
-        expect(dark.surfaces.recessed).toBe("#0f1113");
+        // ADR-0055's page and input fill; legacy's `@body-bg: #000000` and
+        // `@input-bg: rgb(15, 17, 19)` parity is deliberately given up, so
+        // these state the decision's values rather than legacy's.
+        expect(dark.background.default).toBe("#101010");
+        expect(dark.surfaces.recessed).toBe("#141414");
         expect(
             contrastRatio(
                 resolveColor(dark.background.paper),
                 resolveColor(dark.background.default),
             ),
         ).toBeLessThan(1.5);
-        // Legacy `@text-color: rgb(156, 156, 156)`, verbatim.
-        expect(dark.text.primary).toBe("#9c9c9c");
+        // Legacy's `@text-color: rgb(156, 156, 156)` stood here verbatim
+        // until FM-180 lifted it a step, and only a step: it is still
+        // legacy's neutral muted grey rather than a white.
+        expect(dark.text.primary).toBe("#a5a5a5");
+        expect(relativeLuminance(resolveColor(dark.text.primary))).toBeLessThan(
+            0.45,
+        );
+    });
+});
+
+/*
+ * ADR-0055 (FM-180): the two near-black themes leave pure black for one
+ * layered ground, and they take it *alike* -- the decision names six values
+ * and binds both blocks to them, which is what stops
+ * `dark-dyschromatopsia` from drifting back onto the grey block's surfaces it
+ * spread before FM-180.
+ *
+ * The two text tokens `dark` re-authored are measured here rather than only
+ * pinned, and each is paired with its predecessor on the ground that moved --
+ * the raised control surface, the lightest ground a glyph lands on -- so a
+ * revert of either value fails as a *contrast* failure rather than as a
+ * changed string. That is the FM-156 pattern, applied to the two floors
+ * ADR-0055's new grounds cost.
+ */
+describe("the near-black themes' layered ground (ADR-0055)", () => {
+    const decided = {
+        "background.default": "#101010",
+        "background.paper": "#1e1e1e",
+        bar: "#1e1e1e",
+        control: "#262626",
+        recessed: "#141414",
+        hairlineFaint: "rgba(255, 255, 255, 0.1)",
+    } as const;
+
+    for (const name of ["dark", "dark-dyschromatopsia"] as const) {
+        it(`should state ADR-0055's six ground values on ${name}`, () => {
+            const {palette} = createHydraTheme(name, false);
+
+            expect({
+                "background.default": palette.background.default,
+                "background.paper": palette.background.paper,
+                bar: palette.surfaces.bar,
+                control: palette.surfaces.control,
+                recessed: palette.surfaces.recessed,
+                hairlineFaint: palette.surfaces.hairlineFaint,
+            }).toEqual(decided);
+            // The app bar is level with the cards rather than darker than
+            // them, which is the one item of the six that is a *relationship*
+            // and the inversion the owner reported.
+            expect(palette.surfaces.bar).toBe(palette.background.paper);
+            // The hairline is the one surface token ADR-0055 leaves alone,
+            // per block.
+            expect(palette.surfaces.hairline).toBe(
+                name === "dark"
+                    ? "rgba(255, 255, 255, 0.12)"
+                    : "rgba(255, 255, 255, 0.1)",
+            );
+        });
+    }
+
+    it("should re-author the two dark tokens whose 4.5:1 floor the raised control surface costs", () => {
+        const {palette} = createHydraTheme("dark", false);
+        const control = resolveColor(palette.surfaces.control);
+        /** The values that stood on the pure-black grounds. */
+        const superseded = {
+            "text.secondary": "#7e868d",
+            "surfaces.mutedText": "#8a8a8a",
+        } as const;
+
+        for (const [role, value] of [
+            ["text.secondary", palette.text.secondary],
+            ["surfaces.mutedText", palette.surfaces.mutedText],
+        ] as const) {
+            expect(
+                contrastRatio(compositeOver(value, control), control),
+            ).toBeGreaterThanOrEqual(4.5);
+            // The old value fails here, which is why it moved.
+            expect(
+                contrastRatio(
+                    compositeOver(superseded[role], control),
+                    control,
+                ),
+            ).toBeLessThan(4.5);
+            expect(value).not.toBe(superseded[role]);
+        }
+        // `text.primary` lost no floor of its own -- legacy's `#9c9c9c` still
+        // reads 5.51:1 on this ground -- and moved only to keep the role
+        // separation the owner reported on 2026-08-31 (secondary must not
+        // read as the same colour as primary; 1.35:1 when it was authored).
+        // Both halves are asserted, so a quiet drop back to `#9c9c9c` fails
+        // as the collapsed separation it would be rather than as a string.
+        expect(
+            contrastRatio(compositeOver("#9c9c9c", control), control),
+        ).toBeGreaterThanOrEqual(4.5);
+        expect(
+            contrastRatio(
+                resolveColor(palette.text.secondary),
+                resolveColor("#9c9c9c"),
+            ),
+        ).toBeLessThan(1.35);
+        expect(
+            contrastRatio(
+                resolveColor(palette.text.secondary),
+                resolveColor(palette.text.primary),
+            ),
+        ).toBeGreaterThanOrEqual(1.35);
     });
 });
 

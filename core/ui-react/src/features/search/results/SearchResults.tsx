@@ -1576,6 +1576,23 @@ export function SearchResults({
                                         // is from it).
                                         verticalAlign: "top",
                                     },
+                                    // FM-179: the one row shape that reads
+                                    // better centred. A row with a cover tile
+                                    // has a 56px object in its title cell and
+                                    // one line of text in every other cell;
+                                    // top-aligned, Indexer/Size/Actions cling
+                                    // to the tile's upper edge with 40px of
+                                    // empty cell under them, which is the
+                                    // same complaint FM-175's rule above
+                                    // answers for wrapped titles, mirrored.
+                                    // Centred, they line up with the tile --
+                                    // and with the title's first line, which
+                                    // the title cell's own stack centres on
+                                    // the tile in `ResultRow`. Rows without a
+                                    // tile are untouched FM-175.
+                                    "& tbody > tr[data-has-cover] > td": {
+                                        verticalAlign: "middle",
+                                    },
                                     // FM-175 (owner request, 2026-09-02): 8px
                                     // horizontal body padding, half MUI's
                                     // stock 16px, so the width the table

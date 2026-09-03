@@ -4,6 +4,7 @@ import {
     fireEvent,
     render,
     screen,
+    waitFor,
     within,
 } from "@testing-library/react";
 import type {MockedFunction} from "vitest";
@@ -3495,7 +3496,7 @@ describe("SearchResults", () => {
         expect(ageColor("Ageless release")).toBe(ageColor("Older release"));
     });
 
-    it("should render a cover only while show covers is enabled, at the configured width and resolved against the application base", () => {
+    it("should render a cover tile only while show covers is enabled, framed at the configured maximum width and resolved against the application base", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/hydra/",
             safeConfig: {searching: {coverSize: 140}},
@@ -3531,18 +3532,48 @@ describe("SearchResults", () => {
             />,
         );
         // Off by default (the owner's choice; legacy defaulted this on), so
-        // no image renders even for the two results that carry a cover.
+        // neither a tile nor an image renders for the two results that carry
+        // a cover.
         closeDisplayOptions();
+        expect(
+            screen.queryAllByTestId("search-result-cover-tile"),
+        ).toHaveLength(0);
         expect(screen.queryAllByTestId("search-result-cover")).toHaveLength(0);
 
         fireEvent.click(displayOption("Show covers"));
         expect(displayOption("Show covers")).toBeChecked();
         closeDisplayOptions();
 
-        expect(screen.getAllByTestId("search-result-cover")).toHaveLength(2);
-        const absolute = within(resultRow("Absolute cover")).getByTestId(
-            "search-result-cover",
+        expect(screen.getAllByTestId("search-result-cover-tile")).toHaveLength(
+            2,
         );
+        const tile = within(resultRow("Absolute cover")).getByTestId(
+            "search-result-cover-tile",
+        );
+        // FM-179: the reserved footprint. Height is fixed and the width has a
+        // floor, both stated before the image exists, so nothing about this
+        // box depends on the response arriving -- and the ceiling is
+        // `searching.coverSize` (ADR-0054), which is also the width the
+        // full-size preview renders at.
+        const tileStyle = getComputedStyle(tile);
+        expect(tileStyle.height).toBe("56px");
+        expect(tileStyle.minWidth).toBe("38px");
+        expect(tileStyle.maxWidth).toBe("140px");
+        expect(tileStyle.boxSizing).toBe("border-box");
+        expect(tileStyle.overflow).toBe("hidden");
+        expect(tileStyle.borderStyle).toBe("solid");
+        expect(tileStyle.borderWidth).toBe("1px");
+        // The frame's three visual values are read from the theme, not
+        // authored: these are MUI's *default* theme (no `ThemeProvider` in
+        // this test), so `shape.borderRadius` is 4 and the two palette roles
+        // are the light-mode ones. The application theme's own 8px radius and
+        // dark tokens are what the browser gate shows.
+        expect(tileStyle.borderRadius).toBe("4px");
+        expect(tileStyle.borderColor).toBe("rgba(0, 0, 0, 0.12)");
+        expect(tileStyle.backgroundColor).toBe("rgba(0, 0, 0, 0.04)");
+        expect(tile).toHaveAttribute("data-cover-state", "loading");
+
+        const absolute = within(tile).getByTestId("search-result-cover");
         // The indexer's own URL is used verbatim; the proxied path is resolved
         // through the transport, so it stays under a non-root application base
         // instead of becoming a root path.
@@ -3552,8 +3583,15 @@ describe("SearchResults", () => {
         );
         expect(absolute).toHaveAttribute("alt", "");
         expect(absolute).toHaveAttribute("loading", "lazy");
-        expect(getComputedStyle(absolute).width).toBe("140px");
-        expect(getComputedStyle(absolute).height).toBe("auto");
+        // Height-driven inside the frame: the tile decides the size, the
+        // aspect ratio decides the width.
+        expect(getComputedStyle(absolute).height).toBe("100%");
+        expect(getComputedStyle(absolute).width).toBe("auto");
+        expect(getComputedStyle(absolute).display).toBe("block");
+
+        fireEvent.load(absolute);
+        expect(tile).toHaveAttribute("data-cover-state", "loaded");
+
         expect(
             within(resultRow("Proxied cover")).getByTestId(
                 "search-result-cover",
@@ -3562,28 +3600,37 @@ describe("SearchResults", () => {
             "src",
             "http://localhost:3000/hydra/cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
         );
-        // A result without a cover renders no image and reserves nothing.
+        // A result without a cover renders neither tile nor image and
+        // reserves nothing.
+        expect(
+            within(resultRow("Coverless result")).queryByTestId(
+                "search-result-cover-tile",
+            ),
+        ).not.toBeInTheDocument();
         expect(
             within(resultRow("Coverless result")).queryByTestId(
                 "search-result-cover",
             ),
         ).not.toBeInTheDocument();
 
-        // The image sits between the expand slots and the title text, in the
+        // The tile sits between the expand slots and the title text, in the
         // title cell's own row stack, so the title still follows it.
         expect(
-            [...absolute.parentElement!.children].map(
+            [...tile.parentElement!.children].map(
                 (element) =>
                     element.getAttribute("data-testid") ?? element.textContent,
             ),
-        ).toEqual(["search-result-cover", "Absolute cover"]);
+        ).toEqual(["search-result-cover-tile", "Absolute cover"]);
 
         fireEvent.click(displayOption("Show covers"));
         closeDisplayOptions();
+        expect(
+            screen.queryAllByTestId("search-result-cover-tile"),
+        ).toHaveLength(0);
         expect(screen.queryAllByTestId("search-result-cover")).toHaveLength(0);
     });
 
-    it("should fall back to a 100px cover when the configuration carries no usable cover size", () => {
+    it("should cap the cover tile at 100px when the configuration carries no usable cover size", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",
             safeConfig: {searching: {coverSize: 0}},
@@ -3608,8 +3655,261 @@ describe("SearchResults", () => {
         fireEvent.click(displayOption("Show covers"));
         closeDisplayOptions();
         expect(
-            getComputedStyle(screen.getByTestId("search-result-cover")).width,
+            getComputedStyle(screen.getByTestId("search-result-cover-tile"))
+                .maxWidth,
         ).toBe("100px");
+    });
+
+    it("should middle-align only the rows that render a cover tile", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {searching: {coverSize: 120}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Absolute cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Coverless result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                    ],
+                }}
+            />,
+        );
+        // Nothing is flagged while the option is off, not even for the result
+        // that has a cover: the flag says "this row renders a tile".
+        closeDisplayOptions();
+        expect(resultRow("Absolute cover")).not.toHaveAttribute(
+            "data-has-cover",
+        );
+
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+
+        // FM-179: the attribute the table's `verticalAlign: middle` rule is
+        // keyed on (the rule itself is a descendant selector in the table's
+        // `sx`, which a jsdom cascade cannot resolve -- the browser gate
+        // measures the rendered alignment).
+        expect(resultRow("Absolute cover")).toHaveAttribute("data-has-cover");
+        expect(resultRow("Coverless result")).not.toHaveAttribute(
+            "data-has-cover",
+        );
+        // The title cell's own stack follows the same split: centred on the
+        // tile where there is one, FM-175's top alignment where there is not.
+        const titleStack = (title: string) =>
+            getComputedStyle(
+                within(resultRow(title)).getByTestId("search-result-title")
+                    .firstElementChild!,
+            ).alignItems;
+        expect(titleStack("Absolute cover")).toBe("center");
+        expect(titleStack("Coverless result")).toBe("flex-start");
+    });
+
+    it("should turn a cover that fails to load into a quiet empty tile with no image and no trigger", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {searching: {coverSize: 120}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Broken cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/gone.jpg",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+
+        fireEvent.error(screen.getByTestId("search-result-cover"));
+
+        const tile = screen.getByTestId("search-result-cover-tile");
+        expect(tile).toHaveAttribute("data-cover-state", "failed");
+        // The image is *removed*, not hidden: a hidden element with a failed
+        // `src` is what paints a broken-image glyph.
+        expect(
+            screen.queryByTestId("search-result-cover"),
+        ).not.toBeInTheDocument();
+        expect(tile.querySelector("img")).toBeNull();
+        // The footprint is unchanged, so the row does not move when a cover
+        // turns out to be unreachable.
+        expect(getComputedStyle(tile).height).toBe("56px");
+        expect(getComputedStyle(tile).minWidth).toBe("38px");
+        // Nothing to show, so nothing to operate: not a button, not in the
+        // accessibility tree, and inert.
+        expect(tile.tagName).toBe("DIV");
+        expect(tile).toHaveAttribute("aria-hidden");
+        expect(tile).not.toHaveAttribute("aria-label");
+        fireEvent.pointerEnter(tile);
+        fireEvent.click(tile);
+        expect(
+            screen.queryByTestId("search-result-cover-popover"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should preview the full-size cover on hover, on focus, and on tap, without ever taking focus off the trigger", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {searching: {coverSize: 140}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Absolute cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+
+        const tile = screen.getByTestId("search-result-cover-tile");
+        // The trigger's own anatomy: a real button whose accessible name is
+        // this action, advertising the surface it opens and its state. The
+        // thumbnail inside keeps `alt=""`, so the name is the button's only
+        // text and the row's title stays the row's accessible content.
+        expect(tile.tagName).toBe("BUTTON");
+        expect(tile).toHaveAttribute("type", "button");
+        expect(tile).toHaveAttribute(
+            "aria-label",
+            "Show cover for Absolute cover",
+        );
+        expect(tile).toHaveAttribute("aria-haspopup", "dialog");
+        expect(tile).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByTestId("search-result-cover-popover"),
+        ).not.toBeInTheDocument();
+
+        // Hover.
+        fireEvent.pointerEnter(tile, {pointerType: "mouse"});
+        const popover = screen.getByTestId("search-result-cover-popover");
+        expect(tile).toHaveAttribute("aria-expanded", "true");
+        // The same image, at the configured full-size width -- the size the
+        // thumbnail is a thumbnail *of*.
+        const preview = popover.querySelector("img")!;
+        expect(preview).toHaveAttribute(
+            "src",
+            within(tile).getByTestId("search-result-cover").getAttribute("src"),
+        );
+        expect(preview).toHaveAttribute("alt", "");
+        expect(getComputedStyle(preview).width).toBe("140px");
+        expect(getComputedStyle(preview).height).toBe("auto");
+        // The preview floats over an untouched page: MUI's `Modal` scroll
+        // lock is disabled, so opening it takes away neither the document's
+        // scrollbar nor the width that scrollbar occupied.
+        expect(document.body.style.overflow).toBe("");
+        expect(document.body.style.paddingRight).toBe("");
+
+        fireEvent.pointerLeave(tile);
+        // The popover leaves the DOM at the end of MUI's own exit transition,
+        // so every close below is awaited rather than asserted synchronously.
+        await popoverClosed();
+
+        // A touch tap, in the order a browser really emits: the synthesized
+        // hover arrives *and leaves* again, and the button takes focus, all
+        // before the click. Measured in Chromium touch emulation:
+        // `pointerenter:touch -> pointerleave:touch -> mouseenter -> focus ->
+        // click`. The first tap has to open the preview -- legacy's
+        // tap-to-enlarge -- which it only does if neither the synthesized
+        // leave closes it nor the trailing click undoes what focus opened.
+        fireEvent.pointerEnter(tile, {pointerType: "touch"});
+        expect(
+            screen.queryByTestId("search-result-cover-popover"),
+        ).not.toBeInTheDocument();
+        fireEvent.pointerLeave(tile, {pointerType: "touch"});
+        act(() => tile.focus());
+        fireEvent.click(tile);
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        expect(tile).toHaveAttribute("aria-expanded", "true");
+        // A second tap -- the same sequence, minus the focus the trigger
+        // already holds -- closes it again.
+        fireEvent.pointerEnter(tile, {pointerType: "touch"});
+        fireEvent.pointerLeave(tile, {pointerType: "touch"});
+        fireEvent.click(tile);
+        await popoverClosed();
+        act(() => tile.blur());
+
+        // Keyboard: Enter and Space on the focused trigger both reach it as a
+        // click, arriving after the focus that already opened the preview.
+        // Neither may close it.
+        act(() => tile.focus());
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        fireEvent.keyDown(tile, {key: "Enter"});
+        fireEvent.click(tile);
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        expect(tile).toHaveAttribute("aria-expanded", "true");
+        act(() => tile.blur());
+        await popoverClosed();
+
+        act(() => tile.focus());
+        fireEvent.keyDown(tile, {key: " "});
+        fireEvent.keyUp(tile, {key: " "});
+        fireEvent.click(tile);
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        act(() => tile.blur());
+        await popoverClosed();
+
+        // Keyboard: focusing the trigger opens the preview and leaving it
+        // closes it again.
+        // A real `focus()`, not a synthetic focus event: what this asserts is
+        // that the *focused* element is the trigger, before and after Escape.
+        act(() => tile.focus());
+        expect(document.activeElement).toBe(tile);
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        act(() => tile.blur());
+        await popoverClosed();
+
+        // Escape closes it with the trigger still focused: the popover is
+        // `pointerEvents: none` and disables MUI's focus management, so it
+        // never became the focused element to escape *from*.
+        act(() => tile.focus());
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        fireEvent.keyDown(tile, {key: "Escape"});
+        await popoverClosed();
+        expect(document.activeElement).toBe(tile);
+        expect(tile).toHaveAttribute("aria-expanded", "false");
     });
 
     it("should persist compact rows, highlight recent, and the duplicate-controls option in the existing search-results-table payload without persisting the mobile drawer", () => {
@@ -4794,6 +5094,17 @@ function resultRow(title: string): HTMLElement {
         throw new Error(`No result row titled ${title}`);
     }
     return row;
+}
+
+// FM-179: the cover preview is a MUI `Popover`, which stays mounted through
+// its own exit transition -- "closed" is therefore awaited, not asserted on
+// the next line.
+async function popoverClosed(): Promise<void> {
+    await waitFor(() =>
+        expect(
+            screen.queryByTestId("search-result-cover-popover"),
+        ).not.toBeInTheDocument(),
+    );
 }
 
 function storedChoices(): Record<string, unknown> {

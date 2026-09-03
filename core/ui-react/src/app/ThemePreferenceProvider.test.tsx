@@ -24,7 +24,8 @@ import type {ThemePreference} from "./theme";
 const GROUNDS: Record<string, string> = {
     grey: "#1f2426",
     bright: "#f2f4f3",
-    dark: "#000000",
+    // ADR-0055's page ground for both near-black themes since FM-180.
+    dark: "#101010",
 };
 
 function Probe() {
