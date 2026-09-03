@@ -1,0 +1,92 @@
+name: Sync upstream + keep fix
+
+# Runs daily at 3am UTC and on manual trigger
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout our fork (master)
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "Grant Mitchell"
+          git config user.email "grant.mitchell@agentmail.to"
+
+      - name: Fetch upstream changes
+        run: |
+          git remote add upstream https://github.com/theotherp/nzbhydra2.git
+          git fetch upstream master --tags
+
+      - name: Check for upstream changes
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/master)
+          echo "behind=$BEHIND"
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          if [ "$BEHIND" -eq 0 ]; then
+            echo "upstream has no new commits — nothing to do"
+          fi
+
+      - name: Merge upstream into our master
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git merge upstream/master --no-edit
+
+      - name: Re-apply our Torbox fix on top
+        if: steps.check.outputs.behind != '0'
+        run: |
+          # Our fix lives on torbox-filename-fix branch. Merge it on top of
+          # the freshly-updated master so the fix always survives upstream changes.
+          git merge origin/torbox-filename-fix --no-edit || {
+            echo "CONFLICT_DETECTED=1" >> $GITHUB_ENV
+            git merge --abort
+            exit 0
+          }
+          # Sanity check the fix is actually present
+          if grep -q "suffixTitleToResultType" core/src/main/java/org/nzbhydra/downloading/downloaders/torbox/Torbox.java; then
+            echo "✅ Fix present in Torbox.java"
+          else
+            echo "❌ Fix MISSING from Torbox.java — upstream may have refactored it"
+            echo "FIX_MISSING=1" >> $GITHUB_ENV
+          fi
+
+      - name: Push updates
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git push origin master
+          git push origin torbox-filename-fix
+
+      - name: Open issue if fix conflict or fix missing
+        if: env.CONFLICT_DETECTED == '1' || env.FIX_MISSING == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reason = process.env.CONFLICT_DETECTED === '1'
+              ? 'The Torbox fix branch conflicted with the latest upstream changes.'
+              : 'The Torbox fix (suffixTitleToResultType) is MISSING from Torbox.java after merging upstream — the developer may have refactored it.';
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Torbox fix needs attention after upstream sync',
+              body: reason + '\n\nUpstream pushed changes that broke our fix. Please review `core/src/main/java/org/nzbhydra/downloading/downloaders/torbox/Torbox.java` and re-apply the fix manually.'
+            });
+
+      - name: Telegram alert on conflict/missing fix
+        if: env.CONFLICT_DETECTED == '1' || env.FIX_MISSING == '1'
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="⚠️ NZBHydra2 fork: Torbox fix needs attention after upstream sync. Check https://github.com/aethernet404/nzbhydra2/issues"
