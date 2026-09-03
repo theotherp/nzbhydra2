@@ -735,6 +735,13 @@ describe("createHydraTheme typography and density", () => {
                 root: {
                     fontSize: "14px",
                     "&:not(.MuiInputBase-multiline)": {height: controlHeight},
+                    // The one non-sizing rule, and still not a focus style:
+                    // 16px on coarse-pointer devices is what keeps iOS
+                    // Safari from zooming the page into a focused field
+                    // (user report 2026-09-03). Pinned at exactly 16px --
+                    // Safari's threshold -- so a "denser mobile inputs"
+                    // change cannot quietly bring the zoom back.
+                    "@media (pointer: coarse)": {fontSize: "16px"},
                 },
             },
         });

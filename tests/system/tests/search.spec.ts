@@ -1,4 +1,4 @@
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 import {
     captureVisualRegion,
     expectVisualGeometry,
@@ -44,6 +44,46 @@ test.describe("Search", () => {
         await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
+    });
+
+    // User report (2026-09-03): on an iPhone the page zooms in when the search
+    // field is tapped. iOS Safari zooms into any focused input whose computed
+    // font-size is under 16px; the theme's `MuiInputBase` answers with 16px
+    // under `(pointer: coarse)`. No desktop browser reproduces the zoom
+    // itself, so what is pinned is its trigger: the computed size of the
+    // query input on a touch device is exactly 16px, and a mouse device keeps
+    // the mock's 14px. `hasTouch`/`isMobile` are context options, so the touch
+    // half runs in its own context.
+    test("should render the query input at 16px on a touch device so iOS does not zoom into it", async ({
+        browser,
+        page,
+    }) => {
+        // `search-query` is the `<input>` itself (`slotProps.htmlInput`).
+        const inputFontSize = (candidate: import("@playwright/test").Page) =>
+            candidate
+                .getByTestId("search-query")
+                .evaluate((element) => getComputedStyle(element).fontSize);
+
+        expect(await inputFontSize(page)).toBe("14px");
+
+        const context = await browser.newContext({
+            baseURL: testEnvironment.playwrightBaseUrl,
+            hasTouch: true,
+            isMobile: true,
+            viewport: visualViewports.mobile,
+        });
+        try {
+            const touchPage = await context.newPage();
+            await touchPage.goto("/");
+            await dismissWelcomeDialog(touchPage);
+            await expect(touchPage.getByTestId("search-query")).toBeVisible();
+            expect(await inputFontSize(touchPage)).toBe("16px");
+            await touchPage.getByTestId("search-query").tap();
+            await expect(touchPage.getByTestId("search-query")).toBeFocused();
+            expect(await inputFontSize(touchPage)).toBe("16px");
+        } finally {
+            await context.close();
+        }
     });
 
     // FM-094: retargeted from the legacy shell with the `beforeEach` above.

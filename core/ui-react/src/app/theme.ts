@@ -1709,6 +1709,20 @@ export function createHydraTheme(
                         "&:not(.MuiInputBase-multiline)": {
                             height: controlHeight,
                         },
+                        // User report (2026-09-03): on an iPhone the page
+                        // "zooms in a bit" when the search field is tapped.
+                        // That is iOS Safari's own rule -- focusing an input
+                        // whose computed font-size is under 16px scales the
+                        // page until it is -- and no desktop simulator
+                        // emulates it. Touch devices therefore get the 16px
+                        // that switches the zoom off; mouse devices keep the
+                        // mock's 14px. `pointer: coarse` rather than a width
+                        // breakpoint because the zoom is a property of the
+                        // input device, not of the viewport: a tablet at
+                        // 1024px zooms too.
+                        "@media (pointer: coarse)": {
+                            fontSize: "16px",
+                        },
                     },
                 },
             },
