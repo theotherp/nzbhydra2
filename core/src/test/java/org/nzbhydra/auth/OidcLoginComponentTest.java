@@ -70,12 +70,20 @@ class OidcLoginComponentTest {
     private static final String CLIENT_ID = "hydra-client";
     private static final String OIDC_USERNAME = "oidcuser";
 
+    private static final String NATIVE_BUILD_PROPERTY = "HYDRA_NATIVE_BUILD";
+
     private static HttpServer oidcProvider;
     private static RSAKey rsaKey;
     private static volatile String expectedNonce;
+    private static String previousNativeBuildProperty;
 
     @BeforeAll
     static void startOidcProvider() throws Exception {
+        //This tests the JVM security configuration. The native build workflow exports HYDRA_NATIVE_BUILD=true for its
+        //unit test step as well, and SecurityConfig then forces basic auth and never registers the OIDC login, so the
+        //authorization endpoint answers 404 there. NzbHydra.isNativeBuild() lets the property override the environment.
+        previousNativeBuildProperty = System.getProperty(NATIVE_BUILD_PROPERTY);
+        System.setProperty(NATIVE_BUILD_PROPERTY, "false");
         rsaKey = new RSAKeyGenerator(2048).keyID("test-key").generate();
         oidcProvider = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         oidcProvider.createContext("/token", exchange -> {
@@ -100,6 +108,11 @@ class OidcLoginComponentTest {
     @AfterAll
     static void stopOidcProvider() {
         oidcProvider.stop(0);
+        if (previousNativeBuildProperty == null) {
+            System.clearProperty(NATIVE_BUILD_PROPERTY);
+        } else {
+            System.setProperty(NATIVE_BUILD_PROPERTY, previousNativeBuildProperty);
+        }
     }
 
     @Test

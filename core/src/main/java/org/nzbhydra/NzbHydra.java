@@ -368,8 +368,13 @@ public class NzbHydra {
     }
 
     public static boolean isNativeBuild() {
-        String hydraNativeBuildEnv = System.getenv("HYDRA_NATIVE_BUILD");
         String hydraNativeBuildProperty = System.getProperty("HYDRA_NATIVE_BUILD");
-        return hydraNativeBuildEnv != null || hydraNativeBuildProperty != null;
+        if (hydraNativeBuildProperty != null) {
+            //An explicit "false" system property overrides the environment. The native build workflow exports
+            //HYDRA_NATIVE_BUILD=true for the whole job, unit tests included, and a test of the plain JVM configuration
+            //(e.g. OidcLoginComponentTest) needs a way to opt out of that.
+            return !"false".equalsIgnoreCase(hydraNativeBuildProperty.trim());
+        }
+        return System.getenv("HYDRA_NATIVE_BUILD") != null;
     }
 }
