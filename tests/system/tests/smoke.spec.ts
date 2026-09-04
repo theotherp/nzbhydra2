@@ -441,11 +441,31 @@ test.describe("Theme selection", () => {
             (window as unknown as {fm154: number}).fm154 = 1;
         });
 
+        const schemes = new Map<string, string>();
         for (const theme of themes) {
             await chooseTheme(page, theme.value);
             await expect(selector).toHaveText(`Theme: ${theme.label}`);
             grounds.set(theme.value, await ground());
+            schemes.set(
+                theme.value,
+                await page.evaluate(
+                    () =>
+                        getComputedStyle(document.documentElement).colorScheme,
+                ),
+            );
         }
+        // `CssBaseline enableColorScheme`: the document's `color-scheme`
+        // follows the palette mode, which is what makes the browser-drawn
+        // date pickers (stats custom range, history refine) open dark on
+        // the dark themes instead of as a white box (owner report
+        // 2026-09-04). Asserted here because the pickers themselves are
+        // native popups a test cannot open or photograph.
+        expect(Object.fromEntries(schemes)).toEqual({
+            grey: "dark",
+            bright: "light",
+            dark: "dark",
+            "dark-dyschromatopsia": "dark",
+        });
 
         expect(
             await page.evaluate(

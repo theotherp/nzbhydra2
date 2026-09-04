@@ -90,7 +90,15 @@ export function App({bootstrap, isLoading = false}: AppProps) {
          * forced a provider reorder.
          */
         <ThemePreferenceProvider>
-            <CssBaseline />
+            {/* `enableColorScheme` writes `color-scheme: dark|light` from
+                the palette mode onto the document, which is what the
+                browser reads when it draws the controls we do not: the
+                native `<input type="date">` / `datetime-local` popups and
+                calendar icons in the stats range and the history refine
+                surface opened as a white box over the dark themes (owner
+                report 2026-09-04). Native scrollbars follow the same
+                scheme; the theme already styles those explicitly. */}
+            <CssBaseline enableColorScheme />
             {isLoading ? (
                 <Container maxWidth="sm" sx={{py: 8}}>
                     <Stack alignItems="center" role="status" spacing={2}>
