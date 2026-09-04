@@ -1340,6 +1340,14 @@ features:
     # recalculating from scratch. `API-STATS-QUERY`'s semantics are unchanged:
     # the query function merges each response into the held value field by
     # field, and a single-family toggle still requests only that family.
+    # 2026-09-04 (FM-185): the Custom range's two fields are MUI X
+    # `DatePicker`s (`YYYY-MM-DD` typed entry) so the calendar renders in-page
+    # from the active palette in every browser, Firefox included -- its native
+    # `type="date"` panel is drawn at browser level and follows the OS theme,
+    # which no page-level `color-scheme` reaches. `stats-custom-after` and
+    # `stats-custom-before` now sit on the field root rather than on its
+    # input; the two `YYYY-MM-DD` strings, the 400 ms commit, both error
+    # messages and the request instants are unchanged.
     selectors:
       # Controls header: stats-dashboard, stats-controls-header,
       # stats-date-preset-<last7|last30|last90|lastYear|allTime|custom>,
@@ -1444,6 +1452,12 @@ features:
       - core/ui-react/src/features/search/SearchPage.test.tsx
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/search-history.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
     selectors:
       - search-history-refresh
       - search-history-table
@@ -1556,6 +1570,12 @@ features:
       - core/ui-react/src/domain/downloads/actions.test.ts
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/downloads.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
     selectors:
       - download-history-refresh
       - download-history-table
@@ -1651,6 +1671,12 @@ features:
       - core/ui-react/src/domain/links/textLinks.test.ts
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/notification-history.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
     selectors:
       - notification-history-refresh
       - notification-history-table

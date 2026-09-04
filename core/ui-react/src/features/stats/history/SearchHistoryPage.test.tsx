@@ -1,4 +1,6 @@
 import {ThemeProvider} from "@mui/material";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {
     createMemoryHistory,
@@ -90,22 +92,26 @@ function renderRouted(options: {
     });
     const result = render(
         <ThemeProvider theme={createHydraTheme("grey")}>
-            <QueryClientProvider
-                client={
-                    new QueryClient({defaultOptions: {queries: {retry: false}}})
-                }
-            >
-                {/*
-                 * FM-170: `CopyValueButton` calls `useToasts` unconditionally
-                 * (before deciding whether it renders anything), so every
-                 * page under test needs a real provider -- same as the
-                 * production tree, which mounts one once for the whole app
-                 * in `App.tsx`.
-                 */}
-                <ToastProvider>
-                    <RouterProvider router={router} />
-                </ToastProvider>
-            </QueryClientProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <QueryClientProvider
+                    client={
+                        new QueryClient({
+                            defaultOptions: {queries: {retry: false}},
+                        })
+                    }
+                >
+                    {/*
+                     * FM-170: `CopyValueButton` calls `useToasts` unconditionally
+                     * (before deciding whether it renders anything), so every
+                     * page under test needs a real provider -- same as the
+                     * production tree, which mounts one once for the whole app
+                     * in `App.tsx`.
+                     */}
+                    <ToastProvider>
+                        <RouterProvider router={router} />
+                    </ToastProvider>
+                </QueryClientProvider>
+            </LocalizationProvider>
         </ThemeProvider>,
     );
     return {...result, router};
@@ -272,8 +278,12 @@ describe("SearchHistoryPage", () => {
                 ),
         );
         await screen.findByTestId("search-history-row");
-        for (const label of ["After", "Before", "Query"]) {
-            expect(screen.getByLabelText(label)).toBeVisible();
+        expect(screen.getByLabelText("Query")).toBeVisible();
+        for (const label of ["After", "Before"]) {
+            // FM-185: the time controls are MUI X pickers, whose label is
+            // associated with both the `role="group"` control and the
+            // `aria-hidden` form input behind it.
+            expect(screen.getByRole("group", {name: label})).toBeVisible();
         }
         expect(
             screen.getByRole("combobox", {name: "Source"}),

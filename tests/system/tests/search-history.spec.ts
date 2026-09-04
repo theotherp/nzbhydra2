@@ -776,7 +776,80 @@ test.describe("Search history", () => {
             page.getByRole("combobox", {name: "Rows per page"}),
         ).toHaveText("100");
     });
+
+    /**
+     * FM-185. The refine surface's two Time fields are MUI X
+     * `DateTimePicker`s, so their calendar is drawn by the page and wears the
+     * theme the reader chose -- which is the whole reason the native
+     * `<input type="datetime-local">` was given up: Firefox draws its panel
+     * at browser level, outside anything the page's `color-scheme` reaches.
+     */
+    test("should open the refine time calendar in the active theme", async ({
+        page,
+    }) => {
+        try {
+            for (const viewport of ["desktop", "mobile"] as const) {
+                for (const value of ["grey", "bright", "dark"] as const) {
+                    await prepareVisualEvidence(page, viewport, async () => {
+                        await page.goto("/stats/searches");
+                        await dismissWelcomeDialog(page);
+                    });
+                    await chooseTheme(page, value);
+                    if (viewport === "mobile") {
+                        // Below 768px the sections live in the bottom sheet
+                        // the compact trigger opens, not in a docked column.
+                        await page.getByTestId("history-refine-toggle").click();
+                    }
+                    const field = page.getByTestId("history-refine-time-after");
+                    await expect(field).toBeVisible();
+                    // Scoped to the After field: the Before field carries a
+                    // button with the same accessible name (`e08aa3b87`).
+                    await field
+                        .getByRole("button", {name: /^Choose date/})
+                        .click();
+                    const calendar = page
+                        .getByRole("dialog")
+                        .filter({has: page.getByRole("gridcell")});
+                    await expect(calendar).toBeVisible();
+                    await page.screenshot({
+                        path: visualEvidencePath(
+                            "F-HISTORY-SEARCHES",
+                            `refine-time-calendar-${value}-${viewport}`,
+                        ),
+                    });
+                    await page.keyboard.press("Escape");
+                    await expect(calendar).toHaveCount(0);
+                }
+            }
+        } finally {
+            await clearThemePreference(page);
+        }
+    });
 });
+
+/**
+ * FM-185 needs the same two theme helpers `stats.spec.ts` has: the selector
+ * writes the preference per user against a shared instance, so whatever a
+ * case wears must not outlive it.
+ */
+async function chooseTheme(page: Page, value: string): Promise<void> {
+    await page.getByTestId("app-shell-theme-selector").click();
+    await page.getByTestId(`app-shell-theme-option-${value}`).click();
+    // Unmounted, not merely fading: a capture taken during MUI's exit
+    // transition photographs a translucent menu over the page.
+    await expect(page.getByRole("menu")).toHaveCount(0);
+}
+
+async function clearThemePreference(page: Page): Promise<void> {
+    const response = await page.request.put(
+        "/internalapi/genericstorage/themePreference?forUser=true",
+        {
+            data: JSON.stringify(""),
+            headers: {"content-type": "application/json"},
+        },
+    );
+    expect(response.ok()).toBe(true);
+}
 
 async function refreshUntilHistoryRowIsVisible(
     page: import("@playwright/test").Page,

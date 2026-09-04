@@ -11,6 +11,8 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import {CircularProgress, Container, Stack, Typography} from "@mui/material";
 import {CssBaseline} from "@mui/material";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import {
     MutationCache,
     QueryCache,
@@ -90,39 +92,49 @@ export function App({bootstrap, isLoading = false}: AppProps) {
          * forced a provider reorder.
          */
         <ThemePreferenceProvider>
-            {/* `enableColorScheme` writes `color-scheme: dark|light` from
-                the palette mode onto the document, which is what the
-                browser reads when it draws the controls we do not: the
-                native `<input type="date">` / `datetime-local` popups and
-                calendar icons in the stats range and the history refine
-                surface opened as a white box over the dark themes (owner
-                report 2026-09-04). Native scrollbars follow the same
-                scheme; the theme already styles those explicitly. */}
-            <CssBaseline enableColorScheme />
-            {isLoading ? (
-                <Container maxWidth="sm" sx={{py: 8}}>
-                    <Stack
-                        role="status"
-                        spacing={2}
-                        sx={{
-                            alignItems: "center",
-                        }}
-                    >
-                        <CircularProgress variant="indeterminate" />
-                        <Typography>Loading…</Typography>
-                    </Stack>
-                </Container>
-            ) : (
-                <QueryClientProvider client={queryClient}>
-                    <SafeConfigProvider bootstrap={bootstrap}>
-                        <DialogProvider>
-                            <ToastProvider>
-                                <RouterProvider router={router} />
-                            </ToastProvider>
-                        </DialogProvider>
-                    </SafeConfigProvider>
-                </QueryClientProvider>
-            )}
+            {/* The single date-library binding for every MUI X picker in the
+                application (ADR-0002's component set). It carries no theme:
+                the calendar is stock MUI and takes the active palette from
+                `ThemePreferenceProvider` above it. */}
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {/* `enableColorScheme` writes `color-scheme: dark|light` from
+                    the palette mode onto the document, which is what the
+                    browser reads when it draws the controls we do not. FM-185
+                    replaced the stats range and history refine time inputs --
+                    the `e541f7a46` quickfix's original subject -- with MUI X
+                    pickers that render their calendar in-page from the palette,
+                    because Firefox draws a native `<input type="date">` panel at
+                    browser level that no page-level `color-scheme` reaches
+                    (owner report 2026-09-04). What still needs this flag is
+                    every other browser-drawn surface: native scrollbars, form
+                    controls we do not replace, and the `input type="number"`
+                    spinners. */}
+                <CssBaseline enableColorScheme />
+                {isLoading ? (
+                    <Container maxWidth="sm" sx={{py: 8}}>
+                        <Stack
+                            role="status"
+                            spacing={2}
+                            sx={{
+                                alignItems: "center",
+                            }}
+                        >
+                            <CircularProgress variant="indeterminate" />
+                            <Typography>Loading…</Typography>
+                        </Stack>
+                    </Container>
+                ) : (
+                    <QueryClientProvider client={queryClient}>
+                        <SafeConfigProvider bootstrap={bootstrap}>
+                            <DialogProvider>
+                                <ToastProvider>
+                                    <RouterProvider router={router} />
+                                </ToastProvider>
+                            </DialogProvider>
+                        </SafeConfigProvider>
+                    </QueryClientProvider>
+                )}
+            </LocalizationProvider>
         </ThemePreferenceProvider>
     );
 }

@@ -2399,3 +2399,39 @@ describe("the refine selection controls' hover states (FM-161)", () => {
         });
     }
 });
+
+describe("MUI X picker inputs (FM-185 follow-up)", () => {
+    it("should size and surface the picker family exactly like the text-field family", () => {
+        const theme = createHydraTheme("grey", false);
+        // The picker input is not an `InputBase`, so it takes the same
+        // numbers by its own name: control height, control text size, and
+        // the coarse-pointer 16px that keeps iOS from zooming.
+        expect(theme.components?.MuiPickersInputBase).toEqual({
+            styleOverrides: {
+                root: {
+                    fontSize: "14px",
+                    height: controlHeight,
+                    "@media (pointer: coarse)": {fontSize: "16px"},
+                },
+                sectionsContainer: {paddingBottom: 0, paddingTop: 0},
+            },
+        });
+        const root = theme.components?.MuiPickersOutlinedInput?.styleOverrides
+            ?.root as (args: {theme: typeof theme}) => Record<string, unknown>;
+        const resolved = root({theme});
+        expect(resolved.borderRadius).toBe(8);
+        expect(resolved.backgroundColor).toBe(theme.palette.surfaces.recessed);
+        // Parity, not a literal: the outline colour is whatever the
+        // text-field family resolves for the same theme.
+        const outlined = (
+            theme.components?.MuiOutlinedInput?.styleOverrides?.root as (args: {
+                theme: typeof theme;
+            }) => Record<string, {borderColor?: string}>
+        )({theme});
+        expect(resolved["& .MuiPickersOutlinedInput-notchedOutline"]).toEqual({
+            borderColor:
+                outlined["& .MuiOutlinedInput-notchedOutline"].borderColor,
+            "& legend": {fontSize: "12px"},
+        });
+    });
+});

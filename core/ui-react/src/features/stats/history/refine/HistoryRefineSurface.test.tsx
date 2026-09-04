@@ -1,4 +1,6 @@
 import {ThemeProvider} from "@mui/material/styles";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import {
     cleanup,
     fireEvent,
@@ -108,17 +110,33 @@ function renderSurface(
     const onClearAll = overrides.onClearAll ?? vi.fn();
     render(
         <ThemeProvider theme={createHydraTheme()}>
-            <HistoryRefineLayout
-                dimensions={overrides.dimensions ?? dimensions}
-                onChange={onChange}
-                onClearAll={onClearAll}
-                values={values}
-            >
-                <div data-testid="page-body" />
-            </HistoryRefineLayout>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <HistoryRefineLayout
+                    dimensions={overrides.dimensions ?? dimensions}
+                    onChange={onChange}
+                    onClearAll={onClearAll}
+                    values={values}
+                >
+                    <div data-testid="page-body" />
+                </HistoryRefineLayout>
+            </LocalizationProvider>
         </ThemeProvider>,
     );
     return {onChange, onClearAll};
+}
+
+/**
+ * Types a value into one of the MUI X pickers FM-185 put on the time
+ * dimension. The field is a list of contenteditable sections plus one
+ * `aria-hidden` `<input>`, and that input is the field's own keyboard/autofill
+ * entry point: what is written to it is parsed in the field's *display*
+ * format, which is why the value here is space-separated rather than the
+ * `T`-separated string the filter stores.
+ */
+function typeIntoPicker(testId: string, displayValue: string): void {
+    const input = screen.getByTestId(testId).querySelector("input");
+    if (!input) throw new Error(`No picker input inside ${testId}`);
+    fireEvent.change(input, {target: {value: displayValue}});
 }
 
 // ADR-0050: a `checkboxes` dimension renders as a `C-REFINE-MULTISELECT` that
@@ -142,13 +160,22 @@ describe("HistoryRefineSurface", () => {
         ).toBeVisible();
         expect(screen.getByTestId("history-refine-bar")).toBeVisible();
         for (const label of [
-            "After",
-            "Before",
             "Title",
             "Minimum age (days)",
             "Maximum age (days)",
         ]) {
             expect(screen.getByLabelText(label)).toBeVisible();
+        }
+        for (const label of ["After", "Before"]) {
+            // FM-185: the two time controls are MUI X pickers. Their visible
+            // label is associated with both the `role="group"` control the
+            // reader interacts with and the `aria-hidden` form input behind
+            // it, so `getByLabelText` alone is ambiguous by construction --
+            // the label is asserted against the control itself.
+            expect(
+                screen.getByLabelText(label, {selector: '[role="group"]'}),
+            ).toBeVisible();
+            expect(screen.getByRole("group", {name: label})).toBeVisible();
         }
         expect(
             screen.getByRole("combobox", {name: "Source"}),
@@ -382,9 +409,7 @@ describe("HistoryRefineSurface", () => {
             min: "3",
             max: "",
         });
-        fireEvent.change(screen.getByLabelText("Before"), {
-            target: {value: "2024-01-02T10:00"},
-        });
+        typeIntoPicker("history-refine-time-before", "2024-01-02 10:00");
         expect(onChange).toHaveBeenLastCalledWith("time", {
             kind: "time",
             after: "",
@@ -395,6 +420,55 @@ describe("HistoryRefineSurface", () => {
         expect(onChange).toHaveBeenLastCalledWith("source", {
             kind: "boolean",
             value: "INTERNAL",
+        });
+    });
+
+    it("should empty a whole date-time with the field's own Clear button", () => {
+        // Owner request 2026-09-04: resetting a date-time meant deleting each
+        // section separately. The Clear button only exists while the field
+        // holds a value, so the surface is rendered with one.
+        const {onChange} = renderSurface({
+            time: {kind: "time", after: "", before: "2024-01-02T10:00"},
+        });
+        fireEvent.click(
+            within(screen.getByTestId("history-refine-time-before")).getByRole(
+                "button",
+                {name: "Clear"},
+            ),
+        );
+        expect(onChange).toHaveBeenLastCalledWith("time", {
+            kind: "time",
+            after: "",
+            before: "",
+        });
+    });
+
+    /*
+     * The picker's other entry point. Whichever way a value is chosen, what
+     * leaves this component is the same `YYYY-MM-DDTHH:mm` string the native
+     * `<input type="datetime-local">` reported, because that string -- not the
+     * `Dayjs` -- is what `HistoryFilterValues`, the URL and `toServerTime`
+     * consume.
+     */
+    it("should report a calendar-picked time in the stored string format", () => {
+        const {onChange} = renderSurface({
+            time: {kind: "time", after: "2024-03-10T08:45", before: ""},
+        });
+        fireEvent.click(
+            within(screen.getByTestId("history-refine-time-after")).getByRole(
+                "button",
+                {name: /^Choose date/},
+            ),
+        );
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("gridcell", {
+                name: "21",
+            }),
+        );
+        expect(onChange).toHaveBeenLastCalledWith("time", {
+            kind: "time",
+            after: "2024-03-21T08:45",
+            before: "",
         });
     });
 

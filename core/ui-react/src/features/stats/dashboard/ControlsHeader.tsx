@@ -8,11 +8,11 @@ import {
     MenuItem,
     Stack,
     Switch,
-    TextField,
     ToggleButton,
     ToggleButtonGroup,
     Typography,
 } from "@mui/material";
+import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {useState} from "react";
 
 import {
@@ -20,6 +20,13 @@ import {
     type StatFamily,
     type StatFamilySelection,
 } from "../../../api/stats/mainStats";
+import {
+    DATE_DISPLAY_FORMAT,
+    DATE_VALUE_FORMAT,
+    pickerFieldSlotProps,
+    pickerValueOf,
+    pickerValueString,
+} from "../../../domain/date-time/pickerValue";
 import {DATE_PRESETS, type DatePresetId} from "./dateRange";
 
 const FAMILY_GROUPS: {label: string; families: StatFamily[]}[] = [
@@ -145,28 +152,42 @@ export function ControlsHeader({
                         gap: 1,
                     }}
                 >
-                    <TextField
+                    <DatePicker
                         data-testid="stats-custom-after"
-                        error={Boolean(customError)}
-                        helperText={customError}
+                        format={DATE_DISPLAY_FORMAT}
                         label="After"
-                        onChange={(event) =>
-                            onCustomChange("after", event.target.value)
+                        onChange={(value) =>
+                            onCustomChange(
+                                "after",
+                                pickerValueString(value, DATE_VALUE_FORMAT),
+                            )
                         }
-                        slotProps={{inputLabel: {shrink: true}}}
-                        type="date"
-                        value={customAfter}
+                        slotProps={{
+                            ...pickerFieldSlotProps,
+                            textField: {
+                                error: Boolean(customError),
+                                helperText: customError,
+                            },
+                        }}
+                        value={pickerValueOf(customAfter, DATE_VALUE_FORMAT)}
                     />
-                    <TextField
+                    <DatePicker
                         data-testid="stats-custom-before"
-                        error={Boolean(customError)}
+                        format={DATE_DISPLAY_FORMAT}
                         label="Before"
-                        onChange={(event) =>
-                            onCustomChange("before", event.target.value)
+                        onChange={(value) =>
+                            onCustomChange(
+                                "before",
+                                pickerValueString(value, DATE_VALUE_FORMAT),
+                            )
                         }
-                        slotProps={{inputLabel: {shrink: true}}}
-                        type="date"
-                        value={customBefore}
+                        slotProps={{
+                            ...pickerFieldSlotProps,
+                            textField: {
+                                error: Boolean(customError),
+                            },
+                        }}
+                        value={pickerValueOf(customBefore, DATE_VALUE_FORMAT)}
                     />
                 </Stack>
             )}

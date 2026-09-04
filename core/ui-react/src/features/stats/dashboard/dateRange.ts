@@ -40,10 +40,16 @@ export type CustomDateValidation =
     | {valid: false; error: string};
 
 /**
- * Validates a Custom range's two `<input type="date">` values: both must
- * parse and `after` must be strictly before `before` (Presentation
- * Structure: "Invalid ranges (after >= before, unparseable input) are
- * flagged inline and never sent").
+ * Validates a Custom range's two `YYYY-MM-DD` values: both must parse and
+ * `after` must be strictly before `before` (Presentation Structure: "Invalid
+ * ranges (after >= before, unparseable input) are flagged inline and never
+ * sent").
+ *
+ * FM-185 replaced the two `<input type="date">` fields that produced these
+ * strings with MUI X `DatePicker`s, which write the identical format and an
+ * empty string for a cleared or half-entered field. Nothing here changed: the
+ * strings, not the picker, are the contract this module and every consumer
+ * downstream of it are written against.
  */
 export function validateCustomRange(
     input: CustomDateInput,

@@ -513,15 +513,43 @@ test.describe("React aggregate statistics dashboard", () => {
         expect(disabledBody.includeDisabled).toBe(true);
 
         await page.getByTestId("stats-date-preset-custom").click();
-        const afterInput = page
+        // FM-185: the field is a list of contenteditable sections, and the
+        // only `<input>` inside it is the `aria-hidden` one MUI X keeps for
+        // form submission -- so a reader (and this test) types digits into
+        // the sections, which advance by themselves.
+        const afterYear = page
             .getByTestId("stats-custom-after")
-            .locator("input");
-        await afterInput.fill("2099-01-01");
+            .getByRole("spinbutton", {name: "Year"});
+        await afterYear.click();
+        await page.keyboard.type("20990101");
         await expect(
             page.getByText(
                 "The After date must be earlier than the Before date.",
             ),
         ).toBeVisible();
+
+        /*
+         * And a valid typed date reaches the server as the same instant the
+         * `<input type="date">` this replaced produced: local midnight of the
+         * typed day. The expectation is that derivation evaluated in the page
+         * itself, so a picker that sent UTC midnight -- or the instant of the
+         * keystroke -- fails here rather than agreeing with itself.
+         */
+        const customRequest = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname === "/internalapi/stats",
+        );
+        await afterYear.click();
+        await page.keyboard.type("20260101");
+        const customBody = (await customRequest)
+            .request()
+            .postDataJSON() as Record<string, unknown>;
+        expect(customBody.after).toBe(
+            await page.evaluate(() =>
+                new Date("2026-01-01T00:00:00").toISOString(),
+            ),
+        );
     });
 
     test("should capture the dashboard's full screenshot strip", async ({
@@ -678,9 +706,9 @@ test.describe("React aggregate statistics dashboard", () => {
             });
             await expect(indexerTable).toContainText("55.7%");
             await expect(indexerTable).toContainText("95.2%");
-            await expect(page.getByTestId("stats-age-older-1000")).toContainText(
-                "2.5%",
-            );
+            await expect(
+                page.getByTestId("stats-age-older-1000"),
+            ).toContainText("2.5%");
             await expect(page.getByTestId("stats-age-average")).toContainText(
                 "45.3",
             );
@@ -887,6 +915,69 @@ test.describe("React aggregate statistics dashboard", () => {
                     `${scrollerTestId}-scrolled-mobile`,
                 ),
             });
+        }
+    });
+
+    /**
+     * FM-185's whole point, and the one thing jsdom cannot answer: the
+     * calendar is now drawn by the page, so it wears the theme the reader
+     * chose. The `<input type="date">` this replaced handed its popup to the
+     * browser, which drew it from the OS theme -- fixed for Chrome and Safari
+     * by `e541f7a46`'s `color-scheme`, never for Firefox, whose panel lives
+     * outside the page entirely.
+     */
+    test("opens the Custom range calendar in the active theme", async ({
+        page,
+    }, testInfo) => {
+        const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
+        const applicationUrl = (path: string) =>
+            new URL(path, applicationBaseUrl).toString();
+        await page.route("**/internalapi/stats", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify(statsResponseFixture()),
+            });
+        });
+        try {
+            for (const viewport of ["desktop", "mobile"] as const) {
+                for (const value of ["grey", "bright", "dark"] as const) {
+                    await prepareVisualEvidence(page, viewport, async () => {
+                        await page.goto(applicationUrl("/stats/stats"));
+                        await dismissWelcomeDialog(page);
+                        await expect(
+                            page.getByTestId("stats-dashboard"),
+                        ).toBeVisible();
+                    });
+                    await chooseTheme(page, value);
+                    await page.getByTestId("stats-date-preset-custom").click();
+                    // Scoped to the After field: the Before field carries a
+                    // button with the same accessible name, and the page
+                    // would otherwise be strict-mode ambiguous (`e08aa3b87`).
+                    await page
+                        .getByTestId("stats-custom-after")
+                        .getByRole("button", {name: /^Choose date/})
+                        .click();
+                    const calendar = page.getByRole("dialog");
+                    await expect(calendar).toBeVisible();
+                    // The calendar is in the document, not a browser-level
+                    // panel: it is inside the page's own root.
+                    expect(
+                        await calendar.evaluate((element) =>
+                            Boolean(element.closest("body")),
+                        ),
+                    ).toBe(true);
+                    await page.screenshot({
+                        path: visualEvidencePath(
+                            "F-STATS-MAIN",
+                            `custom-range-calendar-${value}-${viewport}`,
+                        ),
+                    });
+                    await page.keyboard.press("Escape");
+                    await expect(calendar).toHaveCount(0);
+                }
+            }
+        } finally {
+            await clearThemePreference(page);
         }
     });
 });

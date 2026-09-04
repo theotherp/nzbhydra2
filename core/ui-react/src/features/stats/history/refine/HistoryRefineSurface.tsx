@@ -1,4 +1,5 @@
 import {Box, MenuItem, Stack, TextField, Typography} from "@mui/material";
+import {DateTimePicker} from "@mui/x-date-pickers/DateTimePicker";
 import {useState, type ReactNode} from "react";
 
 import {
@@ -17,6 +18,13 @@ import {
     type RefineSurfaceLabels,
     type RefineSurfaceTestIds,
 } from "../../../../components/refine/RefineSurface";
+import {
+    DATE_TIME_DISPLAY_FORMAT,
+    DATE_TIME_VALUE_FORMAT,
+    pickerFieldSlotProps,
+    pickerValueOf,
+    pickerValueString,
+} from "../../../../domain/date-time/pickerValue";
 import {useHistoryRefineCollapsed} from "./historyRefineCollapsed";
 
 // This feature's own chrome vocabulary for ADR-0046's shared refine surface.
@@ -486,37 +494,41 @@ function TimeSection({dimension, onChange, values}: SectionProps<"time">) {
         <Section dimension={dimension}>
             <SectionCaption id={captionId} label={dimension.label} />
             <Stack sx={{gap: 1}}>
-                <TextField
+                <DateTimePicker
+                    ampm={false}
+                    data-testid={testId(dimension, "after")}
+                    format={DATE_TIME_DISPLAY_FORMAT}
                     label={dimension.afterLabel}
-                    onChange={(event) =>
+                    slotProps={pickerFieldSlotProps}
+                    onChange={(value) =>
                         onChange(dimension.id, {
                             kind: "time",
-                            after: event.target.value,
+                            after: pickerValueString(
+                                value,
+                                DATE_TIME_VALUE_FORMAT,
+                            ),
                             before: range.before,
                         })
                     }
-                    slotProps={{
-                        htmlInput: {"data-testid": testId(dimension, "after")},
-                        inputLabel: {shrink: true},
-                    }}
-                    type="datetime-local"
-                    value={range.after}
+                    value={pickerValueOf(range.after, DATE_TIME_VALUE_FORMAT)}
                 />
-                <TextField
+                <DateTimePicker
+                    ampm={false}
+                    data-testid={testId(dimension, "before")}
+                    format={DATE_TIME_DISPLAY_FORMAT}
                     label={dimension.beforeLabel}
-                    onChange={(event) =>
+                    slotProps={pickerFieldSlotProps}
+                    onChange={(value) =>
                         onChange(dimension.id, {
                             kind: "time",
                             after: range.after,
-                            before: event.target.value,
+                            before: pickerValueString(
+                                value,
+                                DATE_TIME_VALUE_FORMAT,
+                            ),
                         })
                     }
-                    slotProps={{
-                        htmlInput: {"data-testid": testId(dimension, "before")},
-                        inputLabel: {shrink: true},
-                    }}
-                    type="datetime-local"
-                    value={range.before}
+                    value={pickerValueOf(range.before, DATE_TIME_VALUE_FORMAT)}
                 />
             </Stack>
         </Section>

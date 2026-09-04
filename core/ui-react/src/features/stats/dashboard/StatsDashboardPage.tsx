@@ -86,7 +86,8 @@ type DashboardData = {
  * mounts a second apart produce ranges that differ by milliseconds; keying on
  * the instants would give every remount a fresh cache entry and the full-page
  * "Calculating stats…" would be back. A day is also the granularity of the
- * Custom range's two `<input type="date">` values.
+ * Custom range's two date values, whether they are typed into or picked from
+ * the two `DatePicker`s that hold them (FM-185).
  *
  * That only holds because `range` itself is truncated to day boundaries
  * before it ever reaches this key or a request (see `truncateToDayBoundary`
@@ -130,7 +131,7 @@ function statsQueryKey(range: DateRange, includeDisabled: boolean) {
  * before it becomes `range` state, so the key's day granularity and the
  * actual request always agree -- see `statsQueryKey`'s docblock. Custom
  * ranges need no such step: `dateRange.ts`'s `parseDateInput` already parses
- * `<input type="date">` values at midnight.
+ * `YYYY-MM-DD` values at midnight.
  */
 /**
  * How long the custom date fields wait after the last edit before the range
@@ -277,8 +278,8 @@ export function StatsDashboardPage({
 
     /**
      * A custom range is adopted `CUSTOM_RANGE_COMMIT_DELAY_MS` after the last
-     * edit, not on the edit itself. A `<input type="date">` reports every
-     * intermediate value the reader types, and most of them parse: typing the
+     * edit, not on the edit itself. The field reports every intermediate
+     * value the reader types, and most of them parse: typing the
      * year of "2024-01-01" walks through 0002, 0020 and 0202, each a valid
      * range, each a new query key, each a full multi-second stats
      * recalculation on the server. The validation message stays immediate --

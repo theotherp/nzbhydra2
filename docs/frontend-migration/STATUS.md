@@ -1655,6 +1655,24 @@ suite was independently re-run green; the select-all antialiasing delta; a `Syst
 near-circular checkbox ring MUI now draws. Candidates for a future quickfix. Visible changes for the owner's eye: the
 Tab inset, the Switch ring, and the rounder checkbox ring.
 
+FM-185 (Themed Date Pickers (MUI X) For The Stats Range And The History Time Filters) replaced the native
+`<input type="date">` / `datetime-local` controls — whose popup Firefox draws from the OS theme, so the `e541f7a46`
+`color-scheme` quickfix could not reach it — with `@mui/x-date-pickers` 9.13.0 on a `dayjs` 1.11.23 adapter: the stats
+Custom range is two `DatePicker`s, the history refine time dimension two `DateTimePicker`s (`ampm={false}`, typed entry
+`YYYY-MM-DD HH:mm` per FM-174's 24-hour rule), one `LocalizationProvider` in `App.tsx`, and a strict `pickerValue.ts`
+round trip under `C-DATE-TIME` that writes exactly the strings the native inputs wrote (`""` when incomplete), so the
+URL parameters and request instants are byte-identical — recomputed by the reviewer from the old parse paths and
+asserted per site, including a real POST-body assertion. Keyboard entry with the calendar closed is proven live; the
+calendar is in-page and wears each palette, in Firefox too (one-off capture); no theme override, one deduplicated
+`@mui/x-internals`, no other date library. Bundle JS +10.5% (recorded; the packet caps nothing). `getByLabelText` is
+ambiguous against MUI X's stock DOM (control plus an `aria-hidden` input), met via role-scoped label queries, and the
+four test ids moved to the field roots. Vitest 1939/1939, real-backend stats + the three history specs 29/29 on a
+rebuilt jar; thirteen captures reviewed. Passed 2026-09-04 first cycle with two minor findings, not corrected
+(optional): the 390x844 history captures show MUI X's desktop popper clipped at the viewport edge because the capture
+helper resizes without touch emulation (a real touch device gets the fitting modal); and `data-testid` sits on the
+picker component rather than `slotProps.textField` because `@mui/utils` 9.4.0 gates `data-*` on slot props behind an
+undeclared `DataAttributesOverrides` augmentation (ADR-0056's parked adoption). Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -1681,6 +1699,8 @@ None.
 None.
 
 ## Upcoming
+
+- FM-185 (themed date pickers) is complete (entry above). No task packets are queued.
 
 - The 2026-09-04 MUI batch — FM-183 (upgrade to 9.4.0) and FM-184 (`theme.focusVisible`, ADR-0056) — is complete
   (entries above). `enhanceHighContrast` is parked; `motion.reducedMotion` sits in a stash pending a cause (see

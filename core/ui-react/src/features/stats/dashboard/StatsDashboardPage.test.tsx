@@ -8,6 +8,8 @@ import {
     within,
 } from "@testing-library/react";
 import {ThemeProvider} from "@mui/material/styles";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
@@ -70,10 +72,12 @@ function renderPage(
     render(
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={createHydraTheme()}>
-                <StatsDashboardPage
-                    bootstrap={bootstrap(overrides)}
-                    transport={transport}
-                />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <StatsDashboardPage
+                        bootstrap={bootstrap(overrides)}
+                        transport={transport}
+                    />
+                </LocalizationProvider>
             </ThemeProvider>
         </QueryClientProvider>,
     );
@@ -129,6 +133,19 @@ afterEach(() => {
     vi.restoreAllMocks();
     vi.useRealTimers();
 });
+
+/**
+ * The `aria-hidden` `<input>` behind one of the MUI X pickers FM-185 put on
+ * the Custom range. The field itself is a list of contenteditable sections;
+ * this input is its keyboard/autofill entry point, holding and accepting the
+ * value in the field's *display* format -- which for these two is
+ * `YYYY-MM-DD`, the same string `toDateInputValue` produces.
+ */
+function pickerInput(testId: string): HTMLInputElement {
+    const input = screen.getByTestId(testId).querySelector("input");
+    if (!input) throw new Error(`No picker input inside ${testId}`);
+    return input;
+}
 
 describe("StatsDashboardPage", () => {
     it("loads with every family selected on the default 30-day window", async () => {
@@ -278,9 +295,7 @@ describe("StatsDashboardPage", () => {
         // own days -- confirming this is the exact default-state scenario
         // the finding describes, not a contrived one.
         fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
-        const afterInput = within(
-            screen.getByTestId("stats-custom-after"),
-        ).getByLabelText("After") as HTMLInputElement;
+        const afterInput = pickerInput("stats-custom-after");
         expect(afterInput.value).toBe(toDateInputValue(presetQuery.after));
 
         // Switching to Custom on those prefilled days must not refetch (the
@@ -306,6 +321,56 @@ describe("StatsDashboardPage", () => {
         );
     });
 
+    /*
+     * FM-185 replaced the two `<input type="date">` fields with MUI X
+     * `DatePicker`s. What must not move is the instant a chosen day becomes:
+     * the native input reported "2026-01-01" and `dateRange.ts`'s
+     * `parseDateInput` turned that into `new Date("2026-01-01T00:00:00")` --
+     * local midnight. The expectation below is that derivation written out by
+     * hand rather than the picker's own value formatted back, so a picker that
+     * silently produced UTC midnight, or the instant of the click, would fail
+     * here.
+     */
+    it("sends the same instant for a picked day as the native date input did", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        const callsBefore = getStatsMock.mock.calls.length;
+
+        // Typed entry, calendar closed.
+        fireEvent.change(pickerInput("stats-custom-after"), {
+            target: {value: "2026-01-01"},
+        });
+        await waitFor(() =>
+            expect(getStatsMock.mock.calls.length).toBeGreaterThan(callsBefore),
+        );
+        const typedQuery = getStatsMock.mock.calls.at(-1)?.[1] as StatsQuery;
+        expect(typedQuery.after.toISOString()).toBe(
+            new Date("2026-01-01T00:00:00").toISOString(),
+        );
+
+        // The same value chosen from the calendar rather than typed. The
+        // button that opens it is the only affordance the picker adds, and it
+        // carries its own accessible name.
+        const openCalendar = within(
+            screen.getByTestId("stats-custom-after"),
+        ).getByRole("button", {name: /^Choose date/});
+        fireEvent.click(openCalendar);
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("gridcell", {
+                name: "15",
+            }),
+        );
+        await waitFor(() => {
+            const picked = getStatsMock.mock.calls.at(-1)?.[1] as StatsQuery;
+            expect(picked.after.toISOString()).toBe(
+                new Date("2026-01-15T00:00:00").toISOString(),
+            );
+        });
+        expect(pickerInput("stats-custom-after").value).toBe("2026-01-15");
+    });
+
     it("flags an incomplete custom range inline and never sends it", async () => {
         getStatsMock.mockResolvedValue(resultOf({}));
         renderPage();
@@ -313,9 +378,9 @@ describe("StatsDashboardPage", () => {
         expect(getStatsMock).toHaveBeenCalledTimes(1);
 
         fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
-        const after = screen.getByTestId("stats-custom-after");
-        const afterInput = within(after).getByLabelText("After");
-        fireEvent.change(afterInput, {target: {value: "2099-01-01"}});
+        fireEvent.change(pickerInput("stats-custom-after"), {
+            target: {value: "2099-01-01"},
+        });
 
         expect(
             await screen.findByText(
@@ -327,8 +392,8 @@ describe("StatsDashboardPage", () => {
     });
 
     /*
-     * `<input type="date">` reports every intermediate value typed into it,
-     * and most of them are valid ranges: the year of "2020-01-01" walks
+     * The field reports every intermediate value typed into it, and most of
+     * them are valid ranges: the year of "2020-01-01" walks
      * through 0002, 0020 and 0202. Each one used to become the range, and so a
      * new query key and a full stats recalculation the reader never asked for.
      */
@@ -340,9 +405,7 @@ describe("StatsDashboardPage", () => {
         expect(getStatsMock).toHaveBeenCalledTimes(1);
 
         vi.useFakeTimers();
-        const afterInput = within(
-            screen.getByTestId("stats-custom-after"),
-        ).getByLabelText("After");
+        const afterInput = pickerInput("stats-custom-after");
         for (const year of ["0002", "0020", "0202", "2020"]) {
             fireEvent.change(afterInput, {target: {value: `${year}-01-01`}});
         }

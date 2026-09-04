@@ -1,4 +1,6 @@
 import {ThemeProvider} from "@mui/material";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {
     createMemoryHistory,
@@ -76,22 +78,26 @@ function renderRouted(component: () => ReactNode, search?: string) {
     });
     const result = render(
         <ThemeProvider theme={createHydraTheme("grey")}>
-            <QueryClientProvider
-                client={
-                    new QueryClient({defaultOptions: {queries: {retry: false}}})
-                }
-            >
-                {/*
-                 * FM-170: `CopyValueButton` calls `useToasts` unconditionally
-                 * (before deciding whether it renders anything), so the page
-                 * under test needs a real provider -- same as the production
-                 * tree, which mounts one once for the whole app in
-                 * `App.tsx`.
-                 */}
-                <ToastProvider>
-                    <RouterProvider router={router} />
-                </ToastProvider>
-            </QueryClientProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <QueryClientProvider
+                    client={
+                        new QueryClient({
+                            defaultOptions: {queries: {retry: false}},
+                        })
+                    }
+                >
+                    {/*
+                     * FM-170: `CopyValueButton` calls `useToasts` unconditionally
+                     * (before deciding whether it renders anything), so the page
+                     * under test needs a real provider -- same as the production
+                     * tree, which mounts one once for the whole app in
+                     * `App.tsx`.
+                     */}
+                    <ToastProvider>
+                        <RouterProvider router={router} />
+                    </ToastProvider>
+                </QueryClientProvider>
+            </LocalizationProvider>
         </ThemeProvider>,
     );
     return {...result, router};
@@ -136,6 +142,20 @@ function respondWith(body: unknown, requests: RequestInit[] = []) {
             }),
         );
     });
+}
+
+/**
+ * Types a value into the MUI X picker FM-185 put on the time dimension. The
+ * field is a list of contenteditable sections plus one `aria-hidden`
+ * `<input>`, and that input is the field's own keyboard/autofill entry point:
+ * what is written to it is parsed in the field's *display* format, which is
+ * why the value here is space-separated rather than the `T`-separated string
+ * the filter stores and sends.
+ */
+function typeIntoPicker(testId: string, displayValue: string): void {
+    const input = screen.getByTestId(testId).querySelector("input");
+    if (!input) throw new Error(`No picker input inside ${testId}`);
+    fireEvent.change(input, {target: {value: displayValue}});
 }
 
 describe("NotificationHistoryPage", () => {
@@ -401,13 +421,23 @@ describe("NotificationHistoryPage", () => {
             },
         });
 
-        fireEvent.change(screen.getByLabelText("After"), {
-            target: {value: "2024-01-01T00:00"},
-        });
+        typeIntoPicker("history-refine-time-after", "2024-01-01 00:00");
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         expect(lastBody().filterModel.time.filterType).toBe("time");
+        /*
+         * FM-185 replaced the `<input type="datetime-local">` behind this
+         * dimension with a MUI X `DateTimePicker`. The instant on the wire
+         * must not move: the native input reported "2024-01-01T00:00" and
+         * `filters.ts`'s `toServerTime` turned that into
+         * `new Date("2024-01-01T00:00").toISOString()` -- local midnight.
+         * The expectation is that derivation written out by hand, not the
+         * picker's own value formatted back.
+         */
+        expect(lastBody().filterModel.time.filterValue.after).toBe(
+            new Date("2024-01-01T00:00").toISOString(),
+        );
         expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
             "2 active filters",
         );

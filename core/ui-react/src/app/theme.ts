@@ -1,4 +1,5 @@
 import {chipClasses} from "@mui/material/Chip";
+import type {} from "@mui/x-date-pickers/themeAugmentation";
 import {
     createTheme,
     type CSSObject,
@@ -1742,6 +1743,49 @@ export function createHydraTheme(
                         (ownerState.elevation ?? 0) === 0
                             ? {}
                             : {borderRadius: 12}),
+                    }),
+                },
+            },
+            // FM-185's MUI X pickers render `PickersInputBase`/
+            // `PickersOutlinedInput`, not `InputBase`/`OutlinedInput`, so
+            // none of the input rules above or below reach them: they came
+            // up at MUI's stock 56px with a 40px calendar button beside 32px
+            // fields (owner report 2026-09-04). These two blocks restate the
+            // same sizing and surface for the picker family -- the control
+            // height and text size, the coarse-pointer 16px, the recessed
+            // fill, radius, outline colour and 12px legend -- so a picker is
+            // the same box as the text field next to it.
+            MuiPickersInputBase: {
+                styleOverrides: {
+                    root: {
+                        fontSize: controlFontSize,
+                        height: controlHeight,
+                        "@media (pointer: coarse)": {
+                            fontSize: "16px",
+                        },
+                    },
+                    // MUI's own 16.5px vertical padding is what made the
+                    // field 56px; the fixed height above centres the
+                    // sections instead.
+                    sectionsContainer: {
+                        paddingBottom: 0,
+                        paddingTop: 0,
+                    },
+                },
+            },
+            MuiPickersOutlinedInput: {
+                styleOverrides: {
+                    root: ({theme}) => ({
+                        borderRadius: 8,
+                        backgroundColor: theme.palette.surfaces.recessed,
+                        "& .MuiPickersOutlinedInput-notchedOutline": {
+                            borderColor: colors.inputOutline,
+                            "& legend": {fontSize: "12px"},
+                        },
+                        "&.Mui-disabled .MuiPickersOutlinedInput-notchedOutline":
+                            {
+                                borderColor: theme.palette.surfaces.hairline,
+                            },
                     }),
                 },
             },
