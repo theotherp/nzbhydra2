@@ -130,7 +130,7 @@ export function RecentSearches({
                             // ADR-0012 (Option A1). `ArrowRight` moves focus
                             // onto this row's nested Refill `IconButton` --
                             // verified unconsumed by the installed
-                            // `@mui/material` `7.3.9`'s
+                            // `@mui/material` `9.4.0`'s
                             // `MenuList/MenuList.js` `handleKeyDown` (its
                             // `ArrowDown`/`ArrowUp`/`Home`/`End` branches
                             // don't match, and `"ArrowRight".length !== 1`
@@ -181,7 +181,7 @@ export function RecentSearches({
                                         // states. `ArrowLeft`/`Escape` return
                                         // focus to the owning row (`Escape`
                                         // also stops propagation so
-                                        // `@mui/material` `7.3.9`'s
+                                        // `@mui/material` `9.4.0`'s
                                         // `Modal/useModal.js`
                                         // `createHandleKeyDown` never sees it
                                         // and closes the menu).
@@ -291,16 +291,18 @@ export function RecentSearches({
                     text, so it never repeats once per entry in a menu whose
                     width is content-driven. It is the Menu's *last* child and
                     carries no `tabindex`, which is deliberate: `@mui/material`
-                    `7.3.9`'s `MenuList/MenuList.js` does an `activeItemIndex`
-                    lookahead over its children that can inject
-                    `autoFocus`/`tabIndex: 0` into the first non-disabled
-                    child it finds, and `moveFocus` skips any candidate
-                    failing `!nextFocus.hasAttribute('tabindex')`. Rendering
-                    this only when at least one entry precedes it guarantees a
-                    `recent-search-entry` row always claims `activeItemIndex`
-                    first, so this node is never a focus stop -- the recorded
-                    keyboard trace in `tests/system/tests/search.spec.ts`
-                    proves no key ever lands focus here. */}
+                    `9.4.0`'s `MenuList/MenuList.js` is a roving-tabindex
+                    container (`@mui/utils`' `useRovingTabIndex`) whose
+                    items are the children that carry a `tabindex`, and
+                    `Menu.js`'s `handleEntering` focuses the container's
+                    current item (a reopened menu comes back on the row
+                    focused at close; a first open falls back to the first
+                    item). Rendering this only when at least one entry
+                    precedes it guarantees a `recent-search-entry` row is
+                    always the item the container lands on, so this node is
+                    never a focus stop -- the recorded keyboard trace in
+                    `tests/system/tests/search.spec.ts` (re-proven on 9.4.0
+                    by FM-183) proves no key ever lands focus here. */}
                 {(recentSearches.data?.length ?? 0) > 0 && (
                     <Typography
                         variant="caption"

@@ -587,6 +587,12 @@ function CoverThumbnail({
     // current state would close what the focus a few milliseconds earlier had
     // just opened. See the comment on the click handler.
     const openedByFocus = useRef(false);
+    // Whether the focus that armed `openedByFocus` came from a pointer press
+    // (a tap or a mouse-down) rather than from the keyboard. A pointer's
+    // own click is the tail of that gesture and is consumed; a mouse click
+    // arriving *after* a keyboard focus is a new gesture and toggles.
+    const openedByPointerFocus = useRef(false);
+    const pointerDownPending = useRef(false);
     const failed = state === "failed";
     const open = anchorEl !== null;
     // The frame. Identical in all three states -- that is what makes a broken
@@ -626,6 +632,8 @@ function CoverThumbnail({
     }
     const close = () => {
         openedByFocus.current = false;
+        openedByPointerFocus.current = false;
+        pointerDownPending.current = false;
         setAnchorEl(null);
     };
     return (
@@ -656,12 +664,26 @@ function CoverThumbnail({
                 // thumbnail hover already opened -- toggles as usual, which is
                 // what closes the preview.
                 onClick={(event: ReactMouseEvent<HTMLElement>) => {
-                    if (openedByFocus.current) {
-                        openedByFocus.current = false;
+                    const armed = openedByFocus.current;
+                    const byPointer = openedByPointerFocus.current;
+                    openedByFocus.current = false;
+                    openedByPointerFocus.current = false;
+                    pointerDownPending.current = false;
+                    // A keyboard-synthesized click reports `detail === 0`
+                    // (Enter/Space); a pointer click reports its click count.
+                    // Consume the click only when it ends the gesture whose
+                    // focus opened the preview: a tap (pointer focus) or a
+                    // key press (keyboard click). A mouse click after a
+                    // keyboard focus-open is a new gesture and toggles
+                    // (FM-179 review finding).
+                    if (armed && (event.detail === 0 || byPointer)) {
                         setAnchorEl(event.currentTarget);
                         return;
                     }
                     setAnchorEl(open ? null : event.currentTarget);
+                }}
+                onPointerDown={() => {
+                    pointerDownPending.current = true;
                 }}
                 onKeyDown={(event: ReactKeyboardEvent) => {
                     if (event.key === "Escape" && open) {
@@ -702,6 +724,8 @@ function CoverThumbnail({
                     // mouse-down of a click on a hovered thumbnail) leaves the
                     // following click free to close it.
                     openedByFocus.current = !open;
+                    openedByPointerFocus.current = pointerDownPending.current;
+                    pointerDownPending.current = false;
                     setAnchorEl(event.currentTarget);
                 }}
                 sx={{...tileSx, cursor: "pointer"}}

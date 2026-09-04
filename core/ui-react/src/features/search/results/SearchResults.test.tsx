@@ -715,7 +715,7 @@ describe("SearchResults", () => {
             />,
         );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
-        enableDuplicateControls();
+        toggleDuplicateControls();
         const expandDuplicates = screen.getByRole("button", {
             name: "Expand duplicates",
         });
@@ -1183,7 +1183,7 @@ describe("SearchResults", () => {
             target: {value: "Alpha"},
         });
         await settleFilterCommits();
-        enableDuplicateControls();
+        toggleDuplicateControls();
         fireEvent.click(
             screen.getByRole("button", {name: "Expand duplicates"}),
         );
@@ -3845,8 +3845,11 @@ describe("SearchResults", () => {
             screen.queryByTestId("search-result-cover-popover"),
         ).not.toBeInTheDocument();
         fireEvent.pointerLeave(tile, {pointerType: "touch"});
+        fireEvent.pointerDown(tile, {pointerType: "touch"});
         act(() => tile.focus());
-        fireEvent.click(tile);
+        // A pointer's click carries its click count; only a keyboard
+        // synthesized click reports `detail: 0`.
+        fireEvent.click(tile, {detail: 1});
         expect(
             screen.getByTestId("search-result-cover-popover"),
         ).toBeInTheDocument();
@@ -3855,7 +3858,22 @@ describe("SearchResults", () => {
         // already holds -- closes it again.
         fireEvent.pointerEnter(tile, {pointerType: "touch"});
         fireEvent.pointerLeave(tile, {pointerType: "touch"});
-        fireEvent.click(tile);
+        fireEvent.pointerDown(tile, {pointerType: "touch"});
+        fireEvent.click(tile, {detail: 1});
+        await popoverClosed();
+        act(() => tile.blur());
+
+        // Keyboard focus, then a *mouse* click: the focus opened the preview,
+        // but the click is a new gesture (there was no pointer press before
+        // the focus), so it closes -- the same as clicking a hover-opened
+        // thumbnail (FM-179 review finding: the first mouse click used to be
+        // swallowed after a Tab).
+        act(() => tile.focus());
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        fireEvent.pointerDown(tile, {pointerType: "mouse"});
+        fireEvent.click(tile, {detail: 1});
         await popoverClosed();
         act(() => tile.blur());
 
@@ -4733,7 +4751,7 @@ describe("SearchResults", () => {
             renderResults(
                 <SearchResults data={mixedExpandData(["duplicate"])} />,
             );
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             expect(expandSlotsByRow()).toEqual([
                 ["Alpha release", ["Expand duplicates"]],
@@ -4747,7 +4765,7 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             expect(expandSlotsByRow()).toEqual([
                 ["Alpha release", ["Expand group", "Expand duplicates"]],
@@ -4761,7 +4779,7 @@ describe("SearchResults", () => {
         // group control.
         it("should keep the group slot left and the duplicate slot right on a duplicate-only row", () => {
             renderResults(<SearchResults data={groupAndDuplicateOnlyRows()} />);
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             expect(expandSlotsByRow()).toEqual([
                 ["Alpha release", ["Expand group", "spacer"]],
@@ -4775,7 +4793,7 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
 
@@ -4794,13 +4812,13 @@ describe("SearchResults", () => {
             renderResults(
                 <SearchResults data={mixedExpandData(["duplicate"])} />,
             );
-            enableDuplicateControls();
+            toggleDuplicateControls();
             fireEvent.click(
                 screen.getByRole("button", {name: "Expand duplicates"}),
             );
             expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
 
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
             expect(
@@ -4813,7 +4831,7 @@ describe("SearchResults", () => {
             ).toHaveLength(0);
 
             // Switching it back on starts from the collapsed state.
-            enableDuplicateControls();
+            toggleDuplicateControls();
             expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
             expect(
                 screen.getByRole("button", {name: "Expand duplicates"}),
@@ -4826,7 +4844,7 @@ describe("SearchResults", () => {
                     data={mixedExpandData(["duplicate", "title"])}
                 />,
             );
-            enableDuplicateControls();
+            toggleDuplicateControls();
 
             const group = screen.getByRole("button", {name: "Expand group"});
             const duplicates = screen.getByRole("button", {
@@ -5825,8 +5843,8 @@ function displayOption(label: string): HTMLElement {
 
 // FM-176: the duplicate expand control is opt-in and off by default, so every
 // case that addresses it flips "Show duplicate expand controls" the way a user
-// would. Calling this again turns the option back off.
-function enableDuplicateControls(): void {
+// would -- and back off again on the next call, hence the name.
+function toggleDuplicateControls(): void {
     fireEvent.click(displayOption("Show duplicate expand controls"));
     closeDisplayOptions();
 }

@@ -43,8 +43,8 @@ features:
       - deliberate - FM-154/FM-155 (ADR-0049) put theme selection in the nav bar beside the login/logout control rather than in Config > Main, and offer Auto/Grey/Bright/Dark/Dark (Dyschromatopsia) rather than legacy's fixed four; the choice applies immediately and FM-155 persists it per user through C-THEME-PREFERENCE (server record, with a localStorage seed that only shortens the wrong-theme flash)
       - deliberate - FM-184 (ADR-0056) hands the application-wide keyboard focus ring to `@mui/material` 9.4's `theme.focusVisible` instead of authoring one rule per control family; ADR-0013's measured 3px/3px geometry is kept by passing it to the theme rather than taking MUI's 2px/2px defaults, and MUI decides which family insets (Tab by 9px, MenuItem/ListItemButton/Autocomplete option by 3px) and on which node it paints (the icon `svg` for Checkbox/Radio, the track for Switch). Legacy authored no focus indication at all, so this is a deliberate divergence in the same direction ADR-0013 already recorded
       - deliberate - FM-171 mounts `C-SESSION-EXPIRY`'s session-expired dialog in the shell, a capability legacy has no counterpart for (`nzbhydra.js` and `header-controller.js` carry no 401 handling; issue #1080's server half, `60a121aae`, is what made an expired session answer a background request with a plain 401 rather than a redirect). Its action is a Reload button rather than an automatic reload, because the full navigation that completes the OIDC/form login also destroys unsaved form state, and no decision entry asks for the automatic behavior
-      - deliberate - FM-180 (ADR-0055) gives up legacy's `@body-bg: #000000` / `@input-bg: rgb(15, 17, 19)` parity for both near-black themes after an owner report (2026-09-03) that page, cards and tables read as one flat black with no row dividers: `dark` and `dark-dyschromatopsia` share one layered ground (page `#101010`, cards/tables `#1e1e1e`, raised controls `#262626`, app bar level with the cards, input fill `#141414`, row dividers at 10% white), with elevation overlays still off per FM-117, and `dark`'s `text.secondary`/`surfaces.mutedText`/`text.primary` re-authored where the lighter control surface cost a recorded 4.5:1 floor
-      - "deliberate - FM-183 keeps `@mui/material` 9's changed component defaults rather than pinning 7.3.9's in the theme (ADR-0014, and the FM-183 packet forbids an override added for that purpose) -- the `ListItemIcon` min-width default moved 56px to 36px, which reaches exactly one rendered site, the folder/file rows of `FileBrowserSetting`'s dialog (plain `List` + `ListItemButton`), whose labels now start 36px rather than 56px after the row's content edge, measured in the 9.4.0 DOM (`min-width: 36px`, 24px glyph, label at +36px) against `ListItemIcon.js`'s `minWidth: 56` in 7.3.9 and `theme.spacing(4.5)` in 9.4.0; `IndexerSelectionButton`'s menu is NOT affected, because `MenuItem` pins its `ListItemIcon` to 36px in 7.3.9 and 9.4.0 alike (`MenuItem.js`, both versions) and the captured menu is pixel-identical before and after. A `TextField select`'s label renders as a `<div>`"
+      - "deliberate - FM-180 (ADR-0055) gives up legacy's `@body-bg: #000000` / `@input-bg: rgb(15, 17, 19)` parity for both near-black themes after an owner report (2026-09-03) that page, cards and tables read as one flat black with no row dividers: `dark` and `dark-dyschromatopsia` share one layered ground (page `#101010`, cards/tables `#1e1e1e`, raised controls `#262626`, app bar level with the cards, input fill `#141414`, row dividers at 10% white), with elevation overlays still off per FM-117, and `dark`'s `text.secondary`/`surfaces.mutedText`/`text.primary` re-authored where the lighter control surface cost a recorded 4.5:1 floor"
+      - "deliberate - FM-183 keeps `@mui/material` 9's changed component defaults rather than pinning 7.3.9's in the theme (ADR-0014, and the FM-183 packet forbids an override added for that purpose) -- the `ListItemIcon` min-width default moved 56px to 36px, which reaches exactly one rendered site, the folder/file rows of `FileBrowserSetting`'s dialog (plain `List` + `ListItemButton`), whose labels now start 36px rather than 56px after the row's content edge, measured in the 9.4.0 DOM (`min-width: 36px`, 24px glyph, label at +36px) against `ListItemIcon.js`'s `minWidth: 56` in 7.3.9 and `theme.spacing(4.5)` in 9.4.0; `IndexerSelectionButton`'s menu is NOT affected, because `MenuItem` pins its `ListItemIcon` to 36px in 7.3.9 and 9.4.0 alike (`MenuItem.js`, both versions) and the captured menu is pixel-identical before and after. A `TextField select`'s label renders as a `<div>` The other forced rendering delta is `CheckCircleOutline`: 7.3.9's legacy module shipped an older cut of the check (one unit thicker, drawn first) that no 9.4.0 module carries, so `DownloadHistoryPage`'s status icon now draws the newer cut -- sub-pixel, same drawing, pinned in `legacyOutlineIcons.test.tsx`; the other four legacy families map byte-for-byte onto their `*OutlineOutlined` files."
       - "deliberate - the `bright` theme reuses the shell's `banner-grey-dark.png` masthead rather than legacy's separate `banner-bright.png`, because MUI paints the app bar `primary.main` under `palette.mode: \"light\"` and the white/green wordmark reads on that green ground; legacy switched the asset per theme"
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -254,13 +254,6 @@ features:
       # -- so those two columns are now sized for the values users see, not for
       # `9999d`/`999.99 GB`. The expand controls that share the Title cell are
       # icon buttons from the same request; see F-SEARCH-GROUP-SELECTION.
-      # 2026-09-03 (FM-179, owner request): the cover is a 56px-tall framed
-      # tile (`search-result-cover-tile`) with a footprint reserved before the
-      # image loads, so a covered row no longer reflows; the full-size image
-      # opens in `search-result-cover-popover` on hover, focus and tap, which
-      # is what closes FM-177's enlarge gap. Rows that render a tile carry
-      # `data-has-cover` and middle-align; every other row keeps FM-175's top
-      # alignment.
       # 2026-09-02 (FM-175, owner request): the same budget is now pixel
       # tracks -- every column but Title has a fixed width sized for its own
       # header label, and Title has none, so it takes the whole remainder
@@ -270,6 +263,13 @@ features:
       # sized to the text rather than to MUI's defaults, which is what makes
       # the row roughly 22px shorter. Below 1280px the tracks become the same
       # shape as percentages so the table keeps shrinking (ADR-0011).
+      # 2026-09-03 (FM-179, owner request): the cover is a 56px-tall framed
+      # tile (`search-result-cover-tile`) with a footprint reserved before the
+      # image loads, so a covered row no longer reflows; the full-size image
+      # opens in `search-result-cover-popover` on hover, focus and tap, which
+      # is what closes FM-177's enlarge gap. Rows that render a tile carry
+      # `data-has-cover` and middle-align; every other row keeps FM-175's top
+      # alignment.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
@@ -348,8 +348,9 @@ features:
       # 2026-09-02 (FM-176/FM-178, ADR-0054): the `hydra.search-results.table`
       # payload's persisted keys are `sorting`, `sidebarCollapsed`,
       # `refineCategoryOpen`, `refineIndexerOpen`, `compactRows`,
-      # `highlightRecent`, and `showDuplicateControls` -- browser-local, per
-      # ADR-0054, not server-side per-user preferences (`storedChoices.ts`).
+      # `highlightRecent`, `showDuplicateControls`, and `showCovers` (FM-177)
+      # -- browser-local, per ADR-0054, not server-side per-user preferences
+      # (`storedChoices.ts`).
       # `filters` left this payload entirely with FM-178: every refine
       # filter resets on a new search (see the gap line below), so none of
       # them can usefully outlive one.
@@ -402,7 +403,7 @@ features:
         in the per-search controller and were never stored
         (`dataTableDirectives.js`), only `sorting` was. This supersedes
         `MAINTENANCE.md`'s two per-key scoping ledger entries
-        (`100b5dd00`, `41e4dc59e`), which generalize into this one
+        (`24329c640`, `27efd28f5`), which generalize into this one
         whole-filter-set reset"
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
@@ -550,6 +551,10 @@ features:
       # lines only. Above the load-all-confirm-threshold, "Load all results"
       # asks for confirmation first before committing to the unbounded fetch.
       - results-load-all-confirmation
+      # 2026-09-03 (FM-181): below the 768px stacking breakpoint these two
+      # buttons render inside F-SEARCH-RESULTS' `results-paging-footer` under
+      # the last card instead of inside `results-toolbar`; ids, labels and
+      # disabled/aria-busy rules are the same, one copy either way.
     parity: partial
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse
@@ -1469,6 +1474,9 @@ features:
       - history-refine-summary
       - history-refine-drawer
       - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before
@@ -1510,7 +1518,7 @@ features:
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in SearchHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
-      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
       - capability added - FM-170 gives Query, Additional parameters, User agent, and IP address (row and details-dialog) a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
       - 'deliberate - FM-174 (owner request 2026-09-01) declutters the row: the `<key> ID` identifier lines left the Additional-parameters cell and its copy text, and the Details dialog gained the entry''s full criteria instead (each identifier as the same external link the row used to render, season/episode/author, the size and age lines, and the selected indexers), so no value the row dropped became unreachable. This is a deliberate delta from legacy, which printed exactly one linked identifier inline in the row (`search-history-controller.js:150-217`) and offered none of them in its details modal. The same task gave size and age one line each (`Size: 100 MB - 200 MB`, `Age: up to 10 days`) instead of separate Minimum/Maximum rows, dropped the misleading `Selected indexers: None` line for the ordinary empty selection, and moved Repeat out of the Query column into an icon-only button beside Details carrying legacy''s own tooltip sentence (`search-history.html:76-92`).'
   - id: F-HISTORY-SAVED-SEARCHES
@@ -1578,6 +1586,9 @@ features:
       - history-refine-summary
       - history-refine-drawer
       - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before
@@ -1617,7 +1628,7 @@ features:
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in DownloadHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
-      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where DownloadHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where DownloadHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
       - capability added - FM-170 gives Title and IP address a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
@@ -1671,6 +1682,9 @@ features:
       - history-refine-summary
       - history-refine-drawer
       - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
       - history-refine-time
       - history-refine-time-after
       - history-refine-time-before
@@ -1694,7 +1708,7 @@ features:
     parity: partial
     gaps:
       - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in NotificationHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
-      - deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current="page"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where NotificationHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where NotificationHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
       - capability added - FM-170 gives Title, Body, and URLs a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
   - id: F-SYSTEM-SHELL
     name: System administration tab shell

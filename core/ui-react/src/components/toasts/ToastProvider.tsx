@@ -121,7 +121,8 @@ export function ToastProvider({children}: {children: React.ReactNode}) {
  * every subtree an open modal hides.
  *
  * `Snackbar` contains no `Portal` and takes neither a `container` prop nor a
- * portal slot (`@mui/material` 7.3.9), so the stack rendered in-tree under
+ * portal slot (`@mui/material` 7.3.9, and still none in 9.4.0 -- re-checked
+ * by FM-183), so the stack rendered in-tree under
  * `#root` — one of the `container.children` that `ModalManager.add`'s
  * `ariaHiddenSiblings` marks `aria-hidden="true"` when any `Modal`, `Dialog` or
  * `Drawer` opens. Every toast raised while a dialog was up was therefore

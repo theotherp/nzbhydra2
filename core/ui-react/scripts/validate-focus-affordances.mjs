@@ -324,7 +324,8 @@ const themeBlocks = themeFamilyBlocks(themeSource);
  * variant (`internalDisabledThemeFocusVisible: false`), `Chip` renders a
  * `ButtonBase` once it is clickable or deletable, `Checkbox.js`/`Radio.js`
  * ring `svg:first-of-type`, `Switch.js` rings `~ .MuiSwitch-track`, and
- * `Link.js` and `Autocomplete.js` ring their own `focusVisible` class. On any
+ * `Link.js` and `Autocomplete.js` ring their own `focusVisible` class, and
+ * `Rating.js`/`Slider.js` spread `outsetFocusRing` themselves. On any
  * of these the focus indicator is MUI's and survives `disableRipple`; on
  * anything else the ripple is still the only thing MUI ships.
  *
@@ -347,6 +348,8 @@ const focusVisibleConsumers = new Set([
     "MenuItem",
     "PaginationItem",
     "Radio",
+    "Rating",
+    "Slider",
     "StepButton",
     "Switch",
     "Tab",

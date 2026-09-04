@@ -140,7 +140,9 @@ describe("SystemShell", () => {
                 `/hydra/system/${testId.replace("system-tab-", "")}`,
             );
         }
-        expect(screen.getByTestId("system-control")).toBeVisible();
+        // The Control tab body is a lazy route: awaited, not read once (a
+        // 2-in-5 flake in the FM-184 review).
+        expect(await screen.findByTestId("system-control")).toBeVisible();
     });
 
     it("should land bare /system on the Control tab", async () => {

@@ -3262,6 +3262,13 @@ test.describe("Search results", () => {
                 // lists collapsed.
                 const config = await hydra.getConfig();
                 const searching = config.searching as Record<string, unknown>;
+                const quickFilterConfigBefore = {
+                    showQuickFilterButtons: searching.showQuickFilterButtons,
+                    alwaysShowQuickFilterButtons:
+                        searching.alwaysShowQuickFilterButtons,
+                    preselectQuickFilterButtons:
+                        searching.preselectQuickFilterButtons,
+                };
                 searching.showQuickFilterButtons = false;
                 searching.alwaysShowQuickFilterButtons = false;
                 searching.preselectQuickFilterButtons = [];
@@ -3317,6 +3324,15 @@ test.describe("Search results", () => {
                 await expectNoPageOverflow(page);
                 fixture.spread = 12;
                 fixture.withDownloadType = true;
+                // The three quick-filter keys go back to what this instance
+                // had: left at `false`/`[]` they changed the refine sidebar
+                // every later test in the run saw (FM-181 review finding).
+                const restored = await hydra.getConfig();
+                Object.assign(
+                    restored.searching as Record<string, unknown>,
+                    quickFilterConfigBefore,
+                );
+                await hydra.saveConfig(restored);
             } else {
                 // --- mobile drawer, unregressed ----------------------------
                 await expect(sidebar).toHaveCount(0);
@@ -4369,6 +4385,11 @@ test.describe("Search results", () => {
         expect(await expandSlotsOf(page, "Slot Bravo Release")).toEqual([
             "spacer",
         ]);
+        // The both-controls row is where a stale second-slot spacer would
+        // show first: with the option off it has exactly its group control.
+        expect(await expandSlotsOf(page, "Slot Charlie Release")).toEqual([
+            "Expand group",
+        ]);
         await captureVisualRegion(
             page.getByTestId("search-results-table"),
             "F-SEARCH-GROUP-SELECTION",
@@ -4525,10 +4546,14 @@ test.describe("Search results", () => {
         // that does not. One surviving cover is repointed at a URL that will
         // never answer, which is the third case. Everything else about these
         // results is what the backend actually sent.
+        // Which titles keep a cover is recorded from the response itself, so
+        // the tile assertion below is by title, not by display order or by
+        // how many rows the virtualizer happens to have mounted.
+        const titlesWithCover: string[] = [];
         await page.route("**/internalapi/search", async (route) => {
             const response = await route.fetch();
             const body = (await response.json()) as {
-                searchResults: Array<{cover: string | null}>;
+                searchResults: Array<{cover: string | null; title: string}>;
             };
             body.searchResults.forEach((result, index) => {
                 if (index % 2 === 1) {
@@ -4537,6 +4562,7 @@ test.describe("Search results", () => {
                     result.cover =
                         "https://artworks.thetvdb.com/banners/broken-cover.jpg";
                 }
+                if (result.cover) titlesWithCover.push(result.title);
             });
             await route.fulfill({response, json: body});
         });
@@ -4564,8 +4590,19 @@ test.describe("Search results", () => {
         await captureResultsViewport(page, "covers-off-desktop");
 
         await toggleDisplayOption(page, "Show covers");
-        // Exactly the results that carry a cover render a tile.
-        await expect(tiles).toHaveCount(Math.ceil((await rows.count()) / 2));
+        // Exactly the results that carry a cover render a tile, checked row
+        // by row against the titles the response kept a cover on.
+        expect(titlesWithCover.length).toBeGreaterThan(0);
+        const mountedRows = await rows.count();
+        for (let index = 0; index < mountedRows; index++) {
+            const row = rows.nth(index);
+            const title = await row.getAttribute("data-result-title");
+            await expect(
+                row.getByTestId("search-result-cover-tile"),
+            ).toHaveCount(
+                title !== null && titlesWithCover.includes(title) ? 1 : 0,
+            );
+        }
         const firstTile = tiles.first();
         const firstCover = covers.first();
         await expect(firstCover).toHaveAttribute(

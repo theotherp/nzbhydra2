@@ -391,8 +391,8 @@ describe("resolveThemeName", () => {
             // app bar accent is its own `primary.main`, not grey's teal.
             barAccent: theme.palette.primary.main,
             // The second, since FM-156: a boundary alpha is a measurement
-            // against a ground, and this variant's page is pure black rather
-            // than grey's `#1f2426`. Stated here rather than folded into
+            // against a ground, and this variant's page is `#101010`
+            // (ADR-0055) rather than grey's `#1f2426`. Stated here rather than folded into
             // `...grey` so that a *drift* in this token still fails, and so
             // that the other seven staying shared remains asserted.
             selectAllOutline: "rgba(255, 255, 255, 0.42)",

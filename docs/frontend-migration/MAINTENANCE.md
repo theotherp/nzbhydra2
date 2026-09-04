@@ -3463,3 +3463,51 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` vitest 137 files / 1913 tests, `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `build`, `validate:migration` green; `tests/system` `tsc --noEmit` and prettier clean; whole `smoke.spec.ts` 11/11 against a jar rebuilt from this tree; `git diff --check` clean.
 - **Commit:** `e541f7a46`
 - **Note:** owner question 2026-09-04 ("can the date pickers in the history and stats be adapted to the theme?"). They are native `<input type="date">` (stats custom range) and `datetime-local` (history refine) controls; MUI themes the field but the browser draws the popup and calendar icon from the document's `color-scheme`, which nothing set. `CssBaseline enableColorScheme` writes it from the palette mode, so the popup follows dark/light; its accents stay the browser's own, not the palette's. The theme-switch smoke case asserts the computed `color-scheme` per theme. **Left as a candidate:** a fully themed picker means MUI X Date Pickers (new dependency + adapter, a component contract, and the system tests that fill the native inputs rewritten) — a packet, only if the native dark popup still reads wrong to the owner.
+
+### 2026-09-04 — Correct eight retained `FEATURES.yaml` findings from the FM-176..FM-184 reviews
+
+- **Why not a packet:** registry text only — comments, gap lines, and the registration of a selector FM-181 already shipped (`history-refine-done`, asserted by `search-history.spec.ts`); no code, contract semantics, or behavior touched.
+- **Paths:** `docs/frontend-migration/FEATURES.yaml`
+- **Gates:** every `gaps` entry now parses as a string (`yaml` in `core/ui-react`; four entries — FM-180's and the three FM-166 pager lines — had parsed as mappings because of a colon-space inside backticks, which `validate:migration` does not type-check); `validate:migration` valid; `git diff --check` clean.
+- **Commit:** `1c0eb0ca8`
+- **Note:** the eight items, each a retained minor finding: the FM-180 gap-line YAML defect (FM-183 review); the FM-183 gap line lacking the forced `CheckCircleOutline` glyph delta (FM-183 re-review); the FM-179 note out of chronological order (FM-179 review); the persisted-keys comment omitting `showCovers` (FM-178 review); the FM-178 gap line citing the superseded scoping entries by pre-rebase shas (FM-178 review); `F-SEARCH-PAGING` silent on the FM-181 footer and `history-refine-done` registered only in `C-REFINE-SURFACE`'s note (FM-181 review); plus the three FM-166 lines found by the same parse check.
+
+### 2026-09-04 — Bring three stale version and ground comments up to 9.4.0 and ADR-0055
+
+- **Why not a packet:** comments only.
+- **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/components/toasts/ToastProvider.tsx`, `core/ui-react/src/app/theme.test.ts`
+- **Gates:** vitest 138 files / 1930 tests, `typecheck`, `lint` (0 errors), `format:check` green.
+- **Commit:** `82074ea10`
+- **Note:** retained findings from the FM-180 and FM-183 reviews. `theme.ts:1248`, also named, had already been rewritten by FM-184.
+
+### 2026-09-04 — List Rating and Slider among the focus validator's 9.4.0 consumers
+
+- **Why not a packet:** a validator inventory correction in the safe direction; no runtime code.
+- **Paths:** `core/ui-react/scripts/validate-focus-affordances.mjs`
+- **Gates:** `validate:focus-affordances` (23 consumers), vitest, `typecheck` green.
+- **Commit:** `39a114325`
+- **Note:** retained finding from the FM-184 review.
+
+### 2026-09-04 — Await the lazy Control tab body in the SystemShell tab-order case
+
+- **Why not a packet:** test-only.
+- **Paths:** `core/ui-react/src/features/system/SystemShell.test.tsx`
+- **Gates:** vitest 138 files / 1930 tests green.
+- **Commit:** `27b16cf9d`
+- **Note:** the 2-in-5 flake the FM-184 reviewer saw; `getByTestId` read a lazily routed body once.
+
+### 2026-09-04 — Let a mouse click close a cover preview that keyboard focus opened
+
+- **Why not a packet:** a single-component bugfix with a regression test that is red against the old handler and green with the fix; no contract or `data-testid` change.
+- **Paths:** `core/ui-react/src/features/search/results/ResultRow.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`
+- **Gates:** vitest 138 files / 1930 tests, `typecheck`, `lint`, `format:check`, `build`, `knip`, `check:api`, `validate:migration` green; whole `results.spec.ts` + `smoke.spec.ts` 46/46 against a jar rebuilt from this tree.
+- **Commit:** `326844809`
+- **Note:** retained finding from the FM-179 re-review. The guard now distinguishes the gesture that produced the click: a tap (pointer press before the focus) and a keyboard click (`detail === 0`) are consumed as the tail of the opening gesture; a mouse click after a keyboard focus is a new gesture and toggles. The same commit renames the FM-176 test helper `enableDuplicateControls` to `toggleDuplicateControls` (FM-176 review finding).
+
+### 2026-09-04 — Three retained `results.spec.ts` findings from the FM-176/177/181 reviews
+
+- **Why not a packet:** test-only.
+- **Paths:** `tests/system/tests/results.spec.ts`
+- **Gates:** `tests/system` `tsc --noEmit` and prettier clean; whole `results.spec.ts` + `smoke.spec.ts` 46/46 against a jar rebuilt from this tree.
+- **Commit:** `ae78f0094`
+- **Note:** the FM-055 consolidation case restores the three quick-filter keys it set on the live instance (FM-181); the option-off block asserts the both-controls row (FM-176); the covers case asserts tiles by title from the intercepted response, not by a parity count (FM-177). **Not done, with reasons:** FM-181's `sameValues` "space-join collision" — the code already joins with a NUL separator, the finding misread it; FM-182's `page.reload()` persistence step — `fixtures.ts:110` clears `localStorage` on every document, so a reload cannot observe the stored sort in this suite; FM-175's Select-header 1px `scrollWidth` overshoot — needs a browser measurement to place, clips nothing, left as a candidate; FM-184's select-all antialiasing and `aria-haspopup` semantics — owner call and proposed packet respectively.
