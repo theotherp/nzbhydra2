@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v9.0.0"
+    date: "2026-09-05"
+    final: true
+    changes:
+      -   type: "feature"
+          text: "Complete rewrite of the UI. I'll the the results speak for themselves. Let me know what you think."
 -   version: "v8.9.0"
     date: "2026-07-09"
     final: true
