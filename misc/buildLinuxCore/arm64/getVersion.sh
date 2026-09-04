@@ -11,4 +11,6 @@ if [[ ! -d "${PWD}/core" ]] ; then
 fi
 source "${PWD}/misc/buildLinuxCore/arm64/remote.sh"
 
-${REMOTE_SSH} ${REMOTE_USER}@${REMOTE_HOST} "docker run --rm -v ~/nzbhydra2/:/nzbhydra2:ro --entrypoint /nzbhydra2/core/target/core hydrabuild:latest -DHYDRA_NATIVE_BUILD=false --version"
+# Emit only the version. tail -n1 guards against any stray leading line from ssh/docker so the
+# caller (build_and_release.py compares the whole captured output) gets exactly the version string.
+${REMOTE_SSH} ${REMOTE_USER}@${REMOTE_HOST} "docker run --rm -v ~/nzbhydra2/:/nzbhydra2:ro --entrypoint /nzbhydra2/core/target/core hydrabuild:latest -DHYDRA_NATIVE_BUILD=false --version" | tr -d '\r' | tail -n1

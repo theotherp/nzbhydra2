@@ -1,35 +1,43 @@
-# alpine doesn't work because we need libgc for the native image
-FROM ubuntu:18.04
-
-# See https://octopus.com/blog/using-ubuntu-docker-image
+# Image used to build the linux amd64 core executable locally. Mirrors the arm64 image and
+# .github/workflows/buildNative.yml (GraalVM community 25, Node 26, Java 17 sources).
+# Rebuilt by buildLinuxCore.sh on every run (docker layer cache makes that cheap).
+# The executable is linked with -H:+StaticExecutableWithDynamicLibC, so the base image's glibc
+# (22.04 -> 2.35) is the minimum glibc users need.
+FROM ubuntu:22.04
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl libfreetype6 libfreetype6-dev build-essential ca-certificates
-RUN wget -nv --no-check-certificate https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl xz-utils git libfreetype6 libfreetype6-dev zlib1g-dev build-essential ca-certificates
 
-RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
-RUN ln -s /opt/apache-maven-3.9.6 /opt/maven
+# Maven. archive.apache.org keeps old versions, dlcdn.apache.org only the newest
+ARG MAVEN_VERSION=3.9.9
+RUN wget -nv https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz -P /tmp \
+    && tar xf /tmp/apache-maven-*.tar.gz -C /opt && ln -s /opt/apache-maven-${MAVEN_VERSION} /opt/maven && rm /tmp/apache-maven-*.tar.gz
 ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
-ENV PATH=${M2_HOME}/bin:${PATH}
 
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.1/graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
-RUN tar xzf graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz -C /
-RUN rm graalvm-community-jdk-22.0.1_linux-x64_bin.tar.gz
-ENV PATH=/graalvm-community-openjdk-22.0.1+8.1/bin/:$PATH
-ENV JAVA_HOME=/graalvm-community-openjdk-22.0.1+8.1
+# GraalVM community. Keep in sync with the graalvm/setup-graalvm version in buildNative.yml.
+# native-maven-plugin refuses GraalVM builds older than the newest release of the JDK line, so use the newest 25.x tag
+ARG GRAALVM_TAG=graal-25.3.4.1
+ARG GRAALVM_FILE=graalvm-community-jdk-25i3-25.0.4.1_linux-x64_bin.tar.gz
+RUN wget -nv https://github.com/graalvm/graalvm-ce-builds/releases/download/${GRAALVM_TAG}/${GRAALVM_FILE} -P /tmp \
+    && mkdir -p /opt/graalvm && tar xzf /tmp/graalvm-community-*.tar.gz -C /opt/graalvm --strip-components=1 && rm /tmp/graalvm-community-*.tar.gz
+ENV JAVA_HOME=/opt/graalvm
 
-# When you update this also change the directory in buildInContainer.sh
-RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
-RUN tar -xf upx-4.2.4-amd64_linux.tar.xz
-RUN rm upx-4.2.4-amd64_linux.tar.xz
-ENV PATH=/tmp/upx-4.2.4-amd64_linux/:$PATH
+# Node for the React UI build (see engines in core/ui-react/package.json)
+ARG NODE_VERSION=26.8.1
+RUN wget -nv https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz -P /tmp \
+    && mkdir -p /opt/node && tar xf /tmp/node-*.tar.xz -C /opt/node --strip-components=1 && rm /tmp/node-*.tar.xz
 
+# Newer upx versions crash on arm64 (https://github.com/upx/upx/issues/737); pin the same version on amd64 for parity
+ARG UPX_VERSION=4.2.4
+RUN wget -nv https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-amd64_linux.tar.xz -P /tmp \
+    && mkdir -p /opt/upx && tar xf /tmp/upx-*.tar.xz -C /opt/upx --strip-components=1 && rm /tmp/upx-*.tar.xz
+
+ENV PATH=/opt/graalvm/bin:/opt/maven/bin:/opt/node/bin:/opt/upx:${PATH}
 ENV HYDRA_NATIVE_BUILD=true
 
 COPY buildInContainer.sh /
+RUN chmod +x /buildInContainer.sh
+ENTRYPOINT ["/buildInContainer.sh"]
 
-ENTRYPOINT /buildInContainer.sh
-
-# To debug docker run --rm -it --entrypoint bash hydrabuild
-# or for a running container docker exec -it <container-name-or-id> bash
+# To debug: docker run --rm -it --entrypoint bash hydrabuild-amd64

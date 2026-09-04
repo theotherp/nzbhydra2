@@ -12,4 +12,7 @@ source "${ARM64_DIR}/remote.env"
 : "${REMOTE_KEY:?REMOTE_KEY missing in remote.env}"
 : "${REMOTE_ADMIN_USER:=ubuntu}"
 REMOTE_KEY_PATH="${REMOTE_KEY/#\~/$HOME}"
-REMOTE_SSH="ssh -i ${REMOTE_KEY_PATH}"
+# LogLevel=ERROR drops the "Permanently added host key" notice; WarnWeakCrypto silences the
+# post-quantum key-exchange warning. Both go to stderr, and getVersion.sh's output is captured
+# with stderr merged in, so without this the warning banner leaks into the parsed version string.
+REMOTE_SSH="ssh -o LogLevel=ERROR -o WarnWeakCrypto=no-pq-kex -i ${REMOTE_KEY_PATH}"
