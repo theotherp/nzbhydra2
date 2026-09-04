@@ -23,10 +23,12 @@ export function AutomaticUpdateNotice({
             square
         >
             <Stack
-                alignItems="center"
                 direction="row"
-                flexWrap="wrap"
                 spacing={2}
+                sx={{
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                }}
             >
                 <Typography>An update was automatically installed.</Typography>
                 <Button

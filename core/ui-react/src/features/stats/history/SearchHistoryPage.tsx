@@ -213,15 +213,23 @@ export function SearchHistoryPage({
             values={values}
         >
             <Stack
-                alignItems="center"
                 direction="row"
-                justifyContent="space-between"
                 spacing={1}
+                sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                }}
             >
                 <Typography component="h1" variant="h4">
                     Search history
                 </Typography>
-                <Stack alignItems="center" direction="row" spacing={1}>
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -416,10 +424,12 @@ export function SearchHistoryPage({
                                      */}
                                     <TableCell>
                                         <Stack
-                                            alignItems="center"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <span>{queryLabel(entry)}</span>
                                             <CopyValueButton
@@ -434,10 +444,13 @@ export function SearchHistoryPage({
                                     {showUserAgent && (
                                         <TableCell>
                                             <Stack
-                                                alignItems="center"
                                                 direction="row"
-                                                justifyContent="space-between"
                                                 spacing={1}
+                                                sx={{
+                                                    alignItems: "center",
+                                                    justifyContent:
+                                                        "space-between",
+                                                }}
                                             >
                                                 <span>
                                                     {entry.userAgent ?? ""}
@@ -455,10 +468,12 @@ export function SearchHistoryPage({
                                     </TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="flex-start"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "flex-start",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <Criteria
                                                 dereferer={
@@ -491,10 +506,13 @@ export function SearchHistoryPage({
                                     {showsIp(userInfoType) && (
                                         <TableCell>
                                             <Stack
-                                                alignItems="center"
                                                 direction="row"
-                                                justifyContent="space-between"
                                                 spacing={1}
+                                                sx={{
+                                                    alignItems: "center",
+                                                    justifyContent:
+                                                        "space-between",
+                                                }}
                                             >
                                                 <span>{entry.ip ?? ""}</span>
                                                 <CopyValueButton
@@ -507,9 +525,11 @@ export function SearchHistoryPage({
                                     )}
                                     <TableCell>
                                         <Stack
-                                            alignItems="center"
                                             direction="row"
                                             spacing={0.5}
+                                            sx={{
+                                                alignItems: "center",
+                                            }}
                                         >
                                             <Button
                                                 data-testid="search-history-details"
@@ -643,10 +663,12 @@ function DetailsDialog({
                                     <TableCell>Host</TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="center"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <span>{details.data.ip ?? ""}</span>
                                             <CopyValueButton
@@ -661,10 +683,12 @@ function DetailsDialog({
                                     <TableCell>User agent</TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="center"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <span>
                                                 {details.data.userAgent ?? ""}
@@ -897,7 +921,12 @@ function Criteria({
                     key={criterion.key}
                     spacing={0.5}
                 >
-                    <Typography component="dt" fontWeight="medium">
+                    <Typography
+                        component="dt"
+                        sx={{
+                            fontWeight: "medium",
+                        }}
+                    >
                         {criterion.label}:
                     </Typography>
                     <Typography component="dd" sx={{m: 0}}>

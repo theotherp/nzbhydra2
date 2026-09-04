@@ -92,9 +92,11 @@ export function RawLogView({transport}: {transport: ApiTransport}) {
     return (
         <Stack data-testid="system-log-view-raw" spacing={2}>
             <Stack
-                alignItems={{sm: "center"}}
                 direction={{sm: "row", xs: "column"}}
                 spacing={2}
+                sx={{
+                    alignItems: {sm: "center"},
+                }}
             >
                 <Button
                     onClick={() => void log.refetch()}
@@ -144,7 +146,13 @@ export function RawLogView({transport}: {transport: ApiTransport}) {
                 />
             </Stack>
             {log.isPending && (
-                <Stack alignItems="center" role="status" spacing={2}>
+                <Stack
+                    role="status"
+                    spacing={2}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <CircularProgress variant="indeterminate" />
                     <Typography>Loading the log file</Typography>
                 </Stack>

@@ -52,7 +52,6 @@ export function IndexerStateSwitch({
                         checked={isIndexerEnabled(field.value)}
                         data-testid={settingInputTestId(name)}
                         disabled={!configComplete}
-                        inputRef={field.ref}
                         name={field.name}
                         onBlur={field.onBlur}
                         onChange={(_event, checked) =>
@@ -62,7 +61,10 @@ export function IndexerStateSwitch({
                             // `Switch` defaults its input slot to
                             // `{role: "switch"}`; supplying an `input` object
                             // replaces that default outright.
-                            input: {role: "switch"},
+                            input: {
+                                role: "switch",
+                                ref: field.ref,
+                            },
                         }}
                     />
                 }

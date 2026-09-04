@@ -1,4 +1,4 @@
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import {
     Box,
     Button,
@@ -167,7 +167,7 @@ export function AddIndexerDialog({
                                                 onClick={() => onSelect(preset)}
                                                 startIcon={
                                                     isCustom ? (
-                                                        <AddCircleOutlineIcon fontSize="small" />
+                                                        <AddCircleOutlineOutlinedIcon fontSize="small" />
                                                     ) : undefined
                                                 }
                                                 sx={{

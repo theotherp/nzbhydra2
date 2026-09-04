@@ -338,7 +338,12 @@ function UserTableRow({
     return (
         <TableRow data-testid={`config-user-entry-${index}`}>
             <TableCell>
-                <Stack alignItems="flex-start" spacing={0.5}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: "flex-start",
+                    }}
+                >
                     <Typography
                         data-testid={`config-user-username-${index}`}
                         // A username is free text and can be long; it wraps

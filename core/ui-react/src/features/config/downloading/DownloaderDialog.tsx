@@ -221,12 +221,13 @@ export function DownloaderDialog({
         <AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}>
             <Dialog
                 data-testid={DOWNLOADER_DIALOG_TEST_ID}
-                // Legacy's `blockUI`: while the check runs there is no way out of
-                // the dialog at all, not by Escape and not by clicking the
-                // backdrop.
-                disableEscapeKeyDown={checking}
                 fullWidth
                 maxWidth="sm"
+                // Legacy's `blockUI`: while the check runs there is no way out
+                // of the dialog at all, not by Escape and not by clicking the
+                // backdrop. `Modal` routes both gestures through `onClose`, so
+                // this one guard refuses both -- which is why v9's removal of
+                // `disableEscapeKeyDown` changes nothing here.
                 onClose={() => {
                     if (!checking) {
                         onCancel();
@@ -326,11 +327,13 @@ export function DownloaderDialog({
                     </FormProvider>
                     {checking ? (
                         <Stack
-                            alignItems="center"
                             data-testid="config-downloader-dialog-checking"
                             direction="row"
                             role="status"
                             spacing={1}
+                            sx={{
+                                alignItems: "center",
+                            }}
                         >
                             <CircularProgress
                                 size={18}

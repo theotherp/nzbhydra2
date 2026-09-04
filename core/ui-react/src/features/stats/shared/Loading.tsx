@@ -23,7 +23,14 @@ export function Loading({message}: {message: string}) {
     }, []);
     if (!visible) return null;
     return (
-        <Stack alignItems="center" component="main" role="status" spacing={1}>
+        <Stack
+            component="main"
+            role="status"
+            spacing={1}
+            sx={{
+                alignItems: "center",
+            }}
+        >
             <CircularProgress />
             <Typography>{message}</Typography>
         </Stack>

@@ -50,7 +50,13 @@ export function AutomaticUpdateChangelogDialog({
             </DialogTitle>
             <DialogContent dividers>
                 {history.isPending && (
-                    <Stack alignItems="center" role="status" sx={{py: 2}}>
+                    <Stack
+                        role="status"
+                        sx={{
+                            alignItems: "center",
+                            py: 2,
+                        }}
+                    >
                         <CircularProgress variant="indeterminate" />
                     </Stack>
                 )}

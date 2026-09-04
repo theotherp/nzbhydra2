@@ -59,8 +59,10 @@ export function OverviewTiles({stats}: {stats: StatsResult}) {
         <Stack
             data-testid="stats-overview-tiles"
             direction="row"
-            flexWrap="wrap"
-            gap={2}
+            sx={{
+                flexWrap: "wrap",
+                gap: 2,
+            }}
         >
             {tiles.map((tile) => (
                 <Card
@@ -70,7 +72,12 @@ export function OverviewTiles({stats}: {stats: StatsResult}) {
                     variant="outlined"
                 >
                     <CardContent>
-                        <Typography color="text.secondary" variant="body2">
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: "text.secondary",
+                            }}
+                        >
                             {tile.label}
                         </Typography>
                         <Typography component="p" variant="h4">

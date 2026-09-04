@@ -23,7 +23,7 @@ declare module "@mui/material/styles" {
         refineSectionLabel?: TypographyStyle;
     }
 
-    // `@mui/material@7.3.9` reads `options.colorSpace` in `createThemeNoVars`
+    // `@mui/material@9.4.0` reads `options.colorSpace` in `createThemeNoVars`
     // and exposes it on the theme (its `alpha`/`lighten`/`darken` helpers and
     // `createPalette`'s `augmentColor` both branch on it), but only declares the
     // option on the internal `createColorScheme` signature, not on the public
@@ -1218,91 +1218,77 @@ const themeColors: Record<ThemeName, ThemeColors> = {
 
 /*
  * ---------------------------------------------------------------------------
- * The application's single authored keyboard focus indicator (ADR-0013).
+ * The application's single keyboard focus indicator: MUI's own
+ * `theme.focusVisible`, at ADR-0013's measured geometry (ADR-0056).
  * ---------------------------------------------------------------------------
  *
- * ADR-0013 (`docs/frontend-migration/decisions/ADR-0013-application-wide-
- * keyboard-focus-indication.md`, accepted 2026-08-19, **Option A**) decides
- * that this application indicates keyboard focus with one explicit focus-ring
- * token, authored per control family and keyed to each component's own
- * `&.Mui-focusVisible` / `:focus-visible` selector. Option B (raising the
- * precedence of the global `:focus-visible` rule) was recommended by the ADR's
- * proposer and explicitly rejected by the repository owner; do not reintroduce
- * its mechanism -- no `!important`, no specificity raise, no per-family opt-in
- * on the `MuiCssBaseline` rule as the way the indicator is delivered.
+ * ADR-0013 (accepted 2026-08-19, **Option A**) decided that this application
+ * indicates keyboard focus with one explicit focus-ring token rather than with
+ * the browser default, and measured its geometry: a 3px ring at a 3px offset
+ * (changed area `6(w+h) + 108` px2 against WCAG 2.4.11's `2 x perimeter` =
+ * `4(w+h)` threshold, cleared at every control size in this application),
+ * drawn inset (`-3px`, area `6(w+h) - 36` px2, still above the same threshold)
+ * wherever an ancestor measurably clips an outset ring. ADR-0015 amended the
+ * scope: the text-input/select family is not ringed at all, because MUI's own
+ * focused `notchedOutline` (2px `primary.main`, measured by FM-052 at
+ * 3.15-5.56:1) is that family's indicator and a ring doubles it.
  *
- * `focusRing()` below is that token, and it is the *only* focus declaration in
- * this file: the global `MuiCssBaseline` `:focus-visible` entry that predates
- * ADR-0013 is reconciled with it rather than left beside it, so the
- * application carries one focus system rather than two (ADR-0013's own
- * recorded cost for Option A). The reconciliation replaces that rule's
- * `currentColor` with this token's explicit colour, which is what fixed
- * `NewsPage`'s sanitized bare `<a href>` (its `currentColor` is the UA default
- * link blue, measured by FM-052 at 1.29:1) without changing what the one
- * family that already rendered the rule as authored paints -- MUI `Link` with
- * its default `component="a"`, whose `currentColor` was already
- * `palette.primary.main`.
- *
- * VERSION SCOPE AND RE-VERIFICATION DUTY (ADR-0012's precedent, ADR-0013's
- * `What would keep it from regressing`): every rule below is scoped to
- * `@mui/material` **7.3.9** and to Chrome for Testing, and depends on these
- * MUI internals, cited by symbol name because `node_modules` line numbers rot
+ * ADR-0056 keeps both of those decisions and replaces their *mechanism*.
+ * `@mui/material` **9.4.0** ships the ring as a first-class theme concern, so
+ * this file no longer authors eleven per-family `&.Mui-focusVisible` rules and
+ * a `focusRing()` helper of its own; it opts in once, in `createTheme`'s
+ * `focusVisible` key below, and MUI decides which component paints where. The
+ * mechanism, cited by symbol name because `node_modules` line numbers rot
  * between installs (the failure mode FM-047 hit):
  *
- *   - `ButtonBase/ButtonBase.js` -- `ButtonBaseRoot`'s unconditional
- *     `outline: 0`, and the `Mui-focusVisible` class `useUtilityClasses`
- *     composes onto the root when its `focusVisible` state is true. Its own
- *     `disableRipple` propType comment states the contract this file relies
- *     on: "Without a ripple there is no styling for :focus-visible by default.
- *     Be sure to highlight the element by applying separate styles with the
- *     `.Mui-focusVisible` class."
- *   - `internal/SwitchBase.js` -- `SwitchBaseRoot` (a `styled(ButtonBase)`
- *     rendered with `component: 'span'` and `additionalProps` including
- *     `role: undefined, tabIndex: null`) and `SwitchBaseInput` (a
- *     `styled('input')` with `{cursor: 'inherit', position: 'absolute',
- *     opacity: 0, width: '100%', height: '100%', top: 0, left: 0, margin: 0,
- *     padding: 0, zIndex: 1}`). Because the focusable node of a
- *     `Checkbox`/`Radio`/`Switch` is that fully transparent input, a
- *     `:focus-visible` rule paints there invisibly at any specificity, so
- *     those three families are authored on the *root* `Mui-focusVisible`
- *     class instead.
- *   - `OutlinedInput/OutlinedInput.js` -- its own `&.Mui-focused
- *     .notchedOutline { borderWidth: 2, borderColor: primary.main }` rule is
- *     the input/select family's focus indicator under ADR-0015 (measured by
- *     FM-052 at 3.15-5.56:1, passing the 3:1 axis everywhere). No ring is
- *     authored for `MuiInputBase`; see the note at the `MuiTextField` entry.
- *   - `Link/Link.js` -- both its `outline: 0` reset and its
- *     `` `&.${linkClasses.focusVisible}`: {outline: 'auto'} `` rule live
- *     inside one `variants` entry keyed `props: {component: 'button'}`.
- *   - `MenuItem/MenuItem.js`, `ListItemButton/ListItemButton.js`,
- *     `Chip/Chip.js` -- each ships its own `&.Mui-focusVisible` rule, which
- *     the entries below override rather than fight.
+ *   - `styles/focusVisible.js` -- `resolveFocusVisible` fills `outlineStyle:
+ *     "solid"`, `outlineColor: palette.primary.main`, `outlineWidth: 2`,
+ *     `outlineOffset: 2` and `boxShadow: var(--_focusVisible-shadow, 0 0)`,
+ *     merges this file's object over it, and rewrites the offset to
+ *     `calc(var(--_focusVisible-offset, 1) * 3px)`. `createThemeNoVars.js`
+ *     resolves it per theme, so the ring follows each palette's own
+ *     `primary.main` (ADR-0052) with nothing restated here.
+ *   - Outset: `ButtonBase.js`'s root variant `internalDisabledThemeFocusVisible:
+ *     false` spreads `outsetFocusRing` and the ring onto every `ButtonBase`
+ *     root -- `Button`, `IconButton`, a clickable `Chip`, `TableSortLabel`,
+ *     `PaginationItem`, `ToggleButton`. `Link.js` rings its own
+ *     `MuiLink-focusVisible` class. `Checkbox.js`/`Radio.js` ring
+ *     `&.Mui-focusVisible svg:first-of-type`, because `SwitchBase.js` opts
+ *     their root out (`internalDisabledThemeFocusVisible: true`): the root's
+ *     focusable node is a fully transparent `opacity: 0` input overlay, so the
+ *     visible svg carries the indicator instead. `Switch.js` rings
+ *     `&.Mui-focusVisible ~ .MuiSwitch-track`.
+ *   - Inset, `applyInsetFocusVisible(n)` = an offset of `-n x 3px`: `MenuItem`,
+ *     `ListItemButton` and an `Autocomplete` option at `-3px` (a scrolling
+ *     `Menu`/`Paper`/listbox clips an outset ring), and `Tab` at **`-9px`**
+ *     (`n = 3`), whose `.MuiTabs-scroller` is exactly the tab's own height.
+ *   - `AppBar.js`, a filled `Alert.js` and `SnackbarContent.js` set
+ *     `--_focusVisible-shadow: 0 0 0 4px background.default`, a halo that
+ *     separates the ring from a coloured bar.
  *
- * After **any** `@mui/material` upgrade this must be re-proven by re-running
+ * ONE FOCUS SYSTEM, TWO DECLARATIONS. `MuiCssBaseline`'s `":focus-visible"`
+ * rule below is the only focus declaration left in this file, and it renders
+ * the same resolved token by spreading it: it is the indicator for the one
+ * control class in this application that no MUI component styles at all, the
+ * sanitized unclassed native `<a href>` `NewsPage`'s `SafeRichContent` renders
+ * from third-party HTML (FM-052 measured its `currentColor` default at
+ * 1.29:1). ADR-0013's Option B mechanism stays rejected: no `!important`, no
+ * specificity raise, no per-family opt-in on that rule.
+ *
+ * MUI'S 2/2 DEFAULTS. Deleting the two keys in `focusVisible` below -- and
+ * nothing else -- yields MUI's own `outlineWidth: 2` / `outlineOffset: 2`
+ * (and `Tab` at `-6px`). ADR-0056 records that as an experiment the owner may
+ * run later; until it is run and re-measured, ADR-0013's geometry stands.
+ *
+ * VERSION SCOPE AND RE-VERIFICATION DUTY (ADR-0012's precedent, ADR-0013's
+ * `What would keep it from regressing`): everything above is scoped to
+ * `@mui/material` **9.4.0** and to Chrome for Testing. After **any**
+ * `@mui/material` upgrade it must be re-proven by re-running
  * `tests/system/tests/focus-indication.spec.ts` in a real browser against a
- * real backend -- not by re-reading these sources, and not by a jsdom
+ * real backend -- not by re-reading those sources, and not by a jsdom
  * component test, which has no `:focus-visible`, no layout, no computed
  * outline and no ripple element (ADR-0004).
  */
-const focusRingWidth = "3px";
-// The app's own authored geometry, and the one geometry this repository has
-// measured passing: a 3px ring at a 3px offset has changed area
-// `6(w+h) + 108` px2 against WCAG 2.4.11's `2 x perimeter` = `4(w+h)`
-// threshold, which it clears at every control size.
-const focusRingOutsetOffset = "3px";
-// The same 3px ring drawn *inside* the control box (area `6(w+h) - 36` px2,
-// still above the same threshold for every control in this application).
-// Used only where an outset ring is measurably clipped by an `overflow`
-// ancestor -- see the per-family entries below, each of which records its
-// measured reason.
-const focusRingInsetOffset = "-3px";
-
-function focusRing(theme: Theme, offset: string = focusRingOutsetOffset) {
-    return {
-        outline: `${focusRingWidth} solid ${theme.palette.primary.main}`,
-        outlineOffset: offset,
-    } as const;
-}
 
 export function createHydraTheme(
     preference: ThemePreference = "grey",
@@ -1313,6 +1299,12 @@ export function createHydraTheme(
     const colors = themeColors[resolveThemeName(preference, prefersDark)];
 
     return createTheme({
+        // ADR-0013's measured geometry, and the whole of this application's
+        // focus-ring opt-in (ADR-0056). Deleting these two keys -- and nothing
+        // else -- takes MUI 9.4's own 2px/2px defaults instead; see the block
+        // comment above `createHydraTheme` for the mechanism and for why the
+        // 3px/3px pair is what this repository has measured.
+        focusVisible: {outlineWidth: 3, outlineOffset: 3},
         // MUI 7.3's own opt-in for a non-sRGB palette. `@mui/system`'s
         // `decomposeColor` only understands `#nnn`, `rgb()`, `hsl()` and
         // `color()`, so with the default sRGB color space every internal
@@ -1365,16 +1357,18 @@ export function createHydraTheme(
         components: {
             MuiCssBaseline: {
                 styleOverrides: (theme) => ({
-                    // ADR-0013 family H, and the reconciliation half of this
-                    // file's reconcile-or-scope choice. This rule predates
-                    // ADR-0013 and stays in force, but it now renders the same
-                    // authored token every family below renders, instead of
-                    // its own second one in `currentColor`. It is the only
-                    // indicator for the one control class in the application
-                    // that no MUI component styles at all: the sanitized,
-                    // unclassed native `<a href>` `NewsPage`'s
-                    // `SafeRichContent` renders from third-party HTML.
-                    ":focus-visible": focusRing(theme),
+                    // ADR-0013 family H, and the only focus declaration this
+                    // file still makes (ADR-0056). It is not a second focus
+                    // system: it spreads the very token MUI resolved from the
+                    // `focusVisible` option above, so the ring, its colour and
+                    // its inset behaviour are identical to every component
+                    // MUI rings by itself. It is kept because MUI rings no
+                    // component here -- this is the one control class in the
+                    // application that no MUI component styles at all: the
+                    // sanitized, unclassed native `<a href>` `NewsPage`'s
+                    // `SafeRichContent` renders from third-party HTML, which
+                    // FM-052 measured at 1.29:1 on the browser default.
+                    ":focus-visible": {...theme.focusVisible},
                     // The mock's `<helmet>` scrollbar block, for browsers that
                     // honor the `::-webkit-scrollbar` pseudo-elements. Track and
                     // thumb border reuse the page background token so a future
@@ -1407,7 +1401,7 @@ export function createHydraTheme(
             },
             MuiButton: {
                 styleOverrides: {
-                    root: ({theme}) => ({
+                    root: {
                         // The mock labels its buttons "Search" / "Load more
                         // results" / "Send to downloader" in sentence case.
                         textTransform: "none",
@@ -1426,15 +1420,7 @@ export function createHydraTheme(
                         // The mock's own button radius (`border-radius:8px` on
                         // the primary Search button and the toolbar buttons).
                         borderRadius: 8,
-                        // ADR-0013 family B (the `ButtonBase` ripple family).
-                        // `ButtonBaseRoot`'s unconditional `outline: 0` is why
-                        // the global rule never reached these controls; the
-                        // ripple that stood in for it measured 1.19:1 to
-                        // 2.38:1 (FM-052). Authored on the root's own
-                        // `Mui-focusVisible` class, so it does not depend on
-                        // winning a specificity or insertion-order fight.
-                        "&.Mui-focusVisible": focusRing(theme),
-                    }),
+                    },
                 },
                 // FM-056: the refine surfaces' selection pill (the mock's
                 // `chip(active)`), as a themed `Button` variant. Its selected
@@ -1602,14 +1588,9 @@ export function createHydraTheme(
                     },
                 },
             },
-            // ADR-0013 family B, continued. `IconButton` and `Tab` are
-            // separate `styled(ButtonBase)` components with their own theme
-            // slots, so each names the shared token itself rather than
-            // relying on a single `MuiButtonBase` entry cascading into them.
             MuiIconButton: {
                 styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(theme),
+                    root: {
                         // 4px around MUI's 24px default glyph is exactly
                         // `controlHeight`, so a bar control like the search
                         // form's Advanced toggle stops being the tallest
@@ -1618,55 +1599,7 @@ export function createHydraTheme(
                         // (a 20px glyph) stays proportionally smaller for
                         // in-row icons instead of being padded out to match.
                         padding: 4,
-                    }),
-                },
-            },
-            // ADR-0013 family B, continued -- and the one family whose
-            // geometry is shaped differently for a directly measured reason.
-            // `Tabs` renders every `Tab` inside a `.MuiTabs-scroller` whose
-            // computed `overflow` is not `visible` and whose height equals the
-            // tab's own height, so an outset ring at a 3px offset is clipped
-            // top and bottom (measured live: `stats-tab`, control box
-            // 160.00x48.00, outset ring rect exceeded the scroller rect).
-            // Drawn inset instead, which clears the same WCAG 2.4.11 area
-            // threshold and is not clipped.
-            MuiTab: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(
-                            theme,
-                            focusRingInsetOffset,
-                        ),
-                    }),
-                },
-            },
-            // ADR-0013 family C (the `SwitchBase` family). Authored on the
-            // *root* `Mui-focusVisible` class, never on `:focus-visible`:
-            // `internal/SwitchBase.js` renders `SwitchBaseInput` as a
-            // `styled('input')` with `opacity: 0` covering the whole control,
-            // and that transparent overlay is the node that takes DOM focus,
-            // so a `:focus-visible` rule paints there invisibly at any
-            // specificity. This is the entire reason ADR-0013 chose Option A
-            // over Option B for this family.
-            MuiCheckbox: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(theme),
-                    }),
-                },
-            },
-            MuiRadio: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(theme),
-                    }),
-                },
-            },
-            MuiSwitch: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(theme),
-                    }),
+                    },
                 },
             },
             // ADR-0015 (amending ADR-0013): the text-input/select family does
@@ -1760,57 +1693,13 @@ export function createHydraTheme(
                     label: {fontSize: "13px"},
                 },
             },
-            // ADR-0013 family F. Drawn *inset*, for a measured reason: both
-            // render inside a `Paper` whose computed overflow is not
-            // `visible`, and an outset ring at a 3px offset was measured
-            // clipped by it -- by the `Menu` `Paper` for a `MenuItem` (the
-            // category `Select`'s options and the recent-search entries), and
-            // by the mobile navigation `Drawer`'s `MuiPaper-elevation16` for a
-            // `ListItemButton`, where it additionally overlapped two
-            // neighbouring controls. The inset ring is not clipped at either
-            // site and clears the same WCAG 2.4.11 area threshold. Their stock
-            // MUI indicator is a
-            // `&.Mui-focusVisible { background-color: palette.action.focus }`
-            // tint measured at 1.46:1, and 1.73:1 for the compound
-            // `Mui-selected` variant an open `Select` renders (FM-052); the
-            // authored ring is layered over whichever of those applies rather
-            // than replacing it, so the compound variant needs no rule of its
-            // own.
             MuiMenuItem: {
                 styleOverrides: {
-                    root: ({theme}) => ({
+                    root: {
                         // The mock's menu rows are 14px like its inputs;
                         // MUI's default is `body1` (16px).
                         fontSize: "14px",
-                        "&.Mui-focusVisible": focusRing(
-                            theme,
-                            focusRingInsetOffset,
-                        ),
-                    }),
-                },
-            },
-            MuiListItemButton: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&.Mui-focusVisible": focusRing(
-                            theme,
-                            focusRingInsetOffset,
-                        ),
-                    }),
-                },
-            },
-            // ADR-0013 family H, explicitly. `Link.js` gates both its
-            // `outline: 0` reset and its `&.MuiLink-focusVisible {outline:
-            // 'auto'}` rule behind `props: {component: 'button'}`, so an
-            // `href` link (this application's only rendering today) takes
-            // neither and renders the `MuiCssBaseline` rule above. Authored
-            // here anyway so the family keeps the token if a `Link
-            // component="button"` is ever added.
-            MuiLink: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&:focus-visible": focusRing(theme),
-                    }),
+                    },
                 },
             },
             MuiPaper: {
@@ -2161,7 +2050,7 @@ export function createHydraTheme(
             },
             MuiChip: {
                 styleOverrides: {
-                    root: ({theme}) => ({
+                    root: {
                         // The mock's quality/type pills are `padding:5px 10px`
                         // around a 12px monospace label inside a 1px border,
                         // i.e. ~26px tall -- appreciably denser than MUI's 32px
@@ -2171,20 +2060,7 @@ export function createHydraTheme(
                         // comment above for the second consumer this is
                         // shared with.
                         borderRadius: pillRadius,
-                        // ADR-0013 family G. `Chip.js` ships several
-                        // `&.Mui-focusVisible` background rules; this
-                        // overrides them with the shared token. The one `Chip`
-                        // this application renders (`SearchResults.tsx`'s
-                        // static "Downloaded" indicator) passes neither
-                        // `onClick` nor `onDelete`, so it is not focusable and
-                        // FM-052 dispositioned it out of WCAG 2.4.7/2.4.11
-                        // scope; the rule is authored so the family is covered
-                        // the moment an interactive `Chip` appears, and it is
-                        // recorded in the FM-053 handoff as the one authored
-                        // family with no keyboard-reachable representative to
-                        // gate.
-                        "&.Mui-focusVisible": focusRing(theme),
-                    }),
+                    },
                 },
                 // FM-087: the search bar's constraint chips. The mock's pill
                 // language (mono 12px label on the bar ground behind a

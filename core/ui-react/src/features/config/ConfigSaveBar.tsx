@@ -81,10 +81,12 @@ export function ConfigSaveBar({
             }}
         >
             <Stack
-                alignItems="center"
                 direction="row"
                 spacing={2}
-                sx={{flexWrap: "wrap"}}
+                sx={{
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                }}
             >
                 {search}
                 <Box sx={{flexGrow: 1, minWidth: 0}}>

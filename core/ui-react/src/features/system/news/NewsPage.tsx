@@ -38,7 +38,13 @@ export function NewsPage({loadNews, transport}: NewsPageProps) {
 
     if (newsQuery.data.length === 0) {
         return (
-            <Typography component="h2" textAlign="center" variant="h5">
+            <Typography
+                component="h2"
+                variant="h5"
+                sx={{
+                    textAlign: "center",
+                }}
+            >
                 No news yet ;-)
             </Typography>
         );
@@ -64,7 +70,13 @@ export function NewsPage({loadNews, transport}: NewsPageProps) {
 
 function NewsLoading() {
     return (
-        <Stack alignItems="center" role="status" spacing={2}>
+        <Stack
+            role="status"
+            spacing={2}
+            sx={{
+                alignItems: "center",
+            }}
+        >
             <CircularProgress variant="indeterminate" />
             <Typography>Loading…</Typography>
         </Stack>

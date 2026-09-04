@@ -158,9 +158,11 @@ export function NotificationTemplateEditor({
                         </Typography>
                         <Stack
                             direction="row"
-                            flexWrap="wrap"
                             spacing={1}
                             useFlexGap
+                            sx={{
+                                flexWrap: "wrap",
+                            }}
                         >
                             {event.variables.map((name) => (
                                 <Chip

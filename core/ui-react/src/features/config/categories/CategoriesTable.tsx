@@ -1,5 +1,5 @@
 import EditIcon from "@mui/icons-material/Edit";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import {
     Box,
     Button,
@@ -419,7 +419,12 @@ function CategoryTableRow({
     return (
         <TableRow data-testid={`config-category-entry-${index}`}>
             <TableCell>
-                <Stack alignItems="flex-start" spacing={0.5}>
+                <Stack
+                    spacing={0.5}
+                    sx={{
+                        alignItems: "flex-start",
+                    }}
+                >
                     <Typography
                         data-testid={`config-category-name-${index}`}
                         // A category name is free text and can be long, so it
@@ -497,7 +502,7 @@ function CategoryTableRow({
                                     }
                                     icon={
                                         verdict === true ? undefined : (
-                                            <ErrorOutlineIcon />
+                                            <ErrorOutlineOutlinedIcon />
                                         )
                                     }
                                     key={category}

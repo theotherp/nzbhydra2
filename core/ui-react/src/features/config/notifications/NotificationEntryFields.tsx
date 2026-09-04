@@ -151,13 +151,20 @@ function TestNotificationAction({
 
     return (
         <Box sx={{mb: 2.5}}>
-            <Stack alignItems="flex-start" spacing={0.5}>
+            <Stack
+                spacing={0.5}
+                sx={{
+                    alignItems: "flex-start",
+                }}
+            >
                 <Stack
-                    alignItems={{sm: "center"}}
                     direction={{sm: "row", xs: "column"}}
                     spacing={1}
-                    sx={{width: "100%"}}
                     useFlexGap
+                    sx={{
+                        alignItems: {sm: "center"},
+                        width: "100%",
+                    }}
                 >
                     <Button
                         data-testid={testId}

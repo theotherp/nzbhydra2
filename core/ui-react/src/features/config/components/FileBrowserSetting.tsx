@@ -181,7 +181,13 @@ function FileBrowserDialog({
                     {entry?.fullPath ?? ""}
                 </Typography>
                 {listing.isPending ? (
-                    <Stack alignItems="center" role="status" sx={{py: 3}}>
+                    <Stack
+                        role="status"
+                        sx={{
+                            alignItems: "center",
+                            py: 3,
+                        }}
+                    >
                         <CircularProgress variant="indeterminate" />
                     </Stack>
                 ) : null}

@@ -82,7 +82,14 @@ export function ConfigShell({transport}: {transport: ApiTransport}) {
 
     if (query.isPending) {
         return (
-            <Stack alignItems="center" role="status" spacing={2} sx={{py: 8}}>
+            <Stack
+                role="status"
+                spacing={2}
+                sx={{
+                    alignItems: "center",
+                    py: 8,
+                }}
+            >
                 <CircularProgress variant="indeterminate" />
                 <Typography>Loading configuration…</Typography>
             </Stack>

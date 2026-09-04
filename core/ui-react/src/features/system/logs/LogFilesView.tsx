@@ -27,7 +27,13 @@ export function LogFilesView({transport}: {transport: ApiTransport}) {
     return (
         <Stack data-testid="system-log-view-files" spacing={2}>
             {files.isPending && (
-                <Stack alignItems="center" role="status" spacing={2}>
+                <Stack
+                    role="status"
+                    spacing={2}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <CircularProgress variant="indeterminate" />
                     <Typography>Loading the log files</Typography>
                 </Stack>

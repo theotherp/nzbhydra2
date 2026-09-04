@@ -14,10 +14,15 @@
  *  limitations under the License.
  */
 
-// FM-053 / ADR-0013 / ADR-0014 / ADR-0015: the repository guard against
-// reintroducing the local `sx` patterns that deleted this application's
-// keyboard focus affordances, and against re-growing the feature-local design
-// literals ADR-0014 moved into the theme.
+// FM-053 / FM-184 / ADR-0013 / ADR-0014 / ADR-0015 / ADR-0056: the repository
+// guard against reintroducing the local `sx` patterns that deleted this
+// application's keyboard focus affordances, and against re-growing the
+// feature-local design literals ADR-0014 moved into the theme.
+//
+// Since FM-184 the ring itself is MUI 9.4's own `theme.focusVisible`
+// (ADR-0056) rather than eleven authored `&.Mui-focusVisible` rules, so the
+// shapes below are the ones that can still delete an indicator under that
+// mechanism.
 //
 // Patterns that fail this check:
 //
@@ -28,13 +33,21 @@
 //      shape FM-052 measured as a WCAG 2.4.7 failure). Recolouring
 //      (`borderColor: ...`) is not flagged.
 //
-//   2. `disableRipple` on a control whose family has no authored
-//      `Mui-focusVisible` rule. `ButtonBase.js`: "Without a ripple there is no
-//      styling for :focus-visible by default."
+//   2. `disableRipple` on a component that is NOT one of 9.4.0's own
+//      `focusVisible` consumers (the literal list below). On a consumer the
+//      ring is painted by MUI and does not depend on the ripple at all; on
+//      anything else `ButtonBase.js`'s contract still holds: "Without a
+//      ripple there is no styling for :focus-visible by default."
 //
 //   3. An `InputBase` import in feature code (ADR-0014: standard components
 //      only; a hand-assembled `InputBase` composite is how the focus and
 //      label affordances were lost the first time).
+//
+//   4a. A `Checkbox`/`Radio` `icon`/`checkedIcon`/`indeterminateIcon` whose
+//      element is a `Box`, `span` or `div`. `Checkbox.js`/`Radio.js` author
+//      the ring on `&.Mui-focusVisible svg:first-of-type`, so a non-`svg`
+//      icon leaves that control with no keyboard focus indicator at all
+//      (FM-184 -- the shape `SelectionMenu.tsx`'s select-all square had).
 //
 //   4. A color literal (`#hex`, `rgba(...)`, `oklch(...)`) written in a
 //      *design-literal position* in feature code, outside the files already
@@ -134,6 +147,34 @@ function enclosingComponent(source, index) {
         }
     }
     return enclosing;
+}
+
+const NON_SVG_ICON_ELEMENTS = new Set(["Box", "span", "div"]);
+
+/**
+ * The non-`svg` element an icon passed to a `Checkbox`/`Radio` renders, or
+ * `null` when it renders something MUI's `svg:first-of-type` ring can reach.
+ * A tag written inline (`icon={<Box .../>}`) answers directly; a local
+ * component (`icon={<SelectAllUncheckedIcon />}`) is resolved one level, by
+ * reading the first element its own declaration returns. One level is
+ * deliberate: it covers the shape this repository actually had, and a deeper
+ * indirection is a review question rather than a grep question.
+ */
+function nonSvgIconElement(source, tag) {
+    if (NON_SVG_ICON_ELEMENTS.has(tag)) {
+        return tag;
+    }
+    const declaration = new RegExp(
+        `\\b(?:function\\s+${tag}\\s*\\(|const\\s+${tag}\\s*=)`,
+    ).exec(source);
+    if (!declaration) {
+        return null;
+    }
+    const body = source.slice(declaration.index);
+    const returned = /return\s*\(?\s*<([A-Za-z][A-Za-z0-9]*)/.exec(body);
+    return returned && NON_SVG_ICON_ELEMENTS.has(returned[1])
+        ? returned[1]
+        : null;
 }
 
 const CLOSING_DELIMITER = {"{": "}", "(": ")", "[": "]"};
@@ -277,15 +318,42 @@ function themeFamilyBlocks(source) {
 const themeBlocks = themeFamilyBlocks(themeSource);
 
 /**
- * The MUI component families `theme.ts` authors an `&.Mui-focusVisible` ring
- * for, keyed by the component name a JSX tag would use (`Checkbox` ->
- * `MuiCheckbox`).
+ * `@mui/material` 9.4.0's own `theme.focusVisible` consumers, by the
+ * component name a JSX tag uses. Read off the 9.4.0 sources rather than
+ * inferred: every `styled(ButtonBase)` component takes `ButtonBase.js`'s root
+ * variant (`internalDisabledThemeFocusVisible: false`), `Chip` renders a
+ * `ButtonBase` once it is clickable or deletable, `Checkbox.js`/`Radio.js`
+ * ring `svg:first-of-type`, `Switch.js` rings `~ .MuiSwitch-track`, and
+ * `Link.js` and `Autocomplete.js` ring their own `focusVisible` class. On any
+ * of these the focus indicator is MUI's and survives `disableRipple`; on
+ * anything else the ripple is still the only thing MUI ships.
+ *
+ * This list is version-scoped to 9.4.0 and is re-derived on an upgrade, the
+ * same duty `tests/system/tests/focus-indication.spec.ts` carries.
  */
-const authoredFamilies = new Set(
-    Array.from(themeBlocks.entries())
-        .filter(([, block]) => /Mui-focusVisible/.test(block))
-        .map(([family]) => family),
-);
+const focusVisibleConsumers = new Set([
+    "AccordionSummary",
+    "Autocomplete",
+    "BottomNavigationAction",
+    "Button",
+    "ButtonBase",
+    "CardActionArea",
+    "Checkbox",
+    "Chip",
+    "Fab",
+    "IconButton",
+    "Link",
+    "ListItemButton",
+    "MenuItem",
+    "PaginationItem",
+    "Radio",
+    "StepButton",
+    "Switch",
+    "Tab",
+    "TabScrollButton",
+    "TableSortLabel",
+    "ToggleButton",
+]);
 
 for (const file of files) {
     const displayPath = relative(resolve("."), file);
@@ -361,62 +429,82 @@ for (const file of files) {
         }
     }
 
-    // ---- Check 2: disableRipple without an authored Mui-focusVisible rule --
+    // ---- Check 2: disableRipple outside MUI's focusVisible consumers ------
     for (const match of source.matchAll(/\bdisableRipple\b/g)) {
         const component = enclosingComponent(source, match.index);
-        const authoredInTheme = component
-            ? authoredFamilies.has(component)
+        const ringedByMui = component
+            ? focusVisibleConsumers.has(component)
             : false;
         const authoredLocally = /Mui-focusVisible|focusVisibleClassName/.test(
             source,
         );
-        if (!authoredInTheme && !authoredLocally) {
+        if (!ringedByMui && !authoredLocally) {
             findings.push(
                 `${displayPath}:${lineOf(source, match.index)} ` +
                     `\`disableRipple\` on <${component ?? "unknown"}> removes ` +
-                    `the only focus affordance MUI ships for that control, and ` +
-                    `neither \`app/theme.ts\` nor this file authors a ` +
-                    `\`Mui-focusVisible\` rule for it ` +
-                    `(FM-053 / ADR-0013; ButtonBase.js: "Without a ripple there ` +
-                    `is no styling for :focus-visible by default").`,
+                    `the only focus affordance MUI ships for that control: it ` +
+                    `is not one of 9.4.0's \`theme.focusVisible\` consumers, so ` +
+                    `nothing paints a ring for it ` +
+                    `(FM-053 / FM-184 / ADR-0013 / ADR-0056; ButtonBase.js: ` +
+                    `"Without a ripple there is no styling for :focus-visible ` +
+                    `by default").`,
+            );
+        }
+    }
+
+    // ---- Check 4a: a SwitchBase icon MUI's svg-keyed ring cannot reach -----
+    const iconProp =
+        /\b(?:icon|checkedIcon|indeterminateIcon)\s*=\s*\{\s*<([A-Za-z][A-Za-z0-9]*)/g;
+    for (const match of source.matchAll(iconProp)) {
+        const owner = enclosingComponent(source, match.index);
+        if (owner !== "Checkbox" && owner !== "Radio") {
+            continue;
+        }
+        const element = nonSvgIconElement(source, match[1]);
+        if (element) {
+            findings.push(
+                `${displayPath}:${lineOf(source, match.index)} ` +
+                    `gives <${owner}> an icon that renders <${element}>, not an ` +
+                    `\`svg\`. \`Checkbox.js\`/\`Radio.js\` author the focus ring ` +
+                    `on \`&.Mui-focusVisible svg:first-of-type\` — the root ` +
+                    `cannot carry it, because \`SwitchBase.js\` makes the ` +
+                    `focusable node an \`opacity: 0\` input overlay — so this ` +
+                    `control paints no keyboard focus indicator at all ` +
+                    `(FM-184 / ADR-0056). Draw the icon with \`SvgIcon\`.`,
             );
         }
     }
 }
 
-// ---- Check 3: the authored token itself is still declared ------------------
-// Not one of the two reintroduction patterns, but the thing they would be
-// reintroduced *against*: if `theme.ts` stopped authoring the families below,
-// check 2 would start passing vacuously.
-// ADR-0015: `MuiInputBase` is deliberately NOT in this list — the input/
-// select family indicates focus through MUI's own focused notchedOutline,
-// and an authored `&:has(:focus-visible)` ring there double-borders every
-// focused select. The check below enforces that from the other direction.
-const requiredFamilies = [
-    "MuiButton",
-    "MuiIconButton",
-    "MuiTab",
-    "MuiCheckbox",
-    "MuiRadio",
-    "MuiSwitch",
-    "MuiMenuItem",
-    "MuiListItemButton",
-    "MuiLink",
-    "MuiChip",
-];
-// ADR-0015's guard, stated as what it actually means. It used to reject a
-// `MuiInputBase` entry of ANY kind, which was a proxy for "no authored focus
-// ring here" and stopped being true once the family took legitimate
-// non-focus declarations: the mock's 14px input text size, and the shared
-// `controlHeight` that makes a select the same box as the buttons beside it.
-// What ADR-0015 forbids is a focus *indicator* on the input root -- an
-// authored ring there double-borders every focused select, because the
-// family's indicator is MUI's own focused notchedOutline. So the block is
-// now checked for focus styling rather than for existing at all.
+// ---- Check 5: the focus-ring opt-in itself ---------------------------------
+// Not one of the reintroduction patterns above, but the thing they would be
+// reintroduced *against*: if `theme.ts` stopped opting into MUI's ring, or
+// started authoring a second one beside it, every check above would go on
+// passing while the application lost or doubled its indicator.
+//
+// ADR-0015: `MuiInputBase` is deliberately not ringed — the input/select
+// family indicates focus through MUI's own focused notchedOutline, and an
+// authored `&:has(:focus-visible)` ring there double-borders every focused
+// select. That is enforced from the other direction below, and now falls out
+// of the "only `MuiCssBaseline` declares focus styling" rule as well; it is
+// kept as its own finding because its message is the one a reader needs.
+const focusVisibleOptIn =
+    /focusVisible:\s*\{\s*outlineWidth:\s*3\s*,\s*outlineOffset:\s*3\s*,?\s*\}/;
+if (!focusVisibleOptIn.test(themeSource)) {
+    findings.push(
+        `src/app/theme.ts no longer passes ` +
+            `\`focusVisible: {outlineWidth: 3, outlineOffset: 3}\` to ` +
+            `\`createTheme\`. ADR-0056 adopts MUI 9.4's ring but keeps ` +
+            `ADR-0013's measured 3px/3px geometry rather than MUI's 2px/2px ` +
+            `defaults; dropping the two keys is an owner experiment that has ` +
+            `to be re-measured, not a silent edit.`,
+    );
+}
+
 const inputBaseBlock = themeBlocks.get("InputBase");
 if (
     inputBaseBlock !== undefined &&
-    /Mui-focusVisible|:focus-visible|focusRing\(/.test(inputBaseBlock)
+    /Mui-focusVisible|:focus-visible|outline/i.test(inputBaseBlock)
 ) {
     findings.push(
         `src/app/theme.ts authors focus styling on MuiInputBase. ADR-0015 ` +
@@ -426,24 +514,44 @@ if (
             `are fine.`,
     );
 }
-for (const family of requiredFamilies) {
-    const block = themeBlocks.get(family.replace(/^Mui/, ""));
-    const declared =
-        block !== undefined && /Mui-focusVisible|:focus-visible/.test(block);
-    if (!declared) {
-        findings.push(
-            `src/app/theme.ts no longer authors a focus ring for ${family} ` +
-                `(ADR-0013, Option A requires one authored rule per control ` +
-                `family; see tests/system/tests/focus-indication.spec.ts).`,
-        );
+
+// `MuiCssBaseline` is the one exception, and it is not a second focus system:
+// it spreads the very token MUI resolved. Every other family's ring is MUI's
+// own, so a `Mui-focusVisible`, `:focus-visible` or `outline` declaration in
+// any other theme block is a second, hand-authored indicator (ADR-0056).
+const focusDeclaration =
+    /Mui-focusVisible|:focus-visible|(?:^|[^A-Za-z])outline(?:Color|Offset|Style|Width)?\s*:/;
+for (const [family, block] of themeBlocks) {
+    if (family === "CssBaseline" || !focusDeclaration.test(block)) {
+        continue;
     }
+    findings.push(
+        `src/app/theme.ts authors focus styling on Mui${family}. Since ` +
+            `ADR-0056 the ring is \`theme.focusVisible\`, painted by MUI ` +
+            `itself on every family it reaches; a second declaration here ` +
+            `either doubles it or silently diverges from it. The only ` +
+            `focus declaration this file may make is \`MuiCssBaseline\`'s ` +
+            `":focus-visible" spread, for the unclassed \`<a href>\` no MUI ` +
+            `component styles.`,
+    );
 }
-if (!/":focus-visible":\s*focusRing\(/.test(themeSource)) {
+
+const cssBaselineBlock = (themeBlocks.get("CssBaseline") ?? "").replace(
+    /\s+/g,
+    " ",
+);
+if (
+    !/":focus-visible"\s*:\s*\{\s*\.\.\.theme\.focusVisible\s*\}/.test(
+        cssBaselineBlock,
+    )
+) {
     findings.push(
         `src/app/theme.ts's MuiCssBaseline ":focus-visible" rule no longer ` +
-            `renders the shared authored token, so the application would carry ` +
-            `two focus systems (ADR-0013's recorded cost for Option A, which ` +
-            `FM-053 discharged by reconciling the global rule with the token).`,
+            `spreads \`theme.focusVisible\`, so the one control class MUI ` +
+            `styles nothing for — \`NewsPage\`'s sanitized unclassed ` +
+            `\`<a href>\`, measured at 1.29:1 on the browser default — either ` +
+            `loses its ring or renders a second, divergent one ` +
+            `(ADR-0013 family H, ADR-0056).`,
     );
 }
 
@@ -459,5 +567,6 @@ if (findings.length > 0) {
 
 console.log(
     `Focus affordances are intact: ${files.length} source files checked, ` +
-        `${requiredFamilies.length} authored control families declared in src/app/theme.ts.`,
+        `${focusVisibleConsumers.size} MUI 9.4.0 focusVisible consumers known, ` +
+        `and src/app/theme.ts opts into the ring exactly once.`,
 );

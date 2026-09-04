@@ -156,10 +156,12 @@ export function NotificationHistoryPage({
             values={values}
         >
             <Stack
-                alignItems="center"
                 direction="row"
-                justifyContent="space-between"
                 spacing={1}
+                sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                }}
             >
                 <Typography component="h1" variant="h4">
                     Notification history
@@ -284,10 +286,12 @@ export function NotificationHistoryPage({
                                     </TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="flex-start"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "flex-start",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             {/*
                                              * The testid stays on a box
@@ -315,10 +319,12 @@ export function NotificationHistoryPage({
                                     </TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="flex-start"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "flex-start",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <Box data-testid="notification-history-body">
                                                 <SafeText
@@ -335,10 +341,12 @@ export function NotificationHistoryPage({
                                     </TableCell>
                                     <TableCell>
                                         <Stack
-                                            alignItems="flex-start"
                                             direction="row"
-                                            justifyContent="space-between"
                                             spacing={1}
+                                            sx={{
+                                                alignItems: "flex-start",
+                                                justifyContent: "space-between",
+                                            }}
                                         >
                                             <Box data-testid="notification-history-urls">
                                                 <SafeText

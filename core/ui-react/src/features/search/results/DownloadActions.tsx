@@ -360,11 +360,13 @@ export function DownloadActions({
         ];
         return (
             <Stack
-                alignItems="center"
                 aria-label="Selected result actions"
                 data-testid="results-bulk-actions"
                 direction="row"
-                gap={1}
+                sx={{
+                    alignItems: "center",
+                    gap: 1,
+                }}
             >
                 {/* The count the desktop summary carries as a `· N selected`
                     fragment. On a phone the summary is down to `{filtered} /
@@ -545,12 +547,14 @@ export function DownloadActions({
         // row used to restate are now rendered once, in
         // `search-results-summary`.
         <Stack
-            alignItems="center"
             aria-label="Selected result actions"
             data-testid="results-bulk-actions"
             direction="row"
-            flexWrap="wrap"
-            gap={1}
+            sx={{
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1,
+            }}
         >
             {downloaders.length > 1 && (
                 <Select

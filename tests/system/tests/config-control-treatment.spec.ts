@@ -887,12 +887,19 @@ test.describe("Raised surfaces after the paper flattening (FM-117)", () => {
         await showAdvanced(page);
         await page.getByTestId(`config-input-${CHIPS_SETTING}`).click();
         const emptyList = page.locator(".MuiAutocomplete-paper");
+        // FM-183: through `@mui/material` 7.3.9 an option-less `Autocomplete`
+        // still mounted an (unpainted) paper, and this read used to assert
+        // that as its precondition; 9.4.0 mounts none at all. Both outcomes
+        // satisfy the claim below -- nothing is painted -- so the paper is
+        // measured only if one exists, and the precondition is gone rather
+        // than inverted: what this case exists to pin is the absence of a
+        // painted strip, not which of the two ways MUI achieves it.
+        const emptyListBox =
+            (await emptyList.count()) === 0
+                ? null
+                : await emptyList.first().boundingBox();
         expect(
-            await emptyList.count(),
-            "the option-less field must still mount the paper this checks",
-        ).toBeGreaterThan(0);
-        expect(
-            await emptyList.first().boundingBox(),
+            emptyListBox,
             "a chips field with no suggestions must paint no empty bordered strip",
         ).toBeNull();
 

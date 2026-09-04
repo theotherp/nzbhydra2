@@ -34,7 +34,13 @@ export function UpdateBanner({
                               infos.latestVersionIsBeta ? " Beta" : ""
                           }.`}
                 </Typography>
-                <Stack direction="row" flexWrap="wrap" spacing={2}>
+                <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                        flexWrap: "wrap",
+                    }}
+                >
                     <Button
                         data-testid="update-footer-changelog"
                         onClick={() => onShowChangelog(latestVersion)}

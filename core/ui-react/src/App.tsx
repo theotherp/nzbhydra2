@@ -101,7 +101,13 @@ export function App({bootstrap, isLoading = false}: AppProps) {
             <CssBaseline enableColorScheme />
             {isLoading ? (
                 <Container maxWidth="sm" sx={{py: 8}}>
-                    <Stack alignItems="center" role="status" spacing={2}>
+                    <Stack
+                        role="status"
+                        spacing={2}
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
                         <CircularProgress variant="indeterminate" />
                         <Typography>Loading…</Typography>
                     </Stack>

@@ -36,7 +36,6 @@ export function SwitchSetting({
                     <Switch
                         checked={field.value === true}
                         data-testid={settingInputTestId(name)}
-                        inputRef={field.ref}
                         name={field.name}
                         onBlur={field.onBlur}
                         onChange={(_event, checked) => field.onChange(checked)}
@@ -52,6 +51,7 @@ export function SwitchSetting({
                                     hasHelp: help !== undefined,
                                 }),
                                 role: "switch",
+                                ref: field.ref,
                             },
                         }}
                     />

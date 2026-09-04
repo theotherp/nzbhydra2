@@ -67,7 +67,13 @@ export function SystemTasksTab({
     return (
         <Stack data-testid="system-tasks" spacing={2}>
             {tasks.isPending && (
-                <Stack alignItems="center" role="status" spacing={2}>
+                <Stack
+                    role="status"
+                    spacing={2}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <CircularProgress variant="indeterminate" />
                     <Typography>Loading the scheduled tasks</Typography>
                 </Stack>

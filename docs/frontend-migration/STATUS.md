@@ -1615,6 +1615,46 @@ carries ~140 lines of whitespace-only reformatting of unrelated blocks, and the 
 `setSorting` path's existing unit round-trip rather than a `page.reload()` in the new e2e case. Candidates for a future
 quickfix. The 2026-09-03 owner-request batch FM-181..FM-182 is complete.
 
+FM-183 (Mechanical Upgrade Of `@mui/material` And `@mui/icons-material` From 7.3.9 To 9.4.0) is the one-hop upgrade
+(there is no Material UI 8): both packages pinned at 9.4.0 with one deduplicated copy each of `@mui/material`/`system`/
+`utils`/`types`; the v9 removals ported by the `deprecations/all` and `v9.0.0/system-props` codemods with every hunk
+read and every literal preserved; `disableEscapeKeyDown` removed at seven dialogs whose existing `onClose` guards are
+stricter than a reason check; no token, `styleOverrides` or `defaultProps` change, and v9's changed defaults kept per
+ADR-0014/ADR-0056 (`ListItemIcon` 36px reaches only `FileBrowserSetting`, measured; `MenuItem` pinned 36px in both
+versions). Three specs repaired inside the task after one packet refinement: the ADR-0012 trace re-derived around v9's
+reopen focus (MUI now refocuses the row focused at close; contract intact), an option-less-Autocomplete paper-count
+precondition dropped, and the bare-anchor UA-colour pin made `color-scheme`-aware — that last failure pre-dates the
+upgrade and belongs to the `e541f7a46` quickfix, which verified only `smoke.spec.ts`. First review failed on a real
+regression the guide's wording caused: four legacy `*Outline` icon families had been repointed to `*Outlined`, the
+filled glyph; the byte-identical files are `*OutlineOutlined`. Fix cycle 1 repointed all five, pinned each family's
+`<path d>` against 7.3.9's literal in a new unit test (CheckCircle is the one family with an unavoidable sub-pixel
+delta — no 9.4.0 module ships its old cut), re-captured and pixel-diffed the whole strip with matching page heights,
+and corrected the `ListItemIcon` claim. Bundle JS +0.61%, CSS unchanged. Vitest 1928/1928, full real-backend suite
+225/225 on the rebuilt jar; sixteen captures plus glyph-proof crops diffed by the reviewer. Passed 2026-09-04 after one
+fix cycle with six minor findings, not corrected (optional): the stats-pair "confined to" boxes miss five stray
+antialiasing pixels; the handoff says `theme.test.ts` holds 64 tests (129); the Review bullet said 1913 unit tests
+(1928); the CheckCircle glyph delta is missing from the FM-183 gap line; the packet's allowlist wording did not
+literally cover the new test file (the write is judged in scope); stale `7.3.9` cites in `RecentSearches.tsx`,
+`ToastProvider.tsx:124`, `theme.ts:1248`. Candidates for a future quickfix.
+
+FM-184 (Focus Ring From `theme.focusVisible` At ADR-0013's 3px/3px Geometry) replaced the hand-authored focus ring with
+MUI 9.4's `theme.focusVisible` opted in once as `{outlineWidth: 3, outlineOffset: 3}` (ADR-0056): `focusRing()`, its
+three constants and the per-family rules are gone, `MuiCssBaseline` keeps one spread of the resolved token for the
+unclassed anchor, and MUI decides node and offset per family (Tab is the one geometry that moved, −3px → −9px, still
+unclipped). Two families gained an indicator they never had — the old `MuiSwitch` rule targeted a class MUI never
+composes, so the config "Advanced settings" switch had no ring, and the Autocomplete option had only its tint — and
+`SelectionMenu`'s select-all icons became `SvgIcon`s so MUI's Checkbox rule (`svg:first-of-type`) reaches them (glyphs
+matched; the square's edge antialiases differently, 84/841 px, indistinguishable at 1x). `validate-focus-affordances`
+now guards a literal 9.4.0 consumer list plus a non-`svg`-icon check; the spec lost no assertion (56 → 62 `expect`s)
+and gained Switch and option probes; every family re-measured at 4.92–5.83:1. ADR-0013 and ADR-0015 carry the
+amendment. Vitest 1930/1930, real-backend focus-indication / search / smoke 40/40 on a rebuilt jar; 25 before/after
+pairs diffed by the reviewer. Passed 2026-09-04 first cycle with six minor findings, not corrected (optional): the
+validator's consumer list omits `Rating`/`Slider` (safe direction); the archived vitest log is an npm error though the
+suite was independently re-run green; the select-all antialiasing delta; a `SystemShell.test.tsx:143` flake seen 2/5
+(pre-existing, unrecorded); the glyph baseline constant is font-tuned; the "slightly rounder" wording undersells the
+near-circular checkbox ring MUI now draws. Candidates for a future quickfix. Visible changes for the owner's eye: the
+Tab inset, the Switch ring, and the rounder checkbox ring.
+
 ## Active
 
 None.
@@ -1641,6 +1681,10 @@ None.
 None.
 
 ## Upcoming
+
+- The 2026-09-04 MUI batch — FM-183 (upgrade to 9.4.0) and FM-184 (`theme.focusVisible`, ADR-0056) — is complete
+  (entries above). `enhanceHighContrast` is parked; `motion.reducedMotion` sits in a stash pending a cause (see
+  `MAINTENANCE.md` *Open candidates*). No task packets are queued.
 
 - The 2026-09-03 owner-request batch FM-181..FM-182 (phone results chrome with the refine bottom sheet; the phone sort
   menu) and FM-180 (dark themes re-grounded, ADR-0055) are complete (entries above). No task packets are queued.

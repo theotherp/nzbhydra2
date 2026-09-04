@@ -153,19 +153,22 @@ export function NotificationEntriesSection({
                                 expandIcon={<ExpandMoreIcon />}
                             >
                                 <Stack
-                                    // `flex-start` at `xs` on purpose: the
-                                    // column stack would otherwise stretch the
-                                    // message-type chip to the full row width,
-                                    // where it reads as a button rather than
-                                    // as a badge on the heading.
-                                    alignItems={{
-                                        sm: "center",
-                                        xs: "flex-start",
-                                    }}
                                     direction={{sm: "row", xs: "column"}}
                                     spacing={1}
-                                    sx={{width: "100%"}}
                                     useFlexGap
+                                    sx={{
+                                        // `flex-start` at `xs` on purpose: the
+                                        // column stack would otherwise stretch
+                                        // the message-type chip to the full
+                                        // row width, where it reads as a
+                                        // button rather than as a badge on the
+                                        // heading.
+                                        alignItems: {
+                                            sm: "center",
+                                            xs: "flex-start",
+                                        },
+                                        width: "100%",
+                                    }}
                                 >
                                     {/*
                                      * `span`, not a heading: `AccordionSummary`

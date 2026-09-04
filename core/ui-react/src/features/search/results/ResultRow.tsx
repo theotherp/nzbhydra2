@@ -249,9 +249,6 @@ export const ResultRow = memo(function ResultRow({
             >
                 <Checkbox
                     checked={selected}
-                    inputProps={{
-                        "aria-label": `Select ${result.title}`,
-                    }}
                     onChange={(event) => {
                         onSelectionChange(
                             result.searchResultId,
@@ -270,6 +267,11 @@ export const ResultRow = memo(function ResultRow({
                         }
                     }}
                     size="small"
+                    slotProps={{
+                        input: {
+                            "aria-label": `Select ${result.title}`,
+                        },
+                    }}
                 />
             </TableCell>
             {resultColumns.map((column) => {
@@ -347,21 +349,22 @@ export const ResultRow = memo(function ResultRow({
                             // cell now guarantees. The title itself still
                             // wraps inside its own box.
                             <Stack
-                                // FM-179: a row with a cover tile centres its
-                                // title's first line, indexer, size and
-                                // actions on the 56px tile (the table's
-                                // `data-has-cover` rule does the other cells;
-                                // this does the title cell's own stack).
-                                // Without a tile the row is unchanged FM-175
-                                // top alignment.
-                                alignItems={
-                                    coverSrc !== undefined
-                                        ? "center"
-                                        : "flex-start"
-                                }
                                 direction="row"
-                                flexWrap="nowrap"
-                                gap={0.5}
+                                sx={{
+                                    // FM-179: a row with a cover tile centres
+                                    // its title's first line, indexer, size
+                                    // and actions on the 56px tile (the
+                                    // table's `data-has-cover` rule does the
+                                    // other cells; this does the title cell's
+                                    // own stack). Without a tile the row is
+                                    // unchanged FM-175 top alignment.
+                                    alignItems:
+                                        coverSrc !== undefined
+                                            ? "center"
+                                            : "flex-start",
+                                    flexWrap: "nowrap",
+                                    gap: 0.5,
+                                }}
                             >
                                 {/* Slot 1 (left) is always the title-group
                                     control, slot 2 (right) always the
@@ -434,10 +437,12 @@ export const ResultRow = memo(function ResultRow({
                             </Stack>
                         ) : isIndexer ? (
                             <Stack
-                                alignItems="center"
                                 direction="row"
-                                gap={0.5}
-                                justifyContent="flex-end"
+                                sx={{
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    justifyContent: "flex-end",
+                                }}
                             >
                                 {indexerColor !== undefined && (
                                     <Box
@@ -472,11 +477,13 @@ export const ResultRow = memo(function ResultRow({
                     the one item here that is not an icon -- which may still
                     drop below the icons in a narrow Actions column. */}
                 <Stack
-                    alignItems="center"
                     direction="row"
-                    flexWrap="wrap"
-                    gap={0.5}
-                    justifyContent="flex-end"
+                    sx={{
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 0.5,
+                        justifyContent: "flex-end",
+                    }}
                 >
                     {/* FM-150: the icons are one non-wrapping group, so the
                         download shares a line with the detail links instead of
@@ -489,12 +496,14 @@ export const ResultRow = memo(function ResultRow({
                         into a block with the download beside it rather than
                         forcing the row taller by a whole control. */}
                     <Stack
-                        alignItems="center"
                         direction="row"
-                        flexWrap="nowrap"
-                        gap={0.5}
-                        justifyContent="flex-end"
-                        sx={{minWidth: 0}}
+                        sx={{
+                            alignItems: "center",
+                            flexWrap: "nowrap",
+                            gap: 0.5,
+                            justifyContent: "flex-end",
+                            minWidth: 0,
+                        }}
                     >
                         {/* FM-082: the NFO action plus the session-gated
                             Binsearch/comments/details links legacy rendered in

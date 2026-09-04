@@ -1,4 +1,4 @@
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import {
     Alert,
     Button,
@@ -54,17 +54,25 @@ export function CpuUsageCard({
         <Card data-testid="system-cpu-chart" variant="outlined">
             <CardContent>
                 <Stack
-                    alignItems="center"
                     direction="row"
-                    justifyContent="space-between"
                     spacing={1}
+                    sx={{
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                    }}
                 >
-                    <Stack alignItems="center" direction="row" spacing={0.5}>
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
                         <Typography component="h2" variant="h6">
                             CPU usage
                         </Typography>
                         <Tooltip title={CPU_CHART_HELP}>
-                            <HelpOutlineIcon
+                            <HelpOutlineOutlinedIcon
                                 aria-label="About CPU usage"
                                 fontSize="small"
                                 sx={{color: "text.secondary"}}

@@ -270,7 +270,13 @@ export function SystemBugreportTab({
                             posted:
                         </Typography>
 
-                        <Stack direction="row" flexWrap="wrap" gap={2}>
+                        <Stack
+                            direction="row"
+                            sx={{
+                                flexWrap: "wrap",
+                                gap: 2,
+                            }}
+                        >
                             <Button
                                 data-testid="system-debug-download"
                                 disabled={busy}
@@ -335,7 +341,13 @@ export function SystemBugreportTab({
                             </Alert>
                         )}
 
-                        <Stack direction="row" flexWrap="wrap" gap={2}>
+                        <Stack
+                            direction="row"
+                            sx={{
+                                flexWrap: "wrap",
+                                gap: 2,
+                            }}
+                        >
                             <Button
                                 data-testid="system-thread-dump"
                                 disabled={busy}
@@ -426,7 +438,13 @@ export function SystemBugreportTab({
                             }}
                             value={sql}
                         />
-                        <Stack direction="row" flexWrap="wrap" gap={2}>
+                        <Stack
+                            direction="row"
+                            sx={{
+                                flexWrap: "wrap",
+                                gap: 2,
+                            }}
+                        >
                             <Button
                                 data-testid="system-sql-query"
                                 disabled={busy}
@@ -465,7 +483,12 @@ export function SystemBugreportTab({
 
             <Card variant="outlined">
                 <CardContent>
-                    <Stack alignItems="flex-start" spacing={2}>
+                    <Stack
+                        spacing={2}
+                        sx={{
+                            alignItems: "flex-start",
+                        }}
+                    >
                         <Typography component="h2" variant="h6">
                             Misc
                         </Typography>

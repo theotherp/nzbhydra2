@@ -131,7 +131,13 @@ function SizePresetRow({pathFor}: {pathFor: CategoryFieldPathBuilder}) {
             label="Size preset"
             name={minName}
         >
-            <Stack alignItems="center" direction="row" spacing={1}>
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                    alignItems: "center",
+                }}
+            >
                 <TextField
                     inputRef={minField.ref}
                     label="Min"

@@ -1,5 +1,5 @@
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
     Box,
@@ -228,11 +228,14 @@ export function IndexerTable({
         // scroll and marks whichever edge it is currently clipping.
         <>
             <Stack
-                alignItems={{sm: "center"}}
                 direction={{xs: "column", sm: "row"}}
                 spacing={1}
-                sx={{flexWrap: "wrap", mb: 2}}
                 useFlexGap
+                sx={{
+                    alignItems: {sm: "center"},
+                    flexWrap: "wrap",
+                    mb: 2,
+                }}
             >
                 <TextField
                     // Not a `C-CONFIG-FIELDS` control: it binds to no
@@ -525,7 +528,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
             <Chip
                 color="error"
                 data-testid={`config-indexer-incomplete-${index}`}
-                icon={<ErrorOutlineIcon />}
+                icon={<ErrorOutlineOutlinedIcon />}
                 key="incomplete"
                 label={CONFIG_INCOMPLETE_MARKER}
                 size="small"
@@ -536,7 +539,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
             <Chip
                 color="warning"
                 data-testid={`config-indexer-caps-incomplete-${index}`}
-                icon={<HelpOutlineIcon />}
+                icon={<HelpOutlineOutlinedIcon />}
                 key="caps-incomplete"
                 label={CAPS_INCOMPLETE_MARKER}
                 size="small"
@@ -568,7 +571,12 @@ const IndexerTableRow = memo(function IndexerTableRow({
     // sits above — not on — the row's vertical center, same as the compact
     // branch has always rendered it.
     const name = (
-        <Stack alignItems="flex-start" spacing={0.5}>
+        <Stack
+            spacing={0.5}
+            sx={{
+                alignItems: "flex-start",
+            }}
+        >
             {nameButton}
             {nameChips}
         </Stack>
@@ -597,7 +605,12 @@ const IndexerTableRow = memo(function IndexerTableRow({
         return (
             <TableRow data-testid={`config-indexer-entry-${index}`}>
                 <TableCell>
-                    <Stack alignItems="flex-start" spacing={1}>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            alignItems: "flex-start",
+                        }}
+                    >
                         {name}
                         {type}
                         {/*

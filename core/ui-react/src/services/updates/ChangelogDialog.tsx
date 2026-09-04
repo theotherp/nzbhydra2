@@ -47,7 +47,13 @@ export function ChangelogDialog({
             <DialogTitle id="hydra-changelog-title">Change log</DialogTitle>
             <DialogContent dividers>
                 {changes.isPending && (
-                    <Stack alignItems="center" role="status" sx={{py: 2}}>
+                    <Stack
+                        role="status"
+                        sx={{
+                            alignItems: "center",
+                            py: 2,
+                        }}
+                    >
                         <CircularProgress variant="indeterminate" />
                     </Stack>
                 )}

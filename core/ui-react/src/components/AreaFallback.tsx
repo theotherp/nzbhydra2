@@ -33,11 +33,14 @@ import {CircularProgress, Stack, Typography} from "@mui/material";
 export function AreaFallback({message}: {message: string}) {
     return (
         <Stack
-            alignItems="center"
             component="main"
             role="status"
             spacing={1}
-            sx={{minHeight: 320, pt: 8}}
+            sx={{
+                alignItems: "center",
+                minHeight: 320,
+                pt: 8,
+            }}
         >
             <CircularProgress />
             <Typography>{message}</Typography>

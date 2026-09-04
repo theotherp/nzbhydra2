@@ -1,6 +1,6 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import {
     Box,
     Button,
@@ -183,11 +183,13 @@ export function ConfigFieldset({
             sx={{border: 0, m: 0, minWidth: 0, p: 0, pt: 1}}
         >
             <Stack
-                alignItems="center"
                 component="legend"
                 direction="row"
                 spacing={0.5}
-                sx={{pb: 1}}
+                sx={{
+                    alignItems: "center",
+                    pb: 1,
+                }}
             >
                 <Typography component="span" variant="h6">
                     {label}
@@ -199,7 +201,7 @@ export function ConfigFieldset({
                             data-testid={`config-fieldset-tooltip-${label.toLowerCase()}`}
                             size="small"
                         >
-                            <HelpOutlineIcon fontSize="small" />
+                            <HelpOutlineOutlinedIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                 )}

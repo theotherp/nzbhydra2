@@ -198,8 +198,10 @@ export function RefineSidebar({
                     <Stack
                         data-testid="refine-quality-filters"
                         direction="row"
-                        flexWrap="wrap"
-                        sx={{gap: 0.75}}
+                        sx={{
+                            flexWrap: "wrap",
+                            gap: 0.75,
+                        }}
                     >
                         {quickFilters.map((filter) => (
                             <RefineChip
@@ -299,8 +301,10 @@ export function RefineSidebar({
                     <Stack
                         data-testid="refine-type-chips"
                         direction="row"
-                        flexWrap="wrap"
-                        sx={{gap: 0.75}}
+                        sx={{
+                            flexWrap: "wrap",
+                            gap: 0.75,
+                        }}
                     >
                         {downloadTypeOptions.map((type) => (
                             <RefineChip

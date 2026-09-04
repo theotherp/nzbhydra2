@@ -61,10 +61,12 @@ export function SystemControlTab({transport}: {transport: ApiTransport}) {
 
     return (
         <Stack
-            alignItems="center"
             data-testid="system-control"
             spacing={2}
-            sx={{py: 2}}
+            sx={{
+                alignItems: "center",
+                py: 2,
+            }}
         >
             <Stack direction="row" spacing={2}>
                 <Button

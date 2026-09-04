@@ -1360,6 +1360,23 @@ symbol — a rule the repository already states in packet prompts and does not e
 Known defects and gaps found but not yet fixed, routed by **mechanism** per README's *Choosing A Mechanism* — by risk, not by
 visibility.
 
+- **`motion.reducedMotion: "system"` (MUI 9.1, ADR-0056) deterministically breaks `results.spec.ts:2193`.** Attempted
+  as a single-session fix on 2026-09-04 after FM-183: one theme line plus a `theme.test.ts` pin; every `core/ui-react`
+  gate green (vitest 1932/1932). Against a jar rebuilt with the change, the sticky-toolbar case fails 3/3 at `:2534`
+  (`[data-result-title="Sticky Evidence Result 01"]` is absent from the DOM after the Compact-rows/Highlight-recent
+  toggles at 40% scroll); with the change stashed and the jar rebuilt, the same spec is 35/35. MUI's implementation
+  only wraps `transition: none` in `@media (prefers-reduced-motion: reduce)` (`styles/reducedMotion.js`), which headless
+  Chromium does not match (`matchMedia(...).matches === false` on the rig), so the mechanism is unexplained — it does not
+  qualify as a quickfix until it is. The edit is preserved in `git stash` (`quickfix: reduced-motion theme change, stashed
+  to bisect results.spec.ts:2193 on 9.4.0`); the owner deletes or resumes it. Routed to a **`/fm-quickfix`** retry once
+  the cause is found, or a packet if it turns out to be a virtualizer interaction.
+- **Two MUI-9 leverage candidates from the 2026-09-04 research report are invalid** (ADR-0056 listed them as
+  single-session fixes): (1) dropping the `as MenuListProps` casts — 9.4.0 still types `Menu`'s `list` slot without a
+  `data-*` index signature (`TS2353` at all three sites), so the casts stay; (2) removing the Tooltip wrapper `<span>`s
+  on disabled triggers — `ButtonBase` still sets `pointer-events: none` on `.Mui-disabled` (`ButtonBase.js:81`), so a
+  disabled `IconButton` receives no pointer events and MUI 9.4's disabled-trigger support cannot fire without the wrapper.
+  Both verified 2026-09-04; neither will be attempted.
+
 - **The React UI has no session-expired recovery for the 401 an expired OIDC (or form) session now produces.** Issue
   #1080's server half is fixed (`60a121aae`): in OIDC mode an expired-session background request to `/internalapi/**`
   gets a plain 401 instead of a redirect into the cross-origin authorization flow the browser could not complete

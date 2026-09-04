@@ -212,7 +212,14 @@ function Criteria({
     if (age) values.push(age);
     if (size) values.push(size);
     return (
-        <Stack component="span" direction="row" flexWrap="wrap" gap={1}>
+        <Stack
+            component="span"
+            direction="row"
+            sx={{
+                flexWrap: "wrap",
+                gap: 1,
+            }}
+        >
             {values.map((value, index) => (
                 <span key={index}>
                     {value}

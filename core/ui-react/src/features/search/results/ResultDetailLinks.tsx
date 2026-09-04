@@ -1,4 +1,4 @@
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
@@ -110,17 +110,19 @@ export function ResultDetailLinks({
         : undefined;
     return (
         <Stack
-            alignItems="center"
             data-testid="result-links"
             direction="row"
-            // ADR-0011: the table never scrolls horizontally, so this cell's
-            // content must be able to shrink to a single icon's width -- an
-            // unwrappable row of four controls would set a min-content width
-            // the fixed `<colgroup>` cannot honor and would push the page
-            // itself into horizontal overflow just below the stacking
-            // breakpoint.
-            flexWrap="wrap"
-            justifyContent="flex-end"
+            sx={{
+                alignItems: "center",
+                // ADR-0011: the table never scrolls horizontally, so this
+                // cell's content must be able to shrink to a single icon's
+                // width -- an unwrappable row of four controls would set a
+                // min-content width the fixed `<colgroup>` cannot honor and
+                // would push the page itself into horizontal overflow just
+                // below the stacking breakpoint.
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+            }}
         >
             <Tooltip title={nfoTooltip(result.hasNfo)}>
                 {/* A disabled control fires no events, so the tooltip needs an
@@ -169,7 +171,7 @@ export function ResultDetailLinks({
                     testId="result-comments-link"
                     tooltip="Comments"
                 >
-                    <ChatBubbleOutlineIcon fontSize="small" />
+                    <ChatBubbleOutlineOutlinedIcon fontSize="small" />
                 </DetailLink>
             )}
             {maySeeDetailsDl && (

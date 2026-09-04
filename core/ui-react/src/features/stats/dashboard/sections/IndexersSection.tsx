@@ -101,7 +101,12 @@ export function IndexersSection({stats}: {stats: StatsResult}) {
             <Typography component="h2" variant="h5">
                 Indexers
             </Typography>
-            <Stack direction="row" justifyContent="flex-end">
+            <Stack
+                direction="row"
+                sx={{
+                    justifyContent: "flex-end",
+                }}
+            >
                 <Button
                     aria-expanded={showDetails}
                     data-testid="stats-indexers-details-toggle"

@@ -50,7 +50,13 @@ export function SystemUpdatesTab({transport}: {transport: ApiTransport}) {
     return (
         <Stack data-testid="system-updates" spacing={3}>
             {infos.isPending && (
-                <Stack alignItems="center" role="status" spacing={2}>
+                <Stack
+                    role="status"
+                    spacing={2}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <CircularProgress variant="indeterminate" />
                     <Typography>Loading versions and changelog</Typography>
                 </Stack>
@@ -176,7 +182,12 @@ function UpdateStatus({
                 </Stack>
             )}
 
-            <Stack alignItems="flex-start" spacing={1}>
+            <Stack
+                spacing={1}
+                sx={{
+                    alignItems: "flex-start",
+                }}
+            >
                 {offers.showUpToDate && (
                     <Typography>You&apos;re up to date!</Typography>
                 )}
@@ -266,7 +277,12 @@ function VersionHistory({
                     )}
                     {entries === undefined ? (
                         !failed && (
-                            <Stack alignItems="center" role="status">
+                            <Stack
+                                role="status"
+                                sx={{
+                                    alignItems: "center",
+                                }}
+                            >
                                 <CircularProgress variant="indeterminate" />
                             </Stack>
                         )

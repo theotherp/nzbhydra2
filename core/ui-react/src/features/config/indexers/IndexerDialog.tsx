@@ -427,13 +427,15 @@ export function IndexerDialog({
         <>
             <Dialog
                 data-testid={INDEXER_DIALOG_TEST_ID}
+                fullWidth
+                maxWidth="md"
                 // While a check runs there is no way out of the dialog at all,
                 // which is legacy's `blockUI` and what keeps the transaction
                 // atomic: closing mid-check would leave an answer arriving for
-                // a transaction that no longer exists.
-                disableEscapeKeyDown={busy}
-                fullWidth
-                maxWidth="md"
+                // a transaction that no longer exists. `Modal` routes Escape
+                // and a backdrop click through `onClose`, so this one guard
+                // refuses both -- which is why v9's removal of
+                // `disableEscapeKeyDown` changes nothing here.
                 onClose={() => {
                     if (!busy) {
                         onCancel();
@@ -762,11 +764,13 @@ export function IndexerDialog({
                     </FormProvider>
                     {checkingConnection ? (
                         <Stack
-                            alignItems="center"
                             data-testid="config-indexer-dialog-checking"
                             direction="row"
                             role="status"
                             spacing={1}
+                            sx={{
+                                alignItems: "center",
+                            }}
                         >
                             <CircularProgress
                                 size={18}

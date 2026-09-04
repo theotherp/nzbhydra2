@@ -267,12 +267,13 @@ export function ExternalToolDialog({
         <AdvancedDisclosureContext.Provider value={NO_ADVANCED_DISCLOSURE}>
             <Dialog
                 data-testid={EXTERNAL_TOOL_DIALOG_TEST_ID}
-                // Legacy's `blockUI`: while a request runs there is no way out of
-                // the dialog at all, not by Escape and not by clicking the
-                // backdrop.
-                disableEscapeKeyDown={blocked}
                 fullWidth
                 maxWidth="sm"
+                // Legacy's `blockUI`: while a request runs there is no way out
+                // of the dialog at all, not by Escape and not by clicking the
+                // backdrop. `Modal` routes both gestures through `onClose`, so
+                // this one guard refuses both -- which is why v9's removal of
+                // `disableEscapeKeyDown` changes nothing here.
                 onClose={() => {
                     if (!blocked) {
                         onCancel();
@@ -493,11 +494,13 @@ export function ExternalToolDialog({
                     </FormProvider>
                     {busy === null ? null : (
                         <Stack
-                            alignItems="center"
                             data-testid="config-external-tool-dialog-busy"
                             direction="row"
                             role="status"
                             spacing={1}
+                            sx={{
+                                alignItems: "center",
+                            }}
                         >
                             <CircularProgress
                                 size={18}

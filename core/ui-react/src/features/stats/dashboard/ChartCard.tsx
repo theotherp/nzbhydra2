@@ -1,4 +1,4 @@
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import {
     Box,
     Button,
@@ -85,18 +85,26 @@ export function ChartCard({
         <Card data-testid={testId} ref={cardRef} variant="outlined">
             <CardContent>
                 <Stack
-                    alignItems="center"
                     direction="row"
-                    justifyContent="space-between"
                     spacing={1}
+                    sx={{
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                    }}
                 >
-                    <Stack alignItems="center" direction="row" spacing={0.5}>
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
                         <Typography component="h3" variant="subtitle1">
                             {title}
                         </Typography>
                         {help && (
                             <Tooltip title={help}>
-                                <HelpOutlineIcon
+                                <HelpOutlineOutlinedIcon
                                     aria-label={`About ${title}`}
                                     fontSize="small"
                                     sx={{color: "text.secondary"}}

@@ -1,4 +1,4 @@
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import {
     Box,
     Chip,
@@ -169,7 +169,13 @@ export function SettingRow({
                 position: inTableCell ? "relative" : undefined,
             }}
         >
-            <Stack alignItems="center" direction="row" spacing={1}>
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                    alignItems: "center",
+                }}
+            >
                 <Box sx={{flexGrow: 1, maxWidth: settingColumnMaxWidth}}>
                     {children}
                 </Box>
@@ -196,7 +202,7 @@ export function SettingRow({
                             data-testid={`config-tooltip-${name.replaceAll(".", "-")}`}
                             size="small"
                         >
-                            <HelpOutlineIcon fontSize="small" />
+                            <HelpOutlineOutlinedIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                 )}

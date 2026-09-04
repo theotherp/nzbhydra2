@@ -350,7 +350,13 @@ export function StatsDashboardPage({
     }
     if (!hasLoadedOnce && query.isError) {
         return (
-            <Stack alignItems="flex-start" component="main" spacing={2}>
+            <Stack
+                component="main"
+                spacing={2}
+                sx={{
+                    alignItems: "flex-start",
+                }}
+            >
                 <StatsDisclaimer />
                 <Typography component="h1" variant="h4">
                     Statistics
@@ -367,9 +373,11 @@ export function StatsDashboardPage({
         <Stack component="main" data-testid="stats-dashboard" spacing={3}>
             <StatsDisclaimer />
             <Stack
-                alignItems="center"
                 direction="row"
-                justifyContent="space-between"
+                sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                }}
             >
                 <Typography component="h1" variant="h4">
                     Statistics
@@ -390,9 +398,11 @@ export function StatsDashboardPage({
             />
             {stats.after && stats.before && (
                 <Typography
-                    color="text.secondary"
                     data-testid="stats-resolved-range"
                     variant="body2"
+                    sx={{
+                        color: "text.secondary",
+                    }}
                 >
                     Showing data from{" "}
                     {formatServerDateTime(

@@ -1260,10 +1260,14 @@ export function SearchResults({
                         renders only while something is selected. */}
                     <Stack spacing={refineSurfaceCompact ? 1 : 1.5}>
                         <Stack
-                            alignItems="center"
                             direction="row"
-                            flexWrap={refineSurfaceCompact ? "nowrap" : "wrap"}
-                            gap={refineSurfaceCompact ? 1 : 1.5}
+                            sx={{
+                                alignItems: "center",
+                                flexWrap: refineSurfaceCompact
+                                    ? "nowrap"
+                                    : "wrap",
+                                gap: refineSurfaceCompact ? 1 : 1.5,
+                            }}
                         >
                             {refineSurfaceCompact && mobileSelectionMenu}
                             {(hasResults || hasRejectedResults) && (
@@ -1588,11 +1592,13 @@ export function SearchResults({
                                 !refineSurfaceCompact &&
                                 onSaveSearch && (
                                     <Stack
-                                        alignItems="center"
                                         data-testid="results-bulk-actions"
                                         direction="row"
-                                        flexWrap="wrap"
-                                        gap={1}
+                                        sx={{
+                                            alignItems: "center",
+                                            flexWrap: "wrap",
+                                            gap: 1,
+                                        }}
                                     >
                                         <Button
                                             disabled={savingSearch}
@@ -1614,9 +1620,11 @@ export function SearchResults({
             {hasResults && (
                 <>
                     <Stack
-                        alignItems="flex-start"
                         direction={{xs: "column", sm: "row"}}
                         spacing={2}
+                        sx={{
+                            alignItems: "flex-start",
+                        }}
                     >
                         <RefineSidebar
                             categoryOpen={categoryOpen}

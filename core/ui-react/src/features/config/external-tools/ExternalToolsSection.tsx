@@ -190,7 +190,14 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
                     ))}
                 </Stack>
             )}
-            <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap>
+            <Stack
+                direction="row"
+                spacing={1}
+                useFlexGap
+                sx={{
+                    flexWrap: "wrap",
+                }}
+            >
                 <Button
                     aria-controls={
                         addMenuAnchor === null ? undefined : ADD_MENU_ID

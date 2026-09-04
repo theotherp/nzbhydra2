@@ -100,6 +100,21 @@ input overlay where `:focus-visible` paints invisibly. Gated by `tests/system/te
 keyboard-only) and the `validate:focus-affordances` source guard; both are version-scoped to the installed MUI and must be
 re-proven after an upgrade. *Amended by ADR-0015:* the ring no longer applies to the text-input/select family.
 
+*Amended by ADR-0056 (FM-184, 2026-09-04):* the mechanism is now `@mui/material` 9.4.0's `theme.focusVisible`, opted
+into once in `theme.ts` as `focusVisible: {outlineWidth: 3, outlineOffset: 3}`. ADR-0013's measured geometry and
+FM-052's contrast evidence stand — every family was re-measured in a real browser at 4.92:1 to 5.83:1 against its own
+composited ground, all above the 3:1 axis — but the application no longer authors a rule per family. MUI decides the
+node and the offset: `ButtonBase` roots (Button, IconButton, TableSortLabel, clickable Chip) and `Link` outset at
+`3px`; `Checkbox`/`Radio` on `&.Mui-focusVisible svg:first-of-type` (their root's focusable node is an `opacity: 0`
+input overlay, so an icon that is not an `svg` gets no indicator — the reason `SelectionMenu`'s select-all icons are
+`SvgIcon`s); `Switch` on `&.Mui-focusVisible ~ .MuiSwitch-track`; `MenuItem`, `ListItemButton` and an `Autocomplete`
+option inset at `-3px`; `Tab` inset at `-9px`. Two spots stay authored: the `focusVisible` option itself, and
+`MuiCssBaseline`'s `":focus-visible"` rule, which spreads the same resolved token for the sanitized unclassed
+`<a href>` no MUI component styles. Deleting the two width/offset keys yields MUI's 2px/2px defaults (and `Tab` at
+`-6px`); ADR-0056 records that as an experiment the owner may run later, and it requires re-measuring, not just
+deleting. Version-scoped to 9.4.0: `tests/system/tests/focus-indication.spec.ts` and `validate-focus-affordances.mjs`
+(whose consumer list is literal) are re-derived and re-run on the next upgrade.
+
 ## ADR-0014 — Token fidelity, standard MUI (accepted 2026-08-19)
 
 Supersedes ADR-0009's pixel-fidelity reading after the owner reviewed the result: literal translation of the mock's inline CSS
@@ -125,6 +140,10 @@ With ADR-0014 restoring stock inputs, the text-input/select family indicates foc
 where MUI renders nothing by itself: `ButtonBase` (Button/IconButton/Tab), `SwitchBase` (Checkbox/Radio/Switch),
 `MenuItem`/`ListItemButton` (inset), `Chip`, `Link`, and the global `:focus-visible` rule for unclassed elements. Feature code
 must not suppress the resting or focused input border; the focus gate and source guard are updated to assert this split.
+
+*Amended by ADR-0056 (FM-184, 2026-09-04):* the ring half of this split is now MUI 9.4.0's `theme.focusVisible` (see the
+ADR-0013 amendment); the split itself is unchanged — the text-input/select family is still indicated by MUI's focused
+`notchedOutline` and carries no ring.
 
 ## ADR-0016 — History refine bar multi-select semantics (accepted 2026-08-19)
 
@@ -932,3 +951,25 @@ from these tokens, not from `Paper` elevation. Every dark-theme contrast figure 
 FM-161: hover wash, select-all outline, input outline, muted text, the four-ground floors) is re-measured on the new
 grounds and tokens re-authored only where a recorded floor is lost. Legacy's `@body-bg: #000000` parity (ADR-0049,
 FM-154) is deliberately given up for this theme. Owner decided 2026-09-03.
+
+## ADR-0056 — What the MUI 9 upgrade is allowed to leverage (accepted 2026-09-04)
+
+FM-183 bumps `@mui/material`/`@mui/icons-material` 7.3.9 → 9.4.0 mechanically (there is no Material UI 8; v7 upgrades
+straight to v9). A research pass over the v9 guide and 9.x release notes identified what this codebase could then adopt;
+the owner decided the batch on 2026-09-04. **Focus ring:** adopt `theme.focusVisible` (9.4) in place of the authored ring
+in `theme.ts` and the `focusRing()` sites, **keeping ADR-0013's measured 3px width / 3px offset** by passing them to
+`focusVisible` rather than taking MUI's 2px defaults — ADR-0013 and ADR-0015 are amended, not superseded, and their
+contrast evidence stays valid; MUI decides which components get inset rings, which the focus-indication spec and
+`validate-focus-affordances` must re-prove. The owner notes (2026-09-04) that MUI's 2px defaults can still be tried
+later — once `focusVisible` carries the ring, that is deleting the two width/offset overrides and re-measuring. **Reduced motion:** `motion.reducedMotion: "system"` (9.1) as a single-session
+fix; no user-facing toggle (that would be an ADR-0049-adjacent packet, declined). **High contrast:** `enhanceHighContrast`
+(9.1, forced-colors) is parked as a ledger candidate until a user asks. **Not adopted:** `cssVariables`/`colorSchemes` —
+a v6/v7 feature, no SSR flicker to fix, and ADR-0049's five named palettes do not map onto MUI's light/dark scheme
+shape without a preference-model redesign; a future packet with its own entry if ever. Small adoptions (typed `data-*`
+on `slotProps` replacing `MenuListProps` casts; Tooltip disabled-trigger support replacing wrapper `<span>`s) are
+single-session fixes. FM-183 itself keeps v9's changed defaults (e.g. `ListItemIcon` 36px) per ADR-0014 rather than
+pinning v7's. Research report: session scratchpad `mui-7-to-9-leverage.md` (2026-09-04). Owner decided 2026-09-04.
+*Applied consequence (coordinator, 2026-09-04):* MUI 9's `Menu` reopens with focus on the item that was focused when it
+closed (roving tabindex), where 7 always focused the first item. ADR-0012's contract — ArrowRight reaches the nested
+Refill, ArrowLeft/Escape return — still holds; per this entry's "keep v9's changed defaults" the behaviour is kept and
+the ADR-0012 keyboard trace is re-traced rather than the old focus pinned.

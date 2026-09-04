@@ -1,6 +1,6 @@
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
     Alert,
@@ -174,10 +174,12 @@ export function DownloadHistoryPage({
             values={values}
         >
             <Stack
-                alignItems="center"
                 direction="row"
-                justifyContent="space-between"
                 spacing={1}
+                sx={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                }}
             >
                 <Typography component="h1" variant="h4">
                     Download history
@@ -351,10 +353,13 @@ export function DownloadHistoryPage({
                                     {showsIp(userInfoType) && (
                                         <TableCell>
                                             <Stack
-                                                alignItems="center"
                                                 direction="row"
-                                                justifyContent="space-between"
                                                 spacing={1}
+                                                sx={{
+                                                    alignItems: "center",
+                                                    justifyContent:
+                                                        "space-between",
+                                                }}
                                             >
                                                 <span>{entry.ip ?? ""}</span>
                                                 <CopyValueButton
@@ -396,14 +401,26 @@ function TitleCell({
         ? externalLink(searchResult.details, dereferer)
         : undefined;
     return (
-        <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
+        <Stack
+            direction="row"
+            sx={{
+                alignItems: "center",
+                gap: 1,
+                flexWrap: "wrap",
+            }}
+        >
             {repeatEligible(searchResult) ? (
                 <DirectDownloadActions
                     result={historyDownloadResult(searchResult)}
                     onDownloaded={() => {}}
                 />
             ) : (
-                <Typography component="span" color="text.secondary">
+                <Typography
+                    component="span"
+                    sx={{
+                        color: "text.secondary",
+                    }}
+                >
                     Repeat unavailable
                 </Typography>
             )}
@@ -435,27 +452,42 @@ function statusIcon(status: DownloadStatus): ReactNode {
     switch (status) {
         case "NONE":
         case "REQUESTED":
-            return <HelpOutlineIcon color="disabled" fontSize="small" />;
+            return (
+                <HelpOutlineOutlinedIcon color="disabled" fontSize="small" />
+            );
         case "INTERNAL_ERROR":
         case "NZB_DOWNLOAD_ERROR":
         case "NZB_NOT_ADDED":
         case "NZB_ADD_ERROR":
         case "NZB_ADD_REJECTED":
         case "CONTENT_DOWNLOAD_ERROR":
-            return <ErrorOutlineIcon color="error" fontSize="small" />;
+            return <ErrorOutlineOutlinedIcon color="error" fontSize="small" />;
         case "CONTENT_DOWNLOAD_WARNING":
             return <WarningAmberIcon color="warning" fontSize="small" />;
         case "NZB_DOWNLOAD_SUCCESSFUL":
         case "NZB_ADDED":
-            return <CheckCircleOutlineIcon color="info" fontSize="small" />;
+            return (
+                <CheckCircleOutlineOutlinedIcon color="info" fontSize="small" />
+            );
         case "CONTENT_DOWNLOAD_SUCCESSFUL":
-            return <CheckCircleOutlineIcon color="success" fontSize="small" />;
+            return (
+                <CheckCircleOutlineOutlinedIcon
+                    color="success"
+                    fontSize="small"
+                />
+            );
     }
 }
 
 function StatusCell({status}: {status: DownloadStatus}) {
     return (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
+        <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{
+                alignItems: "center",
+            }}
+        >
             <Box aria-hidden="true" sx={{display: "flex"}}>
                 {statusIcon(status)}
             </Box>

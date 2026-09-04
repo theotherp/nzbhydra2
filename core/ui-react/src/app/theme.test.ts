@@ -558,7 +558,10 @@ describe("createHydraTheme base palette", () => {
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*\/\/.*$/gm, "");
         const start = source.indexOf("const darkContrastText");
-        const end = source.indexOf("const focusRingWidth");
+        // FM-184 removed `const focusRingWidth` (the ring is MUI's own
+        // token now, ADR-0056), so the region now ends at the factory --
+        // the first declaration after the blocks that is not itself one.
+        const end = source.indexOf("export function createHydraTheme");
 
         expect(start).toBeGreaterThan(0);
         expect(end).toBeGreaterThan(start);
@@ -669,15 +672,13 @@ describe("createHydraTheme typography and density", () => {
         const theme = createHydraTheme("grey", false);
 
         expect(theme.shape.borderRadius).toBe(8);
-        // `MuiButton`'s root override became a theme-reading function when
-        // ADR-0013's authored focus ring joined it, so it is resolved and
-        // compared by value, on the same pattern as `MuiPaper` below.
+        // `MuiButton`'s root override was a theme-reading function while
+        // ADR-0013's authored focus ring lived in it; FM-184 (ADR-0056) moved
+        // the ring onto MUI's own `theme.focusVisible`, so the entry states
+        // only the mock's geometry again and is a plain object.
         const buttonRoot = theme.components?.MuiButton?.styleOverrides?.root;
 
-        expect(typeof buttonRoot).toBe("function");
-        expect(
-            (buttonRoot as (props: {theme: typeof theme}) => unknown)({theme}),
-        ).toEqual({
+        expect(buttonRoot).toEqual({
             textTransform: "none",
             borderRadius: 8,
             // The shared control height, stated on the root so every button
@@ -686,10 +687,6 @@ describe("createHydraTheme typography and density", () => {
             minHeight: controlHeight,
             paddingTop: 0,
             paddingBottom: 0,
-            "&.Mui-focusVisible": {
-                outline: "3px solid oklch(0.68 0.195 144.6)",
-                outlineOffset: "3px",
-            },
         });
         // `MuiOutlinedInput`'s root override became a theme-reading function
         // when ADR-0014's surface tokens joined it (recessed input ground,
@@ -828,25 +825,17 @@ describe("createHydraTheme typography and density", () => {
             );
             expect(legendSize).toBe(labelSize * 0.75);
         }
-        // `MuiChip`'s root override became a theme-reading function for the
-        // same reason `MuiButton`'s did: `Chip` is one of ADR-0013's authored
-        // control families, so its `&.Mui-focusVisible` rule reads the shared
-        // focus-ring token off the theme. Resolved and compared by value on
-        // the same `MuiPaper` pattern; the mock's `height: 26` and
-        // `borderRadius: 7` literals this assertion exists to pin are still
-        // asserted.
+        // `MuiChip`'s root override was a theme-reading function for the
+        // same reason `MuiButton`'s was: `Chip` was one of ADR-0013's authored
+        // control families. FM-184 (ADR-0056) hands the ring to MUI -- a
+        // clickable `Chip` renders a `ButtonBase`, which rings itself -- so
+        // the entry is a plain object again and pins only the mock's
+        // `height: 26` and its pill radius.
         const chipRoot = theme.components?.MuiChip?.styleOverrides?.root;
 
-        expect(typeof chipRoot).toBe("function");
-        expect(
-            (chipRoot as (props: {theme: typeof theme}) => unknown)({theme}),
-        ).toEqual({
+        expect(chipRoot).toEqual({
             height: 26,
             borderRadius: "999px",
-            "&.Mui-focusVisible": {
-                outline: "3px solid oklch(0.68 0.195 144.6)",
-                outlineOffset: "3px",
-            },
         });
     });
 
@@ -1012,12 +1001,20 @@ describe("createHydraTheme typography and density", () => {
             baseline as (theme: unknown) => Record<string, unknown>
         )(theme);
 
-        // ADR-0013 reconciled this rule with the authored focus-ring token, so
-        // it renders `palette.primary.main` explicitly instead of the
-        // `currentColor` that measured 1.29:1 on `NewsPage`'s bare anchors.
+        // ADR-0013 reconciled this rule with the focus-ring token instead of
+        // leaving it to render `currentColor` (1.29:1 on `NewsPage`'s bare
+        // anchors); FM-184 (ADR-0056) keeps exactly that, now by spreading
+        // MUI's own resolved `theme.focusVisible`. Compared against the
+        // theme's own object so the rule cannot drift away from it, and
+        // asserted field by field so the geometry stays visible here.
+        expect(styles[":focus-visible"]).toEqual({...theme.focusVisible});
         expect(styles[":focus-visible"]).toEqual({
-            outline: "3px solid oklch(0.68 0.195 144.6)",
-            outlineOffset: "3px",
+            outlineStyle: "solid",
+            outlineColor: "oklch(0.68 0.195 144.6)",
+            outlineWidth: 3,
+            outlineOffset: "calc(var(--_focusVisible-offset, 1) * 3px)",
+            boxShadow:
+                "var(--_focusVisible-behavior, ) var(--_focusVisible-shadow, 0 0)",
         });
         expect(styles["*::-webkit-scrollbar"]).toEqual({width: 11, height: 11});
         expect(styles["*::-webkit-scrollbar-track"]).toEqual({
@@ -1031,6 +1028,53 @@ describe("createHydraTheme typography and density", () => {
         expect(styles["*::-webkit-scrollbar-thumb:hover"]).toEqual({
             background: "#495456",
         });
+    });
+});
+
+/*
+ * FM-184 / ADR-0056: the focus ring is MUI 9.4's own `theme.focusVisible`
+ * now, opted into once in `createHydraTheme` and resolved per theme by
+ * `createThemeNoVars.js`. What this file can prove without a browser is the
+ * opt-in itself -- that it is declared, that it carries ADR-0013's measured
+ * 3px/3px geometry rather than MUI's 2px/2px defaults, and that its colour
+ * follows every palette's own `primary.main` (ADR-0052) rather than restating
+ * one. Which component paints where, and at what offset, is a real-browser
+ * question and is gated by `tests/system/tests/focus-indication.spec.ts`
+ * (ADR-0004).
+ */
+describe("the focus-ring opt-in (ADR-0013's geometry, ADR-0056's mechanism)", () => {
+    it("should resolve ADR-0013's 3px ring at a 3px offset, not MUI's 2px defaults", () => {
+        const theme = createHydraTheme("grey", false);
+
+        expect(theme.focusVisible).toEqual({
+            outlineStyle: "solid",
+            outlineColor: theme.palette.primary.main,
+            outlineWidth: 3,
+            // `wireFocusVisibleVars` multiplies the authored offset by the
+            // private sign variable, which is how MUI flips the same ring
+            // inward on a clip-prone component (`MenuItem`, `Tab`) without
+            // this file knowing the ring's width. Unset, the variable falls
+            // back to `1`, so an ordinary control computes `3px`.
+            outlineOffset: "calc(var(--_focusVisible-offset, 1) * 3px)",
+            boxShadow:
+                "var(--_focusVisible-behavior, ) var(--_focusVisible-shadow, 0 0)",
+        });
+    });
+
+    it("should take its colour from every offered theme's own primary.main", () => {
+        for (const option of themePreferenceOptions) {
+            const theme = createHydraTheme(option.value, false);
+            const focusVisible = theme.focusVisible as {
+                outlineColor: string;
+                outlineWidth: number;
+            };
+
+            expect(focusVisible.outlineColor).toBe(theme.palette.primary.main);
+            expect(focusVisible.outlineWidth).toBe(3);
+        }
+        // The five offered preferences resolve to four palettes; `auto` is
+        // covered above because it builds a theme like any other value.
+        expect(themePreferenceOptions).toHaveLength(5);
     });
 });
 
@@ -2021,8 +2065,8 @@ describe("grey's brand-green primary family (FM-158, ADR-0052)", () => {
             ) => Record<string, Record<string, string>>
         )(createHydraTheme("grey", false));
 
-        expect(baseline[":focus-visible"].outline).toBe(
-            `3px solid ${palette.primary.main}`,
+        expect(baseline[":focus-visible"].outlineColor).toBe(
+            palette.primary.main,
         );
         // The inverse: none of the five values is the superseded teal.
         for (const [key, superseded] of Object.entries(teal)) {

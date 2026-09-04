@@ -287,7 +287,13 @@ export function DownloaderStatusFooter({
                 zIndex: (muiTheme) => muiTheme.zIndex.appBar,
             }}
         >
-            <Stack alignItems="center" direction="row" spacing={1.5}>
+            <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{
+                    alignItems: "center",
+                }}
+            >
                 {status.url === null ? (
                     <DownloaderLogo logo={logo} name={downloaderName} />
                 ) : (

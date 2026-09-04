@@ -25,10 +25,12 @@ export function ChangelogEntries({entries}: {entries: ChangelogEntry[]}) {
                     </Typography>
                     {entry.changes.map((change, changeIndex) => (
                         <Stack
-                            alignItems="baseline"
                             direction="row"
                             key={changeIndex}
                             spacing={1}
+                            sx={{
+                                alignItems: "baseline",
+                            }}
                         >
                             <ChangeTypeBadge type={change.type} />
                             <SafeRichContent

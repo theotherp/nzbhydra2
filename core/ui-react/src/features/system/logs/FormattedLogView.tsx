@@ -89,7 +89,13 @@ export function FormattedLogView({
             </Stack>
             {paging}
             {page.isPending && (
-                <Stack alignItems="center" role="status" spacing={2}>
+                <Stack
+                    role="status"
+                    spacing={2}
+                    sx={{
+                        alignItems: "center",
+                    }}
+                >
                     <CircularProgress variant="indeterminate" />
                     <Typography>Loading the log file</Typography>
                 </Stack>

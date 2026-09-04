@@ -79,8 +79,9 @@ export function SettingsSearchField({
                     {...params}
                     label="Search settings"
                     slotProps={{
+                        ...params.slotProps,
                         htmlInput: {
-                            ...params.inputProps,
+                            ...params.slotProps.htmlInput,
                             "data-testid": "config-search",
                         },
                     }}
@@ -94,10 +95,13 @@ export function SettingsSearchField({
                     data-testid={settingsSearchOptionTestId(option)}
                 >
                     <Stack
-                        alignItems="center"
                         direction="row"
                         spacing={1}
-                        sx={{minWidth: 0, width: "100%"}}
+                        sx={{
+                            alignItems: "center",
+                            minWidth: 0,
+                            width: "100%",
+                        }}
                     >
                         <Box sx={{flexGrow: 1, minWidth: 0}}>
                             <Typography component="div" variant="body2">

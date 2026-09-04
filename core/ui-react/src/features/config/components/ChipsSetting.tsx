@@ -1,4 +1,4 @@
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import {Autocomplete, Chip, TextField} from "@mui/material";
 import {useState} from "react";
 import {useController} from "react-hook-form";
@@ -120,7 +120,7 @@ export function ChipsSetting({
                 // tests the property for truthiness and otherwise runs its own
                 // tag rendering, so the five consumers without a validator go
                 // down exactly the path they went down before FM-107.
-                renderTags={
+                renderValue={
                     validateChip === undefined
                         ? undefined
                         : (value, getTagProps) =>
@@ -151,7 +151,7 @@ export function ChipsSetting({
                                           icon={
                                               message ===
                                               undefined ? undefined : (
-                                                  <ErrorOutlineIcon />
+                                                  <ErrorOutlineOutlinedIcon />
                                               )
                                           }
                                           key={key}
@@ -169,12 +169,13 @@ export function ChipsSetting({
                         name={field.name}
                         placeholder={placeholder}
                         slotProps={{
+                            ...params.slotProps,
                             htmlInput: {
-                                ...params.inputProps,
+                                ...params.slotProps.htmlInput,
                                 "data-testid": settingInputTestId(name),
                             },
                             input: {
-                                ...params.InputProps,
+                                ...params.slotProps.input,
                                 "aria-describedby": settingDescribedBy(name, {
                                     // Was hardcoded `false`, and still resolves
                                     // to `false` for every consumer that passes

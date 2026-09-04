@@ -14,14 +14,16 @@ import {
  * the restart dialog it is deliberately not dismissable — legacy opened it
  * with `backdrop: 'static', keyboard: false` — because the instance is being
  * replaced underneath the page while it is open. Omitting `onClose` is what
- * makes a backdrop click inert in MUI.
+ * makes both a backdrop click and Escape inert in MUI: `Modal` routes each of
+ * them through `onClose`, so with no handler there is nothing for either
+ * gesture to close (v9 removed `disableEscapeKeyDown` in favour of exactly
+ * this).
  */
 export function UpdateProgressDialog({messages}: {messages: string[] | null}) {
     return (
         <Dialog
             aria-labelledby="hydra-update-progress-title"
             data-testid="system-update-progress-dialog"
-            disableEscapeKeyDown
             fullWidth
             maxWidth="sm"
             open={messages !== null}
@@ -31,7 +33,13 @@ export function UpdateProgressDialog({messages}: {messages: string[] | null}) {
             </DialogTitle>
             <DialogContent>
                 {messages === null || messages.length === 0 ? (
-                    <Stack alignItems="center" direction="row" spacing={2}>
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
                         <CircularProgress
                             aria-label="Update in progress"
                             size={24}

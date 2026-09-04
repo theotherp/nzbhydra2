@@ -1,6 +1,7 @@
-import {Box, Button, Checkbox, Menu, MenuItem, Stack} from "@mui/material";
+import {Button, Checkbox, Menu, MenuItem, Stack, SvgIcon} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {useState} from "react";
+import type {ReactNode} from "react";
 
 import {denseControlFontSize, selectAllRadius} from "../../../app/theme";
 import type {SelectionStatus} from "./resultTable";
@@ -11,6 +12,10 @@ import type {SelectionStatus} from "./resultTable";
 // its 1.5px border, and it moves only if that box does. A named local
 // constant for that reason rather than a shared density token.
 const SELECT_ALL_GLYPH_FONT_SIZE = "11px";
+// The mock's `toggleAll` box and its border, as numbers, because the square is
+// now drawn in user units inside an SVG viewBox rather than as a CSS border.
+const SELECT_ALL_SIZE = 17;
+const SELECT_ALL_BORDER_WIDTH = 1.5;
 
 // The tri-state select-all checkbox's small square control (F-SEARCH-GROUP-
 // SELECTION, FM-046), matching the mock's own `toggleAll` button: 17x17px, a
@@ -18,74 +23,106 @@ const SELECT_ALL_GLYPH_FONT_SIZE = "11px";
 // literal -- see its doc comment for why this control's two rendering paths
 // are both genuine consumers), a filled `primary.main` square with a check
 // mark when checked, a dash when indeterminate, and a transparent square with
-// a neutral border when unchecked. Implemented through MUI `Checkbox`'s
-// `icon`/`checkedIcon`/`indeterminateIcon` props plus `sx` sizing on the
-// control itself (ADR-0002: restyle the existing MUI control, never a
-// bespoke one) -- the underlying native `<input type="checkbox">`, the
-// element Testing Library's and Playwright's `role="checkbox"` queries
-// resolve to, is sized to fill this 17x17 control exactly, so its own
-// rendered bounding box is what this task's visual contract measures.
-const selectAllSquareSx = {
-    alignItems: "center",
-    borderRadius: selectAllRadius,
-    display: "flex",
-    fontSize: SELECT_ALL_GLYPH_FONT_SIZE,
-    height: 17,
-    justifyContent: "center",
-    lineHeight: 1,
-    width: 17,
-} as const;
+// a neutral border when unchecked.
+//
+// FM-184 (ADR-0056) is why it is an `SvgIcon` and not the `Box` it used to be.
+// Under `@mui/material` 9.4.0 the keyboard focus ring for the `SwitchBase`
+// family is MUI's own, and `Checkbox.js` authors it on
+// `&.Mui-focusVisible svg:first-of-type` -- the root cannot carry it, because
+// `SwitchBase.js` renders the focusable node as an `opacity: 0` input overlay.
+// A `Checkbox` whose `icon`/`checkedIcon`/`indeterminateIcon` is not an `svg`
+// therefore paints no focus indicator at all. The stroked `rect` below is the
+// same 17x17 box the `Box` drew (stroke centred on the path, so the path is
+// inset by half the 1.5px border and the outer edge still lands on 0 and 17),
+// and the glyphs are still the same two characters at the same font size.
+// `app/theme.ts` authors no `MuiCheckbox` rule for this: one would double-ring
+// every stock checkbox in the application.
+const selectAllOuterRadius = Number.parseFloat(selectAllRadius);
+
+function SelectAllSquare({
+    children,
+    filled,
+}: {
+    children?: ReactNode;
+    filled: boolean;
+}) {
+    return (
+        <SvgIcon
+            sx={{
+                height: SELECT_ALL_SIZE,
+                width: SELECT_ALL_SIZE,
+                // Inherited by the `<text>` glyph below; the svg's own box is
+                // stated above, so this sizes the glyph and nothing else.
+                fontSize: SELECT_ALL_GLYPH_FONT_SIZE,
+                // The square's two colours are carried as `color` and read
+                // back through `currentColor` on the shapes, so this file
+                // still consumes palette *paths* (ADR-0014) exactly as the
+                // `Box` it replaces did, rather than reaching into
+                // `theme.palette` -- which breaks wherever the control is
+                // rendered without this application's theme.
+                color: filled ? "primary.main" : "surfaces.selectAllOutline",
+                "& .select-all-glyph": {color: "primary.contrastText"},
+            }}
+            viewBox={`0 0 ${SELECT_ALL_SIZE} ${SELECT_ALL_SIZE}`}
+        >
+            <rect
+                className="select-all-square"
+                fill={filled ? "currentColor" : "none"}
+                height={SELECT_ALL_SIZE - SELECT_ALL_BORDER_WIDTH}
+                rx={selectAllOuterRadius - SELECT_ALL_BORDER_WIDTH / 2}
+                stroke="currentColor"
+                strokeWidth={SELECT_ALL_BORDER_WIDTH}
+                width={SELECT_ALL_SIZE - SELECT_ALL_BORDER_WIDTH}
+                x={SELECT_ALL_BORDER_WIDTH / 2}
+                y={SELECT_ALL_BORDER_WIDTH / 2}
+            />
+            {children}
+        </SvgIcon>
+    );
+}
+
+// The glyph's baseline anchor, measured rather than derived. The `Box` this
+// replaces centred the glyph by flex-centring a `line-height: 1` line box in
+// the 17x17 square, which is not the same reference SVG's
+// `dominant-baseline: central` uses; anchoring at the square's exact centre
+// (8.5) rendered both glyphs one device pixel low. Measured in Chrome against
+// the previous rendering with the application's own IBM Plex Sans face: every
+// anchor in 7.5..8.25 reproduces it pixel for pixel, and 8 is the middle of
+// that band.
+const SELECT_ALL_GLYPH_BASELINE = 8;
+
+function SelectAllGlyph({children}: {children: ReactNode}) {
+    return (
+        <text
+            className="select-all-glyph"
+            dominantBaseline="central"
+            fill="currentColor"
+            textAnchor="middle"
+            x={SELECT_ALL_SIZE / 2}
+            y={SELECT_ALL_GLYPH_BASELINE}
+        >
+            {children}
+        </text>
+    );
+}
 
 function SelectAllUncheckedIcon() {
-    return (
-        <Box
-            sx={{
-                ...selectAllSquareSx,
-                border: "1.5px solid",
-                // FM-154: a per-theme token (`surfaces.selectAllOutline`),
-                // reached by palette path exactly as the two filled icons
-                // below reach `primary.main`. It replaces an
-                // `alpha(common.white, 0.25)` literal -- a dark-theme remnant
-                // ADR-0014 already bars, and one that vanished (1.03:1) on the
-                // bright theme's light results ground, under WCAG 1.4.11's 3:1
-                // for the boundary that identifies a control. FM-154 could
-                // only re-author the two themes it authored; FM-156 raised the
-                // other two, so all four now clear 3:1 on their own ground.
-                borderColor: "surfaces.selectAllOutline",
-            }}
-        />
-    );
+    return <SelectAllSquare filled={false} />;
 }
 
 function SelectAllCheckedIcon() {
     return (
-        <Box
-            sx={{
-                ...selectAllSquareSx,
-                bgcolor: "primary.main",
-                border: "1.5px solid",
-                borderColor: "primary.main",
-                color: "primary.contrastText",
-            }}
-        >
-            ✓
-        </Box>
+        <SelectAllSquare filled>
+            <SelectAllGlyph>✓</SelectAllGlyph>
+        </SelectAllSquare>
     );
 }
 
 function SelectAllIndeterminateIcon() {
     return (
-        <Box
-            sx={{
-                ...selectAllSquareSx,
-                bgcolor: "primary.main",
-                border: "1.5px solid",
-                borderColor: "primary.main",
-                color: "primary.contrastText",
-            }}
-        >
-            –
-        </Box>
+        <SelectAllSquare filled>
+            <SelectAllGlyph>–</SelectAllGlyph>
+        </SelectAllSquare>
     );
 }
 
@@ -122,34 +159,32 @@ export function SelectionMenu({
     const suffix = idPrefix === "toolbar" ? " (mobile)" : "";
     return (
         <Stack
-            alignItems="center"
             data-testid={`${idPrefix}-selection-menu`}
             direction="row"
+            sx={{
+                alignItems: "center",
+            }}
         >
             <Checkbox
                 checked={status === "all"}
                 checkedIcon={<SelectAllCheckedIcon />}
-                // FM-053 (ADR-0013): kept, deliberately, and no longer an
-                // affordance deletion. FM-052 dispositioned this control
-                // `fails 2.4.7` because `disableRipple` left it with no
-                // indicator at all -- the only property that changed was the
-                // `opacity: 0` native input overlay's own `outline-style`.
-                // ADR-0013's accepted Option A gives the `SwitchBase` family an
-                // authored `&.Mui-focusVisible` ring on the visible root
-                // instead (`app/theme.ts`, `MuiCheckbox`), which is the
-                // indicator this control now renders and which the ripple
-                // never was. Removing `disableRipple` would reinstate a
-                // ~38px pulsating ripple on this deliberately flat 17x17
-                // `p: 0` square (FM-046) and would measure 1.19:1-2.38:1
-                // anyway, so it is replaced rather than restored -- the second
-                // of the two options FM-053's Acceptance allows.
+                // FM-053 (ADR-0013), FM-184 (ADR-0056): kept, deliberately,
+                // and not an affordance deletion. FM-052 dispositioned this
+                // control `fails 2.4.7` because `disableRipple` left it with
+                // no indicator at all -- the only property that changed was
+                // the `opacity: 0` native input overlay's own `outline-style`.
+                // Since 9.4.0 MUI's own `Checkbox.js` rings
+                // `&.Mui-focusVisible svg:first-of-type`, which is the
+                // indicator this control renders (see `SelectAllSquare`
+                // above) and which the ripple never was. Removing
+                // `disableRipple` would reinstate a ~38px pulsating ripple on
+                // this deliberately flat 17x17 `p: 0` square (FM-046) and
+                // would measure 1.19:1-2.38:1 anyway, so it is replaced
+                // rather than restored.
                 disableRipple
                 icon={<SelectAllUncheckedIcon />}
                 indeterminate={status === "some"}
                 indeterminateIcon={<SelectAllIndeterminateIcon />}
-                inputProps={{
-                    "aria-label": `Select all visible results${suffix}`,
-                }}
                 onChange={(event) =>
                     event.target.checked ? onSelectAll() : onDeselectAll()
                 }
@@ -160,6 +195,11 @@ export function SelectionMenu({
                     p: 0,
                     width: 17,
                     "&:hover": {backgroundColor: "transparent"},
+                }}
+                slotProps={{
+                    input: {
+                        "aria-label": `Select all visible results${suffix}`,
+                    },
                 }}
             />
             <Button

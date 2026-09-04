@@ -104,9 +104,12 @@ export function IndexerImportDialog({
     return (
         <Dialog
             data-testid={INDEXER_IMPORT_DIALOG_TEST_ID}
-            disableEscapeKeyDown={busy}
             fullWidth
             maxWidth="sm"
+            // While the import runs there is no way out of the dialog at all.
+            // `Modal` routes Escape and a backdrop click through `onClose`, so
+            // this one guard refuses both -- which is why v9's removal of
+            // `disableEscapeKeyDown` changes nothing here.
             onClose={() => {
                 if (!busy) {
                     onCancel();
@@ -142,11 +145,13 @@ export function IndexerImportDialog({
                 )}
                 {busy ? (
                     <Stack
-                        alignItems="center"
                         data-testid="config-indexer-import-running"
                         direction="row"
                         role="status"
                         spacing={1}
+                        sx={{
+                            alignItems: "center",
+                        }}
                     >
                         <CircularProgress size={18} variant="indeterminate" />
                         <Typography variant="body2">

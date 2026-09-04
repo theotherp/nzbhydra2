@@ -165,7 +165,6 @@ export function ConfigNav({
                 sx={{pt: 2}}
             >
                 <Typography
-                    color="text.secondary"
                     component="p"
                     // Its own testid rather than a role/text lookup: the
                     // heading's text is the active tab's own label, which
@@ -173,8 +172,11 @@ export function ConfigNav({
                     // exactly the strict-mode collision the per-tab specs must
                     // stay clear of (Acceptance).
                     data-testid="config-nav-anchor-list-heading"
-                    sx={{px: 2}}
                     variant="overline"
+                    sx={{
+                        color: "text.secondary",
+                        px: 2,
+                    }}
                 >
                     {activeTabLabel}
                 </Typography>
@@ -222,7 +224,13 @@ export function ConfigNav({
         );
 
     const foot = (
-        <Stack alignItems="flex-start" spacing={1} sx={{pt: 2}}>
+        <Stack
+            spacing={1}
+            sx={{
+                alignItems: "flex-start",
+                pt: 2,
+            }}
+        >
             <FormControlLabel
                 control={
                     <Switch
@@ -479,10 +487,12 @@ function ConfigNavLabel({
 }) {
     return (
         <Stack
-            alignItems="center"
             direction="row"
             spacing={1}
-            sx={{width: "100%"}}
+            sx={{
+                alignItems: "center",
+                width: "100%",
+            }}
         >
             <Box component="span" sx={{flexGrow: 1}}>
                 {tab.label}

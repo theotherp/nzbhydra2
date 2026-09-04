@@ -46,14 +46,21 @@ export function LoginPage({
     });
 
     return (
-        <Stack alignItems="center" sx={{py: 6}}>
+        <Stack
+            sx={{
+                alignItems: "center",
+                py: 6,
+            }}
+        >
             <Paper sx={{maxWidth: 420, p: 3, width: "100%"}}>
                 <Box component="form" noValidate onSubmit={submit}>
                     <Stack spacing={2}>
                         <Typography
                             component="h1"
-                            textAlign="center"
                             variant="h5"
+                            sx={{
+                                textAlign: "center",
+                            }}
                         >
                             Log in
                         </Typography>
@@ -86,7 +93,12 @@ export function LoginPage({
                         >
                             Log in
                         </Button>
-                        <Typography color="text.secondary" variant="body2">
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: "text.secondary",
+                            }}
+                        >
                             You will be forwarded to the search area.
                         </Typography>
                     </Stack>

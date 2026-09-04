@@ -339,9 +339,9 @@ export function RefineSurface({
                             {children}
                         </Box>
                         <Stack
-                            alignItems="center"
                             direction="row"
                             sx={{
+                                alignItems: "center",
                                 borderTop: "1px solid",
                                 borderTopColor: "surfaces.hairlineFaint",
                                 gap: 1,
@@ -469,12 +469,21 @@ function RefineHeader({
     summary?: ReactNode;
 }) {
     return (
-        <Stack alignItems="center" direction="row" sx={{mb: 2}}>
+        <Stack
+            direction="row"
+            sx={{
+                alignItems: "center",
+                mb: 2,
+            }}
+        >
             {summary}
             <Stack
-                alignItems="center"
                 direction="row"
-                sx={{gap: 0.25, ml: "auto"}}
+                sx={{
+                    alignItems: "center",
+                    gap: 0.25,
+                    ml: "auto",
+                }}
             >
                 {actions}
             </Stack>

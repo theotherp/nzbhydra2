@@ -89,16 +89,22 @@ export function RecentSearches({
                 anchorEl={anchor}
                 anchorOrigin={{horizontal: "left", vertical: "bottom"}}
                 id="recent-searches-menu"
-                MenuListProps={{"aria-label": "Recent searches"}}
                 onClose={() => setAnchor(null)}
                 open={open}
                 slotProps={{
                     paper: {sx: {maxWidth: "calc(100vw - 32px)"}},
+                    list: {"aria-label": "Recent searches"},
                 }}
                 transformOrigin={{horizontal: "left", vertical: "top"}}
             >
                 {recentSearches.isPending && (
-                    <Stack alignItems="center" role="status" sx={{p: 2}}>
+                    <Stack
+                        role="status"
+                        sx={{
+                            alignItems: "center",
+                            p: 2,
+                        }}
+                    >
                         <CircularProgress
                             aria-label="Loading recent searches"
                             size={24}
@@ -297,9 +303,14 @@ export function RecentSearches({
                     proves no key ever lands focus here. */}
                 {(recentSearches.data?.length ?? 0) > 0 && (
                     <Typography
-                        color="text.secondary"
-                        sx={{pl: 2, pr: 4, py: 1, whiteSpace: "normal"}}
                         variant="caption"
+                        sx={{
+                            color: "text.secondary",
+                            pl: 2,
+                            pr: 4,
+                            py: 1,
+                            whiteSpace: "normal",
+                        }}
                     >
                         Press Right Arrow on an entry to refill the search form;
                         Left Arrow or Escape returns.

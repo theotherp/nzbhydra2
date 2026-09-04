@@ -386,12 +386,15 @@ export function CapsCheckDialog({
         <Dialog
             aria-labelledby="config-indexer-caps-dialog-title"
             data-testid={CAPS_CHECK_DIALOG_TEST_ID}
-            disableEscapeKeyDown={onLeave === undefined}
             fullWidth
             maxWidth="sm"
             onClose={(_event, reason) => {
                 // Escape leaves; a backdrop click does not, so minutes of
                 // waiting are not lost to a stray click beside the dialog.
+                // `leave()` is itself a no-op without an `onLeave`, which is
+                // what refuses Escape for a dialog that cannot be left --
+                // v9 removed `disableEscapeKeyDown`, leaving this check as
+                // the only place either gesture is decided.
                 if (reason === "escapeKeyDown") {
                     leave();
                 }
@@ -417,10 +420,12 @@ export function CapsCheckDialog({
                         </List>
                     )}
                     <Stack
-                        alignItems="center"
                         data-testid="config-indexer-caps-progress"
                         direction="row"
                         spacing={1}
+                        sx={{
+                            alignItems: "center",
+                        }}
                     >
                         <CircularProgress
                             size={18}
@@ -440,7 +445,12 @@ export function CapsCheckDialog({
                         </Typography>
                     </Stack>
                     {showsProgress ? (
-                        <Typography color="text.secondary" variant="caption">
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: "text.secondary",
+                            }}
+                        >
                             {PROGRESS_CAPTION}
                         </Typography>
                     ) : null}

@@ -67,12 +67,14 @@ export function HistoryPager({
     const totalPages = Math.max(1, Math.ceil(totalElements / pageSize));
     return (
         <Stack
-            alignItems="center"
             data-testid="history-pager"
             direction="row"
-            flexWrap="wrap"
             spacing={2}
             useFlexGap
+            sx={{
+                alignItems: "center",
+                flexWrap: "wrap",
+            }}
         >
             <Pagination
                 count={totalPages}

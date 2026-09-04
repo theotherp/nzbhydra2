@@ -154,7 +154,13 @@ export function SystemBackupTab({
 
     return (
         <Stack data-testid="system-backup" spacing={3}>
-            <Stack direction="row" flexWrap="wrap" gap={2}>
+            <Stack
+                direction="row"
+                sx={{
+                    flexWrap: "wrap",
+                    gap: 2,
+                }}
+            >
                 <Button
                     data-testid="system-backup-create-download"
                     disabled={busy}
@@ -215,7 +221,13 @@ export function SystemBackupTab({
                     Existing backups
                 </Typography>
                 {backups.isPending && (
-                    <Stack alignItems="center" role="status" spacing={2}>
+                    <Stack
+                        role="status"
+                        spacing={2}
+                        sx={{
+                            alignItems: "center",
+                        }}
+                    >
                         <CircularProgress variant="indeterminate" />
                         <Typography>Loading the backups</Typography>
                     </Stack>

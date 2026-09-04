@@ -113,9 +113,11 @@ export function ControlsHeader({
         <Stack
             data-testid="stats-controls-header"
             direction="row"
-            flexWrap="wrap"
-            gap={2}
-            sx={{alignItems: "center"}}
+            sx={{
+                flexWrap: "wrap",
+                gap: 2,
+                alignItems: "center",
+            }}
         >
             <ToggleButtonGroup
                 aria-label="Date range preset"
@@ -137,7 +139,12 @@ export function ControlsHeader({
                 ))}
             </ToggleButtonGroup>
             {preset === "custom" && (
-                <Stack direction="row" gap={1}>
+                <Stack
+                    direction="row"
+                    sx={{
+                        gap: 1,
+                    }}
+                >
                     <TextField
                         data-testid="stats-custom-after"
                         error={Boolean(customError)}
@@ -189,7 +196,12 @@ export function ControlsHeader({
                 open={Boolean(familyMenuAnchor)}
             >
                 <Box sx={{px: 2, pt: 1, pb: 0.5, maxWidth: 320}}>
-                    <Typography color="text.secondary" variant="caption">
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: "text.secondary",
+                        }}
+                    >
                         Deselecting a statistic skips its calculation, which
                         speeds up loading.
                     </Typography>

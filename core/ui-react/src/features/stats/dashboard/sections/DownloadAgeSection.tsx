@@ -33,7 +33,13 @@ export function DownloadAgeSection({stats}: {stats: StatsResult}) {
             <Typography component="h2" variant="h5">
                 Downloads per age
             </Typography>
-            <Stack direction="row" flexWrap="wrap" gap={3}>
+            <Stack
+                direction="row"
+                sx={{
+                    flexWrap: "wrap",
+                    gap: 3,
+                }}
+            >
                 <SummaryStat
                     label="Average age (days)"
                     testId="stats-age-average"
@@ -130,7 +136,12 @@ function SummaryStat({
 }) {
     return (
         <Stack data-testid={testId}>
-            <Typography color="text.secondary" variant="body2">
+            <Typography
+                variant="body2"
+                sx={{
+                    color: "text.secondary",
+                }}
+            >
                 {label}
             </Typography>
             <Typography component="p" variant="h5">

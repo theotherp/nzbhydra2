@@ -966,22 +966,26 @@ export function SearchWorkspace({
                                             <TextField
                                                 label="Indexers"
                                                 select
-                                                SelectProps={{
-                                                    multiple: true,
-                                                    value: selectedIndexers,
-                                                    onChange: (event) =>
-                                                        selectIndexers(
-                                                            typeof event.target
-                                                                .value ===
-                                                                "string"
-                                                                ? event.target.value.split(
-                                                                      ",",
-                                                                  )
-                                                                : (event.target
-                                                                      .value as string[]),
-                                                        ),
-                                                }}
                                                 fullWidth
+                                                slotProps={{
+                                                    select: {
+                                                        multiple: true,
+                                                        value: selectedIndexers,
+                                                        onChange: (event) =>
+                                                            selectIndexers(
+                                                                typeof event
+                                                                    .target
+                                                                    .value ===
+                                                                    "string"
+                                                                    ? event.target.value.split(
+                                                                          ",",
+                                                                      )
+                                                                    : (event
+                                                                          .target
+                                                                          .value as string[]),
+                                                            ),
+                                                    },
+                                                }}
                                             >
                                                 {eligibleIndexers.map(
                                                     (indexer) => (

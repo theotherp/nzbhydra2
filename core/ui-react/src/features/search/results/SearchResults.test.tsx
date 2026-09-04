@@ -5968,7 +5968,7 @@ function liveDownloaderTree(
 function chooseDownloader(name: string): void {
     const select = screen
         .getByTestId("results-bulk-actions")
-        .querySelector('[aria-label="Downloader"] [role="combobox"]');
+        .querySelector('[role="combobox"][aria-label="Downloader"]');
     if (!select) {
         throw new Error("No downloader select");
     }
@@ -5997,18 +5997,19 @@ async function sendToFirstDownloader(
     return JSON.parse(String(addRequest.body)).downloaderName;
 }
 
-// The bare `Select`'s `aria-label` sits on its `MuiInputBase-root` wrapper
-// rather than on the `role="combobox"` element MUI renders inside it, so the
-// rest of this file addresses the select by that wrapper too; the combobox
-// child is what carries the displayed value and takes the open/close events.
+// FM-183: `@mui/material` 9 puts the bare `Select`'s `aria-label` on the
+// `role="combobox"` element itself (`Select/SelectInput.mjs`); through 7.3.9 it
+// sat on the `MuiInputBase-root` wrapper and the combobox was addressed as its
+// descendant. The element this returns is unchanged either way -- the combobox
+// is what carries the displayed value and takes the open/close events.
 function categorySelect(): HTMLElement {
-    const wrapper = screen
+    const combobox = screen
         .getByTestId("results-bulk-actions")
-        .querySelector('[aria-label="Downloader category"] [role="combobox"]');
-    if (!wrapper) {
+        .querySelector('[role="combobox"][aria-label="Downloader category"]');
+    if (!combobox) {
         throw new Error("No downloader category select");
     }
-    return wrapper as HTMLElement;
+    return combobox as HTMLElement;
 }
 
 function requestCategory(init: RequestInit): unknown {

@@ -1,23 +1,37 @@
 /*
- * FM-053 / ADR-0013 -- the application-wide authored keyboard focus indicator.
+ * FM-053 / FM-184 / ADR-0013 / ADR-0056 -- the application-wide keyboard focus
+ * indicator.
  *
  * WHAT THIS FILE GATES. ADR-0013 (accepted 2026-08-19, **Option A**) decides
  * that this application indicates keyboard focus with one explicit focus-ring
- * token, authored per control family on each component's own
- * `&.Mui-focusVisible` / `:focus-visible` selector in
- * `core/ui-react/src/app/theme.ts`. ADR-0015 (accepted 2026-08-19) amends the
- * scope: the text-input/select family is NOT ring-authored — since ADR-0014
- * restored stock outlined inputs, that family's indicator is MUI's own
- * focused `notchedOutline` (2px `primary.main`), and this spec asserts both
- * that it paints and that no ring doubles it. For every other family this
- * spec reaches one representative control with real `Tab`/`Shift+Tab` (and,
- * for menu items, real `Enter`/`ArrowDown`) keypresses, records
- * `element.matches(":focus-visible")` for each, and asserts both that the
- * focused/unfocused computed-style delta is non-empty and that the *literal*
- * authored values render -- `outline: 3px solid oklch(0.68 0.195 144.6)` at a
- * `3px` (or, for the three families measured clipped by an ancestor, `-3px`)
- * offset. It asserts computed styles and measured geometry, never a
- * screenshot comparison.
+ * token and measures its geometry: 3px wide at a 3px offset, drawn inset where
+ * an ancestor clips an outset ring. ADR-0015 (accepted 2026-08-19) amends the
+ * scope: the text-input/select family is NOT ringed — since ADR-0014 restored
+ * stock outlined inputs, that family's indicator is MUI's own focused
+ * `notchedOutline` (2px `primary.main`), and this spec asserts both that it
+ * paints and that no ring doubles it.
+ *
+ * ADR-0056 (accepted 2026-09-04) keeps both decisions and replaces their
+ * *mechanism*: since FM-184 the ring is `@mui/material` 9.4.0's own
+ * `theme.focusVisible`, opted into once in `core/ui-react/src/app/theme.ts`
+ * with ADR-0013's geometry (`outlineWidth: 3`, `outlineOffset: 3`) rather than
+ * MUI's 2px/2px defaults. `theme.ts` authors no per-family rule any more, so
+ * what this file gates is no longer "the eleven authored rules render" but
+ * "every family this application actually renders still paints the measured
+ * ring, wherever MUI decided to put it". That distinction is the whole point
+ * of the file: MUI chooses the node (the `Checkbox` ring lands on the icon
+ * `svg`, the `Switch` ring on the track) and the offset (`Tab` insets by
+ * three ring-offsets, `MenuItem`/`ListItemButton`/`Autocomplete` option by
+ * one), and only a real browser can show which.
+ *
+ * For every family this spec reaches one representative control with real
+ * `Tab`/`Shift+Tab` (and, for menu items and options, real
+ * `Enter`/`ArrowDown`) keypresses, records `element.matches(":focus-visible")`
+ * for each, and asserts both that the focused/unfocused computed-style delta
+ * is non-empty and that the *literal* values render --
+ * `outline: 3px solid oklch(0.68 0.195 144.6)` at `3px`, `-3px`, or `-9px`.
+ * It asserts computed styles and measured geometry, never a screenshot
+ * comparison.
  *
  * WHY IT IS A SYSTEM TEST AND NOT A COMPONENT TEST. ADR-0004: jsdom has no
  * `:focus-visible`, no layout, no computed outline and no ripple element, so
@@ -36,23 +50,45 @@
  *
  * VERSION SCOPE AND RE-VERIFICATION DUTY (ADR-0012's precedent; ADR-0013's
  * `What would keep it from regressing`). Every assertion below is scoped to
- * `@mui/material` **7.3.9** and to the Chrome for Testing build Playwright
- * installs for this repository. The authored rules it proves depend on these
- * MUI internals, cited by symbol name because `node_modules` line numbers rot
- * between installs (the failure mode FM-047 hit):
- * `ButtonBase/ButtonBase.js`'s `ButtonBaseRoot` (`outline: 0`) and the
- * `Mui-focusVisible` class it composes onto the root;
- * `internal/SwitchBase.js`'s `SwitchBaseRoot` (`component: 'span'`,
- * `role: undefined, tabIndex: null`) and `SwitchBaseInput` (`opacity: 0`);
- * `InputBase/InputBase.js`'s `InputBaseRoot` and `InputBaseInput`'s
- * `'&:focus': {outline: 0}`; `OutlinedInput/OutlinedInput.js`'s
- * `OutlinedInputRoot = styled(InputBase.InputBaseRoot)` and its
- * `&.Mui-focused .notchedOutline { borderWidth: 2 }`;
- * `Select/SelectInput.js`'s `MuiInputBase-input` class on the
- * `role="combobox"` node; `Link/Link.js`'s `component: 'button'` variant.
+ * `@mui/material` **9.4.0** and to the Chrome for Testing build Playwright
+ * installs for this repository. It depends on these MUI internals, cited by
+ * symbol name because `node_modules` line numbers rot between installs (the
+ * failure mode FM-047 hit):
+ *
+ *   - `styles/focusVisible.js` -- `resolveFocusVisible` (the resolved ring)
+ *     and `wireFocusVisibleVars`, which rewrites the offset to
+ *     `calc(var(--_focusVisible-offset, 1) * 3px)`. That variable *inherits*,
+ *     which is why every offset below is read from the ringed node itself
+ *     rather than assumed from its family.
+ *   - Outset: `ButtonBase/ButtonBase.js`'s root variant
+ *     `internalDisabledThemeFocusVisible: false`, which spreads
+ *     `outsetFocusRing` (resetting that inherited variable) and the ring onto
+ *     every `ButtonBase` root -- `Button`, `IconButton`, `TableSortLabel`,
+ *     a clickable `Chip`. `Link/Link.js` rings `MuiLink-focusVisible`.
+ *     `Checkbox/Checkbox.js` rings `&.Mui-focusVisible svg:first-of-type`,
+ *     because `internal/SwitchBase.js` opts the root out
+ *     (`internalDisabledThemeFocusVisible: true`) -- its `SwitchBaseInput` is
+ *     an `opacity: 0` overlay, so a ring on the root or on the focused node
+ *     itself would paint invisibly. `Switch/Switch.js` rings
+ *     `&.Mui-focusVisible ~ .MuiSwitch-track`.
+ *   - Inset, `applyInsetFocusVisible(n)` = an offset of `-n x 3px`:
+ *     `MenuItem/MenuItem.js`, `ListItemButton/ListItemButton.js` and
+ *     `Autocomplete/Autocomplete.js`'s option at `n = 1`, `Tab/Tab.js` at
+ *     `n = 3`.
+ *   - Unringed input family: `InputBase/InputBase.js`'s `InputBaseInput`
+ *     `'&:focus': {outline: 0}`; `OutlinedInput/OutlinedInput.js`'s
+ *     `&.Mui-focused .notchedOutline { borderWidth: 2 }`;
+ *     `Select/SelectInput.js`'s `MuiInputBase-input` class on the
+ *     `role="combobox"` node.
+ *
  * **After any `@mui/material` upgrade this must be re-proven by re-running
  * this spec in a real browser against a real backend -- not by re-reading
- * those sources.**
+ * those sources.** The one MUI internal that moved in 9.4.0 and is visible
+ * from a keyboard trace is `MenuList`, now a roving-tabindex container whose
+ * `Menu` reopens on the row focused when it closed rather than on the first
+ * row; that is kept as MUI's default per ADR-0014/ADR-0056, changes nothing
+ * about focus *indication*, and is re-traced where ADR-0012 measures it
+ * (`search.spec.ts`, the ArrowRight/ArrowLeft/Escape Refill case).
  *
  * THE `MuiChip` FAMILY IS GATED HERE SINCE FM-087. It used to be the one
  * authored family with no keyboard-reachable representative: the only `Chip`
@@ -89,6 +125,16 @@ const FOCUS_RING_RGB: [number, number, number] = [48, 181, 63];
 const FOCUS_RING_WIDTH = "3px";
 const OUTSET_OFFSET = "3px";
 const INSET_OFFSET = "-3px";
+/**
+ * `Tab/Tab.js` spreads `applyInsetFocusVisible(3)`, so a tab's ring insets by
+ * three ring-offsets rather than one: `calc(-3 * 3px)`. FM-053 drew it at
+ * `-3px` for the same measured reason (the `.MuiTabs-scroller` is exactly the
+ * tab's own height, so an outset ring is clipped top and bottom); MUI's own
+ * rule is simply deeper, and 9 + 3 px still lands well inside a 48px tab. The
+ * `2 x perimeter` check in `expectAuthoredFocusRing` re-measures the
+ * consequence rather than trusting it.
+ */
+const TAB_INSET_OFFSET = "-9px";
 /** WCAG 2.2 SC 2.4.11: the changed area must reach `2 x perimeter` = `4(w+h)`. */
 const MINIMUM_CONTRAST = 3;
 
@@ -431,6 +477,27 @@ async function captureFocusedControl(
     await page.screenshot({
         path,
         clip: {x, y, width: right - x, height: bottom - y},
+    });
+}
+
+/**
+ * `Checkbox`'s ringed node, probed where MUI 9.4.0 actually paints it.
+ * `Checkbox/Checkbox.js` authors the ring on
+ * `&.Mui-focusVisible svg:first-of-type` and `internal/SwitchBase.js` opts the
+ * root out, so the root -- which FM-053's authored rule used -- now carries no
+ * outline at all, and the focusable node is still the `opacity: 0` input
+ * overlay a ring would paint invisibly on. The keyboard walk therefore still
+ * targets the root (the only node that contains the focusable input), while
+ * every measurement is taken on the icon `svg` MUI ringed.
+ */
+async function probeCheckboxRing(
+    page: Page,
+    root: Locator,
+): Promise<FocusProbe> {
+    return probeFocus(page, root.locator("svg:first-of-type"), {
+        reach: async () => {
+            await tabTo(page, root);
+        },
     });
 }
 
@@ -839,15 +906,19 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             await openSearchRoute(page, viewport);
             await runSearch(page);
 
-            // Family C -- the `SwitchBase` family, authored on the *root*
-            // `Mui-focusVisible` class. `internal/SwitchBase.js` renders
-            // `SwitchBaseInput` as a `styled('input')` with `opacity: 0`
-            // covering the whole control, and that transparent overlay is the
-            // node that takes DOM focus, so a `:focus-visible` rule would
-            // paint there invisibly. FM-052 measured exactly that outcome for
-            // this control (`checkbox-select-all`, `fails 2.4.7`), which is
-            // why the assertions below are made against the visible root and
-            // its `opacity`.
+            // Family C -- the `SwitchBase` family. `internal/SwitchBase.js`
+            // renders `SwitchBaseInput` as a `styled('input')` with
+            // `opacity: 0` covering the whole control, and that transparent
+            // overlay is the node that takes DOM focus, so a ring on it paints
+            // invisibly -- FM-052 measured exactly that outcome for this
+            // control (`checkbox-select-all`, `fails 2.4.7`). FM-184: MUI 9.4
+            // answers that by ringing the icon `svg` instead of the root, so
+            // the measurement moves to the `svg` while the two properties that
+            // made the original defect a defect -- a non-transparent painting
+            // node, and the input overlay still being transparent -- stay
+            // asserted. This control's icons are `SvgIcon`s for exactly that
+            // reason (`SelectionMenu.tsx`); as `Box` squares they would match
+            // no MUI rule and paint nothing.
             const selectionMenu =
                 viewport === "desktop"
                     ? "header-selection-menu"
@@ -855,7 +926,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             const checkboxRoot = page
                 .getByTestId(selectionMenu)
                 .locator(".MuiCheckbox-root");
-            const selectAll = await probeFocus(page, checkboxRoot);
+            const selectAll = await probeCheckboxRing(page, checkboxRoot);
             expectAuthoredFocusRing(
                 `checkbox-select-all (${viewport})`,
                 selectAll,
@@ -865,6 +936,12 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 selectAll.rootOpacity,
                 `checkbox-select-all (${viewport}): the indicator must paint on a non-transparent node`,
             ).toBe("1");
+            expect(
+                await checkboxRoot.evaluate(
+                    (element) => getComputedStyle(element).outlineStyle,
+                ),
+                `checkbox-select-all (${viewport}): the root itself paints no second ring (SwitchBase opts it out)`,
+            ).toBe("none");
             expect(
                 await checkboxRoot
                     .locator("input")
@@ -962,7 +1039,109 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         }
     });
 
-    test("should render the authored ring on the Tab family inset, because an outset ring is clipped by the Tabs scroller", async ({
+    // FM-184: `Tab` is the one family whose *offset* MUI states differently
+    // from every other inset family (`applyInsetFocusVisible(3)`, not `(1)`),
+    // so it is asserted at `-9px` while the measured reason it insets at all
+    // -- the scroller clipping an outset ring -- is re-proven unchanged below.
+    // FM-184 (ADR-0056): the two families MUI 9.4 rings on a node this
+    // application had no gate for at all. Neither existed as a probe under the
+    // authored mechanism -- the `Switch` because FM-053's rule sat on the root
+    // it shared with `Checkbox`/`Radio`, the `Autocomplete` option because no
+    // authored rule ever named it -- and both are now MUI's own decision about
+    // *where* the ring lands, which only a real browser can show.
+    test("should render the ring on the Switch track and on a keyboard-highlighted Autocomplete option", async ({
+        page,
+    }) => {
+        await page.setViewportSize(visualViewports.desktop);
+        await page.goto("/config/main");
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("config-main")).toBeVisible();
+
+        // `Switch/Switch.js` rings `&.Mui-focusVisible ~ .MuiSwitch-track`,
+        // not the root and not the thumb: the root is a `SwitchBase`, whose
+        // focusable node is the same `opacity: 0` overlay the `Checkbox`
+        // family has. The keyboard walk therefore targets the root (the only
+        // node containing that input) and the measurement is taken on the
+        // track. `SwitchRoot` is `overflow: hidden` with a 12px pad around a
+        // 34x14 track, so the 6px an outset ring reaches is not clipped --
+        // asserted, not assumed, by `expectAuthoredFocusRing`.
+        // `Switch.js` forwards `...other` -- and so this `data-testid` -- to
+        // its `SwitchSwitchBase`, not to `SwitchRoot`, so the track is the
+        // testid'd node's *sibling*. That is also why the keyboard walk below
+        // targets the testid'd node: it is the one that contains the input.
+        const advancedSwitchBase = page.getByTestId("config-advanced-toggle");
+        await expect(advancedSwitchBase).toBeVisible();
+        const track = advancedSwitchBase.locator(
+            "xpath=following-sibling::span[contains(@class,'MuiSwitch-track')]",
+        );
+        const switchProbe = await probeFocus(page, track, {
+            reach: async () => {
+                await tabTo(page, advancedSwitchBase);
+            },
+        });
+        expectAuthoredFocusRing(
+            'config "Advanced settings" Switch (track)',
+            switchProbe,
+            OUTSET_OFFSET,
+        );
+        expect(
+            await advancedSwitchBase
+                .locator("input")
+                .evaluate((element) => getComputedStyle(element).opacity),
+            "config advanced Switch: MUI's native input overlay is still transparent",
+        ).toBe("0");
+        await captureFocusedControl(
+            page,
+            advancedSwitchBase.locator(
+                "xpath=ancestor::span[contains(@class,'MuiSwitch-root')][1]",
+            ),
+            "visual-evidence/FM-184/keyboard-focus-config-advanced-switch-desktop.png",
+        );
+
+        // `Autocomplete/Autocomplete.js` rings its option with
+        // `applyInsetFocusVisible(1)`, because the listbox scrolls and would
+        // clip an outset ring. The class it is keyed to is added by
+        // `useAutocomplete.js` only when the highlight moved for
+        // `reason === "keyboard"`, so this is reachable *only* by a real
+        // ArrowDown -- `autoHighlight` marks the first option `Mui-focused`
+        // without marking it focus-visible, which is why the second option is
+        // the one with a genuine unfocused baseline inside the open listbox.
+        const settingsSearch = page.getByTestId("config-search");
+        await tabTo(page, settingsSearch);
+        await page.keyboard.type("port");
+        const options = page.locator(".MuiAutocomplete-option");
+        await expect(options.nth(1)).toBeVisible();
+        const secondOption = options.nth(1);
+        const optionProbe = await probeFocus(page, secondOption, {
+            reach: async () => {
+                for (let press = 0; press < 12; press++) {
+                    await page.keyboard.press("ArrowDown");
+                    if (
+                        await secondOption.evaluate((element) =>
+                            element.classList.contains("Mui-focusVisible"),
+                        )
+                    ) {
+                        return;
+                    }
+                }
+                throw new Error(
+                    "ArrowDown never keyboard-highlighted the second settings-search option",
+                );
+            },
+        });
+        expectAuthoredFocusRing(
+            "config settings-search Autocomplete option",
+            optionProbe,
+            INSET_OFFSET,
+        );
+        await captureFocusedControl(
+            page,
+            secondOption,
+            "visual-evidence/FM-184/keyboard-focus-settings-search-option-desktop.png",
+        );
+    });
+
+    test("should render the ring on the Tab family inset by three offsets, because an outset ring is clipped by the Tabs scroller", async ({
         page,
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
@@ -973,7 +1152,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             expectAuthoredFocusRing(
                 `stats Tab (${viewport})`,
                 tab,
-                INSET_OFFSET,
+                TAB_INSET_OFFSET,
             );
             // The measured reason the Tab family is shaped differently: the
             // scroller's own box is exactly the tab's height, so a 3px ring at
@@ -1054,10 +1233,12 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             "stats-history-text-input",
         );
 
-        const checkbox = await probeFocus(
-            page,
-            page.locator(".MuiCheckbox-root").first(),
-        );
+        // The same `svg:first-of-type` node as the select-all probe above, on
+        // the application's only default-padding `Checkbox`: its root box is
+        // MUI's 42x42 rather than a 17x17 square, so this proves the ring
+        // follows the icon and not the padded root.
+        const historyCheckbox = page.locator(".MuiCheckbox-root").first();
+        const checkbox = await probeCheckboxRing(page, historyCheckbox);
         expectAuthoredFocusRing(
             "stats-history-checkbox (default padding)",
             checkbox,
@@ -1067,6 +1248,12 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             checkbox.rootOpacity,
             "stats-history-checkbox: the indicator must paint on a non-transparent node",
         ).toBe("1");
+        expect(
+            await historyCheckbox
+                .locator("input")
+                .evaluate((element) => getComputedStyle(element).opacity),
+            "stats-history-checkbox: MUI's native input overlay is still transparent",
+        ).toBe("0");
 
         const refresh = await probeFocus(
             page,
@@ -1143,10 +1330,28 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await expect(anchor).toBeVisible();
         const probe = await probeFocus(page, anchor);
         expectAuthoredFocusRing("news-page bare anchor", probe, OUTSET_OFFSET);
+        // What this pins is that the anchor's own `currentColor` is still the
+        // *user-agent default* link colour and nothing this application
+        // authored -- which is what makes the ring measured above authored
+        // rather than inherited. Chromium resolves that default through
+        // `-internal-light-dark(#0000EE, #9E9EFF)`, so the member it picks
+        // follows the document's `color-scheme`, which `e541f7a46` (the
+        // 2026-09-04 `CssBaseline enableColorScheme` quickfix, made and
+        // verified on 7.3.9) ties to the palette mode: dark on grey, light on
+        // bright. Read from the document instead of hardcoding the light
+        // member, so the claim survives a theme change and stays a statement
+        // about the UA default rather than about one palette.
+        const documentColorScheme = await page.evaluate(
+            () => getComputedStyle(document.documentElement).colorScheme,
+        );
         expect(
             probe.unfocusedOutline.color,
-            "the anchor's own currentColor is still the UA link blue, so the ring's colour is authored rather than inherited",
-        ).toBe("rgb(0, 0, 238)");
+            "the anchor's own currentColor is still the UA link blue for the document's colour scheme, so the ring's colour is authored rather than inherited",
+        ).toBe(
+            documentColorScheme === "dark"
+                ? "rgb(158, 158, 255)"
+                : "rgb(0, 0, 238)",
+        );
         await captureFocusedControl(
             page,
             anchor,

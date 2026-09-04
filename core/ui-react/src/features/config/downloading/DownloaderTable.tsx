@@ -167,7 +167,12 @@ function DownloaderTableRow({
                 data-testid={`config-repeat-entry-${DOWNLOADERS_TEST_ID}-${index}`}
             >
                 <TableCell>
-                    <Stack alignItems="flex-start" spacing={1}>
+                    <Stack
+                        spacing={1}
+                        sx={{
+                            alignItems: "flex-start",
+                        }}
+                    >
                         {name}
                         {type}
                         {url}

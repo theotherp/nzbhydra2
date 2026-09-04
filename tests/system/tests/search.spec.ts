@@ -1102,6 +1102,22 @@ test.describe("Search", () => {
             await trigger.focus();
             await page.keyboard.press("Enter");
             await expect(menu).toBeVisible();
+            // The rows arrive from a query, so the freshly opened list can
+            // still be holding focus on its own container; waiting for the
+            // row keeps the key press below from landing on an empty list.
+            await expect(betaRow).toBeVisible();
+            // FM-183. `@mui/material` 9 reopens a menu on the row that was
+            // focused when it closed, not on the first row (see the reopen
+            // block at the end of this trace for the mechanism and its own
+            // assertion). Every block below was written against 7.3.9's
+            // always-the-first-row reopen, so the helper now states that
+            // precondition instead of inheriting it: `Home` is `MenuList`'s
+            // own first-item binding -- exercised as a contract assertion in
+            // its own right further down -- and the assertion after it makes
+            // a change to either behaviour fail here rather than somewhere
+            // downstream.
+            await page.keyboard.press("Home");
+            await expect(betaRow).toBeFocused();
         }
 
         type TraceEntry = {
@@ -1129,10 +1145,11 @@ test.describe("Search", () => {
         }
 
         // Open by keyboard: focus the trigger (as tabbing to it would leave
-        // it), then Enter. MUI's `MenuList` `activeItemIndex` lookahead
-        // autofocuses the first entry, which -- given `time desc` ordering
-        // and the two-entry cap above -- is beta, the more recently
-        // submitted search.
+        // it), then Enter. On a first open MUI's `MenuList` has no
+        // remembered item, so its roving-tabindex container falls back to
+        // the first focusable entry, which -- given `time desc` ordering and
+        // the two-entry cap above -- is beta, the more recently submitted
+        // search.
         await openMenuByKeyboard();
         await expect(betaRow).toBeFocused();
         await record("(open by keyboard) focus trigger, Enter");
@@ -1154,22 +1171,19 @@ test.describe("Search", () => {
 
         // The button shows a real focus indicator when reached: it matches
         // `:focus-visible` -- Chromium's genuine keyboard-focus heuristic,
-        // not merely `document.activeElement`. `app/theme.ts`'s
-        // `MuiCssBaseline` override sets `outline: 3px solid currentColor`
-        // at `outlineOffset: 3px` on `:focus-visible` globally, and
-        // `outlineOffset` does reach this element (confirmed below), but
-        // `outline-style`/`outline-width` do not: `@mui/material` `7.3.9`'s
-        // `ButtonBase/ButtonBase.js` gives every `ButtonBase`-derived root
-        // (`Button`, `IconButton`, `ListItemButton`, ...) its own
-        // unconditional `outline: 0`, generated as a higher-specificity
-        // compound class that wins the cascade over the single-class
-        // `:focus-visible` global rule for the `outline` shorthand
-        // (`outline-style`/`outline-width`) -- verified directly against
-        // both this button and an unrelated, pre-existing nav
-        // `ListItemButton`, so this is an app-wide `ButtonBase` property,
-        // not something FM-050 introduced or can fix here (`app/theme.ts`
-        // is outside this task's `Files Allowed To Modify`). Recorded as a
-        // maintenance candidate under Follow-Up Work.
+        // not merely `document.activeElement` -- at ADR-0013's measured 3px
+        // offset. FM-184 (ADR-0056) is what makes the offset meaningful here
+        // rather than incidental: `@mui/material` 9.4.0's
+        // `ButtonBase/ButtonBase.js` rings every `ButtonBase`-derived root
+        // itself, and spreads `outsetFocusRing` on it, which resets the
+        // inherited `--_focusVisible-offset` this Refill button would
+        // otherwise pick up from the `MenuItem` row containing it (menu items
+        // inset their ring). So the `3px` below states that a nested
+        // `IconButton` inside an inset family is outset, which is the
+        // property that would break silently if that reset were lost. The
+        // ring's full geometry per family is gated in
+        // `focus-indication.spec.ts`; this assertion stays ADR-0012's, about
+        // the keyboard trace reaching a visibly focused control.
         const focusIndicator = await page.evaluate(() => {
             const active = document.activeElement as HTMLElement;
             const style = window.getComputedStyle(active);
@@ -1184,7 +1198,7 @@ test.describe("Search", () => {
         // `matchesFocusVisible`/`outlineOffset` above hold regardless of
         // whether anything is actually painted -- `outlineOffset` still
         // computes to `3px` even with `outline-style: none`. The real,
-        // app-wide mechanism `@mui/material` `7.3.9` substitutes for the
+        // app-wide mechanism `@mui/material` `9.4.0` substitutes for the
         // suppressed CSS outline is `ButtonBase/ButtonBase.js`'s pulsating
         // `TouchRipple`: its `useEffect` calls `ripple.pulsate()` whenever
         // `focusVisible && focusRipple` (both true here -- `IconButton`
@@ -1366,6 +1380,33 @@ test.describe("Search", () => {
         await expect(page.getByTestId("search-query")).toHaveValue(alphaQuery);
         expect(searchRequestCount).toBe(beforeSpace);
         await record("Space (from button)");
+
+        // FM-183, the ADR-0012 re-proof against 9.4.0. `MenuList` is now
+        // built on a roving-tabindex container (`@mui/utils`'s
+        // `useRovingTabIndex`), and `Menu.js`'s `handleEntering` calls
+        // `focusInitialTarget()`, which returns that container's *current*
+        // active item rather than the default first one; the list outlives
+        // the close, so a menu reopened from its trigger comes back on the
+        // row that was focused when it closed. Through 7.3.9 every reopen
+        // focused the first row. The behaviour is kept as MUI's own default
+        // per ADR-0014/ADR-0056 rather than pinned back, and ADR-0012's
+        // contract is untouched by it -- `ArrowRight` still reaches the
+        // row's nested Refill, `ArrowLeft`/`Escape` still return to the row,
+        // as every block above proves. Asserted here so the trace carries
+        // the change rather than merely tolerating it.
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await page.keyboard.press("Tab");
+        await expect(menu).toBeHidden();
+        await trigger.focus();
+        await page.keyboard.press("Enter");
+        await expect(menu).toBeVisible();
+        await expect(alphaRow).toBeFocused();
+        await record("(reopen) focus returns to the row focused at close");
+        await page.keyboard.press("Home");
+        await expect(betaRow).toBeFocused();
+        await record("Home (after reopen)");
 
         // The full trace is the deliverable this packet requires; attach it
         // to the report so it is durable evidence, not just a console log.
