@@ -262,3 +262,39 @@ cmd /c buildCore.cmd
 - First boot after shutdown takes longer (Windows updates, etc.)
 - Consider keeping the VM running during development sessions
 - Snapshot the VM after successful setup to enable easy recovery
+
+## Actual setup used by this project (win11-ltsc)
+
+The generic steps above are the template. The live build host set up for this repo is:
+
+- **VM:** libvirt domain `win11-ltsc` (German-locale Win11 LTSC). Pinned to `192.168.122.45` via a DHCP reservation, so its IP survives reboots.
+- **Access:** SSH alias `winbuild` in `~/.ssh/config` (User `build`, `IdentityFile ~/.ssh/winbuild`). The IP lives in ssh config, not in the repo. `misc/build_windows_vm.py` targets `build@winbuild`.
+- **Toolchain paths** (referenced by `buildCore.cmd`): VS Build Tools `C:\BuildTools`, GraalVM `C:\Programme\graalvm\graalvm-community-jdk-25i1-25.0.3`, Maven `C:\tools\apache-maven-3.9.12`, Node 26 `C:\tools\node`.
+
+### Two non-obvious setup steps
+
+1. **SSH key must go in `administrators_authorized_keys`, not the per-user file.** On non-English Windows, the default `sshd_config` rule `Match Group administrators` cannot resolve the localized group to a SID, so it matches *every* user
+   (including a non-admin `build`) into the admin branch and reads only `C:\ProgramData\ssh\administrators_authorized_keys`. Put the client public key there, one key per line, with ACL locked to `SYSTEM:F` and `BUILTIN\Administrators:F`,
+   inheritance removed:
+
+   ```powershell
+   $key = '<your ssh public key>'
+   $f = "$env:ProgramData\ssh\administrators_authorized_keys"
+   $existing = if (Test-Path $f) { Get-Content $f | Where-Object { $_.Trim() } } else { @() }
+   Set-Content -Path $f -Value (@($existing) + $key) -Encoding ascii
+   icacls $f /inheritance:r /grant 'SYSTEM:F' /grant 'BUILTIN\Administrators:F'
+   Restart-Service sshd
+   ```
+
+   (Use `Set-Content` with an explicit array, not `Add-Content`: appending to a file whose last line lacks a trailing newline fuses two keys into one invalid line.)
+
+2. **Install Node 26** for the React UI build and make sure `buildCore.cmd` has it on PATH (it references `C:\tools\node`):
+
+   ```powershell
+   $u = "https://nodejs.org/dist/v26.8.1/node-v26.8.1-win-x64.zip"
+   Invoke-WebRequest $u -OutFile "$env:TEMP\node.zip"
+   Expand-Archive "$env:TEMP\node.zip" C:\tools -Force
+   Rename-Item C:\tools\node-v26.8.1-win-x64 C:\tools\node
+   ```
+
+`buildCore.cmd` runs a full reactor `mvn clean install` (excluding the release/packaging modules) before `native:compile`, so `core`'s sibling modules (`mapping`, `release-parser`, `sockslib`) resolve from the local repo.

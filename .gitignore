@@ -38,6 +38,7 @@ misc/.gui-systemtest-runs
 /results
 other/wrapper/pyInstaller/windows/build
 other/wrapper/pyInstaller/windows_console/build
+.venv
 
 **/.DS_Store
 core/ui-src/hydra-ng
@@ -56,6 +57,7 @@ org.eclipse.jdt.apt.core.prefs
 .mnemosyne/
 .playwright-cli
 uimock/
+__pycache__
 
 # CTRF test reports generated in CI for ctrf-io/github-test-reporter (see .github/workflows/)
 ctrf/
