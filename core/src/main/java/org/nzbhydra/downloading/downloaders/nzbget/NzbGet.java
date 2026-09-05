@@ -91,6 +91,7 @@ public class NzbGet extends Downloader {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(downloaderConfig.getUrl());
             builder.path("jsonrpc");
             Map<String, String> headers = new HashMap<>();
+            headers.put("User-Agent", "NZBHydra2");
             if (downloaderConfig.getUsername().isPresent() && downloaderConfig.getPassword().isPresent()) {
                 headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername().get() + ":" + downloaderConfig.getPassword().get()).getBytes()));
             }

@@ -23,12 +23,20 @@ import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.ByteArrayInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SabnzbdTest {
@@ -103,6 +111,36 @@ class SabnzbdTest {
         Request capturedRequest = requestCaptor.getValue();
         String contentType = capturedRequest.body().contentType().toString();
         assertThat(contentType).startsWith("multipart/form-data");
+        assertThat(capturedRequest.header("User-Agent")).isEqualTo("NZBHydra2");
+    }
+
+    @Test
+    void shouldSendUserAgentHeaderOnRestTemplateCalls() throws Exception {
+        RestTemplate internalRestTemplate = (RestTemplate) ReflectionTestUtils.getField(sabnzbd, "restTemplate");
+
+        ClientHttpRequest clientHttpRequest = mock(ClientHttpRequest.class);
+        ClientHttpResponse clientHttpResponse = mock(ClientHttpResponse.class);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders requestHeaders = new HttpHeaders();
+
+        when(clientHttpRequest.getHeaders()).thenReturn(requestHeaders);
+        when(clientHttpRequest.execute()).thenReturn(clientHttpResponse);
+        when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(clientHttpResponse.getHeaders()).thenReturn(responseHeaders);
+        when(clientHttpResponse.getBody()).thenReturn(new ByteArrayInputStream("{\"categories\":[]}".getBytes()));
+
+        ClientHttpRequestFactory delegateFactory = mock(ClientHttpRequestFactory.class);
+        when(delegateFactory.createRequest(any(), any())).thenReturn(clientHttpRequest);
+        internalRestTemplate.setRequestFactory(delegateFactory);
+
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        sabnzbd.initialize(downloaderConfig);
+
+        sabnzbd.getCategories();
+
+        assertThat(requestHeaders.getFirst("User-Agent")).isEqualTo("NZBHydra2");
     }
 
 }

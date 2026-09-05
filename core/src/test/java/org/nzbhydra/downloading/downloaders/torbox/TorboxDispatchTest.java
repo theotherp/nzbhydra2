@@ -28,6 +28,7 @@ class TorboxDispatchTest {
     private HttpServer server;
     private final AtomicReference<String> requestPath = new AtomicReference<>();
     private final AtomicReference<String> requestBody = new AtomicReference<>();
+    private final AtomicReference<String> requestUserAgent = new AtomicReference<>();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -35,6 +36,7 @@ class TorboxDispatchTest {
         server.createContext("/configured/torrents/createtorrent", exchange -> {
             requestPath.set(exchange.getRequestURI().getPath());
             requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            requestUserAgent.set(exchange.getRequestHeaders().getFirst("User-Agent"));
             byte[] response = "{\"success\":true,\"data\":{\"usenetdownload_id\":\"torrent-123\"}}".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, response.length);
@@ -62,6 +64,7 @@ class TorboxDispatchTest {
         assertThat(downloadId).isEqualTo("torrent-123");
         assertThat(requestPath.get()).isEqualTo("/configured/torrents/createtorrent");
         assertThat(requestBody.get()).contains("name=\"name\"", "Torrent title", "name=\"category\"", "movies", "torrent-content");
+        assertThat(requestUserAgent.get()).isEqualTo("NZBHydra2");
     }
 
     @Test

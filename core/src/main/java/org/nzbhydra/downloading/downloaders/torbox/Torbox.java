@@ -80,6 +80,7 @@ public class Torbox extends Downloader {
         this.restTemplate = new RestTemplate(torboxHttpRequestFactory);
         this.restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().add("Authorization", "Bearer " + downloaderConfig.getApiKey());
+            request.getHeaders().add("User-Agent", "NZBHydra2");
             return execution.execute(request, body);
         });
     }

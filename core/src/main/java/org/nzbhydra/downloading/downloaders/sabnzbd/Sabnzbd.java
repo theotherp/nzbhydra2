@@ -87,7 +87,11 @@ public class Sabnzbd extends Downloader {
 
     public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder) {
         super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
-        this.restTemplate = restTemplate;
+        this.restTemplate = new RestTemplate(requestFactory);
+        this.restTemplate.getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().add("User-Agent", "NZBHydra2");
+            return execution.execute(request, body);
+        });
         this.requestFactory = requestFactory;
     }
 
@@ -149,6 +153,7 @@ public class Sabnzbd extends Downloader {
         RequestBody formBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("name", title, RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_XML_VALUE), fileContent)).build();
         Request request = new Request.Builder()
                 .url(urlBuilder.toUriString())
+            .header("User-Agent", "NZBHydra2")
                 .post(formBody)
                 .build();
         OkHttpClient client = requestFactory.getOkHttpClient(urlBuilder.build().encode().toUri().getHost());

@@ -1,9 +1,11 @@
 package org.nzbhydra.downloading.downloaders.nzbget;
 
+import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.webaccess.Ssl;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -66,6 +68,21 @@ class NzbGetTest {
         NzbGet nzbGet = new NzbGet(null, null, null, null, null, ssl, null);
 
         assertThatCode(() -> nzbGet.initialize(config)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldSendUserAgentHeader() {
+        Ssl ssl = mock(Ssl.class);
+        when(ssl.getVerificationStateForHost("localhost")).thenReturn(Ssl.SslVerificationState.DISABLED_HOST);
+        when(ssl.getAllTrustingSslContext()).thenReturn(null);
+        DownloaderConfig config = new DownloaderConfig();
+        config.setUrl("http://localhost/nzbget/");
+
+        NzbGet nzbGet = new NzbGet(null, null, null, null, null, ssl, null);
+        nzbGet.initialize(config);
+
+        JsonRpcHttpClient client = (JsonRpcHttpClient) ReflectionTestUtils.getField(nzbGet, "client");
+        assertThat(client.getHeaders()).containsEntry("User-Agent", "NZBHydra2");
     }
 
     private static LinkedHashMap<String, Object> configEntry(String name, String value) {
