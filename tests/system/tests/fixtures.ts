@@ -92,7 +92,7 @@ type HydraApi = {
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
     assertUniqueIndexerCredentials(): Promise<void>;
     rotateLogs(): Promise<void>;
-    configureSabnzbdMock(): Promise<void>;
+    configureSabnzbdMock(options?: {withNzbGet?: boolean}): Promise<void>;
     resetSabnzbdRecording(): Promise<void>;
     getSabnzbdRecording(): Promise<Record<string, unknown>>;
     mockNzbUrl(nzbId: string): string;
@@ -636,7 +636,17 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             );
         },
 
-        async configureSabnzbdMock(): Promise<void> {
+        /**
+         * @param options.withNzbGet FM-186: additionally enables the
+         *   mockserver's NZBGet (`/nzbget/jsonrpc`), so the results table
+         *   renders *two* per-row send buttons -- the count the row's Actions
+         *   track has to fit without the icon group wrapping. Off by default,
+         *   so every existing caller keeps the single-downloader downloading
+         *   configuration it was written against.
+         */
+        async configureSabnzbdMock(options?: {
+            withNzbGet?: boolean;
+        }): Promise<void> {
             const config = await getConfig();
             const downloading = config.downloading as HydraConfig;
             downloading.nzbAccessType = "PROXY";
@@ -653,6 +663,19 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                     defaultCategory: testEnvironment.sabnzbdMockCategory,
                     enabled: true,
                 },
+                ...(options?.withNzbGet
+                    ? [
+                          {
+                              name: testEnvironment.nzbgetMockName,
+                              url: `${testEnvironment.mockserverInternalUrl}/nzbget`,
+                              downloaderType: "NZBGET",
+                              downloadType: "NZB",
+                              nzbAddingType: "UPLOAD",
+                              addPaused: true,
+                              enabled: true,
+                          },
+                      ]
+                    : []),
             ];
             await saveConfig(config);
         },

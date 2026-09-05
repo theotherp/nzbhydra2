@@ -223,7 +223,11 @@ components:
     state: partial
     note: FM-181 gave the bulk row a second rendering below 768px over the same state -- a selection count, one split send button whose menu carries the downloader and category choices the desktop Selects bind (menuitemradio,
       aria-checked), and an overflow menu holding ZIP, black hole and copy links under their unchanged gating and disabled rules. It is a JavaScript branch inside the one component, not a second component and not a CSS-hidden copy, so
-      every control exists exactly once at any width; the domain operations in domain/downloads are untouched. Row 2 renders only while something is selected there, which is why Save search moved to the toolbar's row 1.
+      every control exists exactly once at any width; the domain operations in domain/downloads are untouched. Row 2 renders only while something is selected there, which is why Save search moved to the toolbar's row 1. FM-186 (owner request 2026-09-05) extracted the send itself into one shared flow, features/search/results/sendFlow.ts's runSendFlow -- duplicate probe with category null, confirmation, client-side
+      category resolution (explicit choice, else the downloader's configured default, else null), addNzbs, and the failure toasts -- called by both this bar and the per-row send buttons F-SEARCH-DOWNLOADS' result-send-to-downloader
+      adds, so a row send and a one-result bulk send are the same request. isCompatibleWithDownloader and configuredDefaultCategory moved into domain/downloads/actions.ts with their semantics unchanged (TORBOX results only to a TORBOX
+      downloader, torrents to none; an empty defaultCategory is no default), since both callers decide with them. What stays per caller is the reporting -- the bulk bar marks every addedIds row and toasts one summary, while a row
+      marks itself only when addedIds names it.
   - id: C-DOWNLOADER-STATUS
     responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
     legacy:
@@ -317,7 +321,9 @@ components:
       last card. Nothing at or above 768px changed; the refine-sidebar's rendered outerHTML at 1280x800 is identical before and after (FM-136's method). FM-182 (owner report 2026-09-03) added results-sort-toggle to that same row 1, between
       the summary and display-options-toggle, on the phone branch only (no hidden desktop copy) -- a MUI Menu of the six sortable columns (menuitemradio, one checked from sorting[0].id) plus an Ascending/Descending pair (checked from
       sorting[0].desc, disabled while sorting is empty), writing the same sorting state and setSorting the desktop headers' sort-{{column}} buttons write, so a phone pick and the matching header's aria-sort never disagree after a
-      viewport change.
+       viewport change. FM-186 (owner request 2026-09-05) made the Actions <colgroup> track a function rather than a constant -- actionsTrackWidth(count) in resultTable.ts, 140 + 28 * the
+      enabled downloader count, one 24px send button plus its 4px gap on top of FM-175's 140px icon inventory -- and both width sets derive from it, the below-1280px percentages as that width over the 936px basis table, so the two sets
+      still describe the same table at the basis. Title still declares no width and absorbs the difference (289px of content at two downloaders, accepted by that request below FM-175's 340px floor).
   - id: C-HISTORY-REFINE-BAR
     responsibility: Shared stats-history refine sections and filter state -- the single filter surface beside every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select
       checkboxes, boolean, number range) with active-filter count and clear-all. It owns state and options only -- HistoryFilterValues filtered server-side through C-HISTORY-REQUEST rather than over already-loaded rows, and options each

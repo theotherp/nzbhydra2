@@ -5556,6 +5556,298 @@ describe("SearchResults phone sort menu", () => {
     });
 });
 
+// --- FM-186: the per-row send-to-downloader buttons ----------------------
+//
+// Legacy's `addable-nzb` control, one per enabled compatible downloader, in
+// every row's Actions cell. The send itself is the bulk bar's own flow
+// (`runSendFlow`), so what these cases pin is the row control's own contract:
+// which buttons exist, what one click sends, what it does with the answer,
+// and the Actions track the buttons have to fit into.
+describe("SearchResults per-row send to downloader", () => {
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+        delete window.__NZBHYDRA_BOOTSTRAP__;
+    });
+
+    // Routed by URL rather than by call order: the bulk bar fetches the first
+    // downloader's categories on mount, so a positional mock would make every
+    // assertion below depend on when that unrelated request lands.
+    function routedFetch(addNzbsBody: string, reasonRequired = false) {
+        return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
+            (url) => {
+                if (url.endsWith("/categories")) {
+                    return Promise.resolve(jsonResponse([]));
+                }
+                if (url.includes("checkDuplicateMovieDownload")) {
+                    return Promise.resolve(jsonResponse({reasonRequired}));
+                }
+                if (url.includes("addNzbs")) {
+                    return Promise.resolve(
+                        new Response(addNzbsBody, {
+                            headers: {"Content-Type": "application/json"},
+                        }),
+                    );
+                }
+                return Promise.resolve(new Response("", {status: 404}));
+            },
+        );
+    }
+
+    function bootstrapWith(downloaders: unknown[]) {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {downloaders}},
+        };
+    }
+
+    const sab = {name: "SAB", enabled: true, downloaderType: "SABNZBD"};
+    const nzbget = {name: "NZBGet", enabled: true, downloaderType: "NZBGET"};
+    const torbox = {name: "Torbox", enabled: true, downloaderType: "TORBOX"};
+
+    function sendButtons(row?: HTMLElement) {
+        return (row ? within(row) : screen).queryAllByTestId(
+            "result-send-to-downloader",
+        );
+    }
+
+    it("should render one send button per enabled compatible downloader, after the direct download", () => {
+        bootstrapWith([sab, nzbget]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const buttons = sendButtons();
+        expect(
+            buttons.map((button) => button.getAttribute("data-downloader")),
+        ).toEqual(["SAB", "NZBGet"]);
+        for (const [name, button] of [
+            ["SAB", buttons[0]],
+            ["NZBGet", buttons[1]],
+        ] as const) {
+            // The accessible name and the tooltip are the same string, so
+            // what is announced and what is shown can never diverge.
+            expect(button).toHaveAttribute("aria-label", `Send to ${name}`);
+            fireEvent.mouseOver(button);
+            expect(button).toHaveAccessibleName(`Send to ${name}`);
+            const glyph = within(button).getByRole("presentation", {
+                hidden: true,
+            });
+            expect(glyph).toHaveAttribute("width", "16");
+            expect(glyph).toHaveAttribute("height", "16");
+        }
+        // Legacy's order: the direct download first, then one icon per
+        // downloader, all inside the row's non-wrapping icon group.
+        const download = screen.getByTestId("download-nzb");
+        expect(
+            download.compareDocumentPosition(buttons[0]) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(buttons[0].closest("span")?.parentElement).toBe(
+            download.parentElement,
+        );
+    });
+
+    it("should offer a TORBOX result only its TORBOX downloader, and a torrent none at all", () => {
+        bootstrapWith([sab, torbox]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORBOX", true)} />,
+        );
+        const rowFor = (title: string) =>
+            screen.getByText(title).closest("tr") as HTMLElement;
+        expect(
+            sendButtons(rowFor("NZB result")).map((button) =>
+                button.getAttribute("data-downloader"),
+            ),
+        ).toEqual(["SAB", "Torbox"]);
+        expect(
+            sendButtons(rowFor("TORBOX result")).map((button) =>
+                button.getAttribute("data-downloader"),
+            ),
+        ).toEqual(["Torbox"]);
+        cleanup();
+        bootstrapWith([sab, torbox]);
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT", true)} />,
+        );
+        expect(sendButtons(rowFor("TORRENT result"))).toHaveLength(0);
+    });
+
+    it("should render no send button and keep the bare Actions track with no downloader configured", () => {
+        bootstrapWith([]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(sendButtons()).toHaveLength(0);
+        expect(actionsTrackRules()).toEqual({
+            narrow: "14.96%",
+            pixel: "140px",
+        });
+    });
+
+    it("should widen the Actions track by one slot per downloader in both width sets", () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(actionsTrackRules()).toEqual({
+            narrow: "17.95%",
+            pixel: "168px",
+        });
+        cleanup();
+        bootstrapWith([sab, nzbget]);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(actionsTrackRules()).toEqual({
+            narrow: "20.94%",
+            pixel: "196px",
+        });
+        // The percentage is the pixel track over the 936px basis table, so
+        // both sets describe the same table there.
+        expect(196 / 936).toBeCloseTo(0.2094, 4);
+    });
+
+    it("should send one row through the shared flow and raise its Downloaded chip", async () => {
+        bootstrapWith([{...sab, defaultCategory: "Movies HD"}]);
+        const fetchImplementation = routedFetch(
+            '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+        await vi.waitFor(() =>
+            expect(
+                fetchImplementation.mock.calls.some(([url]) =>
+                    String(url).includes("addNzbs"),
+                ),
+            ).toBe(true),
+        );
+        const [, addInit] = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).includes("addNzbs"),
+        ) as [string, RequestInit];
+        expect(JSON.parse(String(addInit.body))).toEqual({
+            downloaderName: "SAB",
+            // No per-row picker, so the configured default is what the
+            // client resolves and sends -- the same resolution the bulk bar
+            // makes for an unset category choice.
+            category: "Movies HD",
+            reason: null,
+            searchResults: [
+                {
+                    searchResultId: "1",
+                    mappedCategory: "Movies",
+                    originalCategory: undefined,
+                },
+            ],
+        });
+        // The duplicate probe still carries no category.
+        const [, probeInit] = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).includes("checkDuplicateMovieDownload"),
+        ) as [string, RequestInit];
+        expect(requestCategory(probeInit)).toBeNull();
+        const row = screen.getByTestId("search-result-row");
+        await vi.waitFor(() =>
+            expect(within(row).getByText("Downloaded")).toBeVisible(),
+        );
+        expect(await screen.findByText("Sent to SAB.")).toBeVisible();
+    });
+
+    it("should send nothing when the duplicate confirmation is cancelled", async () => {
+        bootstrapWith([sab]);
+        const fetchImplementation = routedFetch("{}", true);
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+        expect(
+            await screen.findByText("Duplicate movie download"),
+        ).toBeVisible();
+        fireEvent.click(screen.getByRole("button", {name: "Cancel"}));
+        await vi.waitFor(() =>
+            expect(
+                screen.queryByText("Duplicate movie download"),
+            ).not.toBeInTheDocument(),
+        );
+        expect(
+            fetchImplementation.mock.calls.some(([url]) =>
+                String(url).includes("addNzbs"),
+            ),
+        ).toBe(false);
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should report a rejected send and leave the row unmarked", async () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal(
+            "fetch",
+            routedFetch(
+                '{"successful":false,"message":"Downloader rejected the NZB.","addedIds":[],"missedIds":[],"invalidIds":[]}',
+            ),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+        expect(
+            await screen.findByText("Downloader rejected the NZB."),
+        ).toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    // A successful response that does not name this row's id is legacy's own
+    // `-error` case (`addable-nzb.js` tested `addedIds.indexOf(...)`, not just
+    // `successful`), and it must not raise the chip.
+    it("should not mark a row whose id is missing from a successful response", async () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal(
+            "fetch",
+            routedFetch(
+                '{"successful":true,"addedIds":[99],"missedIds":[1],"invalidIds":[]}',
+            ),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+        expect(
+            await screen.findByText("The download action failed."),
+        ).toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+});
+
+/**
+ * The two Actions `<col>` widths the table currently rendered declares -- the
+ * pixel one (used at and above 1280px) and the percentage one below it. Both
+ * are emotion rules on the table's own `sx` rather than inline `<col>` widths
+ * (an inline width cannot be swapped at a breakpoint), and jsdom resolves no
+ * media query, so the rules' text is what is read here. Filtered by the
+ * table's own generated class, because emotion's stylesheet keeps every rule
+ * an earlier render in this document inserted.
+ */
+function actionsTrackRules(): {narrow: string; pixel: string} {
+    const classes = [
+        ...screen.getByTestId("search-results-table").classList,
+    ].filter((name) => name.startsWith("css-"));
+    const widths = [...document.querySelectorAll("style")]
+        .flatMap((style) => (style.textContent ?? "").split("}"))
+        .filter(
+            (rule) =>
+                rule.includes("col:nth-of-type(8){") &&
+                classes.some((name) => rule.includes(`.${name} `)),
+        )
+        .map((rule) => rule.split("width:")[1]?.replace(";", "") ?? "");
+    const pixel = widths.filter((width) => width.endsWith("px"));
+    const narrow = widths.filter((width) => width.endsWith("%"));
+    if (pixel.length !== 1 || narrow.length !== 1) {
+        throw new Error(`Unexpected Actions track rules: ${widths.join(", ")}`);
+    }
+    return {narrow: narrow[0], pixel: pixel[0]};
+}
+
 /**
  * FM-150 fixture: "Alpha release" plus an unrelated "Zulu release" that can
  * never expand anything, with the alpha group shaped to carry the requested

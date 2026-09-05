@@ -23,19 +23,19 @@ import {denseControlFontSize} from "../../../app/theme";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
-    addFilesRequest,
     categories,
+    configuredDefaultCategory,
     configuredDownloaders,
     downloadId,
     downloadSettings,
     downloadZip,
+    isCompatibleWithDownloader,
     prepareZip,
-    requiresDuplicateReason,
     saveNzbs,
     saveOrSendTorrents,
-    sendToDownloader,
 } from "../../../domain/downloads/actions";
 import type {Downloader} from "../../../domain/downloads/actions";
+import {runSendFlow} from "./sendFlow";
 
 // The mock's primary bulk-action button (`sendToDownloader`): filled
 // `primary.main`/`primary.contrastText` when enabled,
@@ -239,47 +239,29 @@ export function DownloadActions({
                     "None of the selected results can be sent to this downloader.",
             });
         }
-        const request = addFilesRequest(
+        // FM-186: the duplicate probe, its confirmation, the client-side
+        // category resolution, the add request and every failure toast are
+        // `runSendFlow` (`sendFlow.ts`) now, so this bar and the per-row send
+        // buttons run one flow rather than two copies of it. What stays here
+        // is what is specific to a *bulk* send: the summary toast and marking
+        // every id the server reports back.
+        const outcome = await runSendFlow({
+            category,
+            dialogs,
             downloader,
-            sendableResults,
-            null,
-            null,
-        );
-        try {
-            // The duplicate probe deliberately carries `category: null`, as
-            // legacy's `checkIfDuplicateMovieDownloadRequiresReason` did: it
-            // asks only whether this movie was downloaded before. The resolved
-            // category is attached below, for the add request alone.
-            if (await requiresDuplicateReason(transport, request)) {
-                const decision = await dialogs.confirm({
-                    title: "Duplicate movie download",
-                    message:
-                        "This movie was downloaded before. Do you want to send it to the downloader?",
-                    confirmLabel: "Send",
-                });
-                if (decision === "cancelled") {
-                    return;
-                }
-            }
-            // An unset selection (`null`, the "Use downloader default" option)
-            // resolves here, client-side, to the downloader's configured
-            // default -- never on the server, which special-cases only the
-            // three sentinel strings and forwards anything else, `null`
-            // included, unchanged. A downloader with no configured default
-            // still sends `null`, and the sentinels ride through verbatim so
-            // the server can keep interpreting them.
-            request.category =
-                category ?? configuredDefaultCategory(downloader);
-            await execute(
-                () => sendToDownloader(transport, request),
-                "Successfully added selected results.",
-            );
-        } catch {
-            toasts.showToast({
-                severity: "error",
-                message: "Unable to check duplicate downloads.",
-            });
+            onBusyChange: setBusy,
+            results: sendableResults,
+            toasts,
+            transport,
+        });
+        if (outcome.status !== "sent") {
+            return;
         }
+        onDownloaded(outcome.response.addedIds);
+        toasts.showToast({
+            severity: "success",
+            message: "Successfully added selected results.",
+        });
     };
     const copy = async () => {
         if (!results.length) {
@@ -754,24 +736,4 @@ export function bootstrapBase(): string {
         typeof value.baseUrl === "string"
         ? value.baseUrl
         : "/";
-}
-
-/**
- * The downloader's configured default category, or `null` when it has none.
- * An unconfigured `defaultCategory` reaches the UI as `undefined` (the Java
- * field has no initializer) or as `""`; both mean "no default", and both must
- * send `null` rather than an empty category. FM-114.
- */
-function configuredDefaultCategory(downloader: Downloader): string | null {
-    return downloader.defaultCategory ? downloader.defaultCategory : null;
-}
-
-function isCompatibleWithDownloader(
-    result: SearchResult,
-    downloader: Downloader,
-): boolean {
-    if (result.downloadType === "TORBOX") {
-        return downloader.downloaderType === "TORBOX";
-    }
-    return result.downloadType !== "TORRENT";
 }

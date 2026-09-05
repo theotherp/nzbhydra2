@@ -27,6 +27,10 @@ export class TestEnvironment {
         process.env.SABNZBD_MOCK_API_KEY || "deterministic-sabnzbd-key";
     readonly sabnzbdMockCategory =
         process.env.SABNZBD_MOCK_CATEGORY || "Deterministic Category";
+    // FM-186: the second enabled downloader the per-row send buttons are
+    // asserted against (`configureSabnzbdMock({withNzbGet: true})`), served by
+    // the mockserver's `/nzbget/jsonrpc`.
+    readonly nzbgetMockName = "Deterministic NZBGet";
     readonly downloaderIntegrationQuery = "downloader-integration-nzb";
     readonly downloaderIntegrationNzbTitle = "Hydra Downloader Integration NZB";
     readonly downloaderIntegrationNzbContent =

@@ -39,6 +39,10 @@ import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
 import {ToastContext} from "../../../components/toasts/toasts";
+import {
+    configuredDownloaders,
+    type Downloader,
+} from "../../../domain/downloads/actions";
 import {writeItem} from "../../../domain/storage/browserStorage";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase, DownloadActions} from "./DownloadActions";
@@ -65,6 +69,7 @@ import type {
     ResultGroup,
 } from "./resultTable";
 import {
+    actionsTrackWidth,
     activeFilterCount,
     defaultFilters,
     duplicateGroupKey,
@@ -214,16 +219,24 @@ const ROW_OVERSCAN = 8;
 //
 // `undefined` means "declare no width for this track"; the entry still
 // exists so TABLE_COLUMN_COUNT and the rendered `<col>` list stay in step.
-const TABLE_COLUMN_WIDTHS: Array<number | string | undefined> = [
-    40,
-    undefined,
-    90,
-    98,
-    65,
-    90,
-    52,
-    140,
-];
+//
+// FM-186 makes the last track a function of how many enabled downloaders the
+// row's Actions cell has to hold send buttons for -- `actionsTrackWidth`, the
+// single source both this set and the percentage set below derive from.
+function tableColumnWidths(
+    downloaderCount: number,
+): Array<number | string | undefined> {
+    return [
+        40,
+        undefined,
+        90,
+        98,
+        65,
+        90,
+        52,
+        actionsTrackWidth(downloaderCount),
+    ];
+}
 
 // The same tracks below the basis width, as percentages of the table.
 //
@@ -236,16 +249,29 @@ const TABLE_COLUMN_WIDTHS: Array<number | string | undefined> = [
 // instead of Title alone being crushed to nothing. Headers clip with an
 // ellipsis at the narrow end, as they did before FM-175; the "every header
 // fits" criterion is a criterion at the 1280x800 basis, not below it.
-const NARROW_TABLE_COLUMN_WIDTHS: Array<number | string | undefined> = [
-    40,
-    undefined,
-    "9.62%",
-    "10.47%",
-    "6.94%",
-    "9.62%",
-    "5.56%",
-    "14.96%",
-];
+function narrowTableColumnWidths(
+    downloaderCount: number,
+): Array<number | string | undefined> {
+    return [
+        40,
+        undefined,
+        "9.62%",
+        "10.47%",
+        "6.94%",
+        "9.62%",
+        "5.56%",
+        // Computed rather than written out, so it cannot drift from the pixel
+        // track above: 140px is 14.96%, and each downloader's 28px slot adds
+        // ~2.99% (one downloader 17.95%, two 20.94%).
+        `${((actionsTrackWidth(downloaderCount) / TABLE_BASIS_WIDTH) * 100).toFixed(2)}%`,
+    ];
+}
+
+// The basis table's width in px, i.e. what a 1280x800 viewport leaves beside
+// the docked refine sidebar. Every percentage above is its own pixel track
+// over this width, which is what makes the two sets the same table at the
+// basis.
+const TABLE_BASIS_WIDTH = 936;
 
 // The viewport width the pixel tracks above are measured at, and the width
 // at or above which they are used. It is deliberately the same 1280 as the
@@ -281,7 +307,7 @@ function columnTrackRules(
 // The table's fixed `<colgroup>` track count, which the spacer rows have to
 // span so the fixed layout is not disturbed by a row with a different cell
 // count.
-const TABLE_COLUMN_COUNT = TABLE_COLUMN_WIDTHS.length;
+const TABLE_COLUMN_COUNT = tableColumnWidths(0).length;
 
 // FM-162: above this many *available* results, "Load all results" asks first.
 // A single search legitimately reports tens of thousands of available results,
@@ -356,6 +382,25 @@ export function SearchResults({
     const indexerColors = useMemo(
         () => indexerColorsFromSafeConfig(effectiveSafeConfig),
         [effectiveSafeConfig],
+    );
+    // FM-186: the enabled downloaders every row renders a send button for.
+    // Live (ADR-0017) and memoized for the same two reasons as the colours
+    // above -- a downloader enabled or removed in Config -> Downloading
+    // reaches already-rendered rows without a reload, and `ResultRow`'s `memo`
+    // needs one stable reference rather than the config object itself.
+    const downloaders = useMemo(
+        (): Downloader[] => configuredDownloaders(effectiveSafeConfig),
+        [effectiveSafeConfig],
+    );
+    // The two `<colgroup>` track sets, both derived from that count so they
+    // still describe the same table at the 936px basis.
+    const pixelColumnWidths = useMemo(
+        () => tableColumnWidths(downloaders.length),
+        [downloaders.length],
+    );
+    const narrowColumnWidths = useMemo(
+        () => narrowTableColumnWidths(downloaders.length),
+        [downloaders.length],
     );
     // FM-177 (ADR-0054): covers render at `searching.coverSize`, the width
     // Config -> Searching already owns ("Cover width", help text "when
@@ -1685,12 +1730,10 @@ export function SearchResults({
                                 sx={(theme) => ({
                                     tableLayout: "fixed",
                                     width: "100%",
-                                    ...columnTrackRules(
-                                        NARROW_TABLE_COLUMN_WIDTHS,
-                                    ),
+                                    ...columnTrackRules(narrowColumnWidths),
                                     [theme.breakpoints.up(
                                         TABLE_PIXEL_TRACK_BREAKPOINT,
-                                    )]: columnTrackRules(TABLE_COLUMN_WIDTHS),
+                                    )]: columnTrackRules(pixelColumnWidths),
                                     // FM-162: the two virtualization spacer
                                     // rows carry nothing but height -- no
                                     // padding, no card separator at <768px.
@@ -1986,8 +2029,11 @@ export function SearchResults({
                                           tracks leaves Title 361px, i.e. a
                                           345px content box -- up from
                                           FM-150's 349px track / 317px box,
-                                          and clear of the 340px this task
-                                          was given as its floor.
+                                          and clear of the 340px FM-175 was
+                                          given as its floor. That is the
+                                          zero-downloader table; see the
+                                          Actions bullet below for what one
+                                          and two downloaders leave.
                                         - The named tracks each clear their
                                           own header label's measured width
                                           (uppercase 11px plus the sort glyph
@@ -2006,13 +2052,34 @@ export function SearchResults({
                                           `nowrap`, so nothing reflows and
                                           the value stays legible -- accepted
                                           there, unchanged here.
-                                        - Actions is 140px because it holds a
-                                          fixed inventory: four 24px detail
-                                          icons plus the 24px download, 5x24
-                                          plus four 4px gaps = 136px, so the
-                                          icon group never wraps and the
+                                        - Actions is 140px for its fixed
+                                          inventory: four 24px detail icons
+                                          plus the 24px download, 5x24 plus
+                                          four 4px gaps = 136px, so the icon
+                                          group never wraps and the
                                           "Downloaded" chip still has a line
-                                          to drop to.
+                                          to drop to. FM-186 (owner request,
+                                          2026-09-05) adds one 24px send
+                                          button and one 4px gap per enabled
+                                          downloader to that same group, so
+                                          the track is
+                                          `actionsTrackWidth(count)` =
+                                          140 + 28*count -- 168px at one
+                                          downloader, 196px at two -- and
+                                          both width sets are derived from
+                                          that one function rather than
+                                          restated.
+                                        - Title absorbs the difference, as
+                                          the only track with no width: its
+                                          content box is 345px with no
+                                          downloader, 317px with one and
+                                          289px with two. The 289px is below
+                                          FM-175's 340px floor and is
+                                          accepted by this request, which
+                                          asked for the send buttons on the
+                                          row and for the track to grow with
+                                          the downloader count rather than
+                                          for the icons to wrap.
 
                                         These `<col>` elements carry no width
                                         of their own: both sets of tracks are
@@ -2026,12 +2093,12 @@ export function SearchResults({
                                         add up to more table than there is:
                                         a fixed layout does not scale them
                                         down, it overflows, so
-                                        `NARROW_TABLE_COLUMN_WIDTHS` holds
+                                        `narrowTableColumnWidths` holds
                                         the same shape as percentages there
                                         and ADR-0011's "no horizontal scroll"
                                         stays true at every width. */}
                                 <colgroup>
-                                    {TABLE_COLUMN_WIDTHS.map((_, index) => (
+                                    {pixelColumnWidths.map((_, index) => (
                                         <col key={index} />
                                     ))}
                                 </colgroup>
@@ -2391,6 +2458,7 @@ export function SearchResults({
                                                 downloaded={downloadedIds.has(
                                                     row.result.searchResultId,
                                                 )}
+                                                downloaders={downloaders}
                                                 duplicateExpanded={
                                                     row.duplicateExpanded
                                                 }

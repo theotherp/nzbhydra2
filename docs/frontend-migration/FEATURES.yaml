@@ -270,6 +270,16 @@ features:
       # is what closes FM-177's enlarge gap. Rows that render a tile carry
       # `data-has-cover` and middle-align; every other row keeps FM-175's top
       # alignment.
+      # 2026-09-05 (FM-186, owner request): the Actions track is no longer a
+      # constant. It is `actionsTrackWidth(count)` = 140 + 28 * the enabled
+      # downloader count (`resultTable.ts`) -- one 24px send button plus its
+      # 4px gap per downloader on top of FM-175's 140px icon inventory -- and
+      # both width sets are derived from it, the percentages as that width
+      # over the 936px basis table. Title still declares no width and absorbs
+      # the difference: 345px of content with no downloader, 317px with one,
+      # 289px with two, the last accepted by that request below FM-175's
+      # 340px floor. The buttons themselves are F-SEARCH-DOWNLOADS'
+      # `result-send-to-downloader`.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
@@ -462,6 +472,7 @@ features:
     legacy_sources:
       - core/ui-src/js/nzb-download-service.js
       - core/ui-src/js/directives/addable-nzb.js
+      - core/ui-src/js/directives/addable-nzbs.js
       - core/ui-src/js/directives/download-nzbs-button.js
       - core/ui-src/js/directives/download-nzbzip-button.js
       - core/ui-src/js/directives/copy-links-button.js
@@ -509,6 +520,19 @@ features:
       # their unchanged gating and disabled rules. `save-search` moves to
       # toolbar row 1 as an icon there, keeping its `#save-search` id, so it
       # stays reachable without a selection.
+      # 2026-09-05 (FM-186, owner request): legacy's per-row `addable-nzb`
+      # control is migrated. Every row's Actions cell renders one
+      # `result-send-to-downloader` icon button per enabled, compatible
+      # downloader (`data-downloader` names it; `aria-label` and tooltip are
+      # both `Send to {name}`), placed after the direct-download icon in the
+      # non-wrapping icon group. It sends that one result through the same
+      # flow the bulk bar uses (`sendFlow.ts`'s `runSendFlow` -- duplicate
+      # probe, confirmation, client-side category resolution, `addNzbs`), and
+      # raises the row's `Downloaded` chip only when the response's
+      # `addedIds` names this result, exactly as legacy's `-success` icon
+      # variant did. The Actions `<colgroup>` track grows with the enabled
+      # downloader count (`actionsTrackWidth` in `resultTable.ts`).
+      - result-send-to-downloader
       - send-to-downloader
       - send-to-downloader-options
       - send-to-downloader-menu
@@ -519,7 +543,8 @@ features:
       - results-bulk-actions
     parity: partial
     gaps:
-      - deliberate - no per-row send-to-downloader control; legacy's `addable-nzb.js` put one on every row, React sends only from the bulk bar against the current selection. Retiring or reproducing it is an open question no packet has taken (FM-128 was explicitly barred from deciding it).
+      - deliberate - no per-row category picker; legacy's `addable-nzb` could be configured to ask for a category per send (`alwaysAsk`, `addable-nzb-modal.html` through `DownloaderCategoriesService.openCategorySelection`). React's row control always resolves the downloader's configured default, which is what the bulk bar's unset category choice does too; the bulk bar's category `Select` remains the only place a category is chosen (FM-186).
+      - deliberate - no per-downloader icon override; legacy let a downloader configure an `iconCssClass` that replaced the row icon with that Font Awesome glyph (`addable-nzb.js`). React ships no Font Awesome, so the row icon is always the downloader type's own mark (FM-186).
     # 2026-08-23: `download-history route migration` removed -- that route is
     # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
     # claimed missing capability that exists.
@@ -527,8 +552,10 @@ features:
     # promoted. Until FM-128 the bulk actions were not merely partial but
     # broken on success -- a safe-integer bound in the shared response schema
     # rejected every live response (see the four API-DOWNLOAD-* notes). That
-    # is fixed and now covered at both levels; the per-row gap above is what
-    # keeps this record short of full parity.
+    # is fixed and now covered at both levels.
+    # 2026-09-05 (FM-186): the per-row send control that kept this record
+    # short of parity now ships; what remains partial is the two narrower
+    # gaps above (the per-send category prompt and the icon override).
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:

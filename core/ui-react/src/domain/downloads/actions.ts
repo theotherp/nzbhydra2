@@ -144,6 +144,43 @@ export function configuredDownloaders(safeConfig: unknown): Downloader[] {
         .map((value) => value as Downloader);
 }
 
+/**
+ * The downloader's configured default category, or `null` when it has none.
+ * An unconfigured `defaultCategory` reaches the UI as `undefined` (the Java
+ * field has no initializer) or as `""`; both mean "no default", and both must
+ * send `null` rather than an empty category. FM-114.
+ *
+ * FM-186 moved this here from `features/search/results/DownloadActions.tsx`,
+ * unchanged: the bulk bar and the per-row send control both resolve a
+ * category with it, so it is downloader domain logic rather than one
+ * component's private helper.
+ */
+export function configuredDefaultCategory(
+    downloader: Downloader,
+): string | null {
+    return downloader.defaultCategory ? downloader.defaultCategory : null;
+}
+
+/**
+ * Whether one result can be sent to one downloader at all.
+ *
+ * Legacy's `addable-nzbs.js` filtered the row's downloader list with the same
+ * two rules, and the bulk bar has enforced them since FM-159: a TORBOX result
+ * goes only to a TORBOX downloader, and a torrent goes to no downloader at all
+ * (torrents are saved or sent by `saveOrSendTorrents` instead). Moved here by
+ * FM-186 with its semantics untouched, for the same reason as
+ * `configuredDefaultCategory` above.
+ */
+export function isCompatibleWithDownloader(
+    result: SearchResult,
+    downloader: Downloader,
+): boolean {
+    if (result.downloadType === "TORBOX") {
+        return downloader.downloaderType === "TORBOX";
+    }
+    return result.downloadType !== "TORRENT";
+}
+
 export function downloadSettings(safeConfig: unknown): {
     saveNzbs: boolean;
     saveTorrents: boolean;

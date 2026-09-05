@@ -24,8 +24,10 @@ import {memo, useRef, useState} from "react";
 
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
+import type {Downloader} from "../../../domain/downloads/actions";
 import {DirectDownloadActions} from "./DownloadActions";
 import {ResultDetailLinks} from "./ResultDetailLinks";
+import {SendToDownloaderButtons} from "./SendToDownloaderButtons";
 import {formatResultDetails, formatResultSize} from "./resultTable";
 
 /**
@@ -123,6 +125,7 @@ export const ResultRow = memo(function ResultRow({
     coverWidth,
     dereferer,
     downloaded,
+    downloaders,
     duplicateExpanded,
     duplicateKey,
     expandSlots,
@@ -152,6 +155,12 @@ export const ResultRow = memo(function ResultRow({
     coverWidth?: number;
     dereferer: unknown;
     downloaded: boolean;
+    // FM-186: the enabled downloaders whose send buttons this row's Actions
+    // cell renders, as one reference the parent memoizes on the live safe
+    // config -- for the same reason `indexerColors` is passed that way rather
+    // than as the config itself: this row is `memo`ized, and a config object
+    // is rebuilt (name-for-name identical) by every unrelated config save.
+    downloaders: Downloader[];
     duplicateExpanded: boolean;
     duplicateKey: string;
     // FM-150/FM-176: which expand-control slots every row of the current
@@ -521,6 +530,22 @@ export const ResultRow = memo(function ResultRow({
                                 onDownloaded(result.searchResultId)
                             }
                             result={result}
+                        />
+                        {/* FM-186: legacy's per-downloader send icons, in
+                            legacy's own position -- after the direct download
+                            (`search-result.html`'s row: the direct link, then
+                            one `addable-nzb` per enabled downloader). Inside
+                            the non-wrapping group, so they stay on the
+                            download's line; the Actions track is widened by
+                            one slot per downloader to hold them
+                            (`actionsTrackWidth` in `resultTable.ts`). */}
+                        <SendToDownloaderButtons
+                            downloaders={downloaders}
+                            onDownloaded={() =>
+                                onDownloaded(result.searchResultId)
+                            }
+                            result={result}
+                            transport={transport}
                         />
                     </Stack>
                     {downloaded && (

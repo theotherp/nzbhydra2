@@ -606,3 +606,25 @@ export function formatResultDetails(result: {
     }
     return parts.join(" / ");
 }
+
+/**
+ * The Actions column's track width, in px, for a given count of enabled
+ * downloaders (FM-186).
+ *
+ * FM-175 sized the track at 140px for a fixed inventory: four 24px detail
+ * icons plus the 24px direct download, i.e. 5x24 plus four 4px gaps = 136px,
+ * so the icon group never wraps and the "Downloaded" chip still has a line to
+ * drop to. Every enabled downloader now adds one more 24px `size="small"`
+ * button and one more 4px gap to that same non-wrapping group, so the track
+ * grows by exactly 28px per downloader and the 140px inventory is kept
+ * whole.
+ *
+ * This is the single source for *both* of the table's width sets: the pixel
+ * tracks used at and above the 1280px basis, and the percentages used below
+ * it, which are this width over the 936px basis table. Typing either set by
+ * hand would let them disagree at the basis, which is the one width where
+ * they must be the same table to the pixel.
+ */
+export function actionsTrackWidth(downloaderCount: number): number {
+    return 140 + 28 * downloaderCount;
+}

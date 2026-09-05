@@ -1,6 +1,7 @@
 import {describe, expect, it, vi} from "vitest";
 
 import {
+    actionsTrackWidth,
     activeFilterCount,
     ageInDays,
     defaultFilters,
@@ -644,5 +645,31 @@ describe("formatResultDetails", () => {
         expect(formatResultDetails({grabs: 0, seeders: 0, peers: 0})).toBe(
             "0 / 0 / 0",
         );
+    });
+});
+
+// FM-186: the Actions track is the row's icon inventory, so it grows by one
+// 24px send button plus its 4px gap for every enabled downloader. Both of the
+// table's width sets are derived from this one function -- the pixel tracks
+// used at and above the 1280px basis, and the percentages below it, which are
+// this width over the 936px basis table -- so a hand-written second set could
+// not disagree with it at the basis.
+describe("actions track width", () => {
+    it("should keep FM-175's icon inventory with no downloader configured", () =>
+        expect(actionsTrackWidth(0)).toBe(140));
+    it("should add one 24px button and one 4px gap per enabled downloader", () => {
+        expect(actionsTrackWidth(1)).toBe(168);
+        expect(actionsTrackWidth(2)).toBe(196);
+    });
+    it("should agree with the narrow percentages at the 936px basis table", () => {
+        for (const [count, percentage] of [
+            [0, "14.96"],
+            [1, "17.95"],
+            [2, "20.94"],
+        ] as const) {
+            expect(((actionsTrackWidth(count) / 936) * 100).toFixed(2)).toBe(
+                percentage,
+            );
+        }
     });
 });

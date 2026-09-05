@@ -215,6 +215,215 @@ test.describe("Downloads", () => {
         );
     });
 
+    // FM-186: the same workflow driven from the row itself -- legacy's
+    // `addable-nzb` icon, which React never had. It makes the bulk case's
+    // claims again rather than trusting that "it is the same flow": the
+    // request body, the response body, the SABnzbd recording and the row's
+    // own `Downloaded` chip are what prove the row control reaches the real
+    // downloader with a resolved category, and they are exactly what would
+    // stay green if the shared flow were wired up wrongly for one caller.
+    test("should send a single result to SABnzbd from its own row", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.resetSabnzbdRecording();
+        expect(await hydra.getSabnzbdRecording()).toEqual({});
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const sendButton = resultRow.getByRole("button", {
+            name: "Send to Deterministic SABnzbd",
+        });
+        await expect(sendButton).toBeVisible();
+        // Visual Gate (FM-186): the row with one enabled downloader, before
+        // the send.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(sendButton).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-one-downloader-desktop",
+            ),
+        });
+        const duplicate = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/downloader/checkDuplicateMovieDownload",
+        );
+        const add = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/downloader/addNzbs",
+        );
+        await sendButton.click();
+
+        const duplicateCheckRequest = (await duplicate)
+            .request()
+            .postDataJSON() as {
+            searchResults?: unknown[];
+            category?: unknown;
+            reason?: unknown;
+        };
+        expect((await duplicate).status()).toBe(200);
+        expect(duplicateCheckRequest.searchResults).toHaveLength(1);
+        expect(duplicateCheckRequest.category).toBeNull();
+        expect(duplicateCheckRequest.reason).toBeNull();
+
+        const addResponse = await add;
+        expect(addResponse.status()).toBe(200);
+        const addNzbRequest = addResponse.request().postDataJSON() as {
+            downloaderName?: unknown;
+            searchResults?: unknown[];
+            category?: unknown;
+        };
+        expect(addNzbRequest.downloaderName).toBe("Deterministic SABnzbd");
+        // One row, one entry -- not the whole selection, and not the whole
+        // result set.
+        expect(addNzbRequest.searchResults).toHaveLength(1);
+        // The row control has no category picker (legacy's `alwaysAsk` modal
+        // is a recorded gap), so it resolves the downloader's configured
+        // default exactly as the bulk bar does for an unset choice.
+        expect(addNzbRequest.category).toBe(
+            testEnvironment.sabnzbdMockCategory,
+        );
+        const addBody = (await addResponse.json()) as {
+            successful?: boolean;
+            addedIds?: unknown[];
+            invalidIds?: unknown[];
+            missedIds?: unknown[];
+        };
+        expect(addBody.successful).toBe(true);
+        expect(addBody.addedIds).toHaveLength(1);
+        expect(addBody.invalidIds).toEqual([]);
+        expect(addBody.missedIds).toEqual([]);
+        // Legacy marked the row's own icon `-success` only when the response
+        // named this result's id; React's equivalent is the row's chip
+        // (ADR-0006), raised by the same test.
+        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(
+            page.getByText("Sent to Deterministic SABnzbd."),
+        ).toBeVisible();
+        // Visual Gate (FM-186): the row after a successful send from it.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-downloaded-row-desktop",
+            ),
+        });
+
+        const recording = await hydra.getSabnzbdRecording();
+        expect(recording.method).toBe("POST");
+        expect(recording.apiKey).toBe(testEnvironment.sabnzbdMockApiKey);
+        expect(recording.multipartFilename).toBe(
+            `${testEnvironment.downloaderIntegrationNzbTitle}.nzb`,
+        );
+        expect(recording.multipartContent).toBe(
+            testEnvironment.downloaderIntegrationNzbContent,
+        );
+        expect(recording.queryParameters).toEqual(
+            expect.objectContaining({
+                mode: "addfile",
+                apikey: testEnvironment.sabnzbdMockApiKey,
+                cat: testEnvironment.sabnzbdMockCategory,
+                nzbname: `${testEnvironment.downloaderIntegrationNzbTitle}.nzb`,
+            }),
+        );
+    });
+
+    // FM-186: the Actions track grows by one 24px button plus its 4px gap per
+    // enabled downloader (`actionsTrackWidth`), and the point of that formula
+    // is that the row's non-wrapping icon group still fits. Two enabled
+    // downloaders is the count this repository's configuration can produce
+    // against real mocks, and a browser is the only place the claim means
+    // anything -- jsdom resolves neither the `<colgroup>` rules nor a wrap.
+    test("should fit two downloaders' send buttons on the row's icon line without overflow", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock({withNzbGet: true});
+        // The shell reads the safe configuration once at bootstrap and
+        // refreshes it only after a save made *in this browser* (ADR-0017), so
+        // a downloader added through the API after `beforeEach`'s navigation
+        // needs a reload to reach the rendered rows.
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const sendButtons = resultRow.getByTestId("result-send-to-downloader");
+        await expect(sendButtons).toHaveCount(2);
+        await expect(
+            resultRow.getByRole("button", {
+                name: "Send to Deterministic SABnzbd",
+            }),
+        ).toBeVisible();
+        await expect(
+            resultRow.getByRole("button", {
+                name: `Send to ${testEnvironment.nzbgetMockName}`,
+            }),
+        ).toBeVisible();
+        for (const viewport of [
+            {width: 1280, height: 800},
+            {width: 1024, height: 768},
+        ]) {
+            await page.setViewportSize(viewport);
+            const download = await resultRow
+                .getByTestId("download-nzb")
+                .boundingBox();
+            expect(download).not.toBeNull();
+            for (const index of [0, 1]) {
+                const box = await sendButtons.nth(index).boundingBox();
+                expect(box).not.toBeNull();
+                // Same line as the direct download: a wrapped group would put
+                // this button a row height lower.
+                expect(box?.y).toBeCloseTo(download?.y as number, 0);
+            }
+            const overflow = await page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth -
+                    document.documentElement.clientWidth,
+            );
+            expect(overflow).toBeLessThanOrEqual(1);
+        }
+        // Visual Gate (FM-186): the two-downloader row at both evidence
+        // viewports -- desktop, and the phone card layout where the Actions
+        // cell is a block rather than a track.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(sendButtons).toHaveCount(2);
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-two-downloaders-desktop",
+            ),
+        });
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await expect(sendButtons).toHaveCount(2);
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-two-downloaders-mobile",
+            ),
+        });
+    });
+
     test("should provide the React direct NZB browser transfer", async ({
         page,
     }) => {

@@ -2,8 +2,10 @@ import {describe, expect, it, vi} from "vitest";
 import {
     addFilesRequest,
     categories,
+    configuredDefaultCategory,
     downloadId,
     historyDownloadResult,
+    isCompatibleWithDownloader,
     MalformedDownloadResponseError,
     prepareZip,
     requiresDuplicateReason,
@@ -35,6 +37,34 @@ describe("download actions", () => {
                 },
             ],
         }));
+    // FM-186 moved both helpers here from `DownloadActions.tsx`, where the
+    // bulk bar was their only caller; the per-row send buttons are the second.
+    // The semantics are unchanged, and these are the rules that decide them.
+    it("should treat only a non-empty configured default category as a default", () => {
+        expect(configuredDefaultCategory({name: "SAB"})).toBeNull();
+        expect(
+            configuredDefaultCategory({name: "SAB", defaultCategory: ""}),
+        ).toBeNull();
+        expect(
+            configuredDefaultCategory({name: "SAB", defaultCategory: "Movies"}),
+        ).toBe("Movies");
+    });
+
+    it("should send a TORBOX result only to a TORBOX downloader, and no torrent to any", () => {
+        const sab = {name: "SAB", downloaderType: "SABNZBD"};
+        const torbox = {name: "Torbox", downloaderType: "TORBOX"};
+        const of = (downloadType?: string) => ({...result, downloadType});
+        expect(isCompatibleWithDownloader(of("TORBOX"), torbox)).toBe(true);
+        expect(isCompatibleWithDownloader(of("TORBOX"), sab)).toBe(false);
+        expect(isCompatibleWithDownloader(of("TORRENT"), sab)).toBe(false);
+        expect(isCompatibleWithDownloader(of("TORRENT"), torbox)).toBe(false);
+        expect(isCompatibleWithDownloader(of("NZB"), sab)).toBe(true);
+        expect(isCompatibleWithDownloader(of("NZB"), torbox)).toBe(true);
+        // A result with no download type at all is not a torrent, so it stays
+        // sendable -- the rule is written as "not TORRENT", not "is NZB".
+        expect(isCompatibleWithDownloader(of(undefined), sab)).toBe(true);
+    });
+
     it("should map a download-history search result to a direct-action-ready result using its own identifier", () => {
         const mapped = historyDownloadResult({
             id: "42",

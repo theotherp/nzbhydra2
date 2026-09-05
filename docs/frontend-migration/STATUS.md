@@ -1673,6 +1673,12 @@ helper resizes without touch emulation (a real touch device gets the fitting mod
 picker component rather than `slotProps.textField` because `@mui/utils` 9.4.0 gates `data-*` on slot props behind an
 undeclared `DataAttributesOverrides` augmentation (ADR-0056's parked adoption). Candidates for a future quickfix.
 
+FM-186 (Per-Row Send-To-Downloader Buttons With A Downloader-Count-Derived Actions Track) restored legacy's
+`addable-nzbs` per-row send icons: one 16px logo `IconButton` per enabled compatible downloader after the direct download,
+sharing one extracted send flow (`sendFlow.ts`) with the bulk bar, and an Actions track of `140 + 28 × downloaders` px
+with the narrow percentages derived from it. Vitest 1954/1954, real-backend downloads/results/focus specs 53/53. Passed
+2026-09-05 first cycle; minor findings retained (a stray YAML space, untested in-flight `aria-busy`, unrestored fixture).
+
 ## Active
 
 None.
@@ -1700,7 +1706,8 @@ None.
 
 ## Upcoming
 
-- FM-185 (themed date pickers) is complete (entry above). No task packets are queued.
+- FM-186 (per-row send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above). No
+  task packets are queued.
 
 - The 2026-09-04 MUI batch — FM-183 (upgrade to 9.4.0) and FM-184 (`theme.focusVisible`, ADR-0056) — is complete
   (entries above). `enhanceHighContrast` is parked; `motion.reducedMotion` sits in a stash pending a cause (see
