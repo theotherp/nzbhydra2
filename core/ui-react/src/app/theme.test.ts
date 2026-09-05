@@ -2419,6 +2419,15 @@ describe("MUI X picker inputs (FM-185 follow-up)", () => {
         const root = theme.components?.MuiPickersOutlinedInput?.styleOverrides
             ?.root as (args: {theme: typeof theme}) => Record<string, unknown>;
         const resolved = root({theme});
+        // The notch stays open for the permanently shrunk label, as
+        // `MuiOutlinedInput` already defaults; MUI X does not derive it
+        // from the theme's `MuiInputLabel.shrink`.
+        expect(theme.components?.MuiPickersOutlinedInput?.defaultProps).toEqual(
+            {notched: true},
+        );
+        expect(theme.components?.MuiOutlinedInput?.defaultProps).toEqual({
+            notched: true,
+        });
         expect(resolved.borderRadius).toBe(8);
         expect(resolved.backgroundColor).toBe(theme.palette.surfaces.recessed);
         // Parity, not a literal: the outline colour is whatever the

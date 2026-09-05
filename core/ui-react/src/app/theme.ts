@@ -1774,6 +1774,14 @@ export function createHydraTheme(
                 },
             },
             MuiPickersOutlinedInput: {
+                // The picker counterpart of `MuiOutlinedInput`'s `notched`
+                // default below: MUI X's `PickersTextField` forwards
+                // `notched` only from an explicit `slotProps.inputLabel.shrink`
+                // (`PickersTextField.js`, `inputAdditionalProps.notched =
+                // inputLabelSlotProps.shrink`), never from the theme's
+                // `MuiInputLabel` default, so the permanently shrunk label
+                // floated over an unbroken border (owner report 2026-09-05).
+                defaultProps: {notched: true},
                 styleOverrides: {
                     root: ({theme}) => ({
                         borderRadius: 8,
