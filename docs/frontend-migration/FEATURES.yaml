@@ -280,6 +280,16 @@ features:
       # 289px with two, the last accepted by that request below FM-175's
       # 340px floor. The buttons themselves are F-SEARCH-DOWNLOADS'
       # `result-send-to-downloader`.
+      # 2026-09-05 (FM-187, owner request): the count is no longer the
+      # downloader count alone. It is `downloaders.length` plus one slot for
+      # F-SEARCH-DOWNLOADS' `result-send-to-black-hole` button, reserved by
+      # `blackHoleSlot(results, settings)` (`resultTable.ts`) -- true iff a
+      # loaded result would render that button. Derived from the *unfiltered*
+      # loaded results, so a refine filter never shifts the columns, and from
+      # the results at all rather than the config, because `sendMagnetLinks`
+      # defaults to true (`baseConfig.yml:281-283`) and a config-only rule
+      # would cost every NZB-only install 28px of Title for a button no row
+      # shows. FM-176's expand slots reserve from the rendered rows likewise.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
@@ -532,6 +542,24 @@ features:
       # `addedIds` names this result, exactly as legacy's `-success` icon
       # variant did. The Actions `<colgroup>` track grows with the enabled
       # downloader count (`actionsTrackWidth` in `resultTable.ts`).
+      # 2026-09-05 (FM-187, owner request, ruled "Show for torrent and NZB"):
+      # legacy's per-row `save-or-send-file` control is migrated with it.
+      # Every non-TORBOX row's Actions cell renders one
+      # `result-send-to-black-hole` icon button, last in the same
+      # non-wrapping icon group -- for a TORRENT when `saveTorrentsTo` or
+      # `sendMagnetLinks` is set, for an NZB when `saveNzbsTo` is, and absent
+      # rather than disabled otherwise (legacy's `ng-if="::enableButton"`).
+      # `aria-label` and tooltip are legacy's own strings verbatim (`Save
+      # torrent to black hole or send magnet link` / `Save NZB to black
+      # hole`), and one click PUTs `[downloadId]` to
+      # `API-DOWNLOAD-SAVE-SEND-TORRENTS` or `API-DOWNLOAD-SAVE-NZBS`. The
+      # row's `Downloaded` chip is raised only when the response's `addedIds`
+      # names this result -- stricter than legacy, which read `successful`
+      # alone and so marked a *skipped* file as downloaded. Its Actions
+      # `<colgroup>` slot is reserved by `blackHoleSlot` (`resultTable.ts`)
+      # from the unfiltered loaded results, not from the config alone,
+      # because `sendMagnetLinks` defaults to true.
+      - result-send-to-black-hole
       - result-send-to-downloader
       - send-to-downloader
       - send-to-downloader-options
@@ -556,6 +584,10 @@ features:
     # 2026-09-05 (FM-186): the per-row send control that kept this record
     # short of parity now ships; what remains partial is the two narrower
     # gaps above (the per-send category prompt and the icon override).
+    # 2026-09-05 (FM-187): the row's send-to-black-hole control ships too, so
+    # every legacy row action in `search-result.html:100-131` now has a React
+    # equivalent. The two gaps above are unchanged and still hold this record
+    # at `partial`.
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:

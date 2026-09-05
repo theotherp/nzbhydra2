@@ -19,7 +19,7 @@ Currently available:
 - A live downloader-status footer, cross-route, shown when a downloader is enabled and status display is on: state,
   queue count, current download title/progress, and a rate sparkline, fed by a live connection. Live in-app notification
   toasts for admin sessions when enabled in settings.
-- Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping (with legacy's one-time TV-episode grouping help, shown once per user), each row's indexer shown with its configured colour, paging, rejection-reason breakdowns, supported download actions (including per-row send-to-downloader icons), display preferences, and saving executed searches.
+- Search criteria, including media and indexer selection; recent-search refill and repeat; live progress; and result sorting, filtering, grouping (with legacy's one-time TV-episode grouping help, shown once per user), each row's indexer shown with its configured colour, paging, rejection-reason breakdowns, supported download actions (including per-row send-to-downloader and send-to-black-hole icons), display preferences, and saving executed searches.
 - Saved-search listing, reopen, and deletion.
 - The statistics dashboard — date-range and disabled-indexer selection, per-family statistics selection with persisted
   choices, overview KPI tiles, a sortable consolidated indexer table, grouped activity charts, config-gated source-share

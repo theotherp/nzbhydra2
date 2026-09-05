@@ -4,6 +4,7 @@ import {
     actionsTrackWidth,
     activeFilterCount,
     ageInDays,
+    blackHoleSlot,
     defaultFilters,
     formatResultDetails,
     formatResultSize,
@@ -666,10 +667,110 @@ describe("actions track width", () => {
             [0, "14.96"],
             [1, "17.95"],
             [2, "20.94"],
+            // FM-187's black hole slot is one more of the same 28px slots, so
+            // the third count is the one a downloader plus the button reaches.
+            [3, "23.93"],
         ] as const) {
             expect(((actionsTrackWidth(count) / 936) * 100).toFixed(2)).toBe(
                 percentage,
             );
         }
+    });
+    it("should size a downloader plus FM-187's black hole slot alike", () =>
+        expect(actionsTrackWidth(3)).toBe(224));
+});
+
+// FM-187: the black hole button's Actions slot is reserved from the loaded
+// results *and* the black hole configuration, not from the configuration
+// alone. `sendMagnetLinks` defaults to true, so a config-only rule would cost
+// every stock NZB-only install 28px of Title for a button no row renders.
+describe("black hole slot", () => {
+    const settings = {
+        saveNzbs: false,
+        saveTorrents: false,
+        sendMagnets: false,
+    };
+    it("should reserve nothing without results", () =>
+        expect(blackHoleSlot([], {...settings, saveNzbs: true})).toBe(false));
+    it("should reserve for an NZB result only with an NZB black hole", () => {
+        expect(blackHoleSlot([{downloadType: "NZB"}], settings)).toBe(false);
+        expect(
+            blackHoleSlot([{downloadType: "NZB"}], {
+                ...settings,
+                saveNzbs: true,
+            }),
+        ).toBe(true);
+    });
+    it("should treat a result without a download type as an NZB, like legacy's directive", () => {
+        expect(blackHoleSlot([{}], settings)).toBe(false);
+        expect(blackHoleSlot([{}], {...settings, saveNzbs: true})).toBe(true);
+    });
+    it("should reserve for an NZB result on neither torrent setting", () => {
+        expect(
+            blackHoleSlot([{downloadType: "NZB"}], {
+                saveNzbs: false,
+                saveTorrents: true,
+                sendMagnets: true,
+            }),
+        ).toBe(false);
+    });
+    it("should reserve for a torrent result on either torrent setting", () => {
+        expect(blackHoleSlot([{downloadType: "TORRENT"}], settings)).toBe(
+            false,
+        );
+        expect(
+            blackHoleSlot([{downloadType: "TORRENT"}], {
+                ...settings,
+                saveTorrents: true,
+            }),
+        ).toBe(true);
+        expect(
+            blackHoleSlot([{downloadType: "TORRENT"}], {
+                ...settings,
+                sendMagnets: true,
+            }),
+        ).toBe(true);
+    });
+    it("should not reserve for a torrent result on the NZB setting", () =>
+        expect(
+            blackHoleSlot([{downloadType: "TORRENT"}], {
+                ...settings,
+                saveNzbs: true,
+            }),
+        ).toBe(false));
+    it("should never reserve for a TORBOX result", () =>
+        expect(
+            blackHoleSlot([{downloadType: "TORBOX"}], {
+                saveNzbs: true,
+                saveTorrents: true,
+                sendMagnets: true,
+            }),
+        ).toBe(false));
+    it("should reserve as soon as one loaded result would render the button", () =>
+        expect(
+            blackHoleSlot(
+                [
+                    {downloadType: "TORBOX"},
+                    {downloadType: "NZB"},
+                    {downloadType: "TORRENT"},
+                ],
+                {...settings, sendMagnets: true},
+            ),
+        ).toBe(true));
+    // The packet's own worked example: stock defaults (`sendMagnetLinks`
+    // true, no black hole folder) over an NZB-only result set reserve nothing,
+    // so the track stays FM-175's 140px.
+    it("should leave an NZB-only result set at 140px under stock defaults", () => {
+        const stock = {
+            saveNzbs: false,
+            saveTorrents: false,
+            sendMagnets: true,
+        };
+        const slot = blackHoleSlot(
+            [{downloadType: "NZB"}, {downloadType: "NZB"}],
+            stock,
+        );
+        expect(slot).toBe(false);
+        expect(actionsTrackWidth(0 + (slot ? 1 : 0))).toBe(140);
     });
 });

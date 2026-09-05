@@ -1,4 +1,5 @@
-import {readFile} from "node:fs/promises";
+import {readdir, readFile} from "node:fs/promises";
+import {join} from "node:path";
 
 import type {Locator, Page} from "@playwright/test";
 import {
@@ -422,6 +423,202 @@ test.describe("Downloads", () => {
                 "row-send-two-downloaders-mobile",
             ),
         });
+    });
+
+    // FM-187: legacy's `save-or-send-file` control, restored on the row. The
+    // torrent case is the one that needs a real backend most: the endpoint
+    // writes a file, and `FileHandler.java:188-203` *skips* a same-named file
+    // that already exists while still answering `successful: true` with the
+    // id in `addedIds`. Only reading the folder back distinguishes "written"
+    // from "skipped", which is why `configureBlackHole` empties it first.
+    test("should save a torrent to the black hole from its own row", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureBlackHole({torrents: true});
+        // The shell reads the safe configuration once at bootstrap and
+        // refreshes it only after a save made *in this browser* (ADR-0017),
+        // so a black hole configured through the API after `beforeEach`'s
+        // navigation needs a reload to reach the rendered rows.
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        // Not `searchForResult`: the baseline's newznab mocks answer this
+        // query with twenty generic results of their own beside the one
+        // torznab torrent, and the table is virtualized, so the torrent's row
+        // need not be in the DOM at all. The refine title filter narrows the
+        // rendered rows to it. The Actions slot is derived from the
+        // *unfiltered* loaded results, so filtering does not disturb what
+        // this case is about.
+        await page
+            .getByTestId("search-query")
+            .fill(testEnvironment.torrentFileQuery);
+        const searchResponse = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname === "/internalapi/search",
+        );
+        await page.getByTestId("search-submit").click();
+        expect((await searchResponse).status()).toBe(200);
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await page
+            .getByTestId("refine-filter-title")
+            .fill(testEnvironment.torrentFileTitle);
+        await expect(
+            page
+                .getByTestId("search-result-title")
+                .filter({hasText: testEnvironment.torrentFileTitle}),
+        ).toBeVisible();
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.torrentFileTitle});
+        const blackHoleButton = resultRow.getByTestId(
+            "result-send-to-black-hole",
+        );
+        await expect(blackHoleButton).toHaveAttribute(
+            "aria-label",
+            "Save torrent to black hole or send magnet link",
+        );
+        // Visual Gate (FM-187): the torrent row with the button, idle.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(blackHoleButton).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-black-hole-torrent-desktop",
+            ),
+        });
+        // Visual Gate (FM-187): the same row as a phone card, where the
+        // Actions cell is a block rather than a track.
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await expect(blackHoleButton).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-black-hole-torrent-mobile",
+            ),
+        });
+        await page.setViewportSize({width: 1280, height: 800});
+
+        const save = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/saveOrSendTorrents",
+        );
+        await blackHoleButton.click();
+        const saveResponse = await save;
+        expect(saveResponse.status()).toBe(200);
+        // The endpoint takes bare download ids -- one row, one id.
+        const requestedIds = saveResponse.request().postDataJSON() as unknown[];
+        expect(requestedIds).toHaveLength(1);
+        const saveBody = (await saveResponse.json()) as {
+            successful?: boolean;
+            addedIds?: unknown[];
+            missedIds?: unknown[];
+            invalidIds?: unknown[];
+        };
+        expect(saveBody.successful).toBe(true);
+        expect(saveBody.addedIds).toHaveLength(1);
+        expect(saveBody.missedIds).toEqual([]);
+        expect(saveBody.invalidIds).toEqual([]);
+        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(page.getByText("Saved or sent torrent.")).toBeVisible();
+        // Visual Gate (FM-187): the torrent row after a successful save.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-black-hole-torrent-saved-desktop",
+            ),
+        });
+
+        const torrentPath = join(
+            testEnvironment.blackholeFolderTestAccess,
+            `${testEnvironment.torrentFileTitle}.torrent`,
+        );
+        expect(
+            await readdir(testEnvironment.blackholeFolderTestAccess),
+        ).toEqual([`${testEnvironment.torrentFileTitle}.torrent`]);
+        expect(await readFile(torrentPath, "utf8")).toBe(
+            testEnvironment.torrentFileContent,
+        );
+    });
+
+    test("should save an NZB to the black hole from its own row", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureBlackHole({nzbs: true});
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const blackHoleButton = resultRow.getByTestId(
+            "result-send-to-black-hole",
+        );
+        await expect(blackHoleButton).toHaveAttribute(
+            "aria-label",
+            "Save NZB to black hole",
+        );
+        // Visual Gate (FM-187): the NZB row with `saveNzbsTo` set, beside the
+        // send-to-downloader button `beforeEach` configures.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(blackHoleButton).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-black-hole-nzb-desktop",
+            ),
+        });
+
+        const save = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/saveNzbsToBlackhole",
+        );
+        await blackHoleButton.click();
+        const saveResponse = await save;
+        expect(saveResponse.status()).toBe(200);
+        expect(saveResponse.request().postDataJSON() as unknown[]).toHaveLength(
+            1,
+        );
+        const saveBody = (await saveResponse.json()) as {
+            successful?: boolean;
+            addedIds?: unknown[];
+            missedIds?: unknown[];
+            invalidIds?: unknown[];
+        };
+        expect(saveBody.successful).toBe(true);
+        expect(saveBody.addedIds).toHaveLength(1);
+        expect(saveBody.missedIds).toEqual([]);
+        expect(saveBody.invalidIds).toEqual([]);
+        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(page.getByText("Saved NZB to black hole.")).toBeVisible();
+
+        const written = await readdir(
+            testEnvironment.blackholeFolderTestAccess,
+        );
+        expect(written).toEqual([
+            `${testEnvironment.downloaderIntegrationNzbTitle}.nzb`,
+        ]);
+        expect(
+            await readFile(
+                join(testEnvironment.blackholeFolderTestAccess, written[0]),
+                "utf8",
+            ),
+        ).toBe(testEnvironment.downloaderIntegrationNzbContent);
     });
 
     test("should provide the React direct NZB browser transfer", async ({

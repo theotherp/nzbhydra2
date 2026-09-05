@@ -31,6 +31,27 @@ export class TestEnvironment {
     // asserted against (`configureSabnzbdMock({withNzbGet: true})`), served by
     // the mockserver's `/nzbget/jsonrpc`.
     readonly nzbgetMockName = "Deterministic NZBGet";
+    // FM-187: the black hole folders the per-row send-to-black-hole cases use.
+    // `blackholeFolderHydra` is what the *instance* is configured to write to;
+    // `blackholeFolderTestAccess` is where this process reads the file back.
+    // They differ only under docker, whose compose file mounts the host's
+    // `/tmp/hydraBlackhole_core` at the container's `/hydraBlackhole`
+    // (`docker/docker-compose-systemtest/linux/docker-compose.yaml:57`); a
+    // locally started core and CI's native core share the host filesystem, so
+    // both default to the host side of that mount.
+    readonly blackholeFolderHydra =
+        process.env.BLACKHOLE_FOLDER_HYDRA || "/tmp/hydraBlackhole_core";
+    readonly blackholeFolderTestAccess =
+        process.env.BLACKHOLE_FOLDER_TESTACCESS || "/tmp/hydraBlackhole_core";
+    // FM-187: the mockserver's deterministic torrent fixture
+    // (`MockNewznab.java:44-49`), reachable only through a torznab indexer --
+    // the baseline's newznab mocks answer with NZB results.
+    readonly torznabMockIndexerName = "Deterministic Torznab";
+    readonly torznabMockApiKey = "deterministic-torznab-key";
+    readonly torrentFileQuery = "torrent-system-file";
+    readonly torrentFileTitle = "Hydra Deterministic Torrent File";
+    readonly torrentFileContent =
+        "d4:infod4:name31:Hydra Deterministic Torrent Fileee";
     readonly downloaderIntegrationQuery = "downloader-integration-nzb";
     readonly downloaderIntegrationNzbTitle = "Hydra Downloader Integration NZB";
     readonly downloaderIntegrationNzbContent =

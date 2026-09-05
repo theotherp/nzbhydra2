@@ -628,3 +628,40 @@ export function formatResultDetails(result: {
 export function actionsTrackWidth(downloaderCount: number): number {
     return 140 + 28 * downloaderCount;
 }
+
+/**
+ * FM-187: whether any loaded result renders the row's send-to-black-hole
+ * button, i.e. whether the Actions track has to reserve one more 28px slot
+ * for it (`actionsTrackWidth(downloaders.length + 1)`).
+ *
+ * The rule per result is legacy's `save-or-send-file` gating verbatim
+ * (`save-or-send-torrent.js` at `1982886e2`, rendered under
+ * `search-result.html`'s `ng-if="result.downloadType!='TORBOX'"`): a TORRENT
+ * shows the control when a torrent black hole *or* magnet sending is
+ * configured, anything else is an NZB and shows it when an NZB black hole is,
+ * and a TORBOX result never shows it at all.
+ *
+ * **Why this reads the results and not only the config.** `sendMagnetLinks`
+ * defaults to `true` (`config/baseConfig.yml:281-283`), so a config-only slot
+ * would be reserved on every stock install -- including the NZB-only ones
+ * where no row can ever render the button -- and would cost Title 28px for
+ * nothing. FM-176's expand slots reserve from the rendered rows for the same
+ * reason.
+ *
+ * The caller passes the *unfiltered* loaded results, so a refine filter that
+ * happens to hide every torrent does not shift the table's columns while the
+ * user types.
+ */
+export function blackHoleSlot(
+    results: Array<Pick<SearchResult, "downloadType">>,
+    settings: {saveNzbs: boolean; saveTorrents: boolean; sendMagnets: boolean},
+): boolean {
+    return results.some((result) => {
+        if (result.downloadType === "TORBOX") {
+            return false;
+        }
+        return result.downloadType === "TORRENT"
+            ? settings.saveTorrents || settings.sendMagnets
+            : settings.saveNzbs;
+    });
+}

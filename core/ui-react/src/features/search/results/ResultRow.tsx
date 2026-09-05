@@ -24,9 +24,13 @@ import {memo, useRef, useState} from "react";
 
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
-import type {Downloader} from "../../../domain/downloads/actions";
+import type {
+    Downloader,
+    downloadSettings,
+} from "../../../domain/downloads/actions";
 import {DirectDownloadActions} from "./DownloadActions";
 import {ResultDetailLinks} from "./ResultDetailLinks";
+import {SendToBlackHoleButton} from "./SendToBlackHoleButton";
 import {SendToDownloaderButtons} from "./SendToDownloaderButtons";
 import {formatResultDetails, formatResultSize} from "./resultTable";
 
@@ -126,6 +130,7 @@ export const ResultRow = memo(function ResultRow({
     dereferer,
     downloaded,
     downloaders,
+    downloadSettings: settings,
     duplicateExpanded,
     duplicateKey,
     expandSlots,
@@ -161,6 +166,10 @@ export const ResultRow = memo(function ResultRow({
     // than as the config itself: this row is `memo`ized, and a config object
     // is rebuilt (name-for-name identical) by every unrelated config save.
     downloaders: Downloader[];
+    // FM-187: the black hole configuration this row's send-to-black-hole
+    // button is gated on, passed as one parent-memoized reference for exactly
+    // the same `memo` reason as `downloaders` above.
+    downloadSettings: ReturnType<typeof downloadSettings>;
     duplicateExpanded: boolean;
     duplicateKey: string;
     // FM-150/FM-176: which expand-control slots every row of the current
@@ -545,6 +554,21 @@ export const ResultRow = memo(function ResultRow({
                                 onDownloaded(result.searchResultId)
                             }
                             result={result}
+                            transport={transport}
+                        />
+                        {/* FM-187: legacy's `save-or-send-file`, last in the
+                            group and in legacy's own position -- after the
+                            downloader icons (`search-result.html:122`, one
+                            control for every non-TORBOX row). It reserves the
+                            same 28px Actions slot a downloader does, but only
+                            when some loaded row actually renders it
+                            (`blackHoleSlot` in `resultTable.ts`). */}
+                        <SendToBlackHoleButton
+                            onDownloaded={() =>
+                                onDownloaded(result.searchResultId)
+                            }
+                            result={result}
+                            settings={settings}
                             transport={transport}
                         />
                     </Stack>

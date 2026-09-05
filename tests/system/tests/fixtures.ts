@@ -1,3 +1,6 @@
+import {mkdir, readdir, rm} from "node:fs/promises";
+import {join} from "node:path";
+
 import {
     APIRequestContext,
     APIResponse,
@@ -93,6 +96,10 @@ type HydraApi = {
     assertUniqueIndexerCredentials(): Promise<void>;
     rotateLogs(): Promise<void>;
     configureSabnzbdMock(options?: {withNzbGet?: boolean}): Promise<void>;
+    configureBlackHole(options: {
+        nzbs?: boolean;
+        torrents?: boolean;
+    }): Promise<void>;
     resetSabnzbdRecording(): Promise<void>;
     getSabnzbdRecording(): Promise<Record<string, unknown>>;
     mockNzbUrl(nzbId: string): string;
@@ -677,6 +684,71 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                       ]
                     : []),
             ];
+            await saveConfig(config);
+        },
+        /**
+         * FM-187: puts the instance into the state the per-row
+         * send-to-black-hole cases need, and empties the folder they read
+         * back.
+         *
+         * Emptying is not tidiness. `FileHandler.java:188-203` *skips* a file
+         * whose name already exists in the target folder and still answers
+         * `successful: true` with the id in `addedIds`, so a leftover
+         * `Hydra Deterministic Torrent File.torrent` from an earlier run
+         * would let a case that writes nothing at all pass every assertion.
+         * The folder is created when missing, because a black hole the
+         * instance has never written to does not exist yet.
+         *
+         * `torrents` additionally appends a torznab mock indexer to the
+         * baseline's newznab mocks: the deterministic torrent fixture is
+         * served from `/torznab/api` only (`MockNewznab.java:517-528`), and
+         * the baseline's indexers answer with NZB results. Appended rather
+         * than replacing the list, so the NZB queries the same spec file runs
+         * still have their indexers.
+         *
+         * Nothing here is undone afterwards: the `baseline` fixture rewrites
+         * the whole `downloading` block from `baseConfig.yml` before every
+         * test, where both folders are `null` (`baseConfig.yml:281-283`).
+         */
+        async configureBlackHole(options: {
+            nzbs?: boolean;
+            torrents?: boolean;
+        }): Promise<void> {
+            await mkdir(testEnvironment.blackholeFolderTestAccess, {
+                recursive: true,
+            });
+            for (const entry of await readdir(
+                testEnvironment.blackholeFolderTestAccess,
+            )) {
+                await rm(
+                    join(testEnvironment.blackholeFolderTestAccess, entry),
+                    {force: true, recursive: true},
+                );
+            }
+            const config = await getConfig();
+            const downloading = config.downloading as HydraConfig;
+            if (options.nzbs) {
+                downloading.saveNzbsTo = testEnvironment.blackholeFolderHydra;
+            }
+            if (options.torrents) {
+                downloading.saveTorrentsTo =
+                    testEnvironment.blackholeFolderHydra;
+                config.indexers = [
+                    ...((config.indexers as HydraConfig[] | undefined) ?? []),
+                    {
+                        name: testEnvironment.torznabMockIndexerName,
+                        host: testEnvironment.mockserverInternalUrl,
+                        apiPath: "/torznab/api",
+                        apiKey: testEnvironment.torznabMockApiKey,
+                        backend: "NEWZNAB",
+                        allCapsChecked: true,
+                        searchModuleType: "TORZNAB",
+                        supportedSearchTypes: ["SEARCH"],
+                        supportedSearchIds: [],
+                        ...BASELINE_INDEXER_FIELDS,
+                    },
+                ];
+            }
             await saveConfig(config);
         },
         async resetSabnzbdRecording(): Promise<void> {

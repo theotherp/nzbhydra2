@@ -227,7 +227,12 @@ components:
       category resolution (explicit choice, else the downloader's configured default, else null), addNzbs, and the failure toasts -- called by both this bar and the per-row send buttons F-SEARCH-DOWNLOADS' result-send-to-downloader
       adds, so a row send and a one-result bulk send are the same request. isCompatibleWithDownloader and configuredDefaultCategory moved into domain/downloads/actions.ts with their semantics unchanged (TORBOX results only to a TORBOX
       downloader, torrents to none; an empty defaultCategory is no default), since both callers decide with them. What stays per caller is the reporting -- the bulk bar marks every addedIds row and toasts one summary, while a row
-      marks itself only when addedIds names it.
+      marks itself only when addedIds names it. FM-187 (owner request 2026-09-05, ruled "Show for torrent and NZB") added the row's send-to-black-hole button beside them,
+      features/search/results/SendToBlackHoleButton.tsx -- legacy's save-or-send-file directive, switching label, enable rule and endpoint on the result's download type
+      (saveOrSendTorrents for a TORRENT when saveTorrentsTo or sendMagnetLinks is set, saveNzbsToBlackhole for an NZB when saveNzbsTo is, nothing for TORBOX and nothing when
+      unconfigured). It does not go through runSendFlow -- the black hole endpoints take bare download ids and involve neither downloader, category nor duplicate probe. It shares
+      the row's reporting instead -- addedIds must name this result before the Downloaded chip is raised -- and DownloadActions.execute's two failure wordings. The bulk bar's own
+      black hole button and its gating are untouched.
   - id: C-DOWNLOADER-STATUS
     responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
     legacy:
@@ -324,6 +329,8 @@ components:
        viewport change. FM-186 (owner request 2026-09-05) made the Actions <colgroup> track a function rather than a constant -- actionsTrackWidth(count) in resultTable.ts, 140 + 28 * the
       enabled downloader count, one 24px send button plus its 4px gap on top of FM-175's 140px icon inventory -- and both width sets derive from it, the below-1280px percentages as that width over the 936px basis table, so the two sets
       still describe the same table at the basis. Title still declares no width and absorbs the difference (289px of content at two downloaders, accepted by that request below FM-175's 340px floor).
+      FM-187 (owner request 2026-09-05) made the count downloaders plus one more slot for the row's send-to-black-hole button, reserved by resultTable.ts's blackHoleSlot(results,
+      settings) -- results-aware rather than config-only because sendMagnetLinks defaults to true, and read from the unfiltered loaded results so refining never shifts the columns.
   - id: C-HISTORY-REFINE-BAR
     responsibility: Shared stats-history refine sections and filter state -- the single filter surface beside every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select
       checkboxes, boolean, number range) with active-filter count and clear-all. It owns state and options only -- HistoryFilterValues filtered server-side through C-HISTORY-REQUEST rather than over already-loaded rows, and options each

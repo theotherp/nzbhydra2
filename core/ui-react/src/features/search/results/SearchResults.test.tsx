@@ -5819,6 +5819,359 @@ describe("SearchResults per-row send to downloader", () => {
     });
 });
 
+// --- FM-187: the per-row send-to-black-hole button -----------------------
+//
+// Legacy's `save-or-send-file` control (`save-or-send-torrent.js` at
+// `1982886e2`), rendered after the downloader icons on every non-TORBOX row,
+// with one directive switching label, enable rule and endpoint on the result's
+// download type. These cases pin that switch, the reporting, and the Actions
+// slot the button is reserved.
+describe("SearchResults per-row send to black hole", () => {
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllGlobals();
+        delete window.__NZBHYDRA_BOOTSTRAP__;
+    });
+
+    // The stock `sendMagnetLinks: true` (`config/baseConfig.yml:281-283`) is
+    // the default here too, because it is the case the results-aware slot
+    // exists for: it must not reserve a slot for an NZB-only result set.
+    function bootstrapWith(downloading: Record<string, unknown>) {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {sendMagnetLinks: true, ...downloading},
+            },
+        };
+    }
+
+    const blackHoleButtons = (row?: HTMLElement) =>
+        (row ? within(row) : screen).queryAllByTestId(
+            "result-send-to-black-hole",
+        );
+    const rowFor = (title: string) =>
+        screen.getByText(title).closest("tr") as HTMLElement;
+
+    function blackHoleFetch(body: string) {
+        return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
+            (url) => {
+                if (url.endsWith("/categories")) {
+                    return Promise.resolve(jsonResponse([]));
+                }
+                if (
+                    url.includes("saveNzbsToBlackhole") ||
+                    url.includes("saveOrSendTorrents")
+                ) {
+                    return Promise.resolve(
+                        new Response(body, {
+                            headers: {"Content-Type": "application/json"},
+                        }),
+                    );
+                }
+                return Promise.resolve(new Response("", {status: 404}));
+            },
+        );
+    }
+
+    it("should offer an NZB row the button only with an NZB black hole configured", () => {
+        bootstrapWith({});
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(blackHoleButtons()).toHaveLength(0);
+        cleanup();
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const [button] = blackHoleButtons();
+        // Legacy's string verbatim, as both the accessible name and the
+        // tooltip, so what is announced and what is shown cannot diverge.
+        expect(button).toHaveAttribute("aria-label", "Save NZB to black hole");
+        fireEvent.mouseOver(button);
+        expect(button).toHaveAccessibleName("Save NZB to black hole");
+        // An unconfigured target renders nothing rather than a disabled
+        // button (legacy's `ng-if="::enableButton"`), so the one that does
+        // render is never disabled at rest.
+        expect(button).toBeEnabled();
+    });
+
+    it("should offer a torrent row the button on either torrent target, and neither NZB nor TORBOX rules", () => {
+        for (const downloading of [
+            {saveTorrentsTo: "/torrents", sendMagnetLinks: false},
+            {sendMagnetLinks: true},
+        ]) {
+            bootstrapWith(downloading);
+            renderResults(
+                <SearchResults data={downloadActionResponse("TORRENT")} />,
+            );
+            expect(blackHoleButtons()[0]).toHaveAttribute(
+                "aria-label",
+                "Save torrent to black hole or send magnet link",
+            );
+            cleanup();
+        }
+        // Neither torrent target, and the NZB target is not one of them.
+        bootstrapWith({saveNzbsTo: "/nzbs", sendMagnetLinks: false});
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT")} />,
+        );
+        expect(blackHoleButtons()).toHaveLength(0);
+    });
+
+    it("should never offer a TORBOX row the button, whatever is configured", () => {
+        bootstrapWith({saveNzbsTo: "/nzbs", saveTorrentsTo: "/torrents"});
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORBOX", true)} />,
+        );
+        expect(blackHoleButtons(rowFor("TORBOX result"))).toHaveLength(0);
+        expect(blackHoleButtons(rowFor("NZB result"))).toHaveLength(1);
+    });
+
+    it("should place the button last in the row's icon group, after the send-to-downloader buttons", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {name: "SAB", enabled: true, downloaderType: "SABNZBD"},
+                    ],
+                    saveNzbsTo: "/nzbs",
+                },
+            },
+        };
+        vi.stubGlobal("fetch", blackHoleFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const [button] = blackHoleButtons();
+        const sendToDownloader = screen.getByTestId(
+            "result-send-to-downloader",
+        );
+        const download = screen.getByTestId("download-nzb");
+        for (const earlier of [download, sendToDownloader]) {
+            expect(
+                earlier.compareDocumentPosition(button) &
+                    Node.DOCUMENT_POSITION_FOLLOWING,
+            ).toBeTruthy();
+        }
+        // Inside the same non-wrapping icon group, so it stays on the
+        // download's line rather than pushing the row taller.
+        expect(button.closest("span")?.parentElement).toBe(
+            download.parentElement,
+        );
+    });
+
+    it("should save an NZB row to the black hole and raise its Downloaded chip", async () => {
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        const fetchImplementation = blackHoleFetch(
+            '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(blackHoleButtons()[0]);
+        expect(
+            await screen.findByText("Saved NZB to black hole."),
+        ).toBeVisible();
+        const [url, init] = fetchImplementation.mock.calls[0] as [
+            string,
+            RequestInit,
+        ];
+        expect(url).toMatch(/saveNzbsToBlackhole$/);
+        expect(init.method).toBe("PUT");
+        // The endpoint takes bare download ids, not the `addNzbs` request
+        // shape.
+        expect(JSON.parse(String(init.body))).toEqual(["1"]);
+        expect(
+            within(screen.getByTestId("search-result-row")).getByText(
+                "Downloaded",
+            ),
+        ).toBeVisible();
+    });
+
+    it("should save or send a torrent row through the torrent endpoint", async () => {
+        bootstrapWith({saveTorrentsTo: "/torrents"});
+        const fetchImplementation = blackHoleFetch(
+            '{"successful":true,"addedIds":[2],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT", true)} />,
+        );
+        fireEvent.click(blackHoleButtons(rowFor("TORRENT result"))[0]);
+        expect(await screen.findByText("Saved or sent torrent.")).toBeVisible();
+        const [url, init] = fetchImplementation.mock.calls[0] as [
+            string,
+            RequestInit,
+        ];
+        expect(url).toMatch(/saveOrSendTorrents$/);
+        expect(init.method).toBe("PUT");
+        expect(JSON.parse(String(init.body))).toEqual(["2"]);
+        expect(
+            within(rowFor("TORRENT result")).getByText("Downloaded"),
+        ).toBeVisible();
+        // The NZB row beside it is untouched -- only the sent result is
+        // marked.
+        expect(
+            within(rowFor("NZB result")).queryByText("Downloaded"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should report an unsuccessful response and leave the row unmarked", async () => {
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        vi.stubGlobal(
+            "fetch",
+            blackHoleFetch(
+                '{"successful":false,"message":"The black hole folder does not exist.","addedIds":[],"missedIds":[],"invalidIds":[]}',
+            ),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(blackHoleButtons()[0]);
+        expect(
+            await screen.findByText("The black hole folder does not exist."),
+        ).toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    // A successful response that does not name this row's id is legacy's own
+    // error case for the send buttons beside it (`addedIds.indexOf(...)`), and
+    // is strictly better than legacy's `save-or-send-file`, which read only
+    // `successful` and so marked a *skipped* file as downloaded.
+    it("should not mark a row whose id is missing from a successful response", async () => {
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        vi.stubGlobal(
+            "fetch",
+            blackHoleFetch(
+                '{"successful":true,"addedIds":[99],"missedIds":[1],"invalidIds":[]}',
+            ),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(blackHoleButtons()[0]);
+        expect(
+            await screen.findByText("The download action failed."),
+        ).toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should report a request that never answers with the shared wording", async () => {
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        vi.stubGlobal(
+            "fetch",
+            vi.fn().mockRejectedValue(new Error("Network is unreachable")),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(blackHoleButtons()[0]);
+        expect(
+            await screen.findByText("Unable to complete the download action."),
+        ).toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should disable the button and mark it busy while the save is in flight", async () => {
+        bootstrapWith({saveNzbsTo: "/nzbs"});
+        let release: (() => void) | undefined;
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(
+                () =>
+                    new Promise<Response>((resolve) => {
+                        release = () =>
+                            resolve(
+                                jsonResponse({
+                                    successful: true,
+                                    addedIds: [1],
+                                    missedIds: [],
+                                    invalidIds: [],
+                                }),
+                            );
+                    }),
+            ),
+        );
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const [button] = blackHoleButtons();
+        expect(button).not.toHaveAttribute("aria-busy");
+        fireEvent.click(button);
+        await vi.waitFor(() => expect(button).toBeDisabled());
+        expect(button).toHaveAttribute("aria-busy", "true");
+        await act(async () => {
+            release?.();
+        });
+        await vi.waitFor(() => expect(button).toBeEnabled());
+        expect(button).not.toHaveAttribute("aria-busy");
+    });
+
+    it("should reserve the Actions slot only when a loaded result would render the button", () => {
+        // Stock defaults over an NZB-only result set: `sendMagnetLinks` is
+        // true, so a config-only rule would reserve a slot here for a button
+        // no row can show. The track must stay FM-175's 140px.
+        bootstrapWith({});
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(blackHoleButtons()).toHaveLength(0);
+        expect(actionsTrackRules()).toEqual({
+            narrow: "14.96%",
+            pixel: "140px",
+        });
+        cleanup();
+        // One torrent result under those same defaults does render it, so the
+        // slot is reserved: one 28px slot on top of the 140px inventory.
+        bootstrapWith({});
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT")} />,
+        );
+        expect(blackHoleButtons()).toHaveLength(1);
+        expect(actionsTrackRules()).toEqual({
+            narrow: "17.95%",
+            pixel: "168px",
+        });
+        cleanup();
+        // Plus one enabled downloader: the two slots are the same size and
+        // both width sets still describe one table at the 936px basis.
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {name: "SAB", enabled: true, downloaderType: "SABNZBD"},
+                    ],
+                    sendMagnetLinks: true,
+                },
+            },
+        };
+        vi.stubGlobal("fetch", blackHoleFetch("{}"));
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT", true)} />,
+        );
+        expect(actionsTrackRules()).toEqual({
+            narrow: "20.94%",
+            pixel: "196px",
+        });
+        expect(196 / 936).toBeCloseTo(0.2094, 4);
+    });
+
+    it("should keep the slot while a refine filter hides every result that renders the button", async () => {
+        bootstrapWith({});
+        renderResults(
+            <SearchResults data={downloadActionResponse("TORRENT", true)} />,
+        );
+        expect(actionsTrackRules().pixel).toBe("168px");
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "NZB result"},
+        });
+        await settleFilterCommits();
+        expect(screen.queryByText("TORRENT result")).not.toBeInTheDocument();
+        // The slot is derived from the unfiltered loaded results, so the
+        // columns do not shift while the user types into the refine bar.
+        expect(actionsTrackRules().pixel).toBe("168px");
+    });
+});
+
 /**
  * The two Actions `<col>` widths the table currently rendered declares -- the
  * pixel one (used at and above 1280px) and the percentage one below it. Both

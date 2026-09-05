@@ -41,6 +41,7 @@ import {useCompactRefineSurface} from "../../../components/refine/RefineSurface"
 import {ToastContext} from "../../../components/toasts/toasts";
 import {
     configuredDownloaders,
+    downloadSettings,
     type Downloader,
 } from "../../../domain/downloads/actions";
 import {writeItem} from "../../../domain/storage/browserStorage";
@@ -71,6 +72,7 @@ import type {
 import {
     actionsTrackWidth,
     activeFilterCount,
+    blackHoleSlot,
     defaultFilters,
     duplicateGroupKey,
     filterResults,
@@ -220,22 +222,15 @@ const ROW_OVERSCAN = 8;
 // `undefined` means "declare no width for this track"; the entry still
 // exists so TABLE_COLUMN_COUNT and the rendered `<col>` list stay in step.
 //
-// FM-186 makes the last track a function of how many enabled downloaders the
-// row's Actions cell has to hold send buttons for -- `actionsTrackWidth`, the
-// single source both this set and the percentage set below derive from.
+// FM-186 makes the last track a function of how many send buttons the row's
+// Actions cell has to hold -- `actionsTrackWidth`, the single source both this
+// set and the percentage set below derive from. FM-187 adds one more slot to
+// that count for the send-to-black-hole button, when some loaded result
+// renders it (`actionsSlotCount` below).
 function tableColumnWidths(
-    downloaderCount: number,
+    slotCount: number,
 ): Array<number | string | undefined> {
-    return [
-        40,
-        undefined,
-        90,
-        98,
-        65,
-        90,
-        52,
-        actionsTrackWidth(downloaderCount),
-    ];
+    return [40, undefined, 90, 98, 65, 90, 52, actionsTrackWidth(slotCount)];
 }
 
 // The same tracks below the basis width, as percentages of the table.
@@ -250,7 +245,7 @@ function tableColumnWidths(
 // ellipsis at the narrow end, as they did before FM-175; the "every header
 // fits" criterion is a criterion at the 1280x800 basis, not below it.
 function narrowTableColumnWidths(
-    downloaderCount: number,
+    slotCount: number,
 ): Array<number | string | undefined> {
     return [
         40,
@@ -261,9 +256,9 @@ function narrowTableColumnWidths(
         "9.62%",
         "5.56%",
         // Computed rather than written out, so it cannot drift from the pixel
-        // track above: 140px is 14.96%, and each downloader's 28px slot adds
-        // ~2.99% (one downloader 17.95%, two 20.94%).
-        `${((actionsTrackWidth(downloaderCount) / TABLE_BASIS_WIDTH) * 100).toFixed(2)}%`,
+        // track above: 140px is 14.96%, and each 28px slot adds ~2.99% (one
+        // slot 17.95%, two 20.94%, three 23.93%).
+        `${((actionsTrackWidth(slotCount) / TABLE_BASIS_WIDTH) * 100).toFixed(2)}%`,
     ];
 }
 
@@ -392,15 +387,39 @@ export function SearchResults({
         (): Downloader[] => configuredDownloaders(effectiveSafeConfig),
         [effectiveSafeConfig],
     );
+    // FM-187: the black hole configuration every row's send-to-black-hole
+    // button is gated on. Live and memoized for the same two reasons as
+    // `downloaders` above -- a folder set in Config -> Downloading reaches
+    // already-rendered rows, and `ResultRow`'s `memo` needs one stable
+    // reference rather than the config object itself.
+    const settings = useMemo(
+        () => downloadSettings(effectiveSafeConfig),
+        [effectiveSafeConfig],
+    );
+    // How many 28px send slots the Actions track has to hold: one per enabled
+    // downloader, plus one for the black hole button when some *loaded* result
+    // would render it. The slot is derived from `data.searchResults` rather
+    // than the filtered rows so a refine filter never shifts the columns, and
+    // from the results at all rather than the config alone because
+    // `sendMagnetLinks` defaults to true (see `blackHoleSlot`).
+    // Memoized because it walks every loaded result, and a search can hold
+    // tens of thousands of them (`LOAD_ALL_CONFIRMATION_THRESHOLD`) while this
+    // component re-renders on every scroll frame.
+    const actionsSlotCount = useMemo(
+        () =>
+            downloaders.length +
+            (blackHoleSlot(data.searchResults, settings) ? 1 : 0),
+        [data.searchResults, downloaders.length, settings],
+    );
     // The two `<colgroup>` track sets, both derived from that count so they
     // still describe the same table at the 936px basis.
     const pixelColumnWidths = useMemo(
-        () => tableColumnWidths(downloaders.length),
-        [downloaders.length],
+        () => tableColumnWidths(actionsSlotCount),
+        [actionsSlotCount],
     );
     const narrowColumnWidths = useMemo(
-        () => narrowTableColumnWidths(downloaders.length),
-        [downloaders.length],
+        () => narrowTableColumnWidths(actionsSlotCount),
+        [actionsSlotCount],
     );
     // FM-177 (ADR-0054): covers render at `searching.coverSize`, the width
     // Config -> Searching already owns ("Cover width", help text "when
@@ -2080,6 +2099,19 @@ export function SearchResults({
                                           row and for the track to grow with
                                           the downloader count rather than
                                           for the icons to wrap.
+                                        - FM-187 (owner request, 2026-09-05)
+                                          adds one more slot of exactly that
+                                          size for the send-to-black-hole
+                                          button, but only while some loaded
+                                          result would render it
+                                          (`blackHoleSlot` in
+                                          `resultTable.ts`). It is derived
+                                          from the results, not the config
+                                          alone, because `sendMagnetLinks`
+                                          defaults to true and an NZB-only
+                                          install must stay at 140px; and from
+                                          the *unfiltered* results, so refining
+                                          never shifts the columns.
 
                                         These `<col>` elements carry no width
                                         of their own: both sets of tracks are
@@ -2458,6 +2490,7 @@ export function SearchResults({
                                                 downloaded={downloadedIds.has(
                                                     row.result.searchResultId,
                                                 )}
+                                                downloadSettings={settings}
                                                 downloaders={downloaders}
                                                 duplicateExpanded={
                                                     row.duplicateExpanded

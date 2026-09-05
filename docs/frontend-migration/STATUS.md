@@ -1679,6 +1679,12 @@ sharing one extracted send flow (`sendFlow.ts`) with the bulk bar, and an Action
 with the narrow percentages derived from it. Vitest 1954/1954, real-backend downloads/results/focus specs 53/53. Passed
 2026-09-05 first cycle; minor findings retained (a stray YAML space, untested in-flight `aria-busy`, unrestored fixture).
 
+FM-187 (Per-Row Send-To-Black-Hole Button For Torrent And NZB Results) restored legacy's `save-or-send-file` row icon:
+one `IconButton` last in the Actions group, for torrents when a torrent folder or magnet sending is set and for NZBs when
+an NZB folder is set, never for TorBox; the Actions track gains a slot only when the unfiltered results contain such a row.
+Stricter than legacy: success needs the id in `addedIds`. Vitest 1976/1976, real-backend downloads/results/focus 55/55.
+Passed 2026-09-05 on the second cycle (first: missing handoff); minor: `actionsTrackWidth` parameter name, prettier debt.
+
 ## Active
 
 None.
@@ -1706,8 +1712,8 @@ None.
 
 ## Upcoming
 
-- FM-186 (per-row send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above). No
-  task packets are queued.
+- FM-187 (per-row send-to-black-hole button), FM-186 (per-row send-to-downloader buttons) and FM-185 (themed date
+  pickers) are complete (entries above).
 
 - The 2026-09-04 MUI batch — FM-183 (upgrade to 9.4.0) and FM-184 (`theme.focusVisible`, ADR-0056) — is complete
   (entries above). `enhanceHighContrast` is parked; `motion.reducedMotion` sits in a stash pending a cause (see
