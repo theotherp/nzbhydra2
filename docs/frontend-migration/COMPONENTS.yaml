@@ -358,7 +358,7 @@ components:
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
     state: done
-    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implemented it. Legacy paths are in git history only (core/ui-src was removed by a31df3aa2). Built on MUI's `Pagination` at boundaryCount 1 and siblingCount 2, which
+    note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implemented it. Legacy paths are in git history only (core/ui-src was removed by 3ce28441e). Built on MUI's `Pagination` at boundaryCount 1 and siblingCount 2, which
       reproduces `dirPagination`'s own nine-slot windowing page for page; `getItemAriaLabel` keeps the "Previous page"/"Next page" names the three hand-rolled pagers carried, and `renderItem` adds the `aria-current="page"` MUI does not set.
       The status line's test id is per route because `notification-history-page-status` is an existing spec contract
   - id: C-COPY-VALUE-BUTTON
@@ -598,7 +598,7 @@ components:
       - F-PLATFORM-SHELL
     classification: shared_hydra
     state: done
-    note: "Delivered by FM-171 (2026-09-01, issue #1080's client half; the server half is 60a121aae). Three files: app/sessionExpiry.ts is the notifier (report,
+    note: "Delivered by FM-171 (2026-09-01, issue #1080's client half; the server half is 88db9bc87). Three files: app/sessionExpiry.ts is the notifier (report,
       subscribe, isSessionExpired, plus a test-only reset seam), app/status/SessionExpiredDialog.tsx is the shell-mounted surface, and app/queryDefaults.ts
       carries retryUnlessUnauthorized so a 401 is not retried before the dialog appears. Both QueryClients -- App.tsx's application-wide one and SearchPage.tsx's
       private recent-search one -- pass their QueryCache and MutationCache onError to reportSessionError; the module-scoped latch is what makes N concurrent

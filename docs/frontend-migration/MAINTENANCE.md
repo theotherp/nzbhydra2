@@ -832,7 +832,7 @@ Format, one entry per fix:
 - **Gates:** `core/ui-react` typecheck / lint (0 errors, 19 pre-existing warnings) / `format:check` / `test` (1129) green; `mvn --batch-mode test -pl core -DskipTests=false` → **Tests run: 478, Failures: 0, Errors: 0**; full system suite **153 passed**, no failures, skips or flaky, against an instance packaged from this tree; `git diff --check` clean.
 - **Commit:** `776ca706d`
 - **Note:** all three were surfaced by FM-095's reviewer and designer rather than by any test, which is the point worth recording — a green suite could not have caught any of them.
-  **The native shell template.** `resource-config.json`'s hand-maintained GraalVM include list named `templates/index.html`, deleted by FM-095, and had never named `templates/react.html`. If that list is load-bearing — its explicit `templates/error.html` entry and commit `c9f27f163` ("Fix native build some more") both suggest it is — a **native** build had no shell template for any route. Neither the 478-test Java suite nor the 153-test system suite can detect this: `NativeApplicationContextTest` reads the JVM classpath, not the image. Repointed, one line.
+  **The native shell template.** `resource-config.json`'s hand-maintained GraalVM include list named `templates/index.html`, deleted by FM-095, and had never named `templates/react.html`. If that list is load-bearing — its explicit `templates/error.html` entry and commit `99b9835f0` ("Fix native build some more") both suggest it is — a **native** build had no shell template for any route. Neither the 478-test Java suite nor the 153-test system suite can detect this: `NativeApplicationContextTest` reads the JVM classpath, not the image. Repointed, one line.
   A wider cleanup was started and deliberately reverted: ~30 further entries in that file name deleted legacy assets, and six were removed before it became clear the file would be left half-swept. Every one of them is inert anyway — line 23's `static/.*` pattern already covers the whole tree — so the diff is now exactly the one load-bearing line, and the dead-entry cleanup is a candidate below rather than churn inside an already-large removal.
   **The caps image.** `CapsGenerator.java:124` advertised indexer capabilities with an image URL under `master/core/ui-src/`, a path FM-095 deletes; it would have kept resolving until the branch merged and then broken silently, since nothing tests a remote asset URL. Repointed at the retained `static/img/banner-bright.png`, the same relocation FM-095 gave `/readme.md`. `grep -rn "ui-src" core/src/main/java` is now empty.
   **The dev proxy's Cookie header.** `devBackend.ts` set `Cookie: nzbhydra-ui=react` on every proxied request via `setHeader`, which *replaces* the browser's own header and so discarded `JSESSIONID` — dev-mode session breakage against a backend with authentication configured. Pre-existing, but its only justification was the selector FM-095 removed, so it is now pure liability. Removed, with the reason recorded at the site so nobody reintroduces it.
@@ -1100,7 +1100,7 @@ Format, one entry per fix:
   endpoint stubbed with a null-bearing payload — no backend was running, so this is not system-test evidence. Shows
   the five-row table with the malformed banner gone, an empty cell for every null, and `0/0` for the configured-zero
   indexer.
-- **Commit:** `58bc87852`
+- **Commit:** `6373bbe92`
 
 ### 2026-08-29 — Stop a config restore manufacturing duplicate indexers, and give the system-test jobs room to finish
 
@@ -1113,7 +1113,7 @@ Format, one entry per fix:
   CI's precondition (three same-host mock indexers) restored between arms — **2 failed / 10 passed before, 12 passed
   after**, the same two tests and the same assertion as CI. Full suite after the fix: **197 passed, 0 failed**.
   Independent review: PASS, no required and no minor findings.
-- **Commit:** `d7ba69fb8`
+- **Commit:** `6b94ba04c`
 
 **The defect.** The `hydra` fixture snapshots the config before each test and puts it back after. Secrets in that
 snapshot are the server's `***UNCHANGED***` markers, so once a test has replaced a whole list the server can no longer
@@ -1131,8 +1131,8 @@ downstream of the same poisoned instance. All fourteen went green on the one fix
 cost of a bad teardown is not bounded by the test that wrote it.
 
 **Why it surfaced only now.** The Java system tests had been failing on this branch, so the Playwright phase never ran.
-`f89dc7bc1` fixed those, and in doing so left three mock indexers on the shared instance where one had been there
-before — enough same-host records for the stripped keys to collide. The defect shipped in `ddc0dff58` on 2026-08-28
+`6b94ba04c` fixed those, and in doing so left three mock indexers on the shared instance where one had been there
+before — enough same-host records for the stripped keys to collide. The defect shipped in `d2fa1463b` on 2026-08-28
 and was invisible for a day behind an unrelated red.
 
 **The fix, and the principle behind it.** The fallback now keeps the list *as the test left it*, splicing the server's
@@ -1153,7 +1153,7 @@ and the uploaded artifacts. Raised to 75. A timeout that fires *during* the run 
 - **Why not a packet:** documentation and provenance text only; no code, contract, registry, or behavior touched.
 - **Paths:** `docs/frontend-migration/README.md` (opening paragraph), `docs/frontend-migration/CONTEXT.md` (Rollout section).
 - **Gates:** `npm run validate:migration` in `core/ui-react` passes. No code changed, so no build, test, or Playwright run applies.
-- **Commit:** `ab9742071`
+- **Commit:** `0aa979bc6`
 - **Note:** both files still described the AngularJS-to-React replacement as a future plan (README's opening line, CONTEXT.md's
   Rollout section), even though `ADR-0023` accepted the migration on 2026-08-23 and FM-094/FM-095 executed the flip and removal
   that same week. `ADR-0023` already is the binding closing decision — this entry does not add a new one, it brings the
@@ -1174,7 +1174,7 @@ and the uploaded artifacts. Raised to 75. A timeout that fires *during* the run 
   contaminated as CI's was, `config-downloading` + `config-main` **4 failed without the baseline, 10/10 with it**;
   full suite from that contaminated instance **197 passed, 0 failed**. Independent review: PASS, no required and no
   minor findings.
-- **Commits:** `563f5b293` (baseline), `8cb0d0c22` (ghcr.io)
+- **Commits:** `0d63f54c1` (baseline), `0d63f54c1` (ghcr.io)
 
 **All nine `config-*` specs had no `beforeEach` between them.** They asserted against the configuration while
 establishing none of it, so their starting state was whatever the previous test left on the shared instance. Every
@@ -1224,7 +1224,7 @@ checked against the ghcr.io registry API first (all 200, including the pinned `r
   `core/src/main/java/org/nzbhydra/debuginfos/DebugInfosWeb.java`, `tests/system/tests/{fixtures.ts,system.spec.ts}`
 - **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; `check:api` reports generated OpenAPI
   types still current; `tests/system.spec.ts` **14 passed**; full suite **197 passed, 0 failed**.
-- **Commit:** `18c5ed445`
+- **Commit:** `bd4e73657`
 
 `PUT /internalapi/debuginfos/rotatelog` archives each active log file to a timestamped neighbour and truncates the
 original; `PUT /internalapi/debuginfos/clearlog` truncates without archiving. Both `ROLE_ADMIN`, neither exposed in
@@ -1242,11 +1242,11 @@ survives both.
 
 ### 2026-08-29 — Reverted: bumping the deprecated GitHub Actions broke the pipeline at startup
 
-- **Commits:** `238d88e1e`, reverted by `400f0a5f1`
+- **Commits:** `bd4e73657`, reverted by `bd4e73657`
 
 Every run annotates three deprecations (Node 20 runtime, `setup-java` v4, the `adopt` distribution). Bumping the eight
 actions and `adopt`→`temurin` made `system-test` and `Native Build` stop with *"This run likely failed because of a
-workflow file issue"* before any job started, on a pipeline that was **fully green at `5b94bf9bf`**.
+workflow file issue"* before any job started, on a pipeline that was **fully green at `7e7547328`**.
 
 Established before reverting: `workflow_dispatch` on both workflows reproduces it, so it is the file and not a
 transient; Frontend CI passes at the same commit using `actions/checkout@v7` and `actions/setup-node@v7`, clearing
@@ -1264,7 +1264,7 @@ at a time. Logged below.
   `core/src/test/java/org/nzbhydra/config/FileSystemBrowserTest.java`
 - **Gates:** `mvn test -Dtest=FileSystemBrowserTest` **3/3**; red arm with the old `catch` restored errors on exactly
   the one new assertion with the identical CI exception; `git diff --check` clean.
-- **Commit:** `f469bf67b`
+- **Commit:** `9f2830ddf`
 
 `config-main.spec.ts:276` failed with an unexpected 500 from `POST /internalapi/config/folderlisting`, passed on
 retry, and CI reported **1 flaky**. It was not flaky. `FileSystemView.getFileSystemView()` reaches AWT, the
@@ -1317,7 +1317,7 @@ symbol — a rule the repository already states in packet prompts and does not e
 - **Gates:** `npm run knip` now exits 0 with no findings (was exit 1, one finding); `npm run typecheck`,
   `format:check`, `build`, `check:api`, `validate:migration` pass; `npm run lint` 0 errors / 15 pre-existing warnings;
   `npm run test -- --run` 1550 passed; `git diff --check` clean.
-- **Commit:** `c0c2dd9fb`
+- **Commit:** `8bb0ca1a2`
 
 
 ### 2026-08-30 — Fold `search-history.spec.ts`'s local `pageFits` into `pageFitsHorizontally`
@@ -1328,7 +1328,7 @@ symbol — a rule the repository already states in packet prompts and does not e
 - **Gates:** `npx tsc --noEmit` clean; `npx prettier --check` clean; `python3 misc/run_gui_systemtest.py --runtime
   local -- tests/search-history.spec.ts` 4 passed against a real JVM core, including the affected `:230` scroller
   test; `git diff --check` clean.
-- **Commit:** `c4929e98e`
+- **Commit:** `8bb0ca1a2`
 
 
 ### 2026-08-30 — Pin the `history-refine-drawer` selector with an assertion
@@ -1340,7 +1340,7 @@ symbol — a rule the repository already states in packet prompts and does not e
   `npm run lint` 0 errors / 15 pre-existing warnings; `npm run test -- --run` 1550 passed; `git diff --check` clean.
   Pinning verified by mutation: renaming the emitted id turns the test red on the missing selector, reverting turns it
   green.
-- **Commit:** `2f1dd653d`
+- **Commit:** `8bb0ca1a2`
 
 ### 2026-08-30 — Add the FM-140 run-order attributes to the java-phase test's hand-built Namespace
 
@@ -1353,7 +1353,7 @@ symbol — a rule the repository already states in packet prompts and does not e
 - **Paths:** `misc/test_run_gui_systemtest.py`
 - **Gates:** target test observed failing before the fix; `python3 -m unittest misc.test_run_gui_systemtest` after —
   27 tests, OK; `git diff --check` clean.
-- **Commit:** `c8f6123b9`
+- **Commit:** `2632ec18b`
 
 ## Open candidates
 
@@ -1378,7 +1378,7 @@ visibility.
   Both verified 2026-09-04; neither will be attempted.
 
 - **The React UI has no session-expired recovery for the 401 an expired OIDC (or form) session now produces.** Issue
-  #1080's server half is fixed (`60a121aae`): in OIDC mode an expired-session background request to `/internalapi/**`
+  #1080's server half is fixed (`88db9bc87`): in OIDC mode an expired-session background request to `/internalapi/**`
   gets a plain 401 instead of a redirect into the cross-origin authorization flow the browser could not complete
   (`status: -1`, plus the Authelia consent race between concurrent requests). What remains is the client half: a query
   or mutation that fails with `UnauthorizedError` today surfaces as an ordinary error state, and the only recovery is
@@ -1397,7 +1397,7 @@ visibility.
   resolves to the refine input only because the refine bar precedes the table in DOM order. The test is green today;
   scoping it through `getByTestId("history-refine-bar")` like the 2026-09-01 refine-locator quickfix did elsewhere is
   a one-line **`/fm-quickfix`**, left unfixed there because one fix per invocation and this one was not failing.
-  Surfaced 2026-09-01 while fixing run 33494077066. **Fixed 2026-09-02 (`5c459ad47`),** see the ledger entry below.
+  Surfaced 2026-09-01 while fixing run 33494077066. **Fixed 2026-09-02 (`dc006c7d9`),** see the ledger entry below.
 
 - **The group-episodes help dialog's acknowledgement was reported never to persist, and the report is not
   reproducible from the client code.** Symptoms observed live against a real backend on 2026-08-31: clicking OK issued
@@ -1410,7 +1410,7 @@ visibility.
   the PUT; a throwaway `SearchPage`-level integration test (full page, real `DialogProvider`, real search, with and
   without `StrictMode`) also went green first try. What is left to distinguish is environmental — CSRF cookie, session
   user — and needs a running instance with the network panel, not another unit test. A stale served bundle is ruled
-  out: the observed jar was rebuilt the same evening (2026-08-31 20:09, from `f58de8dbb`), after every commit touching
+  out: the observed jar was rebuilt the same evening (2026-08-31 20:09, from `8ce112f1e`), after every commit touching
   this path. The observed rig ran `-Dmain.useCsrf=false` with auth `NONE` and the `systemtest` profile. Needs
   reproduction before it can be routed. Surfaced 2026-08-31.
 
@@ -1442,7 +1442,7 @@ visibility.
   makes refine selections search-scoped and unpersisted. *(Headline corrected 2026-08-29, when the mechanism was a
   guess; the correction was right to distrust it and wrong to conclude the carrier was outside the config.)*
 
-- ~~**A Java system test leaves `main.showNews` false on the shared CI instance.**~~ **Fixed 2026-08-29 (`f7e4d127a`,
+- ~~**A Java system test leaves `main.showNews` false on the shared CI instance.**~~ **Fixed 2026-08-29 (`ed8ed5f72`,
   FM-134).** Reproduced live: the test takes `showNews` true→false, and false→true on a second run, proving a toggle.
   **The product-bug hypothesis is discharged** by direct probe — GET, PUT back, disk reload all leave it true, so no
   defect faces real users. The candidate concluded otherwise because it searched for a literal `showNews: false`; the
@@ -1471,7 +1471,7 @@ visibility.
   field defaults for `downloading.nzbAccessType`/`updateStatuses` (`REDIRECT`/`false`) where the effective shipped
   defaults are `baseConfig.yml`'s `PROXY`/`true` — the same source it treats as authoritative for `showNews` — so the
   blast radius claimed for those two fields is overstated; the fields already match the real baseline. Separately it
-  describes `563f5b293`'s baseline as covering "nine config specs", which FM-133 (`bf3a0e98c`) superseded by making it
+  describes `0d63f54c1`'s baseline as covering "nine config specs", which FM-133 (`ed8ed5f72`) superseded by making it
   an `auto` fixture for the whole suite. Neither affects the fix or the discharge. Routed to **`/fm-quickfix`**.
   Surfaced 2026-08-29 by FM-134's review.
 
@@ -1661,7 +1661,7 @@ visibility.
   by FM-126's review.
 
 - **Bump the deprecated GitHub Actions, one at a time.** The three deprecation annotations on every run are still
-  there; `238d88e1e` addressed them all at once and broke workflow startup, and was reverted in `400f0a5f1` — see the
+  there; `bd4e73657` addressed them all at once and broke workflow startup, and was reverted in `bd4e73657` — see the
   entry above for everything already ruled out. `actions/checkout@v7` and `actions/setup-node@v7` are known good
   (Frontend CI ran on them). The remaining suspects are `setup-java@v6` — which is also the release that removes the
   `adopt` distribution, so those two must move together — `upload-artifact@v7`, `download-artifact@v8`,
@@ -1669,7 +1669,7 @@ visibility.
   **`/fm-quickfix`**, repeatedly. Surfaced 2026-08-29.
 
 - ~~**`RawLogView` renders the entire log file into one unbounded `<pre>`.**~~ **Settled 2026-08-29 by ADR-0047: the
-  owner ruled it stays unbounded.** Recorded by FM-135 (`5991b313f`) on `F-SYSTEM-LOG` and `API-SYSTEM-LOG-CURRENT`,
+  owner ruled it stays unbounded.** Recorded by FM-135 (`ed8ed5f72`) on `F-SYSTEM-LOG` and `API-SYSTEM-LOG-CURRENT`,
   with `LOG_VIEW_BUDGET_MS` repointed from "stopgap" to the decision that accepts the render it is sized for. One
   consequence is worth carrying: the ruling was made without the measurement phase the packet asked for, so the record
   holds **no measured cost** for a large-log instance and any reopening starts by producing one. Kept below rather
@@ -1679,7 +1679,7 @@ visibility.
   late in the run the file is megabytes, and that test needed a 120s budget where every other test uses 30s. A real
   instance with a large log pays the same cost. Routed to a **task packet** if it is worth bounding at all — it is a
   product decision, not a test fix. Surfaced 2026-08-29.
-  **Partly overtaken 2026-08-29 (`18c5ed445`):** the log tests now rotate the log first, so they no longer depend on
+  **Partly overtaken 2026-08-29 (`bd4e73657`):** the log tests now rotate the log first, so they no longer depend on
   suite position and `LOG_VIEW_BUDGET_MS` is no longer a race against the suite's growth. The unbounded render itself
   is untouched, so the product-side question stands on its own merits rather than as a test problem.
   Routed to **FM-135** (2026-08-29), written so that "leave it as is, and record why" is an acceptable outcome — the
@@ -1763,7 +1763,7 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   establish half of. The fix is cross-module (either FM-100's panel renders the report inside its own DOM, or it relaxes
   focus enforcement). Surfaced 2026-08-26 by FM-101's re-review. Half (a) was routed to **FM-115** by the 2026-08-27
   batch and is **done** 2026-08-28; half (b) was settled 2026-08-29 by ADR-0037 (accept the focus limitation, forbid
-  actionable toast content) and was discharged by **FM-127**, done 2026-08-29 (`4b8f46962`).
+  actionable toast content) and was discharged by **FM-127**, done 2026-08-29 (`cfa5d350e`).
   **Both halves are closed, but half (b) was closed by acceptance, not by repair.** FM-127 removed the actionable
   content — the toast type admits no React element at all now, so the compiler enforces it — and a toast's *own close
   button* remains untabbable while a modal is open, which ADR-0037 accepts with Escape as the keyboard route. That
@@ -1803,7 +1803,7 @@ entry, 2026-08-27. It stays first because FM-113 is ready and independent, not b
   test at any level covers post-bulk-send row state — also, legacy's own bulk path never marked rows
   (`search-results-controller.js:986-999` only deselects; `.sabnzbd-success` belonged to the per-row button React does
   not have). The packet establishes the truth empirically first, then pins and records it.
-  **Discharged 2026-08-29 (`44fa0d3f4`), and the stated cause was wrong.** The chip mapping was neither missing nor
+  **Discharged 2026-08-29 (`cfa5d350e`), and the stated cause was wrong.** The chip mapping was neither missing nor
   contradicted — it was *unreachable*. `actions.ts` validated `addedIds`/`missedIds` with Zod's `.int()`, which bounds
   by the safe-integer range, while the backend sends `Collection<Long>` hashes, so every successful bulk response was
   rejected and reported to the user as "Unable to complete the download action." The chip was one symptom of a defect
@@ -2014,8 +2014,8 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   (1149/1149 when characterised; the suite is 1506 as of 2026-08-28 — the count drifted, the mechanism did not). Characterized by FM-111's implementer across 15 runs (9 on head, 6 on a stashed base tree) and
   confirmed unrelated on mechanism by its reviewer: the file shares no module with the search feature, so code motion
   there cannot reach it. The fix is to unmount/flush before teardown, with a regression test. Surfaced 2026-08-24.
-  **Fixed 2026-08-28 by FM-122 (`c264c296e`), and this entry's rate was wrong.** Measured across 50 full-suite runs on
-  a true `3263ea69a` baseline: **1 occurrence, p≈0.02** — not the ~1-in-10 recorded above. FM-111's characterisation
+  **Fixed 2026-08-28 by FM-122 (`2651efecd`), and this entry's rate was wrong.** Measured across 50 full-suite runs on
+  a true `6609a915c` baseline: **1 occurrence, p≈0.02** — not the ~1-in-10 recorded above. FM-111's characterisation
   saw it more often; both observations can be true at different times, but the number here sent FM-122 into a campaign
   whose stated confidence its own data could not support. Mechanism, now observed rather than inferred: MUI
   `FocusTrap` polls focus every 50ms and clears the interval only on unmount (`FocusTrap.js:241-249`), so an abandoned
@@ -2062,7 +2062,7 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   reading "Disable ..."). Observed 2026-08-23; reset by hand via `PUT /internalapi/debuginfos/sensitiveDataLogging?enabled=false`.
   The durable fix is a fixture that restores the setting regardless of outcome, which is the same shape as any other
   server-mutating test in this suite — worth a sweep for others rather than fixing this one alone.
-  **Fixed 2026-08-28 by FM-124 (`ddc0dff58`).** A `sensitiveDataLogging` fixture captures the value before the test and
+  **Fixed 2026-08-28 by FM-124 (`d2fa1463b`).** A `sensitiveDataLogging` fixture captures the value before the test and
   PUTs it back in teardown whatever the outcome. The sweep this entry asked for was done and independently re-derived
   by the reviewer across all 20 spec files: ~15 mutation sites, no further gaps of this shape. Worth keeping from it —
   `sensitiveDataLogging` needed its own fixture because it toggles a static encoder field outside `BaseConfig`
@@ -2076,7 +2076,7 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   2026-08-23 while gating the visual-language quickfix above, which could not have caused it (theme-only diff). Fix belongs in the test — dismiss or await the dialog before probing, or scope the locator — contained enough for a
   quickfix.
   **Closed 2026-08-28, and it was already closed when this was logged.** `focus-indication.spec.ts:1095-1100`
-  awaits `news-dialog`, dismisses it, and awaits it hidden before probing — landed in `d53c903cf` on
+  awaits `news-dialog`, dismisses it, and awaits it hidden before probing — landed in `c0bcc3dc1` on
   2026-08-23, the same day this candidate was written. Verified in-tree by the coordinator rather than
   taken from the batch designer's report. The lesson is about the ledger, not the test: a candidate logged
   the same day it is fixed goes stale immediately and then reads as live work for five days. Check the tree
@@ -2085,7 +2085,7 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   bounds the whole run), so any documented full-suite command needs `--global-timeout=1800000` to finish at all; without it the
   run ends `timedout` with reporters unflushed. Raise it or split the suite. Deferred explicitly by FM-094.
   **Checked 2026-08-27:** still `300_000` at `tests/system/playwright.config.ts:12`.
-  **Fixed 2026-08-28 (`ed356d56b`), and this candidate was wrong about its own scope.** Raising
+  **Fixed 2026-08-28 (`6609a915c`), and this candidate was wrong about its own scope.** Raising
   `globalTimeout` alone would have changed nothing observable: `misc/run_gui_systemtest.py`'s `--test-timeout`
   defaults to 300 seconds around the whole `npx playwright test` subprocess and fires first, killing Playwright
   before it can flush. Both are now 1800s. The suite was measured at **197 tests, 5.1 minutes** green — the
@@ -2759,7 +2759,7 @@ their text and relative order are unchanged.
   `entry.label`/`entry.helpText` in at least one per-tab block. Note it means FM-116's own two copies were synced by
   hand and verified by hand, not by any gate. Surfaced 2026-08-27 by FM-116.
 
-- **FM-117's commit message under-counts its own mutation evidence by one.** `0c6af3e32` states that deleting the two
+- **FM-117's commit message under-counts its own mutation evidence by one.** `d60aa3d75` states that deleting the two
   raised-surface rules (`MuiAccordion.styleOverrides.root` and `MuiAutocomplete.styleOverrides.paper`) gives
   **6 failed / 35 passed**. FM-117's fresh re-review reproduced the mutation in an isolated `git archive` copy, twice,
   under both plausible readings of "delete the two rules" — full block removal, and stripping only the
@@ -2768,7 +2768,7 @@ their text and relative order are unchanged.
   The substance is sound and this is the good outcome: the rules are load-bearing and a regression flips real
   assertions rather than leaving a vacuously green suite. Only the number is wrong. Left uncorrected deliberately —
   the claim lives in a commit message, and rewriting local history to fix an off-by-one costs more than it buys. The
-  packet's acceptance record (archived at `cac90200e`) and this entry carry the true count. Surfaced 2026-08-28 by
+  packet's acceptance record (archived at `d60aa3d75`) and this entry carry the true count. Surfaced 2026-08-28 by
   FM-117's re-review.
 
   Worth noting *why* this was caught: the reviewer re-ran the mutation instead of reading the claim. Nine tasks in
@@ -2800,7 +2800,7 @@ their text and relative order are unchanged.
   been decorative. FM-124's implementer reported it and correctly refused to reformat files outside its allowlist.
   Mechanically `npx prettier --write` on those five files; the reason to log it rather than silently fix it is that a
   formatting gate nobody runs is the same failure mode as a test nobody can see fail. Surfaced 2026-08-28 by FM-124.
-  **Fixed 2026-08-28 (`0d1591172`).** `prettier --write` output only, verified semantically rather than assumed:
+  **Fixed 2026-08-28 (`d2fa1463b`).** `prettier --write` output only, verified semantically rather than assumed:
   stripping all whitespace leaves four of the five files still differing, because collapsing a wrapped call also
   drops its trailing comma; stripping whitespace *and* commas leaves all five byte-identical to the previous HEAD.
   Gates: `tsc --noEmit` clean, `prettier --check .` clean, `git diff --check` clean. The full system suite was
@@ -2810,7 +2810,7 @@ their text and relative order are unchanged.
 
 - **The `SearchWorkspace` autocomplete flake reproduces on demand, and only one way.** Confirmed 2026-08-28 by a
   controlled A/B on an idle, load-gated machine, 50 full-suite runs per arm at ~22.5s mean: **5/50 on pristine
-  `b20ee2b53`** and **6/50 with FM-123's changes applied**, always
+  `d2fa1463b`** and **6/50 with FM-123's changes applied**, always
   `SearchWorkspace.test.tsx › "should close the autocomplete dropdown when the user clicks anywhere else, but not when
   clicking a suggestion"` failing `expect(queryByTestId("autocomplete-popup")).not.toBeInTheDocument()`. Pooled with
   FM-122's 12/100 that is 23/200, p ≈ 0.11. Routed to **FM-125**.
@@ -2824,7 +2824,7 @@ their text and relative order are unchanged.
   shows bare `npx vitest run` for 74 of them). No campaign artifacts survived to audit, so the actual defect in that
   measurement is unidentified — a silent pass/fail bug in its loop harness is a hypothesis, not a finding.
 
-- **The `SearchWorkspace` autocomplete flake is fixed** — 2026-08-28 by FM-125 (`2b1930517`). Mechanism: `waitFor`
+- **The `SearchWorkspace` autocomplete flake is fixed** — 2026-08-28 by FM-125 (`bd86eaaa0`). Mechanism: `waitFor`
   resolves on the popup's DOM mutation at commit time, while `closeIfOutside` is attached by a *passive* effect
   flushed afterwards, so the test's outside `mousedown` could fire before the listener existed. Closed test-side with
   `await act(async () => {})`; `SearchWorkspace.tsx` is unchanged, because no real pointer click can land inside a
@@ -2838,7 +2838,7 @@ their text and relative order are unchanged.
   mtimes rather than the traces quoted at it. The conclusion held, but "all" that is "most" is the recurring
   overstatement in this batch.
 
-- **A filename case collision broke the native Windows build, invisibly, on every run.** Fixed 2026-08-28 (`e8978601d`)
+- **A filename case collision broke the native Windows build, invisibly, on every run.** Fixed 2026-08-28 (`6038c7fbd`)
   by renaming `src/app/status/startupChecks.ts` to `startupCheckRunner.ts` (and its test alongside).
   `StartupChecks.tsx` and `startupChecks.ts` differed only in one letter's case, so `./status/StartupChecks` resolved
   to the component on Linux and could resolve to the module on Windows, where it exports no `StartupChecks` and rollup
@@ -2878,7 +2878,7 @@ their text and relative order are unchanged.
 - **Paths:** `core/src/main/java/org/nzbhydra/systemtest/SystemTestStateResetWeb.java`
 - **Gates:** `mvn --batch-mode -pl core test -DskipTests=false -Dtest=SystemTestStateResetWebTest` → 2 tests, 0F/0E;
   `git diff --check` clean.
-- **Commit:** `64d0b972a`
+- **Commit:** `283791f12`
 - **Left open, routed here durably** (was only in FM-141's handoff): ADR-0048's phrase "the state a config PUT cannot
   reach" is overstated — `genericStorage` and `main.welcomeShown` are plain `BaseConfig` fields that round-trip through
   `GET`/`PUT /internalapi/config`; the reset's unique value is supplying the baseline *values* (and real secrets), not
@@ -2891,112 +2891,112 @@ their text and relative order are unchanged.
   5.2 minutes). No code touched.
 - **Paths:** `docs/frontend-migration/MAINTENANCE.md`
 - **Gates:** `npm run validate:migration` valid; `git diff --check` clean.
-- **Commit:** `20c8aed60`
+- **Commit:** `283791f12`
 
 ### 2026-08-30 — Fix the false universal in `fixtures.ts`'s externalTools doc comment
 
 - **Why not a packet:** comment-only; recorded FM-141 review minor finding.
 - **Paths:** `tests/system/tests/fixtures.ts`
 - **Gates:** `npx tsc --noEmit` clean; `npx prettier --check tests` clean; `git diff --check` clean.
-- **Commit:** `6d28ac19c`
+- **Commit:** `283791f12`
 
 ### 2026-08-30 — Import `Arrays` in `HistoryTest` instead of an inline FQN
 
 - **Why not a packet:** cosmetic import consistency; recorded FM-140 review minor finding.
 - **Paths:** `tests/system/src/test/java/org/nzbhydra/HistoryTest.java`
 - **Gates:** `mvn --batch-mode -pl org.nzbhydra.tests:system test-compile -DskipTests=false` green; `git diff --check` clean.
-- **Commit:** `3c721deec`
+- **Commit:** `283791f12`
 
 ### 2026-08-30 — Drop the stale `initialNzbhydra.yml` mention from `tests/system/.prettierignore`
 
 - **Why not a packet:** one-line comment correction; the file it named was deleted by FM-139 (its own handoff logged this).
 - **Paths:** `tests/system/.prettierignore`
 - **Gates:** `npx prettier --check tests` clean.
-- **Commit:** `7f80a155a`
+- **Commit:** `283791f12`
 
 ### 2026-08-31 — Read the live safe config on the search page (stale indexer catalog)
 
 - **Why not a packet:** one contained bugfix in a single module (`SearchPage.tsx` swapped three `bootstrap.safeConfig` reads for the ADR-0017 `useSafeConfig` value), with a regression test observed failing before and passing after.
 - **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** in `core/ui-react`: `typecheck` clean; `lint` 0 errors (15 pre-existing warnings); `format:check` clean; `test -- --run` 1559 passed; `build` green; `check:api` current; `validate:migration` valid. Repo root: `git diff --check` clean.
-- **Commit:** `c86b5882c`
+- **Commit:** `3be03e10d`
 
 ### 2026-08-31 — Wait for the chips-row Collapse to settle before probing the constraint-chip focus ring
 
 - **Why not a packet:** assertion-timing repair in a test; the app's settled state is compliant (measured live: the clip exists only while FM-149's fold transition runs with MUI's transient `overflow: hidden`). Surfaced by FM-154's system-test run and reproduced on the untouched baseline.
 - **Paths:** `tests/system/tests/focus-indication.spec.ts`
 - **Gates:** `tests/system`: `npx tsc --noEmit` clean; `npx prettier --check` clean; full `focus-indication.spec.ts` 10/10 green on a fresh instance via `run_gui_systemtest.py` (exit 0). Two other failures seen only on a long-lived shared instance (stale downloader 500, accumulated search state) are environmental, pre-existing, and absent on the fresh run.
-- **Commit:** `605552eaa`
+- **Commit:** `2ac8c5fdd`
 
 ### 2026-08-31 — Replace stale DownloadActions line citations with symbol references
 
 - **Why not a packet:** documentation-only; recorded FM-150 review minor finding.
 - **Paths:** `docs/frontend-migration/FEATURES.yaml`
 - **Gates:** `validate:migration` valid; `git diff --check` clean.
-- **Commit:** `942dd03fb`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Record the removed history-refine caption element in C-HISTORY-REFINE-BAR
 
 - **Why not a packet:** registry documentation only; recorded FM-153 review minor finding.
 - **Paths:** `docs/frontend-migration/COMPONENTS.yaml`
-- **Gates:** recorded as `validate:migration` valid, **which was false** — the gate command piped the validator through `tail`, masking a failing exit code caused by a `): ` sequence this very entry's note introduced (YAML read a nested mapping). Repaired in `28857cde8` below; the validator's real exit code is now checked.
-- **Commit:** `b968eca56`
+- **Gates:** recorded as `validate:migration` valid, **which was false** — the gate command piped the validator through `tail`, masking a failing exit code caused by a `): ` sequence this very entry's note introduced (YAML read a nested mapping). Repaired in `8d9ae9269` below; the validator's real exit code is now checked.
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Correct the colgroup comment's overflow neighbour and direction
 
 - **Why not a packet:** comment-only (verified line by line); recorded FM-150 review minor finding.
 - **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`
 - **Gates:** `typecheck` clean; `lint` 0 errors; `format:check` clean; `git diff --check` clean.
-- **Commit:** `b3e0d1b61`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Update App.tsx's provider comment to what FM-155 actually did
 
 - **Why not a packet:** comment-only; recorded FM-155 review minor finding.
 - **Paths:** `core/ui-react/src/App.tsx`
 - **Gates:** `typecheck` clean; `format:check` clean; `git diff --check` clean.
-- **Commit:** `0e6fa0dbe`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Make the download tooltip repeat the accessible name verbatim
 
 - **Why not a packet:** label polish, no behavior/testid/aria change; recorded FM-150 review minor finding.
 - **Paths:** `core/ui-react/src/features/search/results/DownloadActions.tsx`
 - **Gates:** results vitest suites 98/98; `typecheck`/`lint` 0 errors/`format:check`/`build` green; `git diff --check` clean.
-- **Commit:** `0819ec073`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Pin the select-all square's selectAllOutline consumption path
 
 - **Why not a packet:** test-only guard; recorded FM-154 review minor finding. Observed red with the palette path deliberately broken, green restored.
 - **Paths:** `core/ui-react/src/features/search/results/SelectionMenu.test.tsx` (new)
 - **Gates:** new test red-on-defect/green-on-fix; `typecheck`/`lint` 0 errors/`format:check`/`knip` green; `git diff --check` clean.
-- **Commit:** `05113dcd2`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Expose full refine option labels via a native title on hover
 
 - **Why not a packet:** UX polish with no rendered-layout change (native `title` attribute); recorded FM-153 review minor finding.
 - **Paths:** `core/ui-react/src/components/refine/RefineMultiselect.tsx`
 - **Gates:** refine vitest suites 36/36; `typecheck`/`lint` 0 errors/`format:check`/`build` green; `git diff --check` clean.
-- **Commit:** `ea4c37924`
+- **Commit:** `8d9ae9269`
 
-### 2026-08-31 — Repair the COMPONENTS.yaml note b968eca56 broke
+### 2026-08-31 — Repair the COMPONENTS.yaml note 8d9ae9269 broke
 
 - **Why not a packet:** one-character-class YAML repair enabling `validate:migration`; authored by the FM-156/157 designer mid-batch, committed by the coordinator.
 - **Paths:** `docs/frontend-migration/COMPONENTS.yaml`
 - **Gates:** `validate:migration` exit code 0 (checked unpiped).
-- **Commit:** `28857cde8`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Move openRefineMultiselect into fixtures.ts
 
 - **Why not a packet:** mechanical dedup of a test helper FM-153's allowlist forced into three specs; recorded FM-153 review minor finding.
 - **Paths:** `tests/system/tests/{fixtures.ts,search-history.spec.ts,downloads.spec.ts,notification-history.spec.ts}`
 - **Gates:** `npx tsc --noEmit` clean; prettier clean; the four affected specs 24/24 on a fresh real-backend instance (exit 0).
-- **Commit:** `eb04032c9`
+- **Commit:** `8d9ae9269`
 
 ### 2026-08-31 — Harden the theme selector captures and restore semantics
 
 - **Why not a packet:** spec-only assertion/capture improvements; recorded FM-154 minors (selector-open capture theme, worst-case mobile label — now asserted non-overflowing) and FM-155 minor (restore clears the preference instead of pinning literal `grey`). Three same-file findings batched into one verified commit — a deliberate deviation from one-fix-per-commit, each finding listed in the message.
 - **Paths:** `tests/system/tests/smoke.spec.ts`
 - **Gates:** `npx tsc --noEmit` clean; prettier clean; `smoke.spec.ts` 11/11 within the 24/24 fresh-instance run (exit 0).
-- **Commit:** `daf8798b1`
+- **Commit:** `8d9ae9269`
 
 **Ledger discipline note (2026-08-31):** the ten entries above were appended in one batch after their fix commits rather than each in its own immediate second commit — a process deviation, recorded rather than hidden.
 
@@ -3005,14 +3005,14 @@ their text and relative order are unchanged.
 - **Why not a packet:** dev-tooling fix with a drift-guard test; the served shell's link set (owner-authored) and the dev injection are now pinned to each other. Owner-requested.
 - **Paths:** `core/ui-react/vite/{devBackend.ts,devBackend.test.ts}`, `core/src/main/resources/templates/react.html` (owner's links, folded in at their request), `misc/images/favicons/favicon.svg` (owner's source copy)
 - **Gates:** devBackend vitest 9/9 (parity test observed red before the fix); `typecheck`/`lint`/`format:check` exit 0; live Vite dev server verified emitting all six icon links including `favicon.svg`.
-- **Commit:** `1a1ad2f79`
+- **Commit:** `601cd9ffe`
 
 ### 2026-08-31 — Larger field labels; separated label/value text in the dark theme
 
 - **Why not a packet:** owner-requested styling polish, tried live on the dev server and approved on screen by the owner (the Visual Gate's approval, given interactively rather than via a strip); no behavior, contract, or testid change. Two same-session tweaks in one commit, both enumerated in its message.
 - **Paths:** `core/ui-react/src/app/{theme.ts,theme.test.ts}`
 - **Gates:** theme suite 122/122 (FM-090 notch pin generalized to legend = 0.75 x label); full vitest 1704/1704; typecheck/lint/format/build/knip/validate:migration/validate:focus-affordances exit 0; `notched-label-geometry.spec.ts` 2/2 in a real browser against an isolated :5176 instance packaged from the diff.
-- **Commit:** `b853699ed`
+- **Commit:** `8ce112f1e`
 - **Note:** dark's `text.secondary` (#7e868d) now sits a step under `surfaces.mutedText` (#8a8a8a) — an accepted inversion, documented in the theme block; revisit only if the muted/secondary hierarchy bothers the owner in practice.
 
 ### 2026-08-31 — Stop holding the search request behind the live-progress handshake
@@ -3020,7 +3020,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** single-module behavior repair inside an existing feature, shipping its own regression test; no capability, contract, `data-testid`, or API/URL change.
 - **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** `SearchPage.test.tsx` 46/46 (the new "without waiting for the live subscription handshake" case observed red first — 0 search requests instead of 1); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `74069fb6d`
+- **Commit:** `8ce112f1e`
 - **Note:** `subscribeSearchState` is now attached concurrently rather than awaited, so a blocked websocket no longer costs every search the transport's 1500ms ready timeout before the HTTP request is issued. `setState({loading: true})` also moved ahead of `await navigate(...)`.
 
 ### 2026-08-31 — Give the search submit button disabled and busy states
@@ -3028,7 +3028,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** UX repair inside an existing feature with its own regression tests; no new capability, contract, `data-testid`, or API/URL change.
 - **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx` (new optional `busy` prop), `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** `SearchPage.test.tsx` + `SearchWorkspace.test.tsx` 92/92 (both new assertions observed red first); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `7722cf751`
+- **Commit:** `8ce112f1e`
 - **Note:** submitting with no indexers selected was a silent no-op that a stale comment described as already disabled. Disabling also removes the form's implicit submission, so Enter matches the button. Two existing cases that re-clicked submit mid-search were adjusted rather than weakened — one now waits for the auto-submit to settle, the other submits the form directly, since overlapping submissions still arise from the page's non-button paths.
 
 ### 2026-08-31 — Watch only the search fields the workspace renders
@@ -3036,7 +3036,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** render-path-only change inside one component, with an assertion pinning it; no contract, `data-testid`, or API change.
 - **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx`
 - **Gates:** `SearchWorkspace.test.tsx` + `SearchPage.test.tsx` 93/93 (the new eligible-indexers case observed red first); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `bc5198de7`
+- **Commit:** `8ce112f1e`
 - **Note:** the blanket `watch()` subscribed the whole workspace to every field, so each keystroke re-rendered the category select, all indexer checkboxes, and every advanced input, and re-ran `catalog.eligibleIndexers` (filter + map + sort). Replaced with two `useWatch` subscriptions over module-level name constants, plus a `useMemo` on `eligibleIndexers`.
 
 ### 2026-08-31 — Memoize the search page's derived transports, catalog, and autocomplete callback
@@ -3044,7 +3044,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** render-path-only change inside one page, shipping a regression test; no contract, `data-testid`, or API change.
 - **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** `SearchPage.test.tsx` + `SearchWorkspace.test.tsx` 94/94 (the new debounce case observed red first — 0 autocomplete requests instead of 1); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `c1d946082`
+- **Commit:** `8ce112f1e`
 - **Note:** the page re-renders on every live progress tick and was rebuilding an `ApiTransport`, a `SockJsStompLiveTransport`, a full zod parse of the safe config (`createCategoryCatalog`), and the `autocomplete` closure each time. The closure was the behavioral one: it is a dependency of the workspace's 300ms debounce effect, so a page re-rendering faster than 300ms could defer the request indefinitely. `vi.useRealTimers()` added to the suite's `afterEach`.
 
 ### 2026-08-31 — Remove the search page's second loading affordance
@@ -3052,7 +3052,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** rendering and UX polish inside an existing feature, shipping a regression test; no capability, contract, `data-testid`, or API change.
 - **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`
 - **Gates:** `SearchPage.test.tsx` + `RecentSearches.test.tsx` + `SearchWorkspace.test.tsx` 104/104 (the new case observed red first — the trigger was not in the document at all); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `52064bdda`
+- **Commit:** `8ce112f1e`
 - **Rendering change, no screenshot strip:** the owner approved the direction in advance and waived the strip for this batch. A running search used to show an inline `CircularProgress` + "Loading…" *and* the blocking `search-status-modal` on the same `state.loading`; the inline one is gone. `RecentSearches` also used to unmount while loading, collapsing the workspace's action row — the form's last row — so the form shrank and regrew around every search; the trigger now stays mounted and goes `disabled` instead.
 
 ### 2026-08-31 — Fetch recent searches only when their menu is open
@@ -3060,7 +3060,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one component's query options, shipping a regression test; no contract, `data-testid`, or API change.
 - **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`, and both suites' tests
 - **Gates (batch-final set):** full vitest 1710/1710 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean.
-- **Commit:** `0617f05b1`
+- **Commit:** `8ce112f1e`
 - **Note:** the list was fetched on mount with the menu closed, from a private `QueryClient` built with no options — so TanStack's own defaults (`staleTime: 0`, `refetchOnWindowFocus: true`) rather than the app's, costing a request per page load, per tab refocus, and per reopen. The client stays private (its `refreshKey` keys the cache, and the page's tests render it without the app's provider) but now carries `DEFAULT_QUERY_STALE_TIME_MS` and window-focus refetching off; that constant is imported and read lazily inside `useState`'s initializer because the import closes an `App` → `router` → `SearchPage` → `App` cycle.
 
 ### 2026-08-31 — Debounce the refine sidebar's typed filter commits
@@ -3068,7 +3068,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** render-path-only change inside one feature's filter controls, shipping regression tests; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/search/results/filterControls.tsx`, `core/ui-react/src/features/search/results/RefineSidebar.tsx`, and both `RefineSidebar.test.tsx` and `SearchResults.test.tsx`
 - **Gates:** `RefineSidebar.test.tsx` + `SearchResults.test.tsx` 104/104 (the two new "coalesces a burst of typing" cases observed red first — 5 and 3 commits for 5 and 3 keystrokes); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `baaaef2ac`
+- **Commit:** `8ce112f1e`
 - **Note:** "Title contains" and the Size/Age/Grabs range fields wrote into `SearchResults`'s `ResultFilters` on every keystroke, and each write re-ran `filterResults` over every loaded result, the full re-sort and re-group, the selected-rewrite effect, `hasActiveFilters` (a `defaultFilters` scan plus two `JSON.stringify`), a synchronous `localStorage` write, and a full table re-render. `useDebouncedFilterValue` holds the typed value locally and commits it 175ms after the last keystroke; an outside change ("Clear all", the per-range clear, restored filters) is adopted during render and cancels a commit still in flight. Written without refs-in-render and without `setState` in an effect, both of which this repo's `react-hooks` lint rules reject.
 
 ### 2026-08-31 — Coalesce the results toolbar's re-measurement into one animation frame
@@ -3076,7 +3076,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one effect inside one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`
 - **Gates (batch-final set):** full vitest 1714/1714 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The new coalescing case observed red first — 2 synchronous measurements for 2 observer deliveries.
-- **Commit:** `ea350d559`
+- **Commit:** `8ce112f1e`
 - **Note:** the sticky `results-toolbar`'s height is tracked by a `MutationObserver` over `{characterData, childList, subtree}`, but the toolbar's own text carries the "N of M loaded / N filtered / N selected" counters — so every checkbox click and every committed filter change ran a callback that calls `getBoundingClientRect()`, forcing a synchronous reflow. The mutation-driven measure now goes through one `requestAnimationFrame` per burst (`ConfigNav.tsx`'s scroll-handler shape), with a direct-measure fallback where `rAF` is unavailable and a frame cancel in the effect's cleanup. The initial measure, `document.fonts.ready` and the `ResizeObserver` still measure directly, so the reason the observer exists — the action row's `<Select>`s populating asynchronously — is unchanged.
 
 ### 2026-08-31 — Bring a config save rejection on screen and put focus on it
@@ -3084,7 +3084,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one behavior on one existing feature's error path, two modules, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigFeedbackBanner.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates:** `ConfigShell.test.tsx` + `ConfigFeedbackBanner.test.tsx` 68/68 (the new case observed red first — focus stayed on `<body>` and the banner never took it); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `0c6d57c3d`
+- **Commit:** `d11d8c4cf`
 - **Note:** the sticky bar deliberately holds Save at every scroll position, but the report a refusal produces renders in flow at the top of the config area, so a save pressed from the bottom of a long tab changed nothing visible except an 8px dot in the settings nav. The banner now exposes its error alert through an optional `errorRef` and makes it programmatically focusable (`tabIndex={-1}`, out of the tab order — it is a report, not a control); the shell scrolls to it and focuses it when one appears. Plain `scrollIntoView({block: "start"})`: there is no `prefers-reduced-motion` convention in the repository to follow, and the feature's one other call site (`useSettingsNavigation`) is unqualified too. Deliberately skipped while FM-100's review panel is open — the report is then the raised portal layer inside the panel's own `FocusTrap`, which is the cross-module focus question already recorded in this ledger.
 
 ### 2026-08-31 — Focus the first invalid field when a config editor dialog refuses a draft
@@ -3092,7 +3092,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one behavior on an existing refusal path, mechanically identical at all five call sites (one call plus its import), shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** new `core/ui-react/src/features/config/invalidFieldFocus.ts`; `indexers/IndexerDialog.tsx`, `downloading/DownloaderDialog.tsx`, `external-tools/ExternalToolDialog.tsx`, `categories/CategoryDialog.tsx`, `auth/UserDialog.tsx` (all under `core/ui-react/src/features/config/`); `indexers/IndexersConfigTab.test.tsx`
 - **Gates:** `IndexersConfigTab.test.tsx` plus the downloading, external-tools, categories and auth config suites, 227/227 across 8 files (the new case observed red first — the caret stayed on the score field); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `d07bc52cf`
+- **Commit:** `d11d8c4cf`
 - **Note:** one commit for five dialogs because the change is the same mechanical shape in each. Two things were measured rather than assumed. The error's own `ref` is used instead of `setFocus(path)`, which throws for a path the form has not registered. And the tree is read from `control._formState` rather than from the rendered `formState`: the caller stands in the tick right after `await trigger()`, before React has re-rendered, so against the rendered snapshot the walk sees an empty error tree and focuses nothing — that was the first attempt here, and the regression test caught it.
 
 ### 2026-08-31 — Ask before the config save bar's Discard throws every edit away
@@ -3100,7 +3100,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one interaction on one existing control, through the confirmation service this same file already uses twice, shipping regression tests; no capability, contract, API, or persisted-data change, and the only `data-testid` involved is the one the new dialog introduces.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates:** `ConfigShell.test.tsx` 58/58 (both discard cases observed red first — no `config-discard-changes` dialog appeared at all); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `bd367ff32`
+- **Commit:** `d11d8c4cf`
 - **Note:** Discard sat beside Save with nothing between them and discarded every edit on every tab on one click, while the navigation guard asked a three-way question about the same loss. The new confirmation is two-answer, not three: the admin declined "save instead" by not pressing Save. The guard's own Discard answer still resets directly — it has already asked — so both paths keep sharing the one `discardChanges` definition.
 
 ### 2026-08-31 — Keep config edits typed while a save was in flight
@@ -3108,7 +3108,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one hook, no rendering change, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/config/useConfigSave.ts`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates:** `test --run src/features/config/` 625/625 across 26 files (the new case observed red first — the field held `normalized-by-server` and the typed value was gone); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `eff429c13`
+- **Commit:** `d11d8c4cf`
 - **Note:** only the Save button goes disabled during the PUT, so the form stays editable while the request is out, and the success path's `form.reset(savedResponse)` overwrote anything typed after Save — silent data loss on a slow connection. Of the two candidate fixes, keeping the edits beat disabling the form: a `<fieldset disabled>` does not reach MUI's non-native controls (a `Select`'s own surface stays clickable) and a busy overlay is a rendering change, hence a packet. The reset stays — `defaultValues` must become the server's normalized, re-masked copy — and a leaf-path diff between a submit-time snapshot and the form as it stands when the answer arrives is re-applied over it with `shouldDirty`. The snapshot has to be deep-cloned: `getValues()` spreads the form's value object only one level, so every section below it is the live object React Hook Form keeps writing keystrokes into, and without the clone the diff always finds nothing. That was the first attempt here, and the regression test caught it.
 
 ### 2026-08-31 — Return to the top of the page when a config tab is opened
@@ -3116,7 +3116,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one effect in one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates:** `test --run src/features/config/` 626/626 across 26 files (the new case observed red first — `scrollTo` was never called); `typecheck`, `lint`, `format:check` exit 0.
-- **Commit:** `36e8eea9c`
+- **Commit:** `d11d8c4cf`
 - **Note:** nothing in the application resets scroll on a route change — there is no `ScrollRestoration` and no scroll handling in `src/app/` or `src/router.tsx` — and the config tabs differ in length by an order of magnitude, so leaving the bottom of Searching for Categories left the viewport at an arbitrary offset. Kept config-scoped on purpose: a router-level `ScrollRestoration` is a decision about every route in the application, which is a packet. A layout effect rather than a passive one, so it can never land on top of FM-099's settings navigation, which scrolls to a specific row from a passive effect or a timer — every layout effect in a commit runs before any passive effect in it. Guarded on `window.scrollY !== 0`, which is both honest and what keeps jsdom's unimplemented `scrollTo` out of every test that merely switches tabs. The fieldset scrollspy and the "on this page" list assume window scrolling and are untouched — this scrolls the same window.
 
 ### 2026-08-31 — Offer a retry when the configuration cannot be loaded
@@ -3124,7 +3124,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one branch of one component, shipping a regression test; no capability, contract, API, or persisted-data change, and the only `data-testid` involved is the one the new control introduces.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.tsx`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates (batch-final set):** full vitest 1720/1720 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The new case observed red first — no `config-load-retry` element existed.
-- **Commit:** `f5d740102`
+- **Commit:** `d11d8c4cf`
 - **Note:** the error branch was a static `Alert`, so a failed `GET /internalapi/config` — the backend still starting, a dropped connection — left the whole configuration area dead with a browser reload as the only way out. The alert now carries a Retry action wired to the query's own `refetch()`, disabled while a fetch is in flight so it cannot be queued twice.
 
 ### 2026-08-31 — Stop refetching every query when the window regains focus
@@ -3132,7 +3132,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one client-wide default plus a mechanical move of one constant and its three references, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** new `core/ui-react/src/app/queryDefaults.ts`; `core/ui-react/src/App.tsx`, `core/ui-react/src/App.test.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run` on `App.test.tsx`, `SearchPage.test.tsx` and `StatsDashboardPage.test.tsx` 71/71 across 3 files. The new focus case observed red first — 2 indexer-status reads where 1 was expected.
-- **Commit:** `bbd4fd194`
+- **Commit:** `d11d8c4cf`
 - **Note:** react-query's `refetchOnWindowFocus` defaults to `true` and nothing overrode it at the client level, so any query past `DEFAULT_QUERY_STALE_TIME_MS` refetched on focus — alt-tabbing back to a history page re-POSTed the page read *and* its COUNT and moved the table under the pointer, for an action the reader never took. Legacy never did this, and every page that can go stale already carries a Refresh control. The same commit closes the `App` → `router` → `SearchPage` → `App` import cycle noted in the recent-searches entry above: `DEFAULT_QUERY_STALE_TIME_MS` now lives in a leaf module with no imports of its own, so the lazy-read-inside-`useState` comment that made the cycle safe is gone rather than merely justified. The test drives the real application and dispatches the `visibilitychange` event on `window`, which is what `focusManager` actually subscribes to — a `document` dispatch does not reach it, and that first attempt passed against the unfixed tree.
 
 ### 2026-08-31 — Debounce the history pages' filter round trips
@@ -3140,7 +3140,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one new feature-local hook plus the state wiring of three existing pages, the same mechanical shape at each, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change.
 - **Paths:** new `core/ui-react/src/features/stats/history/useHistoryFilterCriteria.ts`; `SearchHistoryPage.tsx`, `DownloadHistoryPage.tsx`, `NotificationHistoryPage.tsx` and the search/download suites (all under `core/ui-react/src/features/stats/history/`)
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 44/44 across 5 files. The new burst-of-typing case observed red against the pre-fix pages — 6 reads for 5 keystrokes where 1 was expected.
-- **Commit:** `ce3c315e4`
+- **Commit:** `25103af5e`
 - **Note:** the refine surface's free-text, number-range and datetime fields commit per input event, and all three routes keyed their query on the raw values, so typing "avengers" was eight POSTs — each a page read *and* its COUNT — with seven answers discarded. The hook splits the values the controls edit (still per keystroke, so nothing about the fields changes) from the criteria the query is keyed on, 275ms behind. The page number travels *inside* those criteria rather than beside them: a filter edit also returns to page 1, and committing the two separately would have made every filter change two requests instead of one, which is the opposite of the point. Paging and sorting change the key themselves and so commit a pending edit rather than racing it — that coalescing is why two existing cases now expect three and two reads where they expected four and five, with the request bodies they assert unchanged.
 
 ### 2026-08-31 — Key the history queries on the filter model, not the raw values
@@ -3148,7 +3148,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a query-key expression on three pages plus one guard on an existing handler, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change, and the request bodies are unchanged.
 - **Paths:** `SearchHistoryPage.tsx`, `DownloadHistoryPage.tsx`, `NotificationHistoryPage.tsx`, `SearchHistoryPage.test.tsx` (all under `core/ui-react/src/features/stats/history/`)
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 45/45 across 5 files. The new user-agent-toggle case observed red first — 2 reads where 1 was expected.
-- **Commit:** `502fe7aab`
+- **Commit:** `25103af5e`
 - **Note:** `historyFilterModel` already collapses empty text, whitespace, an unparseable numeric bound and a `boolean` left on "all" to no filter, so it is the honest identity of a history read; the raw values gave each of those states a key of its own, and typing a character and deleting it re-read a byte-identical page with its COUNT. The search page's own instance of the same waste is fixed with it: unchecking "Show user agents", a column toggle rather than a filter, wrote `{kind: "freetext", text: ""}` into the values whether or not anything had been typed there, so the dimension is now cleared only when it actually held something.
 
 ### 2026-08-31 — Reserve the fetch indicator's row instead of inserting it
@@ -3156,7 +3156,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** styling and markup polish inside existing features — an already-present wrapper made unconditional, the same shape at four sites — shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/stats/history/{SearchHistoryPage,DownloadHistoryPage,NotificationHistoryPage}.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/` 116/116 across 13 files. The new case observed red first — no `status` element existed at all while idle.
-- **Commit:** `d53e269cd`
+- **Commit:** `25103af5e`
 - **Note:** the spinner row was mounted when a fetch started and unmounted when it ended, so each refresh moved everything below it by the row's own height twice — on the history pages that is once per committed filter edit, under the reader's pointer. The row is now always in the layout with a reserved minimum height (`theme.spacing(3)`, the row's own line height) and only its contents come and go, which also makes it one durable live region rather than one created and destroyed per fetch. No screenshot strip: nothing about the fetching state's appearance changed, only whether the idle state reserves its space.
 
 ### 2026-08-31 — Adopt a typed custom stats range once, not per keystroke
@@ -3164,7 +3164,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one handler in one component, shipping a regression test; no capability, contract, `data-testid`, persisted-data, API, or rendering change.
 - **Paths:** `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.tsx`, `core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/dashboard/` 46/46 across 5 files. The new case observed red first — 5 recalculations where 1 was expected.
-- **Commit:** `5b1b4f950`
+- **Commit:** `25103af5e`
 - **Note:** `<input type="date">` reports every intermediate value, and most of them parse — the year of "2020-01-01" walks through 0002, 0020 and 0202 — so each was adopted as the range, and a range is a query key, so typing a date started three full multi-second recalculations over windows spanning two millennia. Adoption now waits 400ms after the last edit (longer than the history pages' 275ms because what it defers is a recalculation rather than a page read). The inline validation message stays immediate: it costs nothing and it is what tells the reader the range is unfinished. Preset buttons still set the range directly, and switching to one cancels a pending adoption.
 
 ### 2026-08-31 — Offer a way out of a filtered-empty history page
@@ -3172,7 +3172,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one action on an existing alert, driven by state each page already held, the same addition at three sites, shipping a regression test; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/stats/history/{SearchHistoryPage,DownloadHistoryPage,NotificationHistoryPage}.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 47/47 across 5 files. The new case observed red first — no "Clear filters" control existed.
-- **Commit:** `fa1eb1f69`
+- **Commit:** `25103af5e`
 - **Note:** the empty notice named the filters as the cause but offered nothing to do about them, and on a narrow viewport the refine surface that holds them is collapsed (ADR-0046), so the cause was named and unreachable at once. The action reuses each page's existing clear, and is rendered only while `activeHistoryFilterCount` over the *committed* criteria is non-zero — an empty history has no filters to blame, and offering to clear none of them would be worse than offering nothing.
 
 ### 2026-08-31 — Lead the search history Query cell with the query
@@ -3180,7 +3180,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** markup order inside one table cell; no capability, contract, `data-testid`, persisted-data, or API change, and the button keeps its test id and accessible name.
 - **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/history/` 47/47 across 5 files. The cell's reading order is now asserted, and that assertion fails against the previous markup.
-- **Commit:** `6a7d55312`
+- **Commit:** `25103af5e`
 - **Note:** the Repeat button preceded the query text, so the one column a reader scans read "Repeat avengers" in every row — the same leading word everywhere and the queries themselves starting at a different offset in each. Query first, Repeat right-aligned after it in a row, so the actions form their own edge. No screenshot strip: the change is a reordering of two nodes already in the cell, with no token, palette or density involved.
 
 ### 2026-08-31 — Derive the horizontal bar chart's label margin from its labels
@@ -3188,7 +3188,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one chart wrapper's layout arithmetic; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/` 118/118 across 13 files.
-- **Commit:** `1af552286`
+- **Commit:** `25103af5e`
 - **Note:** the chart reserved a fixed 140px for category labels regardless of what they said or how wide the viewport was, so on a 390px phone a chart whose whole purpose is comparing bar lengths had roughly 200px of plot, and a chart of five-letter indexer names reserved as much as one of full user-agent strings. The margin is now the longest label's own width, capped at the old 140px and at 84px below `sm`; a label that outgrows its margin is elided with an ellipsis on the axis only, so the tooltip still carries it in full. No screenshot strip and no new test: the change is dimensional and jsdom lays out neither the chart nor the media query it reads — the sizes above are derived from a per-character estimate, not measured in a browser, which is why the *ceiling* remains the previously shipped value rather than a new number.
 - **Open candidate carried out of this batch:** the five stats tables (`sections/{IndexersSection,ActivitySection,SourcesSection,DownloadAgeSection}.tsx` and `indexers/IndexerStatusesPage.tsx`) still use a bare `TableContainer` with no measured `minWidth` floor and no `C-TABLE-SCROLL-AFFORDANCE`, unlike every history table. Giving them the same treatment is not a quickfix: each scroller needs a new `data-testid`, `COMPONENTS.yaml` would gain five consumers on `C-TABLE-SCROLL-AFFORDANCE`, and each floor has to be *measured* at 390x844 rather than guessed, which is exactly what the existing floors' site comments justify.
 
@@ -3197,7 +3197,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one derivation wrapped in `useMemo`, no behavior change; no capability, contract, `data-testid`, persisted-data, or API change.
 - **Paths:** `core/ui-react/src/features/stats/dashboard/sections/IndexersSection.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; `test --run src/features/stats/dashboard/` 46/46 across 5 files.
-- **Commit:** `600ad2050`
+- **Commit:** `25103af5e`
 - **Note:** memoized for its identity as much as for its cost — `rows` is the dependency of the sort memo directly below it, so a fresh array each render defeated that memo too and re-joined and re-sorted every indexer for renders that only opened the detail columns or moved a sort arrow. Keyed on `stats`, its only input. No test: nothing observable changes.
 
 ### 2026-08-31 — Keep the history paging/sorting cases off the filter debounce
@@ -3205,23 +3205,23 @@ their text and relative order are unchanged.
 - **Why not a packet:** two test files, no production code.
 - **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`, `core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx`
 - **Gates (batch-final set):** full vitest 1726/1726 across 126 files; `typecheck`, `lint`, `format:check`, `build`, `check:api`, `validate:migration` exit 0; `git diff --check` clean. The two cases were also run three consecutive times in isolation.
-- **Commit:** `6020bb7aa`
-- **Note:** `ce3c315e4` gave a typed filter edit a 275ms commit delay, and both cases awaited an element *between* the typed edit and the sort click that commits it. On a loaded machine that await can outlast the debounce, so the timer commits first and the run sees four reads instead of three — seen once in a full-suite run and never in an isolated one, which is the signature. The three interactions are now issued synchronously so no timer can interleave; the counts and request bodies asserted are unchanged.
+- **Commit:** `25103af5e`
+- **Note:** `25103af5e` gave a typed filter edit a 275ms commit delay, and both cases awaited an element *between* the typed edit and the sort click that commits it. On a loaded machine that await can outlast the debounce, so the timer commits first and the run sees four reads instead of three — seen once in a full-suite run and never in an isolated one, which is the signature. The three interactions are now issued synchronously so no timer can interleave; the counts and request bodies asserted are unchanged.
 
 ### 2026-09-01 — Adapt `config.spec.ts` to the Discard confirmation dialog
 
 - **Why not a packet:** a locator/assertion repair in one existing spec file, adapting it to a control's already-shipped behavior change; no capability, contract, `data-testid`, or persisted-data change.
 - **Paths:** `tests/system/tests/config.spec.ts`
 - **Gates:** `npx tsc --noEmit` in `tests/system` exit 0; real-backend run of the whole file via `python3 misc/run_gui_systemtest.py --runtime local --skip-install -- config.spec.ts` — 29/29 passed, exit 0; `git diff --check` clean.
-- **Commit:** `769708e37`
-- **Note:** `bd367ff32` put the save bar's Discard behind a `dialogs.confirm` step (`config-discard-changes`) but never touched this spec, so the real-backend run of the whole file against baseline `b436a32f1` showed 3 pre-existing failures, all clicking `config-discard` and then asserting the old immediate-reset behavior: "should summarize unsaved changes, badge their section, and undo them on Discard", and the config-shell visual-evidence test's dirty-summary and validation-error Discard branches. A `clickDiscardAndConfirm` helper now drives the dialog at the two sites where confirming is plumbing only; the first test, whose actual subject is the discard behavior itself, was extended rather than just patched — it now also asserts the dialog's unsaved-count text and that Cancel keeps the edit before asserting the confirmed reset.
+- **Commit:** `6bc17d298`
+- **Note:** `d11d8c4cf` put the save bar's Discard behind a `dialogs.confirm` step (`config-discard-changes`) but never touched this spec, so the real-backend run of the whole file against baseline `00e8dcf4f` showed 3 pre-existing failures, all clicking `config-discard` and then asserting the old immediate-reset behavior: "should summarize unsaved changes, badge their section, and undo them on Discard", and the config-shell visual-evidence test's dirty-summary and validation-error Discard branches. A `clickDiscardAndConfirm` helper now drives the dialog at the two sites where confirming is plumbing only; the first test, whose actual subject is the discard behavior itself, was extended rather than just patched — it now also asserts the dialog's unsaved-count text and that Cancel keeps the edit before asserting the confirmed reset.
 
 ### 2026-09-01 — Tighten `SearchedCategory.searchType` to the API union
 
 - **Why not a packet:** mechanical type tightening in one file, no behavioral surface.
 - **Paths:** `core/ui-react/src/features/search/results/groupEpisodesHelp.ts`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `groupEpisodesHelp.test.ts` + `SearchResults.test.tsx` + `SearchPage` suite, 158 tests, all green.
-- **Commit:** `45f36d253`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-162..FM-170 reviews. `searchType` was `string | undefined`, looser than every other declaration of the same field in the codebase; a misspelled literal at a future call site would have typechecked and silently disabled the group-episodes dialog. Tightened to the same `"BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH"` union used at every other site. No exported alias for the union exists anywhere to reuse — every site declares it inline — so this keeps that pattern rather than introducing a new one. `SearchPage.tsx`'s threading site already supplied a value of this type (via the zod enum in `domain/categories/catalog.ts`), so no other file needed changes.
 
 ### 2026-09-01 — Tie `TABLE_COLUMN_COUNT` to the results `<colgroup>`
@@ -3229,7 +3229,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** single-file structural tie between two things restating the same fact, no behavior change.
 - **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `SearchResults.test.tsx`, 97/97 green.
-- **Commit:** `c02bc0d47`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-162..FM-170 reviews. `TABLE_COLUMN_COUNT = 8` restated the `<colgroup>`'s `<col>` count with nothing tying them together; a future column change would leave the virtualization spacer rows' `colSpan` wrong under `tableLayout: fixed`. Extracted the per-column widths into a new `TABLE_COLUMN_WIDTHS` array that both the rendered `<colgroup>` (via `.map`) and `TABLE_COLUMN_COUNT` (its `.length`) now derive from. Rendered widths and `colSpan` values are unchanged.
 
 ### 2026-09-01 — Register already-shipped selectors and one gap in `FEATURES.yaml`
@@ -3237,7 +3237,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** formally a `FEATURES.yaml` edit, which the quickfix gate normally refuses for that reason alone. Sanctioned exception: this records ALREADY-SHIPPED, ALREADY-REVIEWED reality rather than proposing new behavior, and changes no contract -- `results-virtual-spacer-top`/`-bottom` and `results-load-all-confirmation` are both testids that shipped in FM-162, whose own `FEATURES.yaml` edit was scoped to gap lines only and never registered them; the F-CONFIG-INDEXERS gap line documents an existing backend/client behavior that was previously recorded only in a test comment.
 - **Paths:** `docs/frontend-migration/FEATURES.yaml`
 - **Gates:** `npm run validate:migration` exit 0; `git diff --check` clean.
-- **Commit:** `1a196bace`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-162..FM-170 reviews. F-SEARCH-SORT-FILTER's selectors gained `results-virtual-spacer-top`/`results-virtual-spacer-bottom`; F-SEARCH-PAGING's gained `results-load-all-confirmation` (mirroring `results-load-all`'s registration); F-CONFIG-INDEXERS' gaps gained one line recording that the backend's caps-check message multimap (`IndexerWeb.checkCaps`) is cleared only at the start of a new check, so an abandoned check's threads keep appending to it and a subsequent check's message list can carry the prior run's lines -- inflating the reported count, which the client's `Math.max` clamp absorbs by inflating the denominator rather than surfacing the discrepancy.
 
 ### 2026-09-01 — Fail the production-asset validator on a stale chart marker
@@ -3245,7 +3245,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** single-file build-script repair; no application code, contract, or behavior touched.
 - **Paths:** `core/ui-react/scripts/validate-production-assets.mjs`
 - **Gates:** `typecheck`, `lint`, `format:check`, `build`, `validate:production-assets` exit 0. Red/green demonstrated: with a bogus `MuiChartsRenamedUpstream` marker temporarily added, `validate:production-assets` exits 1 with `Chart marker stale: MuiChartsRenamedUpstream appear in none of the 61 emitted JavaScript files`; with the marker removed it exits 0. The temporary edit was reverted before staging.
-- **Commit:** `c68bfe48c`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-163 review. FM-163's chart-marker guard scans the entry's static import closure for string literals that survive minification; if upstream renames one, it matches nothing, the scan finds nothing, and the guard passes forever while guarding nothing — a silent false pass, the one failure mode this script must not have. Every marker must now also be found in at least one *emitted* chunk (the chart code does ship, it just must not ship on the critical path); a marker found nowhere fails with a "marker stale" diagnostic naming it. The check caught a real one on its first run: `MuiSparkLineChart` appears in no build and nowhere in `@mui/x-charts@9.11.1` — `SparkLineChart` declares no utility class of its own — so that marker had never guarded anything since it was written. Dropped rather than replaced: a sparkline renders a `ChartsSurface` like every other chart does, so `MuiChartsSurface` already covers it.
 
 ### 2026-09-01 — Diagnose an out-of-`assets/` static import instead of a bare `ENOENT`
@@ -3253,7 +3253,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** single-file build-script diagnostic; no application code, contract, or behavior touched, and the pass/fail verdict is unchanged.
 - **Paths:** `core/ui-react/scripts/validate-production-assets.mjs`
 - **Gates:** `typecheck`, `lint`, `format:check`, `validate:production-assets` exit 0. Red/green demonstrated on scratch copies of the script seeded with an extra `vendor.js` walk entry: the pre-fix copy exits 1 with `Error: ENOENT: no such file or directory, open '.../dist/assets/vendor.js'`; the post-fix copy exits 1 with `React chunk index.js statically imports ../vendor/vendor.js, which is not an emitted asset in .../dist/assets. The critical-path walk resolves every static import by its base name (vendor.js) ...`. Both copies lived in the scratchpad; the committed script is unseeded.
-- **Commit:** `651159d23`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-163 review. The closure walk resolved each static import by `basename()` and read it from `assets/` unconditionally, so an import resolving outside that directory crashed with an `ENOENT` naming a path nobody had written — loud, never a false pass, but useless. It still exits non-zero (an unreadable import means the walked closure is incomplete, which would leave the chart check scanning less than the browser downloads), now naming the importing chunk, the specifier, and the base name looked up. The walk reads from the emitted-source map the staleness check above it already builds, so an out-of-`assets/` chunk is simply absent from that map rather than a failed read.
 
 ### 2026-09-01 — Share one area `Suspense` fallback across the three lazy areas
@@ -3261,7 +3261,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** mechanical de-duplication of an identical element into one module; rendered DOM unchanged, no contract, testid, or behavior touched.
 - **Paths:** new `core/ui-react/src/components/AreaFallback.tsx`; `core/ui-react/src/features/{config,system,stats}/routes.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check`, `build`, `validate:production-assets` exit 0; vitest across `src/features/{config,stats,system}`, 56 files / 898 tests green.
-- **Commit:** `097b8fdc5`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-163 review. Each of the three areas' `routes.tsx` carried a near-identical `AREA_FALLBACK` element plus an eight-line doc comment restating the same reasoning, all three duplicating the anatomy of `features/stats/shared/Loading.tsx` (`Stack`/`CircularProgress`/`Typography`, `minHeight: 320`, `role="status"`, `component="main"`). The message is now the only thing each area supplies. Placed in `components/` rather than under `features/stats/` because `system` and `config` import it too, and kept deliberately light: these `routes.tsx` files are eagerly loaded — `router.tsx` builds the whole route tree synchronously — so everything they import lands in the entry chunk that FM-163 guards. Measured rather than assumed: the entry went from 1,085,529 to 1,085,339 bytes, and `validate:production-assets` still reports no chart code on the critical path.
 
 ### 2026-09-01 — Correct what the stats area's eager search schema actually costs
@@ -3269,7 +3269,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a source comment only; no code line changed, verified by diff.
 - **Paths:** `core/ui-react/src/features/stats/routes.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; vitest `src/features/stats`, 19 files / 168 tests green.
-- **Commit:** `2cbfef555`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-163 review. The comment beside the area's `validateSearch` claimed `historySearchParams.ts` "imports the sort-column *types* only, so no history page or API module is pulled in eagerly" — false, not merely stale: it also imports runtime values (`zod`, `features/stats/shared/pageSize.ts`, and `HISTORY_BOOLEAN_ALL`/`isHistoryFilterActive` from `api/history/filters.ts`), which do join the eager entry closure because `routes.tsx` is loaded eagerly. The correction says so, names what it costs (all three small, `filters.ts` importing nothing at all, entry measured at 1,085,339 of FM-163's 1,250,000-byte ceiling), and distinguishes what is mechanically enforced — `validate:production-assets` guards only that no chart code is on the critical path — from what is measured but unenforced, so the next reader does not re-acquire the same false confidence about the byte figure.
 
 ### 2026-09-01 — Take the lazy module load out of `ConfigShell.test.tsx`'s waits
@@ -3277,7 +3277,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** single test file, scaffolding only; no assertion, production module, or contract touched.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.test.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; `ConfigShell.test.tsx` run five times consecutively, 61/61 green each time; full `npm run test -- --run`, 131 files / 1815 tests green.
-- **Commit:** `55eef27b2`
+- **Commit:** `c749b343f`
 - **Note:** a full-suite run under load failed a ConfigShell `findByTestId` timeout on 2026-09-01 (seen by the FM-170 reviewer) that passes in isolation. Cause, as far as it can be established from a single non-reproducing observation: FM-163 put the shell and every tab body behind `React.lazy`, so the first render in this file resolves through a dynamic `import()` — a module load competing for CPU with every other suite in a parallel run, raced against Testing Library's default 1000ms `findBy*` window. Two changes: a `beforeAll` resolves the shell's lazy payload once up front, so `waitForShell()` (this file's most-used wait, ~90 call sites) waits for a config fetch and a render rather than for a module load as well; and `asyncUtilTimeout` is raised to 5000ms for this file, covering every wait rather than only the one observed failing. Nothing asserted changes — a wait that succeeds today succeeds at the same moment; only a genuinely broken assertion now takes longer to give up. The tab bodies are deliberately left cold: the FM-120 frame test reasons about their load timing explicitly with its own warm-up, and a blanket warm-up here would take that decision away from it. **Honest limit:** an intermittent failure that did not reproduce cannot be proven gone. Five consecutive isolated runs and one full run are evidence of no regression, not proof of a fix; the suite's known ~1-in-10-to-13 full-run flake rate (FM-123) means even a clean full run is weak evidence on its own.
 
 ### 2026-09-01 — Pin the cold first-visit config tab swap
@@ -3285,7 +3285,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one test file plus the doc comment it disproves; no production behavior changed.
 - **Paths:** `core/ui-react/src/features/config/ConfigShell.test.tsx`, `core/ui-react/src/components/AreaFallback.tsx` (doc comment only)
 - **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; `ConfigShell.test.tsx` run five times consecutively, 62/62 green each time; vitest across `src/features/{config,stats,system}`, 56 files / 899 tests green. Red/green demonstrated on both new assertions, each on a scratch edit reverted before staging: changing the config area's fallback message makes the occupancy assertion fail (`expected { outgoing: false, …(5) } to match object { occupied: true }`), and expecting `"Main"` instead of `"Authorization"` makes the swap-completeness assertion fail (`expected 'Authorization' to be 'Main'`) — so neither loop is vacuous.
-- **Commit:** `13624bcf9`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-163 review. FM-120's frame test warms both lazy payloads before measuring, so it covers the warm swap only; the cold first visit — module load plus router transition, which FM-163 introduced — had no assertion. Recorded with a `MutationObserver`, whose callback is a microtask queued after each committed DOM batch, so every state a browser could have painted is inspected rather than one chosen frame. Two invariants hold across the whole sequence and are now asserted: the content area is always occupied, by a tab body or by the area's own labelled fallback; and whenever the incoming body is present it carries its own heading and never the outgoing tab's entries. Writing it corrected a claim all three areas' fallbacks had carried since FM-163 and that `AreaFallback` inherited — that a tab switch is a transition React resolves "by holding the outgoing body rather than falling back to this at all". True warm, false cold: React shows a newly mounted `Suspense` boundary's fallback even inside a transition, and each tab body mounts its own. It also surfaced a defect that is **not** fixed here — the first frame of a cold swap puts the incoming tab's heading over the outgoing tab's entries and holds it for the whole load — left unasserted rather than shipped red, documented at the test, and routed under *Open candidates* above.
 
 ### 2026-09-01 — Remove HorizontalBarChart's dead `height` override prop
@@ -3293,7 +3293,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** mechanical dead-code removal; no caller, contract, or `data-testid` touched.
 - **Paths:** `core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 19 pre-existing warnings), `format:check` exit 0; vitest `ChartCard.test.tsx` + `sections/IndexersSection.test.tsx`, 8/8 green.
-- **Commit:** `dc07c39e2`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-164/FM-166 reviews. The optional `height` prop had no callers anywhere in `src` (grep confirmed, and typecheck proved it after removal). Left in place it was the one route by which the rendered chart height could silently diverge from the `chartHeight` its `ChartCard` reserves for the deferred-mount placeholder — exactly the layout shift FM-164 removed by introducing `horizontalBarChartHeight`. `chartHeight` is now always `horizontalBarChartHeight(sorted.length)`.
 
 ### 2026-09-01 — Correct the height-carrier comment in `expectChartDrawn`
@@ -3301,7 +3301,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a source comment only; no assertion or production code changed, verified by diff.
 - **Paths:** `tests/system/tests/stats.spec.ts`
 - **Gates:** `npx tsc --noEmit` (in `tests/system`) clean.
-- **Commit:** `a62ec68d9`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-164/FM-166 reviews. The comment claimed "a grouped-bar card reserves its height on the wrapper" -- wrong carrier. `GroupedBarChart.tsx` sizes its own `Box` (nested inside the `-chart` wrapper the test asserts on) to `GROUPED_BAR_CHART_HEIGHT`; the wrapper itself carries no explicit height. The comment's conclusion — that the wrapper alone can't distinguish a drawn chart from an empty one — still holds, so only the mechanism is corrected.
 
 ### 2026-09-01 — Extract non-component exports to clear `react-refresh` warnings
@@ -3309,7 +3309,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** mechanical moves of plain functions/constants into sibling modules; no behavior, contract, or `data-testid` touched, proven by an unchanged diff shape and green suites.
 - **Paths:** new `core/ui-react/src/features/stats/dashboard/charts/chartSizing.ts`, `core/ui-react/src/features/stats/indexers/vipWarning.ts`, `core/ui-react/src/components/MigrationPlaceholder.tsx`; edited `HorizontalBarChart.tsx`, `GroupedBarChart.tsx`, `ControlsHeader.tsx`, `StatsDashboardPage.tsx`, `dateRange.ts`, `IndexerStatusesPage.tsx` (+ its test), `router.tsx`, and the four dashboard sections that import the moved chart-sizing helpers (`ActivitySection.tsx`, `DownloadAgeSection.tsx`, `IndexersSection.tsx`, `SourcesSection.tsx`).
 - **Gates:** `typecheck`, `lint` (0 errors, warnings 19 → 15), `format:check` exit 0; vitest across `src/features/stats/dashboard`, `IndexerStatusesPage.test.tsx`, and `router.test.tsx`, all green (75 + 18 tests).
-- **Commit:** `2ae497b81`
+- **Commit:** `c749b343f`
 - **Note:** retained minor finding from the FM-164/FM-166 reviews. Four files mixed a component export with a plain function/constant export, tripping `react-refresh/only-export-components`: `HorizontalBarChart.tsx` (`horizontalBarChartHeight`, added by FM-164), `ControlsHeader.tsx` (`customDateInputsFor`), `IndexerStatusesPage.tsx` (`vipWarning`), and `router.tsx` (where the odd export out was the `MigrationPlaceholder` component sitting next to `createAppRouter`). Each was a mechanical relocation to a sibling module with no logic change; `GroupedBarChart.tsx`'s `GROUPED_BAR_CHART_HEIGHT` moved into the same new `chartSizing.ts` as `horizontalBarChartHeight` for consistency, though it wasn't itself warning (`allowConstantExport: true` covers a plain constant, not a function). `router.tsx:25`'s own export, `createAppRouter`, was left in place rather than moved: it is entangled with this file's private route-wiring helpers, and moving it risked touching route wiring beyond a mechanical move, whereas extracting the one component export it happened to share the file with cleared the same warning at far lower risk.
 
 ### 2026-09-01 — Move `MuiPagination` density into the theme
@@ -3317,7 +3317,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a `defaultProps` entry following an existing theme idiom (`MuiTextField`, immediately above it), plus dropping the per-instance prop it replaces and pinning it in `theme.test.ts`; no color literal, contract, or `data-testid` touched.
 - **Paths:** `core/ui-react/src/app/theme.ts`, `core/ui-react/src/app/theme.test.ts`, `core/ui-react/src/features/stats/history/HistoryPager.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 15 warnings), `format:check` exit 0; vitest `HistoryPager.test.tsx` + `theme.test.ts`, 143/143 green.
-- **Commit:** `08f4eea04`
+- **Commit:** `a93f37677`
 - **Note:** retained minor finding from the FM-166 review. `HistoryPager.tsx` set `size="small"` on its `Pagination` per instance, justified by a comment noting it "also matches the theme's small-by-default density" -- left per-instance only because `theme.ts` was outside FM-166's allowlist at the time. Added `MuiPagination: {defaultProps: {size: "small"}}` to `createHydraTheme`'s `components` block next to `MuiTextField`'s identical-shaped entry, dropped the per-instance prop and the now-redundant clause of its comment (the `siblingCount`/viewport-fit rationale stays, re-attributed to the theme default), and pinned the new default in `theme.test.ts` beside the `MuiTextField` pin it mirrors. No rendering change: `HistoryPager.test.tsx` renders through `createHydraTheme`, so the size was already "small" before and after -- only the place stating it moved. No screenshot strip: not a visual change.
 
 ### 2026-09-01 — Tighten HistoryPager item spacing for the 390px wrap ("owner's eye wanted")
@@ -3325,7 +3325,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** styling/UX polish inside an existing control, no contract or `data-testid` touched, backed by a jsdom computed-style regression test with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/stats/history/HistoryPager.tsx`, `core/ui-react/src/features/stats/history/HistoryPager.test.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, the same 15 warnings), `format:check` exit 0; vitest `HistoryPager.test.tsx`, 23/23 green. Red/green demonstrated on the new "zeroes the margin" test: with `sx={{mx: 0}}` removed it fails (`expected '1px' to be '0px'`); restored, it and the rest of the suite pass.
-- **Commit:** `91b5ed76a`
+- **Commit:** `a93f37677`
 - **Note:** retained minor finding, owner-flagged for their eye (cosmetic; the pager's numbered run stays pinned at 9 slots per `HistoryPager.test.tsx`'s table, unchanged here). At ten or more pages the strip wraps "Last page" alone onto a second line at 390px. Measured, not assumed: it renders 13 items at that page count (First, Previous, nine page/ellipsis slots, Next, Last); the comment this fix replaced claimed "eleven small slots are ~350px" and was itself stale/wrong. Each item is 26px (`MuiPaginationItem`'s `small` `minWidth`) plus MUI's own 1px each-side margin -- 28px per item, 364px total, which does not reliably fit 390px once the page's own padding is subtracted. `sx={{mx: 0}}` on the `renderItem` `PaginationItem` zeroes that margin without touching the 26px tap target; a first attempt putting the same override on the parent `Pagination`'s own `sx` as a nested `& .MuiPaginationItem-root` selector measurably did not apply (verified in jsdom) and was abandoned in favor of the per-item `sx`, which does. One genuine limit surfaced along the way: MUI's `PaginationItem.js` renders the ellipsis ("…") from a branch that never spreads `sx` onto the element, so the two ellipsis slots keep their 1px margin regardless -- the fix recovers 11 x 2px = 22px of an estimated 26px shortfall (11 x 26px + 2 x 28px = 342px), not the full 26px. **Honest limit:** jsdom performs no layout, so nothing here proves the wrap is actually gone at 390px in a real browser -- only that the margin genuinely is zero on the reachable items. Bringing up a real instance to screenshot needs the full Maven/JVM system-test recipe (`docs/frontend-migration` memory's bring-up notes), judged not cheap enough for this fix; per the task's own instruction this is recorded rather than done, and the change is marked **owner's eye wanted**.
 
 ### 2026-09-01 — Gate the indexer list's search-source cell on `visibleIndexerFields`
@@ -3333,7 +3333,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a single-module conditional inside an existing feature, implementing a decision `DECISIONS.md` already made (ADR-0040, accepted 2026-08-29); no contract, `data-testid`, or new decision involved, and it ships a regression test with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/IndexerTable.tsx`, `core/ui-react/src/features/config/indexers/IndexersConfigTab.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `IndexersConfigTab.test.tsx` + `IndexerTable.test.tsx`, 62/62 green.
-- **Commit:** `8569dac77`
+- **Commit:** `a93f37677`
 - **Note:** pre-existing gap surfaced by FM-168's implementer. ADR-0040 decided that the list's `enabledForSearchSource` cell renders only where `visibleIndexerFields(entry.searchModuleType)` offers the field — as `IndexerDialog.tsx` already does via its `shows()` helper — but nothing ever implemented the gate, so a TORBOX row offered a select the editor withholds. FM-168 had already made this cheap: the row subscribes to `searchModuleType` through `ROW_DISPLAY_FIELDS`, so the gate is a local conditional with no new subscription. The column is deliberately kept rather than dropped: a gated row renders an empty wide-layout cell so the header and every other row still line up, mirroring how the dialog omits the field from its layout without rearranging the rest; the compact stack simply omits the control. Per ADR-0040's own binding constraint no `FEATURES.yaml` gap entry is warranted — this closes an inconsistency rather than retiring a capability.
 
 ### 2026-09-01 — Pin FM-168's narrowed list subscription
@@ -3341,7 +3341,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a test-only addition inside an existing suite; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/IndexerTable.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `IndexerTable.test.tsx`, 5/5 green.
-- **Commit:** `d069f649e`
+- **Commit:** `a93f37677`
 - **Note:** retained finding from the FM-168 review, which proved the narrowing unpinned: reverting `IndexersConfigTab`'s `useWatch` `compute` projection to a whole-array watch left every case in the suite green, so only the `memo` half of FM-168's two-part change was actually tested. The new case counts executions of the *tab* function — `indexerCategoryOptions` is called once, unconditionally, in its body and nowhere else in the mounted tree, which makes it a render counter that cannot itself perturb the memoization it measures (the same argument the file already makes for `indexerLegend` as the row counter) — across an edit to `enabledForSearchSource`, the one editable cell in neither the tab's projection nor `ROW_DISPLAY_FIELDS`. One warm-up write precedes the measurement: `useWatch` seeds its computed value as `undefined` rather than as the projection of the mounted values, so the first signal of any kind is unequal to it and re-renders once regardless of subscription width — an initialization, not a leak, and pinning `0` without the warm-up would have pinned that quirk instead. Red observed by deleting `compute:` from `IndexersConfigTab.tsx` in the working tree (`expected 1 to be +0`, four existing cases still green) and restoring the file before committing.
 
 ### 2026-09-01 — Pin the `indexers.1` / `indexers.10` prefix collision
@@ -3349,7 +3349,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a test-only addition inside an existing suite; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/IndexerTable.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `IndexerTable.test.tsx`, 6/6 green.
-- **Commit:** `89f120edf`
+- **Commit:** `a93f37677`
 - **Note:** retained finding from the FM-168 review. `ROW_DISPLAY_FIELDS`' comment justifies naming full leaf paths by React Hook Form's prefix matching, but the suite's render-isolation cases edited indices 0, 3 and 7 — none of which collides with any other index in a twelve-row table — so the documented hazard was unexercised. `shouldSubscribeByName` matches when *either* name is a prefix of the other (`currentName.startsWith(signalName) || signalName.startsWith(currentName)`), which fixes the direction: the collision fires when the **longer** index is written, since the signal (`indexers.10.score`) is what must carry the subscription name (`indexers.1`) as its prefix — not, as the finding was first phrased, when index 1 is written. The case therefore edits `indexers.10.score` and asserts the row at index 1 stays un-rendered. Red observed by collapsing `useRowDisplayValues` to a whole-entry `useWatch({name: "indexers.<index>"})` in the working tree (`expected 1 to be +0`, every other case still green) and restoring the file before committing.
 
 ### 2026-09-01 — Announce the caps check's waiting state on open
@@ -3357,7 +3357,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** an accessibility repair inside one existing dialog, restoring an announcement FM-167 dropped; no contract or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/CapsCheckDialog.tsx`, `core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `CapsCheckDialog.test.tsx`, 19/19 green.
-- **Commit:** `f9b0b6d10`
+- **Commit:** `a93f37677`
 - **Note:** retained finding from the FM-167 review. FM-167 removed `role="status"` from the progress row (it was re-read on every 500ms tick) and moved announcements into a polite off-screen region carrying only what a tick *added*. That leaves a single-indexer check with nothing to announce at all: it reports no progress count, and it can resolve before the server publishes its first message, so a screen reader heard only the dialog title for the whole check. Fixed by seeding the region once, on open, with exactly the line the dialog paints beside its spinner at that moment (`openingText`: the waiting text where there is nothing to count, the zero-progress line for a bulk check), which also keeps the two surfaces from disagreeing. Deliberately an effect rather than the state's initial value: content already present when a live region enters the document is not announced by screen readers, so the seed must arrive as a change *after* the first render. Chosen over restoring `role="status"` on the static waiting line for the same reason and because it reuses the one region rather than adding a second. The per-tick path is untouched, so FM-167's reason for removing the role — a per-tick re-read of the whole list — is not reintroduced.
 
 ### 2026-09-01 — Re-announce a caps-check line that repeats the last one
@@ -3365,7 +3365,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** an accessibility repair inside one existing dialog, adding no surface; no contract or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/CapsCheckDialog.tsx`, `core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `CapsCheckDialog.test.tsx`, 20/20 green.
-- **Commit:** `59b7832cc`
+- **Commit:** `a93f37677`
 - **Note:** retained finding from the FM-167 review, and the companion to the waiting-state seed recorded above. The region was set straight to the joined text of whatever a tick added, so two ticks producing the same sentence wrote the same string — no DOM mutation, and a live region is read when its content *changes*, so a genuinely new line passed in silence. This is reachable rather than theoretical: the server publishes a multimap of one list per indexer and `appendedLines` is a multiset difference that deliberately keeps a repeated line ("Checking caps of ..." arriving twice, a retried step), so a repeat is exactly the case that diff exists to preserve. Every announcement now goes through one `announce` helper that alternates a zero-width space onto the end — the smallest edit that makes a repeat a change, invisible, unspoken, and not part of any accessible name — and the on-open seed uses the same helper, so the parity is unbroken from the first announcement. The suite's existing exact-text assertions are unaffected: its `announcement()` helper strips the marker and says why, while the new case reads the raw `textContent` to prove the mutation happened.
 
 ### 2026-09-01 — Pin both halves of the history draft/arrival guard
@@ -3373,7 +3373,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a test-only addition inside an existing suite; no production file, contract, or `data-testid` touched, with a demonstrated red/green per clause.
 - **Paths:** `core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest `useHistoryFilterCriteria.test.tsx`, 15/15 green.
-- **Commit:** `83d50d80f`
+- **Commit:** `a93f37677`
 - **Note:** retained finding from the FM-165 review: `external`'s first clause (`search !== draft.from`, object identity) was load-bearing and untested in isolation. Each clause now has a case that fails only when that clause goes, verified by two separate working-tree mutations — dropping the identity clause fails only *keep a just-committed edit while the router catches up*, and forcing `external` to `false` fails only *roll a pending edit back when the reader arrives from outside*; every pre-existing case, the Back-restores-the-view one included, stays green under both, which is exactly why the guard was unpinned. Production logic deliberately unchanged: nothing found proves it wrong. **Which branch stays theoretical:** the pathological case the finding named — the router handing back a *reference-identical* search object while the committed filters differ from `draft.base` — is not constructible through the public router API. TanStack only reuses the search object when it did not change, and if the filters did not change there is nothing for the content clause to disagree about; every real arrival allocates a new object. So the identity clause is pinned for the render it actually owns (its own commit in flight) rather than for the hypothetical it was written to defend against, and the hypothetical remains uncovered by construction rather than by omission. **One nuance recorded, not fixed:** `external` is filter-scoped by definition ("whether the URL's *filters* are something this hook did not put there"), so a Back that changes only the page leaves a pending filter edit in place, and that edit still commits when its debounce elapses — narrower than the effect's comment ("an external arrival also cancels an edit that was still waiting to commit") reads on its own. The first draft of the rollback case hit this and was retargeted to an arrival that genuinely changes the filters; whether a page-only arrival should also cancel is a behavior question for a packet, not a quickfix, and is left as a candidate.
 
 ### 2026-09-01 — Give the caps check raised from an open indexer an exit
@@ -3381,7 +3381,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a contained third branch in one dialog's existing outcome handling plus its single call site, reusing the close sequence's established "not committed" answer; no new surface, contract, or `data-testid`, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/features/config/indexers/IndexerDialog.tsx`, `core/ui-react/src/features/config/indexers/CapsCheckDialog.tsx`, `core/ui-react/src/features/config/indexers/IndexersConfigTab.test.tsx`, `docs/frontend-migration/FEATURES.yaml`
 - **Gates:** `typecheck`, `lint`, `format:check` exit 0; vitest across `src/features/config/indexers`, 152/152 green; `validate:migration` valid.
-- **Commit:** `b1d931e84`
+- **Commit:** `a93f37677`
 - **Note:** FM-167 follow-up candidate, scope-checked before starting and found to fit. FM-167 added "Stop waiting" to the progress dialog but withheld it where `IndexerDialog` raises it, because that check gates a commit and the resolver had only two outcomes — a result, or `null` meaning "the request failed", which reports an error and commits the entry anyway. Neither is what leaving means, so an admin who started a check from the editor had no way out of it at all. `CapsCheckOutcome` is now a result, `"failed"`, or `"left"`; `"left"` returns `null` from `checkCapsBeforeClose`, which is already what the close sequence means by "not committed" (the same answer the connection-check dialog's "Aahh, let me try again" gives), so the abandoned commit attempt puts the admin back in the still-open editor with fields intact, nothing written, and no acknowledgement of a failure that did not happen — the least surprising reading of an exit from a check that was *blocking* a commit. The in-box manual check just stops. The blast radius stayed inside `IndexerDialog` and its one `CapsCheckDialog` call site: `IndexersConfigTab`'s bulk-recheck path is untouched, and no other caller of the dialog exists. **Registry truth maintenance:** `FEATURES.yaml`'s "the caps-check exit is offered for the bulk recheck only" line was written by FM-167 to describe exactly this gap, and is corrected here rather than left to assert something the code no longer does — the same reason prior ledger entries have corrected registry lines. `CapsCheckDialog`'s own comment explaining why `IndexerDialog` had no `onLeave` is corrected with it; the prop stays optional, since it is what withholds the exit from a caller that has no answer for one.
 
 ### 2026-09-01 — Scope the history refine locators past FM-170's copy buttons
@@ -3389,23 +3389,23 @@ their text and relative order are unchanged.
 - **Why not a packet:** locator repair in tests only — no behavior, contract, or `data-testid` change; the fix consumes existing test ids.
 - **Paths:** `tests/system/tests/downloads.spec.ts`, `tests/system/tests/search-history.spec.ts`
 - **Gates:** `npx tsc --noEmit` in `tests/system` clean; full `downloads.spec.ts` + `search-history.spec.ts` run against a locally built real-backend stack (HEAD core jar + mockserver on alternate ports 15076/15080, user's dev services untouched): 10/10 green, including all 4 tests red in run 33494077066. `git diff --check` clean.
-- **Commit:** `e08aa3b87`
-- **Note:** both specs reached the refine surface's freetext inputs with page-wide `getByLabel("Title")` / `getByLabel("Query")`. FM-170 (`1ee9083f2`) added per-row copy buttons labeled "Copy title" / "Copy query", which `getByLabel`'s default substring matching also resolves, so every visible history row became an extra match and the locators failed strict mode. The lookups are now scoped through `getByTestId("history-refine-bar")`, keeping the accessible-label assertion while excluding the table rows. `focus-indication.spec.ts:1046`'s `getByLabel("Query").first()` survives on DOM order alone and is recorded under *Open candidates* rather than edited green.
+- **Commit:** `5050f5e5d`
+- **Note:** both specs reached the refine surface's freetext inputs with page-wide `getByLabel("Title")` / `getByLabel("Query")`. FM-170 (`ccd474d8d`) added per-row copy buttons labeled "Copy title" / "Copy query", which `getByLabel`'s default substring matching also resolves, so every visible history row became an extra match and the locators failed strict mode. The lookups are now scoped through `getByTestId("history-refine-bar")`, keeping the accessible-label assertion while excluding the table rows. `focus-indication.spec.ts:1046`'s `getByLabel("Query").first()` survives on DOM order alone and is recorded under *Open candidates* rather than edited green.
 
 ### 2026-09-02 — Drop the stale FM-125 "planned, next" bullet from `STATUS.md` Upcoming
 
 - **Why not a packet:** documentation text only; no code, contract, or behavior touched.
 - **Paths:** `docs/frontend-migration/STATUS.md`
 - **Gates:** `validate:migration` valid; `git diff --check` clean.
-- **Commit:** `36a832472`
-- **Note:** retained minor finding from the FM-172 review. FM-125 was done at `2b1930517` (2026-08-28) and its done bullet already sat three entries above, but the pre-implementation bullet survived every later reconcile because reconciles add to the top of Upcoming and rarely reread its tail.
+- **Commit:** `dc006c7d9`
+- **Note:** retained minor finding from the FM-172 review. FM-125 was done at `bd86eaaa0` (2026-08-28) and its done bullet already sat three entries above, but the pre-implementation bullet survived every later reconcile because reconciles add to the top of Upcoming and rarely reread its tail.
 
 ### 2026-09-02 — Drive the app-wide `MutationCache` session-expiry hook with a real mutation
 
 - **Why not a packet:** a test-only addition inside an existing suite; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `core/ui-react/src/App.test.tsx`
 - **Gates:** `typecheck`, `lint` (0 errors, 15 pre-existing warnings), `format:check`, `build`, `check:api`, `validate:migration` exit 0; full vitest 137 files / 1879 tests green; `git diff --check` clean.
-- **Commit:** `d4fbf6dba`
+- **Commit:** `dc006c7d9`
 - **Note:** retained minor finding from the FM-171 review: both `QueryClient`s got a `MutationCache` `onError` and no test ever drove a mutation through either. The app-wide client owns exactly one mutation, `SavedSearchesPage`'s deletion, so the case renders `/stats/saved-searches`, confirms a row's Delete, answers the `DELETE` with 401 and asserts one dialog and exactly one refused write (the list read is answered normally, so nothing else can have raised it). Red with `App.tsx`'s `onError` removed, green restored. **Left uncovered by construction:** `SearchPage.tsx`'s private recent-search client also carries the hook but owns no mutation at all, so there is nothing to drive it with; its query half is pinned in `SearchPage.test.tsx`.
 
 ### 2026-09-02 — Scope the focus-indication history Query locator through the refine bar
@@ -3413,15 +3413,15 @@ their text and relative order are unchanged.
 - **Why not a packet:** locator repair in a test only; no behavior, contract, or `data-testid` change.
 - **Paths:** `tests/system/tests/focus-indication.spec.ts`
 - **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `focus-indication.spec.ts` 10/10 green via `misc/run_gui_systemtest.py --runtime local`; `git diff --check` clean.
-- **Commit:** `5c459ad47`
-- **Note:** the *Open candidates* entry above, closed. Same repair as `e08aa3b87`'s, applied to the one site that was green on DOM order alone.
+- **Commit:** `dc006c7d9`
+- **Note:** the *Open candidates* entry above, closed. Same repair as `5050f5e5d`'s, applied to the one site that was green on DOM order alone.
 
 ### 2026-09-02 — Pin the session-expiry refusal count as the exact three-request multiset
 
 - **Why not a packet:** test-only assertion change; no production file, contract, or `data-testid` touched, with a demonstrated red/green.
 - **Paths:** `tests/system/tests/session-expiry.spec.ts`
 - **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `session-expiry.spec.ts` against a local real backend: red at `toHaveLength(2)` (received 3), green 3/3 with the multiset; `git diff --check` clean.
-- **Commit:** `17aae3242`
+- **Commit:** `dc006c7d9`
 - **Note:** retained minor finding from the FM-171 review, **and the finding's proposed fix was wrong.** `toHaveLength(2)` fails: `/internalapi/updates/infos` is refused twice, by two consumers with their own query keys — `SystemUpdatesTab` (`update-infos`) and the shell's `UpdateFooterBanners` (`update-footer-infos`) — alongside one `versionHistory`. The `>= 2` hid the third request; a count of two would have called the second consumer a retry storm. The sorted multiset of all three paths fails on either a genuine retry or a lost consumer, which is what the comment always claimed.
 
 ### 2026-09-02 — Search by TMDB identifier so the history row's "no ID line" pin is load-bearing
@@ -3429,23 +3429,23 @@ their text and relative order are unchanged.
 - **Why not a packet:** a test-only addition inside an existing system spec; no production file, contract, or `data-testid` touched.
 - **Paths:** `tests/system/tests/search-history.spec.ts`
 - **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `search-history.spec.ts` 7/7 green via `misc/run_gui_systemtest.py --runtime existing` against the local real backend; `git diff --check` clean.
-- **Commit:** `0f23341be`
+- **Commit:** `dc006c7d9`
 - **Note:** retained minor finding from the FM-174 review. The sibling case's `not.toContainText(" ID:")` searched by plain text, so nothing it asserted could regress. The new case selects the deterministic movie from the real `/internalapi/autocomplete/MOVIE`, pins `"tmdbId":"424242"` in the search body, then asserts the row prints neither `TMDB` nor the value and the details dialog links `424242` to `https://www.themoviedb.org/movie/424242` with `target="_blank"`. The query is the fixture's fixed title rather than a UUID, so the row is the first match under the default time-descending sort, as the file's repeat case already does. **Not red/green-proven here:** a mutation that puts identifiers back in the row needs a rebuilt jar behind the rig; the same behaviour is red/green-pinned in `SearchHistoryPage.test.tsx`, and this case adds the real-backend half.
 
 ### 2026-09-02 — Wait for the recent-searches request on menu open, not on submit or page load
 
-- **Why not a packet:** test-expectation repair only; no behavior, contract, or `data-testid` change — the behavior it follows is the owner's own `0617f05b1`.
+- **Why not a packet:** test-expectation repair only; no behavior, contract, or `data-testid` change — the behavior it follows is the owner's own `8ce112f1e`.
 - **Paths:** `tests/system/tests/search.spec.ts`
 - **Gates:** `tests/system` `npx tsc --noEmit` and `prettier --check` clean; whole `search.spec.ts` 17/17 green against the local real backend (the runner's `--runtime existing` was stopped twice mid-container-recreate, so Playwright was run directly with the runner's environment); `git diff --check` clean.
-- **Commit:** `0d6c390ca`
-- **Note:** CI runs 33494077066 and 33524653525 failed `search.spec.ts:256` and `:905` on both Linux jobs (JVM coverage included; Windows green) with `page.waitForResponse` timeouts on `POST /internalapi/history/searches/forsearching`. The last green run, `c0a1d9ae2` (2026-08-31 17:38), predates `0617f05b1` (21:40), which gates the recent-search query on the menu being open; the two tests still expected the request from a search submit and from page load. The 2026-09-01 refine-locator quickfix (`e08aa3b87`) fixed the other four failures of run 33494077066 and left these two, so run 33524653525 was the same pair again on a later commit. Both waits now surround the trigger click that issues the request.
+- **Commit:** `dc006c7d9`
+- **Note:** CI runs 33494077066 and 33524653525 failed `search.spec.ts:256` and `:905` on both Linux jobs (JVM coverage included; Windows green) with `page.waitForResponse` timeouts on `POST /internalapi/history/searches/forsearching`. The last green run, `fa0f7ae90` (2026-08-31 17:38), predates `8ce112f1e` (21:40), which gates the recent-search query on the menu being open; the two tests still expected the request from a search submit and from page load. The 2026-09-01 refine-locator quickfix (`5050f5e5d`) fixed the other four failures of run 33494077066 and left these two, so run 33524653525 was the same pair again on a later commit. Both waits now surround the trigger click that issues the request.
 
 ### 2026-09-03 — Render inputs at 16px on coarse-pointer devices so iOS stops zooming into them
 
 - **Why not a packet:** styling inside the theme's existing `MuiInputBase` rule; no behavior, contract, or `data-testid` change, and the rendering change is pinned by a computed-style assertion rather than a strip (the zoom itself is not reproducible outside iOS).
 - **Paths:** `core/ui-react/src/app/theme.ts`, `core/ui-react/src/app/theme.test.ts`, `tests/system/tests/search.spec.ts`
 - **Gates:** `core/ui-react` vitest 137 files / 1893 tests, `typecheck`, `lint` (0 errors, 15 pre-existing warnings), `format:check`, `build`, `check:api`, `validate:migration` all green; `tests/system` `tsc --noEmit` and prettier clean; whole `search.spec.ts` 18/18 against a jar rebuilt from this tree; `git diff --check` clean.
-- **Commit:** `25780dddc`
+- **Commit:** `a18f15d3a`
 - **Note:** user report 2026-09-03 with a video the owner could not reproduce in a desktop phone simulator. iOS Safari scales the page into any focused input whose computed font-size is under 16px; the theme's inputs are the mock's 14px. The rule is keyed on `(pointer: coarse)`, not a width breakpoint, because the zoom follows the input device (a tablet at 1024px zooms too), and mouse devices keep 14px. The new system case asserts 16px in a `hasTouch`/`isMobile` context before and after focusing the field and 14px in the mouse context; the theme pin states the media rule at exactly Safari's threshold so a "denser mobile inputs" change cannot quietly bring the zoom back. `maximum-scale=1` was rejected because it also blocks pinch zoom. Not verified on a physical iPhone; the owner should confirm with the reporter.
 
 ### 2026-09-03 — Give the results bar unambiguous Sort, Display and Refine icons
@@ -3453,7 +3453,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** an icon swap inside existing controls; no behavior, contract, label, or `data-testid` change. Rendering change referenced by the regenerated strip.
 - **Paths:** `core/ui-react/src/features/search/results/ResultsPopovers.tsx`, `core/ui-react/src/features/search/results/SearchResults.tsx`
 - **Gates:** `core/ui-react` vitest 137 files / 1913 tests, `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `build`, `knip`, `validate:migration` green; whole `results.spec.ts` 35/35 against a jar rebuilt from this tree, regenerating `F-SEARCH-RESULTS/fm181-phone-bar-idle.png` and `F-SEARCH-SORT-FILTER/fm182-phone-sort-menu.png` (both opened and checked); `git diff --check` clean.
-- **Commit:** `7675d3b3d`
+- **Commit:** `aac64ae6b`
 - **Note:** owner request 2026-09-03 after FM-181/FM-182: Refine used `FilterList` (three shrinking bars — the glyph most apps use for *sort*, sitting next to a real Sort button), Display used `Tune`'s sliders (reads as settings or filters), Sort used `SwapVert`'s arrows (reads as swap). Now Refine is the `FilterAltOutlined` funnel, Sort the conventional `Sort` bars (unambiguous once the funnel owns "filter"), and Display options the `VisibilityOutlined` eye — every entry in that menu is about what is shown. The eye is applied to the desktop "Display" button too, so both viewports agree. Alternative the owner was offered for Display and did not take: `ViewAgendaOutlined`.
 
 ### 2026-09-04 — Let the document's `color-scheme` follow the theme so native date pickers open dark
@@ -3461,7 +3461,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** one prop on the existing `CssBaseline`; no behavior, contract, or `data-testid` change. The rendering it changes is the browser's own popup, which no capture can photograph, so the trigger is pinned instead.
 - **Paths:** `core/ui-react/src/App.tsx`, `tests/system/tests/smoke.spec.ts`
 - **Gates:** `core/ui-react` vitest 137 files / 1913 tests, `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `build`, `validate:migration` green; `tests/system` `tsc --noEmit` and prettier clean; whole `smoke.spec.ts` 11/11 against a jar rebuilt from this tree; `git diff --check` clean.
-- **Commit:** `e541f7a46`
+- **Commit:** `8748f6f80`
 - **Note:** owner question 2026-09-04 ("can the date pickers in the history and stats be adapted to the theme?"). They are native `<input type="date">` (stats custom range) and `datetime-local` (history refine) controls; MUI themes the field but the browser draws the popup and calendar icon from the document's `color-scheme`, which nothing set. `CssBaseline enableColorScheme` writes it from the palette mode, so the popup follows dark/light; its accents stay the browser's own, not the palette's. The theme-switch smoke case asserts the computed `color-scheme` per theme. **Left as a candidate:** a fully themed picker means MUI X Date Pickers (new dependency + adapter, a component contract, and the system tests that fill the native inputs rewritten) — a packet, only if the native dark popup still reads wrong to the owner.
 
 ### 2026-09-04 — Correct eight retained `FEATURES.yaml` findings from the FM-176..FM-184 reviews
@@ -3469,7 +3469,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** registry text only — comments, gap lines, and the registration of a selector FM-181 already shipped (`history-refine-done`, asserted by `search-history.spec.ts`); no code, contract semantics, or behavior touched.
 - **Paths:** `docs/frontend-migration/FEATURES.yaml`
 - **Gates:** every `gaps` entry now parses as a string (`yaml` in `core/ui-react`; four entries — FM-180's and the three FM-166 pager lines — had parsed as mappings because of a colon-space inside backticks, which `validate:migration` does not type-check); `validate:migration` valid; `git diff --check` clean.
-- **Commit:** `1c0eb0ca8`
+- **Commit:** `bb9393948`
 - **Note:** the eight items, each a retained minor finding: the FM-180 gap-line YAML defect (FM-183 review); the FM-183 gap line lacking the forced `CheckCircleOutline` glyph delta (FM-183 re-review); the FM-179 note out of chronological order (FM-179 review); the persisted-keys comment omitting `showCovers` (FM-178 review); the FM-178 gap line citing the superseded scoping entries by pre-rebase shas (FM-178 review); `F-SEARCH-PAGING` silent on the FM-181 footer and `history-refine-done` registered only in `C-REFINE-SURFACE`'s note (FM-181 review); plus the three FM-166 lines found by the same parse check.
 
 ### 2026-09-04 — Bring three stale version and ground comments up to 9.4.0 and ADR-0055
@@ -3477,7 +3477,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** comments only.
 - **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, `core/ui-react/src/components/toasts/ToastProvider.tsx`, `core/ui-react/src/app/theme.test.ts`
 - **Gates:** vitest 138 files / 1930 tests, `typecheck`, `lint` (0 errors), `format:check` green.
-- **Commit:** `82074ea10`
+- **Commit:** `bb9393948`
 - **Note:** retained findings from the FM-180 and FM-183 reviews. `theme.ts:1248`, also named, had already been rewritten by FM-184.
 
 ### 2026-09-04 — List Rating and Slider among the focus validator's 9.4.0 consumers
@@ -3485,7 +3485,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a validator inventory correction in the safe direction; no runtime code.
 - **Paths:** `core/ui-react/scripts/validate-focus-affordances.mjs`
 - **Gates:** `validate:focus-affordances` (23 consumers), vitest, `typecheck` green.
-- **Commit:** `39a114325`
+- **Commit:** `bb9393948`
 - **Note:** retained finding from the FM-184 review.
 
 ### 2026-09-04 — Await the lazy Control tab body in the SystemShell tab-order case
@@ -3493,7 +3493,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** test-only.
 - **Paths:** `core/ui-react/src/features/system/SystemShell.test.tsx`
 - **Gates:** vitest 138 files / 1930 tests green.
-- **Commit:** `27b16cf9d`
+- **Commit:** `bb9393948`
 - **Note:** the 2-in-5 flake the FM-184 reviewer saw; `getByTestId` read a lazily routed body once.
 
 ### 2026-09-04 — Let a mouse click close a cover preview that keyboard focus opened
@@ -3501,7 +3501,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** a single-component bugfix with a regression test that is red against the old handler and green with the fix; no contract or `data-testid` change.
 - **Paths:** `core/ui-react/src/features/search/results/ResultRow.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`
 - **Gates:** vitest 138 files / 1930 tests, `typecheck`, `lint`, `format:check`, `build`, `knip`, `check:api`, `validate:migration` green; whole `results.spec.ts` + `smoke.spec.ts` 46/46 against a jar rebuilt from this tree.
-- **Commit:** `326844809`
+- **Commit:** `bb9393948`
 - **Note:** retained finding from the FM-179 re-review. The guard now distinguishes the gesture that produced the click: a tap (pointer press before the focus) and a keyboard click (`detail === 0`) are consumed as the tail of the opening gesture; a mouse click after a keyboard focus is a new gesture and toggles. The same commit renames the FM-176 test helper `enableDuplicateControls` to `toggleDuplicateControls` (FM-176 review finding).
 
 ### 2026-09-04 — Three retained `results.spec.ts` findings from the FM-176/177/181 reviews
@@ -3509,7 +3509,7 @@ their text and relative order are unchanged.
 - **Why not a packet:** test-only.
 - **Paths:** `tests/system/tests/results.spec.ts`
 - **Gates:** `tests/system` `tsc --noEmit` and prettier clean; whole `results.spec.ts` + `smoke.spec.ts` 46/46 against a jar rebuilt from this tree.
-- **Commit:** `ae78f0094`
+- **Commit:** `bb9393948`
 - **Note:** the FM-055 consolidation case restores the three quick-filter keys it set on the live instance (FM-181); the option-off block asserts the both-controls row (FM-176); the covers case asserts tiles by title from the intercepted response, not by a parity count (FM-177). **Not done, with reasons:** FM-181's `sameValues` "space-join collision" — the code already joins with a NUL separator, the finding misread it; FM-182's `page.reload()` persistence step — `fixtures.ts:110` clears `localStorage` on every document, so a reload cannot observe the stored sort in this suite; FM-175's Select-header 1px `scrollWidth` overshoot — needs a browser measurement to place, clips nothing, left as a candidate; FM-184's select-all antialiasing and `aria-haspopup` semantics — owner call and proposed packet respectively.
 
 ### 2026-09-04 — Size the MUI X pickers like the other form controls and give them a Clear button
@@ -3517,5 +3517,5 @@ their text and relative order are unchanged.
 - **Why not a packet:** styling inside existing controls plus a stock MUI X field affordance; no behavior beyond the affordance, no contract, label or `data-testid` change. Rendering change referenced by the regenerated calendar captures.
 - **Paths:** `core/ui-react/src/app/theme.ts`, `core/ui-react/src/app/theme.test.ts`, `core/ui-react/src/domain/date-time/pickerValue.ts`, `core/ui-react/src/features/stats/dashboard/ControlsHeader.tsx`, `core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.tsx`, `core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx`
 - **Gates:** `core/ui-react` vitest 139 files / 1941 tests, `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `build`, `knip`, `check:api`, `validate:focus-affordances`, `validate:migration` green; `stats.spec.ts` + the three history specs 29/29 against a jar rebuilt from this tree, regenerating `F-STATS-MAIN/custom-range-calendar-*` and `F-HISTORY-SEARCHES/refine-time-calendar-*` (the dark desktop one opened and checked: 32px field, small glyph); `git diff --check` clean.
-- **Commit:** `e6773ea30`
+- **Commit:** `3671b43c5`
 - **Note:** two owner reports on FM-185 the same day. (1) MUI X's `PickersInputBase`/`PickersOutlinedInput` are not `InputBase`/`OutlinedInput`, so the theme's sizing and surface rules never reached them; `MuiPickersInputBase`/`MuiPickersOutlinedInput` now restate them, and the theme test pins the outline colour by parity with the text-field rule rather than a literal (the token lives on `ThemeColors`, not `palette`). (2) `slotProps.field.clearable` — MUI X's own Clear button, rendered only while the field holds a value, which is why the unit case renders the surface with one. Both applied through one `pickerFieldSlotProps` so a future picker cannot miss either. FM-185's packet had forbidden theme edits for its own scope; this is the follow-up that scope deferred.

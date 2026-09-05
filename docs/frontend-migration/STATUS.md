@@ -968,7 +968,7 @@ implementer's own, and restoration fidelity was established rather than asserted
 hunk headers internally consistent with them, the focus-affordance line drift equal to the same insertion count, and
 the identical red/green split reproduced. It was then committed *before* its re-review — recorded in the commit message
 as a deliberate inversion, since leaving it uncommitted a second time was the larger risk. Verified on baseline
-`a40e74de7` with the full gate chain (1456 tests) and a re-run real-backend `downloads` plus unedited `results` at 34
+`f0893eff2` with the full gate chain (1456 tests) and a re-run real-backend `downloads` plus unedited `results` at 34
 passed. Passed with three minor findings, none corrected (optional), carried into `MAINTENANCE.md`.
 
 FM-115 (Toast Announcement Over Modals) closes the announcement half of an app-wide WCAG 4.1.3 defect: `Snackbar`
@@ -1343,7 +1343,7 @@ subtrees behind `React.lazy`/`Suspense` (search route and shell stay eager; non-
 independently proved red on both a re-static import and the `manualChunks` trap. ADR-0010 intact (`react.html`
 untouched, two unhashed entry assets). Mid-task designer refinement allowlisted `ConfigShell.test.tsx` (spec defect:
 the FM-120 frame test's 20-microtask drain cannot cross a first lazy load) — the fix is a pure-addition warm-up, every
-assertion untouched; a separate quickfix (769708e37) repaired `config.spec.ts`'s pre-existing Discard-dialog failures
+assertion untouched; a separate quickfix (6bc17d298) repaired `config.spec.ts`'s pre-existing Discard-dialog failures
 proven on baseline. Full vitest 1741/1741; real-backend smoke 11/11, stats 7/7, config 29/29 via the quickfix run.
 Passed 2026-09-01 with minor findings, not corrected (optional): the cold first-visit tab swap is argued but unasserted
 (the warmed test measures a cached render), three duplicated `AREA_FALLBACK` constants, minification-marker staleness
@@ -1491,7 +1491,7 @@ the delta from legacy's one inline linked ID); size and age render as single ran
 non-empty array — one `searchCriteria` model feeds row cell, copy text, and dialog, so they cannot drift. `C-DATE-TIME`'s
 `formatParsed` now uses `hourCycle: "h23"` (legacy `reformatDate` parity, medium date style kept), the two 12h consumer pins
 were rewritten to 24h, the Time cell never wraps, and the table's min-width floor was re-measured 700→760. Vitest 1878/1878,
-real-backend `search-history.spec.ts` 6/6 with the e08aa3b87-scoped refine locators; four captures reviewed. Passed 2026-09-02
+real-backend `search-history.spec.ts` 6/6 with the 5050f5e5d-scoped refine locators; four captures reviewed. Passed 2026-09-02
 first cycle with three minor findings, not corrected (optional): the system spec's `" ID:"` absence assertion runs against a
 search that never carried identifiers (not load-bearing), `detailsEntry` is resolved from the current page so a row leaving
 the page mid-dialog would drop its criteria (unreachable while modal), and `dereferer: unknown` is threaded through three
@@ -1548,7 +1548,7 @@ Red/green pinned by a new test (title + size range + quick filter reset on a new
 fails against the pre-change sources. Vitest 1887/1887, real-backend `results.spec.ts` 32/32 against a repackaged jar.
 Passed 2026-09-02 first cycle with two minor findings, not corrected (optional): `F-SEARCH-SORT-FILTER`'s persisted-keys
 comment still omits `showCovers`, and its FM-178 gap line cites the two superseded ledger entries by pre-rebase shas
-(`100b5dd00`/`41e4dc59e`) where `MAINTENANCE.md` records them as `24329c640`/`27efd28f5`. Candidates for a future
+(`8b8cd44d1`/`8b8cd44d1`) where `MAINTENANCE.md` records them as `24329c640`/`27efd28f5`. Candidates for a future
 quickfix. The 2026-09-02 owner-request batch FM-175..FM-178 is complete.
 
 FM-179 (Cover Thumbnails — Fixed-Height Framed Tile, Middle-Aligned Rows, Hover/Focus Full-Size Preview) reshaped
@@ -1624,7 +1624,7 @@ ADR-0014/ADR-0056 (`ListItemIcon` 36px reaches only `FileBrowserSetting`, measur
 versions). Three specs repaired inside the task after one packet refinement: the ADR-0012 trace re-derived around v9's
 reopen focus (MUI now refocuses the row focused at close; contract intact), an option-less-Autocomplete paper-count
 precondition dropped, and the bare-anchor UA-colour pin made `color-scheme`-aware — that last failure pre-dates the
-upgrade and belongs to the `e541f7a46` quickfix, which verified only `smoke.spec.ts`. First review failed on a real
+upgrade and belongs to the `8748f6f80` quickfix, which verified only `smoke.spec.ts`. First review failed on a real
 regression the guide's wording caused: four legacy `*Outline` icon families had been repointed to `*Outlined`, the
 filled glyph; the byte-identical files are `*OutlineOutlined`. Fix cycle 1 repointed all five, pinned each family's
 `<path d>` against 7.3.9's literal in a new unit test (CheckCircle is the one family with an unavoidable sub-pixel
@@ -1656,7 +1656,7 @@ near-circular checkbox ring MUI now draws. Candidates for a future quickfix. Vis
 Tab inset, the Switch ring, and the rounder checkbox ring.
 
 FM-185 (Themed Date Pickers (MUI X) For The Stats Range And The History Time Filters) replaced the native
-`<input type="date">` / `datetime-local` controls — whose popup Firefox draws from the OS theme, so the `e541f7a46`
+`<input type="date">` / `datetime-local` controls — whose popup Firefox draws from the OS theme, so the `8748f6f80`
 `color-scheme` quickfix could not reach it — with `@mui/x-date-pickers` 9.13.0 on a `dayjs` 1.11.23 adapter: the stats
 Custom range is two `DatePicker`s, the history refine time dimension two `DateTimePicker`s (`ampm={false}`, typed entry
 `YYYY-MM-DD HH:mm` per FM-174's 24-hour rule), one `LocalizationProvider` in `App.tsx`, and a strict `pickerValue.ts`
@@ -1744,12 +1744,12 @@ None.
   (entry above), as are FM-145 (StatsComponentTest context reuse), FM-143 (search-chips reserved row), and FM-144
   (stats placeholder delay) — the whole 2026-08-30 owner-request batch is complete.
 
-- FM-125 (Autocomplete Close Flake) is **done** — `2b1930517`, accepted 2026-08-28 on a fresh independent review
+- FM-125 (Autocomplete Close Flake) is **done** — `bd86eaaa0`, accepted 2026-08-28 on a fresh independent review
   with no required findings. `waitFor` resolves at commit time, but `closeIfOutside` is attached by a passive effect
   flushed later; under whole-suite scheduling the test's outside `mousedown` could land in that gap. Closed with
   `await act(async () => {})` as a precondition — both behavioural halves independently re-mutated by the reviewer and
   still red when broken. Test-side only; `SearchWorkspace.tsx` byte-identical. Red loop 6/70 instrumented, green loop
-  50/50. Packet archived at `e58bcac22`.
+  50/50. Packet archived at `bd86eaaa0`.
 
 - **The suite-determinism batch (FM-122..FM-125) is complete**, and with it every known flake in the unit suite. What
   the batch actually found is worth keeping: `MAINTENANCE.md` recorded *one* flake at "1 in 10 to 13 runs" that nobody
@@ -1759,24 +1759,24 @@ None.
   unnoticed. Four separate reasons a green suite meant less than it appeared to.
 
 - FM-123 (Failure-Evidence Preservation And Racing-Assertion Audit) is **done for two of its three concerns** —
-  `23bc19aec`, accepted 2026-08-28. The `FailureArtifactReporter` and one genuine racing-assertion fix in
+  `b0b23ed92`, accepted 2026-08-28. The `FailureArtifactReporter` and one genuine racing-assertion fix in
   `IndexersConfigTab.test.tsx` landed and were independently verified; the first review FAILED the reporter for
   missing the exit-1-with-zero-failed class and the correction was re-reviewed clean. **The autocomplete flake it was
   also scoped to fix is NOT fixed** and is re-opened as FM-125 — not carried as a silent gap. Its premise-stale
   hand-back was correct behaviour on evidence that later proved wrong: a controlled idle-machine A/B reproduces the
-  flake at 5/50 and 6/50, matching FM-122's 12/100. Packet archived at `8164a8d06`.
+  flake at 5/50 and 6/50, matching FM-122's 12/100. Packet archived at `b0b23ed92`.
 
-- FM-124 (System Suite Server-State Restoration) is **done** — `ddc0dff58`, accepted 2026-08-28 on a fresh
+- FM-124 (System Suite Server-State Restoration) is **done** — `d2fa1463b`, accepted 2026-08-28 on a fresh
   independent review with no required findings. A `sensitiveDataLogging` fixture restores the setting in teardown
   regardless of outcome, so a mid-test failure can no longer poison the shared instance and make the *next* run fail
   on its own precondition. The sweep the ledger asked for was done and independently re-derived: ~15 mutation sites,
-  no gaps. Packet archived at `db140559d`.
+  no gaps. Packet archived at `d2fa1463b`.
 
-- FM-122 (Unit Suite Teardown Race Elimination) is **done** — `c264c296e`, accepted 2026-08-28 on a fresh independent
+- FM-122 (Unit Suite Teardown Race Elimination) is **done** — `2651efecd`, accepted 2026-08-28 on a fresh independent
   review with no findings. A global `afterEach(cleanup)` in `vitest.setup.ts` closes the exit-1-with-0-failed class.
   Primary evidence is deterministic (10/10 red without the guard, 10/10 green with it), not statistical: the packet's
   confidence arithmetic assumed p≈0.1 and the measured rate was p≈0.02, which the implementer caught and corrected
-  against its own result. Packet archived at `339136a4f`.
+  against its own result. Packet archived at `2651efecd`.
 
 - **FM-123 is now much better specified than when it was designed, and its packet should be refined before it starts.**
   It was written against an *anonymous* flake, so its honest scope was evidence-preservation plus a racing-assertion
@@ -1793,10 +1793,10 @@ None.
   executes in; FM-124 (Playwright server-state restoration) is a different runtime boundary and may run alongside
   either. Later members stay planned packets in `tasks/`.
 
-- FM-121 (Stats Shell Layout Route And Caching) is **done** — `e438c1cd3`, accepted after one correction cycle and a
+- FM-121 (Stats Shell Layout Route And Caching) is **done** — `3dd24826d`, accepted after one correction cycle and a
   fresh re-review.
 
-- FM-117 (Config Control Treatment) is **done** — `0c6af3e32`, accepted 2026-08-28. Its correction cycle carried an
+- FM-117 (Config Control Treatment) is **done** — `d60aa3d75`, accepted 2026-08-28. Its correction cycle carried an
   explicit "not re-reviewed, do not treat as accepted" warning here and in its commit message; that warning is now
   discharged by a fresh independent re-review returning PASS with no required findings. The re-review recomputed every
   contrast ratio from raw values instead of quoting the handoff, re-ran every gate itself, and reproduced the mutation
@@ -1804,16 +1804,16 @@ None.
   not 6). That is logged in `MAINTENANCE.md`; the commit message is history and stands as written. **FM-120 is
   unblocked.**
 
-- FM-118 (Downloaders Table) is **done** — `b3b3b0300`, accepted 2026-08-28 on a fresh independent review returning
+- FM-118 (Downloaders Table) is **done** — `b8a0e890f`, accepted 2026-08-28 on a fresh independent review returning
   PASS with no required and no minor findings, the batch's first clean first pass. Downloaders now present as a table
   matching the indexers one: name button as the edit control, Type, URL, Enabled switch left on the row. All five
   ADR-0033 testid families survived, so `settingsIndex.ts` and `settingsIndexDrift.test.tsx` needed no edit and were
   confirmed byte-identical and still exercised. The reviewer rebuilt the tree in a scratch copy — necessary, since
   `DownloaderTable.tsx` was untracked and `git archive HEAD` would have missed it — re-ran every gate, reproduced both
   mutations, and independently checked the Torbox *name button*, which the handoff had not discussed. Packet archived
-  at `e40804c61`.
+  at `b8a0e890f`.
 
-- FM-119 (Categories Edit Modals) is **done** — `d1a7dfbec`, accepted 2026-08-28 after one FAIL, a correction, and a
+- FM-119 (Categories Edit Modals) is **done** — `0507c0e06`, accepted 2026-08-28 after one FAIL, a correction, and a
   fresh independent re-review returning PASS with no required and no minor findings. Categories now present as a
   summary table plus `CategoryDialog`, matching indexers and downloaders. This closed two owner observations with one
   change: the always-mounted accordions were also the reason the tab felt slow. Measured, per the packet's binding
@@ -1825,16 +1825,16 @@ None.
   than the always-mounted accordions gave, and as first delivered it was weaker: `add()` pushes a `name: null`
   placeholder, Cancel/Escape/backdrop undid it, but unmounting the tab did not — so switching config tabs mid-add
   leaked a nameless category that surfaced only at Save. The reviewer reproduced it with a harness that unmounts the
-  tab the way the router does. Closed with a transaction-token-gated cleanup effect. Packet archived at `31ce72a35`.
+  tab the way the router does. Closed with a transaction-token-gated cleanup effect. Packet archived at `0507c0e06`.
 
-- FM-120 (Config Nav Subsection Flicker) is **done** — `789a89e16`, accepted 2026-08-28 on a fresh independent review
+- FM-120 (Config Nav Subsection Flicker) is **done** — `2f3257b34`, accepted 2026-08-28 on a fresh independent review
   returning PASS with no findings. One line: the fieldset-registering effect moved from `useEffect` to
   `useLayoutEffect`, so registration finishes inside the tab-switch commit instead of after a paint opportunity.
   `ConfigNav.tsx`, `fieldsetNav.ts` and `ConfigShell.tsx` have zero diff, so ADR-0028's frozen shape and the
   deliberate null render for a fieldset-less tab both stand. The proof had to escape React's `act()` contract to
   exist, and was checked for stability at 25 runs rather than trusted; what it cannot reach — a real compositor frame,
   and the router's own two-phase commit — is recorded in the packet's acceptance rather than implied covered. Packet
-  archived at `7c5cd53e8`.
+  archived at `2f3257b34`.
 
 - **The 2026-08-27 owner-observation batch FM-117..FM-121 is complete.** All five are done: FM-117 (control
   treatment), FM-118 (downloaders table), FM-119 (categories modals), FM-120 (nav flicker), FM-121 (stats shell).
@@ -1853,7 +1853,7 @@ None.
   note below, FM-119 must not start until this is out of `review`.
 
 - **FM-118 and FM-119 were sequenced deliberately, and FM-119 is now clear to start** (FM-118 committed at
-  `b3b3b0300`). The reason they could not overlap: They edit disjoint sources, but
+  `b8a0e890f`). The reason they could not overlap: They edit disjoint sources, but
   `config/settingsSearch/settingsIndexDrift.test.tsx` renders *every* config tab in one file, so it mounts both the
   downloading and categories tabs — run in parallel, each implementer's suite would contain the other's uncommitted
   work, which is exactly the contamination that cost FM-117/FM-121 their per-task verification runs. Sequence them;
@@ -1905,7 +1905,7 @@ None.
   119 files / 1505 tests, typecheck clean, lint 14 warnings / 0 errors, format:check clean, knip 1 pre-existing
   finding, build/check:api/validate:migration/validate:focus-affordances green, `git diff --check` clean,
   `settingsIndex.ts` and `tests/system/tests/config.spec.ts` confirmed byte-identical to base
-  (`git diff --stat 793da96bc --`, empty), and 34/34 real-backend `config-categories.spec.ts` +
+  (`git diff --stat b8a0e890f --`, empty), and 34/34 real-backend `config-categories.spec.ts` +
   `config.spec.ts` (unedited). Still `review`, awaiting a fresh independent re-review.
 
 - The 2026-08-27 maintenance-ledger batch (FM-113..FM-116) is complete.

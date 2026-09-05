@@ -845,7 +845,7 @@ Should that be bounded — server-side tail, client-side last-N with a load-ever
   producing one.
 
 **Why it is defensible.** This is legacy's behaviour (`hydra-log.js`), so it is not a regression. The test pressure
-that surfaced it is gone: `18c5ed445` added `rotatelog`, and the log tests rotate first. What remains is a real
+that surfaced it is gone: `bd4e73657` added `rotatelog`, and the log tests rotate first. What remains is a real
 instance with a very large log, which is a cost its operator already pays for other reasons.
 
 ## ADR-0048 — The system-test state reset is a `systemtest`-profile-gated internal endpoint (accepted 2026-08-30)
