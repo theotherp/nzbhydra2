@@ -115,7 +115,10 @@ public class SearchPersister {
                         x.setIndexerSearchEntityId(savedEntity.getId());
                     }
                 }
-                indexerSearchResultPersistor.persistSearchResultOccurrences(savedEntity, indexerSearchResult.getSearchResultEntities());
+                if (!indexerSearchResult.getExistingSearchResultIds().isEmpty()) {
+                    searchResultRepository.setIndexerSearchEntityIdWhereMissing(indexerSearchResult.getExistingSearchResultIds(), savedEntity.getId());
+                }
+                indexerSearchResultPersistor.persistSearchResultOccurrences(savedEntity, indexerSearchResult.getSearchResultIds());
             }
             searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
             indexerSearchCacheEntry.setIndexerSearchEntity(savedEntity);

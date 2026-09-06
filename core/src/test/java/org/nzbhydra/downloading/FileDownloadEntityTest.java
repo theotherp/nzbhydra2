@@ -37,7 +37,7 @@ class FileDownloadEntityTest {
         searchResult.setFirstFound(Instant.now());
         searchResult.setPubDate(Instant.now());
         searchResult.setDownloadType(DownloadType.NZB);
-        searchResult.setId(1234L);
+        searchResult.setHash(1234L);
         final IndexerEntity indexerEntity = new IndexerEntity("indexerName");
         searchResult.setIndexer(indexerEntity);
         final SearchEntity searchEntity = new SearchEntity();

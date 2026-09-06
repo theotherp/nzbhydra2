@@ -47,7 +47,7 @@ public class DownloadUrlBuilder {
             builder = urlCalculator.getRequestBasedUriBuilder();
             log.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
         }
-        return new DownloadLink(getDownloadLink(new DownloadIdentifier(searchResult.getId(), searchResult.getDownloadSearchId()), internal, searchResult.getDownloadType(), builder), true);
+        return new DownloadLink(getDownloadLink(new DownloadIdentifier(searchResult.getHash(), searchResult.getDownloadSearchId()), internal, searchResult.getDownloadType(), builder), true);
     }
 
     public String getDownloadLinkForResults(Long searchResultId, boolean internal, DownloadType downloadType) {

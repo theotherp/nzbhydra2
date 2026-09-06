@@ -23,7 +23,7 @@ import java.util.Optional;
 public class MainConfig {
 
 
-    private Integer configVersion = 24;
+    private Integer configVersion = 25;
 
     //Hosting settings
     @RestartRequired
@@ -109,7 +109,7 @@ public class MainConfig {
     @RestartRequired
     private int databaseRetentionTime = 1000;
     @RestartRequired
-    private int databaseWriteDelay = 5000;
+    private int databaseWriteDelay = 500;
 
 
     //Other settings

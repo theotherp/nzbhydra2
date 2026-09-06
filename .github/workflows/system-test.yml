@@ -509,6 +509,148 @@ jobs:
 
 
 
+    # Starts the JVM core with a data folder the previous code base wrote (H2 2.1, tests/system/instanceData/h2v2Migration,
+    # seeded by MigrationFixtureTool) and runs DatabaseMigrationSystemTest against it: the start-up migrates the
+    # database to H2 2.4 and the Flyway migrations, and the test proves the recorded history, downloads and download
+    # links survived. Needs a JRE in the container, which is why it runs the JVM core rather than the native image.
+  runMigrationTestLinux:
+      needs: buildMockserver
+      runs-on: ubuntu-latest
+      permissions:
+          contents: read
+          pull-requests: write
+          actions: read
+      timeout-minutes: 45
+      env:
+          spring_profiles_active: build,systemtest,testdocker,core
+          nzbhydra_port: 5076
+          nzbhydra.port: 5076
+          nzbhydra_name: core
+          NZBHYDRANAME: core
+          nzbhydra.name: core
+          HYDRA_INTERNAL_API_KEY: internalApiKey
+          HYDRA_EXTERNAL_URL: http://core:5076
+          MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+          MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+          MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
+          COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration.yaml
+      steps:
+          -   uses: actions/checkout@v4
+              name: "Check out source"
+
+          -   name: Set artifact timestamp
+              run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
+          -   name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: '17'
+                  distribution: 'adopt'
+                  cache: 'maven'
+
+          -   name: Set up Node 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+          -   name: "Build JVM core and test dependencies"
+              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:core -am
+
+          -   name: "Prepare the data folder from the H2 v2 fixture"
+              run: |
+                  mkdir -p "$MIGRATION_DATA_FOLDER/database"
+                  cp tests/system/instanceData/h2v2Migration/nzbhydra.yml "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/expectations.json "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/database/nzbhydra.mv.db "$MIGRATION_DATA_FOLDER/database/"
+                  # The container runs as root; the test on the runner reads the log and database files it writes.
+                  chmod -R a+rwX "$MIGRATION_DATA_FOLDER"
+                  echo "Fixture header: $(head -c 200 "$MIGRATION_DATA_FOLDER/database/nzbhydra.mv.db" | tr -c '[:print:]' ' ')"
+                  cat "$MIGRATION_DATA_FOLDER/expectations.json"
+
+          -   name: "Create docker network"
+              run: docker network create systemtest
+
+          -   name: "Run mockserver and JVM core with the fixture"
+              run: docker compose $COMPOSE_FILES up --quiet-pull -d mockserver core
+
+          -   name: "Wait for the migrated JVM core"
+              # The migration exports and re-imports the database in separate java processes; allow well over the usual
+              # start-up time.
+              run: |
+                  for attempt in {1..240}; do
+                    if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+                      echo "Core is up after $attempt attempts"
+                      exit 0
+                    fi
+                    if [ "$(docker inspect -f '{{.State.Running}}' core 2>/dev/null)" != "true" ]; then
+                      echo "::error::The core container stopped before becoming healthy"
+                      docker compose $COMPOSE_FILES logs --no-color core
+                      exit 1
+                    fi
+                    sleep 2
+                  done
+                  echo "::error::The core did not become healthy in time"
+                  docker compose $COMPOSE_FILES logs --no-color
+                  exit 1
+
+          -   name: "Run migration test"
+              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dgroups=migration -Dmigrationtest.datafolder=$MIGRATION_DATA_FOLDER -Dmigrationtest.mockserverExternalUrl=$MOCKSERVER_EXTERNAL_URL
+
+          -   name: "Convert migration test results to CTRF"
+              if: always()
+              run: npx --yes junit-to-ctrf "tests/system/target/surefire-reports/*.xml" -o ctrf/migration-tests.json -t "Database migration test (Linux JVM core)"
+
+          -   name: "Publish CTRF test report"
+              if: always()
+              uses: ctrf-io/github-test-reporter@v1
+              with:
+                  report-path: 'ctrf/*.json'
+                  title: 'Database Migration Test - Linux JVM Core'
+                  group-by: 'filePath'
+                  summary-report: true
+                  insights-report: true
+                  flaky-rate-report: true
+                  slowest-report: true
+                  fail-rate-report: true
+                  upload-artifact: true
+                  artifact-name: 'ctrf-report-migration-test-linux'
+                  fetch-previous-results: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          -   name: "Stop JVM core"
+              if: always()
+              run: |
+                  curl --fail --silent "http://127.0.0.1:5076/internalapi/control/shutdown?internalApiKey=internalApiKey" > /dev/null || true
+                  docker compose $COMPOSE_FILES stop core mockserver || true
+
+          -   name: "Write docker logs"
+              if: always()
+              run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
+
+          -   name: "Upload data folder artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: migration-test--linux-jvm--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: /tmp/hydraMigration
+
+          -   name: "Upload test logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: migration-test--linux-jvm--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: |
+                      tests/**/*.log
+                      tests/**/target/surefire-reports/**
+
+          -   name: "Upload docker logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: migration-test--linux-jvm--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: migration-test-docker.log
+
 
   runSystemTestsWindows:
     needs: [ waitForNative, buildMockserver ]

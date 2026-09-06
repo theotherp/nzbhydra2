@@ -297,10 +297,10 @@ main:
   backupEveryXDays: 7
   backupBeforeUpdate: true
   checkOpenPort: true
-  configVersion: 24
+  configVersion: 25
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
-  databaseWriteDelay: 5000
+  databaseWriteDelay: 500
   deleteBackupsAfterWeeks: 4
   disableSslLocally: false
   disableTour: false

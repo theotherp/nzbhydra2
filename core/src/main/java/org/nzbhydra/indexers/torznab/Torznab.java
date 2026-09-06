@@ -71,7 +71,7 @@ public class Torznab extends Newznab {
         searchResultItem.setHasNfo(HasNfo.NO);
         searchResultItem.setIndexerScore(config.getScore());
         searchResultItem.setDownloadType(DownloadType.TORRENT);
-        searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
+        searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultHash(searchResultItem));
         searchResultItem.setDetails(item.getComments());
 
         return searchResultItem;

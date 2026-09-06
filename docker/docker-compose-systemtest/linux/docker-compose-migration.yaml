@@ -1,0 +1,21 @@
+# Override for the database migration test (runMigrationTestLinux in .github/workflows/system-test.yml):
+#   docker compose -f docker-compose.yaml -f docker-compose-migration.yaml up -d mockserver core
+# Runs the JVM core from core/target on a JRE image, with the H2 v2 fixture copied to
+# /tmp/hydraMigration/defaultDataFolder beforehand. A JRE (not only the native binary) is what the one-time
+# migration needs: it runs the old and the new H2 as separate java processes.
+services:
+    core:
+        image: eclipse-temurin:17-jre
+        container_name: core
+        # A failed migration must not be retried in a loop; the wait step reads the logs instead.
+        restart: "no"
+        # The graceful shutdown compacts the database; give it time before docker kills the process.
+        stop_grace_period: 90s
+        volumes:
+            - ../../../core/target:/app:ro
+            - /tmp/hydraMigration/defaultDataFolder:/data
+        entrypoint: /bin/sh
+        command:
+            - -c
+            - |
+                java -DinternalApiKey=internalApiKey -Dmain.useCsrf=false -Dmain.logging.logfilelevel=DEBUG -jar /app/core-*-exec.jar directstart --datafolder /data

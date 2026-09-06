@@ -83,7 +83,9 @@ class SearchPersisterTest {
 
     private IndexerSearchResult indexerSearchResultWithOneEntity() {
         SearchResultEntity searchResultEntity = new SearchResultEntity();
-        searchResultEntity.setId(nextSearchResultEntityId++);
+        long id = nextSearchResultEntityId++;
+        searchResultEntity.setId(id);
+        searchResultEntity.setHash(id * 1000);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
         indexerSearchResult.setIndexer(indexer1);
         indexerSearchResult.setWasSuccessful(true);
@@ -136,7 +138,7 @@ class SearchPersisterTest {
         searchPersister.persistNewIndexerSearchResults(searchCacheEntryWith(indexerSearchCacheEntry));
 
         verify(indexerSearchRepositoryMock).save(any(IndexerSearchEntity.class));
-        verify(indexerSearchResultPersistorMock).persistSearchResultOccurrences(indexerSearchCacheEntry.getIndexerSearchEntity(), indexerSearchResult.getSearchResultEntities());
+        verify(indexerSearchResultPersistorMock).persistSearchResultOccurrences(indexerSearchCacheEntry.getIndexerSearchEntity(), indexerSearchResult.getSearchResultIds());
         verify(searchResultRepositoryMock).saveAll(indexerSearchResult.getSearchResultEntities());
     }
 

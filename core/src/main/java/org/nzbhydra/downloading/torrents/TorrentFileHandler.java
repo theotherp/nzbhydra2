@@ -49,7 +49,7 @@ public class TorrentFileHandler {
     @Transactional
     public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         //Get result. if link contains magnet: return redirect to magnet URI. otherwise return file
-        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
         if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
@@ -70,7 +70,7 @@ public class TorrentFileHandler {
     @Transactional
     public DownloadResult getTorrentByGuid(String identifier, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(identifier, accessSource == SearchSource.INTERNAL);
-        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(downloadIdentifier.searchResultId());
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(downloadIdentifier.searchResultId());
         if (optionalResult.isEmpty()) {
             throw new InvalidSearchResultIdException(identifier, accessSource == SearchSource.INTERNAL);
         }

@@ -7,12 +7,12 @@ import java.nio.charset.Charset;
 
 public class SearchResultIdCalculator {
 
-    public static long calculateSearchResultId(SearchResultEntity result) {
+    public static long calculateSearchResultHash(SearchResultEntity result) {
         long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid() + result.getTitle() + result.getLink()));
         return hash;
     }
 
-    public static long calculateSearchResultId(SearchResultItem result) {
+    public static long calculateSearchResultHash(SearchResultItem result) {
         long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid()) + result.getTitle() + result.getLink());
         return hash;
     }

@@ -805,7 +805,7 @@ public class SearcherUnitTest {
         assertThat(saved.getSearchEntity()).isSameAs(searchEntity);
 
         assertThat(searchResultEntity.getIndexerSearchEntityId()).isEqualTo(42);
-        verify(indexerSearchResultPersistor).persistSearchResultOccurrences(saved, firstPage.getSearchResultEntities());
+        verify(indexerSearchResultPersistor).persistSearchResultOccurrences(saved, firstPage.getSearchResultIds());
         assertThat(indexerSearchCacheEntry.getIndexerSearchEntity()).isSameAs(saved);
     }
 

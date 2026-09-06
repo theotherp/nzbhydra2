@@ -26,7 +26,14 @@ public class IndexerSearchResult {
     private boolean wasSuccessful = false;
     private String errorMessage;
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
+    /**
+     * The entities of the results which were created for this search result (i.e. which were not in the database before).
+     */
     private Set<SearchResultEntity> searchResultEntities = new HashSet<>();
+    /**
+     * Internal IDs of the results which were already in the database when this search result was persisted.
+     */
+    private Set<Long> existingSearchResultIds = new HashSet<>();
     private int totalResults;
     private int offset;
     private int pageSize;
@@ -52,6 +59,17 @@ public class IndexerSearchResult {
         this.indexer = indexer;
         this.time = Instant.now();
         this.errorMessage = errorMessage;
+    }
+
+    /**
+     * @return the internal IDs of all results of this search result, new and already known ones.
+     */
+    public Set<Long> getSearchResultIds() {
+        Set<Long> ids = new HashSet<>(existingSearchResultIds);
+        for (SearchResultEntity searchResultEntity : searchResultEntities) {
+            ids.add(searchResultEntity.getId());
+        }
+        return ids;
     }
 
     public List<SearchResultItem> getSearchResultItems() {

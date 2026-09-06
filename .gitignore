@@ -5,6 +5,7 @@ target/
 *.ipr
 *.iml
 *.db
+!tests/system/instanceData/*/database/nzbhydra.mv.db
 /bower_components
 /node_modules
 /nzbhydra.db.*
@@ -61,3 +62,4 @@ __pycache__
 
 # CTRF test reports generated in CI for ctrf-io/github-test-reporter (see .github/workflows/)
 ctrf/
+misc/.migration-test-runs

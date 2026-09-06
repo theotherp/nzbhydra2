@@ -93,7 +93,7 @@ class DuplicateMovieDownloadServiceTest {
         FileDownloadEntity latestFailedDownload = download(latestFailedResult, FileDownloadStatus.CONTENT_DOWNLOAD_ERROR);
         FileDownloadEntity olderSuccessfulDownload = download(olderSuccessfulResult, FileDownloadStatus.NZB_ADDED);
 
-        when(searchResultRepository.findAllById(List.of(1L))).thenReturn(List.of(currentResult));
+        when(searchResultRepository.findAllByHashIn(List.of(1L))).thenReturn(List.of(currentResult));
         when(fileDownloadRepository.findByUsernameAndTimeAfterOrderByTimeDesc(eq("user"), any(Instant.class)))
                 .thenReturn(List.of(latestFailedDownload, olderSuccessfulDownload));
         when(indexerSearchRepository.findAllById(Set.of(11))).thenReturn(List.of(indexerSearchEntity(11, currentSearch)));
@@ -142,14 +142,14 @@ class DuplicateMovieDownloadServiceTest {
     }
 
     private void mockRepositories(SearchResultEntity currentResult, FileDownloadEntity recentDownload, SearchEntity currentSearch, SearchEntity recentSearch) {
-        when(searchResultRepository.findAllById(List.of(currentResult.getId()))).thenReturn(List.of(currentResult));
+        when(searchResultRepository.findAllByHashIn(List.of(currentResult.getHash()))).thenReturn(List.of(currentResult));
         when(fileDownloadRepository.findByUsernameAndTimeAfterOrderByTimeDesc(eq("user"), any(Instant.class))).thenReturn(List.of(recentDownload));
         when(indexerSearchRepository.findAllById(Set.of(currentResult.getIndexerSearchEntityId()))).thenReturn(List.of(indexerSearchEntity(currentResult.getIndexerSearchEntityId(), currentSearch)));
         when(indexerSearchRepository.findAllById(Set.of(recentDownload.getSearchResult().getIndexerSearchEntityId()))).thenReturn(List.of(indexerSearchEntity(recentDownload.getSearchResult().getIndexerSearchEntityId(), recentSearch)));
     }
 
     private AddFilesRequest requestFor(SearchResultEntity searchResult) {
-        AddFilesRequest.SearchResult result = new AddFilesRequest.SearchResult(String.valueOf(searchResult.getId()), null, null);
+        AddFilesRequest.SearchResult result = new AddFilesRequest.SearchResult(String.valueOf(searchResult.getHash()), null, null);
         return new AddFilesRequest("downloader", List.of(result), null, null);
     }
 
@@ -171,9 +171,9 @@ class DuplicateMovieDownloadServiceTest {
         return entity;
     }
 
-    private SearchResultEntity searchResult(long id, int indexerSearchId) {
+    private SearchResultEntity searchResult(long hash, int indexerSearchId) {
         SearchResultEntity entity = new SearchResultEntity();
-        entity.setId(id);
+        entity.setHash(hash);
         entity.setIndexerSearchEntityId(indexerSearchId);
         return entity;
     }

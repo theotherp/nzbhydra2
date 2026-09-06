@@ -549,7 +549,7 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setSize(item.getEnclosure().getLength());
         searchResultItem.setPubDate(item.getPubDate());
         searchResultItem.setIndexerScore(config.getScore());
-        searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
+        searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultHash(searchResultItem));
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);

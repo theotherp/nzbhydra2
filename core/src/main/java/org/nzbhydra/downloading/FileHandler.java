@@ -113,7 +113,7 @@ public class FileHandler {
 
     @NotNull
     private SearchResultEntity getResultFromGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
-        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
         if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
@@ -367,7 +367,7 @@ public class FileHandler {
 
 
     public NfoResult getNfo(Long searchResultId) {
-        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(searchResultId);
         if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated search result ID {}", searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);

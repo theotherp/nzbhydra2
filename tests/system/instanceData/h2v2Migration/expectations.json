@@ -1,0 +1,78 @@
+{
+    "createdAt": "2026-09-06T11:37:37.710845420Z",
+    "apiKey": "apikey",
+    "mockserverUrl": "http://mockserver:5080",
+    "indexers": ["Mock1", "Mock2"],
+    "searches": {
+        "count": 10,
+        "queries": ["migrationInternalAlpha", "migrationInternalBeta", "migrationInternalGamma", "migrationExternalAlpha", "migrationExternalBeta", "migrationExternalGamma"],
+        "historyQueries": ["migrationInternalAlpha", "migrationExternalAlpha", "migrationExternalGamma", "migrationExternalBeta", "migrationExternalAlpha", "migrationInternalGamma", "migrationInternalBeta", "migrationInternalAlpha"],
+        "identifiers": [
+            {
+                "identifierKey": "TVMAZE",
+                "identifierValue": "82"
+            }, {
+                "identifierKey": "IMDB",
+                "identifierValue": "tt0848228"
+            }
+        ]
+    },
+    "downloadHistory": [
+        {
+            "title": "indexer1-20",
+            "indexer": "Mock1",
+            "searchResultId": "-5463928757633704595",
+            "accessSource": "INTERNAL",
+            "status": "REQUESTED"
+        }, {
+            "title": "indexer10",
+            "indexer": "Mock2",
+            "searchResultId": "-9207762472092143412",
+            "accessSource": "API",
+            "status": "REQUESTED"
+        }, {
+            "title": "indexer1",
+            "indexer": "Mock1",
+            "searchResultId": "1603975515107388353",
+            "accessSource": "API",
+            "status": "REQUESTED"
+        }
+    ],
+    "downloads": [
+        {
+            "title": "indexer1",
+            "indexer": "Mock1",
+            "guid": "1603975515107388353",
+            "searchResultId": "1603975515107388353",
+            "accessSource": "API"
+        }, {
+            "title": "indexer10",
+            "indexer": "Mock2",
+            "guid": "-9207762472092143412",
+            "searchResultId": "-9207762472092143412",
+            "accessSource": "API"
+        }, {
+            "title": "indexer1-20",
+            "indexer": "Mock1",
+            "guid": "-5463928757633704595",
+            "searchResultId": "-5463928757633704595",
+            "accessSource": "INTERNAL"
+        }
+    ],
+    "indexerApiAccesses": {
+        "Mock2": {
+            "percentSuccessful": 100.0,
+            "averageAccessesPerDay": 10.0
+        },
+        "Mock1": {
+            "percentSuccessful": 100.0,
+            "averageAccessesPerDay": 10.0
+        }
+    },
+    "config": {
+        "main.apiKey": "apikey",
+        "indexers.name": ["Mock1", "Mock2"],
+        "downloading.nzbAccessType": "REDIRECT",
+        "indexers.host": ["http://mockserver:5080", "http://mockserver:5080"]
+    }
+}

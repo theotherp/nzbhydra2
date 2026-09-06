@@ -1,10 +1,19 @@
 #@formatter:off
 -   version: "v9.0.0"
-    date: "2026-09-05"
-    final: true
+    final: false
     changes:
+      -   type: "note"
+          text: "The database library H2 was updated from 2.1 to 2.4. On the first start the existing database is migrated once. This requires a Java 17 (or newer) runtime to be available (also for the native builds and docker images). The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days. Large databases may take a few minutes. "
+      -   type: "fix"
+          text: "Fixed the root cause of database files growing to many gigabytes. Search results are now stored with a sequential internal key instead of a random hash, which caused every write to spread over the whole database file. Together with the updated library and a shorter write delay the file should stay close to the size of the actual data. Downloads and download links are not affected. See #1002 and #976."
+      -   type: "note"
+          text: "As part of the migration, cached search results that are not referenced by a download are dropped. This may cause failing downloads in *arr if they made a search shortly before the update."
+      -   type: "note"
+          text: "The default for the database write delay was reduced from 5000 to 500 ms. Existing configs with the old default are updated automatically. This also reduces the amount of data lost when Hydra is killed."
+      -   type: "note"
+          text: "If you run Hydra in docker make sure the container is stopped gracefully (e.g. stop_grace_period: 120s). Killing the process skips the compaction of the database file on shutdown. It does not corrupt the database."
       -   type: "feature"
-          text: "Send user agent when sending results to down."
+          text: "Send user agent NZBHydra2 when sending results to the downloader."
       -   type: "fix"
           text: "Searches with excluded words (e.g. \"--word\") were executed again for every page instead of using the cached results."
       -   type: "fix"

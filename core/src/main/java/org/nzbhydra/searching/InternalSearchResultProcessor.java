@@ -210,7 +210,7 @@ public class InternalSearchResultProcessor {
                 }
             }
 
-            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getId() == item.getSearchResultId()).findFirst();
+            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getHash() == item.getSearchResultId()).findFirst();
             if (matchingDownload.isPresent()) {
                 builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.get().getTime(), ZoneId.of("UTC"))));
             }

@@ -17,6 +17,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.database.DatabaseStatistics;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -102,6 +103,8 @@ public class DebugInfosProvider {
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
     @Autowired
     private TempFileProvider tempFileProvider;
+    @Autowired
+    private DatabaseStatistics databaseStatistics;
 
 
     @PostConstruct
@@ -245,6 +248,7 @@ public class DebugInfosProvider {
         logNumberOfTableRows("INDEXERAPIACCESS_SHORT");
         logNumberOfTableRows("INDEXERNZBDOWNLOAD");
         logDatabaseFolderSize();
+        logger.info(databaseStatistics.getSummaryLine());
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
             logger.info("Container info: {}", updateManager.getPackageInfo());

@@ -127,7 +127,7 @@ public abstract class Downloader {
                     categoryToSend = category;
                 }
 
-                Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+                Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
                 if (optionalResult.isEmpty()) {
                     logger.error("Download request with invalid/outdated GUID {}", guid);
                     failedSearchResultIds.add(guid);
@@ -189,13 +189,13 @@ public abstract class Downloader {
                 for (AddFilesRequest.SearchResult remainingEntry : searchResults) {
                     addParsedSearchResultId(remainingEntry.getSearchResultId(), failedSearchResultIds, addedNzbs, invalidIds);
                 }
-                failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toSet()));
+                failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getHash).collect(Collectors.toSet()));
                 return new AddNzbsResponse(false, message, addedNzbs, failedSearchResultIds, invalidIds);
             }
         }
 
         // Combine failedSearchResultIds with missedNzb IDs
-        failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toSet()));
+        failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getHash).collect(Collectors.toSet()));
 
         if (missedNzbs.isEmpty() && failedSearchResultIds.isEmpty() && invalidIds.isEmpty()) {
             return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
@@ -348,8 +348,8 @@ public abstract class Downloader {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id match: {}. ", entry, download, idMatches);
             return idMatches;
         }
-        if (guidExternalIds.containsKey(download.getSearchResult().getId())) {
-            boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
+        if (guidExternalIds.containsKey(download.getSearchResult().getHash())) {
+            boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getHash()) && guidExternalIds.get(download.getSearchResult().getHash()).equals(entry.getNzbId());
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id map match: {}. ", entry, download, idFromMapMatches);
             return idFromMapMatches;
         }
