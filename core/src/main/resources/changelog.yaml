@@ -28,6 +28,10 @@
           text: "Duplicates are now detected when results arrive from an indexer instead of for all results every time more are loaded. This should speed up searches with many results."
       -   type: "note"
           text: "For API searches a result that was already returned is no longer replaced by a duplicate found later. Pages stay consistent when loading more results."
+      -   type: "note"
+          text: "I've used AI (Claude) to help me with a lot of this stuff. Without it there wouldn't be a new UI because, let's face it, I'm no designer. The database thing has been troubling me for years and I never found a solution before."
+      -   type: "note"
+          text: "Thanks to Treasure Maps for their donation which made all this possible."
 -   version: "v8.9.0"
     date: "2026-07-09"
     final: true
