@@ -1,7 +1,6 @@
 package org.nzbhydra.database;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,7 +18,6 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,24 +28,17 @@ public class DatabaseRecreationTest {
     private static final String H2_2_1_HEADER = "H:2,block:30,blockSize:1000,chunk:c,clean:1,created:1a076449d10,format:2,version:c,fletcher:f3a7842a";
     private static final String H2_2_4_HEADER = "H:2,block:3,blockSize:1000,chunk:2,clean:1,created:1a07644a66c,format:3,version:2,fletcher:7a1d70de";
 
+    /**
+     * Only used to <i>create</i> the database files the migration is tested against, in a separate JVM. The migration
+     * itself always runs in-process with the relocated H2 from the h2legacy module.
+     */
     private static final File OLD_H2_JAR = new File(System.getProperty("user.home"), ".m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar");
-
-    private static final DatabaseRecreation.JarSource ORIGINAL_JAR_SOURCE = DatabaseRecreation.jarSource;
 
     @TempDir
     Path tempDir;
 
-    @BeforeEach
-    public void setUp() {
-        DatabaseRecreation.jarSource = (dataFolder, format) -> {
-            throw new IllegalStateException("Jar download must not be called from tests");
-        };
-    }
-
     @AfterEach
     public void tearDown() {
-        DatabaseRecreation.jarSource = ORIGINAL_JAR_SOURCE;
-        DatabaseRecreation.javaExecutableSource = DatabaseRecreation::getJavaExecutable;
         DatabaseRecreation.usableSpaceSource = File::getUsableSpace;
         DatabaseRecreation.scriptPostProcessor = scriptFile -> {
         };
@@ -62,6 +53,14 @@ public class DatabaseRecreationTest {
         assertThat(DatabaseRecreation.detectFormat("garbage")).isEqualTo(DatabaseFormat.UNKNOWN);
         assertThat(DatabaseRecreation.detectFormat("")).isEqualTo(DatabaseFormat.UNKNOWN);
         assertThat(DatabaseRecreation.detectFormat(null)).isEqualTo(DatabaseFormat.UNKNOWN);
+    }
+
+    @Test
+    public void shouldOnlyMigrateFormat2() {
+        assertThat(DatabaseFormat.H2_2_1.isMigrationNeeded()).isTrue();
+        assertThat(DatabaseFormat.H2_1_4.isMigrationNeeded()).isFalse();
+        assertThat(DatabaseFormat.CURRENT.isMigrationNeeded()).isFalse();
+        assertThat(DatabaseFormat.UNKNOWN.isMigrationNeeded()).isFalse();
     }
 
     @Test
@@ -99,70 +98,9 @@ public class DatabaseRecreationTest {
     }
 
     @Test
-    public void shouldFindJavaInJavaHomeProperty() throws IOException {
-        final File javaHome = createJavaHome("propertyHome");
-
-        final Optional<String> executable = DatabaseRecreation.findJavaExecutable(javaHome.getAbsolutePath(), null, null, false);
-
-        assertThat(executable).contains(new File(javaHome, "bin/java").getAbsolutePath());
-    }
-
-    @Test
-    public void shouldFindJavaInJavaHomeEnvironmentVariable() throws IOException {
-        final File javaHome = createJavaHome("envHome");
-
-        final Optional<String> executable = DatabaseRecreation.findJavaExecutable(tempDir.resolve("doesNotExist").toString(), javaHome.getAbsolutePath(), null, false);
-
-        assertThat(executable).contains(new File(javaHome, "bin/java").getAbsolutePath());
-    }
-
-    @Test
-    public void shouldFindJavaOnPath() throws IOException {
-        final File javaHome = createJavaHome("pathHome");
-        final String path = tempDir.resolve("empty").toString() + File.pathSeparator + new File(javaHome, "bin").getAbsolutePath();
-
-        final Optional<String> executable = DatabaseRecreation.findJavaExecutable(null, null, path, false);
-
-        assertThat(executable).contains(new File(javaHome, "bin/java").getAbsolutePath());
-    }
-
-    @Test
-    public void shouldLookForJavaExeOnWindows() throws IOException {
-        final File javaHome = createJavaHome("windowsHome");
-        Files.createFile(new File(javaHome, "bin/java.exe").toPath());
-
-        assertThat(DatabaseRecreation.findJavaExecutable(javaHome.getAbsolutePath(), null, null, true)).contains(new File(javaHome, "bin/java.exe").getAbsolutePath());
-        assertThat(DatabaseRecreation.findJavaExecutable(null, null, null, true)).isEmpty();
-    }
-
-    @Test
-    public void shouldReturnEmptyWhenNoJavaIsFound() {
-        assertThat(DatabaseRecreation.findJavaExecutable(null, null, null, false)).isEmpty();
-        assertThat(DatabaseRecreation.findJavaExecutable(tempDir.resolve("nope").toString(), "", tempDir.resolve("nope").toString(), false)).isEmpty();
-    }
-
-    @Test
-    public void shouldAbortBeforeTouchingFileWhenJavaIsMissing() throws Exception {
-        final File databaseFile = createFakeDatabaseFile(H2_2_1_HEADER);
-        final byte[] originalContent = Files.readAllBytes(databaseFile.toPath());
-        DatabaseRecreation.javaExecutableSource = () -> {
-            throw new IllegalStateException("needs a Java 17+ runtime");
-        };
-
-        assertThatThrownBy(() -> DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, "jdbc:h2:file:" + tempDir.resolve("database/nzbhydra")))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("needs a Java 17+ runtime");
-
-        assertThat(Files.readAllBytes(databaseFile.toPath())).isEqualTo(originalContent);
-        assertThat(databaseFolderFiles()).containsExactly("nzbhydra.mv.db");
-        assertThat(dataFolderScriptFiles()).isEmpty();
-    }
-
-    @Test
     public void shouldAbortBeforeTouchingFileWhenDiskSpaceIsInsufficient() throws Exception {
         final File databaseFile = createFakeDatabaseFile(H2_2_1_HEADER);
         final byte[] originalContent = Files.readAllBytes(databaseFile.toPath());
-        DatabaseRecreation.javaExecutableSource = () -> "java";
         DatabaseRecreation.usableSpaceSource = folder -> 0L;
 
         assertThatThrownBy(() -> DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, "jdbc:h2:file:" + tempDir.resolve("database/nzbhydra")))
@@ -174,10 +112,33 @@ public class DatabaseRecreationTest {
         assertThat(dataFolderScriptFiles()).isEmpty();
     }
 
+    /**
+     * H2 1.4 databases are no longer migrated. The file must be left exactly as it is and the message must say what
+     * to do instead.
+     */
+    @Test
+    public void shouldRejectH2_1_4DatabaseWithoutTouchingFile() throws Exception {
+        final File databaseFile = createFakeDatabaseFile(H2_1_4_HEADER);
+        final byte[] originalContent = Files.readAllBytes(databaseFile.toPath());
+        DatabaseRecreation.usableSpaceSource = folder -> {
+            throw new AssertionError("Must not be called");
+        };
+
+        assertThatThrownBy(() -> DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, "jdbc:h2:file:" + tempDir.resolve("database/nzbhydra")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("written by H2 1.4")
+            .hasMessageContaining("NZBHydra 8.x")
+            .hasMessageContaining("was not modified");
+
+        assertThat(Files.readAllBytes(databaseFile.toPath())).isEqualTo(originalContent);
+        assertThat(databaseFolderFiles()).containsExactly("nzbhydra.mv.db");
+        assertThat(dataFolderScriptFiles()).isEmpty();
+    }
+
     @Test
     public void shouldFailOnUnknownFormatWithoutTouchingFile() throws Exception {
         final File databaseFile = createFakeDatabaseFile("H:2,blockSize:1000,format:99");
-        DatabaseRecreation.javaExecutableSource = () -> {
+        DatabaseRecreation.usableSpaceSource = folder -> {
             throw new AssertionError("Must not be called");
         };
 
@@ -190,26 +151,13 @@ public class DatabaseRecreationTest {
     @Test
     public void shouldDoNothingForCurrentFormat() throws Exception {
         final File databaseFile = createFakeDatabaseFile(H2_2_4_HEADER);
-        DatabaseRecreation.javaExecutableSource = () -> {
+        DatabaseRecreation.usableSpaceSource = folder -> {
             throw new AssertionError("Must not be called");
         };
 
         DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, "jdbc:h2:file:" + tempDir.resolve("database/nzbhydra"));
 
         assertThat(databaseFolderFiles()).containsExactly("nzbhydra.mv.db");
-    }
-
-    @Test
-    public void shouldUseLocalJarFromDataFolderInsteadOfDownloading() throws IOException {
-        final File localJar = tempDir.resolve("h2-2.1.214.jar").toFile();
-        Files.writeString(localJar.toPath(), "not really a jar");
-
-        //The default source would try to download if the local file were not picked up
-        final File jar = ORIGINAL_JAR_SOURCE.getJar(tempDir.toFile(), DatabaseFormat.H2_2_1);
-
-        assertThat(jar).isEqualTo(localJar);
-        assertThat(DatabaseFormat.H2_1_4.getJarFileName()).isEqualTo("h2-1.4.200.jar");
-        assertThat(DatabaseFormat.H2_2_1.getJarFileName()).isEqualTo("h2-2.1.214.jar");
     }
 
     @Test
@@ -245,7 +193,8 @@ public class DatabaseRecreationTest {
 
     /**
      * Creates a real H2 2.1.214 database in a separate JVM using the jar from the local maven repository, runs the
-     * migration against it with the bundled H2 and checks the result. Skipped when the old jar is not available.
+     * migration against it and checks the result. The migration itself runs completely in-process: no jar, no java
+     * executable, no download. Skipped when the old jar is not available for the setup.
      */
     @Test
     @EnabledIf("isOldH2JarAvailable")
@@ -258,10 +207,6 @@ public class DatabaseRecreationTest {
         assertThat(DatabaseRecreation.detectFormat(DatabaseRecreation.readHeader(databaseFile))).isEqualTo(DatabaseFormat.H2_2_1);
         //Stale temporary file from a previous attempt that was killed
         Files.write(new File(databaseFolder, "nzbhydra-migration-tmp.mv.db").toPath(), "garbage".getBytes(StandardCharsets.ISO_8859_1));
-        DatabaseRecreation.jarSource = (dataFolder, format) -> {
-            assertThat(format).isEqualTo(DatabaseFormat.H2_2_1);
-            return OLD_H2_JAR;
-        };
 
         DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, dbConnectionUrl);
 
@@ -282,6 +227,9 @@ public class DatabaseRecreationTest {
         assertThat(databaseFolderFiles()).hasSize(2).contains("nzbhydra.mv.db");
         assertThat(databaseFolderFiles()).anyMatch(name -> name.matches("nzbhydra\\.mv\\.db\\.old\\.bak\\.\\d+"));
         assertThat(dataFolderScriptFiles()).isEmpty();
+        //The legacy driver must not stay registered, jdbc:h2: URLs belong to the bundled driver
+        assertThat(java.util.Collections.list(DriverManager.getDrivers()))
+            .noneMatch(driver -> driver.getClass().getName().startsWith("org.nzbhydra.h2legacy"));
     }
 
     /**
@@ -297,7 +245,6 @@ public class DatabaseRecreationTest {
         final String dbConnectionUrl = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
         createDatabaseWithOldH2(dbConnectionUrl, "create table t(id int primary key, v varchar); insert into t values (1,'a')");
         final byte[] originalContent = Files.readAllBytes(databaseFile.toPath());
-        DatabaseRecreation.jarSource = (dataFolder, format) -> OLD_H2_JAR;
         DatabaseRecreation.scriptPostProcessor = scriptFile -> {
             try {
                 Files.writeString(scriptFile.toPath(), "\nINSERT INTO \"PUBLIC\".\"DOES_NOT_EXIST\" VALUES (1);\n", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
@@ -319,72 +266,17 @@ public class DatabaseRecreationTest {
         assertThat(dataFolderScriptFiles()).isEmpty();
     }
 
-    /**
-     * Same for a 1.4.x database, using whatever 1.4 jar is in the local maven repository. Covers the password reset,
-     * the FROM_1X import and the flyway baseline.
-     */
-    @Test
-    @EnabledIf("isH2_1_4JarAvailable")
-    public void shouldMigrate14DatabaseToCurrentVersion() throws Exception {
-        final File oldJar = findH2_1_4Jar().orElseThrow();
-        final File databaseFolder = tempDir.resolve("database").toFile();
-        assertThat(databaseFolder.mkdirs()).isTrue();
-        final File databaseFile = new File(databaseFolder, "nzbhydra.mv.db");
-        final String dbConnectionUrl = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
-        createDatabaseWithOldH2(oldJar, dbConnectionUrl, "create table t(id int primary key, v varchar); insert into t values (1,'a')");
-        assertThat(DatabaseRecreation.detectFormat(DatabaseRecreation.readHeader(databaseFile))).isEqualTo(DatabaseFormat.H2_1_4);
-        DatabaseRecreation.jarSource = (dataFolder, format) -> {
-            assertThat(format).isEqualTo(DatabaseFormat.H2_1_4);
-            return oldJar;
-        };
-
-        DatabaseRecreation.migrateIfNeeded(tempDir.toFile(), databaseFile, dbConnectionUrl);
-
-        assertThat(DatabaseRecreation.detectFormat(DatabaseRecreation.readHeader(databaseFile))).isEqualTo(DatabaseFormat.CURRENT);
-        try (Connection connection = DriverManager.getConnection(dbConnectionUrl, "sa", "sa"); Statement statement = connection.createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery("select v from t where id = 1")) {
-                assertThat(resultSet.next()).isTrue();
-                assertThat(resultSet.getString(1)).isEqualTo("a");
-            }
-            try (ResultSet resultSet = statement.executeQuery("select \"version\", \"description\" from \"flyway_schema_history\" where \"type\" = 'BASELINE'")) {
-                assertThat(resultSet.next()).isTrue();
-                assertThat(resultSet.getString(1)).isEqualTo("1");
-                assertThat(resultSet.getString(2)).isEqualTo("INITIAL");
-            }
-        }
-        assertThat(databaseFolderFiles()).anyMatch(name -> name.matches("nzbhydra\\.mv\\.db\\.old\\.bak\\.\\d+"));
-        assertThat(dataFolderScriptFiles()).isEmpty();
-    }
-
     static boolean isOldH2JarAvailable() {
         return OLD_H2_JAR.isFile();
     }
 
-    static boolean isH2_1_4JarAvailable() {
-        return findH2_1_4Jar().isPresent();
-    }
-
-    private static Optional<File> findH2_1_4Jar() {
-        final File[] versionFolders = OLD_H2_JAR.getParentFile().getParentFile().listFiles((dir, name) -> name.startsWith("1.4."));
-        if (versionFolders == null) {
-            return Optional.empty();
-        }
-        return Arrays.stream(versionFolders)
-            .map(folder -> new File(folder, "h2-" + folder.getName() + ".jar"))
-            .filter(File::isFile)
-            .findFirst();
-    }
-
-    private void createDatabaseWithOldH2(String dbConnectionUrl, String sql) throws Exception {
-        createDatabaseWithOldH2(OLD_H2_JAR, dbConnectionUrl, sql);
-    }
-
     /**
-     * Runs the query with the 2.1.214 shell in a separate JVM and returns its output.
+     * Runs the query with the 2.1.214 shell in a separate JVM and returns its output. Proves that the file written
+     * by the relocated engine is still a valid stock H2 2.1 file.
      */
     private String queryWithOldH2(String dbConnectionUrl, String sql) throws Exception {
         final File output = tempDir.resolve("shell-output.txt").toFile();
-        final Process process = new ProcessBuilder(DatabaseRecreation.getJavaExecutable(), "-cp", OLD_H2_JAR.getAbsolutePath(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", sql)
+        final Process process = new ProcessBuilder(javaExecutable(), "-cp", OLD_H2_JAR.getAbsolutePath(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", sql)
             .redirectErrorStream(true)
             .redirectOutput(output)
             .start();
@@ -394,20 +286,19 @@ public class DatabaseRecreationTest {
         return result;
     }
 
-    private void createDatabaseWithOldH2(File oldJar, String dbConnectionUrl, String sql) throws Exception {
-        final String javaExecutable = DatabaseRecreation.getJavaExecutable();
-        final Process process = new ProcessBuilder(javaExecutable, "-cp", oldJar.getAbsolutePath(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", sql)
+    private void createDatabaseWithOldH2(String dbConnectionUrl, String sql) throws Exception {
+        final Process process = new ProcessBuilder(javaExecutable(), "-cp", OLD_H2_JAR.getAbsolutePath(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", sql)
             .redirectErrorStream(true)
             .inheritIO()
             .start();
         assertThat(process.waitFor()).isEqualTo(0);
     }
 
-    private File createJavaHome(String name) throws IOException {
-        final File bin = tempDir.resolve(name).resolve("bin").toFile();
-        assertThat(bin.mkdirs()).isTrue();
-        Files.createFile(new File(bin, "java").toPath());
-        return bin.getParentFile();
+    /**
+     * Only the test setup needs a java executable; the migration itself does not.
+     */
+    private static String javaExecutable() {
+        return new File(System.getProperty("java.home"), "bin" + File.separator + (System.getProperty("os.name").toLowerCase().contains("win") ? "java.exe" : "java")).getAbsolutePath();
     }
 
     private File createFakeDatabaseFile(String header) throws IOException {

@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>h2legacy</module>
         <module>mockserver</module>
         <module>sockslib</module>
         <module>github-release-plugin</module>

@@ -6,41 +6,34 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import okhttp3.OkHttpClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.springnative.ReflectionMarker;
-import org.nzbhydra.webaccess.OkHttp3ClientHttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,9 +43,15 @@ import java.util.stream.Collectors;
  * Migrates existing database files written by older H2 versions to the bundled H2 version.
  * <p>
  * H2 cannot open MVStore files written by older major/minor versions. The only supported path is to export the old
- * database to an SQL script with the old H2 version and import that script with the new one. The export runs the
- * downloaded old H2 jar in a separate JVM (the old classes cannot live next to the bundled ones), the import runs
- * in-process with the bundled driver.
+ * database to an SQL script with the old H2 version and import that script with the new one. Both steps run
+ * in-process and need neither a java executable nor any download: the old engine is H2 2.1.214 shipped by the
+ * {@code h2legacy} module, relocated to {@code org.nzbhydra.h2legacy.org.h2} so that it can live next to the
+ * bundled H2 (see {@code other/h2legacy}). It is used through {@code new
+ * org.nzbhydra.h2legacy.org.h2.Driver().connect(...)} and never through {@link DriverManager}, which must keep
+ * handing {@code jdbc:h2:} URLs to the bundled driver.
+ * <p>
+ * Only databases written by H2 2.1/2.2 ({@code format:2}) are migrated. Files written by H2 1.4 ({@code format:1})
+ * are rejected; they have to be migrated with NZBHydra 8.x first, which was the last version able to do that.
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class DatabaseRecreation {
@@ -88,72 +87,45 @@ public class DatabaseRecreation {
     private static final Map<String, String> SCHEMA_VERSION_CHANGES = new LinkedHashMap<>();
 
     /**
-     * Provides the H2 jar needed to export a database of the given format. Package-private so tests can point to a
-     * local jar instead of downloading one.
+     * Message shown for database files written by H2 1.4. Migrating those was dropped after NZBHydra 8.x.
      */
-    interface JarSource {
-        File getJar(File dataFolder, DatabaseFormat format) throws IOException;
-    }
-
-    static JarSource jarSource = DatabaseRecreation::getOrDownloadJar;
+    static final String H2_1_4_NOT_SUPPORTED_MESSAGE = "The database file was written by H2 1.4 which is no longer supported by NZBHydra. Migrate it with NZBHydra 8.x first - that was the last version able to convert 1.4 databases - and then update again, or delete the file to start with an empty database. The database file was not modified.";
 
     /**
-     * Package-private hooks so tests can simulate a missing Java runtime, a full disk or a broken export.
+     * Package-private hooks so tests can simulate a full disk or a broken export.
      */
-    static Supplier<String> javaExecutableSource = DatabaseRecreation::getJavaExecutable;
     static ToLongFunction<File> usableSpaceSource = File::getUsableSpace;
     static Consumer<File> scriptPostProcessor = scriptFile -> {
     };
 
     enum DatabaseFormat {
         /**
-         * Written by H2 1.4.x. Needs export with 1.4.200, import with FROM_1X and a flyway baseline because the
-         * schema history table did not exist yet.
+         * Written by H2 1.4.x. No longer migrated, see {@link #H2_1_4_NOT_SUPPORTED_MESSAGE}.
          */
-        H2_1_4("1.4", "https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar", true, true, true),
+        H2_1_4("1.4"),
         /**
-         * Written by H2 2.1.x / 2.2.x. Needs export with 2.1.214 and a plain import; the script already contains the
-         * flyway schema history.
+         * Written by H2 2.1.x / 2.2.x. Exported with the relocated H2 2.1.214 and imported as-is; the script
+         * already contains the flyway schema history.
          */
-        H2_2_1("2.1", "https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar", false, false, false),
+        H2_2_1("2.1"),
         /**
          * Written by the bundled H2 version. Nothing to do.
          */
-        CURRENT(CURRENT_H2_VERSION, null, false, false, false),
-        UNKNOWN(null, null, false, false, false);
+        CURRENT(CURRENT_H2_VERSION),
+        UNKNOWN(null);
 
         private final String label;
-        private final String jarUrl;
-        private final boolean passwordResetNeeded;
-        private final boolean from1x;
-        private final boolean flywayBaselineNeeded;
 
-        DatabaseFormat(String label, String jarUrl, boolean passwordResetNeeded, boolean from1x, boolean flywayBaselineNeeded) {
+        DatabaseFormat(String label) {
             this.label = label;
-            this.jarUrl = jarUrl;
-            this.passwordResetNeeded = passwordResetNeeded;
-            this.from1x = from1x;
-            this.flywayBaselineNeeded = flywayBaselineNeeded;
         }
 
         public String getLabel() {
             return label;
         }
 
-        public String getJarUrl() {
-            return jarUrl;
-        }
-
-        /**
-         * @return the file name of the jar, e.g. {@code h2-2.1.214.jar}. A file with this name in the data folder is
-         * used instead of downloading it.
-         */
-        public String getJarFileName() {
-            return jarUrl == null ? null : jarUrl.substring(jarUrl.lastIndexOf('/') + 1);
-        }
-
         public boolean isMigrationNeeded() {
-            return this == H2_1_4 || this == H2_2_1;
+            return this == H2_2_1;
         }
     }
 
@@ -179,11 +151,10 @@ public class DatabaseRecreation {
     /**
      * Flow:
      * <ol>
-     * <li>Read the MVStore header and determine the format. Current format: return. Unknown: fail.</li>
-     * <li>Before touching anything: require a Java executable (the export runs in a separate JVM) and enough free
-     * disk space in the data folder.</li>
-     * <li>Download the old H2 jar and export the database to a script in the data folder using the old jar. The
-     * original file stays in place.</li>
+     * <li>Read the MVStore header and determine the format. Current format: return. Unknown or H2 1.4: fail.</li>
+     * <li>Before touching anything: require enough free disk space in the data folder.</li>
+     * <li>Export the database to a script in the data folder with the relocated H2 2.1.214 ({@code SCRIPT TO}, which
+     * is what {@code org.h2.tools.Script} runs). The original file stays in place.</li>
      * <li>Import the script with the bundled H2 (in-process JDBC {@code RUNSCRIPT}) into a temporary database
      * {@code nzbhydra-migration-tmp.mv.db} next to the original. Compare the row counts recorded in the script with
      * the row counts of the temporary database and close it cleanly.</li>
@@ -214,18 +185,14 @@ public class DatabaseRecreation {
             logger.error("Unable to determine database version from header of {}", databaseFile);
             throw new RuntimeException("Invalid database file header");
         }
+        if (format == DatabaseFormat.H2_1_4) {
+            logger.error("Unable to migrate database file {}. {}", databaseFile, H2_1_4_NOT_SUPPORTED_MESSAGE);
+            throw new IllegalStateException(H2_1_4_NOT_SUPPORTED_MESSAGE);
+        }
         logger.info("Migrating database from H2 {} to {}, this is done once and may take several minutes for large databases", format.getLabel(), CURRENT_H2_VERSION);
 
-        //Preconditions: fail before touching the database file
-        final String javaExecutable = javaExecutableSource.get();
+        //Precondition: fail before touching the database file
         checkDiskSpace(dataFolder, databaseFile.length(), usableSpaceSource.applyAsLong(dataFolder));
-        final File h2OldJar;
-        try {
-            h2OldJar = jarSource.getJar(dataFolder, format);
-        } catch (Exception e) {
-            logger.error("Error migrating old database. Unable to download the H2 {} library from {}. If this machine has no internet access download the file manually and put it into the data folder as {}", format.getLabel(), format.getJarUrl(), new File(dataFolder, format.getJarFileName()));
-            throw e;
-        }
 
         deleteTraceFiles(databaseFile);
 
@@ -240,12 +207,8 @@ public class DatabaseRecreation {
             scriptFile = Files.createTempFile(dataFolder.toPath(), "nzbhydra-migration", ".sql").toFile();
             final String scriptFilePath = scriptFile.getCanonicalPath();
 
-            if (format.passwordResetNeeded) {
-                updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, "alter user sa set password 'sa'");
-            }
-
             logger.info("Exporting database with H2 {} to {}", format.getLabel(), scriptFilePath);
-            runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
+            exportScript(dbConnectionUrl, scriptFile);
             scriptPostProcessor.accept(scriptFile);
 
             final Map<String, Long> expectedRowCounts = readRowCountsFromScript(scriptFile);
@@ -253,16 +216,7 @@ public class DatabaseRecreation {
             logger.debug("Row counts recorded in exported script: {}", expectedRowCounts.entrySet().stream().map(x -> x.getKey() + " = " + x.getValue()).collect(Collectors.joining(", ")));
 
             logger.info("Importing script into temporary database {} with H2 {}", tempDatabaseFile, CURRENT_H2_VERSION);
-            importScript(tempConnectionUrl, scriptFile, format.from1x);
-
-            if (format.flywayBaselineNeeded) {
-                final Flyway flyway = Flyway.configure()
-                    .dataSource(tempConnectionUrl, "sa", "sa")
-                    .baselineDescription("INITIAL")
-                    .baselineVersion("1")
-                    .load();
-                flyway.baseline();
-            }
+            importScript(tempConnectionUrl, scriptFile);
 
             verifyRowCounts(tempConnectionUrl, expectedRowCounts);
             shutdownDatabase(tempConnectionUrl);
@@ -385,12 +339,51 @@ public class DatabaseRecreation {
      * Imports the script with the bundled H2 driver. This is what {@code org.h2.tools.RunScript} does internally, but
      * without going through the command line tool.
      */
-    private static void importScript(String dbConnectionUrl, File scriptFile, boolean from1x) throws Exception {
-        final String scriptPath = scriptFile.getCanonicalPath().replace("\\", "/").replace("'", "''");
-        final String sql = "RUNSCRIPT FROM '" + scriptPath + "'" + (from1x ? " FROM_1X" : "");
+    private static void importScript(String dbConnectionUrl, File scriptFile) throws Exception {
+        final String sql = "RUNSCRIPT FROM '" + toSqlLiteral(scriptFile) + "'";
         try (Connection connection = DriverManager.getConnection(dbConnectionUrl, "sa", "sa"); Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }
+    }
+
+    /**
+     * Exports the database with the relocated H2 2.1.214 from the {@code h2legacy} module. {@code SCRIPT TO} is what
+     * {@code org.h2.tools.Script} runs; going through the driver directly means no separate JVM, no java executable
+     * and no download are needed.
+     * <p>
+     * The driver is instantiated and used explicitly instead of asking {@link DriverManager} for a connection: the
+     * relocated driver registers itself when its class is initialized and {@code jdbc:h2:} URLs must keep going to
+     * the bundled driver. It is deregistered again right away.
+     */
+    private static void exportScript(String dbConnectionUrl, File scriptFile) throws Exception {
+        final Properties properties = new Properties();
+        properties.setProperty("user", "sa");
+        properties.setProperty("password", "sa");
+        final Driver legacyDriver = new org.nzbhydra.h2legacy.org.h2.Driver();
+        try {
+            try (Connection connection = legacyDriver.connect(dbConnectionUrl, properties); Statement statement = connection.createStatement()) {
+                statement.execute("SCRIPT TO '" + toSqlLiteral(scriptFile) + "'");
+            }
+        } finally {
+            deregisterLegacyDrivers();
+        }
+    }
+
+    private static void deregisterLegacyDrivers() {
+        for (Driver driver : Collections.list(DriverManager.getDrivers())) {
+            if (driver.getClass().getName().startsWith(org.nzbhydra.h2legacy.H2Legacy.RELOCATED_PACKAGE)) {
+                try {
+                    DriverManager.deregisterDriver(driver);
+                    logger.debug("Deregistered legacy H2 driver {}", driver.getClass().getName());
+                } catch (Exception e) {
+                    logger.warn("Unable to deregister legacy H2 driver {}", driver.getClass().getName(), e);
+                }
+            }
+        }
+    }
+
+    private static String toSqlLiteral(File file) throws IOException {
+        return file.getCanonicalPath().replace("\\", "/").replace("'", "''");
     }
 
     /**
@@ -444,94 +437,6 @@ public class DatabaseRecreation {
         }
         logger.info("Verified row counts of {} tables in migrated database", expectedRowCounts.size());
     }
-
-    private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
-        try {
-            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
-        } catch (Exception e) {
-            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
-        }
-    }
-
-    private static void runH2Command(List<String> command, String errorMessage) throws IOException, InterruptedException {
-        logger.info("Running command: " + Joiner.on(" ").join(command));
-        final Process process = new ProcessBuilder(command)
-            .redirectErrorStream(true)
-            .inheritIO()
-            .start();
-        final int result = process.waitFor();
-        if (result != 0) {
-            throw new RuntimeException(errorMessage + ". Code: " + result);
-        }
-    }
-
-    /**
-     * Uses {@code <dataFolder>/<jar file name>} (e.g. {@code h2-2.1.214.jar}) if the user put it there, which allows
-     * migrating on machines without internet access, and downloads the jar from Maven Central otherwise.
-     */
-    static File getOrDownloadJar(File dataFolder, DatabaseFormat format) throws IOException {
-        final File localJar = new File(dataFolder, format.getJarFileName());
-        if (localJar.isFile()) {
-            logger.info("Using local H2 {} library {} instead of downloading it", format.getLabel(), localJar);
-            return localJar;
-        }
-        logger.info("Downloading H2 {} library from {}", format.getLabel(), format.getJarUrl());
-        return downloadJarFile(format.getJarUrl());
-    }
-
-    private static File downloadJarFile(String url) throws IOException {
-        final ClientHttpRequest request = new OkHttp3ClientHttpRequest(new OkHttpClient(), URI.create(url), HttpMethod.GET);
-        final File jarFile;
-        try (ClientHttpResponse response = request.execute()) {
-            jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();
-            logger.debug("Downloaded file from {} to {}. Will be deleted on exit", url, jarFile);
-            jarFile.deleteOnExit();
-            try (InputStream body = response.getBody()) {
-                com.google.common.io.Files.asByteSink(jarFile).writeFrom(body);
-            }
-            if (response.getStatusCode() != HttpStatus.OK) {
-                throw new RuntimeException("Unable to download database library. Response: " + response.getStatusCode());
-            }
-        }
-        return jarFile;
-    }
-
-    /**
-     * @throws IllegalStateException if no Java executable can be found. Checked before the migration touches any file
-     *                               because the export needs to run the old H2 version in a separate JVM.
-     */
-    static String getJavaExecutable() {
-        return findJavaExecutable(System.getProperty("java.home"), System.getenv("JAVA_HOME"), System.getenv("PATH"), NzbHydra.isOsWindows())
-            .orElseThrow(() -> new IllegalStateException("The one-time database migration to H2 " + CURRENT_H2_VERSION + " needs a Java 17+ runtime but no java executable was found in java.home, JAVA_HOME or on the PATH. Install a JRE or JDK, make sure it's on the PATH (or JAVA_HOME points to it) and restart. The database file was not modified."));
-    }
-
-    static Optional<String> findJavaExecutable(String javaHomeProperty, String javaHomeEnv, String path, boolean windows) {
-        final String executableName = windows ? "java.exe" : "java";
-        for (String javaHome : Arrays.asList(javaHomeProperty, javaHomeEnv)) {
-            if (javaHome == null || javaHome.isBlank()) {
-                continue;
-            }
-            final File candidate = new File(javaHome, "bin" + File.separator + executableName);
-            if (candidate.isFile()) {
-                logger.debug("Determined java executable: {}", candidate);
-                return Optional.of(candidate.getAbsolutePath());
-            }
-        }
-        if (path != null) {
-            for (String directory : path.split(File.pathSeparator)) {
-                if (directory.isBlank()) {
-                    continue;
-                }
-                final File candidate = new File(directory, executableName);
-                if (candidate.isFile()) {
-                    logger.debug("Determined java executable from PATH: {}", candidate);
-                    return Optional.of(candidate.getAbsolutePath());
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
 
     @Data
     @ReflectionMarker

@@ -8608,6 +8608,207 @@
       "type": "org.h2.server.web.JakartaWebServlet"
     },
     {
+        "type": "org.nzbhydra.h2legacy.org.h2.Driver",
+        "methods": [
+            {
+                "name": "<init>",
+                "parameterTypes": []
+            }
+        ]
+    },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.jdbc.JdbcClob"
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.jdbc.JdbcLob",
+          "methods": [
+              {
+                  "name": "free",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.MVStore$TxCounter"
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.Page"
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.db.LobStorageMap$BlobMeta$Type",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.db.LobStorageMap$BlobReference$Type",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.db.NullValueDataType",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.db.RowDataType$Factory",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.db.ValueDataType$Factory",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.tx.VersionedValueType$Factory",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.type.ByteArrayDataType",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.type.LongDataType",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.type.ObjectDataType",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.mvstore.type.StringDataType",
+          "fields": [
+              {
+                  "name": "INSTANCE"
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.async.FilePathAsync",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.disk.FilePathDisk",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.mem.FilePathMem",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.mem.FilePathMemLZF",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.niomapped.FilePathNioMapped",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.niomem.FilePathNioMem",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.niomem.FilePathNioMemLZF",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.retry.FilePathRetryOnInterrupt",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.split.FilePathSplit",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
+          "type": "org.nzbhydra.h2legacy.org.h2.store.fs.zip.FilePathZip",
+          "methods": [
+              {
+                  "name": "<init>",
+                  "parameterTypes": []
+              }
+          ]
+      },
+      {
       "type": "org.hibernate.Incubating"
     },
     {
@@ -26915,6 +27116,12 @@
       "glob": "org/h2/util/data.zip"
     },
     {
+        "glob": "org/nzbhydra/h2legacy/org/h2/util/data.zip"
+    },
+      {
+        "glob": "org/nzbhydra/h2legacy/org/h2/res/_messages_*.prop"
+    },
+      {
       "glob": "org/hibernate/boot/model/FunctionContributor.class"
     },
     {

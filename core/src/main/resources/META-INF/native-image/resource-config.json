@@ -284,6 +284,12 @@
           "pattern": "\\Qorg/h2/util/data.zip\\E"
       },
       {
+          "pattern": "\\Qorg/nzbhydra/h2legacy/org/h2/util/data.zip\\E"
+      },
+      {
+          "pattern": "\\Qorg/nzbhydra/h2legacy/org/h2/res/_messages_\\E.*\\Q.prop\\E"
+      },
+      {
           "pattern": "\\Qorg/hibernate/boot/model/relational/ExportableProducer.class\\E"
       },
       {

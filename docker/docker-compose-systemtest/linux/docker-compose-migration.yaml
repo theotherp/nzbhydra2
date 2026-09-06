@@ -1,8 +1,13 @@
-# Override for the database migration test (runMigrationTestLinux in .github/workflows/system-test.yml):
+# Override for the JVM variant of the database migration test (runMigrationTestLinuxJvm in
+# .github/workflows/system-test.yml):
 #   docker compose -f docker-compose.yaml -f docker-compose-migration.yaml up -d mockserver core
 # Runs the JVM core from core/target on a JRE image, with the H2 v2 fixture copied to
-# /tmp/hydraMigration/defaultDataFolder beforehand. A JRE (not only the native binary) is what the one-time
-# migration needs: it runs the old and the new H2 as separate java processes.
+# /tmp/hydraMigration/defaultDataFolder beforehand. The migration itself now runs entirely in-process
+# (the relocated, bundled H2 2.1 reads and rewrites the database within the single core JVM), so no
+# separate java processes and no extra JRE are needed for the migration to work -- this JVM variant
+# exists to prove the migration also works from the exec jar. The native variant
+# (docker-compose-migration-native.yaml) proves it works from the native image build, which is where
+# reflection metadata problems in the bundled H2 would show up.
 services:
     core:
         image: eclipse-temurin:17-jre

@@ -9482,6 +9482,17 @@
   "name":"org.h2.server.web.JakartaWebServlet"
 },
 {
+  "name":"org.nzbhydra.h2legacy.org.h2.Driver",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.nzbhydra.h2legacy.org.h2.jdbc.JdbcClob"
+},
+{
+  "name":"org.nzbhydra.h2legacy.org.h2.jdbc.JdbcLob",
+  "methods":[{"name":"free","parameterTypes":[] }]
+},
+{
   "name":"org.hibernate.Session",
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,

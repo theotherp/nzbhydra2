@@ -105,7 +105,9 @@ jobs:
 
             -   name: "Run unit tests"
                 if: steps.build-decision.outputs.should-build == 'true'
-                run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
+                # h2legacy is excluded on purpose: its relocated H2 classes only exist in the shaded jar (package phase), which a
+                # reactor "test" run never builds; excluding it makes core resolve the jar installed by the previous step.
+                run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system,!org.nzbhydra:h2legacy --fail-at-end
 
             -   name: "Convert unit test results to CTRF"
                 if: always() && steps.build-decision.outputs.should-build == 'true'

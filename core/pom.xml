@@ -287,6 +287,13 @@
             <artifactId>h2</artifactId>
             <version>2.4.240</version>
         </dependency>
+        <!-- H2 2.1.214 relocated to org.nzbhydra.h2legacy.org.h2, used by DatabaseRecreation to export
+             databases written by H2 2.1/2.2 in-process. See other/h2legacy. -->
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>h2legacy</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.github.marschall</groupId>
             <artifactId>threeten-jpa</artifactId>

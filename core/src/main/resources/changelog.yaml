@@ -1,17 +1,18 @@
 #@formatter:off
+# These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.0"
     final: false
     changes:
-      -   type: "note"
-          text: "The database library H2 was updated from 2.1 to 2.4. On the first start the existing database is migrated once. This requires a Java 17 (or newer) runtime to be available (also for the native builds and docker images). The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days. Large databases may take a few minutes. "
       -   type: "fix"
-          text: "Fixed the root cause of database files growing to many gigabytes. Search results are now stored with a sequential internal key instead of a random hash, which caused every write to spread over the whole database file. Together with the updated library and a shorter write delay the file should stay close to the size of the actual data. Downloads and download links are not affected. See #1002 and #976."
+          text: "The database file no longer grows to many times the size of the data it contains. Some users reported files of dozens of gigabytes; the cause was found and fixed. See #1002 and #976."
       -   type: "note"
-          text: "As part of the migration, cached search results that are not referenced by a download are dropped. This may cause failing downloads in *arr if they made a search shortly before the update."
+          text: "The database library H2 was updated from 2.1 to 2.4. On the first start after the update the existing database is migrated once. This happens automatically, needs nothing installed and may take a few minutes for large databases. The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days."
       -   type: "note"
-          text: "The default for the database write delay was reduced from 5000 to 500 ms. Existing configs with the old default are updated automatically. This also reduces the amount of data lost when Hydra is killed."
+          text: "During the migration the cached search results are discarded (downloads, history and stats are kept). If Sonarr, Radarr etc. made a search shortly before the update they may need to search again before they can download."
       -   type: "note"
-          text: "If you run Hydra in docker make sure the container is stopped gracefully (e.g. stop_grace_period: 120s). Killing the process skips the compaction of the database file on shutdown. It does not corrupt the database."
+          text: "If you run Hydra in docker make sure the container is stopped gracefully (e.g. stop_grace_period: 120s). Killing the process does not corrupt the database but skips the cleanup of the database file on shutdown, so the file stays larger than necessary."
+      -   type: "note"
+          text: "Technical details about the database changes and instructions for container maintainers are in docs/database-upgrade-h2-2.4.md in the repository."
       -   type: "feature"
           text: "Send user agent NZBHydra2 when sending results to the downloader."
       -   type: "fix"
