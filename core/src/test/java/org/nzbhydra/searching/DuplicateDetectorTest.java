@@ -144,6 +144,92 @@ public class DuplicateDetectorTest {
     }
 
 
+    // ------------------------------------------------------------------------------------------------
+    // addToGroups
+    // ------------------------------------------------------------------------------------------------
+
+    @Test
+    void shouldAddItemsOfALaterRoundToTheGroupsOfAnEarlierRound() {
+        Instant now = Instant.now();
+        SearchResultItem fromIndexerA = new SearchResultItem();
+        setValues(fromIndexerA, "indexerA", "poster", "group", now);
+        SearchResultItem fromIndexerB = new SearchResultItem();
+        setValues(fromIndexerB, "indexerB", "poster", "group", now);
+
+        DuplicateGroups duplicateGroups = new DuplicateGroups();
+        testee.addToGroups(duplicateGroups, List.of(fromIndexerA));
+        assertThat(duplicateGroups.getGroups()).hasSize(1);
+        assertThat(duplicateGroups.getNumberOfDuplicates()).isZero();
+
+        testee.addToGroups(duplicateGroups, List.of(fromIndexerB));
+
+        assertThat(duplicateGroups.getGroups()).hasSize(1);
+        assertThat(duplicateGroups.getNumberOfDuplicates()).isEqualTo(1);
+        assertThat(duplicateGroups.getGroup(fromIndexerB)).isSameAs(duplicateGroups.getGroup(fromIndexerA));
+        assertThat(fromIndexerB.getDuplicateIdentifier()).isEqualTo(fromIndexerA.getDuplicateIdentifier());
+    }
+
+    @Test
+    void shouldGroupClearlyDistinctItemsIdenticallyRegardlessOfHowManyBatchesTheyComeIn() {
+        List<SearchResultItem> items = buildItemsWithTwoGroups();
+        DuplicateGroups inOneBatch = new DuplicateGroups();
+        testee.addToGroups(inOneBatch, items);
+
+        DuplicateGroups inTwoBatches = new DuplicateGroups();
+        testee.addToGroups(inTwoBatches, items.subList(0, 2));
+        testee.addToGroups(inTwoBatches, items.subList(2, items.size()));
+
+        assertThat(inTwoBatches.getGroups()).hasSameSizeAs(inOneBatch.getGroups());
+        assertThat(inTwoBatches.getNumberOfDuplicates()).isEqualTo(inOneBatch.getNumberOfDuplicates());
+        for (int i = 0; i < inOneBatch.getGroups().size(); i++) {
+            assertThat(inTwoBatches.getGroups().get(i).getItems()).isEqualTo(inOneBatch.getGroups().get(i).getItems());
+        }
+    }
+
+    @Test
+    void shouldKeepTheIdentifiersOfPreviouslyGroupedItemsStable() {
+        List<SearchResultItem> items = buildItemsWithTwoGroups();
+        DuplicateGroups duplicateGroups = new DuplicateGroups();
+        testee.addToGroups(duplicateGroups, items.subList(0, 2));
+        List<Integer> identifiersAfterFirstCall = items.subList(0, 2).stream().map(SearchResultItem::getDuplicateIdentifier).toList();
+
+        testee.addToGroups(duplicateGroups, items.subList(2, items.size()));
+
+        assertThat(items.subList(0, 2).stream().map(SearchResultItem::getDuplicateIdentifier).toList()).isEqualTo(identifiersAfterFirstCall);
+    }
+
+    @Test
+    void shouldNeverPutTwoItemsOfTheSameIndexerIntoOneGroup() {
+        Instant now = Instant.now();
+        SearchResultItem item1 = new SearchResultItem();
+        setValues(item1, "sameIndexer", "poster", "group", now);
+        SearchResultItem item2 = new SearchResultItem();
+        setValues(item2, "sameIndexer", "poster", "group", now);
+
+        DuplicateGroups duplicateGroups = new DuplicateGroups();
+        testee.addToGroups(duplicateGroups, List.of(item1, item2));
+
+        assertThat(duplicateGroups.getGroups()).hasSize(2);
+        assertThat(duplicateGroups.getNumberOfDuplicates()).isZero();
+        assertThat(item1.getDuplicateIdentifier()).isNotEqualTo(item2.getDuplicateIdentifier());
+    }
+
+    /**
+     * Two items of one poster and two of another one, each pair from two different indexers.
+     */
+    private List<SearchResultItem> buildItemsWithTwoGroups() {
+        Instant now = Instant.now();
+        SearchResultItem item1 = new SearchResultItem();
+        setValues(item1, "indexerA", "poster1", "group", now);
+        SearchResultItem item2 = new SearchResultItem();
+        setValues(item2, "indexerB", "poster1", "group", now.minus(1, ChronoUnit.MINUTES));
+        SearchResultItem item3 = new SearchResultItem();
+        setValues(item3, "indexerA", "poster2", "group", now.minus(2, ChronoUnit.MINUTES));
+        SearchResultItem item4 = new SearchResultItem();
+        setValues(item4, "indexerB", "poster2", "group", now.minus(3, ChronoUnit.MINUTES));
+        return List.of(item1, item2, item3, item4);
+    }
+
     protected void setValues(SearchResultItem item, String indexerName, String poster, String group, Instant pubDate) {
         item.setAgePrecise(true);
         item.setTitle("title");

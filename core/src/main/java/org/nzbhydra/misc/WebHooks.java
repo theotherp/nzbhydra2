@@ -40,10 +40,10 @@ public class WebHooks {
     public void onSearchEvent(SearchEvent searchEvent) throws IOException {
         String searchHook = System.getProperty("nzbhydra.hooks.search");
         if (!Strings.isNullOrEmpty(searchHook)) {
-            if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
+            if (searchEvent.searchRequest().getSource() == SearchSource.INTERNAL) {
                 try {
                     OkHttpClient client = requestFactory.getOkHttpClient(URI.create(searchHook).getHost());
-                    String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.getSearchRequest());
+                    String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.searchRequest());
                     Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();
 

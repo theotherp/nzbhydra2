@@ -13,7 +13,6 @@ import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +55,7 @@ public class IndexerSearchResult {
     }
 
     public List<SearchResultItem> getSearchResultItems() {
-        return searchResultItems.stream().sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
+        return searchResultItems.stream().sorted(SearchResultItem.NEWEST_FIRST).collect(Collectors.toList());
     }
 
     @Override

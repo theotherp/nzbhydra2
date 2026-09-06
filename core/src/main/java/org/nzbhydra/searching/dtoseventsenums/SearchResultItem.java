@@ -29,6 +29,12 @@ public class SearchResultItem  {
         MAYBE
     }
 
+    /**
+     * Orders items by {@link #getBestDate()} newest first. Items without any date are sorted last.
+     */
+    public static final Comparator<SearchResultItem> NEWEST_FIRST =
+        Comparator.comparing(SearchResultItem::getBestDate, Comparator.nullsFirst(Comparator.<Instant>naturalOrder())).reversed();
+
     //Note: Validation annotations relate to the needed state after the item was created by an indexer
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();

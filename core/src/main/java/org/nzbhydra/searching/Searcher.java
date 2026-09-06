@@ -2,43 +2,30 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multiset;
 import jakarta.annotation.PreDestroy;
-import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerSearchEntity;
-import org.nzbhydra.indexers.IndexerSearchRepository;
-import org.nzbhydra.indexers.IndexerSearchResultPersistor;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
-import org.nzbhydra.searching.db.IdentifierKeyValuePair;
 import org.nzbhydra.searching.db.SearchEntity;
-import org.nzbhydra.searching.db.SearchRepository;
-import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,31 +40,21 @@ import java.util.stream.Collectors;
 @Component
 public class Searcher {
 
-    private static final int MAX_QUERIES_UNTIL_BREAK = 15;
-    public static int LOAD_LIMIT_API = 500;
+    private static final int LOAD_LIMIT_API = 500;
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
-    @Autowired
-    protected DuplicateDetector duplicateDetector;
-    @Autowired
-    private IndexerSearchRepository indexerSearchRepository;
-    @Autowired
-    private IndexerSearchResultPersistor indexerSearchResultPersistor;
-    @Autowired
-    private SearchRepository searchRepository;
-    @Autowired
-    private SearchResultRepository searchResultRepository;
-    @Autowired
-    protected IndexerForSearchSelector indexerSelector;
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-    @Autowired
-    private ConfigProvider configProvider;
-    @Autowired
-    private TransactionTemplate transactionTemplate;
+    private final DuplicateDetector duplicateDetector;
+    private final IndexerForSearchSelector indexerSelector;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ConfigProvider configProvider;
+    private final SearchPersister searchPersister;
+
     private final Set<ExecutorService> executors = Collections.synchronizedSet(new HashSet<>());
-    private final Map<Long, List<Future<IndexerSearchResult>>> searchCallables = ExpiringMap.builder()
+    /**
+     * Maps a search request's ID to the state of the search currently running for it.
+     */
+    private final Map<Long, ActiveSearch> activeSearches = ExpiringMap.builder()
             .maxSize(10)
             .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
@@ -85,14 +62,22 @@ public class Searcher {
     private boolean shutdownRequested = false;
 
     /**
-     * Maps a search request's hash to its cache entry
+     * Maps a search request's identifying data to its cache entry
      */
-    private final Map<Integer, SearchCacheEntry> searchRequestCache = ExpiringMap.builder()
+    private final Map<SearchCacheKey, SearchCacheEntry> searchRequestCache = ExpiringMap.builder()
             .maxSize(20)
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .expiration(5, TimeUnit.MINUTES)
             .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
             .build();
+
+    public Searcher(DuplicateDetector duplicateDetector, IndexerForSearchSelector indexerSelector, ApplicationEventPublisher eventPublisher, ConfigProvider configProvider, SearchPersister searchPersister) {
+        this.duplicateDetector = duplicateDetector;
+        this.indexerSelector = indexerSelector;
+        this.eventPublisher = eventPublisher;
+        this.configProvider = configProvider;
+        this.searchPersister = searchPersister;
+    }
 
     public SearchResult search(SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -102,18 +87,25 @@ public class Searcher {
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
         searchResult.setIndexerSelectionResult(searchCacheEntry.getIndexerSelectionResult());
-        searchResult.setNumberOfRemovedDuplicates(searchCacheEntry.getNumberOfRemovedDuplicates());
 
-        List<IndexerSearchCacheEntry> indexersToSearch = getIndexersToSearch(searchCacheEntry);
-        List<IndexerSearchCacheEntry> indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-        List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
-        while ((!indexersToSearch.isEmpty() || !indexersWithCachedResults.isEmpty()) && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll()) && !searchRequest.isShortcut()) {
-            if (shutdownRequested) {
+        //Register before any indexer is queried so that a shortcut request can never be lost
+        ActiveSearch activeSearch = new ActiveSearch();
+        if (searchRequest.isShortcut()) {
+            activeSearch.shortcutRequested = true;
+        }
+        activeSearches.put(searchRequest.getSearchRequestId(), activeSearch);
+
+        while (!shutdownRequested && !activeSearch.shortcutRequested) {
+            List<IndexerSearchCacheEntry> indexersToSearch = searchCacheEntry.getIndexersToSearch();
+            if (indexersToSearch.isEmpty() && searchCacheEntry.getIndexersWithCachedResults().isEmpty()) {
+                break;
+            }
+            if (searchCacheEntry.getSearchResultItems().size() >= numberOfWantedResults && !searchRequest.isLoadAll()) {
                 break;
             }
             if (searchRequest.isLoadAll()) {
                 int maxResultsToLoad = searchCacheEntry.getNumberOfTotalAvailableResults();
-                if (searchResultItems.size() > maxResultsToLoad) {
+                if (searchCacheEntry.getSearchResultItems().size() > maxResultsToLoad) {
                     logger.info("Aborting loading all results because more than {} results were already loaded and we don't want to hammer the indexers too much", maxResultsToLoad);
                     break;
                 }
@@ -121,74 +113,37 @@ public class Searcher {
 
             //Do the actual search
             if (!indexersToSearch.isEmpty()) {
-                callSearchModules(searchRequest, indexersToSearch, searchCacheEntry);
-                //Update so indexers with errors are removed
-                indexersToSearch = getIndexersToSearch(searchCacheEntry);
+                List<IndexerSearchResult> newIndexerSearchResults = queryIndexers(searchRequest, indexersToSearch, activeSearch);
+                //Group the new items right away so that the merge can decide which of them to return
+                List<SearchResultItem> newItems = newIndexerSearchResults.stream()
+                    .flatMap(x -> x.getSearchResultItems().stream())
+                    .collect(Collectors.toList());
+                duplicateDetector.addToGroups(searchCacheEntry.getDuplicateGroups(), newItems);
             }
 
-            indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-            while (!indexersWithCachedResults.isEmpty()) {
-                List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).toList();
-                SearchResultItem newestResult = newestItemsFromIndexers.get(0);
-                Indexer newestResultIndexer = newestResult.getIndexer();
-                IndexerSearchCacheEntry newestIndexerSearchCacheEntry = searchCacheEntry.getIndexerCacheEntries().get(newestResultIndexer.getName());
-                searchResultItems.add(newestIndexerSearchCacheEntry.pop());
-
-                indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-                if (!newestIndexerSearchCacheEntry.isMoreResultsInCache() && newestIndexerSearchCacheEntry.isMoreResultsAvailable()) {
-                    //Circuit breaker: Don't add indexer if it has already executed too many queries
-                    final int executedSearches = newestIndexerSearchCacheEntry.getIndexerSearchResults().size();
-                    if (!searchRequest.isLoadAll() && executedSearches >= MAX_QUERIES_UNTIL_BREAK) {
-                        logger.warn("Indexer {} executed {} queries without a load-all search. Will stop now", newestIndexerSearchCacheEntry.getIndexer().getName(), executedSearches);
-                    } else {
-                        indexersToSearch.add(newestIndexerSearchCacheEntry);
-                    }
-                    //We need to make a new search for that indexer so we need to stop here. If we still haven't enough results the outer loop will cause more results to be loaded
-                    break;
-                }
-            }
-
-            searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
-
-            //todo: Would be better if duplicate detection would be executed when each indexer's search result items are filled from the new indexerSearchResults
-            //That way they wouldn't be considered eligable and this loop wouldn't be executed as often
-
-            DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(new HashSet<>(searchResultItems));
+            searchCacheEntry.mergeCachedResults();
 
             //Save to database
-            createOrUpdateIndexerSearchEnties(searchCacheEntry);
-
-            //Remove duplicates for external searches
-            if (searchRequest.getSource() == SearchSource.API) {
-                int beforeDuplicateRemoval = searchResultItems.size();
-                searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
-                searchResult.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates() + (beforeDuplicateRemoval - searchResultItems.size()));
-            }
-            searchResult.setNumberOfFoundDuplicates(duplicateDetectionResult.getNumberOfDuplicates());
+            searchPersister.persistNewIndexerSearchResults(searchCacheEntry);
 
             //Set the rejection counts from all searches, this and previous
-            searchCacheEntry.getReasonsForRejection().clear();
-            for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
-                for (IndexerSearchResult indexerSearchResult : indexerSearchCacheEntry.getIndexerSearchResults()) {
-                    for (Multiset.Entry<String> rejectionEntry : indexerSearchResult.getReasonsForRejection().entrySet()) {
-                        searchCacheEntry.getReasonsForRejection().add(rejectionEntry.getElement(), rejectionEntry.getCount());
-                    }
-                }
-            }
-
-            searchCacheEntry.setSearchResultItems(new ArrayList<>(searchResultItems));
+            searchCacheEntry.updateReasonsForRejection();
         }
+        activeSearches.remove(searchRequest.getSearchRequestId());
+
+        searchResult.setNumberOfFoundDuplicates(searchCacheEntry.getDuplicateGroups().getNumberOfDuplicates());
+        searchResult.setNumberOfRemovedDuplicates(searchCacheEntry.getNumberOfRemovedDuplicates());
+
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream()
             .filter(x -> !x.getIndexerSearchResults().isEmpty())
             .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
             .collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
-        searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 
-        List<SearchResultItem> searchResultItemsToReturn = new ArrayList<>(searchResultItems);
+        List<SearchResultItem> searchResultItemsToReturn = new ArrayList<>(searchCacheEntry.getSearchResultItems());
         searchResultItemsToReturn.forEach(item -> item.setSearchId(searchCacheEntry.getSearchEntity().getId()));
-        searchResultItemsToReturn.sort(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed());
+        searchResultItemsToReturn.sort(SearchResultItem.NEWEST_FIRST);
 
         spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItemsToReturn);
 
@@ -196,28 +151,18 @@ public class Searcher {
         return searchResult;
     }
 
-    private List<IndexerSearchCacheEntry> getIndexersWithCachedResults(SearchCacheEntry searchCacheEntry) {
-        List<IndexerSearchCacheEntry> indexerSearchCacheEntries = searchCacheEntry.getIndexerCacheEntries().values().stream()
-                .filter(IndexerSearchCacheEntry::isMoreResultsInCache)
-                .collect(Collectors.toList());
-        return indexerSearchCacheEntries;
-    }
-
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset();
         int limit = searchRequest.getLimit();
-//        if (searchRequest.getSource() == SearchSource.INTERNAL) {
-//            limit = configProvider.getBaseConfig().getSearching().getLoadLimitInternal();
-//        } else {
-//            limit = searchRequest.getLimit();
-//        }
+        searchResult.setOffset(offset);
+        searchResult.setLimit(limit);
 
         if (searchRequest.getSource() == SearchSource.INTERNAL
                 && offset == 0
-//                && limit == configProvider.getBaseConfig().getSearching().getLoadLimitInternal()
                 && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
             logger.debug("Will load all cached results");
             limit = searchResultItems.size();
+            searchResult.setLimit(limit);
         }
 
         if (searchRequest.isLoadAll()) {
@@ -234,11 +179,10 @@ public class Searcher {
         if (offset + limit > searchResultItems.size()) {
             logger.debug("Offset {} + limit {} exceeds the number of available results {}; returning all remaining results from cache", offset, limit, searchResultItems.size());
             limit = searchResultItems.size() - offset;
+            searchResult.setLimit(limit);
         }
 
         if (limit != 0) {
-            searchResult.setOffset(offset);
-            searchResult.setLimit(limit);
             String andRemoved = "";
             if (searchRequest.getSource() == SearchSource.API) {
                 andRemoved = " and " + searchResult.getNumberOfRemovedDuplicates() + " were removed as duplicates";
@@ -248,208 +192,103 @@ public class Searcher {
         }
     }
 
-    protected List<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<LinkedHashSet<SearchResultItem>> duplicateGroups) {
-        //Sort duplicate groups internally, map to list, sort the results
-        return duplicateGroups.stream().map(x -> x.stream()
-                .sorted(Comparator.comparingInt((SearchResultItem searchResultItem) -> searchResultItem.getIndexerScore() == null ? 0 : searchResultItem.getIndexerScore())
-                        .reversed()
-                        .thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getBestDate().getEpochSecond())
-                                .reversed())
-                )
-                .iterator().next()
-        ).
-                sorted(Comparator.comparingLong((SearchResultItem x) -> x.getBestDate().getEpochSecond())
-                        .reversed()
-                )
-                .collect(Collectors.toList());
-    }
-
-    protected void createOrUpdateIndexerSearchEnties(SearchCacheEntry searchCacheEntry) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        int countEntities = 0;
-
-        for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
-            for (IndexerSearchResult indexerSearchResult : indexerSearchCacheEntry.getIndexerSearchResults()) {
-                IndexerSearchEntity entity = indexerSearchCacheEntry.getIndexerSearchEntity();
-                if (entity == null) {
-                    entity = new IndexerSearchEntity();
-                    entity.setIndexerEntity(indexerSearchResult.getIndexer().getIndexerEntity());
-                    entity.setSearchEntity(searchCacheEntry.getSearchEntity());
-                    entity.setResultsCount(indexerSearchResult.getTotalResults());
-                    entity.setSuccessful(indexerSearchResult.isWasSuccessful());
-                    entity.setResponseTime(indexerSearchResult.getResponseTime());
-                    entity.setErrorMessage(indexerSearchResult.getErrorMessage());
-                    indexerSearchCacheEntry.setIndexerSearchEntity(entity);
-                }
-                IndexerSearchEntity finalEntity = entity;
-                transactionTemplate.executeWithoutResult(status -> {
-                    IndexerSearchEntity savedEntity = finalEntity;
-                    if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
-                        savedEntity = indexerSearchRepository.save(finalEntity);
-                        for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
-                            if (x.getIndexerSearchEntityId() == null) {
-                                x.setIndexerSearchEntityId(savedEntity.getId());
-                            }
-                        }
-                        indexerSearchResultPersistor.persistSearchResultOccurrences(savedEntity, indexerSearchResult.getSearchResultEntities());
-                    }
-                    searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
-                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).setIndexerSearchEntity(savedEntity);
-                });
-                countEntities++;
-            }
-        }
-        logger.debug(LoggingMarkers.PERFORMANCE, "Saving {} indexer search entities took {}ms", countEntities, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    }
-
     protected SearchCacheEntry getSearchCacheEntry(SearchRequest searchRequest) {
+        //The search entity must contain the query as entered by the user, so remember it before it's changed
+        String rawQuery = searchRequest.getQuery().orElse(null);
+        //Extending the request is idempotent but must happen before the cache key is calculated so that the same
+        //query results in the same key on every page
+        searchRequest.extractQueryAndForbiddenWords();
+        SearchCacheKey searchCacheKey = SearchCacheKey.of(searchRequest);
+
         SearchCacheEntry searchCacheEntry;
-
-        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
+        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchCacheKey)) {
             //New search
-            SearchEntity searchEntity = new SearchEntity();
-            searchEntity.setSource(searchRequest.getSource());
-            searchEntity.setCategoryName(searchRequest.getCategory().getName());
-            searchEntity.setQuery(searchRequest.getQuery().orElse(null));
-            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().filter(x -> x.getValue() != null).map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toSet()));
-            searchEntity.setSeason(searchRequest.getSeason().orElse(null));
-            searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
-            searchEntity.setSearchType(searchRequest.getSearchType());
-            searchEntity.setTitle(searchRequest.getTitle().orElse(null));
-            searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
-            searchEntity.setMinAge(searchRequest.getMinage().orElse(null));
-            searchEntity.setMaxAge(searchRequest.getMaxage().orElse(null));
-            searchEntity.setMinSize(searchRequest.getMinsize().orElse(null));
-            searchEntity.setMaxSize(searchRequest.getMaxsize().orElse(null));
-            searchEntity.setSelectedIndexers(searchRequest.getIndexers().orElse(null));
-
-            //Extend search request
-            searchRequest.extractQueryAndForbiddenWords();
-
-            if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
-                transactionTemplate.executeWithoutResult(status -> searchRepository.save(searchEntity));
-            }
-
+            SearchEntity searchEntity = searchPersister.createSearchEntity(searchRequest, rawQuery);
             IndexerForSearchSelection pickingResult = indexerSelector.pickIndexers(searchRequest);
             searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult, searchEntity);
         } else {
-            searchCacheEntry = searchRequestCache.get(searchRequest.hashCode());
+            searchCacheEntry = searchRequestCache.get(searchCacheKey);
             searchCacheEntry.setLastAccessed(Instant.now());
             searchCacheEntry.setSearchRequest(searchRequest); //Update to latest to keep offset and limit updated
         }
+        searchRequestCache.put(searchCacheKey, searchCacheEntry);
         return searchCacheEntry;
     }
 
-
-    protected List<IndexerSearchCacheEntry> getIndexersToSearch(SearchCacheEntry searchCacheEntry) {
-        List<IndexerSearchCacheEntry> indexerSearchCacheEntries = new ArrayList<>();
-        for (Indexer selectedIndexer : searchCacheEntry.getIndexerSelectionResult().getSelectedIndexers()) {
-            searchCacheEntry.getIndexerCacheEntries().putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer));
-        }
-
-        for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
-            final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
-            if (!searchCacheEntry.getSearchRequest().isLoadAll() && executedSearches >= MAX_QUERIES_UNTIL_BREAK) {
-                //Circuit breaker
-                logger.warn("Indexer {} executed {} queries without a load-all search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches);
-                continue;
-            }
-            if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
-                indexerSearchCacheEntries.add(indexerSearchCacheEntry);
-                continue;
-            }
-            boolean indexerHasMoreResults = indexerSearchCacheEntry.isMoreResultsAvailable();
-            boolean lastRequestSuccessful = indexerSearchCacheEntry.isLastSuccessful();
-            boolean cacheEmpty = !indexerSearchCacheEntry.isMoreResultsInCache();
-            if (indexerHasMoreResults && lastRequestSuccessful && cacheEmpty) {
-                indexerSearchCacheEntries.add(indexerSearchCacheEntry);
-            }
-        }
-
-        if (indexerSearchCacheEntries.isEmpty()) {
-            logger.debug("All indexer caches exhausted");
-        } else {
-            String indexersToCall = indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
-            logger.debug("Going to call {} because their cache is exhausted", indexersToCall);
-        }
-
-        return indexerSearchCacheEntries;
-    }
-
-    protected void callSearchModules(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch, SearchCacheEntry searchCacheEntry) {
-        Map<Indexer, List<IndexerSearchResult>> indexerSearchResults = new HashMap<>();
-        for (IndexerSearchCacheEntry entry : indexersToSearch) {
-            indexerSearchResults.put(entry.getIndexer(), entry.getIndexerSearchResults());
-        }
-
+    /**
+     * Queries all indexers whose caches are exhausted in parallel and adds the results to their cache entries.
+     *
+     * @return the results added in this round, including the ones created for indexers which failed unexpectedly
+     */
+    protected List<IndexerSearchResult> queryIndexers(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch, ActiveSearch activeSearch) {
         ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(indexersToSearch.size());
         executors.add(executor);
-
-        List<IndexerCallable> callables = getRegisteredCallables(searchRequest, indexersToSearch);
+        List<IndexerSearchResult> newIndexerSearchResults = new ArrayList<>();
 
         try {
-            List<Future<IndexerSearchResult>> futures = new ArrayList<>();
-            for (IndexerCallable callable : callables) {
-                Future<IndexerSearchResult> future = executor.submit(callable.callable());
-//                searchCallables.put(new SearchFutureEntry(searchRequest.getSearchRequestId(), callable.indexerName()), future);
-                futures.add(future);
+            List<SubmittedSearch> submittedSearches = new ArrayList<>();
+            for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexersToSearch) {
+                Future<IndexerSearchResult> future = executor.submit(getIndexerCallable(searchRequest, indexerSearchCacheEntry));
+                submittedSearches.add(new SubmittedSearch(indexerSearchCacheEntry, future));
+                activeSearch.futures.add(future);
+                if (activeSearch.shortcutRequested) {
+                    //A shortcut may have arrived between submitting and registering the future
+                    future.cancel(true);
+                }
             }
-            searchCallables.put(searchRequest.getSearchRequestId(), futures);
 
-            for (Future<IndexerSearchResult> future : futures) {
+            for (SubmittedSearch submittedSearch : submittedSearches) {
                 try {
-                    IndexerSearchResult indexerSearchResult = future.get();
-                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).addIndexerSearchResult(indexerSearchResult);
-                    indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).getIndexerSearchResults());
+                    IndexerSearchResult indexerSearchResult = submittedSearch.future().get();
+                    submittedSearch.entry().addIndexerSearchResult(indexerSearchResult);
+                    newIndexerSearchResults.add(indexerSearchResult);
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while searching", e);
+                    IndexerSearchResult unknownFailureSearchResult = buildUnknownFailureSearchResult(submittedSearch.entry());
+                    submittedSearch.entry().addIndexerSearchResult(unknownFailureSearchResult);
+                    newIndexerSearchResults.add(unknownFailureSearchResult);
                 } catch (CancellationException e) {
                     logger.debug("Cancellation of call expected");
+                    activeSearch.shortcutRequested = true;
                     searchRequest.setShortcut(true);
                 }
             }
         } catch (InterruptedException e) {
             logger.error("Unexpected error while searching", e);
+            Thread.currentThread().interrupt();
         } finally {
+            activeSearch.futures.clear();
             executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
             executors.remove(executor);
         }
-        handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
+        return newIndexerSearchResults;
+    }
+
+    private IndexerSearchResult buildUnknownFailureSearchResult(IndexerSearchCacheEntry indexerSearchCacheEntry) {
+        IndexerSearchResult unknownFailureSearchResult = new IndexerSearchResult();
+        unknownFailureSearchResult.setIndexer(indexerSearchCacheEntry.getIndexer());
+        unknownFailureSearchResult.setWasSuccessful(false);
+        unknownFailureSearchResult.setHasMoreResults(false);
+        unknownFailureSearchResult.setErrorMessage("Unexpected error. Please check the log.");
+        unknownFailureSearchResult.setTime(Instant.now());
+        return unknownFailureSearchResult;
     }
 
     public void shortcutSearch(Long searchRequestId) {
-        for (Future<IndexerSearchResult> x : searchCallables.get(searchRequestId)) {
-            x.cancel(true);
+        ActiveSearch activeSearch = activeSearches.get(searchRequestId);
+        if (activeSearch == null) {
+            logger.debug("Unable to shortcut search with ID {} because no search is running for it", searchRequestId);
+            return;
         }
-    }
-
-
-    private void handleIndexersWithFailedFutureExecutions(List<IndexerSearchCacheEntry> indexerSearchCacheEntries, Map<Indexer, List<IndexerSearchResult>> indexerSearchResults) {
-        for (IndexerSearchCacheEntry toSearch : indexerSearchCacheEntries) {
-            if (!indexerSearchResults.containsKey(toSearch.getIndexer())) {
-                IndexerSearchResult unknownFailureSearchResult = new IndexerSearchResult();
-                unknownFailureSearchResult.setWasSuccessful(false);
-                unknownFailureSearchResult.setHasMoreResults(false);
-                unknownFailureSearchResult.setErrorMessage("Unexpected error. Please check the log.");
-                List<IndexerSearchResult> previousIndexerSearchResults = indexerSearchResults.get(toSearch.getIndexer());
-                previousIndexerSearchResults.add(unknownFailureSearchResult);
-                indexerSearchResults.put(toSearch.getIndexer(), previousIndexerSearchResults);
+        activeSearch.shortcutRequested = true;
+        synchronized (activeSearch.futures) {
+            for (Future<IndexerSearchResult> future : activeSearch.futures) {
+                future.cancel(true);
             }
         }
     }
 
-    private List<IndexerCallable> getRegisteredCallables(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch) {
-        List<IndexerCallable> callables = new ArrayList<>();
-
-        for (IndexerSearchCacheEntry toSearch : indexersToSearch) {
-            IndexerCallable callable = getIndexerCallable(searchRequest, toSearch);
-            callables.add(callable);
-        }
-
-        return callables;
-    }
-
-    private IndexerCallable getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
+    private Callable<IndexerSearchResult> getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
         int offset;
         if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
             offset = 0;
@@ -458,7 +297,7 @@ public class Searcher {
             offset = indexerToSearch.getOffset() + indexerToSearch.getPageSize();
         }
         int limit = LOAD_LIMIT_API;
-        return new IndexerCallable(() -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit), indexerSearchCacheEntry.getIndexer().getName());
+        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit);
     }
 
     @SuppressWarnings("unused")
@@ -481,22 +320,48 @@ public class Searcher {
         }
     }
 
-    @Getter
-    public static class SearchEvent {
+    public record SearchEvent(SearchRequest searchRequest) {
+    }
 
-        private SearchRequest searchRequest;
+    /**
+     * State of one currently running search. Allows shortcutting a search between two indexer rounds.
+     */
+    protected static class ActiveSearch {
 
-        public SearchEvent(SearchRequest searchRequest) {
-            this.searchRequest = searchRequest;
+        private volatile boolean shortcutRequested = false;
+        private final List<Future<IndexerSearchResult>> futures = Collections.synchronizedList(new ArrayList<>());
+
+    }
+
+    private record SubmittedSearch(IndexerSearchCacheEntry entry, Future<IndexerSearchResult> future) {
+    }
+
+    /**
+     * Identifies a search request independently of its paging data and of the object's identity. The category is
+     * compared by name on purpose: a config reload creates new Category instances which must still hit the cache.
+     */
+    private record SearchCacheKey(SearchSource source, SearchType searchType, String categoryName, Integer minsize,
+                                  Integer maxsize, Integer minage, Integer maxage, String query,
+                                  Map<MediaIdType, String> identifiers, String title, Integer season, String episode,
+                                  String author) {
+
+        private static SearchCacheKey of(SearchRequest searchRequest) {
+            return new SearchCacheKey(
+                searchRequest.getSource(),
+                searchRequest.getSearchType(),
+                searchRequest.getCategory() == null ? null : searchRequest.getCategory().getName(),
+                searchRequest.getMinsize().orElse(null),
+                searchRequest.getMaxsize().orElse(null),
+                searchRequest.getMinage().orElse(null),
+                searchRequest.getMaxage().orElse(null),
+                searchRequest.getQuery().orElse(null),
+                searchRequest.getIdentifiers() == null ? Map.of() : Collections.unmodifiableMap(new HashMap<>(searchRequest.getIdentifiers())),
+                searchRequest.getTitle().orElse(null),
+                searchRequest.getSeason().orElse(null),
+                searchRequest.getEpisode().orElse(null),
+                searchRequest.getAuthor().orElse(null)
+            );
         }
-
-    }
-
-    private record SearchFutureEntry(Long searchRequestId, String indexerName) {
-    }
-
-    private record IndexerCallable(Callable<IndexerSearchResult> callable, String indexerName) {
-
     }
 
 }
