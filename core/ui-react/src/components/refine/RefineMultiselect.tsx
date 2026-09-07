@@ -17,6 +17,18 @@ import {
 // rows themselves, from `features/search/results/filterControls.tsx`.
 const ROW_COUNT_FONT_SIZE = "11.5px";
 
+// FM-188: the selection actions are stock text `Button`s; only their density
+// is stated here, so that three of them fit the 216px inner width of the 248px
+// docked refine column without wrapping. The row text reads as secondary to
+// the entries it acts on -- these are shortcuts for the rows below, not a
+// filter dimension of their own.
+const selectionActionSx = {
+    color: "text.secondary",
+    fontSize: denseControlFontSize,
+    minWidth: 0,
+    px: 0.75,
+} as const;
+
 /**
  * One option of a `RefineMultiselect`, in the order it is to be rendered.
  *
@@ -31,8 +43,18 @@ export type RefineMultiselectEntry = {
     value: string;
 };
 
+/**
+ * FM-188: `invert`, `all` and `none` are the ids of the optional selection
+ * action row and are supplied only by a consumer that enables it (`all` is the
+ * "All" button's id, not an id for the whole set). Each is applied only where
+ * it is supplied, so a consumer that wants none of them keeps exactly the three
+ * ids this type has always required.
+ */
 export type RefineMultiselectTestIds = {
+    all?: string;
+    invert?: string;
     list: string;
+    none?: string;
     option: string;
     toggle: string;
 };
@@ -66,6 +88,12 @@ export type RefineMultiselectTestIds = {
  * rather than restated as `oklch(... / N)` literals, so they stay tied to
  * `primary.main` and compose with the `dark-dyschromatopsia` variant
  * automatically.
+ *
+ * FM-188's `selectionActions` row does not weaken any of that: it is opt-in,
+ * renders nothing at all when the prop is absent, and each of its three
+ * payloads is computed inside its own click handler from the `entries` and
+ * `selected` props as they are at that moment. Nothing is memoized, stored, or
+ * derived ahead of a click.
  */
 export function RefineMultiselect({
     entries,
@@ -75,6 +103,7 @@ export function RefineMultiselect({
     onToggleOpen,
     open,
     selected,
+    selectionActions = false,
     testId,
     testIds,
 }: {
@@ -90,6 +119,14 @@ export function RefineMultiselect({
     onToggleOpen: () => void;
     open: boolean;
     selected: readonly string[];
+    // FM-188: opt-in "Invert / All / None" row above the entries. Off by
+    // default because the two consumers' selection models are opposites: the
+    // results sidebar preselects every value and a selection *is* the filter,
+    // so operating on the whole set is a real shortcut, while a history
+    // dimension starts empty and an empty selection filters nothing (ADR-0016)
+    // -- there "All" and "None" would be two spellings of "no filter" and
+    // "Invert" would have no state to invert on arrival.
+    selectionActions?: boolean;
     // The section container's own id, for consumers whose specs query the
     // section as a whole (the history views' `history-refine-<id>`). Omitted on
     // the results sidebar, whose sections have never carried one.
@@ -126,6 +163,59 @@ export function RefineMultiselect({
                 )}
             </Button>
             <Collapse in={open}>
+                {/* FM-188: inside the `Collapse`, so the section's caption
+                    button stays the only control reachable while it is
+                    collapsed, and above the entries rather than inside their
+                    `Stack`, so the option list a consumer queries by
+                    `testIds.list` (and names through `groupLabel`) still
+                    contains options only. Every payload is computed here, from
+                    the current `entries` and `selected` props -- the component
+                    derives and remembers nothing. */}
+                {selectionActions && (
+                    <Stack direction="row" sx={{mb: 0.5}}>
+                        <Button
+                            data-testid={testIds.invert}
+                            disabled={entries.length === 0}
+                            onClick={() =>
+                                onChange(
+                                    entries
+                                        .filter(
+                                            (entry) =>
+                                                !selected.includes(entry.value),
+                                        )
+                                        .map((entry) => entry.value),
+                                )
+                            }
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            Invert
+                        </Button>
+                        <Button
+                            data-testid={testIds.all}
+                            disabled={entries.length === 0}
+                            onClick={() =>
+                                onChange(entries.map((entry) => entry.value))
+                            }
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            All
+                        </Button>
+                        <Button
+                            data-testid={testIds.none}
+                            disabled={entries.length === 0}
+                            onClick={() => onChange([])}
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            None
+                        </Button>
+                    </Stack>
+                )}
                 <Stack
                     aria-label={groupLabel}
                     data-testid={testIds.list}

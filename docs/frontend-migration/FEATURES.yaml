@@ -349,6 +349,18 @@ features:
       - refine-indexer-toggle
       - refine-indexer-list
       - refine-indexer-option
+      # 2026-09-07 (FM-188, owner request): the Invert / All / None row at the
+      # top of each expanded C-REFINE-MULTISELECT section. Opt-in on that
+      # component and enabled here only -- this page preselects every value
+      # (`defaultFilters`) and keeps only what is selected (`filterResults`),
+      # so the whole-set actions are meaningful; the history views' sections
+      # start empty and deliberately carry no such row (ADR-0016).
+      - refine-category-invert
+      - refine-category-all
+      - refine-category-none
+      - refine-indexer-invert
+      - refine-indexer-all
+      - refine-indexer-none
       - refine-type-chips
       - filter-toggle-refine-size
       - filter-toggle-refine-age

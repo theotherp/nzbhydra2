@@ -375,6 +375,51 @@ describe("RefineSidebar", () => {
         expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
     });
 
+    // FM-188. The three actions drive the same bound `ResultFilters` the rows
+    // do, which is why every assertion here is on the filtered outcome rather
+    // than on the pressed states alone: on this page a selection *is* the
+    // filter (`defaultFilters` preselects every value, `filterResults` keeps
+    // only what is selected), so "None" legitimately empties the list.
+    it("inverting the indexer selection narrows the results to the one deselected indexer", () => {
+        render(<Harness />);
+        const indexerList = screen.getByTestId("refine-indexer-list");
+        const indexerOne = within(indexerList)
+            .getAllByTestId("refine-indexer-option")
+            .find(
+                (row) => row.getAttribute("data-filter-value") === "IndexerOne",
+            );
+        expect(indexerOne).toBeDefined();
+        fireEvent.click(indexerOne!);
+        expect(filteredTitles()).toEqual(["Bravo"]);
+
+        fireEvent.click(screen.getByTestId("refine-indexer-invert"));
+        expect(indexerOne).toHaveAttribute("aria-pressed", "true");
+        expect(filteredTitles()).toEqual(["Alpha", "Charlie"]);
+        // FM-181's active-filter comparison sees the inverted selection as a
+        // deviation from the defaults, so clearing stays offered.
+        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
+
+        fireEvent.click(screen.getByTestId("refine-indexer-none"));
+        expect(indexerOne).toHaveAttribute("aria-pressed", "false");
+        expect(filteredTitles()).toEqual([]);
+
+        fireEvent.click(screen.getByTestId("refine-indexer-all"));
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+        expect(
+            within(indexerList)
+                .getAllByTestId("refine-indexer-option")
+                .every((row) => row.getAttribute("aria-pressed") === "true"),
+        ).toBe(true);
+    });
+
+    it("offers the same three selection actions for the Category section", () => {
+        render(<Harness />);
+        fireEvent.click(screen.getByTestId("refine-category-none"));
+        expect(filteredTitles()).toEqual([]);
+        fireEvent.click(screen.getByTestId("refine-category-invert"));
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+    });
+
     it("collapsing and expanding a list is reflected by its own toggle's aria-expanded", () => {
         render(<Harness />);
         const toggle = screen.getByTestId("refine-category-toggle");

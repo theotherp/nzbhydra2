@@ -333,6 +333,58 @@ test.describe("Search results", () => {
         );
     });
 
+    // FM-188: the Indexer section's Invert / All / None row, against a real
+    // search rather than a routed one -- the point is that the actions drive
+    // the same `ResultFilters` the rows do, over options this page derived
+    // from what the two mock indexers actually returned. `Mock1` is the
+    // indexer behind `indexer1-result1..3` (see `fixtures.ts`'s note on what a
+    // disabled `Mock1` removes from a `uitest` search).
+    test("should invert and restore the refine sidebar's indexer selection", async ({
+        page,
+    }) => {
+        await searchForUiTestResults(page);
+        await openRefineSidebar(page);
+
+        const mock1 = refineOption(page, "refine-indexer-option", "Mock1");
+        const mock2 = refineOption(page, "refine-indexer-option", "Mock2");
+        await expect(page.getByTestId("refine-indexer-option")).toHaveCount(2);
+        await expect(mock1).toHaveAttribute("aria-pressed", "true");
+        await expect(mock2).toHaveAttribute("aria-pressed", "true");
+
+        await mock2.click();
+        await expect(mock2).toHaveAttribute("aria-pressed", "false");
+        await expectVisibleResultTitles(
+            page,
+            testEnvironment.uiTestResultTitles.slice(0, 3),
+        );
+
+        // Every row's pressed state flips, and what remains visible is
+        // exactly the results of the indexer that was just deselected.
+        await page.getByTestId("refine-indexer-invert").click();
+        await expect(mock1).toHaveAttribute("aria-pressed", "false");
+        await expect(mock2).toHaveAttribute("aria-pressed", "true");
+        await expectVisibleResultTitles(
+            page,
+            testEnvironment.uiTestResultTitles.slice(3),
+        );
+
+        // None empties the visible list, exactly as deselecting every row by
+        // hand does on this page (`filterResults` keeps only what is
+        // selected).
+        await page.getByTestId("refine-indexer-none").click();
+        await expect(mock1).toHaveAttribute("aria-pressed", "false");
+        await expect(mock2).toHaveAttribute("aria-pressed", "false");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(0);
+
+        await page.getByTestId("refine-indexer-all").click();
+        await expect(mock1).toHaveAttribute("aria-pressed", "true");
+        await expect(mock2).toHaveAttribute("aria-pressed", "true");
+        await expectVisibleResultTitles(
+            page,
+            testEnvironment.uiTestResultTitles,
+        );
+    });
+
     test("should expand grouped React results and select visible rows", async ({
         page,
     }) => {
@@ -1086,6 +1138,52 @@ test.describe("Search results", () => {
             "toggle-row-sidebar-desktop",
         );
 
+        // FM-188: both sections carry the Invert / All / None row above their
+        // first entry, and the three buttons sit on one line inside the 216px
+        // inner width of the docked column -- the measurement that decides
+        // whether this row is usable at all here.
+        for (const prefix of ["refine-category", "refine-indexer"]) {
+            const list = page.getByTestId(`${prefix}-list`);
+            const actionBoxes = [];
+            for (const action of ["invert", "all", "none"]) {
+                const button = page.getByTestId(`${prefix}-${action}`);
+                await expect(button).toBeVisible();
+                const box = await button.boundingBox();
+                expect(box).not.toBeNull();
+                if (!box) {
+                    throw new Error(
+                        `${prefix}-${action} requires deterministic geometry`,
+                    );
+                }
+                actionBoxes.push(box);
+            }
+            for (const box of actionBoxes) {
+                expect(box.y).toBe(actionBoxes[0].y);
+            }
+            const listBox = await list.boundingBox();
+            expect(listBox).not.toBeNull();
+            if (!listBox) {
+                throw new Error(`${prefix}-list requires deterministic geometry`);
+            }
+            const last = actionBoxes[actionBoxes.length - 1];
+            expect(last.x + last.width).toBeLessThanOrEqual(
+                listBox.x + listBox.width + 1,
+            );
+            // The row sits above the first entry row, not beside the caption.
+            const firstOption = page.getByTestId(`${prefix}-option`).first();
+            const firstOptionBox = await firstOption.boundingBox();
+            expect(firstOptionBox).not.toBeNull();
+            if (!firstOptionBox) {
+                throw new Error(`${prefix}-option requires deterministic geometry`);
+            }
+            expect(actionBoxes[0].y).toBeLessThan(firstOptionBox.y);
+        }
+        await captureVisualRegion(
+            sidebar,
+            "F-SEARCH-SORT-FILTER",
+            "refine-selection-actions-desktop",
+        );
+
         // Type is a chip group derived from the loaded results' actual
         // downloadType values (never a hardcoded NZB/Torrent pair), and the
         // result with no downloadType is never silently discarded.
@@ -1183,6 +1281,25 @@ test.describe("Search results", () => {
             "F-SEARCH-SORT-FILTER",
             "refine-sidebar-mobile-drawer",
         );
+
+        // FM-188: the same row is reachable in the bottom sheet, and its
+        // actions drive the shared filter state from here too.
+        for (const prefix of ["refine-category", "refine-indexer"]) {
+            for (const action of ["invert", "all", "none"]) {
+                await expect(
+                    sidebar.getByTestId(`${prefix}-${action}`),
+                ).toBeVisible();
+            }
+        }
+        await captureVisualRegion(
+            sidebar,
+            "F-SEARCH-SORT-FILTER",
+            "refine-selection-actions-mobile",
+        );
+        await sidebar.getByTestId("refine-indexer-none").click();
+        await expect(page.getByTestId("search-result-row")).toHaveCount(0);
+        await sidebar.getByTestId("refine-indexer-all").click();
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
 
         // The title filter and one list filter drive the same shared
         // ResultFilters state from the mobile-opened sidebar, so no

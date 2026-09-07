@@ -50,13 +50,21 @@ const REFINE_TEST_IDS: RefineSurfaceTestIds = {
 // FM-153: this page's own ids for the two `C-REFINE-MULTISELECT` sections --
 // the ids `SearchResults.test.tsx` and `tests/system/tests/results.spec.ts`
 // have always queried, unchanged by the extraction.
+// FM-188 added the three selection-action ids per section; the ids above them
+// are unchanged.
 const CATEGORY_TEST_IDS: RefineMultiselectTestIds = {
+    all: "refine-category-all",
+    invert: "refine-category-invert",
     list: "refine-category-list",
+    none: "refine-category-none",
     option: "refine-category-option",
     toggle: "refine-category-toggle",
 };
 const INDEXER_TEST_IDS: RefineMultiselectTestIds = {
+    all: "refine-indexer-all",
+    invert: "refine-indexer-invert",
     list: "refine-indexer-list",
+    none: "refine-indexer-none",
     option: "refine-indexer-option",
     toggle: "refine-indexer-toggle",
 };
@@ -250,6 +258,12 @@ export function RefineSidebar({
                 onToggleOpen={onToggleCategoryOpen}
                 open={categoryOpen}
                 selected={filters.categories}
+                // FM-188: this page's multiselects start with every value
+                // selected (`defaultFilters`) and `filterResults` keeps only
+                // what is selected, so "only this one" and "everything but
+                // these" are otherwise a click per row. The history views'
+                // sections deliberately get no such row (ADR-0016).
+                selectionActions
                 testIds={CATEGORY_TEST_IDS}
             />
             <RefineMultiselect
@@ -264,6 +278,7 @@ export function RefineSidebar({
                 onToggleOpen={onToggleIndexerOpen}
                 open={indexerOpen}
                 selected={filters.indexers}
+                selectionActions
                 testIds={INDEXER_TEST_IDS}
             />
             <RefineSection label="Size (MB)">

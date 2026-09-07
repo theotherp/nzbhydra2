@@ -15,6 +15,16 @@ const TEST_IDS = {
     toggle: "demo-toggle",
 };
 
+// FM-188: the same ids plus the three optional selection-action ones, so a
+// test can prove both that they are applied when the row renders and that
+// supplying them alone renders nothing.
+const ACTION_TEST_IDS = {
+    ...TEST_IDS,
+    all: "demo-all",
+    invert: "demo-invert",
+    none: "demo-none",
+};
+
 // Deliberately not alphabetical: the component must not reorder what it is
 // handed, because the history views' declared dimension options carry meaning
 // in their declared order.
@@ -39,6 +49,7 @@ function renderMultiselect(
                 onToggleOpen={() => setOpen((current) => !current)}
                 open={open}
                 selected={props.selected ?? []}
+                selectionActions={props.selectionActions}
                 testId={props.testId}
                 testIds={props.testIds ?? TEST_IDS}
             />
@@ -176,6 +187,100 @@ describe("RefineMultiselect", () => {
         );
         // The four are four: no state may restate the one beside it.
         expect(new Set(Object.values(rowBackground)).size).toBe(4);
+    });
+
+    // FM-188. The row is opt-in and the history sections deliberately do not
+    // take it (ADR-0016), so its absence is as much a contract as its
+    // behaviour: supplying the three ids without the prop must still render
+    // nothing.
+    it("should render no selection actions unless a consumer opts in", () => {
+        renderMultiselect({open: true, testIds: ACTION_TEST_IDS});
+        for (const testId of ["demo-invert", "demo-all", "demo-none"]) {
+            expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
+        }
+        expect(screen.getAllByRole("button")).toHaveLength(
+            entries.length + 1, // the option rows and the caption toggle
+        );
+    });
+
+    it("should compute each selection action's payload from the current entries and selection", () => {
+        const {onChange} = renderMultiselect({
+            open: true,
+            selected: ["mu", "zeta"],
+            selectionActions: true,
+            testIds: ACTION_TEST_IDS,
+        });
+
+        // Entry order, not selection order and not the order the values were
+        // handed in: "zeta", "alpha", "mu" is how they render.
+        fireEvent.click(screen.getByTestId("demo-invert"));
+        expect(onChange).toHaveBeenLastCalledWith(["alpha"]);
+        fireEvent.click(screen.getByTestId("demo-all"));
+        expect(onChange).toHaveBeenLastCalledWith(["zeta", "alpha", "mu"]);
+        fireEvent.click(screen.getByTestId("demo-none"));
+        expect(onChange).toHaveBeenLastCalledWith([]);
+    });
+
+    it("should invert an empty selection into every entry and a full one into none", () => {
+        const {onChange} = renderMultiselect({
+            open: true,
+            selectionActions: true,
+            testIds: ACTION_TEST_IDS,
+        });
+        fireEvent.click(screen.getByTestId("demo-invert"));
+        expect(onChange).toHaveBeenLastCalledWith(["zeta", "alpha", "mu"]);
+        cleanup();
+
+        const full = renderMultiselect({
+            open: true,
+            selected: ["zeta", "alpha", "mu"],
+            selectionActions: true,
+            testIds: ACTION_TEST_IDS,
+        });
+        fireEvent.click(screen.getByTestId("demo-invert"));
+        expect(full.onChange).toHaveBeenLastCalledWith([]);
+    });
+
+    it("should disable every selection action when there is nothing to act on", () => {
+        renderMultiselect({
+            entries: [],
+            open: true,
+            selectionActions: true,
+            testIds: ACTION_TEST_IDS,
+        });
+        for (const testId of ["demo-invert", "demo-all", "demo-none"]) {
+            expect(screen.getByTestId(testId)).toBeDisabled();
+        }
+    });
+
+    it("should keep the caption toggle the only control outside the collapse", () => {
+        renderMultiselect({
+            open: true,
+            selectionActions: true,
+            testId: "demo-section",
+            testIds: ACTION_TEST_IDS,
+        });
+        const section = screen.getByTestId("demo-section");
+        const collapse = section.querySelector(".MuiCollapse-root");
+        expect(collapse).not.toBeNull();
+        const outsideCollapse = [...section.querySelectorAll("button")].filter(
+            (button) => collapse?.contains(button) !== true,
+        );
+        expect(outsideCollapse).toEqual([screen.getByTestId("demo-toggle")]);
+        expect(outsideCollapse[0]).toHaveAttribute("aria-expanded", "true");
+        // ... and the actions are inside it, above the first entry row, but
+        // outside the option list itself.
+        const list = screen.getByTestId("demo-list");
+        for (const testId of ["demo-invert", "demo-all", "demo-none"]) {
+            const action = screen.getByTestId(testId);
+            expect(collapse?.contains(action)).toBe(true);
+            expect(list.contains(action)).toBe(false);
+            expect(
+                action.compareDocumentPosition(
+                    screen.getAllByTestId("demo-option")[0],
+                ) & Node.DOCUMENT_POSITION_FOLLOWING,
+            ).toBeTruthy();
+        }
     });
 
     it("should carry a section test id only when a consumer supplies one", () => {

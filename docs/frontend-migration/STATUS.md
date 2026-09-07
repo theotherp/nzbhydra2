@@ -1685,6 +1685,18 @@ an NZB folder is set, never for TorBox; the Actions track gains a slot only when
 Stricter than legacy: success needs the id in `addedIds`. Vitest 1976/1976, real-backend downloads/results/focus 55/55.
 Passed 2026-09-05 on the second cycle (first: missing handoff); minor: `actionsTrackWidth` parameter name, prettier debt.
 
+FM-188 (Invert / All / None Selection Actions For The Results Refine Category And Indexer Sections) answered the
+owner's 2026-09-07 request: an opt-in `selectionActions` prop on `C-REFINE-MULTISELECT` renders a row of three stock
+text buttons inside the `Collapse`, above the first entry, with payloads computed from `entries`/`selected` at click
+time (Invert = entry-ordered values not in `selected`, All = every value, None = `[]`), disabled when there are no
+entries; only `RefineSidebar.tsx` enables it, the history views keep ADR-0016's no-invert model and render byte-identical
+markup with the prop absent (sha256-proven), and the header stays the single full-width `aria-expanded` button. Six new
+ids under `F-SEARCH-SORT-FILTER`. Vitest 1983/1983, real-backend `results.spec.ts` 36/36, desktop and 390x844 captures.
+Passed 2026-09-07 first cycle with three minor findings, not corrected (optional): two Prettier-width lines in the new
+`results.spec.ts` geometry helper; that geometry assertion itself goes beyond the Visual Gate's regression-only rule;
+and both sections' identically named Invert/All/None trios lack a distinguishing `aria-label` on their row. Candidates
+for a future quickfix.
+
 ## Active
 
 None.
@@ -1712,8 +1724,8 @@ None.
 
 ## Upcoming
 
-- FM-187 (per-row send-to-black-hole button), FM-186 (per-row send-to-downloader buttons) and FM-185 (themed date
-  pickers) are complete (entries above).
+- FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
+  send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).
 
 - The 2026-09-04 MUI batch — FM-183 (upgrade to 9.4.0) and FM-184 (`theme.focusVisible`, ADR-0056) — is complete
   (entries above). `enhanceHighContrast` is parked; `motion.reducedMotion` sits in a stash pending a cause (see
