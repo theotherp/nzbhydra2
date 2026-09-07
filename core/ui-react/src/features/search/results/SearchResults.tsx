@@ -1478,6 +1478,10 @@ export function SearchResults({
                                             ? {
                                                   alignItems: "center",
                                                   display: "flex",
+                                                  // Owner (2026-09-07): room
+                                                  // between the three touch
+                                                  // targets; they abutted.
+                                                  gap: 1,
                                               }
                                             : {}),
                                     }}
@@ -2015,6 +2019,18 @@ export function SearchResults({
                                         '& td[data-label="Title"]::before': {
                                             content: "none",
                                         },
+                                        // Owner (2026-09-07): on a phone the
+                                        // Actions icons are tapped, not
+                                        // clicked, and the 4px gap the
+                                        // desktop row uses (and the 2px the
+                                        // compact-rows branch above sets)
+                                        // left them too close to hit
+                                        // reliably. Same `tbody` selector as
+                                        // that branch so this later rule
+                                        // wins at equal specificity, on a
+                                        // phone with compact rows on too.
+                                        '& tbody td[data-label="Actions"] .MuiStack-root':
+                                            {gap: 1},
                                     },
                                 })}
                             >
