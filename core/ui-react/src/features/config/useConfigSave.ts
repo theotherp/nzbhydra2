@@ -10,7 +10,11 @@ import {useDialogs} from "../../components/dialogs/dialogs";
 import {useToasts} from "../../components/toasts/toasts";
 
 type ConfigSaveOutcome =
-    /** Persisted; the form now holds the server's own view of the config. */
+    /**
+     * Persisted; the form now holds the server's own view of the config --
+     * except when the server neither returned it nor could be re-read, where
+     * it holds what was submitted and the report says so.
+     */
     | "saved"
     /** The server refused it; nothing was written and the form stays dirty. */
     | "rejected"
@@ -18,6 +22,16 @@ type ConfigSaveOutcome =
     | "failed";
 
 type ConfigSave = () => Promise<ConfigSaveOutcome>;
+
+/**
+ * Said when the server saved the config but did not return it and the
+ * follow-up read failed: the form now shows what was submitted rather than the
+ * server's normalized copy, so the two may differ in whatever the server
+ * rewrites (defaults it fills in, secrets it re-masks).
+ */
+const REREAD_FAILED_WARNING =
+    "The configuration was saved, but it could not be read back from the server. " +
+    "What is shown is what was submitted; reload the page to see the saved configuration.";
 
 /**
  * What the last save attempt has to report, as the banner region renders it.
@@ -47,10 +61,14 @@ export type ConfigSaveController = {
  *   validation passed, so the form deliberately stays dirty;
  * - `ok` plus `warningMessages` -> the config *is* saved and the banner says
  *   so, matching legacy's wording (`config-controller.js:126`);
- * - success -> the form resets from `newConfig`, never from what was
+ * - success -> the form resets from `newConfig` rather than from what was
  *   submitted: the server normalizes the config and re-masks secrets before
  *   returning it (`ConfigWeb.java:96`,
- *   `SensitiveDataConfigValidator.prepareForDisplay`) -- but an edit made
+ *   `SensitiveDataConfigValidator.prepareForDisplay`). A result carrying no
+ *   `newConfig` is re-read instead, and if *that* fails the submitted config
+ *   becomes the baseline and the warning report says the copy on screen is
+ *   unconfirmed -- the file has already changed, so the one thing this may
+ *   not do is fail. But an edit made
  *   *while* the request was in flight is put back over that copy, because the
  *   form stays editable during the save and the server's answer is not about
  *   it;
@@ -122,8 +140,35 @@ export function useConfigSave({
             return "rejected";
         }
 
-        const saved = result.newConfig ?? (await getConfig(transport));
+        // The file on disk has already changed at this point, so nothing
+        // below may throw: a re-read that fails must not turn a save that
+        // happened into a rejected promise the caller reports as a failure
+        // (or, from `void submit()`, as an unhandled rejection). What is
+        // submitted is then the closest thing to the file's contents there
+        // is, so it becomes the baseline, and the admin is told that this
+        // copy is unconfirmed.
+        let saved = result.newConfig;
+        let rereadFailed = false;
+        if (saved === undefined) {
+            try {
+                saved = await getConfig(transport);
+            } catch {
+                saved = submitted;
+                rereadFailed = true;
+            }
+        }
         queryClient.setQueryData(CONFIG_QUERY_KEY, saved);
+        if (rereadFailed) {
+            // The cached copy is the submitted one, not the server's, so it is
+            // marked stale -- but not refetched: a refetch under the open form
+            // would replace what the admin is looking at (and the edits on top
+            // of it) with an answer nobody asked for. The next mount of the
+            // config area reads it again on its own.
+            void queryClient.invalidateQueries({
+                queryKey: CONFIG_QUERY_KEY,
+                refetchType: "none",
+            });
+        }
         // Anything the admin typed while the request was in flight, taken
         // before the reset wipes it. The reset itself is not optional -- the
         // server normalizes the config and re-masks secrets, and
@@ -142,10 +187,13 @@ export function useConfigSave({
         }
         await queryClient.invalidateQueries({queryKey: SAFE_CONFIG_QUERY_KEY});
 
-        if (result.warningMessages.length > 0) {
+        const warnings = rereadFailed
+            ? [...result.warningMessages, REREAD_FAILED_WARNING]
+            : result.warningMessages;
+        if (warnings.length > 0) {
             setFeedback({
                 kind: "warnings",
-                messages: result.warningMessages,
+                messages: warnings,
             });
         } else {
             toasts.showToast({

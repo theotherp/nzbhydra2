@@ -31,6 +31,7 @@ import {
     vi,
 } from "vitest";
 
+import {CONFIG_QUERY_KEY} from "../../api/config/config";
 import {ApiTransport} from "../../api/transport";
 import {SafeConfigProvider} from "../../app/SafeConfigProvider";
 import {createHydraTheme} from "../../app/theme";
@@ -281,7 +282,7 @@ function renderConfigArea({
             </QueryClientProvider>
         </ThemeProvider>,
     );
-    return {router};
+    return {queryClient, router};
 }
 
 async function waitForShell() {
@@ -814,6 +815,80 @@ describe("ConfigShell", () => {
         // so it stays a toast and never becomes a validation report.
         expect(screen.queryByTestId("config-validation-errors")).toBeNull();
         expect(screen.queryByTestId("config-validation-warnings")).toBeNull();
+    });
+
+    // The file on disk has already changed when the follow-up read fails, so
+    // the save is not allowed to come out looking like nothing happened: the
+    // form re-baselines on what was submitted and the admin is told the copy
+    // on screen is unconfirmed. Before this was guarded the whole save
+    // rejected -- no re-baselining, no report, and an unhandled rejection out
+    // of the shell's `void submit()`.
+    it("should keep a save the server did not return a config for when the follow-up read fails", async () => {
+        const backend = createBackend({
+            saveResults: [{ok: true, restartNeeded: false}],
+        });
+        const answer = backend.fetch.getMockImplementation();
+        if (answer === undefined) {
+            throw new Error("the backend has no implementation");
+        }
+        let configReads = 0;
+        backend.fetch.mockImplementation(async (input, init) => {
+            const url = String(input);
+            if (
+                url.endsWith("/internalapi/config") &&
+                (init?.method ?? "GET") === "GET"
+            ) {
+                configReads += 1;
+                if (configReads > 1) {
+                    return new Response("Backend exploded", {status: 500});
+                }
+            }
+            return answer(input, init);
+        });
+        const unhandled: unknown[] = [];
+        const onUnhandled = (event: PromiseRejectionEvent) => {
+            unhandled.push(event.reason);
+        };
+        window.addEventListener("unhandledrejection", onUnhandled);
+        onTestFinished(() =>
+            window.removeEventListener("unhandledrejection", onUnhandled),
+        );
+        const {queryClient} = renderConfigArea({backend});
+        await waitForShell();
+
+        setHost("submitted-value");
+        fireEvent.click(screen.getByTestId("config-save"));
+
+        expect(
+            await screen.findByTestId("config-validation-warnings"),
+        ).toHaveTextContent("could not be read back from the server");
+        // The cached copy is the submitted one, so it is marked stale for the
+        // next mount rather than refetched under the open form.
+        expect(queryClient.getQueryState(CONFIG_QUERY_KEY)?.isInvalidated).toBe(
+            true,
+        );
+        // Re-baselined on what was submitted: the form is no longer dirty and
+        // still holds it.
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-dirty-summary")).toBeNull(),
+        );
+        expect(screen.getByLabelText("Host")).toHaveValue("submitted-value");
+        expect(unhandled).toEqual([]);
+
+        // And the cached config the discard restores from is that copy too,
+        // not the one loaded before the save.
+        setHost("typed-after-the-save");
+        fireEvent.click(screen.getByTestId("config-discard"));
+        fireEvent.click(
+            within(
+                await screen.findByTestId("config-discard-changes"),
+            ).getByRole("button", {name: "Discard"}),
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText("Host")).toHaveValue(
+                "submitted-value",
+            ),
+        );
     });
 
     it("should offer a restart when the server asks for one", async () => {
