@@ -237,6 +237,7 @@ export function SearchWorkspace({
         const current = ++request.current;
         if (!mediaType || selected || title.trim().length < 2) {
             setSuggestions([]);
+            setActiveOption(-1);
             setAutocompleteState("idle");
             return;
         }
@@ -256,6 +257,7 @@ export function SearchWorkspace({
                         return;
                     }
                     setSuggestions([]);
+                    setActiveOption(-1);
                     setAutocompleteState(
                         error instanceof Error &&
                             error.message.includes("invalid format")
@@ -291,11 +293,24 @@ export function SearchWorkspace({
                 )
             ) {
                 setSuggestions([]);
+                setActiveOption(-1);
             }
         };
         document.addEventListener("mousedown", closeIfOutside);
         return () => document.removeEventListener("mousedown", closeIfOutside);
     }, [suggestions.length]);
+    // The dropdown is capped at `maxHeight` and scrolls, so arrowing down a
+    // long list otherwise moves the active option outside the visible area.
+    // `scrollIntoView` is absent in jsdom, hence the capability check.
+    useEffect(() => {
+        if (activeOption < 0) {
+            return;
+        }
+        const option = document.getElementById(`${listboxId}-${activeOption}`);
+        if (option && typeof option.scrollIntoView === "function") {
+            option.scrollIntoView({block: "nearest"});
+        }
+    }, [activeOption, listboxId]);
     const clearSelection = () => {
         request.current++;
         setSelectedYear("");
@@ -393,6 +408,7 @@ export function SearchWorkspace({
             onBlur={(event) => {
                 titleOnBlur(event);
                 setSuggestions([]);
+                setActiveOption(-1);
             }}
             onDragOver={(event) => event.preventDefault()}
             onDrop={onSearchDrop}
@@ -404,12 +420,24 @@ export function SearchWorkspace({
                     );
                 } else if (event.key === "ArrowUp" && suggestions.length) {
                     event.preventDefault();
-                    setActiveOption((current) => Math.max(current - 1, 0));
-                } else if (event.key === "Enter" && activeOption >= 0) {
+                    // ArrowUp with nothing active enters the list from the
+                    // bottom (ArrowDown enters it from the top); inside the
+                    // list both directions stop at the end rather than wrap.
+                    setActiveOption((current) =>
+                        current < 0
+                            ? suggestions.length - 1
+                            : Math.max(current - 1, 0),
+                    );
+                } else if (
+                    event.key === "Enter" &&
+                    activeOption >= 0 &&
+                    activeOption < suggestions.length
+                ) {
                     event.preventDefault();
                     chooseSuggestion(suggestions[activeOption]);
                 } else if (event.key === "Escape") {
                     setSuggestions([]);
+                    setActiveOption(-1);
                 }
             }}
             placeholder="Search…"
@@ -432,9 +460,19 @@ export function SearchWorkspace({
                         activeOption >= 0
                             ? `${listboxId}-${activeOption}`
                             : undefined,
+                    // The field is the combobox of the hand-rolled listbox
+                    // below: without `role`/`aria-expanded`/`aria-autocomplete`
+                    // the `aria-activedescendant` relationship is not one a
+                    // screen reader announces, so neither the dropdown opening
+                    // nor the active option would be spoken. `aria-controls`
+                    // stays conditional because the listbox is only in the DOM
+                    // while there are suggestions.
+                    "aria-autocomplete": "list",
                     "aria-controls": suggestions.length ? listboxId : undefined,
+                    "aria-expanded": suggestions.length > 0,
                     "aria-label": "Search",
                     "data-testid": "search-query",
+                    role: "combobox",
                 },
             }}
             inputRef={setTitleInputRef}

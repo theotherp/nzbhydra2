@@ -683,6 +683,164 @@ describe("SearchWorkspace", () => {
         expect(screen.getByTestId("additional-query")).toBeDisabled();
     });
 
+    it("should expose the title field as a combobox whose expanded state follows the dropdown", async () => {
+        const autocomplete = vi
+            .fn()
+            .mockResolvedValue([{title: "Example Movie", tmdbId: "42"}]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        expect(input).toHaveAttribute("role", "combobox");
+        expect(input).toHaveAttribute("aria-autocomplete", "list");
+        expect(input).toHaveAttribute("aria-expanded", "false");
+        fireEvent.change(input, {target: {value: "Example"}});
+        await waitFor(() =>
+            expect(input).toHaveAttribute("aria-expanded", "true"),
+        );
+        expect(input).toHaveAttribute(
+            "aria-controls",
+            screen.getByTestId("autocomplete-popup").id,
+        );
+        fireEvent.keyDown(input, {key: "Escape"});
+        await waitFor(() =>
+            expect(input).toHaveAttribute("aria-expanded", "false"),
+        );
+    });
+
+    it("should activate the last suggestion when ArrowUp opens the selection from no active option", async () => {
+        const autocomplete = vi.fn().mockResolvedValue([
+            {title: "First Movie", tmdbId: "42"},
+            {title: "Second Movie", tmdbId: "43"},
+            {title: "Third Movie", tmdbId: "44"},
+        ]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Example"}});
+        await waitFor(() =>
+            expect(screen.getAllByTestId("autocomplete-option")).toHaveLength(
+                3,
+            ),
+        );
+        fireEvent.keyDown(input, {key: "ArrowUp"});
+        const options = screen.getAllByTestId("autocomplete-option");
+        expect(input).toHaveAttribute("aria-activedescendant", options[2].id);
+        expect(options[2]).toHaveAttribute("aria-selected", "true");
+        expect(options[0]).toHaveAttribute("aria-selected", "false");
+    });
+
+    it("should drop the active option when Escape closes the dropdown, leaving no dangling reference", async () => {
+        const autocomplete = vi
+            .fn()
+            .mockResolvedValue([{title: "Example Movie", tmdbId: "42"}]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Exam"}});
+        await waitFor(() =>
+            expect(screen.getByTestId("autocomplete-option")).toBeVisible(),
+        );
+        fireEvent.keyDown(input, {key: "ArrowDown"});
+        expect(input).toHaveAttribute("aria-activedescendant");
+        fireEvent.keyDown(input, {key: "Escape"});
+        await waitFor(() =>
+            expect(input).toHaveAttribute("aria-expanded", "false"),
+        );
+        expect(input.getAttribute("aria-activedescendant") ?? "").toBe("");
+        expect(input).not.toHaveAttribute("aria-controls");
+    });
+
+    it("should ignore Enter after Escape closed the dropdown rather than choosing a suggestion that is gone", async () => {
+        const autocomplete = vi
+            .fn()
+            .mockResolvedValue([{title: "Example Movie", tmdbId: "42"}]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Exam"}});
+        await waitFor(() =>
+            expect(screen.getByTestId("autocomplete-option")).toBeVisible(),
+        );
+        fireEvent.keyDown(input, {key: "ArrowDown"});
+        fireEvent.keyDown(input, {key: "Escape"});
+        // jsdom reports a listener's exception as a window `error` event
+        // instead of rethrowing it, so `not.toThrow()` alone would not see
+        // the crash this guards against.
+        const onError = vi.fn();
+        window.addEventListener("error", onError);
+        try {
+            expect(() =>
+                fireEvent.keyDown(input, {key: "Enter"}),
+            ).not.toThrow();
+        } finally {
+            window.removeEventListener("error", onError);
+        }
+        expect(onError).not.toHaveBeenCalled();
+        expect(input).toHaveValue("Exam");
+    });
+
+    it("should scroll the active suggestion into view while arrowing through the list", async () => {
+        const scrollIntoView = vi.fn();
+        const original = Element.prototype.scrollIntoView;
+        Element.prototype.scrollIntoView = scrollIntoView;
+        try {
+            const autocomplete = vi.fn().mockResolvedValue([
+                {title: "First Movie", tmdbId: "42"},
+                {title: "Second Movie", tmdbId: "43"},
+            ]);
+            render(
+                <SearchWorkspace
+                    catalog={catalog}
+                    initialValues={valuesFromSearch(
+                        {category: "Cinema"},
+                        catalog,
+                    )}
+                    onSubmit={vi.fn()}
+                    autocomplete={autocomplete}
+                />,
+            );
+            const input = screen.getByTestId("search-query");
+            fireEvent.change(input, {target: {value: "Example"}});
+            await waitFor(() =>
+                expect(
+                    screen.getAllByTestId("autocomplete-option"),
+                ).toHaveLength(2),
+            );
+            scrollIntoView.mockClear();
+            fireEvent.keyDown(input, {key: "ArrowDown"});
+            fireEvent.keyDown(input, {key: "ArrowDown"});
+            const options = screen.getAllByTestId("autocomplete-option");
+            await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+            expect(scrollIntoView.mock.contexts).toContain(options[1]);
+        } finally {
+            Element.prototype.scrollIntoView = original;
+        }
+    });
+
     it("should show a suggestion's cover to the left of its title, and no image at all for a suggestion without one", async () => {
         const autocomplete = vi.fn().mockResolvedValue([
             {
