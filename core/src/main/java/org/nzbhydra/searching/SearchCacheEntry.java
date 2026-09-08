@@ -35,6 +35,12 @@ public class SearchCacheEntry {
      */
     static final int MAX_QUERIES_UNTIL_BREAK = 15;
 
+    /**
+     * Maximum number of queries sent to a single indexer for one load-all search. Generous because loading all results
+     * legitimately needs many pages, but still a hard backstop against indexers which never stop reporting more results.
+     */
+    static final int MAX_QUERIES_UNTIL_BREAK_LOAD_ALL = MAX_QUERIES_UNTIL_BREAK * 10;
+
     private static final Logger logger = LoggerFactory.getLogger(SearchCacheEntry.class);
 
     /**
@@ -101,9 +107,10 @@ public class SearchCacheEntry {
         List<IndexerSearchCacheEntry> indexersToSearch = new ArrayList<>();
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexerCacheEntries.values()) {
             final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
-            if (!searchRequest.isLoadAll() && executedSearches >= MAX_QUERIES_UNTIL_BREAK) {
+            final int maxQueries = searchRequest.isLoadAll() ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
+            if (executedSearches >= maxQueries) {
                 //Circuit breaker
-                logger.warn("Indexer {} executed {} queries without a load-all search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches);
+                logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, searchRequest.isLoadAll() ? "load-all " : "");
                 continue;
             }
             if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {

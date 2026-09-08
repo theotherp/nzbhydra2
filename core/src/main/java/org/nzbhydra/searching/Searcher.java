@@ -111,6 +111,12 @@ public class Searcher {
                 }
             }
 
+            int newItemsFromIndexers = 0;
+            boolean anyIndexerAdvanced = true;
+            String stalledIndexers = "";
+            final int mergedResultsBefore = searchCacheEntry.getSearchResultItems().size();
+            final int removedDuplicatesBefore = searchCacheEntry.getNumberOfRemovedDuplicates();
+
             //Do the actual search
             if (!indexersToSearch.isEmpty()) {
                 List<IndexerSearchResult> newIndexerSearchResults = queryIndexers(searchRequest, indexersToSearch, activeSearch);
@@ -118,6 +124,10 @@ public class Searcher {
                 List<SearchResultItem> newItems = newIndexerSearchResults.stream()
                     .flatMap(x -> x.getSearchResultItems().stream())
                     .collect(Collectors.toList());
+                newItemsFromIndexers = newItems.size();
+                //A page size of zero means the next query would use the same offset again
+                anyIndexerAdvanced = newIndexerSearchResults.stream().anyMatch(x -> x.getPageSize() > 0);
+                stalledIndexers = newIndexerSearchResults.stream().filter(x -> x.getPageSize() == 0).map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
                 duplicateDetector.addToGroups(searchCacheEntry.getDuplicateGroups(), newItems);
             }
 
@@ -128,6 +138,16 @@ public class Searcher {
 
             //Set the rejection counts from all searches, this and previous
             searchCacheEntry.updateReasonsForRejection();
+
+            //Circuit breaker: if this round neither retrieved nor merged anything and didn't even advance the offset of
+            //any indexer the next round would do exactly the same again. Happens when an indexer reports a large total
+            //and more results but returns empty pages. A page of only rejected results does advance the offset.
+            final boolean nothingMerged = searchCacheEntry.getSearchResultItems().size() == mergedResultsBefore
+                && searchCacheEntry.getNumberOfRemovedDuplicates() == removedDuplicatesBefore;
+            if (newItemsFromIndexers == 0 && nothingMerged && !anyIndexerAdvanced) {
+                logger.warn("Aborting search because the last round of queries returned no new results. The following indexers may report wrong result counts: {}", stalledIndexers);
+                break;
+            }
         }
         activeSearches.remove(searchRequest.getSearchRequestId());
 

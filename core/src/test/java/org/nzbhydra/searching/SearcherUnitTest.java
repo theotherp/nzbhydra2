@@ -910,7 +910,7 @@ public class SearcherUnitTest {
     // ------------------------------------------------------------------------------------------------
 
     @Test
-    void shouldIgnoreTheCircuitBreakerWhenLoadAllIsRequested() throws Exception {
+    void shouldKeepQueryingUntilTheLoadAllMaximumWhenLoadAllIsRequested() throws Exception {
         when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(invocation -> {
             int offset = invocation.getArgument(1);
             return mockIndexerSearchResult(offset, 10, offset < 190, 200, indexer1);

@@ -106,6 +106,18 @@ class SearchCacheEntryTest {
         assertThat(searchCacheEntry.getIndexersToSearch()).contains(indexer1Entry);
     }
 
+    @Test
+    void shouldStopSearchingAnIndexerAfterTheMaximumNumberOfQueriesForLoadAllSearches() {
+        searchRequest.setLoadAll(true);
+        searchCacheEntry.getIndexersToSearch();
+        IndexerSearchCacheEntry indexer1Entry = searchCacheEntry.getIndexerCacheEntries().get("indexer1");
+        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK_LOAD_ALL; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+
+        assertThat(searchCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
+    }
+
     // ------------------------------------------------------------------------------------------------
     // getIndexersWithCachedResults
     // ------------------------------------------------------------------------------------------------
