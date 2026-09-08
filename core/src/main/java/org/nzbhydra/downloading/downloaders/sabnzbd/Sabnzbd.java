@@ -234,7 +234,7 @@ public class Sabnzbd extends Downloader {
             status.setDownloadingTitlePercentFinished(Integer.parseInt(currentEntry.getPercentage()));
         }
 
-        status.setDownloadingRatesInKilobytes(downloadRates);
+        status.setDownloadingRatesInKilobytes(getDownloadRates());
         return status;
     }
 

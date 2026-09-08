@@ -240,7 +240,7 @@ public class NzbGet extends Downloader {
         int downloadRateInKilobytes = downloadRateInBytes / 1024;
         status.setDownloadRateInKilobytes(downloadRateInKilobytes);
         addDownloadRate(downloadRateInKilobytes);
-        status.setDownloadingRatesInKilobytes(downloadRates);
+        status.setDownloadingRatesInKilobytes(getDownloadRates());
 
         Boolean downloadPaused = (Boolean) statusMap.get("DownloadPaused");
         if (downloadPaused) {

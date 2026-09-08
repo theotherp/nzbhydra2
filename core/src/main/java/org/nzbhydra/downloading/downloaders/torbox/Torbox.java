@@ -202,7 +202,7 @@ public class Torbox extends Downloader {
                 .downloaderType(DownloaderType.TORBOX)
                 .state(downloadingEntries.isEmpty() ? DownloaderStatus.State.IDLE : DownloaderStatus.State.DOWNLOADING)
                 .url(BASE_URL)
-                .downloadingRatesInKilobytes(downloadRates)
+                .downloadingRatesInKilobytes(getDownloadRates())
                 .downloadRateInKilobytes(downloadSpeedKb)
                 .elementsInQueue(downloadingEntries.size());
         if (!downloadingEntries.isEmpty()) {

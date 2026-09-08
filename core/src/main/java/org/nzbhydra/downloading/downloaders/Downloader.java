@@ -75,7 +75,7 @@ public abstract class Downloader {
     protected final ConfigProvider configProvider;
 
     protected DownloaderConfig downloaderConfig;
-    protected List<Long> downloadRates = new ArrayList<>();
+    private final List<Long> downloadRates = new ArrayList<>();
 
     public Downloader(FileHandler fileHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, DownloadUrlBuilder downloadUrlBuilder) {
         this.fileHandler = fileHandler;
@@ -330,10 +330,22 @@ public abstract class Downloader {
     }
 
     protected void addDownloadRate(long downloadRateKb) {
-        if (downloadRates.size() >= 300) {
-            downloadRates.remove(0);
+        synchronized (downloadRates) {
+            if (downloadRates.size() >= 300) {
+                downloadRates.remove(0);
+            }
+            downloadRates.add(downloadRateKb);
         }
-        downloadRates.add(downloadRateKb);
+    }
+
+    /**
+     * Returns the recorded download rates. The internal list is written by the status update scheduler while the
+     * returned list may be serialized by another thread, so a snapshot is returned.
+     */
+    protected List<Long> getDownloadRates() {
+        synchronized (downloadRates) {
+            return List.copyOf(downloadRates);
+        }
     }
 
     public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException;
