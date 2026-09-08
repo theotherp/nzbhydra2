@@ -1697,6 +1697,16 @@ Passed 2026-09-07 first cycle with three minor findings, not corrected (optional
 and both sections' identically named Invert/All/None trios lack a distinguishing `aria-label` on their row. Candidates
 for a future quickfix.
 
+FM-189 (Persist The Two Grouping Display Options Across Searches) answered the owner's 2026-09-08 report that "Group
+TV episodes" came back checked after every search: `groupEpisodes` (default true) and `groupTorrentAndUsenet` (default
+false) were bare `useState` and every submit remounts `SearchResults`, so both reset. They now join the
+`hydra.search-results.table` payload (ADR-0054) with legacy's defaults, read through `??` so a stored `false` survives;
+the persist effect writes and depends on both keys, and a restored `false` also suppresses the episode-grouping help
+dialog. Unit round-trip/key-set/first-render/help-suppression cases, a real-backend `results.spec.ts` case that runs a
+second search before the reload half, and the `F-SEARCH-SORT-FILTER` persisted-key comment updated. Vitest 1985/1985,
+`results.spec.ts` 37/37. Passed 2026-09-08 first cycle; the reviewer's two findings were both `STATUS.md` bookkeeping
+(a mangled FM-188 bullet, a link to a never-committed handoff file), corrected by the coordinator.
+
 ## Active
 
 None.
@@ -1723,10 +1733,6 @@ None.
 None.
 
 ## Upcoming
-
-- FM-189: Persist The Two Grouping Display Options Across Searches — the owner's 2026-09-08 report that "Group TV
-  episodes" comes back checked after every search; `groupEpisodes`/`groupTorrentAndUsenet` join the
-  `hydra.search-results.table` payload (ADR-0054) with legacy's true/false defaults. Planned, dependency-ready, next.
 
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).

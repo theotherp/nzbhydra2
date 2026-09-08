@@ -380,9 +380,13 @@ features:
       # 2026-09-02 (FM-176/FM-178, ADR-0054): the `hydra.search-results.table`
       # payload's persisted keys are `sorting`, `sidebarCollapsed`,
       # `refineCategoryOpen`, `refineIndexerOpen`, `compactRows`,
-      # `highlightRecent`, `showDuplicateControls`, and `showCovers` (FM-177)
+      # `highlightRecent`, `showDuplicateControls`, `showCovers` (FM-177),
+      # `groupEpisodes`, and `groupTorrentAndUsenet`
       # -- browser-local, per ADR-0054, not server-side per-user preferences
       # (`storedChoices.ts`).
+      # 2026-09-08 (FM-189): the two grouping options joined that payload so
+      # a new search (which remounts `SearchResults`) no longer resets them;
+      # they default to legacy's own `true`/`false` respectively.
       # `filters` left this payload entirely with FM-178: every refine
       # filter resets on a new search (see the gap line below), so none of
       # them can usefully outlive one.

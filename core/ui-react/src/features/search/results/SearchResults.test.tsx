@@ -2562,7 +2562,8 @@ describe("SearchResults", () => {
         expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
 
         fireEvent.click(screen.getByTestId("sort-title"));
-        // "Group TV episodes" defaults checked (useState(true)); flip it off
+        // "Group TV episodes" defaults checked (no stored choice, so FM-189's
+        // `choices.groupEpisodes ?? true`); flip it off
         // so the test can prove clear-all leaves this explicit choice alone.
         // Since FM-041 it lives in the display-options popover, which has to
         // be closed again before the role queries below can see the rest of
@@ -3928,7 +3929,7 @@ describe("SearchResults", () => {
         expect(tile).toHaveAttribute("aria-expanded", "false");
     });
 
-    it("should persist compact rows, highlight recent, and the duplicate-controls option in the existing search-results-table payload without persisting the mobile drawer", () => {
+    it("should persist compact rows, highlight recent, the duplicate-controls option, and both grouping options in the existing search-results-table payload without persisting the mobile drawer", () => {
         stubWorkingLocalStorage();
         const searchResults = [
             {
@@ -3951,10 +3952,16 @@ describe("SearchResults", () => {
         fireEvent.click(displayOption("Highlight recent"));
         fireEvent.click(displayOption("Show duplicate expand controls"));
         fireEvent.click(displayOption("Show covers"));
+        // FM-189: both grouping options join the same payload, each flipped
+        // away from its own default so a stored `false` is exercised too.
+        fireEvent.click(displayOption("Group TV episodes"));
+        fireEvent.click(displayOption("Group torrent and Usenet results"));
         closeDisplayOptions();
         const stored = storedChoices();
         expect(stored).toMatchObject({
             compactRows: true,
+            groupEpisodes: false,
+            groupTorrentAndUsenet: true,
             highlightRecent: true,
             showCovers: true,
             showDuplicateControls: true,
@@ -3963,6 +3970,8 @@ describe("SearchResults", () => {
         // drawer's transient open state is deliberately not persisted.
         expect(Object.keys(stored).sort()).toEqual([
             "compactRows",
+            "groupEpisodes",
+            "groupTorrentAndUsenet",
             "highlightRecent",
             "refineCategoryOpen",
             "refineIndexerOpen",
@@ -3986,6 +3995,36 @@ describe("SearchResults", () => {
         expect(displayOption("Highlight recent")).toBeChecked();
         expect(displayOption("Show duplicate expand controls")).toBeChecked();
         expect(displayOption("Show covers")).toBeChecked();
+        expect(displayOption("Group TV episodes")).not.toBeChecked();
+        expect(displayOption("Group torrent and Usenet results")).toBeChecked();
+    });
+
+    // FM-189: the owner's defect was that a new search remounts
+    // `SearchResults` (SearchPage drops `state.data` on submit) onto the bare
+    // `useState` defaults. A stored choice has to drive the *grouping*, not
+    // just the checkbox, from the very first render.
+    it("should group torrent and Usenet results from the first render when the stored payload says so", () => {
+        stubWorkingLocalStorage();
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({groupTorrentAndUsenet: true}),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: duplicateAcrossDownloadTypes,
+                }}
+            />,
+        );
+        // Ungrouped these are two title groups; the restored option collapses
+        // them into one before any interaction with the popover.
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        expect(displayOption("Group torrent and Usenet results")).toBeChecked();
+        closeDisplayOptions();
+        fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
 
     it("should drive the persisted docked-sidebar preference from the display-options shortcut at sm and up", () => {
@@ -4231,6 +4270,32 @@ describe("SearchResults", () => {
                 screen.queryByTestId("group-episodes-help-dialog"),
             ).not.toBeInTheDocument();
             expect(puts).toEqual([]);
+        });
+
+        // FM-189: legacy fed `$scope.foo.groupEpisodes` into `isGroupEpisodes`,
+        // so a user who turned episode grouping off was never told about it.
+        // Now that the choice is restored from storage on mount, the restored
+        // `false` has to reach the eligibility check on that same first render.
+        it("shows nothing for an eligible search when the stored payload turned episode grouping off", async () => {
+            stubWorkingLocalStorage();
+            window.localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({groupEpisodes: false}),
+            );
+            const {puts} = genericStorageFetch(false);
+            renderResults(
+                <SearchResults
+                    data={tvResultsData()}
+                    searchedCategory={{name: "TV SD", searchType: "TVSEARCH"}}
+                />,
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            expect(
+                screen.queryByTestId("group-episodes-help-dialog"),
+            ).not.toBeInTheDocument();
+            expect(puts).toEqual([]);
+            expect(displayOption("Group TV episodes")).not.toBeChecked();
         });
 
         it('shows the dialog for a renamed TV category whose name contains no "tv"', async () => {

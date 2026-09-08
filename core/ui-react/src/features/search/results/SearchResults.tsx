@@ -541,8 +541,20 @@ export function SearchResults({
     const [indexerOpen, setIndexerOpen] = useState(
         () => choices.refineIndexerOpen ?? true,
     );
-    const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(false);
-    const [groupEpisodes, setGroupEpisodes] = useState(true);
+    // FM-189: both grouping options persist through the same
+    // `hydra.search-results.table` payload as the other display options
+    // (ADR-0054), because `SearchPage` drops `state.data` on every submit and
+    // remounts this component -- bare `useState` defaults would otherwise
+    // undo the choice on every new search. Legacy's defaults are kept
+    // (`search-results-controller.js`: `groupEpisodes` on,
+    // `groupTorrentAndNewznabResults` off), and `??` rather than `||` so a
+    // stored `false` is honoured.
+    const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(
+        () => choices.groupTorrentAndUsenet ?? false,
+    );
+    const [groupEpisodes, setGroupEpisodes] = useState(
+        () => choices.groupEpisodes ?? true,
+    );
     const [expandedTitles, setExpandedTitles] = useState<Set<string>>(
         new Set(),
     );
@@ -763,6 +775,8 @@ export function SearchResults({
             STORAGE_KEY,
             JSON.stringify({
                 compactRows,
+                groupEpisodes,
+                groupTorrentAndUsenet,
                 highlightRecent,
                 refineCategoryOpen: categoryOpen,
                 refineIndexerOpen: indexerOpen,
@@ -775,6 +789,8 @@ export function SearchResults({
     }, [
         categoryOpen,
         compactRows,
+        groupEpisodes,
+        groupTorrentAndUsenet,
         highlightRecent,
         indexerOpen,
         showCovers,

@@ -1388,6 +1388,71 @@ test.describe("Search results", () => {
         await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
     });
 
+    // FM-189: the owner reported "Group TV episodes" coming back checked
+    // after every new search -- `SearchPage` drops `state.data` on submit and
+    // remounts `SearchResults`, which used to fall back to bare `useState`
+    // defaults. Both grouping options now ride the same
+    // `hydra.search-results.table` payload as the other display options, so a
+    // second search (the defect's own path, no reload involved) keeps them.
+    test("should keep both grouping options across a new search and across a reload", async ({
+        page,
+    }) => {
+        // As in the FM-089 case above: a freshly loaded page, so the payload
+        // asserted below is written by this test alone.
+        await page.goto("/");
+        await searchForUiTestResults(page);
+
+        expect(await displayOptionChecked(page, "Group TV episodes")).toBe(
+            true,
+        );
+        expect(
+            await displayOptionChecked(
+                page,
+                "Group torrent and Usenet results",
+            ),
+        ).toBe(false);
+
+        await toggleDisplayOption(page, "Group TV episodes");
+        await toggleDisplayOption(page, "Group torrent and Usenet results");
+
+        const persistedPayload = await page.evaluate(() =>
+            window.localStorage.getItem("hydra.search-results.table"),
+        );
+        expect(persistedPayload).toContain('"groupEpisodes":false');
+        expect(persistedPayload).toContain('"groupTorrentAndUsenet":true');
+
+        // The owner's exact path: a second search in the same document.
+        await searchForUiTestResults(page);
+        expect(await displayOptionChecked(page, "Group TV episodes")).toBe(
+            false,
+        );
+        expect(
+            await displayOptionChecked(
+                page,
+                "Group torrent and Usenet results",
+            ),
+        ).toBe(true);
+
+        // And across a reload, re-seeding the payload the way the FM-089 case
+        // above does -- this suite's `page` fixture clears `localStorage` on
+        // every new document, so only this half needs `addInitScript`.
+        await page.addInitScript((payload) => {
+            window.localStorage.setItem("hydra.search-results.table", payload);
+        }, persistedPayload as string);
+
+        await page.reload();
+        await searchForUiTestResults(page);
+        expect(await displayOptionChecked(page, "Group TV episodes")).toBe(
+            false,
+        );
+        expect(
+            await displayOptionChecked(
+                page,
+                "Group torrent and Usenet results",
+            ),
+        ).toBe(true);
+    });
+
     test("should provide deterministic bulk-actions-bar visual evidence across desktop and mobile", async ({
         hydra,
         page,

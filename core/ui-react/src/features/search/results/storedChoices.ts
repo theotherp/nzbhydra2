@@ -11,6 +11,12 @@ export const STORAGE_KEY = "hydra.search-results.table";
 
 export type StoredChoices = {
     compactRows?: boolean;
+    // FM-189 (ADR-0054): "Group TV episodes", legacy's `groupEpisodes`
+    // (`search-results-controller.js`), which defaulted *on* there and here.
+    groupEpisodes?: boolean;
+    // FM-189 (ADR-0054): "Group torrent and Usenet results", legacy's
+    // `groupTorrentAndNewznabResults`, which defaulted *off* there and here.
+    groupTorrentAndUsenet?: boolean;
     highlightRecent?: boolean;
     refineCategoryOpen?: boolean;
     refineIndexerOpen?: boolean;
