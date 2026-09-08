@@ -36,9 +36,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import javax.xml.transform.stream.StreamResult;
+import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -228,5 +230,26 @@ public class ExternalApiTest {
         return parameters;
     }
 
+
+    @Test
+    void shouldShrinkCacheToMaxSizeWhenItGrewBeyondItAfterRace() throws Exception {
+        for (int i = 1; i <= 5; i++) {
+            testee.api(getNewznabParameters("q" + i), null, null);
+        }
+        Field cacheField = ExternalApi.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Integer, Object> cache = (Map<Integer, Object>) cacheField.get(testee);
+        assertThat(cache).hasSize(5);
+        //Simulate two concurrent puts having pushed the cache beyond its maximum size
+        Object anyEntry = cache.values().iterator().next();
+        cache.put(1000001, anyEntry);
+        cache.put(1000002, anyEntry);
+        assertThat(cache).hasSize(7);
+
+        testee.api(getNewznabParameters("q6"), null, null);
+
+        assertThat(cache).hasSizeLessThanOrEqualTo(5);
+    }
 
 }
