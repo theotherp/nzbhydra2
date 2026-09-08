@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
@@ -30,7 +31,7 @@ public class DownloadResult {
     private boolean successful;
     private String error;
     private FileDownloadEntity downloadEntity;
-    private HttpStatus statusCode;
+    private HttpStatusCode statusCode;
 
     private static final Pattern URL_PARAM_PATTERN = Pattern.compile("dn=([^&$]+)");
 
@@ -44,7 +45,7 @@ public class DownloadResult {
         this.statusCode = HttpStatus.OK;
     }
 
-    protected DownloadResult(String title, byte[] content, String url, boolean successful, String error, HttpStatus statusCode, FileDownloadEntity downloadEntity) {
+    protected DownloadResult(String title, byte[] content, String url, boolean successful, String error, HttpStatusCode statusCode, FileDownloadEntity downloadEntity) {
         this(title, content, url, successful, error, downloadEntity);
         this.statusCode = statusCode;
     }
@@ -65,8 +66,8 @@ public class DownloadResult {
 
     public ResponseEntity<Object> getAsResponseEntity() {
         ResponseEntity<Object> response;
-        if (statusCode != HttpStatus.OK) {
-            if (statusCode == HttpStatus.TOO_MANY_REQUESTS || statusCode == HttpStatus.INTERNAL_SERVER_ERROR) {
+        if (!statusCode.isSameCodeAs(HttpStatus.OK)) {
+            if (statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) || statusCode.isSameCodeAs(HttpStatus.INTERNAL_SERVER_ERROR)) {
                 //In case of an internal server error we just hope that it works later again...
                 HttpHeaders headers = new HttpHeaders();
                 //Retry after 4 hours by default. Ideally we would know this (see IndexerForSearchSelector), but that would require a DB access and so on. This hardcoded value should be good enough for most cases.
@@ -130,7 +131,7 @@ public class DownloadResult {
         return new DownloadResult(null, null, null, false, error, null);
     }
 
-    public static DownloadResult createErrorResult(String error, HttpStatus httpStatus, FileDownloadEntity entity) {
+    public static DownloadResult createErrorResult(String error, HttpStatusCode httpStatus, FileDownloadEntity entity) {
         return new DownloadResult(null, null, null, false, error, httpStatus, entity);
     }
 

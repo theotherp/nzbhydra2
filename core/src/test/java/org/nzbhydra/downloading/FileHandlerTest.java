@@ -7,11 +7,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.misc.TempFileProvider;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,7 +28,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -27,6 +39,14 @@ class FileHandlerTest {
 
     @Mock
     private TempFileProvider tempFileProvider;
+    @Mock
+    private ConfigProvider configProvider;
+    @Mock
+    private FileDownloadRepository downloadRepository;
+    @Mock
+    private IndexerApiAccessEntityShortRepository shortRepository;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private FileHandler testee;
@@ -38,6 +58,19 @@ class FileHandlerTest {
     void setUp() throws IOException {
         when(tempFileProvider.getTempFile(anyString(), anyString()))
                 .thenAnswer(inv -> File.createTempFile("nzbhydra-test", inv.getArgument(1)));
+        when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
+    }
+
+    @Test
+    void shouldReturnErrorResultForNonStandardHttpStatusCode() throws Exception {
+        SearchResultEntity searchResult = new SearchResultEntity(new IndexerEntity("indexerName"), Instant.now(), "title", "guid", "http://127.0.0.1/nzb", "details", DownloadType.NZB, Instant.now());
+        FileHandler spy = spy(testee);
+        doThrow(new DownloadException("http://127.0.0.1/nzb", 521, "Web server is down")).when(spy).downloadFile(any());
+
+        DownloadResult result = spy.handleContentDownload(SearchSource.INTERNAL, searchResult);
+
+        assertThat(result.isSuccessful()).isFalse();
+        assertThat(result.getStatusCode().value()).isEqualTo(521);
     }
 
     @Test

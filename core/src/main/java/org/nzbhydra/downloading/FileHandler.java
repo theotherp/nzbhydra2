@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,7 +183,7 @@ public class FileHandler {
             shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
 
             publishEvents(result, downloadEntity);
-            return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), HttpStatus.valueOf(e.getStatus()), downloadEntity);
+            return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), HttpStatusCode.valueOf(e.getStatus()), downloadEntity);
         }
 
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
