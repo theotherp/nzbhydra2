@@ -1,9 +1,10 @@
 import {Box, Button, Menu, MenuItem} from "@mui/material";
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {DownloaderDialog} from "./DownloaderDialog";
 import {DownloaderTable} from "./DownloaderTable";
 import {
@@ -16,17 +17,6 @@ import {
     newDownloaderDraft,
     type DownloaderValues,
 } from "./downloadingSettings";
-
-type Editing = {
-    /** `null` while a *new* downloader is being composed. */
-    index: number | null;
-    /**
-     * The transaction's identity, compared against `transactionRef` before a
-     * commit is applied. See `openTransaction`.
-     */
-    token: number;
-    value: DownloaderValues;
-};
 
 /**
  * `F-CONFIG-DOWNLOADING`'s downloader list — legacy's `downloader-config.html`
@@ -54,31 +44,22 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
     const entries = downloadersOf(
         useWatch<ConfigValues>({name: DOWNLOADERS_PATH}),
     );
-    const [editing, setEditing] = useState<Editing | null>(null);
+    /**
+     * The modal transaction (`useListEditorTransaction`): `null` when no
+     * dialog is open, and otherwise the index being edited (`null` while a
+     * *new* downloader is composed), the transaction's identity and the draft.
+     * A connection check that only resolves after its dialog was cancelled,
+     * deleted, or replaced carries a stale token and its commit is dropped
+     * instead of applied. The dialog itself is blocked while a check runs,
+     * which is legacy's `blockUI`; the token is the second line of defence,
+     * because `onSubmit` is captured by an async closure that outlives the
+     * render — and the state it closes over — that started the check.
+     */
+    const transaction = useListEditorTransaction<DownloaderValues>();
+    const editing = transaction.editing;
     const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(
         null,
     );
-    /**
-     * The identity of the transaction that is currently allowed to commit.
-     * Every open and every close bumps it, so a connection check that only
-     * resolves after its dialog was cancelled, deleted, or replaced carries a
-     * stale token and its commit is dropped instead of applied. The dialog
-     * itself is blocked while a check runs, which is legacy's `blockUI`; this
-     * is the second line of defence, because `onSubmit` is captured by an
-     * async closure that outlives the render — and the state it closes over —
-     * that started the check.
-     */
-    const transactionRef = useRef(0);
-
-    const openTransaction = (index: number | null, value: DownloaderValues) => {
-        transactionRef.current += 1;
-        setEditing({index, token: transactionRef.current, value});
-    };
-
-    const closeTransaction = () => {
-        transactionRef.current += 1;
-        setEditing(null);
-    };
 
     const write = (next: DownloaderValues[]) =>
         setValue(DOWNLOADERS_PATH, next as never, {shouldDirty: true});
@@ -86,23 +67,30 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
     /** The array as the form holds it *now*, never a value a render captured. */
     const currentEntries = () => downloadersOf(getValues(DOWNLOADERS_PATH));
 
+    // No `entryCount`, deliberately: this section never guarded a vanished
+    // index, and adding the guard would turn a commit over a removed row from
+    // an unchanged-array write into a silent no-op (FM-191).
     const commit = (
         token: number,
         index: number | null,
         entry: DownloaderValues,
     ) => {
-        if (token !== transactionRef.current) {
-            return;
-        }
-        const current = currentEntries();
-        write(
-            index === null
-                ? [...current, entry]
-                : current.map((existing, entryIndex) =>
-                      entryIndex === index ? {...existing, ...entry} : existing,
-                  ),
-        );
-        closeTransaction();
+        transaction.commit({
+            token,
+            index,
+            write: () => {
+                const current = currentEntries();
+                write(
+                    index === null
+                        ? [...current, entry]
+                        : current.map((existing, entryIndex) =>
+                              entryIndex === index
+                                  ? {...existing, ...entry}
+                                  : existing,
+                          ),
+                );
+            },
+        });
     };
 
     /**
@@ -119,7 +107,7 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
                 (_entry, entryIndex) => entryIndex !== index,
             ),
         );
-        closeTransaction();
+        transaction.close();
     };
 
     return (
@@ -127,7 +115,7 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
             <DownloaderTable
                 entries={entries}
                 onEdit={(index) =>
-                    openTransaction(index, asDownloader(entries[index]))
+                    transaction.open(index, asDownloader(entries[index]))
                 }
             />
             <Button
@@ -151,7 +139,7 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
                         key={preset.value}
                         onClick={() => {
                             setAddMenuAnchor(null);
-                            openTransaction(
+                            transaction.open(
                                 null,
                                 newDownloaderDraft(preset.value),
                             );
@@ -166,7 +154,7 @@ export function DownloadersSection({transport}: {transport: ApiTransport}) {
                     existingNames={otherNames(entries, editing.index)}
                     initialValue={editing.value}
                     isNew={editing.index === null}
-                    onCancel={closeTransaction}
+                    onCancel={transaction.close}
                     onDelete={
                         editing.index === null
                             ? undefined

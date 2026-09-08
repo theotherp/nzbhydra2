@@ -453,7 +453,12 @@ components:
   - id: C-CONFIG-FORM
     responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all eight tabs, and the
       save pipeline that refuses to submit an invalid form and maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`. Since FM-097 it also derives the shell's
-      unsaved-work summary from that one form state -- how many settings changed, and which top-level section each change or validation error belongs to -- so the sticky save bar and the settings nav's per-section badges cannot disagree
+      unsaved-work summary from that one form state -- how many settings changed, and which top-level section each change or validation error belongs to -- so the sticky save bar and the settings nav's per-section badges cannot disagree.
+      Since FM-191 the modal-transaction lifecycle every list editor writes into this form through is one hook, `useListEditorTransaction` (`features/config/useListEditorTransaction.ts`), owning the `{index, token, value}` state, the
+      monotonic token bumped on every open, close and delete, `isCurrent`, `cancel`'s rollback hook, and the commit that drops a resolved transaction whose token is stale or whose row is gone. The array write stays at each call site, which is what
+      keeps `IndexersConfigTab`'s deliberate replace-wholesale commit and everyone else's ADR-0003 spread-over-the-stored-entry merge apart, and what leaves `CategoriesTable`'s ADR-0034 placeholder add and its unmount rollback where they
+      belong. Its six consumers are `auth/AuthUsersSection`, `categories/CategoriesTable`, `downloading/DownloadersSection`, `external-tools/ExternalToolsSection`, `indexers/IndexersConfigTab` and `searching/CustomMappingsSection` -- the
+      last of which had no token at all before FM-191. `notifications/NotificationEntriesSection` is deliberately not one, since it edits entries in place with no draft, dialog or async gap and so has no transaction to own
     legacy:
       - core/ui-src/js/config/config-controller.js
       - core/ui-src/js/config/config-service.js

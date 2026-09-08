@@ -19,6 +19,7 @@ import type {ConfigValues} from "../../../api/config/schema";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {settingTestId, type ConfigFieldPath} from "../components";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {CategoryDialog} from "./CategoryDialog";
 import {
     categoryEntryLegend,
@@ -48,23 +49,14 @@ function categoriesOf(value: unknown): CategoryValues[] {
     return Array.isArray(value) ? (value as CategoryValues[]) : [];
 }
 
-type Editing = {
-    index: number;
-    /**
-     * Whether this transaction was opened by Add rather than Edit. Drives the
-     * dialog's title and whether it offers Delete, and -- unlike the
-     * `DownloaderDialog`/`UserDialog` precedent, where a new entry has no
-     * array slot until Submit -- also drives what Cancel does: see `add` and
-     * `cancelTransaction`.
-     */
-    isNew: boolean;
-    /**
-     * The transaction's identity, compared against `transactionRef` before a
-     * commit is applied. See `openTransaction`.
-     */
-    token: number;
-    value: CategoryValues;
-};
+/**
+ * Whether this transaction was opened by Add rather than Edit. Drives the
+ * dialog's title and whether it offers Delete, and -- unlike the
+ * `DownloaderDialog`/`UserDialog` precedent, where a new entry has no array
+ * slot until Submit -- also drives what Cancel does: see `add` and
+ * `cancelTransaction`.
+ */
+type EditingKind = {isNew: boolean};
 
 /**
  * `F-CONFIG-CATEGORIES`'s catalog (FM-119, following FM-107): legacy's stack
@@ -109,15 +101,19 @@ export function CategoriesTable() {
         useWatch<ConfigValues>({
             name: "categoriesConfig.enableCategorySizes",
         }) === true;
-    const [editing, setEditing] = useState<Editing | null>(null);
     /**
-     * The identity of the transaction that is currently allowed to commit.
-     * Every open and every close bumps it, so a commit from a dialog that was
-     * already cancelled, deleted, or replaced is dropped instead of applied.
+     * The modal transaction (`useListEditorTransaction`): the index being
+     * edited, whether Add opened it, the transaction's identity and the draft.
      * `CategoryDialog` has no asynchronous step of its own, but `onSubmit` is
-     * still a closure captured by a render a later one may have replaced.
+     * still a closure captured by a render a later one may have replaced,
+     * which is what the token guards against.
      */
-    const transactionRef = useRef(0);
+    const transaction = useListEditorTransaction<
+        CategoryValues,
+        EditingKind,
+        number
+    >();
+    const editing = transaction.editing;
     const tableRef = useRef<HTMLTableElement | null>(null);
     /**
      * Bumped to ask for focus on the table. Adding, editing, and removing all
@@ -147,20 +143,15 @@ export function CategoriesTable() {
     const write = (next: CategoryValues[]) =>
         setValue(CATEGORIES_PATH, next as never, {shouldDirty: true});
 
-    const closeTransaction = () => {
-        transactionRef.current += 1;
-        setEditing(null);
-    };
-
     /**
      * Unmount cleanup for an `add` transaction that is still open when the
      * component itself unmounts -- ordinary tab navigation, since
      * `ConfigShell.tsx` mounts only one tab body at a time while the shared
      * form above `<Outlet />` persists. Cancel, Escape, and the backdrop all
      * already undo `add`'s placeholder through `cancelTransaction`, and each
-     * of those bumps `transactionRef` before this effect's cleanup can run,
-     * so this is a no-op for all three -- and for a successful Submit, whose
-     * `commit` also bumps `transactionRef` before writing the final entry.
+     * of those bumps the transaction's token before this effect's cleanup can
+     * run, so this is a no-op for all three -- and for a successful Submit,
+     * whose `commit` also bumps it while writing the final entry.
      * Only a transaction still holding the live token when the component
      * unmounts is rolled back here, so a committed entry can never be
      * mistaken for an abandoned one.
@@ -172,7 +163,7 @@ export function CategoriesTable() {
         const token = editing.token;
         const index = editing.index;
         return () => {
-            if (transactionRef.current !== token) {
+            if (!transaction.isCurrent(token)) {
                 return;
             }
             write(
@@ -199,22 +190,12 @@ export function CategoriesTable() {
     const add = () => {
         const index = currentEntries().length;
         write([...currentEntries(), defaultCategoryEntry()]);
-        transactionRef.current += 1;
-        setEditing({
-            index,
-            isNew: true,
-            token: transactionRef.current,
-            value: defaultCategoryEntry(),
-        });
+        transaction.open(index, defaultCategoryEntry(), {isNew: true});
     };
 
     const edit = (index: number) => {
-        transactionRef.current += 1;
-        setEditing({
-            index,
+        transaction.open(index, structuredClone(currentEntries()[index]), {
             isNew: false,
-            token: transactionRef.current,
-            value: structuredClone(currentEntries()[index]),
         });
     };
 
@@ -227,17 +208,18 @@ export function CategoriesTable() {
      * surviving to a save with no mounted field left anywhere to explain why
      * it was refused (`CategoryDialog`'s module doc).
      */
-    const cancelTransaction = () => {
-        if (editing !== null && editing.isNew) {
-            const index = editing.index;
+    const cancelTransaction = () =>
+        transaction.cancel((abandoned) => {
+            if (!abandoned.isNew) {
+                return;
+            }
+            const index = abandoned.index;
             write(
                 currentEntries().filter(
                     (_entry, entryIndex) => entryIndex !== index,
                 ),
             );
-        }
-        closeTransaction();
-    };
+        });
 
     /**
      * Synchronous, and deliberately so: `CategoriesConfig.setCategories`
@@ -248,29 +230,31 @@ export function CategoriesTable() {
      * against a stale closure if a later render replaced this transaction.
      */
     const commit = (token: number, index: number, entry: CategoryValues) => {
-        if (token !== transactionRef.current) {
-            return;
-        }
         const current = currentEntries();
-        if (index >= current.length) {
-            // The row this transaction was opened over is gone (deleted from
-            // elsewhere while the dialog was open). Committing would either
-            // overwrite whoever shifted into its index or silently drop the
-            // edit; both are worse than discarding it.
-            closeTransaction();
-            return;
+        // `entryCount` asks for the vanished-row guard: the row this
+        // transaction was opened over may have been deleted from elsewhere
+        // while the dialog was open, and committing would either overwrite
+        // whoever shifted into its index or silently drop the edit.
+        const committed = transaction.commit({
+            token,
+            index,
+            entryCount: current.length,
+            write: () =>
+                write(
+                    current.map((existing, entryIndex) =>
+                        // Spread over the stored entry rather than replacing
+                        // it outright: `ConfigWeb.setConfig` writes the whole
+                        // file back, so a key this dialog has no control for
+                        // must survive an edit (ADR-0003).
+                        entryIndex === index
+                            ? {...existing, ...entry}
+                            : existing,
+                    ),
+                ),
+        });
+        if (committed) {
+            setFocusRequest((request) => request + 1);
         }
-        write(
-            current.map((existing, entryIndex) =>
-                // Spread over the stored entry rather than replacing it
-                // outright: `ConfigWeb.setConfig` writes the whole file back,
-                // so a key this dialog has no control for must survive an
-                // edit (ADR-0003).
-                entryIndex === index ? {...existing, ...entry} : existing,
-            ),
-        );
-        closeTransaction();
-        setFocusRequest((request) => request + 1);
     };
 
     const remove = async (index: number) => {
@@ -290,13 +274,13 @@ export function CategoriesTable() {
         }
         // A removal shifts every following index, so no transaction opened
         // before it may still commit by the index it captured.
-        transactionRef.current += 1;
+        transaction.invalidate();
         write(
             currentEntries().filter(
                 (_entry, entryIndex) => entryIndex !== index,
             ),
         );
-        setEditing(null);
+        transaction.close();
         setFocusRequest((request) => request + 1);
     };
 

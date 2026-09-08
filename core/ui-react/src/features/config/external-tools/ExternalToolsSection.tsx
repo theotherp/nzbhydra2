@@ -12,7 +12,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import {
@@ -22,6 +22,7 @@ import {
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
 import {useToasts} from "../../../components/toasts/toasts";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {ExternalToolDialog} from "./ExternalToolDialog";
 import {
     asExternalTool,
@@ -43,17 +44,6 @@ const SYNC_STARTED = "Starting sync to all external tools...";
 const EMPTY_STATE_HEADING = "No external tools configured";
 
 const ADD_MENU_ID = "config-external-tools-add-menu";
-
-type Editing = {
-    /** `null` while a *new* tool is being composed. */
-    index: number | null;
-    /**
-     * The transaction's identity, compared against `transactionRef` before a
-     * commit is applied. See `openTransaction`.
-     */
-    token: number;
-    value: ExternalToolValues;
-};
 
 /**
  * `F-CONFIG-EXTERNAL-TOOLS`' tool list — legacy's `external-tool-config.html`
@@ -79,36 +69,24 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
     const entries = externalToolsOf(
         useWatch<ConfigValues>({name: EXTERNAL_TOOLS_PATH}),
     );
-    const [editing, setEditing] = useState<Editing | null>(null);
+    /**
+     * The modal transaction (`useListEditorTransaction`): `null` when no
+     * dialog is open, and otherwise the index being edited (`null` while a
+     * *new* tool is composed), the transaction's identity and the draft. A
+     * configure call that only resolves after its dialog was cancelled,
+     * deleted, or replaced carries a stale token and its commit is dropped
+     * instead of applied (FM-064's review finding, which applies here for the
+     * same reason: `onSubmit` is captured by an async closure that outlives
+     * the render that started the request).
+     */
+    const transaction = useListEditorTransaction<ExternalToolValues>();
+    const editing = transaction.editing;
     const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(
         null,
     );
     const [syncing, setSyncing] = useState(false);
-    /**
-     * The identity of the transaction that is currently allowed to commit.
-     * Every open and every close bumps it, so a configure call that only
-     * resolves after its dialog was cancelled, deleted, or replaced carries a
-     * stale token and its commit is dropped instead of applied (FM-064's
-     * review finding, which applies here for the same reason: `onSubmit` is
-     * captured by an async closure that outlives the render that started the
-     * request).
-     */
-    const transactionRef = useRef(0);
     /** Hoisted out of the JSX so the `null` check narrows inside a closure. */
     const editingIndex = editing?.index ?? null;
-
-    const openTransaction = (
-        index: number | null,
-        value: ExternalToolValues,
-    ) => {
-        transactionRef.current += 1;
-        setEditing({index, token: transactionRef.current, value});
-    };
-
-    const closeTransaction = () => {
-        transactionRef.current += 1;
-        setEditing(null);
-    };
 
     const write = (next: ExternalToolValues[]) =>
         setValue(EXTERNAL_TOOLS_PATH, next as never, {shouldDirty: true});
@@ -117,23 +95,30 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
     const currentEntries = () =>
         externalToolsOf(getValues(EXTERNAL_TOOLS_PATH));
 
+    // No `entryCount`, deliberately: this section never guarded a vanished
+    // index, and adding the guard would turn a commit over a removed row from
+    // an unchanged-array write into a silent no-op (FM-191).
     const commit = (
         token: number,
         index: number | null,
         entry: ExternalToolValues,
     ) => {
-        if (token !== transactionRef.current) {
-            return;
-        }
-        const current = currentEntries();
-        write(
-            index === null
-                ? [...current, entry]
-                : current.map((existing, entryIndex) =>
-                      entryIndex === index ? {...existing, ...entry} : existing,
-                  ),
-        );
-        closeTransaction();
+        transaction.commit({
+            token,
+            index,
+            write: () => {
+                const current = currentEntries();
+                write(
+                    index === null
+                        ? [...current, entry]
+                        : current.map((existing, entryIndex) =>
+                              entryIndex === index
+                                  ? {...existing, ...entry}
+                                  : existing,
+                          ),
+                );
+            },
+        });
     };
 
     const remove = (index: number) => {
@@ -142,7 +127,7 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
                 (_entry, entryIndex) => entryIndex !== index,
             ),
         );
-        closeTransaction();
+        transaction.close();
     };
 
     /** Legacy's `syncAll`. */
@@ -183,7 +168,7 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
                             index={index}
                             key={index}
                             onEdit={() =>
-                                openTransaction(index, asExternalTool(entry))
+                                transaction.open(index, asExternalTool(entry))
                             }
                             onRemove={() => remove(index)}
                         />
@@ -249,7 +234,7 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
                         key={preset.value}
                         onClick={() => {
                             setAddMenuAnchor(null);
-                            openTransaction(
+                            transaction.open(
                                 null,
                                 newExternalToolDraft(preset.value),
                             );
@@ -264,7 +249,7 @@ export function ExternalToolsSection({transport}: {transport: ApiTransport}) {
                     existingNames={otherNames(entries, editingIndex)}
                     initialValue={editing.value}
                     isNew={editingIndex === null}
-                    onCancel={closeTransaction}
+                    onCancel={transaction.close}
                     onDelete={
                         editingIndex === null
                             ? undefined

@@ -1,12 +1,12 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {Box, Button, Divider, Stack, Typography} from "@mui/material";
-import {useState} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {CustomMappingValues} from "../../../api/config/customMappingTest";
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {CustomMappingDialog} from "./CustomMappingDialog";
 import {
     AFFECTED_VALUE_OPTIONS,
@@ -35,12 +35,6 @@ export const CUSTOM_MAPPINGS_TOOLTIP =
 
 /** `config-fields-service.js:1316`, the legend of an entry with no name. */
 const ENTRY_LEGEND = "Mapping";
-
-type Editing = {
-    /** `null` while a *new* mapping is being composed. */
-    index: number | null;
-    value: CustomMappingValues;
-};
 
 /**
  * `F-CONFIG-SEARCHING`'s custom-mapping list — legacy's `repeatSection` at
@@ -79,7 +73,24 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             | unknown[]
             | null
             | undefined) ?? [];
-    const [editing, setEditing] = useState<Editing | null>(null);
+    /**
+     * The modal transaction (`useListEditorTransaction`): `null` when no
+     * dialog is open, and otherwise the index being edited (`null` while a
+     * *new* mapping is composed), the transaction's identity and the draft.
+     *
+     * FM-191 brought this section into the pattern the five other config list
+     * editors already used. Before it, the commit had no token at all and
+     * therefore no guard against a superseded transaction; that was safe only
+     * because `CustomMappingDialog`'s submit is synchronous (its "Help and
+     * test" request is a separate action that never calls `onSubmit`), so the
+     * gap a token closes -- a resolved commit from a dialog that was already
+     * cancelled, deleted, or replaced -- could not be opened from this
+     * section's own API. The guard is here now regardless, because "no test
+     * button ever grows into the submit path" is not a property this file can
+     * enforce on its own.
+     */
+    const transaction = useListEditorTransaction<CustomMappingValues>();
+    const editing = transaction.editing;
 
     const write = (next: unknown[]) =>
         setValue(CUSTOM_MAPPINGS_PATH, next as never, {shouldDirty: true});
@@ -89,20 +100,29 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             return;
         }
         const index = editing.index;
-        write(
-            index === null
-                ? [...entries, mapping]
-                : entries.map((entry, entryIndex) =>
-                      entryIndex === index
-                          ? {...asRecord(entry), ...mapping}
-                          : entry,
-                  ),
-        );
-        setEditing(null);
+        transaction.commit({
+            token: editing.token,
+            index,
+            entryCount: entries.length,
+            write: () =>
+                write(
+                    index === null
+                        ? [...entries, mapping]
+                        : entries.map((entry, entryIndex) =>
+                              entryIndex === index
+                                  ? {...asRecord(entry), ...mapping}
+                                  : entry,
+                          ),
+                ),
+        });
     };
 
-    const remove = (index: number) =>
+    const remove = (index: number) => {
+        // A removal shifts every following index, so no transaction opened
+        // before it may still commit by the index it captured.
+        transaction.invalidate();
         write(entries.filter((_entry, entryIndex) => entryIndex !== index));
+    };
 
     return (
         <Box data-testid={`config-repeat-${CUSTOM_MAPPINGS_TEST_ID}`}>
@@ -116,10 +136,7 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
                         index={index}
                         key={index}
                         onEdit={() =>
-                            setEditing({
-                                index,
-                                value: customMappingValues(entry),
-                            })
+                            transaction.open(index, customMappingValues(entry))
                         }
                         onRemove={() => remove(index)}
                     />
@@ -127,9 +144,7 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             </Stack>
             <Button
                 data-testid={`config-repeat-add-${CUSTOM_MAPPINGS_TEST_ID}`}
-                onClick={() =>
-                    setEditing({index: null, value: newCustomMapping()})
-                }
+                onClick={() => transaction.open(null, newCustomMapping())}
                 type="button"
                 variant="outlined"
             >
@@ -138,7 +153,7 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             {editing === null ? null : (
                 <CustomMappingDialog
                     initialValue={editing.value}
-                    onCancel={() => setEditing(null)}
+                    onCancel={transaction.close}
                     onSubmit={commit}
                     submitLabel={editing.index === null ? "Add" : "Submit"}
                     transport={transport}

@@ -515,6 +515,66 @@ describe("F-CONFIG-SEARCHING custom mapping transaction", () => {
         expect(harness.form.formState.isDirty).toBe(true);
     });
 
+    it("should drop a commit whose row was removed under the open dialog", async () => {
+        // FM-191: the transaction guard `CustomMappingsSection` gained by
+        // adopting `useListEditorTransaction`. Removing the first entry
+        // shifts every following one, so the index this dialog captured now
+        // names a different mapping; the delete invalidates the transaction's
+        // token and the submit is dropped. Without the token the same submit
+        // writes the second mapping's draft onto the third one.
+        //
+        // The interleaving is driven here rather than in a browser on
+        // purpose: `CustomMappingDialog` is synchronous and MUI's backdrop
+        // covers the Remove buttons, so nothing an admin can do today opens
+        // this window. The guard exists because "the submit path never grows
+        // an await" is not a property this section can enforce on its own.
+        const first = {
+            affectedValue: "QUERY",
+            from: "first",
+            matchAll: false,
+            searchType: "SEARCH",
+            to: "one",
+        };
+        const second = {
+            affectedValue: "QUERY",
+            from: "second",
+            matchAll: false,
+            searchType: "SEARCH",
+            to: "two",
+        };
+        const third = {
+            affectedValue: "QUERY",
+            from: "third",
+            matchAll: false,
+            searchType: "SEARCH",
+            to: "three",
+        };
+        const harness = renderSearching({
+            values: configWith({customMappings: [first, second, third]}),
+        });
+
+        fireEvent.click(screen.getByTestId(`config-repeat-edit-${MAPPINGS}-1`));
+        await screen.findByTestId("config-custom-mapping-dialog");
+        setDialogText("config-custom-mapping-from", "edited");
+        fireEvent.click(
+            screen.getByTestId(`config-repeat-remove-${MAPPINGS}-0`),
+        );
+        fireEvent.click(screen.getByTestId("config-custom-mapping-submit"));
+
+        // Both survivors are exactly what they were: the edit went nowhere
+        // rather than onto the third mapping, which the captured index names
+        // once the first one is gone.
+        await waitFor(() =>
+            expect(mappingsOf(harness)).toEqual([second, third]),
+        );
+        // A dropped commit closes nothing: the token is no longer this
+        // transaction's to end, exactly as in the five sections FM-064's rule
+        // came from. Cancel is what closes this dialog now.
+        expect(
+            screen.getByTestId("config-custom-mapping-dialog"),
+        ).toBeInTheDocument();
+    });
+
     it("should hide the search type for a result-title mapping and keep its value", async () => {
         const harness = renderSearching();
 

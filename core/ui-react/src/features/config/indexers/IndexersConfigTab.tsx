@@ -14,6 +14,7 @@ import {ApiTransport} from "../../../api/transport";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {ConfigFieldset} from "../components";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {AddIndexerDialog} from "./AddIndexerDialog";
 import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
 import {IndexerDialog} from "./IndexerDialog";
@@ -91,18 +92,8 @@ function recheckTargets(
     ).length;
 }
 
-type Editing = {
-    /** The picked preset's prose, shown while composing a new entry. */
-    info?: readonly string[];
-    /** `null` while a *new* indexer is being composed. */
-    index: number | null;
-    /**
-     * The transaction's identity, compared against `transactionRef` before a
-     * commit is applied. See `openTransaction`.
-     */
-    token: number;
-    value: IndexerValues;
-};
+/** The picked preset's prose, shown while composing a new entry. */
+type EditingInfo = {info?: readonly string[]};
 
 /**
  * `F-CONFIG-INDEXERS`: the Indexers configuration tab — legacy's `indexers`
@@ -155,7 +146,19 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
     const categoryOptions = indexerCategoryOptions(
         useWatch<ConfigValues>({name: "categoriesConfig.categories"}),
     );
-    const [editing, setEditing] = useState<Editing | null>(null);
+    /**
+     * The modal transaction (`useListEditorTransaction`): `null` when no
+     * dialog is open, and otherwise the index being edited (`null` while a
+     * *new* indexer is composed), the transaction's identity, the draft and
+     * the picked preset's prose. A check that only resolves after its dialog
+     * was cancelled, deleted, or replaced carries a stale token and its commit
+     * is dropped instead of applied. The dialog itself is blocked while a
+     * check runs; the token is the second line of defence, because `onSubmit`
+     * is captured by an async closure that outlives the render — and the state
+     * it closes over — that started the check.
+     */
+    const transaction = useListEditorTransaction<IndexerValues, EditingInfo>();
+    const editing = transaction.editing;
     const [adding, setAdding] = useState(false);
     /** The bulk recheck in flight, or `null`; drives the shared progress dialog. */
     const [recheck, setRecheck] = useState<ActiveRecheck | null>(null);
@@ -163,37 +166,10 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         null,
     );
     /**
-     * The identity of the transaction that is currently allowed to commit.
-     * Every open and every close bumps it, so a check that only resolves after
-     * its dialog was cancelled, deleted, or replaced carries a stale token and
-     * its commit is dropped instead of applied. The dialog itself is blocked
-     * while a check runs; this is the second line of defence, because
-     * `onSubmit` is captured by an async closure that outlives the render — and
-     * the state it closes over — that started the check.
-     */
-    const transactionRef = useRef(0);
-    /**
      * The same idea for the bulk capability check: the identity of the check
      * whose outcome is currently allowed to be applied. See `ActiveRecheck`.
      */
     const capsCheckRef = useRef(0);
-
-    const openTransaction = useCallback(
-        (
-            index: number | null,
-            value: IndexerValues,
-            info?: readonly string[],
-        ) => {
-            transactionRef.current += 1;
-            setEditing({index, info, token: transactionRef.current, value});
-        },
-        [],
-    );
-
-    const closeTransaction = () => {
-        transactionRef.current += 1;
-        setEditing(null);
-    };
 
     const write = (next: IndexerValues[]) =>
         setValue(INDEXERS_PATH, next as never, {shouldDirty: true});
@@ -203,6 +179,13 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         () => indexersOf(getValues(INDEXERS_PATH)),
         [getValues],
     );
+
+    /**
+     * Hoisted out of the transaction so `editEntry` can depend on it directly.
+     * `useListEditorTransaction` returns it with a stable identity for exactly
+     * this reason.
+     */
+    const openTransaction = transaction.open;
 
     /**
      * `IndexerTable`'s edit callback. Stable on purpose: it is handed down to
@@ -218,27 +201,33 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         [currentEntries, openTransaction],
     );
 
+    // No `entryCount`, deliberately: this tab never guarded a vanished index,
+    // and adding the guard would turn a commit over a removed row from an
+    // unchanged-array write into a silent no-op (FM-191).
     const commit = (
         token: number,
         index: number | null,
         entry: IndexerValues,
     ) => {
-        if (token !== transactionRef.current) {
-            return;
-        }
-        const current = currentEntries();
-        write(
-            index === null
-                ? [...current, entry]
-                : // Replaced, not merged: the entry is a complete clone of the
-                  // one being edited, and a failed capability check *removes*
-                  // `supportedSearchIds`/`supportedSearchTypes` so the next
-                  // Submit checks again. Merging would resurrect them.
-                  current.map((existing, entryIndex) =>
-                      entryIndex === index ? entry : existing,
-                  ),
-        );
-        closeTransaction();
+        transaction.commit({
+            token,
+            index,
+            write: () => {
+                const current = currentEntries();
+                write(
+                    index === null
+                        ? [...current, entry]
+                        : // Replaced, not merged: the entry is a complete
+                          // clone of the one being edited, and a failed
+                          // capability check *removes* `supportedSearchIds`/
+                          // `supportedSearchTypes` so the next Submit checks
+                          // again. Merging would resurrect them.
+                          current.map((existing, entryIndex) =>
+                              entryIndex === index ? entry : existing,
+                          ),
+                );
+            },
+        });
     };
 
     /**
@@ -255,7 +244,7 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                 (_entry, entryIndex) => entryIndex !== index,
             ),
         );
-        closeTransaction();
+        transaction.close();
     };
 
     /**
@@ -272,7 +261,7 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
             });
             return;
         }
-        openTransaction(null, newIndexerDraft(preset), preset.info);
+        transaction.open(null, newIndexerDraft(preset), {info: preset.info});
     };
 
     // ---- the bulk capability recheck ---------------------------------------
@@ -494,7 +483,7 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                     info={editing.info}
                     initialValue={editing.value}
                     isNew={editing.index === null}
-                    onCancel={closeTransaction}
+                    onCancel={transaction.close}
                     onDelete={
                         editing.index === null
                             ? undefined

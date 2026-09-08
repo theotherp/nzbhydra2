@@ -1719,6 +1719,22 @@ second cycle; the first cycle's only required finding was the handoff missing fr
 finding, not corrected: the hook memoises dimensions on the in-flight filter values, so the download and notification
 routes rebuild the dimension array per keystroke (behaviourally inert). Candidate for a future quickfix.
 
+FM-191 (One List-Editor Transaction Hook) put the modal-transaction lifecycle FM-064 established and four later tasks
+hand-copied into `features/config/useListEditorTransaction.ts`: the `{index, token, value}` state, the monotonic token
+bumped on every open, close and delete, `open`/`close`/`cancel`/`invalidate`/`isCurrent`, and a guarded commit that
+drops a resolved transaction whose token is stale or, where the call site opts in with `entryCount`, whose index no
+longer exists. All six sections use it and none holds a `transactionRef`; the array write stayed at each call site, so
+`IndexersConfigTab` still replaces wholesale while the other five spread-merge (ADR-0003), and `CategoriesTable`'s
+ADR-0034 placeholder add and rollbacks are unchanged. `CustomMappingsSection`, which had no token, gains the guard —
+the one deliberate behaviour change — with a red-first case proving a delete under the open dialog used to write the
+edited mapping onto the row that shifted into its index. Five section suites byte-unchanged. `AuthUsersSection` and
+`IndexersConfigTab` captured on isolated base and after trees in list, empty and dialog-open states, 18/18
+byte-identical, re-derived by the reviewer. Vitest 2047/2047, the six real-backend config specs 55/55. Second of the
+2026-09-08 code-quality batch (backlog item 22). Passed 2026-09-09 first cycle; minor findings, not corrected:
+`FEATURES.yaml` `tests:` lists do not yet name the new hook test (nor FM-190's), `CustomMappingsSection` reads
+`entryCount` from the render-captured watch array where the others read `getValues()`, and FM-192/FM-193 still carry
+the stale "focus-affordances red at base" line. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -1746,11 +1762,10 @@ None.
 
 ## Upcoming
 
-- FM-191: One list-editor transaction hook — the six config list editors' open/draft/commit lifecycle and staleness
-  guard behind `useListEditorTransaction`, each caller keeping its own array write. Second of the 2026-09-08
-  code-quality batch (FM-190 done); FM-192 (splitting `SearchResults.tsx` into four components and two hooks) and
-  FM-193 (the settings index becomes the source of labels and help) are planned packets with no dependency between
-  them, promoted one at a time. Backlog items 22, 23, 29.
+- FM-192: Split `SearchResults.tsx` at its verified seams into `ResultsAlerts`, `ResultsToolbar`, `ResultsTable` and
+  `ResultsPagingFooter` plus `useResultDisplayChoices` and `useResultSelection`, rendered output proven byte-identical.
+  Third of the 2026-09-08 code-quality batch (FM-190 and FM-191 done); FM-193 (the settings index becomes the source of
+  labels and help) is a planned packet with no dependency on it. Backlog items 23, 29.
 
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).

@@ -21,6 +21,7 @@ import {useFormContext, useWatch} from "react-hook-form";
 import type {ConfigValues} from "../../../api/config/schema";
 import {useDialogs} from "../../../components/dialogs/dialogs";
 import {settingTestId} from "../components";
+import {useListEditorTransaction} from "../useListEditorTransaction";
 import {
     defaultUser,
     userLegend,
@@ -45,14 +46,6 @@ const USERS_TABLE_TEST_ID = "config-users-table";
  */
 const USERS_ANCHOR_TEST_ID = `config-repeat-${settingTestId(USERS_PATH)}`;
 const ADD_LABEL = "Add new user";
-
-type Editing = {
-    /** `null` while a *new* user is being composed. */
-    index: number | null;
-    /** The transaction's identity, compared before a commit is applied. */
-    token: number;
-    value: UserAuthConfigValues;
-};
 
 /**
  * `F-CONFIG-AUTH`'s Users section (FM-105): legacy's stack of `users` repeat
@@ -86,15 +79,16 @@ export function AuthUsersSection() {
     const dialogs = useDialogs();
     const authType = useWatch<ConfigValues>({name: "auth.authType"});
     const entries = usersOf(useWatch<ConfigValues>({name: USERS_PATH}));
-    const [editing, setEditing] = useState<Editing | null>(null);
     /**
-     * The identity of the transaction currently allowed to commit. Every open
-     * and every close bumps it, so a commit from a dialog that was already
-     * cancelled or replaced is dropped. `UserDialog` has no asynchronous step
-     * of its own, but `onSubmit` is still a closure captured by a render that a
-     * later one may have replaced.
+     * The modal transaction: `null` when no dialog is open, and otherwise the
+     * index being edited (`null` while a *new* user is composed), the
+     * transaction's identity and the draft. `UserDialog` has no asynchronous
+     * step of its own, but `onSubmit` is still a closure captured by a render
+     * that a later one may have replaced, which is what the token guards
+     * against -- see `useListEditorTransaction`.
      */
-    const transactionRef = useRef(0);
+    const transaction = useListEditorTransaction<UserAuthConfigValues>();
+    const editing = transaction.editing;
     const tableRef = useRef<HTMLTableElement | null>(null);
     /**
      * Bumped to ask for focus on the table. §5's repeat-section focus note,
@@ -121,19 +115,6 @@ export function AuthUsersSection() {
         return () => clearTimeout(handle);
     }, [focusRequest]);
 
-    const openTransaction = (
-        index: number | null,
-        value: UserAuthConfigValues,
-    ) => {
-        transactionRef.current += 1;
-        setEditing({index, token: transactionRef.current, value});
-    };
-
-    const closeTransaction = () => {
-        transactionRef.current += 1;
-        setEditing(null);
-    };
-
     const write = (next: UserAuthConfigValues[]) =>
         setValue(USERS_PATH, next as never, {shouldDirty: true});
 
@@ -145,32 +126,33 @@ export function AuthUsersSection() {
         index: number | null,
         entry: UserAuthConfigValues,
     ) => {
-        if (token !== transactionRef.current) {
-            return;
-        }
         const current = currentEntries();
-        if (index !== null && index >= current.length) {
-            // The row this transaction was opened over is gone. Committing
-            // would either write this user's fields onto whoever shifted into
-            // its index or silently drop them; both are worse than discarding
-            // an edit the admin can redo. (`remove` invalidates the token, so
-            // this is the second line of defence, not the first.)
-            closeTransaction();
-            return;
+        // `entryCount` asks for the vanished-row guard: committing over a row
+        // that is gone would either write this user's fields onto whoever
+        // shifted into its index or silently drop them, and both are worse
+        // than discarding an edit the admin can redo.
+        const committed = transaction.commit({
+            token,
+            index,
+            entryCount: current.length,
+            write: () =>
+                write(
+                    index === null
+                        ? [...current, entry]
+                        : current.map((existing, entryIndex) =>
+                              // Spread over the stored entry rather than
+                              // replacing it: `ConfigWeb.setConfig` writes the
+                              // whole file back, so a key this UI has no
+                              // control for must survive an edit (ADR-0003).
+                              entryIndex === index
+                                  ? {...existing, ...entry}
+                                  : existing,
+                          ),
+                ),
+        });
+        if (committed) {
+            setFocusRequest((request) => request + 1);
         }
-        write(
-            index === null
-                ? [...current, entry]
-                : current.map((existing, entryIndex) =>
-                      // Spread over the stored entry rather than replacing it:
-                      // `ConfigWeb.setConfig` writes the whole file back, so a
-                      // key this UI has no control for must survive an edit
-                      // (ADR-0003).
-                      entryIndex === index ? {...existing, ...entry} : existing,
-                  ),
-        );
-        closeTransaction();
-        setFocusRequest((request) => request + 1);
     };
 
     const remove = async (index: number) => {
@@ -189,7 +171,7 @@ export function AuthUsersSection() {
         }
         // A removal shifts every following index, so no transaction opened
         // before it may still commit by the index it captured.
-        transactionRef.current += 1;
+        transaction.invalidate();
         write(
             currentEntries().filter(
                 (_entry, entryIndex) => entryIndex !== index,
@@ -261,7 +243,7 @@ export function AuthUsersSection() {
                                 index={index}
                                 onDelete={() => void remove(index)}
                                 onEdit={() =>
-                                    openTransaction(
+                                    transaction.open(
                                         index,
                                         structuredClone(entry),
                                     )
@@ -273,7 +255,7 @@ export function AuthUsersSection() {
             </TableContainer>
             <Button
                 data-testid="config-users-add"
-                onClick={() => openTransaction(null, defaultUser())}
+                onClick={() => transaction.open(null, defaultUser())}
                 sx={{mt: 2}}
                 type="button"
                 variant="outlined"
@@ -286,7 +268,7 @@ export function AuthUsersSection() {
                     existingUsernames={otherUsernames(entries, editing.index)}
                     initialValue={editing.value}
                     isNew={editing.index === null}
-                    onCancel={closeTransaction}
+                    onCancel={transaction.close}
                     onSubmit={(entry) =>
                         commit(editing.token, editing.index, entry)
                     }
