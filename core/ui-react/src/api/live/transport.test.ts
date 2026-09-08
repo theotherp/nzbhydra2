@@ -77,7 +77,7 @@ function subscribe(
     transport: SockJsStompLiveTransport,
     destination: string,
     handlers: {
-        onMessage?: () => void;
+        onMessage?: (message: unknown) => void;
         onUnavailable?: () => void;
         onReady?: () => void;
     } = {},
@@ -101,19 +101,44 @@ describe("SockJsStompLiveTransport", () => {
 
     afterEach(() => vi.useRealTimers());
 
-    it("should time out, deactivate, and reject before subscribing", async () => {
+    it("should survive a first connect that is only slow and deliver messages once it arrives", async () => {
         const unavailable = vi.fn();
+        const messages: unknown[] = [];
+        const frames = new Map<string, (frame: {body: string}) => void>();
         const subscription = subscribe(
             new SockJsStompLiveTransport(nextBaseUrl(), 10),
-            "/topic/searchState",
-            {onUnavailable: unavailable},
+            "/topic/downloaderStatus",
+            {
+                onMessage: (message) => messages.push(message),
+                onUnavailable: unavailable,
+            },
         );
-        const rejection = expect(subscription).rejects.toThrow("timed out");
+        const client = onlyClient();
+        client.subscribe.mockImplementation((destination, callback) => {
+            frames.set(destination, callback);
+            return {
+                unsubscribe: vi.fn(() => stomp.unsubscribed.push(destination)),
+            };
+        });
 
+        // The ready timeout passes before the connect: a cold load behind a
+        // slow proxy, or a backend still warming up. It is a notice, not a
+        // verdict -- the client keeps reconnecting on its own.
         await vi.advanceTimersByTimeAsync(10);
-        await rejection;
-        expect(onlyClient().deactivate).toHaveBeenCalledWith({force: true});
-        expect(unavailable).not.toHaveBeenCalled();
+        expect(unavailable).toHaveBeenCalledWith(
+            expect.objectContaining({
+                message: "Live progress connection timed out",
+            }),
+        );
+        expect(client.deactivate).not.toHaveBeenCalled();
+
+        connect(client);
+        const opened = await subscription;
+        frames.get("/topic/downloaderStatus")?.({body: '{"rate":1}'});
+        expect(messages).toEqual([{rate: 1}]);
+
+        opened.close();
+        expect(stomp.unsubscribed).toEqual(["/topic/downloaderStatus"]);
     });
 
     it("should reject connection errors and report message parser failures", async () => {
@@ -310,9 +335,10 @@ describe("SockJsStompLiveTransport", () => {
         expect(socket).toHaveBeenCalledTimes(2);
     });
 
-    it("should time out only the subscription that waited, and short-circuit the wait once connected", async () => {
+    it("should notify only the subscription that waited past its timeout, and short-circuit the wait once connected", async () => {
         const baseUrl = nextBaseUrl();
         const unavailable = vi.fn();
+        const otherUnavailable = vi.fn();
         const timingOut = subscribe(
             new SockJsStompLiveTransport(baseUrl, 10),
             "/topic/searchState",
@@ -321,22 +347,24 @@ describe("SockJsStompLiveTransport", () => {
         const permanent = subscribe(
             new SockJsStompLiveTransport(baseUrl, 10_000),
             "/topic/notifications",
+            {onUnavailable: otherUnavailable},
         );
         const client = onlyClient();
-        const rejection = expect(timingOut).rejects.toThrow("timed out");
         await vi.advanceTimersByTimeAsync(10);
-        await rejection;
 
-        // Only the timed-out subscription is gone: the connection stays, and
-        // the other subscription still resolves when the connect arrives.
+        // Only the subscription whose timeout elapsed hears about it; nothing
+        // is torn down, and both are subscribed when the connect arrives.
+        expect(unavailable).toHaveBeenCalledOnce();
+        expect(otherUnavailable).not.toHaveBeenCalled();
         expect(client.deactivate).not.toHaveBeenCalled();
         expect(stomp.unsubscribed).toEqual([]);
         connect(client);
+        await expect(timingOut).resolves.toBeDefined();
         await expect(permanent).resolves.toBeDefined();
         expect(client.subscribe.mock.calls.map(([sent]) => sent)).toEqual([
+            "/topic/searchState",
             "/topic/notifications",
         ]);
-        expect(unavailable).not.toHaveBeenCalled();
 
         // A subscriber joining the established connection is attached at once
         // and never waits for a connect that already happened.

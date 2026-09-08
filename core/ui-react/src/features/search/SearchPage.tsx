@@ -345,6 +345,14 @@ export function SearchPage({
                         return;
                     }
                     submission.subscription = subscribed;
+                    // A connect that only arrived late (past the transport's
+                    // ready timeout, which reports itself through
+                    // `onUnavailable`) still carries live progress from here
+                    // on, so the warning it raised must not outlive it and end
+                    // up next to a finished search's results.
+                    if (activeSubmission.current === submission) {
+                        setLiveUnavailable(undefined);
+                    }
                 },
                 (error: unknown) => {
                     if (activeSubmission.current === submission) {

@@ -233,10 +233,27 @@ export class SockJsStompLiveTransport implements LiveTransport {
             // Only a subscriber that still has to wait for a connect can time
             // out; one joining an established connection is attached
             // synchronously by `add` below.
+            //
+            // A first connect that is merely slow — a cold load behind a
+            // proxy, or a backend still warming up — must not be fatal. The
+            // subscriber therefore stays attached and the client keeps
+            // reconnecting on its own, so `onConnect` still attaches and
+            // resolves whenever the connection comes up; only the notice goes
+            // out now, which is what the search page turns into its "live
+            // progress unavailable" warning. Removing the subscriber here
+            // instead would deactivate the shared client when it was the only
+            // one, leaving the footer and the toasts dead for the whole visit.
+            // The trade is that the promise now stays pending when neither a
+            // connect nor a socket/STOMP error ever arrives, so every consumer
+            // closes on a late resolve (all of them already do) rather than
+            // relying on a rejection to release the subscription.
             const timeout = connection.connected
                 ? undefined
                 : window.setTimeout(() => {
-                      fail(new Error("Live progress connection timed out"));
+                      if (settled || closed) return;
+                      onUnavailable(
+                          new Error("Live progress connection timed out"),
+                      );
                   }, this.readyTimeoutMs);
             connection.add(subscriber);
         });

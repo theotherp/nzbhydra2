@@ -1693,6 +1693,49 @@ describe("SearchPage", () => {
         );
     });
 
+    it("should withdraw the live progress warning once a late connection comes up", async () => {
+        // The transport's ready timeout now reports itself through
+        // `onUnavailable` and keeps waiting, so a connect that merely arrived
+        // late still delivers progress -- and must take its own warning back
+        // rather than leave it standing next to the finished results.
+        let unavailable: (error: Error) => void = () => undefined;
+        let ready: (subscription: {close: () => void}) => void = () =>
+            undefined;
+        const liveTransport: SearchLiveTransport = {
+            subscribeSearchState: vi.fn(
+                (_id, _onProgress, onUnavailable: (error: Error) => void) => {
+                    unavailable = onUnavailable;
+                    return new Promise<{close: () => void}>((resolve) => {
+                        ready = resolve;
+                    });
+                },
+            ),
+        };
+        const fetchImplementation = vi
+            .fn()
+            .mockImplementation(() => new Promise<Response>(() => undefined));
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={liveTransport}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByTestId("search-status-modal");
+        act(() => unavailable(new Error("Live progress connection timed out")));
+        expect(
+            await screen.findByText("Live progress connection timed out"),
+        ).toBeVisible();
+
+        act(() => ready({close: vi.fn()}));
+        await waitFor(() =>
+            expect(
+                screen.queryByText("Live progress connection timed out"),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
     // The page hands the workspace an `autocomplete` callback that the
     // workspace's 300ms debounce effect depends on. Rebuilt per render -- and
     // this page re-renders on every live progress tick -- it restarted the
