@@ -1,6 +1,7 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,6 +23,7 @@ import org.nzbhydra.notifications.DownloadNotificationEvent;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
+import org.nzbhydra.tasks.HydraTask;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -45,13 +47,16 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -80,7 +85,12 @@ public class FileHandler {
     @Autowired
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
 
-    private final Set<File> temporaryZipFiles = new HashSet<>();
+    private static final int MAX_REDIRECTS = 5;
+    private static final long ONE_HOUR = 1000L * 60 * 60;
+    /**
+     * Zip files created for downloads by the user. Cleaned up regularly so the set can't grow without bounds.
+     */
+    private final Set<File> temporaryZipFiles = ConcurrentHashMap.newKeySet();
     @Autowired
     private TempFileProvider tempFileProvider;
 
@@ -232,20 +242,39 @@ public class FileHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        final NzbsDownload nzbsDownload = getNzbsAsFiles(guids, tempDirectory);
-        if (nzbsDownload.fileToTitle.isEmpty()) {
-            return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), Collections.emptyList(), nzbsDownload.invalidIds);
-        }
-        File zip = createZip(nzbsDownload.fileToTitle);
-        zip.deleteOnExit();
-        logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.fileToTitle.size(), guids.size());
-        if (nzbsDownload.tempDirectory != null) {
-            nzbsDownload.tempDirectory.toFile().delete();
-        }
+        try {
+            final NzbsDownload nzbsDownload = getNzbsAsFiles(guids, tempDirectory);
+            if (nzbsDownload.fileToTitle.isEmpty()) {
+                return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), Collections.emptyList(), nzbsDownload.invalidIds);
+            }
+            File zip = createZip(nzbsDownload.fileToTitle);
+            zip.deleteOnExit();
+            logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.fileToTitle.size(), guids.size());
 
-        int failedCount = nzbsDownload.failedIds.size() + nzbsDownload.invalidIds.size();
-        String message = failedCount == 0 ? "All files successfully retrieved" : failedCount + " files could not be loaded";
-        return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds, nzbsDownload.invalidIds);
+            int failedCount = nzbsDownload.failedIds.size() + nzbsDownload.invalidIds.size();
+            String message = failedCount == 0 ? "All files successfully retrieved" : failedCount + " files could not be loaded";
+            return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds, nzbsDownload.invalidIds);
+        } finally {
+            deleteRecursively(tempDirectory);
+        }
+    }
+
+    private static void deleteRecursively(Path directory) {
+        if (directory == null || !Files.exists(directory)) {
+            return;
+        }
+        try (Stream<Path> stream = Files.walk(directory)) {
+            stream.sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (IOException e) {
+                            logger.warn("Unable to delete temporary file {}: {}", path, e.getMessage());
+                        }
+                    });
+        } catch (IOException e) {
+            logger.warn("Unable to delete temporary directory {}: {}", directory, e.getMessage());
+        }
     }
 
     private NzbsDownload getNzbsAsFiles(Collection<String> guids, Path targetDirectory) {
@@ -315,21 +344,52 @@ public class FileHandler {
         temporaryZipFiles.add(tempFile);
         tempFile.deleteOnExit();
         logger.debug("Using temp file {}", tempFile.getAbsolutePath());
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        // Use UTF-8 so ZIP entry names with non-ASCII characters are encoded correctly
-        ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8);
-        Set<String> usedEntryNames = new HashSet<>();
+        try (FileOutputStream fos = new FileOutputStream(tempFile);
+             //Use UTF-8 so ZIP entry names with non-ASCII characters are encoded correctly
+             ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8)) {
+            Set<String> usedEntryNames = new HashSet<>();
 
-        for (Map.Entry<File, String> entry : fileToTitle.entrySet()) {
-            String uniqueEntryName = getUniqueEntryName(entry.getValue(), usedEntryNames);
-            addToZipFile(entry.getKey(), uniqueEntryName, zos);
-            entry.getKey().delete();
+            for (Map.Entry<File, String> entry : fileToTitle.entrySet()) {
+                String uniqueEntryName = getUniqueEntryName(entry.getValue(), usedEntryNames);
+                addToZipFile(entry.getKey(), uniqueEntryName, zos);
+                entry.getKey().delete();
+            }
+        } catch (Exception e) {
+            logger.error("Error while creating ZIP file {}. Deleting it", tempFile.getAbsolutePath(), e);
+            deleteTemporaryZipFile(tempFile);
+            for (File file : fileToTitle.keySet()) {
+                file.delete();
+            }
+            throw e;
         }
 
-        zos.close();
-        fos.close();
-
         return tempFile;
+    }
+
+    private void deleteTemporaryZipFile(File tempFile) {
+        if (tempFile.exists() && !tempFile.delete()) {
+            //Keep the entry so that the regular cleanup will try again later
+            logger.warn("Unable to delete temporary ZIP file {}", tempFile.getAbsolutePath());
+            return;
+        }
+        temporaryZipFiles.remove(tempFile);
+    }
+
+    /**
+     * Deletes temporary ZIP files which are old enough that they surely have been downloaded already (or never will be)
+     * and removes all entries for files which don't exist anymore.
+     */
+    @HydraTask(configId = "deleteTemporaryZipFiles", name = "Delete temporary ZIP files", interval = ONE_HOUR)
+    public void cleanUpTemporaryZipFiles() {
+        final long deleteOlderThan = System.currentTimeMillis() - ONE_HOUR;
+        for (File temporaryZipFile : new ArrayList<>(temporaryZipFiles)) {
+            if (!temporaryZipFile.exists()) {
+                temporaryZipFiles.remove(temporaryZipFile);
+            } else if (temporaryZipFile.lastModified() < deleteOlderThan) {
+                logger.debug("Deleting old temporary ZIP file {}", temporaryZipFile.getAbsolutePath());
+                deleteTemporaryZipFile(temporaryZipFile);
+            }
+        }
     }
 
     private static String getUniqueEntryName(String entryName, Set<String> usedEntryNames) {
@@ -351,18 +411,18 @@ public class FileHandler {
 
     private static void addToZipFile(File file, String entryName, ZipOutputStream zos) throws IOException {
         logger.debug("Adding file {} to temporary ZIP file", file.getAbsolutePath());
-        FileInputStream fis = new FileInputStream(file);
-        ZipEntry zipEntry = new ZipEntry(entryName);
-        zos.putNextEntry(zipEntry);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            ZipEntry zipEntry = new ZipEntry(entryName);
+            zos.putNextEntry(zipEntry);
 
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zos.write(bytes, 0, length);
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+
+            zos.closeEntry();
         }
-
-        zos.closeEntry();
-        fis.close();
     }
 
 
@@ -386,10 +446,14 @@ public class FileHandler {
 
 
     protected byte[] downloadFile(SearchResultEntity result) throws MagnetLinkRedirectException, DownloadException {
+        return downloadFile(result, result.getLink(), 0);
+    }
+
+    private byte[] downloadFile(SearchResultEntity result, String url, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         IndexerConfig indexerConfig = indexerByName.getConfig();
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        Request.Builder requestBuilder = new Request.Builder().url(result.getLink());
+        Request.Builder requestBuilder = new Request.Builder().url(url);
 
         indexerConfig.getUserAgent()
                 .or(() -> configProvider.getBaseConfig().getSearching().getUserAgent())
@@ -400,35 +464,44 @@ public class FileHandler {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isRedirect()) {
-                return handleRedirect(result, response);
+                return handleRedirect(result, url, response, redirectCount);
             }
             if (!response.isSuccessful()) {
-                throw new DownloadException(result.getLink(), response.code(), response.message());
+                throw new DownloadException(url, response.code(), response.message());
             }
             ResponseBody body = response.body();
             if (body == null) {
-                throw new DownloadException(result.getLink(), 500, "NZB downloaded is empty");
+                throw new DownloadException(url, 500, "NZB downloaded is empty");
             }
             return body.bytes();
         } catch (IOException e) {
             logger.error("Error downloading result", e);
-            throw new DownloadException(result.getLink(), 500, "IOException: " + e.getMessage());
+            throw new DownloadException(url, 500, "IOException: " + e.getMessage());
         }
     }
 
-    private byte[] handleRedirect(SearchResultEntity result, Response response) throws MagnetLinkRedirectException, DownloadException {
+    private byte[] handleRedirect(SearchResultEntity result, String url, Response response, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
         String locationHeader = response.header("location");
         if (locationHeader != null) {
             if (locationHeader.startsWith("magnet:")) {
                 throw new MagnetLinkRedirectException(locationHeader);
-            } else {
-                logger.info("Redirecting to URL {}", locationHeader);
-                result.setLink(locationHeader);
-                return downloadFile(result);
             }
+            if (redirectCount >= MAX_REDIRECTS) {
+                logger.error("Aborting download from URL {} after {} redirects, the last one to {}", result.getLink(), redirectCount, locationHeader);
+                throw new DownloadException(url, 508, "More than " + MAX_REDIRECTS + " redirects followed while downloading from URL " + result.getLink());
+            }
+            //The location header may be relative, resolve it against the requested URL
+            final HttpUrl redirectTarget = response.request().url().resolve(locationHeader);
+            if (redirectTarget == null) {
+                logger.error("Unable to handle redirect from URL {} to invalid target {}", url, locationHeader);
+                throw new DownloadException(url, 500, "Invalid redirect target " + locationHeader + " for URL " + url);
+            }
+            logger.info("Redirecting to URL {}", redirectTarget);
+            //Don't write the redirect target to the (possibly managed) entity, it would be silently persisted
+            return downloadFile(result, redirectTarget.toString(), redirectCount + 1);
         }
-        logger.error("Unable to handle redirect from URL {} because no redirection location is set", result.getLink());
-        throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
+        logger.error("Unable to handle redirect from URL {} because no redirection location is set", url);
+        throw new DownloadException(url, 500, "Unable to handle redirect from URL " + url + " because no redirection location is set");
     }
 
     public SaveOrSendResultsResponse saveNzbToBlackhole(Set<String> searchResultIds) {
