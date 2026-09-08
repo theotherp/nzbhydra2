@@ -185,6 +185,19 @@ public class IndexerChecker {
                 });
     }
 
+    /**
+     * Sets the hit and download limits reported by the indexer, if any, and if not already configured.
+     */
+    static void applyLimits(IndexerConfig indexerConfig, Integer apiMax, Integer downloadsMax) {
+        logger.info("Determined an api hit limit of {} and a download limit of {}", apiMax, downloadsMax);
+        if (indexerConfig.getHitLimit().isEmpty() && apiMax != null && apiMax > -1) {
+            indexerConfig.setHitLimit(apiMax);
+        }
+        if (indexerConfig.getDownloadLimit().isEmpty() && downloadsMax != null && downloadsMax > -1) {
+            indexerConfig.setDownloadLimit(downloadsMax);
+        }
+    }
+
     static UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(indexerConfig.getHost()).path(indexerConfig.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
@@ -274,15 +287,7 @@ public class IndexerChecker {
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(SingleCheckCapsResponse::getIdType).collect(Collectors.toSet());
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
-            if (responseWithLimits.isPresent()) {
-                logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
-                if (indexerConfig.getHitLimit().isEmpty() && responseWithLimits.get().apiMax > -1) {
-                    indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
-                }
-                if (indexerConfig.getDownloadLimit().isEmpty() && responseWithLimits.get().downloadsMax > -1) {
-                    indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
-                }
-            }
+            responseWithLimits.ifPresent(response -> applyLimits(indexerConfig, response.getApiMax(), response.getDownloadsMax()));
             if (supportedIds.isEmpty()) {
                 logger.info("Indexer {} does not support searching by any IDs", indexerConfig.getName());
             } else {
