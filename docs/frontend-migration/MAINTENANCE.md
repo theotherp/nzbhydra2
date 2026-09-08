@@ -3567,3 +3567,11 @@ their text and relative order are unchanged.
 - **Gates:** as above, same run.
 - **Commit:** `ff8ddcf64`
 - **Note:** backlog item 13b. Recorded, not fixed: two `waitFor(... toMatchObject({filterModel: {}}))` waits in the new tests are tautological; the real assertions follow them.
+
+### 2026-09-08 — Take per-scroll-frame work out of the results table
+
+- **Why not a packet:** performance change inside an existing feature with no behaviour, contract, `data-testid` or rendering change; the emitted stylesheet was dumped before and after (five states, 2145 rules) by the implementer and independently by the reviewer and is byte-identical. Implemented by a subagent, reviewed by a fresh subagent.
+- **Paths:** `core/ui-react/src/features/search/results/{SearchResults,ResultRow,RefineSidebar}.tsx`, `resultTable.ts`, and their tests.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2002 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances`, `knip` green; `git diff --check -- core/ui-react` clean. No Playwright run: rendering is proven unchanged by the stylesheet dump.
+- **Commit:** `92a90787d`
+- **Note:** backlog item 15 of `docs/code-quality-backlog-2026-09.md`. `activeFilterCount` now takes `(filters, defaults)`; `RefineSidebar` receives `filterDefaults` alongside `results`, an invariant the types cannot enforce (documented in its JSDoc). Recorded, not fixed: `titleCellSx(nestingLevel)` in `ResultRow` still allocates per title cell; one call-count assertion in `resultTable.test.ts` pins an exact number of key reads and may need loosening if the bucketing ever reads more.
