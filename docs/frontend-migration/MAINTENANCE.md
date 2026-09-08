@@ -3551,3 +3551,19 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 1990 tests), `build`, `check:api`, `validate:migration` green; `git diff --check` clean. `npm install` skipped (lockfile unchanged).
 - **Commit:** `ef23626b3`
 - **Note:** backlog item 7 of `docs/code-quality-backlog-2026-09.md`. Accepted trade-off: a promoted queued dialog hard-cuts to the next one without an exit transition, so the fresh mount re-establishes focus and re-announces.
+
+### 2026-09-08 — Keep a persisted config save when the follow-up read fails
+
+- **Why not a packet:** single-hook bugfix with a regression test red before the fix; no contract, `data-testid` or persisted-data change. Implemented by a subagent, reviewed by two fresh subagents.
+- **Paths:** `core/ui-react/src/features/config/useConfigSave.ts`, `core/ui-react/src/features/config/ConfigShell.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 1994 tests), `build`, `check:api`, `validate:migration` green; `git diff --check -- core/ui-react` clean. `npm install` skipped.
+- **Commit:** `6ad6b1b7f`
+- **Note:** backlog item 13b of `docs/code-quality-backlog-2026-09.md`. The path only fires when the server answers a save without `newConfig`, which the current backend never does; it exists for an old backend or a response that did not parse.
+
+### 2026-09-08 — Honour a user-agent filter arriving in the search history URL
+
+- **Why not a packet:** single-page bugfix with regression tests red before the fix; the URL shape, the request shape and all `data-testid`s are unchanged. Implemented by a subagent, reviewed by three fresh subagents (the first found the mount-only initialiser missed in-app arrivals, the second found the field unmounting mid-edit; both fixed).
+- **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.tsx`, `core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx`
+- **Gates:** as above, same run.
+- **Commit:** `ff8ddcf64`
+- **Note:** backlog item 13b. Recorded, not fixed: two `waitFor(... toMatchObject({filterModel: {}}))` waits in the new tests are tautological; the real assertions follow them.
