@@ -3543,3 +3543,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 1986 tests), `build`, `check:api`, `validate:migration` green; `git diff --check` clean. `npm install` skipped (lockfile unchanged).
 - **Commit:** `ad1cc8152`
 - **Note:** backlog item 6 of `docs/code-quality-backlog-2026-09.md`. The ready timeout used to fail and detach the waiting subscriber, which for the only subscriber deactivated the shared STOMP client, so the downloader footer and notification toasts stayed dead for the visit after a cold load behind a slow proxy. Now the timeout only reports unavailability, the subscriber stays attached, and the promise resolves on the eventual connect. Recorded, not fixed: a connect arriving after the HTTP search already finished leaves that search's warning standing (defensible, that search got no progress); an unsettled subscribe against a socket that never connects and never errors stays pending with its subscriber attached (bounded per search, self-heals on connect); `onWebSocketError`/`onStompError` still fail an unsettled first subscriber outright.
+
+### 2026-09-08 — Queue confirmations in DialogProvider instead of dropping the pending one
+
+- **Why not a packet:** single-component bugfix with regression tests red before the fix; no contract, `data-testid`, or persisted-data change. Implemented by a subagent, reviewed three times by fresh subagents (the first two passed with minors that were fixed: in-place swap of a promoted dialog under a still-focused button, and an unmount guard that misbehaved under StrictMode replay).
+- **Paths:** `core/ui-react/src/components/dialogs/DialogProvider.tsx`, `core/ui-react/src/components/dialogs/DialogProvider.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 1990 tests), `build`, `check:api`, `validate:migration` green; `git diff --check` clean. `npm install` skipped (lockfile unchanged).
+- **Commit:** `ef23626b3`
+- **Note:** backlog item 7 of `docs/code-quality-backlog-2026-09.md`. Accepted trade-off: a promoted queued dialog hard-cuts to the next one without an exit transition, so the fresh mount re-establishes focus and re-announces.
