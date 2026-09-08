@@ -1724,6 +1724,10 @@ None.
 
 ## Upcoming
 
+- FM-189: Persist The Two Grouping Display Options Across Searches — the owner's 2026-09-08 report that "Group TV
+  episodes" comes back checked after every search; `groupEpisodes`/`groupTorrentAndUsenet` join the
+  `hydra.search-results.table` payload (ADR-0054) with legacy's true/false defaults. Planned, dependency-ready, next.
+
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).
 
