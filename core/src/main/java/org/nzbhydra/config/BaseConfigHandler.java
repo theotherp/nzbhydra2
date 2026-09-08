@@ -101,15 +101,18 @@ public class BaseConfigHandler {
 
     public void save(boolean saveInstantly) {
         saveLock.lock();
-        if (saveInstantly) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Saving instantly");
-            configReaderWriter.save(baseConfig);
-            toSave = null;
-        } else {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Delaying save");
-            toSave = baseConfig;
+        try {
+            if (saveInstantly) {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Saving instantly");
+                configReaderWriter.save(baseConfig);
+                toSave = null;
+            } else {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Delaying save");
+                toSave = baseConfig;
+            }
+        } finally {
+            saveLock.unlock();
         }
-        saveLock.unlock();
     }
 
     public void load() throws IOException {
@@ -120,17 +123,22 @@ public class BaseConfigHandler {
     @PreDestroy
     public void onShutdown() {
         saveToSave();
-        delayedSaveTimerTask.cancel();
+        if (delayedSaveTimerTask != null) {
+            delayedSaveTimerTask.cancel();
+        }
     }
 
     private void saveToSave() {
         saveLock.lock();
-        if (toSave != null) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Executing delayed save");
-            configReaderWriter.save(toSave);
-            toSave = null;
+        try {
+            if (toSave != null) {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Executing delayed save");
+                configReaderWriter.save(toSave);
+                toSave = null;
+            }
+        } finally {
+            saveLock.unlock();
         }
-        saveLock.unlock();
     }
 
 
