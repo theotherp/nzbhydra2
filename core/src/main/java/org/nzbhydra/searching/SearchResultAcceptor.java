@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,8 +47,6 @@ public class SearchResultAcceptor {
 
     private static final Pattern TITLE_PATTERN = Pattern.compile("(\\w[\\w']*\\w|\\w)");
 
-    private Map<String, List<String>> titleWordCache = new ConcurrentHashMap<>();
-
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
 
@@ -60,7 +57,8 @@ public class SearchResultAcceptor {
     public AcceptorResult acceptResults(List<SearchResultItem> items, SearchRequest searchRequest, IndexerConfig indexerConfig) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        titleWordCache = new HashMap<>();
+        //Cache of title words per acceptance run; must stay local so concurrent runs on this singleton don't interfere
+        Map<String, List<String>> titleWordCache = new HashMap<>();
         List<SearchResultItem> acceptedResults = new ArrayList<>();
         Multiset<String> reasonsForRejection = HashMultiset.create();
         HashSet<SearchResultItem> itemsWithoutActualDuplicates = new HashSet<>(items);
@@ -105,11 +103,11 @@ public class SearchResultAcceptor {
             }
 
             //Forbidden words from query
-            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item, "internal data")) {
+            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item, "internal data", titleWordCache)) {
                 continue;
             }
 
-            if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item, "internal data")) {
+            if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item, "internal data", titleWordCache)) {
                 continue;
             }
 
@@ -120,10 +118,10 @@ public class SearchResultAcceptor {
                 if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
-                if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item, "searching config")) {
+                if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item, "searching config", titleWordCache)) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item, "searching config")) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item, "searching config", titleWordCache)) {
                     continue;
                 }
             }
@@ -134,10 +132,10 @@ public class SearchResultAcceptor {
                 if (!checkRegexes(item, reasonsForRejection, item.getCategory().getRequiredRegex().orElse(null), item.getCategory().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
-                if (!checkRequiredWords(reasonsForRejection, item.getCategory().getRequiredWords(), item, "category")) {
+                if (!checkRequiredWords(reasonsForRejection, item.getCategory().getRequiredWords(), item, "category", titleWordCache)) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, item.getCategory().getForbiddenWords(), item, "category")) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, item.getCategory().getForbiddenWords(), item, "category", titleWordCache)) {
                     continue;
                 }
             }
@@ -288,9 +286,9 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item, String source) {
+    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item, String source, Map<String, List<String>> titleWordCache) {
         if (!requiredWords.isEmpty()) {
-            List<String> titleWords = getTitleWords(item);
+            List<String> titleWords = getTitleWords(item, titleWordCache);
             boolean allPresent = true;
             for (String requiredWord : requiredWords) {
                 if (requiredWord.contains(".") || requiredWord.contains("-")) {
@@ -315,7 +313,7 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    private synchronized List<String> getTitleWords(SearchResultItem item) {
+    private static List<String> getTitleWords(SearchResultItem item, Map<String, List<String>> titleWordCache) {
         return titleWordCache.computeIfAbsent(item.getTitle(), s -> {
             List<String> titleWords = new ArrayList<>();
             Matcher matcher = TITLE_PATTERN.matcher(item.getTitle().toLowerCase());
@@ -327,7 +325,7 @@ public class SearchResultAcceptor {
 
     }
 
-    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item, String source) {
+    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item, String source, Map<String, List<String>> titleWordCache) {
         for (String forbiddenWord : forbiddenWords) {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
@@ -336,7 +334,7 @@ public class SearchResultAcceptor {
                     return false;
                 }
             } else {
-                List<String> titleWords = getTitleWords(item);
+                List<String> titleWords = getTitleWords(item, titleWordCache);
                 Optional<String> found = titleWords.stream().filter(x -> x.equalsIgnoreCase(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
                     logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word (from {}) in title word {} (full title: {})", source, found.get(), item.getTitle());

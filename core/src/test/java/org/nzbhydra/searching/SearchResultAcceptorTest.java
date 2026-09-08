@@ -18,6 +18,7 @@ import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.Newznab;
@@ -28,14 +29,25 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -77,40 +89,40 @@ public class SearchResultAcceptorTest {
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc.def");
         item.setTitle("abc.def ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc.DEF ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc.dEF ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abcdef ghi");
-        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc def ghi");
-        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
 
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc");
         item.setTitle("abc def ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc.def ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abcdef ghi");
-        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("def ghi");
-        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
 
         internalData.getRequiredWords().add("def");
         item.setTitle("abc def ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc de");
-        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsRejected(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
 
         internalData.getRequiredWords().add("def");
         item.setTitle("abc def ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc DEF ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
         item.setTitle("abc dEF ghi");
-        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertIsAccepted(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null, new HashMap<>()));
     }
 
 
@@ -119,44 +131,44 @@ public class SearchResultAcceptorTest {
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc.def");
         item.setTitle("abc.def ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("abc.DEF ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("abc.dEF ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
 
         item.setTitle("abcdef ghi");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("abc def ghi");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
 
 
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc");
         item.setTitle("abc def ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("ABC def ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("aBC def ghi");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("abcdef ghi");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("def ghi");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
 
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add(".DV.");
         item.setTitle("Hello.DV.1080p");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("Hello.DVD.1080p");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
 
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("DV");
         item.setTitle("Hello.DV.1080p");
-        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsRejected(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
         item.setTitle("Hello.DVD.1080p");
-        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertIsAccepted(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null, new HashMap<>()));
     }
 
     @Test
@@ -571,6 +583,149 @@ public class SearchResultAcceptorTest {
             logbackLogger.setLevel(null);
             logAppender.stop();
         }
+    }
+
+    /**
+     * The title word cache used while checking required/forbidden words used to be a field of this singleton bean,
+     * replaced with a plain {@link HashMap} by every acceptance run and guarded by a {@code synchronized} method. Two
+     * searches running at the same time therefore shared one map and serialized on one instance-wide lock. The cache is
+     * now local to a single {@code acceptResults} call, so a run that is parked while looking at a title must not hold
+     * up a concurrent run, and both must produce exactly what they produce sequentially.
+     */
+    @Test
+    void shouldNotLetConcurrentAcceptanceRunsInterfere() throws Exception {
+        when(searchingConfig.getApplyRestrictions()).thenReturn(SearchSourceRestriction.NONE);
+        when(searchingConfig.getLanguagesToKeep()).thenReturn(Collections.emptyList());
+        when(indexerConfig.getEnabledCategories()).thenReturn(Collections.emptyList());
+        when(indexerConfig.getName()).thenReturn("indexer");
+        Indexer<?> indexerMock = mock(Newznab.class);
+        when(indexerMock.getConfig()).thenReturn(indexerConfig);
+
+        CountDownLatch parkedInTitleLookup = new CountDownLatch(1);
+        CountDownLatch otherRunFinished = new CountDownLatch(1);
+        GatedTitleItem gatedItem = new GatedTitleItem(parkedInTitleLookup, otherRunFinished);
+        List<SearchResultItem> itemsAlpha = buildItemsForConcurrencyTest(indexerMock, gatedItem);
+        List<SearchResultItem> itemsBeta = buildItemsForConcurrencyTest(indexerMock, null);
+        SearchRequest requestAlpha = buildRequestRequiring("alpha");
+        SearchRequest requestBeta = buildRequestRequiring("beta");
+
+        List<String> expectedAlpha = acceptedTitles(testee.acceptResults(itemsAlpha, requestAlpha, indexerConfig));
+        List<String> expectedBeta = acceptedTitles(testee.acceptResults(itemsBeta, requestBeta, indexerConfig));
+        assertEquals(11, expectedAlpha.size());
+        assertEquals(10, expectedBeta.size());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        try {
+            gatedItem.arm();
+            Future<List<String>> alphaFuture = executorService.submit(() -> acceptedTitles(testee.acceptResults(itemsAlpha, requestAlpha, indexerConfig)));
+            assertTrue(parkedInTitleLookup.await(10, TimeUnit.SECONDS), "First run never reached the title word lookup");
+
+            Future<List<String>> betaFuture = executorService.submit(() -> {
+                List<String> titles = acceptedTitles(testee.acceptResults(itemsBeta, requestBeta, indexerConfig));
+                otherRunFinished.countDown();
+                return titles;
+            });
+
+            List<String> betaTitles;
+            try {
+                //Red before the fix: the second run blocks on the instance-wide lock held by the parked first run
+                betaTitles = betaFuture.get(5, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                throw new AssertionError("Second acceptance run was blocked by the first run's title word lookup", e);
+            }
+            assertEquals(expectedBeta, betaTitles, "Concurrent run changed the second run's results");
+            assertEquals(expectedAlpha, alphaFuture.get(10, TimeUnit.SECONDS), "Concurrent run changed the first run's results");
+        } finally {
+            otherRunFinished.countDown();
+            executorService.shutdownNow();
+        }
+    }
+
+    /**
+     * Parks the thread once while its title is read, to let a second acceptance run overtake it.
+     * {@code equals}/{@code hashCode} are identity based so that only the title word lookup trips the gate.
+     */
+    private static class GatedTitleItem extends SearchResultItem {
+
+        private final CountDownLatch parked;
+        private final CountDownLatch release;
+        private final AtomicBoolean armed = new AtomicBoolean(false);
+
+        GatedTitleItem(CountDownLatch parked, CountDownLatch release) {
+            this.parked = parked;
+            this.release = release;
+        }
+
+        void arm() {
+            armed.set(true);
+        }
+
+        @Override
+        public String getTitle() {
+            //Bean validation reads the title as well, so only the acceptor's title word lookup may trip the gate
+            if (isCalledFromTitleWordLookup() && armed.compareAndSet(true, false)) {
+                parked.countDown();
+                try {
+                    release.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return super.getTitle();
+        }
+
+        private boolean isCalledFromTitleWordLookup() {
+            return StackWalker.getInstance().walk(frames -> frames.anyMatch(frame -> frame.getClassName().equals(SearchResultAcceptor.class.getName())
+                && frame.getMethodName().startsWith("getTitleWords")));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+    }
+
+    private List<SearchResultItem> buildItemsForConcurrencyTest(Indexer<?> indexerMock, GatedTitleItem gatedItem) {
+        Category concurrencyCategory = new Category("concurrency");
+        concurrencyCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+        concurrencyCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+        List<SearchResultItem> items = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            items.add(fillItem(new SearchResultItem(), (i % 2 == 0 ? "alpha" : "beta") + " some shared title " + i, indexerMock, concurrencyCategory));
+        }
+        if (gatedItem != null) {
+            items.add(fillItem(gatedItem, "alpha gated title", indexerMock, concurrencyCategory));
+        }
+        return items;
+    }
+
+    private SearchResultItem fillItem(SearchResultItem searchResultItem, String title, Indexer<?> indexerMock, Category itemCategory) {
+        searchResultItem.setTitle(title);
+        searchResultItem.setCategory(itemCategory);
+        searchResultItem.setIndexer(indexerMock);
+        searchResultItem.setIndexerGuid(title);
+        searchResultItem.setIndexerScore(0);
+        searchResultItem.setLink("http://127.0.0.1/" + title);
+        searchResultItem.setPubDate(Instant.now().minus(1, ChronoUnit.DAYS));
+        return searchResultItem;
+    }
+
+    private SearchRequest buildRequestRequiring(String requiredWord) {
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        request.getInternalData().getRequiredWords().add(requiredWord);
+        return request;
+    }
+
+    private List<String> acceptedTitles(SearchResultAcceptor.AcceptorResult acceptorResult) {
+        return acceptorResult.getAcceptedResults().stream()
+            .map(SearchResultItem::getTitle)
+            .sorted()
+            .toList();
     }
 
     private void assertIsAccepted(boolean value) {
