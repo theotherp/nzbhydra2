@@ -1707,6 +1707,18 @@ second search before the reload half, and the `F-SEARCH-SORT-FILTER` persisted-k
 `results.spec.ts` 37/37. Passed 2026-09-08 first cycle; the reviewer's two findings were both `STATUS.md` bookkeeping
 (a mangled FM-188 bullet, a link to a never-committed handoff file), corrected by the coordinator.
 
+FM-190 (One History Page Hook And Frame) took the three history routes' duplicated plumbing — the filter-criteria
+destructure, page/size/sort out of the URL, the filter-model-keyed query with `keepPreviousData` and the threaded abort
+signal, the sort and page-size handlers — behind `useHistoryPage`, and the header/status/alerts/scroller/pager frame
+behind `HistoryPageFrame`, with every route-specific string, id and `minWidth` stated at the call site. Pages shrank
+1025→880, 540→392 and 423→276 lines; the three page test files are byte-unchanged. Rendered output proven identical by
+FM-136's method: 3 routes × 4 states, `outerHTML`, body and emotion sheet, 36/36 byte-identical on isolated base and
+after trees, re-run independently by the reviewer. Vitest 2037/2037, real-backend search-history, notification-history
+and downloads specs 22/22. First of the 2026-09-08 code-quality batch (backlog item 21). Passed 2026-09-08 on the
+second cycle; the first cycle's only required finding was the handoff missing from the packet, written by a fixer. Minor
+finding, not corrected: the hook memoises dimensions on the in-flight filter values, so the download and notification
+routes rebuild the dimension array per keystroke (behaviourally inert). Candidate for a future quickfix.
+
 ## Active
 
 None.
@@ -1734,11 +1746,11 @@ None.
 
 ## Upcoming
 
-- FM-190: One history page hook and frame — the three history routes' duplicated plumbing (criteria, query, sort/size
-  handlers, page frame) behind a shared hook and frame component, rendered output proven byte-identical. First of the
-  2026-09-08 code-quality batch; FM-191 (one `useListEditorTransaction` for the config list editors), FM-192 (splitting
-  `SearchResults.tsx` into four components and two hooks) and FM-193 (the settings index becomes the source of labels
-  and help) are planned packets with no dependency between them, promoted one at a time. Backlog items 21, 22, 23, 29.
+- FM-191: One list-editor transaction hook — the six config list editors' open/draft/commit lifecycle and staleness
+  guard behind `useListEditorTransaction`, each caller keeping its own array write. Second of the 2026-09-08
+  code-quality batch (FM-190 done); FM-192 (splitting `SearchResults.tsx` into four components and two hooks) and
+  FM-193 (the settings index becomes the source of labels and help) are planned packets with no dependency between
+  them, promoted one at a time. Backlog items 22, 23, 29.
 
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).

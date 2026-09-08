@@ -3,7 +3,6 @@ import {
     Alert,
     Button,
     Checkbox,
-    CircularProgress,
     Dialog,
     DialogContent,
     DialogTitle,
@@ -19,13 +18,9 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {
-    keepPreviousData,
-    useQuery,
-    type UseQueryResult,
-} from "@tanstack/react-query";
-import {useNavigate, useSearch} from "@tanstack/react-router";
-import {useMemo, useState, type ReactNode} from "react";
+import {useQuery, type UseQueryResult} from "@tanstack/react-query";
+import {useNavigate} from "@tanstack/react-router";
+import {useCallback, useState, type ReactNode} from "react";
 
 import {
     getSearchHistory,
@@ -37,9 +32,8 @@ import {
 } from "../../../api/searchHistory";
 import {redirectRidUrl} from "../../../api/savedSearches";
 import {
-    activeHistoryFilterCount,
-    historyFilterModel,
     isHistoryFilterActive,
+    type HistoryFilterValues,
 } from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
@@ -47,25 +41,18 @@ import {
     CopyValueButton,
     rowRevealsCopyButtonsOnHover,
 } from "../../../components/CopyValueButton";
-import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {recentSearchCriteria} from "../../search/history/recentSearchCriteria";
 import {historyUserInfoType} from "../shared/historyUserInfoType";
 import {Loading} from "../shared/Loading";
-import {type HistoryPageSize} from "../shared/pageSize";
-import {HistoryPager} from "./HistoryPager";
+import {HistoryPageFrame} from "./HistoryPageFrame";
 import {
     defaultHistorySort,
-    historyPageSizeFromSearch,
-    historySortFromSearch,
-    withHistoryPageSize,
-    withHistorySort,
     SEARCH_HISTORY_SORT_COLUMNS,
 } from "./historySearchParams";
-import {HistoryRefineLayout} from "./refine/HistoryRefineSurface";
-import {useHistoryFilterCriteria} from "./useHistoryFilterCriteria";
+import {useHistoryPage} from "./useHistoryPage";
 
 const defaultSort: SearchHistorySort = defaultHistorySort("time");
 
@@ -85,24 +72,8 @@ export function SearchHistoryPage({
     transport: ApiTransport;
 }) {
     const navigate = useNavigate({from: "/stats/searches"});
-    const search = useSearch({strict: false});
     const safeConfig = useSafeConfig(bootstrap);
     const catalog = createCategoryCatalog(safeConfig);
-    const {
-        clearFilters,
-        commitFilters,
-        criteria,
-        goToPage,
-        updateFilter,
-        values,
-    } = useHistoryFilterCriteria();
-    const page = criteria.page;
-    const pageSize = historyPageSizeFromSearch(search);
-    const sort = historySortFromSearch(
-        search,
-        SEARCH_HISTORY_SORT_COLUMNS,
-        defaultSort,
-    );
     // A display toggle with an invariant attached: the user-agent dimension
     // only exists while the column is shown, so a user-agent filter must never
     // be able to sit in the URL with the column hidden -- it would then be in
@@ -117,9 +88,52 @@ export function SearchHistoryPage({
     // holding it open until the commit lands...
     const [userAgentColumnChosen, setUserAgentColumnChosen] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
+    const userInfoType = historyUserInfoType(safeConfig);
+    // The dimensions are a function of those same in-flight filter values,
+    // which is why `useHistoryPage` asks for them that way: the user-agent
+    // dimension has to appear and disappear with the column.
+    const buildDimensions = useCallback(
+        (values: HistoryFilterValues) =>
+            searchHistoryDimensions({
+                categoryNames: catalog.categories.map(
+                    (category) => category.name,
+                ),
+                showUserAgent:
+                    userAgentColumnChosen || userAgentFilterActive(values),
+                showsUsername: showsUsername(userInfoType),
+                showsIp: showsIp(userInfoType),
+            }),
+        [catalog.categories, userAgentColumnChosen, userInfoType],
+    );
+    const {
+        activeFilterCount,
+        changePageSize,
+        clearFilters,
+        dimensions,
+        goToPage,
+        page,
+        pageSize,
+        query,
+        sort,
+        updateFilter,
+        updateSort,
+        values,
+    } = useHistoryPage({
+        defaultSort,
+        dimensions: buildDimensions,
+        fetchPage: (request, signal) =>
+            getSearchHistory(transport, request, signal),
+        queryKeyPrefix: "search-history",
+        sortColumns: SEARCH_HISTORY_SORT_COLUMNS,
+    });
+    const details = useQuery({
+        queryKey: ["search-history-details", detailsId],
+        queryFn: ({signal}) =>
+            getSearchHistoryDetails(transport, detailsId!, signal),
+        enabled: detailsId !== undefined,
+    });
     const userAgentFilter = values["user-agent"];
-    const userAgentFilterActive =
-        userAgentFilter !== undefined && isHistoryFilterActive(userAgentFilter);
+    const userAgentActive = userAgentFilterActive(values);
     // ...and the arrival *latches* the checkbox on, adjusting state during
     // render rather than in an effect. Without the latch the column would be
     // held open by the filter value alone, so clearing the field to retype it
@@ -128,78 +142,11 @@ export function SearchHistoryPage({
     // clears the filter in the same handler, so the two never disagree.
     const [wasUserAgentFilterActive, setWasUserAgentFilterActive] =
         useState(false);
-    if (userAgentFilterActive !== wasUserAgentFilterActive) {
-        setWasUserAgentFilterActive(userAgentFilterActive);
-        if (userAgentFilterActive) setUserAgentColumnChosen(true);
+    if (userAgentActive !== wasUserAgentFilterActive) {
+        setWasUserAgentFilterActive(userAgentActive);
+        if (userAgentActive) setUserAgentColumnChosen(true);
     }
-    const showUserAgent = userAgentColumnChosen || userAgentFilterActive;
-    const userInfoType = historyUserInfoType(safeConfig);
-    const dimensions = useMemo(
-        () =>
-            searchHistoryDimensions({
-                categoryNames: catalog.categories.map(
-                    (category) => category.name,
-                ),
-                showUserAgent,
-                showsUsername: showsUsername(userInfoType),
-                showsIp: showsIp(userInfoType),
-            }),
-        [catalog.categories, showUserAgent, userInfoType],
-    );
-    const query = useQuery({
-        /*
-         * Keyed on the *filter model* rather than on the raw values: the model
-         * is what actually reaches the server, and it already collapses empty
-         * text, whitespace, an unparseable bound and a `boolean` left on "all"
-         * to no filter at all. Keying on the values gave every one of those a
-         * key of its own, so typing a character and deleting it -- or clearing
-         * a field a different way than it was filled -- missed the cache and
-         * re-read a byte-identical page.
-         */
-        queryKey: [
-            "search-history",
-            criteria.page,
-            pageSize,
-            historyFilterModel(dimensions, criteria.values),
-            sort,
-        ],
-        queryFn: ({signal}) =>
-            getSearchHistory(
-                transport,
-                {
-                    dimensions,
-                    values: criteria.values,
-                    page: criteria.page,
-                    limit: pageSize,
-                    sort,
-                },
-                signal,
-            ),
-        // A committed filter edit is a new query key; keeping the previous
-        // page's data rendered (rather than falling back to the first-load
-        // spinner) keeps the refine surface mounted and its focus intact -- see
-        // `DownloadHistoryPage` for the same reasoning.
-        placeholderData: keepPreviousData,
-    });
-    const details = useQuery({
-        queryKey: ["search-history-details", detailsId],
-        queryFn: ({signal}) =>
-            getSearchHistoryDetails(transport, detailsId!, signal),
-        enabled: detailsId !== undefined,
-    });
-    // One navigation, not two: `commitFilters` carries the new ordering into
-    // the same history entry as the filter edit it flushes, so a sort click
-    // during typing is a single Back step and the sort change cannot resolve
-    // against a search the filter commit has not written yet.
-    const updateSort = (column: SearchHistorySort["column"]) => {
-        const next: SearchHistorySort = {
-            column,
-            sortMode: sort.column === column && sort.sortMode === 1 ? 2 : 1,
-        };
-        commitFilters((previous) =>
-            withHistorySort(previous, next, defaultSort),
-        );
-    };
+    const showUserAgent = userAgentColumnChosen || userAgentActive;
     const repeat = (entry: SearchHistoryEntry) => {
         void navigate({
             to: "/",
@@ -209,430 +156,338 @@ export function SearchHistoryPage({
             },
         });
     };
-    /*
-     * A page-size change is one navigation, not two: `commitFilters` already
-     * returns to page 1 (and flushes any filter edit still waiting), and
-     * `withHistoryPageSize` writes the new size into the same search object.
-     * Committing them separately would ask the server for a page that the new
-     * size may have put past the end.
-     */
-    const changePageSize = (size: HistoryPageSize) => {
-        commitFilters((previous) => withHistoryPageSize(previous, size));
-    };
-    if (query.isPending) {
-        return <Loading message="Loading search history…" />;
-    }
-    if (query.isError) {
-        return <Alert severity="error">Unable to load search history.</Alert>;
-    }
-    const {entries: searches, totalElements, malformedCount} = query.data;
-    const detailsEntry = searches.find((entry) => entry.id === detailsId);
-    const activeFilterCount = activeHistoryFilterCount(
-        dimensions,
-        criteria.values,
+    const detailsEntry = query.data?.entries.find(
+        (entry) => entry.id === detailsId,
     );
     return (
-        // The route's single filter surface (ADR-0009/ADR-0046): every
-        // dimension legacy offered per table column lives in the refine
-        // surface this layout docks beside the table, and the table header
-        // carries sorting only. "Show user agents" stays outside the
-        // dimension model -- it is a table-display toggle, not a filter, so
-        // it stays in the heading row with "Refresh".
-        <HistoryRefineLayout
+        <HistoryPageFrame
+            activeFilterCount={activeFilterCount}
             dimensions={dimensions}
-            onChange={updateFilter}
-            onClearAll={clearFilters}
+            entryNoun={{one: "search", many: "searches"}}
+            footer={
+                <DetailsDialog
+                    // FM-174: the row no longer prints the entry's identifiers, so
+                    // the dialog carries the search's full criteria -- the row's
+                    // own entry, since the details endpoint answers with the
+                    // request metadata and the indexer searches only.
+                    criteria={
+                        detailsEntry
+                            ? searchCriteria(detailsEntry, {
+                                  includeIdentifiers: true,
+                              })
+                            : []
+                    }
+                    dereferer={safeConfig?.dereferer}
+                    details={details}
+                    onClose={() => setDetailsId(undefined)}
+                    transport={transport}
+                />
+            }
+            // "Show user agents" stays outside the dimension model -- it is a
+            // table-display toggle, not a filter, so it stays in the heading
+            // row with "Refresh".
+            headerActions={
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={showUserAgent}
+                            onChange={(event) => {
+                                setUserAgentColumnChosen(event.target.checked);
+                                // Hiding the column drops any filter the
+                                // column carried -- but only if it carried
+                                // one. Writing an empty value
+                                // unconditionally made a toggle of a
+                                // column nobody had filtered into a filter
+                                // edit, and so into a re-read of a
+                                // byte-identical page.
+                                if (
+                                    !event.target.checked &&
+                                    userAgentFilter !== undefined &&
+                                    isHistoryFilterActive(userAgentFilter)
+                                ) {
+                                    updateFilter("user-agent", {
+                                        kind: "freetext",
+                                        text: "",
+                                    });
+                                }
+                            }}
+                        />
+                    }
+                    label="Show user agents"
+                />
+            }
+            heading="Search history"
+            messages={{
+                empty: "No search history entries match the current filters.",
+                error: "Unable to load search history.",
+                loading: "Loading search history…",
+                malformed: (count) =>
+                    `${count} malformed search history entries were not displayed.`,
+                refreshing: "Refreshing search history…",
+            }}
+            // Until FM-126 this table had no scrolling ancestor at all, so at
+            // 390x844 it pushed the *document* to 687px against a 390px
+            // viewport -- the ADR-0029 violation ADR-0038 asked to confirm
+            // here first. The container above owns the scroll now, and this is
+            // its floor: re-measured for FM-174's column set at 390x844, laid
+            // out so no cell has to break a word, the six always-on columns
+            // need 752px (Time 157, Query 123, Category 106, Additional
+            // parameters 142, Source 96, Details 128) -- Time grew because the
+            // timestamp no longer wraps and now carries a 24-hour clock, and
+            // Details because it holds the repeat icon beside the button,
+            // while Query lost "Repeat" and Additional parameters lost the
+            // identifier lines. 760 keeps them at that intrinsic width; the
+            // three optional columns (user agent, username, IP) simply make
+            // the table wider than the floor and scroll with it.
+            minWidth={760}
+            onClearFilters={clearFilters}
+            onFilterChange={updateFilter}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            page={page}
+            pageSize={pageSize}
+            query={query}
+            tableLabel="Search history"
+            testIds={{
+                pageStatus: "search-history-page-status",
+                refresh: "search-history-refresh",
+                scroller: "search-history-scroller",
+                table: "search-history-table",
+            }}
             values={values}
         >
-            <Stack
-                direction="row"
-                spacing={1}
-                sx={{
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Typography component="h1" variant="h4">
-                    Search history
-                </Typography>
-                <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{
-                        alignItems: "center",
-                    }}
-                >
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={showUserAgent}
-                                onChange={(event) => {
-                                    setUserAgentColumnChosen(
-                                        event.target.checked,
-                                    );
-                                    // Hiding the column drops any filter the
-                                    // column carried -- but only if it carried
-                                    // one. Writing an empty value
-                                    // unconditionally made a toggle of a
-                                    // column nobody had filtered into a filter
-                                    // edit, and so into a re-read of a
-                                    // byte-identical page.
-                                    if (
-                                        !event.target.checked &&
-                                        userAgentFilter !== undefined &&
-                                        isHistoryFilterActive(userAgentFilter)
-                                    ) {
-                                        updateFilter("user-agent", {
-                                            kind: "freetext",
-                                            text: "",
-                                        });
-                                    }
-                                }}
+            {(searches) => (
+                <>
+                    <TableHead>
+                        <TableRow>
+                            <SortHeader
+                                label="Time"
+                                column="time"
+                                sort={sort}
+                                onSort={updateSort}
                             />
-                        }
-                        label="Show user agents"
-                    />
-                    <Button
-                        data-testid="search-history-refresh"
-                        onClick={() => void query.refetch()}
-                        variant="outlined"
-                    >
-                        Refresh
-                    </Button>
-                </Stack>
-            </Stack>
-            {/*
-             * A constant-height slot, not a conditional row: this indicator
-             * used to be inserted above the table when a fetch started and
-             * removed when it ended, moving everything below it by its own
-             * height twice per refresh -- under the reader's pointer, and for
-             * every filter commit. The row is always in the layout (and is
-             * always the same live region); only its contents come and go.
-             */}
-            <Stack
-                direction="row"
-                role="status"
-                spacing={1}
-                sx={{minHeight: (theme) => theme.spacing(3)}}
-            >
-                {query.isFetching && (
-                    <>
-                        <CircularProgress size={20} />
-                        <Typography>Refreshing search history…</Typography>
-                    </>
-                )}
-            </Stack>
-            {malformedCount > 0 && (
-                <Alert severity="warning">
-                    {malformedCount} malformed search history entries were not
-                    displayed.
-                </Alert>
-            )}
-            {searches.length === 0 ? (
-                <Alert
-                    // A filtered-empty page is otherwise a dead end: the
-                    // filters that emptied it are in the refine surface, which
-                    // is collapsed on narrow viewports. Offered only when
-                    // there is something to clear -- an empty history has no
-                    // filters to blame.
-                    action={
-                        activeFilterCount > 0 ? (
-                            <Button
-                                color="inherit"
-                                onClick={clearFilters}
-                                size="small"
+                            <SortHeader
+                                label="Query"
+                                column="query"
+                                sort={sort}
+                                onSort={updateSort}
+                            />
+                            {showUserAgent && (
+                                <SortHeader
+                                    label="User agent"
+                                    column="user_agent"
+                                    sort={sort}
+                                    onSort={updateSort}
+                                />
+                            )}
+                            <SortHeader
+                                label="Category"
+                                column="category_name"
+                                sort={sort}
+                                onSort={updateSort}
+                            />
+                            <TableCell>Additional parameters</TableCell>
+                            <SortHeader
+                                label="Source"
+                                column="source"
+                                sort={sort}
+                                onSort={updateSort}
+                            />
+                            {showsUsername(userInfoType) && (
+                                <SortHeader
+                                    label="Username"
+                                    column="username"
+                                    sort={sort}
+                                    onSort={updateSort}
+                                />
+                            )}
+                            {showsIp(userInfoType) && (
+                                <SortHeader
+                                    label="IP address"
+                                    column="ip"
+                                    sort={sort}
+                                    onSort={updateSort}
+                                />
+                            )}
+                            <TableCell>Details</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {searches.map((entry) => (
+                            <TableRow
+                                data-testid="search-history-row"
+                                key={entry.id}
+                                sx={rowRevealsCopyButtonsOnHover}
                             >
-                                Clear filters
-                            </Button>
-                        ) : undefined
-                    }
-                    severity="info"
-                >
-                    No search history entries match the current filters.
-                </Alert>
-            ) : (
-                <TableScrollAffordance scrollerTestId="search-history-scroller">
-                    <Table
-                        aria-label="Search history"
-                        data-testid="search-history-table"
-                        // Until FM-126 this table had no scrolling ancestor at
-                        // all, so at 390x844 it pushed the *document* to 687px
-                        // against a 390px viewport -- the ADR-0029 violation
-                        // ADR-0038 asked to confirm here first. The container
-                        // above owns the scroll now, and this is its floor:
-                        // re-measured for FM-174's column set at 390x844, laid
-                        // out so no cell has to break a word, the six
-                        // always-on columns need 752px (Time 157, Query 123,
-                        // Category 106, Additional parameters 142, Source 96,
-                        // Details 128) -- Time grew because the timestamp no
-                        // longer wraps and now carries a 24-hour clock, and
-                        // Details because it holds the repeat icon beside the
-                        // button, while Query lost "Repeat" and Additional
-                        // parameters lost the identifier lines. 760 keeps them
-                        // at that intrinsic width; the three optional columns
-                        // (user agent, username, IP) simply make the table
-                        // wider than the floor and scroll with it.
-                        sx={{minWidth: 760}}
-                    >
-                        <TableHead>
-                            <TableRow>
-                                <SortHeader
-                                    label="Time"
-                                    column="time"
-                                    sort={sort}
-                                    onSort={updateSort}
-                                />
-                                <SortHeader
-                                    label="Query"
-                                    column="query"
-                                    sort={sort}
-                                    onSort={updateSort}
-                                />
+                                {/*
+                                 * FM-174: the whole timestamp on one line.
+                                 * "Sep 10, 2026, 23:00" is the widest
+                                 * value this column ever holds and it has
+                                 * to fit; left to wrap it broke after the
+                                 * year in the narrow layout.
+                                 */}
+                                <TableCell sx={{whiteSpace: "nowrap"}}>
+                                    {formatServerDateTime(
+                                        entry.time,
+                                        bootstrap.serverTimeZone,
+                                    )}
+                                </TableCell>
+                                {/*
+                                 * FM-174 (owner request 2026-09-01): the
+                                 * query and its copy affordance, nothing
+                                 * else. "Repeat" was a text button in this
+                                 * cell and pushed every query off the
+                                 * column a reader scans; it is an icon
+                                 * beside "Details" now.
+                                 */}
+                                <TableCell>
+                                    <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        sx={{
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <span>{queryLabel(entry)}</span>
+                                        <CopyValueButton
+                                            label="query"
+                                            testId="search-history-copy-query"
+                                            value={copyableQueryValue(entry)}
+                                        />
+                                    </Stack>
+                                </TableCell>
                                 {showUserAgent && (
-                                    <SortHeader
-                                        label="User agent"
-                                        column="user_agent"
-                                        sort={sort}
-                                        onSort={updateSort}
-                                    />
+                                    <TableCell>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            sx={{
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                            }}
+                                        >
+                                            <span>{entry.userAgent ?? ""}</span>
+                                            <CopyValueButton
+                                                label="user agent"
+                                                testId="search-history-copy-user-agent"
+                                                value={entry.userAgent}
+                                            />
+                                        </Stack>
+                                    </TableCell>
                                 )}
-                                <SortHeader
-                                    label="Category"
-                                    column="category_name"
-                                    sort={sort}
-                                    onSort={updateSort}
-                                />
-                                <TableCell>Additional parameters</TableCell>
-                                <SortHeader
-                                    label="Source"
-                                    column="source"
-                                    sort={sort}
-                                    onSort={updateSort}
-                                />
+                                <TableCell data-testid="search-history-category">
+                                    {entry.categoryName}
+                                </TableCell>
+                                <TableCell>
+                                    <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        sx={{
+                                            alignItems: "flex-start",
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <Criteria
+                                            dereferer={safeConfig?.dereferer}
+                                            items={searchCriteria(entry, {
+                                                includeIdentifiers: false,
+                                            })}
+                                            transport={transport}
+                                        />
+                                        <CopyValueButton
+                                            label="additional parameters"
+                                            testId="search-history-copy-additional-parameters"
+                                            value={additionalParametersText(
+                                                entry,
+                                            )}
+                                        />
+                                    </Stack>
+                                </TableCell>
+                                <TableCell data-testid="search-history-source">
+                                    {entry.source === "API"
+                                        ? "API"
+                                        : "Internal"}
+                                </TableCell>
                                 {showsUsername(userInfoType) && (
-                                    <SortHeader
-                                        label="Username"
-                                        column="username"
-                                        sort={sort}
-                                        onSort={updateSort}
-                                    />
+                                    <TableCell>
+                                        {entry.username ?? ""}
+                                    </TableCell>
                                 )}
                                 {showsIp(userInfoType) && (
-                                    <SortHeader
-                                        label="IP address"
-                                        column="ip"
-                                        sort={sort}
-                                        onSort={updateSort}
-                                    />
+                                    <TableCell>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            sx={{
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                            }}
+                                        >
+                                            <span>{entry.ip ?? ""}</span>
+                                            <CopyValueButton
+                                                label="IP address"
+                                                testId="search-history-copy-ip"
+                                                value={entry.ip}
+                                            />
+                                        </Stack>
+                                    </TableCell>
                                 )}
-                                <TableCell>Details</TableCell>
+                                <TableCell>
+                                    <Stack
+                                        direction="row"
+                                        spacing={0.5}
+                                        sx={{
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Button
+                                            data-testid="search-history-details"
+                                            onClick={() =>
+                                                setDetailsId(entry.id)
+                                            }
+                                        >
+                                            Details
+                                        </Button>
+                                        {/*
+                                         * Legacy parity
+                                         * (search-history.html:76-92):
+                                         * repeating a search was an
+                                         * icon-only control carrying this
+                                         * sentence as its tooltip. It is
+                                         * the row's secondary action, so
+                                         * it sits beside "Details" rather
+                                         * than in the Query column.
+                                         */}
+                                        <Tooltip title={REPEAT_SEARCH_HINT}>
+                                            <IconButton
+                                                aria-label={REPEAT_SEARCH_HINT}
+                                                data-testid="search-history-repeat"
+                                                onClick={() => repeat(entry)}
+                                                size="small"
+                                            >
+                                                <RepeatIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Stack>
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {searches.map((entry) => (
-                                <TableRow
-                                    data-testid="search-history-row"
-                                    key={entry.id}
-                                    sx={rowRevealsCopyButtonsOnHover}
-                                >
-                                    {/*
-                                     * FM-174: the whole timestamp on one line.
-                                     * "Sep 10, 2026, 23:00" is the widest
-                                     * value this column ever holds and it has
-                                     * to fit; left to wrap it broke after the
-                                     * year in the narrow layout.
-                                     */}
-                                    <TableCell sx={{whiteSpace: "nowrap"}}>
-                                        {formatServerDateTime(
-                                            entry.time,
-                                            bootstrap.serverTimeZone,
-                                        )}
-                                    </TableCell>
-                                    {/*
-                                     * FM-174 (owner request 2026-09-01): the
-                                     * query and its copy affordance, nothing
-                                     * else. "Repeat" was a text button in this
-                                     * cell and pushed every query off the
-                                     * column a reader scans; it is an icon
-                                     * beside "Details" now.
-                                     */}
-                                    <TableCell>
-                                        <Stack
-                                            direction="row"
-                                            spacing={1}
-                                            sx={{
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                            }}
-                                        >
-                                            <span>{queryLabel(entry)}</span>
-                                            <CopyValueButton
-                                                label="query"
-                                                testId="search-history-copy-query"
-                                                value={copyableQueryValue(
-                                                    entry,
-                                                )}
-                                            />
-                                        </Stack>
-                                    </TableCell>
-                                    {showUserAgent && (
-                                        <TableCell>
-                                            <Stack
-                                                direction="row"
-                                                spacing={1}
-                                                sx={{
-                                                    alignItems: "center",
-                                                    justifyContent:
-                                                        "space-between",
-                                                }}
-                                            >
-                                                <span>
-                                                    {entry.userAgent ?? ""}
-                                                </span>
-                                                <CopyValueButton
-                                                    label="user agent"
-                                                    testId="search-history-copy-user-agent"
-                                                    value={entry.userAgent}
-                                                />
-                                            </Stack>
-                                        </TableCell>
-                                    )}
-                                    <TableCell data-testid="search-history-category">
-                                        {entry.categoryName}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Stack
-                                            direction="row"
-                                            spacing={1}
-                                            sx={{
-                                                alignItems: "flex-start",
-                                                justifyContent: "space-between",
-                                            }}
-                                        >
-                                            <Criteria
-                                                dereferer={
-                                                    safeConfig?.dereferer
-                                                }
-                                                items={searchCriteria(entry, {
-                                                    includeIdentifiers: false,
-                                                })}
-                                                transport={transport}
-                                            />
-                                            <CopyValueButton
-                                                label="additional parameters"
-                                                testId="search-history-copy-additional-parameters"
-                                                value={additionalParametersText(
-                                                    entry,
-                                                )}
-                                            />
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell data-testid="search-history-source">
-                                        {entry.source === "API"
-                                            ? "API"
-                                            : "Internal"}
-                                    </TableCell>
-                                    {showsUsername(userInfoType) && (
-                                        <TableCell>
-                                            {entry.username ?? ""}
-                                        </TableCell>
-                                    )}
-                                    {showsIp(userInfoType) && (
-                                        <TableCell>
-                                            <Stack
-                                                direction="row"
-                                                spacing={1}
-                                                sx={{
-                                                    alignItems: "center",
-                                                    justifyContent:
-                                                        "space-between",
-                                                }}
-                                            >
-                                                <span>{entry.ip ?? ""}</span>
-                                                <CopyValueButton
-                                                    label="IP address"
-                                                    testId="search-history-copy-ip"
-                                                    value={entry.ip}
-                                                />
-                                            </Stack>
-                                        </TableCell>
-                                    )}
-                                    <TableCell>
-                                        <Stack
-                                            direction="row"
-                                            spacing={0.5}
-                                            sx={{
-                                                alignItems: "center",
-                                            }}
-                                        >
-                                            <Button
-                                                data-testid="search-history-details"
-                                                onClick={() =>
-                                                    setDetailsId(entry.id)
-                                                }
-                                            >
-                                                Details
-                                            </Button>
-                                            {/*
-                                             * Legacy parity
-                                             * (search-history.html:76-92):
-                                             * repeating a search was an
-                                             * icon-only control carrying this
-                                             * sentence as its tooltip. It is
-                                             * the row's secondary action, so
-                                             * it sits beside "Details" rather
-                                             * than in the Query column.
-                                             */}
-                                            <Tooltip title={REPEAT_SEARCH_HINT}>
-                                                <IconButton
-                                                    aria-label={
-                                                        REPEAT_SEARCH_HINT
-                                                    }
-                                                    data-testid="search-history-repeat"
-                                                    onClick={() =>
-                                                        repeat(entry)
-                                                    }
-                                                    size="small"
-                                                >
-                                                    <RepeatIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableScrollAffordance>
+                        ))}
+                    </TableBody>
+                </>
             )}
-            <HistoryPager
-                entryNoun={{one: "search", many: "searches"}}
-                onPageChange={goToPage}
-                onPageSizeChange={changePageSize}
-                page={page}
-                pageSize={pageSize}
-                statusTestId="search-history-page-status"
-                totalElements={totalElements}
-            />
-            <DetailsDialog
-                // FM-174: the row no longer prints the entry's identifiers, so
-                // the dialog carries the search's full criteria -- the row's
-                // own entry, since the details endpoint answers with the
-                // request metadata and the indexer searches only.
-                criteria={
-                    detailsEntry
-                        ? searchCriteria(detailsEntry, {
-                              includeIdentifiers: true,
-                          })
-                        : []
-                }
-                dereferer={safeConfig?.dereferer}
-                details={details}
-                onClose={() => setDetailsId(undefined)}
-                transport={transport}
-            />
-        </HistoryRefineLayout>
+        </HistoryPageFrame>
     );
+}
+
+/**
+ * Whether a user-agent filter is currently narrowing the view. Read from the
+ * in-flight filter values, which is what lets the column follow a filter that
+ * arrived from a link or a Back step before its commit has landed.
+ */
+function userAgentFilterActive(values: HistoryFilterValues): boolean {
+    const filter = values["user-agent"];
+    return filter !== undefined && isHistoryFilterActive(filter);
 }
 
 function SortHeader({

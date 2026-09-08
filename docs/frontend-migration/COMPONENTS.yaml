@@ -373,7 +373,9 @@ components:
     state: done
     note: Id reserved 2026-08-31 by the FM-162..FM-170 design batch; FM-166 implemented it. Legacy paths are in git history only (core/ui-src was removed by 3ce28441e). Built on MUI's `Pagination` at boundaryCount 1 and siblingCount 2, which
       reproduces `dirPagination`'s own nine-slot windowing page for page; `getItemAriaLabel` keeps the "Previous page"/"Next page" names the three hand-rolled pagers carried, and `renderItem` adds the `aria-current="page"` MUI does not set.
-      The status line's test id is per route because `notification-history-page-status` is an existing spec contract
+      The status line's test id is per route because `notification-history-page-status` is an existing spec contract.
+      Since FM-190 no page renders it directly -- `HistoryPageFrame` does, from the page, size and handlers
+      `useHistoryPage` returns; the per-route status test id is still passed in
   - id: C-COPY-VALUE-BUTTON
     responsibility: One copy-to-clipboard icon button for a single table-cell value -- always in the DOM, revealed on row hover and on focus so it is keyboard-reachable, labelled per value, confirming and failing through C-TOAST-SERVICE, and
       rendering nothing at all where navigator.clipboard is unavailable (NZBHydra is routinely served over plain HTTP). It is offered only on free text or machine-generated identifiers a user pastes elsewhere and that no existing action
@@ -405,6 +407,8 @@ components:
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
     state: partial
+    note: FM-190 moved the last of the per-route assembly out of the pages -- `features/stats/history/useHistoryPage.ts` builds the `HistoryQuery` (declared dimensions, committed values, page, limit, sort), keys the query on the filter
+      model and threads React Query's `AbortSignal` into whichever `getX` reader the route supplies. A route still declares its own dimensions and passes its own reader; nothing here moved
   - id: C-REFINE-SURFACE
     responsibility: Shared refine-surface chrome shell (ADR-0046) -- the docked 248px left column / 48px rail / sub-768px bottom sheet switching, header row (the consumer's optional summary in the left slot, an icon-only clear-all and the
       collapse/close toggle at the end, and no caption), widths, paddings, transitions, and
