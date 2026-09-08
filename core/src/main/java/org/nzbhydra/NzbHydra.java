@@ -170,10 +170,8 @@ public class NzbHydra {
             System.exit(1);
         }
         if (isOsWindows()) {
-            String programFiles = Strings.nullToEmpty(System.getenv("PROGRAMFILES")).toLowerCase();
-            String programFilesx86 = Strings.nullToEmpty(System.getenv("PROGRAMFILES(X86)")).toLowerCase();
             //It may happen that the yaml file is written empty due to some weird write right constraints in c:\program files or c:\program files (x86)
-            if (dataFolderFile.getAbsolutePath().toLowerCase().contains(programFiles) || dataFolderFile.getAbsolutePath().toLowerCase().contains(programFilesx86)) {
+            if (isInProgramFilesFolder(dataFolderFile.getAbsolutePath(), System.getenv("PROGRAMFILES"), System.getenv("PROGRAMFILES(X86)"))) {
                 logger.error("NZBHydra 2 may not work properly when run your windows program files folder. Please put it somewhere else");
                 System.exit(1);
             }
@@ -258,29 +256,42 @@ public class NzbHydra {
     }
 
     private static void handleException(Exception e) throws Exception {
-        String msg;
         if (e.getClass().getName().contains("SilentExitException")) { //Sometimes thrown by spring boot devtools
             return;
         }
-        if (e instanceof YAMLException || e instanceof JacksonException) {
-            msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
-            logger.error(msg);
-        }
-        if (e instanceof ConnectorStartFailedException) {
-            msg = "The selected port is already in use. Either shut the other application down or select another port";
-            logger.error(msg);
-        }
-        if (e.getMessage() != null && e.getMessage().contains("Detected applied migration not resolved locally")) {
-            msg = "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
-            logger.error(msg);
-        } else {
-            msg = "An unexpected error occurred during startup:\n" + e;
-            logger.error("An unexpected error occurred during startup", e);
-        }
-        logger.error("FATAL: " + msg, e);
+        logger.error("FATAL: " + startupErrorMessage(e), e);
 
         //Rethrow so that spring exception handlers can handle this
         throw e;
+    }
+
+    /**
+     * Returns the message to show the user for an error which occurred during startup.
+     */
+    static String startupErrorMessage(Throwable e) {
+        if (e instanceof YAMLException || e instanceof JacksonException) {
+            return "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
+        }
+        if (e instanceof ConnectorStartFailedException) {
+            return "The selected port is already in use. Either shut the other application down or select another port";
+        }
+        if (e.getMessage() != null && e.getMessage().contains("Detected applied migration not resolved locally")) {
+            return "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
+        }
+        return "An unexpected error occurred during startup:\n" + e;
+    }
+
+    /**
+     * Returns true if the data folder is located in one of the given program files folders. Folders which are not set
+     * are ignored (an unset environment variable must not match everything).
+     */
+    static boolean isInProgramFilesFolder(String dataFolderPath, String programFiles, String programFilesx86) {
+        String lowerCaseDataFolderPath = Strings.nullToEmpty(dataFolderPath).toLowerCase();
+        return isInFolder(lowerCaseDataFolderPath, programFiles) || isInFolder(lowerCaseDataFolderPath, programFilesx86);
+    }
+
+    private static boolean isInFolder(String lowerCaseDataFolderPath, String folder) {
+        return !Strings.isNullOrEmpty(folder) && lowerCaseDataFolderPath.contains(folder.toLowerCase());
     }
 
     public static boolean isOsWindows() {
