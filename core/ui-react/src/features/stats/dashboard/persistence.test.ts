@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {STAT_FAMILIES, allFamiliesSelected} from "../../../api/stats/mainStats";
 import {
@@ -8,36 +8,6 @@ import {
     saveFamilySelection,
     saveIncludeDisabled,
 } from "./persistence";
-
-// This project's jsdom environment has no explicit `url` configured, which
-// leaves `window.localStorage` unavailable in every test (a jsdom "opaque
-// origin" limitation -- see the identical note in
-// `SearchResults.test.tsx`'s `stubWorkingLocalStorage`). Installed fresh per
-// test and removed by `vi.unstubAllGlobals()`.
-function stubWorkingLocalStorage(): void {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
-beforeEach(() => {
-    stubWorkingLocalStorage();
-});
-
-afterEach(() => {
-    vi.unstubAllGlobals();
-});
 
 describe("defaultFamilySelection", () => {
     it("enables every family, gating the four user/host share families on historyUserInfoType", () => {

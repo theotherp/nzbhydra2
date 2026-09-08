@@ -1,6 +1,5 @@
 import {
     act,
-    cleanup,
     fireEvent,
     render,
     screen,
@@ -82,24 +81,6 @@ function statsBackend() {
     };
 }
 
-/** See `StatsDashboardPage.test.tsx`: this jsdom has no `window.localStorage`. */
-function stubWorkingLocalStorage(): void {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
 const STATS_TABLIST = {name: "History and statistics"};
 
 async function switchTab(name: string) {
@@ -120,9 +101,6 @@ async function settle() {
 }
 
 afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
     // FM-171: the session-expiry latch is module-scoped and deliberately
     // one-way, so the 401 case below would otherwise leave every later test in
     // this file rendering an open dialog over the application.
@@ -160,7 +138,6 @@ describe("App", () => {
     // is the *same* shell -- so this compares the tablist node's identity, and
     // the next test counts the requests the remount used to throw away.
     it("should keep one stats shell mounted across a tab switch", async () => {
-        stubWorkingLocalStorage();
         vi.stubGlobal("fetch", statsBackend().fetch);
         window.history.pushState({}, "", "/hydra/stats/indexers");
         render(<App bootstrap={statsBootstrap} />);
@@ -172,7 +149,6 @@ describe("App", () => {
     });
 
     it("should serve a stats tab revisited within staleTime from the cache", async () => {
-        stubWorkingLocalStorage();
         const backend = statsBackend();
         vi.stubGlobal("fetch", backend.fetch);
         window.history.pushState({}, "", "/hydra/stats/indexers");
@@ -201,7 +177,6 @@ describe("App", () => {
      * the default the mounted client actually carries.
      */
     it("should not refetch a stale query when the window regains focus", async () => {
-        stubWorkingLocalStorage();
         const backend = statsBackend();
         vi.stubGlobal("fetch", backend.fetch);
         window.history.pushState({}, "", "/hydra/stats/indexers");
@@ -248,7 +223,6 @@ describe("App", () => {
      * be the easy one to leave outside the theme too.
      */
     it("should provide the default theme and the selector that changes it", async () => {
-        stubWorkingLocalStorage();
         vi.stubGlobal("fetch", statsBackend().fetch);
         window.history.pushState({}, "", "/hydra/stats/indexers");
         render(<App bootstrap={statsBootstrap} />);
@@ -286,7 +260,6 @@ describe("App", () => {
      * would still fail here.
      */
     it("should follow the system scheme while Auto is selected", async () => {
-        stubWorkingLocalStorage();
         vi.stubGlobal("fetch", statsBackend().fetch);
         const listeners: (() => void)[] = [];
         const darkScheme = {
@@ -369,7 +342,6 @@ describe("App", () => {
      * nothing and the 401s are the only thing under test.
      */
     it("should raise exactly one session-expired dialog for concurrent 401s", async () => {
-        stubWorkingLocalStorage();
         const refused: string[] = [];
         const backend = statsBackend();
         vi.stubGlobal(
@@ -418,7 +390,6 @@ describe("App", () => {
      * refused request is the `DELETE` alone.
      */
     it("should raise the session-expired dialog for a 401 answered to a mutation", async () => {
-        stubWorkingLocalStorage();
         const refused: string[] = [];
         const backend = statsBackend();
         vi.stubGlobal(

@@ -18,11 +18,12 @@ import {
     within,
 } from "@testing-library/react";
 import type {ReactNode} from "react";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {localStorageStore} from "../../../test/browserStubs";
 import {
     createHistorySearchSchema,
     NOTIFICATION_HISTORY_SORT_COLUMNS,
@@ -149,35 +150,7 @@ function renderNotificationPage(fetchImplementation: typeof fetch) {
     });
 }
 
-// This project's jsdom environment configures no `url`, so its opaque origin
-// has no `window.localStorage` at all -- the same limitation
-// `StatsDashboardPage`'s persistence test documents. Installed by the one test
-// that needs a working store and removed by `vi.unstubAllGlobals()`.
-function stubWorkingLocalStorage(): Map<string, string> {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-    return store;
-}
-
 describe("SearchHistoryPage", () => {
-    afterEach(() => {
-        cleanup();
-        vi.restoreAllMocks();
-        vi.unstubAllGlobals();
-    });
-
     it("should refine through the surface while paging, sorting, and refreshing", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
@@ -1066,7 +1039,7 @@ describe("SearchHistoryPage", () => {
      * preference when its own surface mounts.
      */
     it("should keep the docked column collapsed on another history view and across a reload", async () => {
-        const store = stubWorkingLocalStorage();
+        const store = localStorageStore();
         renderPage(
             vi
                 .fn()

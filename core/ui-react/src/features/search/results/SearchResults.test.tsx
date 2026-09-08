@@ -14,6 +14,10 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {
+    stubMissingLocalStorage,
+    stubNarrowViewport,
+} from "../../../test/browserStubs";
 import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {SearchResults} from "./SearchResults";
 
@@ -59,17 +63,6 @@ function renderResults(ui: React.ReactNode) {
     );
 }
 
-// This project's jsdom environment has no explicit `url` configured (see
-// vite.config.ts), which leaves `window.localStorage` completely
-// unavailable in every test in this file (`typeof window.localStorage ===
-// "undefined"`, a jsdom "opaque origin" limitation, not a polyfill this
-// project ships) -- `getStorage()`'s `window.localStorage` access in
-// SearchResults.tsx resolves to `undefined` rather than throwing, so
-// `getStorage()?.setItem(...)` silently no-ops. A real round trip through
-// persisted state therefore needs a real, working `Storage` for the
-// duration of a single test; `vi.stubGlobal("localStorage", ...)` installs
-// one and the existing `afterEach`'s `vi.unstubAllGlobals()` removes it
-// again automatically.
 // The refine sidebar's free-text and numeric filter fields keep the typed
 // value local and commit it into the shared `ResultFilters` state on a
 // debounce, so the whole filter / sort / group / persist pipeline runs once
@@ -83,28 +76,8 @@ async function settleFilterCommits(): Promise<void> {
     });
 }
 
-function stubWorkingLocalStorage(): void {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
 describe("SearchResults", () => {
     afterEach(() => {
-        cleanup();
-        vi.unstubAllGlobals();
-        window.localStorage?.clear();
         delete window.__NZBHYDRA_BOOTSTRAP__;
     });
 
@@ -912,7 +885,7 @@ describe("SearchResults", () => {
     });
 
     it("should also select visible rows from the toolbar's mobile-reachable selection menu", () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderResults(
             <SearchResults
                 data={{
@@ -1953,7 +1926,6 @@ describe("SearchResults", () => {
         // FM-176: the one case that pins the persisted option instead of
         // clicking it, which also proves `showDuplicateControls` is restored
         // on mount the way `compactRows` is.
-        stubWorkingLocalStorage();
         window.localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify({showDuplicateControls: true}),
@@ -2834,10 +2806,9 @@ describe("SearchResults", () => {
     });
 
     it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting, while the title filter does not survive a fresh mount", async () => {
-        // See `stubWorkingLocalStorage`: this environment's `window.localStorage`
-        // is otherwise unavailable, so a genuine unmount/remount persistence
-        // round trip needs a real, working `Storage` installed first.
-        stubWorkingLocalStorage();
+        // `vitest.setup.ts` installs the working `Storage` this
+        // unmount/remount persistence round trip needs (jsdom's opaque origin
+        // provides none of its own).
         const searchResults = [
             {
                 searchResultId: "1",
@@ -2905,10 +2876,8 @@ describe("SearchResults", () => {
     });
 
     it("should persist the refine sidebar's Category/Indexer collapse state in the existing search-results-table payload, independently of each other", () => {
-        // See `stubWorkingLocalStorage`: a genuine unmount/remount
-        // persistence round trip needs a real, working `Storage` installed
-        // first.
-        stubWorkingLocalStorage();
+        // `vitest.setup.ts` installs the working `Storage` this
+        // unmount/remount persistence round trip needs.
         const searchResults = [
             {
                 searchResultId: "1",
@@ -2983,7 +2952,6 @@ describe("SearchResults", () => {
     });
 
     it("should load an old-shape stored payload lacking the refine collapse keys with both sections defaulting to expanded", () => {
-        stubWorkingLocalStorage();
         // A payload written before this task's two keys existed (or a
         // hand-edited one) still loads cleanly through `loadChoices`.
         window.localStorage.setItem(
@@ -3017,10 +2985,11 @@ describe("SearchResults", () => {
     });
 
     it("should render both refine sections expanded without throwing when storage is unavailable", () => {
-        // No `stubWorkingLocalStorage()`: this file's jsdom environment
-        // leaves `window.localStorage` unavailable by default (see that
-        // helper's own comment above), which stands in for a genuinely
-        // blocked `Storage`.
+        // No storage at all -- this file's jsdom environment leaves
+        // `window.localStorage` unavailable by default, which stands in for a
+        // genuinely blocked `Storage`. Stated explicitly because
+        // `vitest.setup.ts` installs a working store before every test.
+        stubMissingLocalStorage();
         expect(() =>
             renderResults(
                 <SearchResults
@@ -3051,9 +3020,8 @@ describe("SearchResults", () => {
     });
 
     it("should never persist any refine filter, ignoring a stale stored one and resetting everything -- including the title filter -- on a fresh mount", () => {
-        // See `stubWorkingLocalStorage`: a genuine persistence round trip
-        // needs a real, working `Storage` installed first.
-        stubWorkingLocalStorage();
+        // `vitest.setup.ts` installs the working `Storage` this persistence
+        // round trip needs.
         // A payload written by an older build (or by a hand-edited
         // localStorage entry) still carries a `filters` key -- including an
         // indexer/category selection and a title, both scoped to the results
@@ -3298,9 +3266,8 @@ describe("SearchResults", () => {
     });
 
     it("should never persist the refine download-type selection or title filter, and reselect every type -- while resetting the title -- on a new search", async () => {
-        // See `stubWorkingLocalStorage`: a genuine persistence round trip
-        // needs a real, working `Storage` installed first.
-        stubWorkingLocalStorage();
+        // `vitest.setup.ts` installs the working `Storage` this persistence
+        // round trip needs.
         // The download-type chips are derived from the loaded results exactly
         // like the indexer and category lists, so a stored selection has the
         // same failure mode: a search that returned only NZBs would hide
@@ -4011,7 +3978,6 @@ describe("SearchResults", () => {
     });
 
     it("should persist compact rows, highlight recent, the duplicate-controls option, and both grouping options in the existing search-results-table payload without persisting the mobile drawer", () => {
-        stubWorkingLocalStorage();
         const searchResults = [
             {
                 searchResultId: "1",
@@ -4085,7 +4051,6 @@ describe("SearchResults", () => {
     // `useState` defaults. A stored choice has to drive the *grouping*, not
     // just the checkbox, from the very first render.
     it("should group torrent and Usenet results from the first render when the stored payload says so", () => {
-        stubWorkingLocalStorage();
         window.localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify({groupTorrentAndUsenet: true}),
@@ -4109,7 +4074,6 @@ describe("SearchResults", () => {
     });
 
     it("should drive the persisted docked-sidebar preference from the display-options shortcut at sm and up", () => {
-        stubWorkingLocalStorage();
         renderResults(
             <SearchResults
                 data={{
@@ -4148,8 +4112,7 @@ describe("SearchResults", () => {
     });
 
     it("should drive the unpersisted mobile drawer from the same shortcut below sm without reopening it from a stored preference", () => {
-        stubMobileViewport();
-        stubWorkingLocalStorage();
+        stubNarrowViewport();
         // A stored *expanded* docked preference must not pop the drawer open
         // over the results when the same user opens the page on a phone: the
         // two mechanisms are deliberately separate (see `RefineSidebar.tsx`).
@@ -4358,7 +4321,6 @@ describe("SearchResults", () => {
         // Now that the choice is restored from storage on mount, the restored
         // `false` has to reach the eligibility check on that same first render.
         it("shows nothing for an eligible search when the stored payload turned episode grouping off", async () => {
-            stubWorkingLocalStorage();
             window.localStorage.setItem(
                 STORAGE_KEY,
                 JSON.stringify({groupEpisodes: false}),
@@ -5487,7 +5449,6 @@ describe("SearchResults phone sort menu", () => {
     };
 
     function renderSortPhone(choices?: Record<string, unknown>) {
-        stubWorkingLocalStorage();
         if (choices) {
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(choices));
         }
@@ -5607,7 +5568,6 @@ describe("SearchResults phone sort menu", () => {
         // Trap: `column.getAutoSortDir()` reads off the column instance
         // (`table.getColumn(id)`), not the column def -- a string column's
         // instance reports "asc".
-        stubWorkingLocalStorage();
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify({sorting: []}));
         rerender(<SearchResults data={sortData} />);
         openMenu();
@@ -6568,25 +6528,7 @@ function storedChoices(): Record<string, unknown> {
     ) as Record<string, unknown>;
 }
 
-// Below `sm` the refine surface renders as a temporary `Drawer` instead of the
-// docked column, decided by `useMediaQuery` rather than by CSS `display`.
-// jsdom's own `matchMedia` never matches anything, so a mobile viewport has to
-// be stated explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it
-// again. Mirrors `RefineSidebar.test.tsx`'s identical helper.
-function stubMobileViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-    }));
-}
-
-// FM-181: the same stub, but width-aware, because two of the phone chrome's
+// FM-181: `stubNarrowViewport`, but width-aware, because two of the phone chrome's
 // cases turn on *which* width is compact rather than merely that one is: the
 // 600-767px band (where the table already stacks but the old CSS switch had
 // already hidden the toolbar's select-all) and the 1280px desktop control.

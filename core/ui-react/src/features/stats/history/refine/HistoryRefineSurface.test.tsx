@@ -8,7 +8,7 @@ import {
     screen,
     within,
 } from "@testing-library/react";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import type {
     HistoryDimension,
@@ -16,6 +16,12 @@ import type {
     HistoryFilterValues,
 } from "../../../../api/history/filters";
 import {createHydraTheme} from "../../../../app/theme";
+import {
+    localStorageStore,
+    stubMissingLocalStorage,
+    stubNarrowViewport,
+    stubWorkingLocalStorage,
+} from "../../../../test/browserStubs";
 import {HistoryRefineLayout} from "./HistoryRefineSurface";
 
 const dimensions: HistoryDimension[] = [
@@ -58,45 +64,6 @@ const dimensions: HistoryDimension[] = [
         maxLabel: "Maximum age (days)",
     },
 ];
-
-// This project's jsdom environment configures no `url`, so its opaque origin
-// has no `window.localStorage` at all -- the same limitation
-// `StatsDashboardPage`'s persistence test documents. Installed per test that
-// needs it and removed by `vi.unstubAllGlobals()`.
-function stubWorkingLocalStorage(): Map<string, string> {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-    return store;
-}
-
-// Below 768px the surface renders inside a `Drawer` instead of the docked
-// column, decided by `useMediaQuery` rather than by CSS `display`. jsdom's own
-// `matchMedia` never matches anything, so a narrow viewport has to be stated
-// explicitly.
-function stubCompactViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-    }));
-}
 
 function renderSurface(
     values: HistoryFilterValues = {},
@@ -148,11 +115,6 @@ function expandMultiselect(id: string): void {
 }
 
 describe("HistoryRefineSurface", () => {
-    afterEach(() => {
-        cleanup();
-        vi.unstubAllGlobals();
-    });
-
     it("should render one labelled surface with a visible label per declared control", () => {
         renderSurface();
         expect(
@@ -187,7 +149,7 @@ describe("HistoryRefineSurface", () => {
     // ADR-0050: collapsed on every mount, with no persistence of its own --
     // the open state is component-local and nothing writes it anywhere.
     it("should render every multi-select collapsed until its caption is pressed", () => {
-        const store = stubWorkingLocalStorage();
+        const store = localStorageStore();
         renderSurface();
         const toggle = screen.getByTestId("history-refine-indexer-toggle");
         expect(toggle).toHaveTextContent("Indexer");
@@ -276,7 +238,6 @@ describe("HistoryRefineSurface", () => {
     });
 
     it("should collapse the docked column to its rail and keep the active count reachable there", () => {
-        stubWorkingLocalStorage();
         renderSurface({title: {kind: "freetext", text: "example"}});
         const toggle = screen.getByTestId("history-refine-toggle");
         expect(toggle).toHaveAttribute("aria-expanded", "true");
@@ -303,7 +264,7 @@ describe("HistoryRefineSurface", () => {
     });
 
     it("should persist the collapsed column under the shared history key and restore it on a later mount", () => {
-        const store = stubWorkingLocalStorage();
+        const store = localStorageStore();
         renderSurface();
         fireEvent.click(screen.getByTestId("history-refine-toggle"));
         expect(store.get("hydra.history.refine")).toBe("collapsed");
@@ -328,6 +289,9 @@ describe("HistoryRefineSurface", () => {
     it("should start expanded when the stored preference is absent or garbage", () => {
         // No storage at all: jsdom's opaque origin, a private window, blocked
         // site data. `C-BROWSER-STORAGE` swallows it and the column opens.
+        // Stated explicitly because `vitest.setup.ts` installs a working store
+        // before every test.
+        stubMissingLocalStorage();
         renderSurface();
         expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
             "aria-expanded",
@@ -345,8 +309,8 @@ describe("HistoryRefineSurface", () => {
     });
 
     it("should open the sections in a bottom sheet below 768px and never persist that it is open", () => {
-        const store = stubWorkingLocalStorage();
-        stubCompactViewport();
+        const store = localStorageStore();
+        stubNarrowViewport();
         renderSurface({title: {kind: "freetext", text: "example"}});
 
         // Exactly one branch is in the DOM: the compact trigger, carrying the

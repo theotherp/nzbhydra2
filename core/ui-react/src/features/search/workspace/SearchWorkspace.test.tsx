@@ -6,10 +6,14 @@ import {
     screen,
     waitFor,
 } from "@testing-library/react";
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+import {beforeEach, describe, expect, it, vi} from "vitest";
 
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
+import {
+    localStorageStore,
+    stubBlockedLocalStorage,
+} from "../../../test/browserStubs";
 import type {SearchFormValues} from "./searchFormModel";
 import {
     canonicalSearch,
@@ -93,58 +97,11 @@ function deleteChip(testId: string) {
     fireEvent.click(icon as HTMLElement);
 }
 
-/**
- * This project's jsdom environment has no explicit `url` configured, which
- * leaves `window.localStorage` unavailable in every test (a jsdom "opaque
- * origin" limitation -- see the identical note in
- * `features/system/logs/SystemLogTab.test.tsx`). Installed fresh per test and
- * removed by `vi.unstubAllGlobals()`.
- */
-function stubWorkingLocalStorage(): Map<string, string> {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-    return store;
-}
-
-/** A browser that refuses site data: every access throws. */
-function stubBlockedLocalStorage(): void {
-    const blocked = () => {
-        throw new Error("storage is blocked");
-    };
-    vi.stubGlobal("localStorage", {
-        get length(): number {
-            return blocked();
-        },
-        clear: blocked,
-        getItem: blocked,
-        key: blocked,
-        removeItem: blocked,
-        setItem: blocked,
-    } satisfies Storage);
-}
-
 describe("SearchWorkspace", () => {
     let advancedOpenStore: Map<string, string>;
 
     beforeEach(() => {
-        advancedOpenStore = stubWorkingLocalStorage();
-    });
-
-    afterEach(() => {
-        cleanup();
-        vi.unstubAllGlobals();
+        advancedOpenStore = localStorageStore();
     });
 
     it("should restore canonical URL values and category size presets", () => {

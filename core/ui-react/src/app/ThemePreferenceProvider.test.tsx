@@ -1,12 +1,13 @@
 import {useTheme} from "@mui/material/styles";
 import {act, render, screen, waitFor} from "@testing-library/react";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {
     THEME_PREFERENCE_CACHE_KEY_SHARED,
     themePreferenceCacheKey,
     type ThemePreferenceService,
 } from "../services/theme/themePreference";
+import {localStorageStore} from "../test/browserStubs";
 import {
     ThemePreferenceProvider,
     useThemePreference,
@@ -49,23 +50,6 @@ function Probe() {
     );
 }
 
-/** See `themePreference.test.ts`: jsdom's opaque origin has no storage. */
-function stubLocalStorage(store = new Map<string, string>()): void {
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
 function deferredService(): {
     resolve: (preference: ThemePreference | undefined) => void;
     service: ThemePreferenceService;
@@ -93,10 +77,6 @@ function ground(): string {
     return screen.getByTestId("ground").textContent ?? "";
 }
 
-afterEach(() => {
-    vi.unstubAllGlobals();
-});
-
 describe("ThemePreferenceProvider", () => {
     it("should render the default theme with nothing stored anywhere", async () => {
         const {resolve, service} = deferredService();
@@ -115,9 +95,7 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should seed the first render from the local cache, before the server answers", async () => {
-        stubLocalStorage(
-            new Map([[THEME_PREFERENCE_CACHE_KEY_SHARED, "bright"]]),
-        );
+        localStorageStore().set(THEME_PREFERENCE_CACHE_KEY_SHARED, "bright");
         const {resolve, service} = deferredService();
 
         render(
@@ -137,10 +115,9 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should ignore a malformed cached value rather than failing to render", () => {
-        stubLocalStorage(
-            new Map([
-                [THEME_PREFERENCE_CACHE_KEY_SHARED, '{"theme":"bright"}'],
-            ]),
+        localStorageStore().set(
+            THEME_PREFERENCE_CACHE_KEY_SHARED,
+            '{"theme":"bright"}',
         );
         const {service} = deferredService();
 
@@ -154,8 +131,8 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should let the stored server preference win over the cached seed", async () => {
-        const store = new Map([[THEME_PREFERENCE_CACHE_KEY_SHARED, "bright"]]);
-        stubLocalStorage(store);
+        const store = localStorageStore();
+        store.set(THEME_PREFERENCE_CACHE_KEY_SHARED, "bright");
         const {resolve, service} = deferredService();
 
         render(
@@ -174,7 +151,6 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should keep a choice made while the startup read is still in flight", async () => {
-        stubLocalStorage();
         const {resolve, service, writes} = deferredService();
 
         render(
@@ -196,8 +172,7 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should apply, cache and persist a chosen theme", async () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
         const {resolve, service, writes} = deferredService();
 
         render(
@@ -218,7 +193,6 @@ describe("ThemePreferenceProvider", () => {
     });
 
     it("should keep the applied theme when the write fails", async () => {
-        stubLocalStorage();
         const service: ThemePreferenceService = {
             read: () => Promise.resolve(undefined),
             write: () => Promise.reject(new Error("500")),
@@ -264,8 +238,7 @@ describe("ThemePreferenceProvider seed scoping (FM-157)", () => {
      * about it.
      */
     it("should not seed a second user's first paint with the first user's cached theme", async () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
 
         // User A's session: chooses a non-default theme, which caches it
         // under A's scope.
@@ -306,9 +279,6 @@ describe("ThemePreferenceProvider seed scoping (FM-157)", () => {
     });
 
     it("should give an anonymous session its own shared seed, independent of any user's", async () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
-
         vi.stubGlobal("__NZBHYDRA_BOOTSTRAP__", {username: "alice"});
         const aSession = deferredService();
         const {unmount} = render(

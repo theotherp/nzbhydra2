@@ -1,6 +1,10 @@
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../api/transport";
+import {
+    localStorageStore,
+    stubMissingLocalStorage,
+} from "../../test/browserStubs";
 import {createServerPreferences} from "../preferences/serverPreferences";
 import {
     createDefaultThemePreferenceService,
@@ -29,34 +33,6 @@ function serviceOver(fetchImplementation: typeof fetch) {
         ),
     );
 }
-
-/**
- * This project's jsdom environment configures no `url`, which leaves
- * `window.localStorage` unavailable in every test (a jsdom "opaque origin"
- * limitation -- the same note stands in `stats/dashboard/persistence.test.ts`
- * and `SearchResults.test.tsx`). Installed per test and removed by
- * `vi.unstubAllGlobals()`.
- */
-function stubLocalStorage(store = new Map<string, string>()): void {
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
-afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-});
 
 describe("parseThemePreference", () => {
     it("should accept a known preference stored bare", () => {
@@ -252,8 +228,7 @@ describe("readBootstrapUsername", () => {
 
 describe("the startup seed cache", () => {
     it("should round trip an applied preference within one user's scope", () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
 
         writeCachedThemePreference("dark", "alice");
 
@@ -264,8 +239,7 @@ describe("the startup seed cache", () => {
     });
 
     it("should round trip an applied preference for the shared, anonymous scope", () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
 
         writeCachedThemePreference("bright", null);
 
@@ -274,9 +248,6 @@ describe("the startup seed cache", () => {
     });
 
     it("should keep two different users' seeds independent", () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
-
         writeCachedThemePreference("dark", "alice");
         writeCachedThemePreference("bright", "bob");
 
@@ -288,8 +259,7 @@ describe("the startup seed cache", () => {
     });
 
     it("should never return a value cached under the legacy bare key, for any scope", () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
         store.set(LEGACY_THEME_PREFERENCE_CACHE_KEY, "dark");
 
         expect(readCachedThemePreference(null)).toBeUndefined();
@@ -297,8 +267,7 @@ describe("the startup seed cache", () => {
     });
 
     it("should read a malformed or unknown cached value as no preference, in either scope", () => {
-        const store = new Map<string, string>();
-        stubLocalStorage(store);
+        const store = localStorageStore();
 
         for (const stored of ["", "light", "{}", '"light"', "[]"]) {
             store.set(`${THEME_PREFERENCE_CACHE_KEY_USER_PREFIX}alice`, stored);
@@ -310,8 +279,10 @@ describe("the startup seed cache", () => {
     });
 
     it("should read nothing when there is no storage at all", () => {
-        // The unstubbed environment: no `localStorage` on an opaque origin,
-        // which is exactly what `C-BROWSER-STORAGE`'s guard exists for.
+        // No `localStorage` on an opaque origin, which is exactly what
+        // `C-BROWSER-STORAGE`'s guard exists for. Stated explicitly because
+        // `vitest.setup.ts` installs a working store before every test.
+        stubMissingLocalStorage();
         expect(readCachedThemePreference("alice")).toBeUndefined();
         expect(readCachedThemePreference(null)).toBeUndefined();
         expect(() => {

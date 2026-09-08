@@ -11,7 +11,6 @@ import {
 } from "@tanstack/react-router";
 import {
     act,
-    cleanup,
     configure,
     fireEvent,
     render,
@@ -20,16 +19,7 @@ import {
     within,
 } from "@testing-library/react";
 import {useFormContext} from "react-hook-form";
-import {
-    afterEach,
-    beforeAll,
-    beforeEach,
-    describe,
-    expect,
-    it,
-    onTestFinished,
-    vi,
-} from "vitest";
+import {beforeAll, describe, expect, it, onTestFinished, vi} from "vitest";
 
 import {CONFIG_QUERY_KEY} from "../../api/config/config";
 import {ApiTransport} from "../../api/transport";
@@ -38,6 +28,7 @@ import {createHydraTheme} from "../../app/theme";
 import type {BootstrapData} from "../../bootstrap";
 import {DialogProvider} from "../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
+import {stubNarrowViewport} from "../../test/browserStubs";
 import {StatsShell} from "../stats/StatsShell";
 import {SHOW_ADVANCED_STORAGE_KEY} from "./advancedFields";
 import type {ConfigTab} from "./configTabs";
@@ -312,42 +303,6 @@ function setHost(value: string) {
     fireEvent.change(screen.getByLabelText("Host"), {target: {value}});
 }
 
-// jsdom in this project has no working `localStorage` (see
-// SearchResults.test.tsx); the advanced-fields preference needs a real one.
-function stubWorkingLocalStorage(): void {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
-// Below `md` the settings nav renders inside a MUI `Drawer` instead of the
-// docked column, decided by `useMediaQuery` rather than by CSS `display`.
-// jsdom's own `matchMedia` never matches anything, so a mobile viewport has to
-// be stated explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it.
-function stubMobileViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-    }));
-}
-
 // FM-163 put `ConfigShell` and every tab body behind `React.lazy`, so the
 // first render of one in this file resolves through a dynamic `import()` --
 // a module load that, in a full `vitest` run, competes for CPU with every
@@ -371,15 +326,6 @@ beforeAll(async () => {
     // about explicitly, with its own warm-up, and a blanket warm-up here
     // would quietly take that decision away from it.
     await import("./ConfigShell");
-});
-
-beforeEach(() => {
-    stubWorkingLocalStorage();
-});
-
-afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
 });
 
 describe("ConfigShell", () => {
@@ -987,7 +933,7 @@ describe("ConfigShell settings navigation", () => {
     });
 
     it("should collapse into a drawer below the md breakpoint", async () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderConfigArea({backend: createBackend()});
         await waitForShell();
 
@@ -1411,7 +1357,7 @@ describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
     });
 
     it("should close the mobile drawer when an anchor inside it is clicked", async () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderConfigArea({backend: createValidBackend(), realTabBodies: true});
         await waitForShell();
         vi.stubGlobal("scrollTo", vi.fn());

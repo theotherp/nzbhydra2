@@ -9,13 +9,14 @@ import {
 } from "@testing-library/react";
 import {useEffect} from "react";
 import {FormProvider, useForm, type UseFormReturn} from "react-hook-form";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {stubNarrowViewport} from "../../../test/browserStubs";
 import {ShowAdvancedContext} from "../advancedFields";
 import {UNCHANGED_SECRET_MARKER} from "../components";
 import {DownloadingConfigTab} from "./DownloadingConfigTab";
@@ -173,30 +174,6 @@ async function openEntry(index: number): Promise<void> {
 function submitDialog(): void {
     fireEvent.click(screen.getByTestId("config-downloader-dialog-submit"));
 }
-
-/**
- * Below `sm` the downloader table drops its Type/URL/Enabled columns and
- * folds them into the name cell, mirroring `IndexerTable.tsx`'s own
- * `useMediaQuery` branch. jsdom's own `matchMedia` never matches anything, so
- * a phone viewport has to be stated explicitly.
- */
-function stubMobileViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        addEventListener: () => {},
-        addListener: () => {},
-        dispatchEvent: () => false,
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        removeEventListener: () => {},
-        removeListener: () => {},
-    }));
-}
-
-afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-});
 
 describe("Downloading config tab general fieldset", () => {
     it("renders every general field of config-fields-service.js:1837-1979", () => {
@@ -698,7 +675,7 @@ describe("Downloading config tab downloader transaction", () => {
     });
 
     it("stacks every column of an entry into one cell on a phone, dropping nothing", () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderDownloading({
             values: configWith({downloaders: [SABNZBD]}),
         });

@@ -1,6 +1,7 @@
-import {cleanup, fireEvent, render, screen} from "@testing-library/react";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {fireEvent, render, screen} from "@testing-library/react";
+import {describe, expect, it, vi} from "vitest";
 
+import {stubNarrowViewport} from "../../test/browserStubs";
 import type {RefineSurfaceLabels, RefineSurfaceTestIds} from "./RefineSurface";
 import {RefineSurface} from "./RefineSurface";
 
@@ -23,22 +24,6 @@ const testIds: RefineSurfaceTestIds = {
     surface: "probe-surface",
     toggle: "probe-toggle",
 };
-
-// The shell picks its branch with `useMediaQuery`; jsdom's own `matchMedia`
-// never matches anything, so the compact viewport has to be stated explicitly.
-// `vi.unstubAllGlobals()` in `afterEach` removes it again.
-function stubCompactViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-    }));
-}
 
 function Surface({
     collapsed = false,
@@ -75,11 +60,6 @@ function Surface({
 }
 
 describe("RefineSurface", () => {
-    afterEach(() => {
-        cleanup();
-        vi.unstubAllGlobals();
-    });
-
     it("renders the docked column with the consumer's labels and test ids", () => {
         render(<Surface />);
         const surface = screen.getByTestId(testIds.surface);
@@ -100,7 +80,7 @@ describe("RefineSurface", () => {
     // rather than by CSS `display`, so no accessible name and no `data-testid`
     // is ever duplicated.
     it("replaces the docked branch with the drawer branch below the breakpoint", () => {
-        stubCompactViewport();
+        stubNarrowViewport();
         render(<Surface drawerOpen />);
         expect(screen.getByTestId(testIds.drawer)).toBeInTheDocument();
         expect(screen.getAllByTestId(testIds.surface)).toHaveLength(1);
@@ -126,7 +106,7 @@ describe("RefineSurface", () => {
     // list that scrolls. The header keeps the summary and the close control.
     it("pins clear-all and done in the compact sheet's footer", () => {
         const onDrawerOpenChange = vi.fn();
-        stubCompactViewport();
+        stubNarrowViewport();
         render(
             <Surface
                 drawerOpen
@@ -163,7 +143,7 @@ describe("RefineSurface", () => {
     // sticky toolbar row, so the shell must emit none -- otherwise
     // `refine-sidebar-toggle` would exist twice at the same width.
     it("renders no trigger of its own when the consumer places one", () => {
-        stubCompactViewport();
+        stubNarrowViewport();
         const {rerender} = render(<Surface trigger="external" />);
         expect(screen.queryByTestId(testIds.toggle)).not.toBeInTheDocument();
         expect(screen.queryByText(labels.heading)).not.toBeInTheDocument();
@@ -209,7 +189,7 @@ describe("RefineSurface", () => {
     // Closed, the drawer's own content is unmounted; the trigger stays, and it
     // announces the surface as expandable rather than collapsible.
     it("keeps only the trigger while the compact drawer is closed", () => {
-        stubCompactViewport();
+        stubNarrowViewport();
         render(<Surface />);
         expect(
             screen.getByRole("button", {name: labels.expand}),

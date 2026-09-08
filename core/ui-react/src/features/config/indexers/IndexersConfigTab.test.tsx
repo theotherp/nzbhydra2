@@ -10,7 +10,7 @@ import {
 } from "@testing-library/react";
 import {useEffect} from "react";
 import {FormProvider, useForm, type UseFormReturn} from "react-hook-form";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import type {IndexerValues} from "../../../api/config/indexers";
 import type {ConfigValues} from "../../../api/config/schema";
@@ -18,6 +18,7 @@ import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {stubNarrowViewport} from "../../../test/browserStubs";
 import {ShowAdvancedContext} from "../advancedFields";
 import {UNCHANGED_SECRET_MARKER} from "../components";
 import {settingHelpId} from "../components/settings";
@@ -276,31 +277,6 @@ async function clickIn(testId: string, name: string): Promise<void> {
     const dialog = await screen.findByTestId(testId);
     fireEvent.click(within(dialog).getByRole("button", {name}));
 }
-
-/**
- * Below `sm` the table drops its Type and Used-for columns and folds them into
- * the name cell (ADR-0029), decided by `useMediaQuery` rather than by CSS
- * `display` — the Used-for cell holds a real form control, and two copies of it
- * would mean two controls on one configuration path. jsdom's own `matchMedia`
- * never matches anything, so a phone viewport has to be stated explicitly.
- */
-function stubMobileViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        addEventListener: () => {},
-        addListener: () => {},
-        dispatchEvent: () => false,
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        removeEventListener: () => {},
-        removeListener: () => {},
-    }));
-}
-
-afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-});
 
 describe("Indexer list", () => {
     it("orders the rows by state, then priority, then name", () => {
@@ -681,7 +657,7 @@ describe("The indexer table", () => {
     });
 
     it("stacks every column of an entry into one cell on a phone, dropping nothing", () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderIndexers({
             values: configWith([
                 newznab({name: "Mock1", searchModuleType: "TORZNAB"}),
@@ -714,7 +690,7 @@ describe("The indexer table", () => {
     });
 
     it("offers the same orderings as a named control where there are no headers", async () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         renderIndexers({
             values: configWith([
                 newznab({name: "Beta", score: 5}),

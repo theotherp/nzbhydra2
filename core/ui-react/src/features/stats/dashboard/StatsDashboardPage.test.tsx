@@ -101,36 +101,11 @@ function deferred<T>() {
     return {promise, resolve, reject};
 }
 
-// See the identical note in `SearchResults.test.tsx`'s
-// `stubWorkingLocalStorage`: this jsdom environment has no `window.localStorage`
-// at all, so the dashboard's persistence layer needs a real, working `Storage`
-// installed for the duration of each test.
-function stubWorkingLocalStorage(): void {
-    const store = new Map<string, string>();
-    vi.stubGlobal("localStorage", {
-        get length() {
-            return store.size;
-        },
-        clear: () => store.clear(),
-        getItem: (key: string) =>
-            store.has(key) ? (store.get(key) as string) : null,
-        key: (index: number) => [...store.keys()][index] ?? null,
-        removeItem: (key: string) => store.delete(key),
-        setItem: (key: string, value: string) => {
-            store.set(key, value);
-        },
-    } satisfies Storage);
-}
-
 beforeEach(() => {
-    stubWorkingLocalStorage();
     getStatsMock.mockReset();
 });
 
 afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
     vi.useRealTimers();
 });
 

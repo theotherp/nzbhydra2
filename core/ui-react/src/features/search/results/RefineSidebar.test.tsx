@@ -1,6 +1,5 @@
 import {
     act,
-    cleanup,
     fireEvent,
     render,
     screen,
@@ -11,6 +10,7 @@ import {useEffect, useState} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import type {SearchResult} from "../../../api/search";
+import {stubNarrowViewport} from "../../../test/browserStubs";
 import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {RefineSidebar} from "./RefineSidebar";
 import type {QuickFilter, ResultFilters} from "./resultTable";
@@ -43,23 +43,6 @@ const results: SearchResult[] = [
 const oneQualityFilter: QuickFilter[] = [
     {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
 ];
-
-// Below `sm` the sidebar renders inside a MUI `Drawer` instead of the docked
-// column, decided by `useMediaQuery` rather than by CSS `display`. jsdom's own
-// `matchMedia` never matches anything, so a mobile viewport has to be stated
-// explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it again.
-function stubMobileViewport(): void {
-    vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query.includes("max-width"),
-        media: query,
-        onchange: null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-    }));
-}
 
 function Harness({
     collapsed = false,
@@ -190,8 +173,6 @@ function filteredTitles(): string[] {
 
 describe("RefineSidebar", () => {
     afterEach(() => {
-        cleanup();
-        vi.unstubAllGlobals();
         vi.useRealTimers();
     });
 
@@ -232,7 +213,7 @@ describe("RefineSidebar", () => {
     );
 
     it("leaves the below-`sm` sheet branch unpinned", () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         render(<Harness />);
         fireEvent.click(screen.getByTestId("harness-refine-trigger"));
         const style = getComputedStyle(screen.getByTestId("refine-sidebar"));
@@ -563,7 +544,7 @@ describe("RefineSidebar", () => {
     });
 
     it("keeps every filter section reachable below sm through the sheet its external trigger opens", async () => {
-        stubMobileViewport();
+        stubNarrowViewport();
         render(<Harness quickFilters={oneQualityFilter} />);
 
         // Nothing competes with the table for width until the sheet is
