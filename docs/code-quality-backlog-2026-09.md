@@ -59,7 +59,7 @@ Status values: `open`, `in progress`, `done <sha>`, `skipped (<reason>)`.
 | 25 | `checkIfHitLimitIsExceeded`: `oldestAccessFromApi` is always true so the else branch is dead; split into two functions with a result type. Also the swapped format arguments at line 192 (and `SearchResultAcceptor.java:388`). | `searching/IndexerForSearchSelector.java:192, 336-438` | open |
 | 26 | `SearchResultAcceptor.titleWordCache`: a field declared concurrent, replaced with a plain HashMap by every caller thread, guarded by a singleton-wide synchronized on the hot path. Make it a local map. | `searching/SearchResultAcceptor.java:51, 63, 318-328` | open |
 | 27 | `IndexerWebAccess` builds a thread pool per HTTP call and leaks the thread on timeout. | `indexers/IndexerWebAccess.java:86-127` | open |
-| 28 | Connection-failure dialog duplicated verbatim between `IndexerDialog` and `DownloaderDialog`; extract one helper. | `ui-react/src/features/config/indexers/IndexerDialog.tsx:75-86, 336-399`, `downloading/DownloaderDialog.tsx:45-57, 138-186` | open |
+| 28 | Connection-failure dialog duplicated verbatim between `IndexerDialog` and `DownloaderDialog`; extract one helper. | `ui-react/src/features/config/indexers/IndexerDialog.tsx:75-86, 336-399`, `downloading/DownloaderDialog.tsx:45-57, 138-186` | done (6a2f99479) |
 | 29 | Invert `settingsIndex.ts`: make the index the source of labels and help and have the setting components read from it. | `ui-react/src/features/config/settingsSearch/settingsIndex.ts` | open |
 | 30 | Split `theme.ts` into tokens, palettes and components. | `ui-react/src/app/theme.ts` | open |
 

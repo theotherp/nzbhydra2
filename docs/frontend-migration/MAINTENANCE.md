@@ -3607,3 +3607,11 @@ their text and relative order are unchanged.
 - **Gates:** `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, vitest for `features/config/main` and `settingsSearch` (87 tests incl. the settings-index drift test) green.
 - **Commit:** `36d8c8a0b`
 - **Note:** the system-test Playwright specs and `fixtures.ts` gained `csrfHeaders(page)` in the same commit because the rigs now run with CSRF on.
+
+### 2026-09-08 — Share the connection-failure prompt between the indexer and downloader dialogs
+
+- **Why not a packet:** extraction of one duplicated `dialogs.confirm` payload into a hook beside `invalidFieldFocus.ts`; the reviewer reconstructed both old payloads from `git show HEAD` and confirmed byte identity for both subjects and both branches. No `data-testid`, string, button order or focus change. Implemented by a subagent, reviewed by a fresh subagent.
+- **Paths:** `core/ui-react/src/features/config/connectionFailurePrompt.ts` (new) and its test, `core/ui-react/src/features/config/indexers/IndexerDialog.tsx`, `core/ui-react/src/features/config/downloading/DownloaderDialog.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (140 files / 2017 tests), `build`, `validate:migration`, `validate:focus-affordances`, `knip` green; `git diff --check -- core/ui-react` clean.
+- **Commit:** `6a2f99479`
+- **Note:** backlog item 28 of `docs/code-quality-backlog-2026-09.md`. The existing per-tab wiring tests (`IndexersConfigTab.test.tsx`, `DownloadingConfigTab.test.tsx`) pass unchanged.
