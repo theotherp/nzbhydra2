@@ -22,10 +22,12 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -181,5 +183,14 @@ public class UpdateManagerTest {
     }
 
 
+
+    @Test
+    void shouldThrowUpdateExceptionWhenNoReleaseIsFound() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(TypeReference.class))).thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> testee.getUpdateInfo())
+                .isInstanceOf(UpdateException.class)
+                .hasMessageContaining("No release found");
+    }
 
 }

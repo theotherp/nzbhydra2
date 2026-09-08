@@ -155,8 +155,6 @@ public class UpdateManager implements InitializingBean {
         if (!updateToPrereleases) {
             final SemanticVersion latestVersionWithBeta = new SemanticVersion(getLatestRelease(true).getTagName());
             if (latestVersionWithBeta.isUpdateFor(latestVersion)) {
-                updateInfo.setBetaVersion(latestVersion.getAsString());
-
                 final boolean latestWithBetaIsUpdateAndViable = !isVersionIgnored(latestVersionWithBeta) && isVersionNotBlocked(latestVersionWithBeta);
 
                 //Only true when update to beta is not enabled but there's a new beta version. The user can then choose to install it anyway.
@@ -419,7 +417,7 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-    private Release getLatestRelease(boolean includePrereleases) {
+    private Release getLatestRelease(boolean includePrereleases) throws UpdateException {
         return releasesCache.get().stream()
                 .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
                 .filter(release -> {
@@ -427,7 +425,7 @@ public class UpdateManager implements InitializingBean {
                         return true;
                     }
                     return release.getPrerelease() == null || !release.getPrerelease();
-                }).findFirst().orElse(null);
+                }).findFirst().orElseThrow(() -> new UpdateException("No release found"));
     }
 
 
