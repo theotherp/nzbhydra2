@@ -1,5 +1,8 @@
 package org.nzbhydra.searching;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.HashMultiset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,12 +17,14 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -27,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -535,6 +541,36 @@ public class SearchResultAcceptorTest {
         // Requires English, French AND German - should match (all present)
         when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,French,German"));
         assertIsAccepted(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldNameTheExpectedSeederCountAndTheIndexerInTheRightOrder() {
+        ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+        logAppender.start();
+        ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(SearchResultAcceptor.class);
+        logbackLogger.setLevel(Level.DEBUG);
+        logbackLogger.addAppender(logAppender);
+        try {
+            when(indexerConfig.getSearchModuleType()).thenReturn(SearchModuleType.TORZNAB);
+            when(indexerConfig.getName()).thenReturn("indexerName");
+            when(indexerConfig.getMinSeeders()).thenReturn(5);
+            item.setSeeders(2);
+            HashMultiset<String> reasonsForRejection = HashMultiset.create();
+
+            assertIsRejected(testee.checkMinSeeders(indexerConfig, reasonsForRejection, item));
+
+            assertTrue(reasonsForRejection.contains("Not enough seeders"));
+            String message = logAppender.list.stream()
+                .map(ILoggingEvent::getFormattedMessage)
+                .filter(x -> x.contains("seeders expected"))
+                .reduce((first, second) -> second)
+                .orElseThrow(() -> new AssertionError("No seeder log message was logged. Logged: " + logAppender.list));
+            assertEquals("At least 5 seeders expected for results from indexer indexerName but has 2", message);
+        } finally {
+            logbackLogger.detachAppender(logAppender);
+            logbackLogger.setLevel(null);
+            logAppender.stop();
+        }
     }
 
     private void assertIsAccepted(boolean value) {

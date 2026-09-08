@@ -385,7 +385,7 @@ public class SearchResultAcceptor {
 
         final Integer indexerMinSeeders = indexerConfig.getMinSeeders();
         if (indexerMinSeeders != null && resultSeeders < indexerMinSeeders) {
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "At least {} seeders expected for results from indexer {} but has {}", indexerConfig.getName(), indexerMinSeeders, resultSeeders);
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "At least {} seeders expected for results from indexer {} but has {}", indexerMinSeeders, indexerConfig.getName(), resultSeeders);
             reasonsForRejection.add("Not enough seeders");
             return false;
         }
