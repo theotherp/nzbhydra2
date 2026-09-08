@@ -79,6 +79,7 @@ public class CategoryProvider implements InitializingBean {
         if (categories != null) {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
             categoryMapByNumber.clear();
+            categoryMapByMultipleNumber.clear();
             for (Category category : categories) {
                 for (Integer integer : category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList()) {
                     categoryMapByNumber.put(integer, category);
@@ -89,6 +90,7 @@ public class CategoryProvider implements InitializingBean {
             logger.error("Configuration incomplete, categories not set");
             categoryMap = Collections.emptyMap();
             categoryMapByNumber = new HashMap<>();
+            categoryMapByMultipleNumber = new HashMap<>();
         }
     }
 
@@ -205,19 +207,15 @@ public class CategoryProvider implements InitializingBean {
         }
 
 
-        if (cats.size() == 1) {
-            //No main categories found, specific subcategory must've been supplied
+        //Only lists with more than one category get here, single ones are handled above
+        List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
+        if (matchingSubcategories.size() == 1) {
+            result = categoryMapByNumber.get(matchingSubcategories.get(0));
+        } else if (matchingSubcategories.isEmpty()) {
             result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-        } else {
-            List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
-            if (matchingSubcategories.size() == 1) {
-                result = categoryMapByNumber.get(matchingSubcategories.get(0));
-            } else if (matchingSubcategories.size() == 0) {
-                result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-            } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
-                //All match the sub category
-                result = categoryMapByNumber.get(matchingSubcategories.get(0));
-            }
+        } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
+            //All match the sub category
+            result = categoryMapByNumber.get(matchingSubcategories.get(0));
         }
         if (result != null) {
             logger.debug("Found category {} matching newznab categories {}", result.getName(), catsString);
@@ -262,7 +260,6 @@ public class CategoryProvider implements InitializingBean {
         }
 
         //Let's try to find a more general one
-        Optional<Category> found = Optional.empty();
         for (Category category : categories) {
             List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList();
             for (Integer cat : cats) {

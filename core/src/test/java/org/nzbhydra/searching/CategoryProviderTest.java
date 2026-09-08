@@ -199,4 +199,16 @@ public class CategoryProviderTest {
         assertThat(magazineOptional.isPresent()).isEqualTo(false);
     }
 
+    @Test
+    void shouldForgetMultipleNumberCategoriesWhichWereRemovedFromConfig() {
+        List<Integer> newznabCategories = new ArrayList<>(Arrays.asList(10_000, 20_000, 30_000));
+        assertThat(testee.fromResultNewznabCategories(newznabCategories).getName()).isEqualTo("10_000&20_000&30_000");
+
+        testee.baseConfig.getCategoriesConfig().getCategories().removeIf(x -> x.getName().equals("10_000&20_000&30_000"));
+        testee.handleNewConfigEvent(null);
+
+        Category category = testee.fromResultNewznabCategories(new ArrayList<>(Arrays.asList(10_000, 20_000, 30_000)));
+        assertThat(category.getName()).isNotEqualTo("10_000&20_000&30_000");
+    }
+
 }
