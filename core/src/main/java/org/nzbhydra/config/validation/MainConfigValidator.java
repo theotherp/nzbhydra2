@@ -100,18 +100,19 @@ public class MainConfigValidator implements ConfigValidator<MainConfig> {
 
     @Override
     public MainConfig prepareForSaving(BaseConfig oldBaseConfig, MainConfig newConfig) {
-        final String urlBase = newConfig.getUrlBase().orElse(null);
-        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
-            if (!urlBase.startsWith("/")) {
-                newConfig.setUrlBase("/" + urlBase);
+        final String urlBase = newConfig.getUrlBase().map(String::trim).orElse(null);
+        //An empty URL base is represented as an empty optional and needs no normalization
+        if (Strings.isNullOrEmpty(urlBase)) {
+            newConfig.setUrlBase(null);
+        } else {
+            String normalizedUrlBase = urlBase;
+            if (!normalizedUrlBase.startsWith("/")) {
+                normalizedUrlBase = "/" + normalizedUrlBase;
             }
-            if (urlBase.endsWith("/")) {
-                newConfig.setUrlBase(urlBase.substring(0, urlBase.length() - 1));
+            while (normalizedUrlBase.length() > 1 && normalizedUrlBase.endsWith("/")) {
+                normalizedUrlBase = normalizedUrlBase.substring(0, normalizedUrlBase.length() - 1);
             }
-            if ("/".equals(urlBase) || "".equals(urlBase)) {
-                newConfig.setUrlBase("/");
-            }
-            newConfig.setUrlBase(urlBase);
+            newConfig.setUrlBase(normalizedUrlBase);
         }
         return newConfig;
     }
