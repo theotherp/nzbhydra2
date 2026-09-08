@@ -131,7 +131,7 @@ public class ConfigWeb {
         return new SafeConfig(configProvider.getBaseConfig());
     }
 
-    @Secured({"ROLE_USER"})
+    @Secured({"ROLE_ADMIN"})
     @PostMapping(value = "/internalapi/config/folderlisting", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileSystemBrowser.FileSystemEntry getDirectoryListing(@RequestBody FileSystemBrowser.DirectoryListingRequest request) {
         return fileSystemBrowser.getDirectoryListing(request);
