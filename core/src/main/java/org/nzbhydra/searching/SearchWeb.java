@@ -85,11 +85,17 @@ public class SearchWeb {
         lock.lock();
         try {
             searchState = searchStates.get(searchRequest.getSearchRequestId());
-            searchState.setSearchFinished(true);
+            if (searchState != null) {
+                searchState.setSearchFinished(true);
+            }
         } finally {
             lock.unlock();
         }
-        sendSearchState(searchState);
+        if (searchState != null) {
+            sendSearchState(searchState);
+        } else {
+            logger.debug("Search state for search request ID {} is not known anymore, it was probably evicted. Not sending the final search state", searchRequest.getSearchRequestId());
+        }
 
         logger.info("Web search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
