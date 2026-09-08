@@ -1734,6 +1734,12 @@ None.
 
 ## Upcoming
 
+- FM-190: One history page hook and frame — the three history routes' duplicated plumbing (criteria, query, sort/size
+  handlers, page frame) behind a shared hook and frame component, rendered output proven byte-identical. First of the
+  2026-09-08 code-quality batch; FM-191 (one `useListEditorTransaction` for the config list editors), FM-192 (splitting
+  `SearchResults.tsx` into four components and two hooks) and FM-193 (the settings index becomes the source of labels
+  and help) are planned packets with no dependency between them, promoted one at a time. Backlog items 21, 22, 23, 29.
+
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).
 
