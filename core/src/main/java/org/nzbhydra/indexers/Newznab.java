@@ -66,10 +66,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.nzbhydra.misc.NumberParsing.parseIntOrNull;
+import static org.nzbhydra.misc.NumberParsing.parseLongOrNull;
 
 @Getter
 @Setter
@@ -420,11 +424,11 @@ public class Newznab extends Indexer<Xml> {
 
         for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
             try {
-                if (config.getSearchModuleType() == SearchModuleType.TORZNAB && item.getEnclosures().stream().noneMatch(x -> getEnclosureTypes().contains(x.getType()))) {
+                if (config.getSearchModuleType() == SearchModuleType.TORZNAB && getEnclosures(item).stream().noneMatch(x -> getEnclosureTypes().contains(x.getType()))) {
                     debug("Skipping result {} because it doesn't contain a torrent link", item.getTitle());
                     continue;
                 }
-                if (config.getSearchModuleType() == SearchModuleType.NEWZNAB && item.getEnclosures().stream().noneMatch(x -> Objects.equals(x.getType(), "application/x-nzb"))) {
+                if (config.getSearchModuleType() == SearchModuleType.NEWZNAB && getEnclosures(item).stream().noneMatch(x -> Objects.equals(x.getType(), "application/x-nzb"))) {
                     debug("Skipping result {} because it doesn't contain an NZB link", item.getTitle());
                     continue;
                 }
@@ -432,6 +436,10 @@ public class Newznab extends Indexer<Xml> {
                 searchResultItems.add(searchResultItem);
             } catch (NzbHydraException e) {
                 //Already logged
+            } catch (RuntimeException e) {
+                //Don't let a single malformed item abort the whole response
+                warn("Unable to parse result " + item.getTitle() + " (" + e + "). Will skip it.");
+                getLogger().debug("Stacktrace", e);
             }
         }
 
@@ -441,7 +449,7 @@ public class Newznab extends Indexer<Xml> {
     private void checkForTooManyResults(SearchRequest searchRequest, NewznabXmlRoot newznabXmlRoot) {
         if (newznabXmlRoot.getRssChannel().getNewznabResponse() != null) { //is null for torznab
             final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
-            if (searchRequest.isIdBasedQuery() && !searchRequest.getInternalData().isQueryGenerated() && total >= 10_000) {
+            if (total != null && searchRequest.isIdBasedQuery() && !searchRequest.getInternalData().isQueryGenerated() && total >= 10_000) {
                 warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
                 newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
                 newznabXmlRoot.getRssChannel().getItems().clear();
@@ -504,7 +512,7 @@ public class Newznab extends Indexer<Xml> {
             return;
         }
         final int newznabTotal = newznabResponse.getTotal();
-        int offset = newznabResponse.getOffset();
+        int offset = newznabResponse.getOffset() != null ? newznabResponse.getOffset() : 0;
         //if an indexer returns less results in one page than its total number of results then the indexer misbehaves. But if we request more results than the indexer allows per page then this isn't an error
         if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < 100) {
             warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
@@ -562,18 +570,33 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected String getEnclosureUrl(NewznabXmlItem item) throws NzbHydraException {
-        String link;
-        if (item.getEnclosures().isEmpty()) {
-            link = item.getEnclosures().get(0).getUrl();
-        } else {
-            Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureTypes().contains(x.getType())).findAny();
-            if (nzbEnclosure.isEmpty()) {
-                warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
-                throw new NzbHydraException();
-            }
-            link = nzbEnclosure.get().getUrl();
+        final List<NewznabXmlEnclosure> enclosures = getEnclosures(item);
+        if (enclosures.isEmpty()) {
+            warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
+            throw new NzbHydraException();
         }
-        return link;
+        if (enclosures.size() == 1) {
+            return enclosures.get(0).getUrl();
+        }
+        Optional<NewznabXmlEnclosure> nzbEnclosure = enclosures.stream().filter(x -> getEnclosureTypes().contains(x.getType())).findAny();
+        if (nzbEnclosure.isEmpty()) {
+            warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
+            throw new NzbHydraException();
+        }
+        return nzbEnclosure.get().getUrl();
+    }
+
+    protected static List<NewznabXmlEnclosure> getEnclosures(NewznabXmlItem item) {
+        return item.getEnclosures() == null ? Collections.emptyList() : item.getEnclosures();
+    }
+
+    /**
+     * Calls the given setter only if the value could be parsed, leaving any previously set value untouched.
+     */
+    protected static <T> void setIfNotNull(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 
     protected List<String> getEnclosureTypes() {
@@ -584,13 +607,10 @@ public class Newznab extends Indexer<Xml> {
         Map<String, String> attributes = item.getNewznabAttributes().stream()
                 .filter(x -> !Strings.isNullOrEmpty(x.getValue()))
                 .collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
-        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category") && !"None".equals(x.getValue()) && !Strings.isNullOrEmpty(x.getValue())).map(newznabAttribute -> {
-                    try {
-                        return Integer.parseInt(newznabAttribute.getValue());
-                    } catch (NumberFormatException e) {
-                        return null;
-                    }
-                }).filter(Objects::nonNull)
+        List<Integer> newznabCategories = item.getNewznabAttributes().stream()
+                .filter(x -> x.getName().equals("category") && !"None".equals(x.getValue()))
+                .map(x -> parseIntOrNull(x.getValue()))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
 
@@ -627,19 +647,19 @@ public class Newznab extends Indexer<Xml> {
             searchResultItem.setGroup(attributes.get("group"));
         }
         if (attributes.containsKey("files")) {
-            searchResultItem.setFiles(Integer.valueOf(attributes.get("files")));
+            setIfNotNull(parseIntOrNull(attributes.get("files")), searchResultItem::setFiles);
         }
         if (attributes.containsKey("comments")) {
-            searchResultItem.setCommentsCount(Integer.valueOf(attributes.get("comments")));
+            setIfNotNull(parseIntOrNull(attributes.get("comments")), searchResultItem::setCommentsCount);
         }
         if (attributes.containsKey("grabs")) {
-            searchResultItem.setGrabs(Integer.valueOf(attributes.get("grabs")));
+            setIfNotNull(parseIntOrNull(attributes.get("grabs")), searchResultItem::setGrabs);
         }
         if (attributes.containsKey("guid")) {
             searchResultItem.setIndexerGuid(attributes.get("guid"));
         }
         if (attributes.containsKey("size")) {
-            searchResultItem.setSize(Long.valueOf(attributes.get("size")));
+            setIfNotNull(parseLongOrNull(attributes.get("size")), searchResultItem::setSize);
         }
         if (attributes.containsKey("source")) {
             searchResultItem.setSource(attributes.get("source"));

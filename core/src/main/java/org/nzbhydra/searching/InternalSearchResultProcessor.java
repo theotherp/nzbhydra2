@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.nzbhydra.misc.NumberParsing.parseFloatOrNull;
+
 @Component
 public class InternalSearchResultProcessor {
 
@@ -197,9 +199,11 @@ public class InternalSearchResultProcessor {
             if (item.getAttributes().containsKey("showtitle")) {
                 builder.showtitle(item.getAttributes().get("showtitle"));
             }
-            if (item.getAttributes().containsKey("downloadvolumefactor") && item.getAttributes().containsKey("uploadvolumefactor")) {
-                final float dl = Float.parseFloat(item.getAttributes().get("downloadvolumefactor"));
-                final float ul = Float.parseFloat(item.getAttributes().get("uploadvolumefactor"));
+            final Float dlFactor = parseFloatOrNull(item.getAttributes().get("downloadvolumefactor"));
+            final Float ulFactor = parseFloatOrNull(item.getAttributes().get("uploadvolumefactor"));
+            if (dlFactor != null && ulFactor != null) {
+                final float dl = dlFactor;
+                final float ul = ulFactor;
                 if (Float.compare(dl, 0F) == 0) {
                     builder.torrentDownloadFactor("Freelech");
                 } else {

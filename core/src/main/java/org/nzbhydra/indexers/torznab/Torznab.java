@@ -32,7 +32,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+
+import static org.nzbhydra.misc.NumberParsing.parseIntOrNull;
 
 @Getter
 @Setter
@@ -51,16 +54,16 @@ public class Torznab extends Newznab {
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             switch (attribute.getName()) {
-                case "grabs" -> searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
+                case "grabs" -> setIfNotNull(parseIntOrNull(attribute.getValue()), searchResultItem::setGrabs);
                 case "guid" -> searchResultItem.setIndexerGuid(attribute.getValue());
-                case "seeders" -> searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
-                case "peers" -> searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
+                case "seeders" -> setIfNotNull(parseIntOrNull(attribute.getValue()), searchResultItem::setSeeders);
+                case "peers" -> setIfNotNull(parseIntOrNull(attribute.getValue()), searchResultItem::setPeers);
             }
         }
         if (item.getSize() != null) {
             searchResultItem.setSize(item.getSize());
         } else if (item.getTorznabAttributes().stream().noneMatch(x -> x.getName().equals("size"))) {
-            searchResultItem.getAttributes().put("size", String.valueOf(item.getSize()));
+            debug("Result {} does not contain a size", item.getTitle());
         }
         List<Integer> foundCategories = tryAndGetCategoryAsNumber(item);
         if (!foundCategories.isEmpty()) {
@@ -80,15 +83,14 @@ public class Torznab extends Newznab {
     protected List<Integer> tryAndGetCategoryAsNumber(NewznabXmlItem item) {
         Set<Integer> foundCategories = new HashSet<>();
         if (item.getCategory() != null) {
-            try {
-                foundCategories.add(Integer.parseInt(item.getCategory()));
-            } catch (NumberFormatException e) {
-                //NOP
+            final Integer category = parseIntOrNull(item.getCategory());
+            if (category != null) {
+                foundCategories.add(category);
             }
         }
 
-        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
-        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
+        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> parseIntOrNull(x.getValue())).filter(Objects::nonNull).toList());
+        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> parseIntOrNull(x.getValue())).filter(Objects::nonNull).toList());
         return new ArrayList<>(foundCategories);
     }
 

@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -929,6 +930,102 @@ public class NewznabTest {
                 .findFirst()
                 .orElse(1000);
         assertThat(effectiveLimit).isEqualTo(75);
+    }
+
+    @Test
+    void shouldUseEnclosureWithMatchingTypeWhenMultipleAreProvided() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setEnclosures(new ArrayList<>(Arrays.asList(
+                new NewznabXmlEnclosure("http://indexer.com/other/123", 456L, "application/x-rar-compressed"),
+                new NewznabXmlEnclosure("http://indexer.com/nzb/123", 456L, "application/x-nzb")
+        )));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+        assertThat(item.getLink()).isEqualTo("http://indexer.com/nzb/123");
+    }
+
+    @Test
+    void shouldThrowNzbHydraExceptionWhenItemHasNoEnclosures() {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setEnclosures(new ArrayList<>());
+
+        assertThatThrownBy(() -> testee.createSearchResultItem(rssItem)).isInstanceOf(NzbHydraException.class);
+    }
+
+    @Test
+    void shouldSkipItemWithoutEnclosuresInsteadOfAbortingTheWholeResponse() {
+        NewznabXmlItem withoutEnclosures = RssItemBuilder.builder("withoutEnclosures").build();
+        withoutEnclosures.setEnclosures(null);
+        NewznabXmlRoot root = RssBuilder.builder()
+                .items(Arrays.asList(withoutEnclosures, RssItemBuilder.builder("withEnclosure").build()))
+                .newznabResponse(0, 2)
+                .build();
+
+        List<SearchResultItem> items = testee.getSearchResultItems(root, new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
+
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getTitle()).isEqualTo("withEnclosure");
+    }
+
+    @Test
+    void shouldHandleNullTotalForIdBasedSearch() {
+        NewznabXmlRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).build();
+        root.getRssChannel().setNewznabResponse(new NewznabXmlResponse());
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
+
+        List<SearchResultItem> items = testee.getSearchResultItems(root, searchRequest);
+
+        assertThat(items).hasSize(1);
+    }
+
+    @Test
+    void shouldHandleNullOffsetWhenCheckingForInvalidTotal() {
+        NewznabXmlRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).build();
+        NewznabXmlResponse response = new NewznabXmlResponse();
+        response.setOffset(null);
+        response.setTotal(5);
+        root.getRssChannel().setNewznabResponse(response);
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, true);
+        indexerSearchResult.setSearchResultItems(new ArrayList<>());
+
+        testee.completeIndexerSearchResult(root, indexerSearchResult, new AcceptorResult(Collections.emptyList(), HashMultiset.create()), new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
+        //Indexer claims 5 results but only returned one, so the total is corrected
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(1);
+        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
+    }
+
+    @Test
+    void shouldIgnoreUnparsableNumericAttributesAndStillReturnOtherItems() {
+        NewznabXmlItem brokenItem = RssItemBuilder.builder("brokenNumbers").build();
+        brokenItem.getNewznabAttributes().add(new NewznabAttribute("files", "N/A"));
+        brokenItem.getNewznabAttributes().add(new NewznabAttribute("grabs", ""));
+        brokenItem.getNewznabAttributes().add(new NewznabAttribute("comments", "some"));
+        NewznabXmlRoot root = RssBuilder.builder()
+                .items(Arrays.asList(brokenItem, RssItemBuilder.builder("okItem").build()))
+                .newznabResponse(0, 2)
+                .build();
+
+        List<SearchResultItem> items = testee.getSearchResultItems(root, new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
+
+        assertThat(items).hasSize(2);
+        SearchResultItem broken = items.stream().filter(x -> x.getTitle().equals("brokenNumbers")).findFirst().get();
+        assertThat(broken.getFiles()).isNull();
+        assertThat(broken.getCommentsCount()).isNull();
+    }
+
+    @Test
+    void shouldIgnoreUnparsableSizeAttribute() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("size", "N/A"));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+        //Falls back to the size from the enclosure
+        assertThat(item.getSize()).isEqualTo(456L);
     }
 
 }
