@@ -74,7 +74,14 @@ import {readdir, readFile} from "node:fs/promises";
 import {join, relative, resolve} from "node:path";
 
 const sourceRoot = resolve("src");
-const themeFile = resolve("src/app/theme.ts");
+// Backlog item 30 split the theme by responsibility: `theme.ts` composes it
+// (and holds the `focusVisible` opt-in), `themeComponents.ts` holds every
+// `Mui<Family>` override this file reads. Both are read as one source, so the
+// checks below are unaffected by which of the two a rule is written in.
+const themeFiles = [
+    resolve("src/app/theme.ts"),
+    resolve("src/app/themeComponents.ts"),
+];
 
 async function collectSources(directory) {
     const entries = await readdir(directory, {withFileTypes: true});
@@ -285,10 +292,16 @@ const pendingFm054Cleanup = new Set();
 const findings = [];
 
 const files = await collectSources(sourceRoot);
-const themeSource = stripComments(await readFile(themeFile, "utf8"));
+const themeSource = (
+    await Promise.all(
+        themeFiles.map(async (file) =>
+            stripComments(await readFile(file, "utf8")),
+        ),
+    )
+).join("\n");
 
 /**
- * Every `Mui<Family>: { ... }` entry in `theme.ts`, sliced by real brace
+ * Every `Mui<Family>: { ... }` entry in the theme, sliced by real brace
  * matching rather than by a bounded regex -- a lazy `[\s\S]{0,N}?` window can
  * silently run past one family's closing brace into the next one's rule and
  * report a family as authored when it is not.
@@ -495,7 +508,7 @@ const focusVisibleOptIn =
     /focusVisible:\s*\{\s*outlineWidth:\s*3\s*,\s*outlineOffset:\s*3\s*,?\s*\}/;
 if (!focusVisibleOptIn.test(themeSource)) {
     findings.push(
-        `src/app/theme.ts no longer passes ` +
+        `The theme no longer passes ` +
             `\`focusVisible: {outlineWidth: 3, outlineOffset: 3}\` to ` +
             `\`createTheme\`. ADR-0056 adopts MUI 9.4's ring but keeps ` +
             `ADR-0013's measured 3px/3px geometry rather than MUI's 2px/2px ` +
@@ -510,7 +523,7 @@ if (
     /Mui-focusVisible|:focus-visible|outline/i.test(inputBaseBlock)
 ) {
     findings.push(
-        `src/app/theme.ts authors focus styling on MuiInputBase. ADR-0015 ` +
+        `The theme authors focus styling on MuiInputBase. ADR-0015 ` +
             `forbids it: an authored ring on the input root double-borders ` +
             `every focused select; the family's indicator is MUI's own ` +
             `focused notchedOutline. Non-focus declarations (size, height) ` +
@@ -529,7 +542,7 @@ for (const [family, block] of themeBlocks) {
         continue;
     }
     findings.push(
-        `src/app/theme.ts authors focus styling on Mui${family}. Since ` +
+        `The theme authors focus styling on Mui${family}. Since ` +
             `ADR-0056 the ring is \`theme.focusVisible\`, painted by MUI ` +
             `itself on every family it reaches; a second declaration here ` +
             `either doubles it or silently diverges from it. The only ` +
@@ -549,7 +562,7 @@ if (
     )
 ) {
     findings.push(
-        `src/app/theme.ts's MuiCssBaseline ":focus-visible" rule no longer ` +
+        `The theme's MuiCssBaseline ":focus-visible" rule no longer ` +
             `spreads \`theme.focusVisible\`, so the one control class MUI ` +
             `styles nothing for — \`NewsPage\`'s sanitized unclassed ` +
             `\`<a href>\`, measured at 1.29:1 on the browser default — either ` +
@@ -571,5 +584,5 @@ if (findings.length > 0) {
 console.log(
     `Focus affordances are intact: ${files.length} source files checked, ` +
         `${focusVisibleConsumers.size} MUI 9.4.0 focusVisible consumers known, ` +
-        `and src/app/theme.ts opts into the ring exactly once.`,
+        `and the theme opts into the ring exactly once.`,
 );

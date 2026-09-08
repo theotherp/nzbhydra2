@@ -540,41 +540,67 @@ describe("createHydraTheme base palette", () => {
     /*
      * ADR-0049's structural requirement, enforced rather than described: "all
      * colours of a theme live together in one named palette block". A colour
-     * written anywhere else in this file -- a hairline in a `styleOverride`, a
+     * written anywhere else in the theme -- a hairline in a `styleOverride`, a
      * contrast text beside a component entry -- is invisible to a reader
      * comparing two themes and, worse, is the same in all four of them, which
      * is precisely how a dark-theme remnant survives into a light one.
      *
-     * The check is a grep over this file's own source with comments removed
+     * The check is a grep over the theme's own source with comments removed
      * (the prose above and below the blocks quotes measured colours constantly,
-     * and quoting a colour is not stating one). The block region is delimited
-     * by two declarations rather than by a comment marker, so stripping the
-     * comments cannot move it.
+     * and quoting a colour is not stating one).
+     *
+     * Backlog item 30 split the theme into four files and made the requirement
+     * easier to state, not harder: the blocks are the region of
+     * `themePalettes.ts` between `darkContrastText` and the `themeColors` map
+     * that names them, and the other three modules -- the composer, the
+     * tokens and the component overrides -- may state no colour at all. The
+     * palette region is still delimited by two declarations rather than by a
+     * comment marker, so stripping the comments cannot move it.
      */
-    it("should state no colour outside the theme blocks", () => {
+    const uncommented = (path: string) =>
         // Read from the Vitest root (`core/ui-react`) rather than from
         // `import.meta.url`, which Vite rewrites to a non-`file:` URL.
-        const source = readFileSync("src/app/theme.ts", {encoding: "utf8"})
+        readFileSync(path, {encoding: "utf8"})
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*\/\/.*$/gm, "");
+
+    const colours = (source: string) => [
+        ...source.matchAll(/#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\(/g),
+    ];
+
+    const named = (source: string, matches: RegExpExecArray[]) =>
+        matches.map(
+            (match) =>
+                `${match[0]} at ${source.slice(Math.max(0, match.index - 40), match.index + 20).trim()}`,
+        );
+
+    it("should state no colour outside the theme blocks", () => {
+        const source = uncommented("src/app/themePalettes.ts");
         const start = source.indexOf("const darkContrastText");
-        // FM-184 removed `const focusRingWidth` (the ring is MUI's own
-        // token now, ADR-0056), so the region now ends at the factory --
-        // the first declaration after the blocks that is not itself one.
-        const end = source.indexOf("export function createHydraTheme");
+        // The blocks end where the map that names them begins -- the first
+        // declaration after them that is not itself a block. Bounding the
+        // region at both ends rather than only at the front is what catches a
+        // colour appended *after* the blocks as well as one written before
+        // them; both are outside "one named palette block".
+        const end = source.indexOf("export const themeColors");
 
         expect(start).toBeGreaterThan(0);
         expect(end).toBeGreaterThan(start);
-        const strays = [
-            ...source.matchAll(/#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\(/g),
-        ].filter((match) => match.index < start || match.index > end);
+        const strays = colours(source).filter(
+            (match) => match.index < start || match.index > end,
+        ) as RegExpExecArray[];
 
-        expect(
-            strays.map(
-                (match) =>
-                    `${match[0]} at ${source.slice(Math.max(0, match.index - 40), match.index + 20).trim()}`,
-            ),
-        ).toEqual([]);
+        expect(named(source, strays)).toEqual([]);
+    });
+
+    it.each([
+        "src/app/theme.ts",
+        "src/app/themeTokens.ts",
+        "src/app/themeComponents.ts",
+    ])("should state no colour in %s", (path) => {
+        const source = uncommented(path);
+
+        expect(named(source, colours(source) as RegExpExecArray[])).toEqual([]);
     });
 
     it("should derive every palette role's alpha and tonal variants inside the oklch color space", () => {

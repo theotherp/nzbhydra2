@@ -28,7 +28,9 @@ are unrestricted.
 ## UI Conventions (ADR-0014 / ADR-0015)
 
 The design language (palette, typography, density, radii, surface colors) lives in `src/app/theme.ts` — as palette tokens and
-component `styleOverrides`/`defaultProps`. Feature code uses standard components and gets the look from the theme.
+component `styleOverrides`/`defaultProps`. Feature code uses standard components and gets the look from the theme. `theme.ts`
+composes it and is the only module anything outside imports; the parts live beside it in `themeTokens.ts` (raw values),
+`themePalettes.ts` (the four colour blocks) and `themeComponents.ts` (the `components` slot).
 
 - **Standard component for a standard need.** A dropdown is `<TextField select>` (or `Select` with `InputLabel`); a text input
   is `TextField`; never hand-assemble controls from `InputBase`/`Box`. `InputBase` is not imported outside `src/components`.
