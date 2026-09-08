@@ -96,6 +96,17 @@ public class LogAnonymizerTest {
     }
 
     @Test
+    void shouldAnonymizeUsernameWithRegexCharactersFromConfig() throws Exception {
+        UserAuthConfig user = new UserAuthConfig();
+        user.setUsername("a.b+c(");
+        configProviderMock.getBaseConfig().getAuth().getUsers().add(user);
+
+        String anonymized = testee.getAnonymizedLog("username:a.b+c(");
+
+        assertThat(anonymized).isEqualTo("username:<USERNAME>");
+    }
+
+    @Test
     void shouldAnonymizeApikeysFromConfig() throws Exception {
         String anonymized = testee.getAnonymizedLog("r=apikey");
 
