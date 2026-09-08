@@ -46,7 +46,7 @@ Status values: `open`, `in progress`, `done <sha>`, `skipped (<reason>)`.
 | 17 | `NotificationsWeb` lacks the locking `DownloaderWebSocket` has; two concurrent subscribes leak a duplicate one-second pusher. Copy the lock or extract the shared pusher. | `notifications/NotificationsWeb.java:58-59, 106-111`, `downloading/downloaders/DownloaderWebSocket.java:177-187, 220-257` | done (2e511332f) |
 | 18 | Vitest setup: the Map-backed localStorage stub is copy-pasted in ten test files and the matchMedia stub in seven, with no global mock reset. Move them into `vitest.setup.ts`. | `ui-react/vitest.setup.ts` and the ten test files | done (47345c34d) |
 | 19 | Only the stats dashboard passes React Query's abort `signal`; thread it through the history request choke point and the system/stats queries. | `ui-react/src/api/history/request.ts:60-76`, the three history pages' `queryFn` | done (ce4fbfdad) |
-| 20 | `FileHandler` zip and redirect handling: streams and temp dirs leak on error, `temporaryZipFiles` is an unsynchronized ever-growing set, the redirect branch writes the redirect target into the managed entity's `link` column and has no depth limit. | `downloading/FileHandler.java:228-249, 311-366, 419-432` | open |
+| 20 | `FileHandler` zip and redirect handling: streams and temp dirs leak on error, `temporaryZipFiles` is an unsynchronized ever-growing set, the redirect branch writes the redirect target into the managed entity's `link` column and has no depth limit. | `downloading/FileHandler.java:228-249, 311-366, 419-432` | done (b1380f2fd) |
 
 ## Tier 3: refactorings that pay for themselves
 
@@ -67,6 +67,7 @@ Status values: `open`, `in progress`, `done <sha>`, `skipped (<reason>)`.
 
 Smaller findings recorded for later, each verified against the code:
 
+- `NzbHandlingWeb.downloadNzbZip` (item 20 review): a zip path handed to the browser now expires after an hour, and an expired path gets the same misleading "not created by NZBHydra" 500 as an unknown one; distinguish the two and answer 404/410. `FileHandlerTest.shouldDeleteTempDirectoryWhenNoFilesCouldBeRetrieved` diffs the shared `java.io.tmpdir` listing, which a concurrent Hydra process could disturb; inject the base dir to make it hermetic.
 - `NotificationsWeb` and `DownloaderWebSocket` (item 17 review): `scheduler.shutdown()` runs outside the scheduler lock, so a subscribe racing shutdown throws `RejectedExecutionException` out of the event listener; and `cancel(true)` on last disconnect can interrupt a pusher mid-call, which is then logged at ERROR without restoring the interrupt flag. Both pre-date item 17 and are identical in the two classes; fix together with a `shutDown` flag under the lock and an interrupt check before the ERROR log.
 - `IndexerChecker.retrieveJackettIndexers` returns null; `checkCaps` timeout after `invokeAll` is dead; `fillIndexerConfigFromXmlCapsResponse` and `singleCheckCaps` dereference nullable caps fields.
 - `IndexerSearchCacheEntry.isAllPulled`, `SearchCacheEntry.getNumberOfFoundResults`, `SearchResultItem.comparator`, `SearchModuleProvider.java:115` `indexerNames`, `CategoryProvider.java:208-210, 265`: dead code.
