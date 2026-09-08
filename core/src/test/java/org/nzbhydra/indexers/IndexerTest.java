@@ -50,7 +50,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -341,6 +346,69 @@ public class IndexerTest {
     @Test
     public void shouldLogWithMessages() {
         testee.info("Some message {}", "arg1");
+    }
+
+    @Test
+    void shouldNotShareDbLockBetweenIndexers() throws Exception {
+        CountDownLatch firstIsInsideLock = new CountDownLatch(1);
+        CountDownLatch releaseFirst = new CountDownLatch(1);
+        AtomicBoolean isFirstCall = new AtomicBoolean(true);
+        IndexerSearchResultPersistor persistor = mock(IndexerSearchResultPersistor.class);
+        when(persistor.persistSearchResults(any(), anyList(), any())).thenAnswer(invocation -> {
+            if (isFirstCall.getAndSet(false)) {
+                firstIsInsideLock.countDown();
+                releaseFirst.await(10, TimeUnit.SECONDS);
+            }
+            return invocation.getArgument(1);
+        });
+        Indexer<String> firstIndexer = createIndexerWithPersistor(persistor);
+        Indexer<String> secondIndexer = createIndexerWithPersistor(persistor);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            executor.submit(() -> firstIndexer.persistSearchResults(Collections.emptyList(), new IndexerSearchResult()));
+            assertThat(firstIsInsideLock.await(10, TimeUnit.SECONDS)).isTrue();
+
+            Future<?> secondCall = executor.submit(() -> secondIndexer.persistSearchResults(Collections.emptyList(), new IndexerSearchResult()));
+
+            //Fails with a TimeoutException as long as all indexers share one lock
+            assertThat(secondCall.get(5, TimeUnit.SECONDS)).isNotNull();
+        } finally {
+            releaseFirst.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    private Indexer<String> createIndexerWithPersistor(IndexerSearchResultPersistor persistor) {
+        return new Indexer<>(null, null, null, null, null, null, null, null, null, null, null, null, null, null, persistor) {
+            @Override
+            protected Logger getLogger() {
+                return testLogger;
+            }
+
+            @Override
+            protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
+            }
+
+            @Override
+            protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) {
+                return UriComponentsBuilder.fromUriString("http://127.0.0.1");
+            }
+
+            @Override
+            public NfoResult getNfo(String guid) {
+                return null;
+            }
+
+            @Override
+            protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) {
+                return null;
+            }
+        };
     }
 
 
