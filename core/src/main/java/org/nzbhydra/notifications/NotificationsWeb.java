@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -56,16 +56,35 @@ public class NotificationsWeb {
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledFuture;
-    private final Set<String> connectedSessionIds = new HashSet<>();
 
-    private void scheduleDownloadStatusSending() {
-        scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
-            final List<NotificationEntity> newNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
-            if (newNotifications.isEmpty()) {
-                return;
-            }
-            messagingTemplate.convertAndSend(TOPIC, newNotifications);
-        }, 0, INTERVAL, TimeUnit.MILLISECONDS);
+    // Use thread-safe set since subscribe/disconnect events can come from different threads
+    private final Set<String> connectedSessionIds = ConcurrentHashMap.newKeySet();
+
+    // Lock for synchronizing scheduler operations
+    private final Object schedulerLock = new Object();
+
+    private void scheduleNotificationSending() {
+        scheduledFuture = scheduler.scheduleAtFixedRate(this::sendNewNotificationsCatchingErrors, 0, INTERVAL, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Any exception escaping a scheduled task cancels all its further executions, which would stop all notifications
+     * until the next reconnect, so all errors are caught and logged here.
+     */
+    void sendNewNotificationsCatchingErrors() {
+        try {
+            sendNewNotifications();
+        } catch (Exception e) {
+            logger.error("Error while retrieving or sending new notifications", e);
+        }
+    }
+
+    private void sendNewNotifications() {
+        final List<NotificationEntity> newNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
+        if (newNotifications.isEmpty()) {
+            return;
+        }
+        messagingTemplate.convertAndSend(TOPIC, newNotifications);
     }
 
     @MessageMapping("/markNotificationRead")
@@ -103,12 +122,14 @@ public class NotificationsWeb {
             final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
             logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered new connection with session ID {}", simpSessionId);
 
-            if (connectedSessionIds.isEmpty()) {
-                logger.debug(LoggingMarkers.NOTIFICATIONS, "Scheduling notification update {}", simpSessionId);
-                scheduleDownloadStatusSending();
+            synchronized (schedulerLock) {
+                boolean wasEmpty = connectedSessionIds.isEmpty();
+                connectedSessionIds.add(simpSessionId);
+                if (wasEmpty && scheduledFuture == null) {
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Scheduling notification update {}", simpSessionId);
+                    scheduleNotificationSending();
+                }
             }
-
-            connectedSessionIds.add(simpSessionId);
         }
     }
 
@@ -116,19 +137,20 @@ public class NotificationsWeb {
     @EventListener
     public void onClientDisconnect(SessionDisconnectEvent event) {
         final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
-        if (connectedSessionIds.contains(simpSessionId)) {
-            logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered disconnect with session ID {}", simpSessionId);
-            connectedSessionIds.remove(simpSessionId);
-            if (connectedSessionIds.isEmpty()) {
-                if (scheduledFuture != null) {
-                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Cancelling update schedule because no connections left");
-                    scheduledFuture.cancel(true);
-                    scheduledFuture = null;
+        synchronized (schedulerLock) {
+            if (connectedSessionIds.remove(simpSessionId)) {
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered disconnect with session ID {}", simpSessionId);
+                if (connectedSessionIds.isEmpty()) {
+                    if (scheduledFuture != null) {
+                        logger.debug(LoggingMarkers.NOTIFICATIONS, "Cancelling update schedule because no connections left");
+                        scheduledFuture.cancel(true);
+                        scheduledFuture = null;
+                    } else {
+                        logger.debug(LoggingMarkers.NOTIFICATIONS, "No connections found but notifications update was also not scheduled");
+                    }
                 } else {
-                    logger.debug(LoggingMarkers.NOTIFICATIONS, "No connections found but notifications update was also not scheduled");
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Not cancelling schedule because still connections left");
                 }
-            } else {
-                logger.debug(LoggingMarkers.NOTIFICATIONS, "Not cancelling schedule because still connections left");
             }
         }
     }
@@ -140,9 +162,11 @@ public class NotificationsWeb {
 
     @PreDestroy
     public void onShutdown() {
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(true);
-            scheduledFuture = null;
+        synchronized (schedulerLock) {
+            if (scheduledFuture != null) {
+                scheduledFuture.cancel(true);
+                scheduledFuture = null;
+            }
         }
         scheduler.shutdown();
     }
