@@ -159,23 +159,22 @@ public class CustomQueryAndTitleMappingHandler {
         //How it's configured: "TVSEARCH;QUERY;{0:(my hero academia|Boku no Hero Academia) {ignore:.*};{0} s{season:00} e{episode:00}"
 
         //{title:the haunting} {0:.*} -> The Haunting of Bly Manor {0}
-        if ("<remove>".equals(customQueryAndTitleMapping.getTo())) {
-            customQueryAndTitleMapping.setTo("");
-        }
+        //Must not modify the mapping itself because it belongs to the config and would be persisted with the replaced value
+        final String replacementTarget = "<remove>".equals(customQueryAndTitleMapping.getTo()) ? "" : customQueryAndTitleMapping.getTo();
         if (customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY && metaData.getQuery().isPresent()) {
-            final String newQuery = mapValue(metaData, customQueryAndTitleMapping, metaData.getQuery().get());
+            final String newQuery = mapValue(metaData, customQueryAndTitleMapping, metaData.getQuery().get(), replacementTarget);
             metaData.setQuery(newQuery);
         } else if ((customQueryAndTitleMapping.getAffectedValue() == AffectedValue.TITLE || customQueryAndTitleMapping.getAffectedValue() == AffectedValue.RESULT_TITLE) && metaData.getTitle().isPresent()) {
-            final String newTitle = mapValue(metaData, customQueryAndTitleMapping, metaData.getTitle().get());
+            final String newTitle = mapValue(metaData, customQueryAndTitleMapping, metaData.getTitle().get(), replacementTarget);
             metaData.setTitle(newTitle);
         }
     }
 
-    private String mapValue(MetaData metaData, CustomQueryAndTitleMapping customQueryAndTitleMapping, String value) {
+    private String mapValue(MetaData metaData, CustomQueryAndTitleMapping customQueryAndTitleMapping, String value, String replacementTarget) {
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using dataset \"{}\"", value, customQueryAndTitleMapping);
         String mappedValue = value;
 
-        String replacementRegex = customQueryAndTitleMapping.getTo();
+        String replacementRegex = replacementTarget;
         if (metaData.getSeason().isPresent()) {
             replacementRegex = replacementRegex.replace("{season:00}", String.format("%02d", metaData.getSeason().get()));
             replacementRegex = replacementRegex.replace("{season:0}", String.valueOf(metaData.getSeason().get()));
