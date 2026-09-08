@@ -125,5 +125,22 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         assertThat(testee.getOkHttpClient(googleHost)).isNotSameAs(testee.getOkHttpClient(yahooHost));
     }
 
+    @Test
+    void shouldRebuildCachedClientsAfterConfigChange() {
+        final String host = "www.somedomain.com";
+        baseConfig.getMain().setProxyType(ProxyType.NONE);
+        final OkHttpClient clientBeforeConfigChange = testee.getOkHttpClient(host);
+        assertThat(clientBeforeConfigChange.proxy()).isNull();
+
+        baseConfig.getMain().setProxyType(ProxyType.HTTP);
+        baseConfig.getMain().setProxyHost("proxyhost");
+        baseConfig.getMain().setProxyPort(1234);
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+
+        final OkHttpClient clientAfterConfigChange = testee.getOkHttpClient(host);
+        assertThat(clientAfterConfigChange).isNotSameAs(clientBeforeConfigChange);
+        assertThat(clientAfterConfigChange.proxy().address()).isEqualTo(new InetSocketAddress("proxyhost", 1234));
+    }
+
 
 }

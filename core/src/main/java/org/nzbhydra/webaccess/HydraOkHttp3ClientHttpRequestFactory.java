@@ -86,6 +86,8 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     public void handleConfigChangedEvent(ConfigChangedEvent event) {
         MainConfig mainConfig = event.getNewConfig().getMain();
         sockProxySocketFactory = new SockProxySocketFactory(mainConfig.getProxyHost(), mainConfig.getProxyPort(), mainConfig.getProxyUsername(), mainConfig.getProxyPassword());
+        //Cached clients were built from the old config (proxy, proxy ignore list, SSL verification, ...) and must be rebuilt
+        clientCache.clear();
     }
 
 
