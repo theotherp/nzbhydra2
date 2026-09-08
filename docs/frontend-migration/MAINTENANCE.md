@@ -3583,3 +3583,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2007 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` green; `git diff --check -- core/ui-react` clean. No captures: attributes and keyboard behaviour only, nothing visible changes.
 - **Commit:** `fd0475508`
 - **Note:** backlog item 16 of `docs/code-quality-backlog-2026-09.md`. Recorded, not fixed: `aria-controls` is omitted while the combobox is collapsed, which ARIA 1.2 lists as required; matches MUI's own Autocomplete and there is no popup to reference, so left as is. Home/End are not implemented (optional in the pattern).
+
+### 2026-09-08 — Share the vitest browser stubs and install a working localStorage per test
+
+- **Why not a packet:** test-infrastructure only; no production source, contract, `data-testid` or rendering change. Implemented by a subagent, reviewed by two fresh subagents (the first found one test that had silently lost its "no storage at all" branch and three leftover local stub copies; all fixed).
+- **Paths:** `core/ui-react/src/test/browserStubs.ts` (new), `core/ui-react/vitest.setup.ts`, and sixteen `*.test.ts(x)` files that now import the shared helpers.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2007 tests; three full runs plus one shuffled run green), `validate:migration`, `knip` green; `git diff --check -- core/ui-react` clean.
+- **Commit:** `47345c34d`
+- **Note:** backlog item 18 of `docs/code-quality-backlog-2026-09.md`. Every test now starts with a working, empty localStorage; tests that need an absent, blocked or throwing storage call `stubMissingLocalStorage`, `stubBlockedLocalStorage` or `stubThrowingLocalStorageAccessor` explicitly. Recorded, not fixed: two `ThemePreferenceProvider` tests that used to run with no storage now run with an empty one; neither asserts on storage absence. `stubViewportWidth` in `SearchResults.test.tsx` stays local because it is width-parameterised.
