@@ -33,6 +33,11 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 DEFAULT_IMAGE = "ghcr.io/theotherp/hydra-beta"
+# The rootless docker context's buildkit worker doesn't see the host's
+# qemu-aarch64 binfmt registration, so it can't build linux/arm64 images.
+# The "default" (root) docker context's buildkit worker does, so use it
+# explicitly instead of relying on whatever context happens to be active.
+DOCKER_CONTEXT = "default"
 
 
 @dataclass(frozen=True)
@@ -144,7 +149,7 @@ def tags(image: str, version: str, arch: Arch) -> list:
 
 
 def build_image(image: str, version: str, arch: Arch):
-    cmd = ["docker", "build", "--platform", arch.platform]
+    cmd = ["docker", "--context", DOCKER_CONTEXT, "build", "--platform", arch.platform]
     for tag in tags(image, version, arch):
         cmd += ["-t", tag]
     cmd.append(str(SCRIPT_DIR))
@@ -158,7 +163,7 @@ def ensure_login():
         return
     token = token_file.read_text().strip()
     run(
-        ["docker", "login", "ghcr.io", "-u", "theotherp", "--password-stdin"],
+        ["docker", "--context", DOCKER_CONTEXT, "login", "ghcr.io", "-u", "theotherp", "--password-stdin"],
         input=token.encode(),
     )
 
@@ -167,7 +172,7 @@ def publish(image: str, version: str, archs: list):
     ensure_login()
     for arch in archs:
         for tag in tags(image, version, arch):
-            run(["docker", "push", tag])
+            run(["docker", "--context", DOCKER_CONTEXT, "push", tag])
 
 
 def main():
