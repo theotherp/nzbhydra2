@@ -37,7 +37,7 @@ class TorboxDispatchTest {
             requestPath.set(exchange.getRequestURI().getPath());
             requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             requestUserAgent.set(exchange.getRequestHeaders().getFirst("User-Agent"));
-            byte[] response = "{\"success\":true,\"data\":{\"usenetdownload_id\":\"torrent-123\"}}".getBytes(StandardCharsets.UTF_8);
+            byte[] response = "{\"success\":true,\"error\":null,\"detail\":\"Torrent Added Successfully\",\"data\":{\"hash\":\"abc\",\"torrent_id\":123,\"auth_id\":\"auth\"}}".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, response.length);
             exchange.getResponseBody().write(response);
@@ -61,7 +61,7 @@ class TorboxDispatchTest {
 
         String downloadId = torbox.addContent("torrent-content".getBytes(StandardCharsets.UTF_8), "Torrent title", DownloadType.TORRENT, "movies");
 
-        assertThat(downloadId).isEqualTo("torrent-123");
+        assertThat(downloadId).isEqualTo("abc");
         assertThat(requestPath.get()).isEqualTo("/configured/torrents/createtorrent");
         assertThat(requestBody.get()).contains("name=\"name\"", "Torrent title", "name=\"category\"", "movies", "torrent-content");
         assertThat(requestUserAgent.get()).isEqualTo("NZBHydra2");

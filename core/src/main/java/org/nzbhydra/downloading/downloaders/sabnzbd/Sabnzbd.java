@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,8 +78,6 @@ public class Sabnzbd extends Downloader {
         SABNZBD_STATUS_TO_HYDRA_STATUS.put("Completed", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         SABNZBD_STATUS_TO_HYDRA_STATUS.put("Failed", FileDownloadStatus.CONTENT_DOWNLOAD_ERROR);
     }
-
-    private Instant lastErrorLogged;
 
     private final RestTemplate restTemplate;
     private final HydraOkHttp3ClientHttpRequestFactory requestFactory;
@@ -190,16 +187,9 @@ public class Sabnzbd extends Downloader {
         QueueResponse queueResponse = null;
         try {
             queueResponse = callSabnzb(uriBuilder.build().toUri(), QueueResponse.class);
-            lastErrorLogged = null;
+            resetStatusErrorThrottle();
         } catch (DownloaderException e) {
-            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
-                logger.error("Error contacting sabnzbd", e);
-                lastErrorLogged = Instant.now();
-            }
-            DownloaderStatus status = new DownloaderStatus();
-            status.setState(DownloaderStatus.State.OFFLINE);
-            addDownloadRate(0);
-            return status;
+            return handleStatusRequestError(logger, "Error contacting sabnzbd", e);
         }
         DownloaderStatus status = new DownloaderStatus();
         if (queueResponse == null || queueResponse.getQueue() == null || queueResponse.getQueue().getSlots() == null) {

@@ -20,6 +20,7 @@ import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.AddUDlResponse;
+import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxAddUdlData;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxDownload;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
@@ -161,17 +162,49 @@ public class Torbox extends Downloader {
         try {
             ResponseEntity<AddUDlResponse> entity = restTemplate.postForEntity(url.toUriString(), request, AddUDlResponse.class);
             AddUDlResponse dlResponse = entity.getBody();
+            if (dlResponse == null) {
+                log.error("Error adding {} for \"{}\" to torbox: torbox returned an empty response", descInLog, title);
+                throw new DownloaderException("Torbox returned an empty response");
+            }
             if (dlResponse.isSuccess()) {
+                final String downloadId = extractDownloadId(dlResponse.getData(), resultType);
+                if (downloadId == null) {
+                    log.error("Error adding {} for \"{}\" to torbox: torbox reported success but did not return a download ID", descInLog, title);
+                    throw new DownloaderException("Torbox did not return a download ID for " + title);
+                }
                 log.info("Successfully added \"{}\" to torbox", title);
-                return dlResponse.getData().getUsenetdownload_id();
+                return downloadId;
             }
             log.error("Error adding {} for NZB {} to torbox. Error: {}\nDetail:{}", descInLog, title, dlResponse.getError(), dlResponse.getDetail());
             throw new DownloaderException("Torbox returned error: " + dlResponse.getError());
 
+        } catch (DownloaderException e) {
+            //Already logged and carries a specific message, don't hide it behind the generic one below
+            throw e;
         } catch (Exception e) {
             log.error("Unexpected response when sending add request for {} to torbox", title, e);
             throw new DownloaderException("Error sending " + descInLog + " to torbox", e);
         }
+    }
+
+    /**
+     * The usenet endpoint answers with a usenet download ID, the torrent endpoint with a hash and a numeric torrent ID.
+     * For torrents the hash is preferred: torbox's torrent and usenet ID spaces are independent and we only ever list
+     * usenet entries (by numeric ID), so a stored torrent ID could equals-match an unrelated usenet entry while a hash
+     * cannot. Returns null only when torbox reported success without any usable identifier.
+     */
+    @Nullable
+    private static String extractDownloadId(@Nullable TorboxAddUdlData data, ResultType resultType) {
+        if (data == null) {
+            return null;
+        }
+        if (resultType == ResultType.TORBOX_USENET || resultType == ResultType.NZB) {
+            return data.getUsenetdownload_id();
+        }
+        if (data.getHash() != null) {
+            return data.getHash();
+        }
+        return data.getTorrent_id() == null ? null : String.valueOf(data.getTorrent_id());
     }
 
     private static ResultType determineResultType(byte[] value, String title, DownloadType downloadType) throws DownloaderException {

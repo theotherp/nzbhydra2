@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -79,7 +78,6 @@ public class NzbGet extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
-    private Instant lastErrorLogged;
 
 
     //LATER Handle username / password and failed auth, return codes
@@ -177,16 +175,9 @@ public class NzbGet extends Downloader {
         LinkedHashMap<String, Object> statusMap;
         try {
             statusMap = client.invoke("status", new Object[]{}, LinkedHashMap.class);
-            lastErrorLogged = null;
+            resetStatusErrorThrottle();
         } catch (Throwable e) {
-            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
-                logger.error("Error contacting NZBGet", e);
-                lastErrorLogged = Instant.now();
-            }
-            DownloaderStatus status = new DownloaderStatus();
-            status.setState(DownloaderStatus.State.OFFLINE);
-            addDownloadRate(0);
-            return status;
+            return handleStatusRequestError(logger, "Error contacting NZBGet", e);
         }
         DownloaderStatus status = getStatusFromMap(statusMap);
 

@@ -2,6 +2,10 @@
 
 package org.nzbhydra.downloading.downloaders.sabnzbd;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -19,9 +23,12 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
+import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
+import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,6 +40,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -112,6 +120,48 @@ class SabnzbdTest {
         String contentType = capturedRequest.body().contentType().toString();
         assertThat(contentType).startsWith("multipart/form-data");
         assertThat(capturedRequest.header("User-Agent")).isEqualTo("NZBHydra2");
+    }
+
+    @Test
+    void shouldFallBackToOfflineStatusAndLogTheErrorOnlyOncePerThrottleWindow() throws Exception {
+        class FailingSabnzbd extends Sabnzbd {
+            FailingSabnzbd(HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+                super(null, null, null, null, null, null, requestFactory, null);
+            }
+
+            @Override
+            protected <T> T callSabnzb(java.net.URI uri, Class<T> responseType) throws DownloaderException {
+                throw new DownloaderException("downloader is offline");
+            }
+
+            List<Long> recordedRates() {
+                return getDownloadRates();
+            }
+        }
+        FailingSabnzbd failing = new FailingSabnzbd(requestFactory);
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        downloaderConfig.setName("sabnzbd");
+        failing.initialize(downloaderConfig);
+        ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+        logAppender.start();
+        Logger sabnzbdLogger = (Logger) LoggerFactory.getLogger(Sabnzbd.class);
+        sabnzbdLogger.addAppender(logAppender);
+        try {
+            DownloaderStatus first = failing.getStatus();
+            DownloaderStatus second = failing.getStatus();
+
+            assertThat(first.getState()).isEqualTo(DownloaderStatus.State.OFFLINE);
+            assertThat(second.getState()).isEqualTo(DownloaderStatus.State.OFFLINE);
+            assertThat(failing.recordedRates()).containsExactly(0L, 0L);
+            assertThat(logAppender.list.stream()
+                    .filter(x -> x.getLevel() == Level.ERROR)
+                    .filter(x -> "Error contacting sabnzbd".equals(x.getMessage()))
+                    .toList()).hasSize(1);
+        } finally {
+            sabnzbdLogger.detachAppender(logAppender);
+            logAppender.stop();
+        }
     }
 
     @Test

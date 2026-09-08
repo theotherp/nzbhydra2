@@ -39,6 +39,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,13 @@ public abstract class Downloader {
     protected DownloaderConfig downloaderConfig;
     private final List<Long> downloadRates = new ArrayList<>();
 
+    /**
+     * How long an unreachable downloader is left unlogged after the first error was logged.
+     */
+    private static final Duration STATUS_ERROR_LOG_INTERVAL = Duration.ofMinutes(10);
+    private final Object statusErrorLock = new Object();
+    private Instant lastStatusErrorLogged;
+
     public Downloader(FileHandler fileHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, DownloadUrlBuilder downloadUrlBuilder) {
         this.fileHandler = fileHandler;
         this.searchResultRepository = searchResultRepository;
@@ -100,131 +108,169 @@ public abstract class Downloader {
 
     @Transactional
     public AddNzbsResponse addBySearchResultIds(List<AddFilesRequest.SearchResult> searchResults, String category) {
+        AddNzbsResults results = new AddNzbsResults();
 
-        Set<Long> addedNzbs = new HashSet<>();
-        Set<SearchResultEntity> missedNzbs = new HashSet<>();
-        Set<Long> failedSearchResultIds = new HashSet<>();
-        Set<String> invalidIds = new LinkedHashSet<>();
-
-        for (AddFilesRequest.SearchResult entry : searchResults) {
+        for (int i = 0; i < searchResults.size(); i++) {
+            AddFilesRequest.SearchResult entry = searchResults.get(i);
             try {
-                DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(entry.getSearchResultId(), true);
-                Long guid = downloadIdentifier.searchResultId();
-                String categoryToSend;
-
-                if ("Use original category".equals(category)) {
-                    if ("N/A".equals(entry.getOriginalCategory())) {
-                        logger.info("Using mapped category {} because the original category is N/A", entry.getMappedCategory());
-                        categoryToSend = entry.getMappedCategory();
-                    } else {
-                        categoryToSend = entry.getOriginalCategory();
-                    }
-                } else if ("Use mapped category".equals(category)) {
-                    categoryToSend = entry.getMappedCategory();
-                } else if ("Use no category".equals(category)) {
-                    categoryToSend = null;
-                } else {
-                    categoryToSend = category;
-                }
-
-                Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
-                if (optionalResult.isEmpty()) {
-                    logger.error("Download request with invalid/outdated GUID {}", guid);
-                    failedSearchResultIds.add(guid);
-                    continue;
-                }
-                final SearchResultEntity searchResult = optionalResult.get();
-                searchResult.setDownloadSearchId(downloadIdentifier.searchId());
-                final String searchResultTitle = optionalResult.get().getTitle();
-                final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
-                try {
-
-                    NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType(), searchResult);
-                    final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
-                    if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
-                        logger.debug("Adding type UPLOAD and file download access type PROXY for downloader {} and indexer {}", getName(), indexerConfig.getName());
-                        // As we need to get the NZB and send it to the downloader there's no difference between redirect or proxy
-                        DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
-                        if (result.isSuccessful()) {
-                            String externalId = addContent(result.getContent(), result.getTitle(), searchResult.getDownloadType(), categoryToSend);
-                            result.getDownloadEntity().setExternalId(externalId);
-                            fileHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
-                            addedNzbs.add(guid);
-                        } else {
-                            missedNzbs.add(searchResult);
-                        }
-                    } else {
-                        logger.debug("Adding type SEND_LINK for downloader {} and indexer {}", getName(), indexerConfig.getName());
-                        //Adding type is SEND_LINK or indexer requires a redirect or even sending the direct link
-                        //In any case we send a link, either to us or to the indexer
-                        DownloadLink link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
-
-                        String externalId = addLink(link.link(), searchResultTitle, searchResult.getDownloadType(), categoryToSend);
-                        guidExternalIds.put(guid, externalId);
-                        addedNzbs.add(guid);
-
-                        //Ideally we would add the download and set it to failed after an exception but that is too much work
-                        if (!link.isInternal()) {
-                            logger.debug("Saving download for sending an external link to the downloader");
-                            //We're sending an external link to the downloader and will never hear back about that so we need to store this as a download
-                            fileHandler.handleRedirect(SearchSource.INTERNAL, searchResult, link.link());
-                        }
-                    }
-                } catch (DuplicateNzbException e) {
-                    if (searchResult != null) {
-                        missedNzbs.add(searchResult);
-                    }
-                }
+                addSearchResult(entry, category, results);
             } catch (InvalidSearchResultIdException | EntityNotFoundException e) {
                 logger.error("Unable to find the search result in the database for ID: {}", entry.getSearchResultId());
-                addParsedSearchResultId(entry.getSearchResultId(), failedSearchResultIds, addedNzbs, invalidIds);
+                addParsedSearchResultId(entry.getSearchResultId(), results);
             } catch (DownloaderException e) {
                 // DownloaderException indicates a downloader-wide issue, so we stop processing
                 logger.error("Downloader error: {}", e.getMessage());
-                String message = e.getMessage();
-                if (!addedNzbs.isEmpty()) {
-                    message += ".\n" + addedNzbs.size() + " were added successfully before the error";
-                }
-                // Add remaining unprocessed search results to failed list
-                for (AddFilesRequest.SearchResult remainingEntry : searchResults) {
-                    addParsedSearchResultId(remainingEntry.getSearchResultId(), failedSearchResultIds, addedNzbs, invalidIds);
-                }
-                failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getHash).collect(Collectors.toSet()));
-                return new AddNzbsResponse(false, message, addedNzbs, failedSearchResultIds, invalidIds);
+                //Everything from the current entry onwards is unprocessed. Entries before it were already sorted into one of the buckets
+                return buildAbortedResponse(e, searchResults.subList(i, searchResults.size()), results);
             }
         }
 
-        // Combine failedSearchResultIds with missedNzb IDs
-        failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getHash).collect(Collectors.toSet()));
+        return buildResponse(results);
+    }
 
-        if (missedNzbs.isEmpty() && failedSearchResultIds.isEmpty() && invalidIds.isEmpty()) {
-            return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
-        } else {
-            logger.debug("At least one NZB was not downloaded successfully or could not be added to the downloader");
-            String message = "";
-            if (!missedNzbs.isEmpty()) {
-                message = "NZBs for the following titles could not be downloaded or added:\r\n" +
-                          missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", "));
-            }
-            if (!failedSearchResultIds.isEmpty() && missedNzbs.isEmpty()) {
-                message = "Some search results could not be processed";
-            }
-            if (!invalidIds.isEmpty()) {
-                message = "Some download identifiers were invalid";
-            }
-            return new AddNzbsResponse(!addedNzbs.isEmpty(), message, addedNzbs, new ArrayList<>(failedSearchResultIds), invalidIds);
+    /**
+     * Resolves one requested search result and hands it to the downloader.
+     *
+     * @throws InvalidSearchResultIdException when the requested identifier cannot be parsed
+     * @throws DownloaderException            when the downloader itself failed, meaning no further results should be sent to it
+     */
+    private void addSearchResult(AddFilesRequest.SearchResult entry, String category, AddNzbsResults results) throws InvalidSearchResultIdException, DownloaderException {
+        DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(entry.getSearchResultId(), true);
+        Long guid = downloadIdentifier.searchResultId();
+        String categoryToSend = determineCategoryToSend(entry, category);
+
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
+        if (optionalResult.isEmpty()) {
+            logger.error("Download request with invalid/outdated GUID {}", guid);
+            results.failedSearchResultIds.add(guid);
+            return;
+        }
+        final SearchResultEntity searchResult = optionalResult.get();
+        searchResult.setDownloadSearchId(downloadIdentifier.searchId());
+        try {
+            sendToDownloader(searchResult, guid, categoryToSend, results);
+        } catch (DuplicateNzbException e) {
+            results.missedNzbs.add(searchResult);
         }
     }
 
-    private void addParsedSearchResultId(String identifier, Set<Long> failedSearchResultIds, Set<Long> addedNzbs, Set<String> invalidIds) {
+    private String determineCategoryToSend(AddFilesRequest.SearchResult entry, String category) {
+        if ("Use original category".equals(category)) {
+            if ("N/A".equals(entry.getOriginalCategory())) {
+                logger.info("Using mapped category {} because the original category is N/A", entry.getMappedCategory());
+                return entry.getMappedCategory();
+            }
+            return entry.getOriginalCategory();
+        }
+        if ("Use mapped category".equals(category)) {
+            return entry.getMappedCategory();
+        }
+        if ("Use no category".equals(category)) {
+            return null;
+        }
+        return category;
+    }
+
+    private void sendToDownloader(SearchResultEntity searchResult, Long guid, String categoryToSend, AddNzbsResults results) throws DownloaderException {
+        final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
+        NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType(), searchResult);
+        final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
+        if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
+            logger.debug("Adding type UPLOAD and file download access type PROXY for downloader {} and indexer {}", getName(), indexerConfig.getName());
+            // As we need to get the NZB and send it to the downloader there's no difference between redirect or proxy
+            DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, searchResult); //Uploading NZBs can only be done via proxying
+            if (result.isSuccessful()) {
+                String externalId = addContent(result.getContent(), result.getTitle(), searchResult.getDownloadType(), categoryToSend);
+                result.getDownloadEntity().setExternalId(externalId);
+                fileHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                results.addedNzbs.add(guid);
+            } else {
+                results.missedNzbs.add(searchResult);
+            }
+        } else {
+            logger.debug("Adding type SEND_LINK for downloader {} and indexer {}", getName(), indexerConfig.getName());
+            //Adding type is SEND_LINK or indexer requires a redirect or even sending the direct link
+            //In any case we send a link, either to us or to the indexer
+            DownloadLink link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
+
+            String externalId = addLink(link.link(), searchResult.getTitle(), searchResult.getDownloadType(), categoryToSend);
+            if (externalId != null) {
+                //A null value would make isDownloadMatchingDownloaderEntry throw for every later status update
+                guidExternalIds.put(guid, externalId);
+            }
+            results.addedNzbs.add(guid);
+
+            //Ideally we would add the download and set it to failed after an exception but that is too much work
+            if (!link.isInternal()) {
+                logger.debug("Saving download for sending an external link to the downloader");
+                //We're sending an external link to the downloader and will never hear back about that so we need to store this as a download
+                fileHandler.handleRedirect(SearchSource.INTERNAL, searchResult, link.link());
+            }
+        }
+    }
+
+    private AddNzbsResponse buildAbortedResponse(DownloaderException e, List<AddFilesRequest.SearchResult> unprocessedEntries, AddNzbsResults results) {
+        String message = e.getMessage();
+        if (!results.addedNzbs.isEmpty()) {
+            message += ".\n" + results.addedNzbs.size() + " were added successfully before the error";
+        }
+        for (AddFilesRequest.SearchResult unprocessedEntry : unprocessedEntries) {
+            addParsedSearchResultId(unprocessedEntry.getSearchResultId(), results);
+        }
+        results.mergeMissedNzbsIntoFailedIds();
+        return new AddNzbsResponse(false, message, results.addedNzbs, results.failedSearchResultIds, results.invalidIds);
+    }
+
+    private AddNzbsResponse buildResponse(AddNzbsResults results) {
+        results.mergeMissedNzbsIntoFailedIds();
+
+        if (results.missedNzbs.isEmpty() && results.failedSearchResultIds.isEmpty() && results.invalidIds.isEmpty()) {
+            return new AddNzbsResponse(true, null, results.addedNzbs, Collections.emptyList());
+        }
+        logger.debug("At least one NZB was not downloaded successfully or could not be added to the downloader");
+        return new AddNzbsResponse(!results.addedNzbs.isEmpty(), buildFailureMessage(results), results.addedNzbs, new ArrayList<>(results.failedSearchResultIds), results.invalidIds);
+    }
+
+    /**
+     * Builds the message shown to the user. Every kind of failure that occurred is reported, not just the last one.
+     */
+    private String buildFailureMessage(AddNzbsResults results) {
+        List<String> messages = new ArrayList<>();
+        if (!results.missedNzbs.isEmpty()) {
+            messages.add("NZBs for the following titles could not be downloaded or added:\r\n" +
+                         results.missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", ")));
+        } else if (!results.failedSearchResultIds.isEmpty()) {
+            messages.add("Some search results could not be processed");
+        }
+        if (!results.invalidIds.isEmpty()) {
+            messages.add("Some download identifiers were invalid");
+        }
+        return String.join("\r\n", messages);
+    }
+
+    private void addParsedSearchResultId(String identifier, AddNzbsResults results) {
         try {
             long searchResultId = DownloadIdentifier.parse(identifier, true).searchResultId();
-            if (!addedNzbs.contains(searchResultId) && !failedSearchResultIds.contains(searchResultId)) {
-                failedSearchResultIds.add(searchResultId);
+            if (!results.addedNzbs.contains(searchResultId) && !results.failedSearchResultIds.contains(searchResultId)) {
+                results.failedSearchResultIds.add(searchResultId);
             }
         } catch (InvalidSearchResultIdException e) {
             logger.error("Unable to parse download identifier {}", identifier);
-            invalidIds.add(identifier);
+            results.invalidIds.add(identifier);
+        }
+    }
+
+    /**
+     * The buckets a requested search result can end up in while {@link #addBySearchResultIds(List, String)} runs.
+     */
+    private static class AddNzbsResults {
+        private final Set<Long> addedNzbs = new HashSet<>();
+        private final Set<SearchResultEntity> missedNzbs = new HashSet<>();
+        private final Set<Long> failedSearchResultIds = new HashSet<>();
+        private final Set<String> invalidIds = new LinkedHashSet<>();
+
+        private void mergeMissedNzbsIntoFailedIds() {
+            failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getHash).collect(Collectors.toSet()));
         }
     }
 
@@ -327,6 +373,33 @@ public abstract class Downloader {
             logger.error("Error while trying to update download statuses", throwable);
         }
         return updatedDownloads;
+    }
+
+    /**
+     * Called by a downloader after a status request succeeded so that the next failure is logged again.
+     */
+    protected void resetStatusErrorThrottle() {
+        synchronized (statusErrorLock) {
+            lastStatusErrorLogged = null;
+        }
+    }
+
+    /**
+     * Shared fallback for a failed status request: the error is logged at most once per {@link #STATUS_ERROR_LOG_INTERVAL}
+     * (using the calling downloader's own logger and message, so log output is unchanged) and an OFFLINE status with a
+     * recorded download rate of zero is returned.
+     */
+    protected DownloaderStatus handleStatusRequestError(Logger downloaderLogger, String errorMessage, Throwable error) {
+        synchronized (statusErrorLock) {
+            if (lastStatusErrorLogged == null || lastStatusErrorLogged.isBefore(Instant.now().minus(STATUS_ERROR_LOG_INTERVAL))) {
+                downloaderLogger.error(errorMessage, error);
+                lastStatusErrorLogged = Instant.now();
+            }
+        }
+        DownloaderStatus status = new DownloaderStatus();
+        status.setState(DownloaderStatus.State.OFFLINE);
+        addDownloadRate(0);
+        return status;
     }
 
     protected void addDownloadRate(long downloadRateKb) {
