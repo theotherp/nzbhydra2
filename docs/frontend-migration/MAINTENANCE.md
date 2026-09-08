@@ -3575,3 +3575,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2002 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances`, `knip` green; `git diff --check -- core/ui-react` clean. No Playwright run: rendering is proven unchanged by the stylesheet dump.
 - **Commit:** `92a90787d`
 - **Note:** backlog item 15 of `docs/code-quality-backlog-2026-09.md`. `activeFilterCount` now takes `(filters, defaults)`; `RefineSidebar` receives `filterDefaults` alongside `results`, an invariant the types cannot enforce (documented in its JSDoc). Recorded, not fixed: `titleCellSx(nestingLevel)` in `ResultRow` still allocates per title cell; one call-count assertion in `resultTable.test.ts` pins an exact number of key reads and may need loosening if the bucketing ever reads more.
+
+### 2026-09-08 — Make the title autocomplete a complete combobox
+
+- **Why not a packet:** markup and keyboard polish inside an existing feature plus one contained bugfix (Enter after Escape threw), with regression tests red before the fix; no `data-testid` or contract change. The hand-rolled listbox is kept per `search-form-redesign.md` (*What does not change*). Implemented by a subagent, reviewed twice by fresh subagents (the first found the stale active option on Escape/blur; fixed).
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2007 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` green; `git diff --check -- core/ui-react` clean. No captures: attributes and keyboard behaviour only, nothing visible changes.
+- **Commit:** `fd0475508`
+- **Note:** backlog item 16 of `docs/code-quality-backlog-2026-09.md`. Recorded, not fixed: `aria-controls` is omitted while the combobox is collapsed, which ARIA 1.2 lists as required; matches MUI's own Autocomplete and there is no popup to reference, so left as is. Home/End are not implemented (optional in the pattern).
