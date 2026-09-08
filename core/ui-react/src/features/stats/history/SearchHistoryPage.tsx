@@ -103,9 +103,36 @@ export function SearchHistoryPage({
         SEARCH_HISTORY_SORT_COLUMNS,
         defaultSort,
     );
-    const [showUserAgent, setShowUserAgent] = useState(false);
+    // A display toggle with an invariant attached: the user-agent dimension
+    // only exists while the column is shown, so a user-agent filter must never
+    // be able to sit in the URL with the column hidden -- it would then be in
+    // the search parameters but in no dimension, and so in no request, no
+    // refine field and no active-filter count, leaving the page claiming a
+    // filter it does not apply. The column therefore follows the checkbox
+    // *or* an active user-agent filter, which is what carries a bookmark, a
+    // shared link, a reload, a Back step and a link from elsewhere alike.
+    // Derived from the current filter values rather than from the URL, so
+    // unticking -- which clears the filter in the same handler and commits it
+    // `FILTER_COMMIT_DELAY_MS` later -- hides the column at once instead of
+    // holding it open until the commit lands...
+    const [userAgentColumnChosen, setUserAgentColumnChosen] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
     const userAgentFilter = values["user-agent"];
+    const userAgentFilterActive =
+        userAgentFilter !== undefined && isHistoryFilterActive(userAgentFilter);
+    // ...and the arrival *latches* the checkbox on, adjusting state during
+    // render rather than in an effect. Without the latch the column would be
+    // held open by the filter value alone, so clearing the field to retype it
+    // would unmount the field under the caret on the keystroke that empties
+    // it. Once shown, the column stays until the checkbox is unticked -- which
+    // clears the filter in the same handler, so the two never disagree.
+    const [wasUserAgentFilterActive, setWasUserAgentFilterActive] =
+        useState(false);
+    if (userAgentFilterActive !== wasUserAgentFilterActive) {
+        setWasUserAgentFilterActive(userAgentFilterActive);
+        if (userAgentFilterActive) setUserAgentColumnChosen(true);
+    }
+    const showUserAgent = userAgentColumnChosen || userAgentFilterActive;
     const userInfoType = historyUserInfoType(safeConfig);
     const dimensions = useMemo(
         () =>
@@ -235,7 +262,9 @@ export function SearchHistoryPage({
                             <Checkbox
                                 checked={showUserAgent}
                                 onChange={(event) => {
-                                    setShowUserAgent(event.target.checked);
+                                    setUserAgentColumnChosen(
+                                        event.target.checked,
+                                    );
                                     // Hiding the column drops any filter the
                                     // column carried -- but only if it carried
                                     // one. Writing an empty value

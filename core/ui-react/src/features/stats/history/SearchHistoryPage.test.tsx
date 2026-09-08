@@ -511,6 +511,117 @@ describe("SearchHistoryPage", () => {
         );
     });
 
+    // A link, a bookmark or a Back step can arrive with the user-agent filter
+    // already in the URL. The dimension only exists while the column is shown,
+    // so the column has to come up shown -- otherwise the filter reaches
+    // neither the request nor the refine surface while the URL still claims it
+    // is on.
+    it("should show the user-agent column and send its filter when the URL arrives with one", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        renderPage(fetchImplementation, {search: "?ft.user-agent=agent"});
+        await screen.findByTestId("search-history-row");
+
+        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+            filterModel: {
+                user_agent: {filterType: "freetext", filterValue: "agent"},
+            },
+        });
+        expect(screen.getByLabelText("Show user agents")).toBeChecked();
+        expect(screen.getByLabelText("User agent")).toHaveValue("agent");
+    });
+
+    // Clearing the field to retype it makes the filter momentarily inactive.
+    // The column has to survive that -- before the arrival latched the
+    // checkbox on, the field unmounted under the caret on the keystroke that
+    // emptied it -- and still go away when the checkbox is unticked.
+    it("should keep the user-agent column while its field is cleared, and drop it only when unticked", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        renderPage(fetchImplementation, {search: "?ft.user-agent=agent"});
+        await screen.findByTestId("search-history-row");
+        const field = screen.getByLabelText("User agent");
+        field.focus();
+
+        fireEvent.change(field, {target: {value: ""}});
+
+        expect(screen.getByLabelText("User agent")).toBe(field);
+        expect(field).toHaveFocus();
+
+        fireEvent.click(screen.getByLabelText("Show user agents"));
+        expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
+        await waitFor(() =>
+            expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+                filterModel: {},
+            }),
+        );
+        expect(
+            JSON.parse(requests.at(-1)?.body as string).filterModel,
+        ).not.toHaveProperty("user_agent");
+    });
+
+    // The same invariant one render later: the filtered URL can also arrive
+    // after mount -- a Back step onto a filtered entry, or a link from
+    // elsewhere -- while the column sits hidden.
+    it("should show the user-agent column when a filtered URL arrives after mount", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        const {router} = renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
+
+        await router.navigate({
+            to: "/stats/searches",
+            search: {"ft.user-agent": "agent"},
+        });
+
+        expect(await screen.findByLabelText("User agent")).toHaveValue("agent");
+        expect(screen.getByLabelText("Show user agents")).toBeChecked();
+        await waitFor(() =>
+            expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+                filterModel: {
+                    user_agent: {filterType: "freetext", filterValue: "agent"},
+                },
+            }),
+        );
+    });
+
     it("should hide the username and IP filter dimensions when history user info is disabled", async () => {
         renderPage(
             vi
