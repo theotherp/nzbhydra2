@@ -128,8 +128,11 @@ export class MalformedUpdateResponseError extends Error {
 /** `API-UPDATES-INFOS`: everything the Updates tab branches on. */
 export async function getUpdateInfos(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<UpdateInfos> {
-    return parseUpdateInfos(await transport.request<unknown>(INFOS_PATH));
+    return parseUpdateInfos(
+        await transport.request<unknown>(INFOS_PATH, {signal}),
+    );
 }
 
 /**
@@ -138,9 +141,10 @@ export async function getUpdateInfos(
  */
 export async function getSimpleUpdateInfos(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<SimpleUpdateInfos> {
     const infos = parseUpdateInfos(
-        await transport.request<unknown>(SIMPLE_INFOS_PATH),
+        await transport.request<unknown>(SIMPLE_INFOS_PATH, {signal}),
     );
     return {
         currentVersion: infos.currentVersion,
@@ -151,9 +155,10 @@ export async function getSimpleUpdateInfos(
 /** `API-UPDATES-VERSION-HISTORY`: every released change up to this version. */
 export async function getVersionHistory(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<ChangelogEntry[]> {
     return parseChangelog(
-        await transport.request<unknown>(VERSION_HISTORY_PATH),
+        await transport.request<unknown>(VERSION_HISTORY_PATH, {signal}),
     );
 }
 

@@ -21,9 +21,14 @@ export class MalformedNewsResponseError extends Error {
     }
 }
 
-export async function getNews(transport: ApiTransport): Promise<NewsEntry[]> {
-    const response =
-        await transport.request<NewsListResponse>("internalapi/news");
+export async function getNews(
+    transport: ApiTransport,
+    signal?: AbortSignal,
+): Promise<NewsEntry[]> {
+    const response = await transport.request<NewsListResponse>(
+        "internalapi/news",
+        {signal},
+    );
     return parseNewsEntries(response);
 }
 

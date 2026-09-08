@@ -62,9 +62,10 @@ export class MalformedBackupResponseError extends Error {
  */
 export async function getBackups(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<BackupEntry[]> {
     const parsed = backupListSchema.safeParse(
-        await transport.request<unknown>(LIST_PATH),
+        await transport.request<unknown>(LIST_PATH, {signal}),
     );
     if (!parsed.success) {
         throw new MalformedBackupResponseError();

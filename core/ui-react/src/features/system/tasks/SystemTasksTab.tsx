@@ -48,7 +48,7 @@ export function SystemTasksTab({
     const queryClient = useQueryClient();
     const [runningTask, setRunningTask] = useState<string | null>(null);
     const tasks = useQuery({
-        queryFn: () => getTasks(transport),
+        queryFn: ({signal}) => getTasks(transport, signal),
         queryKey: TASKS_QUERY_KEY,
     });
 

@@ -35,7 +35,7 @@ export function RawLogView({transport}: {transport: ApiTransport}) {
     const [tail, setTail] = useState(loadTail);
     const logPanel = useRef<HTMLPreElement>(null);
     const log = useQuery({
-        queryFn: () => getCurrentLogFile(transport),
+        queryFn: ({signal}) => getCurrentLogFile(transport, signal),
         queryKey: ["system-log-current"],
         refetchInterval: autoRefresh ? REFRESH_INTERVAL_MS : false,
         // FM-121 gave the application a 30-second default `staleTime`. A log

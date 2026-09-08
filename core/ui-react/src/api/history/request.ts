@@ -67,10 +67,17 @@ export async function requestHistoryPage<TEntry>(
         query: HistoryQuery;
         parseEntry: (value: unknown) => TEntry | undefined;
     },
+    /**
+     * React Query's own `AbortSignal`, forwarded to `fetch` so a page that
+     * unmounts or changes its query key cancels the request in flight instead
+     * of leaving it to finish unobserved.
+     */
+    signal?: AbortSignal,
 ): Promise<HistoryPage<TEntry>> {
     const response = await transport.request<unknown>(request.path, {
         method: "POST",
         json: historyRequestBody(request.query),
+        signal,
     });
     return historyPage(response, request.label, request.parseEntry);
 }

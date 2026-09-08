@@ -35,7 +35,7 @@ export function SystemAboutTab({
 }) {
     const dereferer = useSafeConfig(bootstrap)?.dereferer;
     const infos = useQuery({
-        queryFn: () => getSimpleUpdateInfos(transport),
+        queryFn: ({signal}) => getSimpleUpdateInfos(transport, signal),
         queryKey: ["update-simple-infos"],
     });
     const packageInfo = infos.data?.packageInfo ?? null;

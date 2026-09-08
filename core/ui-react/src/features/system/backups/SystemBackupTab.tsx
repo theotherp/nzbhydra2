@@ -61,7 +61,7 @@ export function SystemBackupTab({
     const [busy, setBusy] = useState(false);
     const [progress, setProgress] = useState<UploadProgress | null>(null);
     const backups = useQuery({
-        queryFn: () => getBackups(transport),
+        queryFn: ({signal}) => getBackups(transport, signal),
         queryKey: ["system-backups"],
     });
 

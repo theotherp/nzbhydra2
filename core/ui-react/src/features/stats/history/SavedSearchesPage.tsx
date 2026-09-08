@@ -47,7 +47,7 @@ export function SavedSearchesPage({
     const [pendingDelete, setPendingDelete] = useState<number>();
     const query = useQuery({
         queryKey,
-        queryFn: () => getSavedSearches(transport),
+        queryFn: ({signal}) => getSavedSearches(transport, signal),
     });
     const deletion = useMutation({
         mutationFn: (index: number) => deleteSavedSearch(transport, index),

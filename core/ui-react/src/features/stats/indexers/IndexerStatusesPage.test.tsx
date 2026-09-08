@@ -1,8 +1,9 @@
 import {ThemeProvider} from "@mui/material/styles";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {cleanup, render, screen, within} from "@testing-library/react";
-import {afterEach, describe, expect, it} from "vitest";
+import {cleanup, render, screen, waitFor, within} from "@testing-library/react";
+import {afterEach, describe, expect, it, vi} from "vitest";
 
+import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {IndexerStatusesPage} from "./IndexerStatusesPage";
 import {vipWarning} from "./vipWarning";
@@ -281,5 +282,40 @@ describe("IndexerStatusesPage", () => {
         expect(vipWarning("2025-01-09", "UTC", now)).toBeUndefined();
         expect(vipWarning("Lifetime", "UTC", now)).toBeUndefined();
         expect(vipWarning("not-a-date", "UTC", now)).toBeUndefined();
+    });
+
+    it("should pass React Query's abort signal to fetch and abort it on unmount", async () => {
+        const signals: (AbortSignal | null | undefined)[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                signals.push(init?.signal);
+                // Still in flight when the page goes away.
+                return new Promise<Response>(() => {});
+            },
+        ) as unknown as typeof fetch;
+        const {unmount} = render(
+            <ThemeProvider theme={createHydraTheme()}>
+                <QueryClientProvider
+                    client={
+                        new QueryClient({
+                            defaultOptions: {queries: {retry: false}},
+                        })
+                    }
+                >
+                    <IndexerStatusesPage
+                        bootstrap={bootstrap}
+                        transport={new ApiTransport("/", fetchImplementation)}
+                    />
+                </QueryClientProvider>
+            </ThemeProvider>,
+        );
+        await waitFor(() => expect(signals).toHaveLength(1));
+        const signal = signals[0];
+        expect(signal).toBeInstanceOf(AbortSignal);
+        expect(signal?.aborted).toBe(false);
+
+        unmount();
+
+        await waitFor(() => expect(signal?.aborted).toBe(true));
     });
 });

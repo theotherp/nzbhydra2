@@ -41,7 +41,7 @@ export function FormattedLogView({
     const [offset, setOffset] = useState(0);
     const [openEntry, setOpenEntry] = useState<LogEntry | null>(null);
     const page = useQuery({
-        queryFn: () => getJsonLogs(transport, offset),
+        queryFn: ({signal}) => getJsonLogs(transport, offset, signal),
         queryKey: ["system-log-json", offset],
         // As in `RawLogView`: the application-wide 30-second `staleTime`
         // (FM-121) must not apply to a log tail, whose whole value is that it

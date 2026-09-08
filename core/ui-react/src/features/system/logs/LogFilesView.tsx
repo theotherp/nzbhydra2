@@ -20,7 +20,7 @@ import {ApiTransport} from "../../../api/transport";
  */
 export function LogFilesView({transport}: {transport: ApiTransport}) {
     const files = useQuery({
-        queryFn: () => getLogFileNames(transport),
+        queryFn: ({signal}) => getLogFileNames(transport, signal),
         queryKey: ["system-log-files"],
     });
 

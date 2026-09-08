@@ -598,4 +598,24 @@ describe("DownloadHistoryPage", () => {
             screen.getByRole("columnheader", {name: "Title"}),
         ).toHaveAttribute("aria-sort", "ascending");
     });
+
+    it("should abort the in-flight history request when the page unmounts", async () => {
+        const signals: (AbortSignal | null | undefined)[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                signals.push(init?.signal);
+                // Still in flight when the page goes away.
+                return new Promise<Response>(() => {});
+            },
+        ) as unknown as typeof fetch;
+        const {unmount} = renderPage(fetchImplementation);
+        await waitFor(() => expect(signals).toHaveLength(1));
+        const signal = signals[0];
+        expect(signal).toBeInstanceOf(AbortSignal);
+        expect(signal?.aborted).toBe(false);
+
+        unmount();
+
+        await waitFor(() => expect(signal?.aborted).toBe(true));
+    });
 });

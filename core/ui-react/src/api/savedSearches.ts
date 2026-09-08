@@ -86,9 +86,11 @@ export async function createSavedSearch(
 
 export async function getSavedSearches(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<SavedSearchList> {
     const response = await transport.request<unknown>(
         "internalapi/savedsearches",
+        {signal},
     );
     if (!Array.isArray(response)) {
         throw new Error("Saved searches response has an invalid format");

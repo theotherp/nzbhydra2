@@ -25,7 +25,8 @@ export function NewsPage({loadNews, transport}: NewsPageProps) {
 
     const newsQuery = useQuery({
         queryKey: ["news"],
-        queryFn: loadNews ?? (() => getNews(transport as ApiTransport)),
+        queryFn: ({signal}) =>
+            loadNews ? loadNews() : getNews(transport as ApiTransport, signal),
     });
 
     if (newsQuery.isPending) {

@@ -156,13 +156,18 @@ export function downloadHistoryDimensions(options: {
 export async function getDownloadHistory(
     transport: ApiTransport,
     query: HistoryQuery,
+    signal?: AbortSignal,
 ): Promise<HistoryPage<DownloadHistoryEntry>> {
-    return requestHistoryPage(transport, {
-        path: "internalapi/history/downloads",
-        label: "Download history",
-        query,
-        parseEntry: downloadHistoryEntry,
-    });
+    return requestHistoryPage(
+        transport,
+        {
+            path: "internalapi/history/downloads",
+            label: "Download history",
+            query,
+            parseEntry: downloadHistoryEntry,
+        },
+        signal,
+    );
 }
 
 function downloadHistoryEntry(

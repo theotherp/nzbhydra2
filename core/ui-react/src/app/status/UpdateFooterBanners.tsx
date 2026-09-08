@@ -48,7 +48,7 @@ export function UpdateFooterBanners({
     const maySeeAdmin = bootstrap.maySeeAdmin === true;
     const infos = useQuery({
         enabled: maySeeAdmin,
-        queryFn: () => getUpdateInfos(transport),
+        queryFn: ({signal}) => getUpdateInfos(transport, signal),
         queryKey: ["update-footer-infos"],
         staleTime: Infinity,
     });

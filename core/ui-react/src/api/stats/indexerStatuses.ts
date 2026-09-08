@@ -56,9 +56,11 @@ const statusSchema = z.object({
 
 export async function getIndexerStatuses(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<IndexerStatusList> {
     const response = await transport.request<IndexerStatusesResponse>(
         "internalapi/indexerstatuses",
+        {signal},
     );
     return parseIndexerStatuses(response);
 }

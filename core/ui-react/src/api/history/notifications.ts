@@ -106,13 +106,18 @@ export function notificationHistoryDimensions(): HistoryDimension[] {
 export async function getNotificationHistory(
     transport: ApiTransport,
     query: HistoryQuery,
+    signal?: AbortSignal,
 ): Promise<HistoryPage<NotificationHistoryEntry>> {
-    return requestHistoryPage(transport, {
-        path: "internalapi/history/notifications",
-        label: "Notification history",
-        query,
-        parseEntry: notificationHistoryEntry,
-    });
+    return requestHistoryPage(
+        transport,
+        {
+            path: "internalapi/history/notifications",
+            label: "Notification history",
+            query,
+            parseEntry: notificationHistoryEntry,
+        },
+        signal,
+    );
 }
 
 /**

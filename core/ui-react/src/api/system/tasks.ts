@@ -56,8 +56,11 @@ function toTasks(data: unknown): SystemTask[] {
  * sorted by next execution time server-side; that order is kept as the
  * display order.
  */
-export async function getTasks(transport: ApiTransport): Promise<SystemTask[]> {
-    return toTasks(await transport.request<unknown>(TASKS_PATH));
+export async function getTasks(
+    transport: ApiTransport,
+    signal?: AbortSignal,
+): Promise<SystemTask[]> {
+    return toTasks(await transport.request<unknown>(TASKS_PATH, {signal}));
 }
 
 /**

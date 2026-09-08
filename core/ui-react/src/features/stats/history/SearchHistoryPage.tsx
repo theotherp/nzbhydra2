@@ -163,14 +163,18 @@ export function SearchHistoryPage({
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
-        queryFn: () =>
-            getSearchHistory(transport, {
-                dimensions,
-                values: criteria.values,
-                page: criteria.page,
-                limit: pageSize,
-                sort,
-            }),
+        queryFn: ({signal}) =>
+            getSearchHistory(
+                transport,
+                {
+                    dimensions,
+                    values: criteria.values,
+                    page: criteria.page,
+                    limit: pageSize,
+                    sort,
+                },
+                signal,
+            ),
         // A committed filter edit is a new query key; keeping the previous
         // page's data rendered (rather than falling back to the first-load
         // spinner) keeps the refine surface mounted and its focus intact -- see
@@ -179,7 +183,8 @@ export function SearchHistoryPage({
     });
     const details = useQuery({
         queryKey: ["search-history-details", detailsId],
-        queryFn: () => getSearchHistoryDetails(transport, detailsId!),
+        queryFn: ({signal}) =>
+            getSearchHistoryDetails(transport, detailsId!, signal),
         enabled: detailsId !== undefined,
     });
     // One navigation, not two: `commitFilters` carries the new ordering into

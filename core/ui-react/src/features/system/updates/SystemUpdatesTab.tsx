@@ -39,11 +39,11 @@ export function SystemUpdatesTab({transport}: {transport: ApiTransport}) {
     );
     const installer = useUpdateInstaller(transport);
     const infos = useQuery({
-        queryFn: () => getUpdateInfos(transport),
+        queryFn: ({signal}) => getUpdateInfos(transport, signal),
         queryKey: ["update-infos"],
     });
     const history = useQuery({
-        queryFn: () => getVersionHistory(transport),
+        queryFn: ({signal}) => getVersionHistory(transport, signal),
         queryKey: ["update-version-history"],
     });
 

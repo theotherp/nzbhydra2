@@ -137,4 +137,65 @@ describe("requestHistoryPage", () => {
             },
         });
     });
+
+    it("should forward React Query's abort signal to fetch", async () => {
+        const controller = new AbortController();
+        const fetchImplementation = vi.fn<typeof fetch>(
+            async () =>
+                new Response(JSON.stringify({content: [], totalElements: 0}), {
+                    headers: {"Content-Type": "application/json"},
+                }),
+        );
+        await requestHistoryPage(
+            new ApiTransport("/hydra/", fetchImplementation),
+            {
+                path: "internalapi/history/downloads",
+                label: "Download history",
+                query: {
+                    dimensions: [],
+                    values: {},
+                    page: 1,
+                    limit: 25,
+                    sort: {column: "time", sortMode: 2},
+                },
+                parseEntry: () => undefined,
+            },
+            controller.signal,
+        );
+        const [, init] = fetchImplementation.mock.calls[0];
+        expect(init?.signal).toBe(controller.signal);
+    });
+
+    it("should reject with the abort reason when the supplied signal is aborted", async () => {
+        const controller = new AbortController();
+        // Stands in for the browser's own `fetch`, which rejects with the
+        // signal's reason as soon as that signal is aborted.
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) =>
+                new Promise<Response>((_resolve, reject) => {
+                    init?.signal?.addEventListener("abort", () => {
+                        reject(init.signal?.reason);
+                    });
+                }),
+        );
+        const page = requestHistoryPage(
+            new ApiTransport("/hydra/", fetchImplementation),
+            {
+                path: "internalapi/history/downloads",
+                label: "Download history",
+                query: {
+                    dimensions: [],
+                    values: {},
+                    page: 1,
+                    limit: 25,
+                    sort: {column: "time", sortMode: 2},
+                },
+                parseEntry: () => undefined,
+            },
+            controller.signal,
+        );
+        controller.abort(new DOMException("aborted", "AbortError"));
+
+        await expect(page).rejects.toThrow("aborted");
+    });
 });

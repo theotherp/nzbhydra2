@@ -41,9 +41,10 @@ export function IndexerStatusesPage({
         );
     const query = useQuery({
         queryKey: ["indexer-statuses"],
-        queryFn:
-            loadStatuses ??
-            (() => getIndexerStatuses(transport as ApiTransport)),
+        queryFn: ({signal}) =>
+            loadStatuses
+                ? loadStatuses()
+                : getIndexerStatuses(transport as ApiTransport, signal),
     });
     if (query.isPending) return <Loading message="Loading indexer statuses…" />;
     if (query.isError)

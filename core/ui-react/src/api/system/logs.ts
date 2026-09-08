@@ -56,13 +56,16 @@ export class MalformedLogResponseError extends Error {
 export async function getJsonLogs(
     transport: ApiTransport,
     offset: number,
+    signal?: AbortSignal,
 ): Promise<LogPage> {
     const query = new URLSearchParams({
         limit: String(LOG_PAGE_SIZE),
         offset: String(offset),
     });
     return parseLogPage(
-        await transport.request<unknown>(`${JSON_LOGS_PATH}?${query}`),
+        await transport.request<unknown>(`${JSON_LOGS_PATH}?${query}`, {
+            signal,
+        }),
         offset,
     );
 }
@@ -74,8 +77,9 @@ export async function getJsonLogs(
  */
 export async function getCurrentLogFile(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<string> {
-    return blobText(await transport.requestBlob(CURRENT_LOG_PATH));
+    return blobText(await transport.requestBlob(CURRENT_LOG_PATH, {signal}));
 }
 
 /**
@@ -96,9 +100,10 @@ function blobText(blob: Blob): Promise<string> {
 /** `API-SYSTEM-LOG-FILES`: the log directory's files, newest first. */
 export async function getLogFileNames(
     transport: ApiTransport,
+    signal?: AbortSignal,
 ): Promise<string[]> {
     const parsed = logFileNamesSchema.safeParse(
-        await transport.request<unknown>(LOG_FILE_NAMES_PATH),
+        await transport.request<unknown>(LOG_FILE_NAMES_PATH, {signal}),
     );
     if (!parsed.success) {
         throw new MalformedLogResponseError();

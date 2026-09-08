@@ -113,14 +113,18 @@ export function DownloadHistoryPage({
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
-        queryFn: () =>
-            getDownloadHistory(transport, {
-                dimensions,
-                values: criteria.values,
-                page: criteria.page,
-                limit: pageSize,
-                sort,
-            }),
+        queryFn: ({signal}) =>
+            getDownloadHistory(
+                transport,
+                {
+                    dimensions,
+                    values: criteria.values,
+                    page: criteria.page,
+                    limit: pageSize,
+                    sort,
+                },
+                signal,
+            ),
         // A committed filter edit is a new query key. Without this the page
         // would fall back to its first-load spinner on each one, unmounting
         // the refine surface mid-edit and taking keyboard focus with it; the

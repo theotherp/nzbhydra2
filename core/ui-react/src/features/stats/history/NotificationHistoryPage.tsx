@@ -94,14 +94,18 @@ export function NotificationHistoryPage({
             historyFilterModel(dimensions, criteria.values),
             sort,
         ],
-        queryFn: () =>
-            getNotificationHistory(transport, {
-                dimensions,
-                values: criteria.values,
-                page: criteria.page,
-                limit: pageSize,
-                sort,
-            }),
+        queryFn: ({signal}) =>
+            getNotificationHistory(
+                transport,
+                {
+                    dimensions,
+                    values: criteria.values,
+                    page: criteria.page,
+                    limit: pageSize,
+                    sort,
+                },
+                signal,
+            ),
         // As on download history: a committed filter edit makes a new query
         // key, and falling back to the first-load spinner would unmount the
         // refine surface mid-edit and take keyboard focus with it.

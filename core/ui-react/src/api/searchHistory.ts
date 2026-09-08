@@ -163,13 +163,18 @@ export function searchHistoryDimensions(options: {
 export async function getSearchHistory(
     transport: ApiTransport,
     query: HistoryQuery,
+    signal?: AbortSignal,
 ): Promise<HistoryPage<SearchHistoryEntry>> {
-    return requestHistoryPage(transport, {
-        path: "internalapi/history/searches",
-        label: "Search history",
-        query,
-        parseEntry: historyEntry,
-    });
+    return requestHistoryPage(
+        transport,
+        {
+            path: "internalapi/history/searches",
+            label: "Search history",
+            query,
+            parseEntry: historyEntry,
+        },
+        signal,
+    );
 }
 
 function historyEntry(value: unknown): SearchHistoryEntry | undefined {
@@ -253,11 +258,13 @@ function historyEntry(value: unknown): SearchHistoryEntry | undefined {
 export async function getSearchHistoryDetails(
     transport: ApiTransport,
     id: number,
+    signal?: AbortSignal,
 ): Promise<SearchHistoryDetails> {
     if (!Number.isInteger(id))
         throw new Error("Search history ID must be an integer");
     const response = await transport.request<unknown>(
         `internalapi/history/searches/details/${id}`,
+        {signal},
     );
     const parsed = detailsSchema.safeParse(response);
     if (!parsed.success)

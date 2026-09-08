@@ -380,4 +380,49 @@ describe("SystemLogTab files view", () => {
             "nzbhydra2.log.1",
         );
     });
+
+    it("should abort a superseded log page request without surfacing an error", async () => {
+        const signals: AbortSignal[] = [];
+        const backend: Backend = {
+            fetch: vi.fn<typeof fetch>(),
+            jsonLogRequests: [],
+            rawLogRequests: 0,
+        };
+        backend.fetch.mockImplementation(
+            async (input: RequestInfo | URL, init?: RequestInit) => {
+                const url = new URL(String(input));
+                if (!url.pathname.endsWith("/debuginfos/jsonlogs")) {
+                    return jsonResponse(null);
+                }
+                const offset = Number(url.searchParams.get("offset"));
+                backend.jsonLogRequests.push(offset);
+                if (init?.signal) signals.push(init.signal);
+                if (offset === 0) {
+                    return jsonResponse({hasMore: true, lines: [logEntry()]});
+                }
+                // The older page never answers on its own; only its abort
+                // settles it, exactly as the browser's own fetch behaves.
+                return new Promise<Response>((_resolve, reject) => {
+                    init?.signal?.addEventListener("abort", () => {
+                        reject(init.signal?.reason);
+                    });
+                });
+            },
+        );
+        renderLogTab(backend);
+        await screen.findByTestId("system-log-table");
+        expect(signals[0]).toBeInstanceOf(AbortSignal);
+
+        fireEvent.click(screen.getByTestId("system-log-older"));
+        await waitFor(() => expect(signals).toHaveLength(2));
+        // Back to the newest page while the older read is still in flight:
+        // the superseded request must be cancelled, not left running.
+        fireEvent.click(screen.getByTestId("system-log-newer"));
+
+        await waitFor(() => expect(signals[1].aborted).toBe(true));
+        await screen.findByTestId("system-log-table");
+        expect(
+            screen.queryByText("Unable to load the log file."),
+        ).not.toBeInTheDocument();
+    });
 });
