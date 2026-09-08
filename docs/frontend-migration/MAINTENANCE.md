@@ -3599,3 +3599,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (139 files / 2012 tests), `build`, `check:api`, `validate:migration`, `knip` green; `git diff --check -- core/ui-react` clean.
 - **Commit:** `ce4fbfdad`
 - **Note:** backlog item 19 of `docs/code-quality-backlog-2026-09.md`. Cancellation relies on TanStack reading the `signal` getter, which the `({signal})` destructure does; the transport does not wrap fetch rejections. Recorded, not fixed: the `loadNews`/`loadStatuses` test seams take no signal, so a seam-backed query reads the signal without honouring it (benign); config, file browser, changelog dialogs and recent searches still use `() =>` queryFns because their API functions were out of scope.
+
+### 2026-09-08 — CSRF help text shared between the main config tab and the settings index
+
+- **Why not a packet:** three-line React side of core backlog item 14 (CSRF enforcement); a single `CSRF_HELP` constant in `mainSettings.ts` is referenced by `MainConfigTab.tsx` and `settingsIndex.ts` so the two copies cannot drift. No behaviour, contract or `data-testid` change. Reviewed by two fresh subagents as part of the core change.
+- **Paths:** `core/ui-react/src/features/config/main/{mainSettings.ts,MainConfigTab.tsx}`, `core/ui-react/src/features/config/settingsSearch/settingsIndex.ts`
+- **Gates:** `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, vitest for `features/config/main` and `settingsSearch` (87 tests incl. the settings-index drift test) green.
+- **Commit:** `36d8c8a0b`
+- **Note:** the system-test Playwright specs and `fixtures.ts` gained `csrfHeaders(page)` in the same commit because the rigs now run with CSRF on.
