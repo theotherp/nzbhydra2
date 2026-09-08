@@ -1,4 +1,5 @@
 import {cleanup, fireEvent, render, screen} from "@testing-library/react";
+import {StrictMode, useEffect} from "react";
 import {describe, expect, it, vi} from "vitest";
 
 import {DialogProvider} from "./DialogProvider";
@@ -45,6 +46,159 @@ describe("DialogProvider", () => {
         await vi.waitFor(() =>
             expect(onResult).toHaveBeenCalledWith("confirmed"),
         );
+    });
+
+    // FM maintenance: two overlapping `confirm()` calls used to overwrite each
+    // other's pending confirmation, dropping the first caller's `resolve` so
+    // its promise never settled (the duplicate-movie probe in `sendFlow.ts`
+    // could leave a send neither happening nor reporting).
+    it("should queue a second confirmation instead of dropping the first", async () => {
+        const settled: string[] = [];
+        function DoubleTrigger() {
+            const dialogs = useDialogs();
+            return (
+                <button
+                    onClick={() => {
+                        void dialogs
+                            .confirm({message: "First?", title: "First"})
+                            .then((result) => settled.push(`first:${result}`));
+                        void dialogs
+                            .confirm({message: "Second?", title: "Second"})
+                            .then((result) => settled.push(`second:${result}`));
+                    }}
+                    type="button"
+                >
+                    Open two
+                </button>
+            );
+        }
+
+        render(
+            <DialogProvider>
+                <DoubleTrigger />
+            </DialogProvider>,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Open two"}));
+
+        expect(screen.getByRole("dialog", {name: "First"})).toBeInTheDocument();
+        expect(screen.queryByText("Second?")).toBeNull();
+        const firstConfirmButton = screen.getByRole("button", {
+            name: "Confirm",
+        });
+
+        fireEvent.click(firstConfirmButton);
+        await vi.waitFor(() => expect(settled).toContain("first:confirmed"));
+
+        expect(
+            screen.getByRole("dialog", {name: "Second"}),
+        ).toBeInTheDocument();
+        // The next confirmation must mount a fresh dialog rather than swapping
+        // its text in under the user's focus: an in-place swap lets a second
+        // Enter press dismiss a dialog the user never saw, and screen readers
+        // never re-announce it.
+        expect(screen.getByRole("button", {name: "Confirm"})).not.toBe(
+            firstConfirmButton,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Cancel"}));
+        await vi.waitFor(() => expect(settled).toContain("second:cancelled"));
+
+        expect(settled).toEqual(["first:confirmed", "second:cancelled"]);
+    });
+
+    it("should keep the context value identity stable across an open and close", async () => {
+        const seen: unknown[] = [];
+        function IdentityProbe() {
+            const dialogs = useDialogs();
+            seen.push(dialogs);
+            return (
+                <button
+                    onClick={() => {
+                        void dialogs.confirm({
+                            message: "Delete this search?",
+                            title: "Delete search",
+                        });
+                    }}
+                    type="button"
+                >
+                    Open
+                </button>
+            );
+        }
+
+        render(
+            <DialogProvider>
+                <IdentityProbe />
+            </DialogProvider>,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Open"}));
+        fireEvent.click(screen.getByRole("button", {name: "Confirm"}));
+        await vi.waitFor(() =>
+            expect(screen.queryByText("Delete this search?")).toBeNull(),
+        );
+
+        expect(seen.length).toBeGreaterThan(0);
+        for (const value of seen) {
+            expect(value).toBe(seen[0]);
+        }
+    });
+
+    it("should settle a still-pending confirmation when the provider unmounts", async () => {
+        const onResult = vi.fn();
+        const {unmount} = render(
+            <DialogProvider>
+                <ConfirmationTrigger onResult={onResult} />
+            </DialogProvider>,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Delete"}));
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+        unmount();
+
+        await vi.waitFor(() =>
+            expect(onResult).toHaveBeenCalledWith("cancelled"),
+        );
+    });
+
+    // React runs a child's effects before its parent's, so StrictMode's
+    // dev-only effect replay interleaves a child that confirms from a mount
+    // effect with the provider's own mount and cleanup. The cleanup must leave
+    // no half-open state behind, or the replayed `confirm()` renders behind a
+    // zombie dialog whose buttons answer nothing.
+    it("should show exactly one working dialog under StrictMode's effect replay", async () => {
+        const onResult = vi.fn();
+        function ConfirmOnMount() {
+            const dialogs = useDialogs();
+            useEffect(() => {
+                void dialogs
+                    .confirm({
+                        message: "Delete this search?",
+                        title: "Delete search",
+                    })
+                    .then(onResult);
+            }, [dialogs]);
+            return null;
+        }
+
+        render(
+            <StrictMode>
+                <DialogProvider>
+                    <ConfirmOnMount />
+                </DialogProvider>
+            </StrictMode>,
+        );
+
+        expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+        fireEvent.click(screen.getByRole("button", {name: "Confirm"}));
+
+        await vi.waitFor(() =>
+            expect(onResult).toHaveBeenLastCalledWith("confirmed"),
+        );
+        await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     });
 
     it("should offer a third answer when a confirmation asks for one", async () => {
