@@ -35,10 +35,20 @@ export function groupResults(
     results: SearchResult[],
     options: GroupingOptions,
 ): ResultGroup[] {
+    // Both maps append with `push` rather than by rebuilding the bucket array
+    // (`[...(map.get(key) ?? []), result]`), which copied every member already
+    // in a group for each further member and so cost O(n^2) per group. A
+    // `Map`'s insertion order and each bucket's append order are unchanged, so
+    // the emitted group order and each group's member order are identical.
     const titleGroups = new Map<string, SearchResult[]>();
     for (const result of results) {
         const key = groupingKey(result, options);
-        titleGroups.set(key, [...(titleGroups.get(key) ?? []), result]);
+        const group = titleGroups.get(key);
+        if (group === undefined) {
+            titleGroups.set(key, [result]);
+        } else {
+            group.push(result);
+        }
     }
     return [...titleGroups.entries()].map(([key, groupedResults]) => {
         const duplicates = new Map<string, SearchResult[]>();
@@ -47,10 +57,12 @@ export function groupResults(
                 result.hash === undefined
                     ? `result:${result.searchResultId}`
                     : `hash:${result.hash}`;
-            duplicates.set(duplicateKey, [
-                ...(duplicates.get(duplicateKey) ?? []),
-                result,
-            ]);
+            const duplicateGroup = duplicates.get(duplicateKey);
+            if (duplicateGroup === undefined) {
+                duplicates.set(duplicateKey, [result]);
+            } else {
+                duplicateGroup.push(result);
+            }
         }
         return {key, duplicateGroups: [...duplicates.values()]};
     });
@@ -248,7 +260,14 @@ export function defaultFilters(
 /**
  * FM-181: how many of the refine surface's eight filter dimensions -- title,
  * categories, indexers, download types, size, age, grabs, quick filters --
- * currently differ from `defaultFilters(results, quickFilters)`.
+ * currently differ from `defaults`, the `defaultFilters(results,
+ * quickFilters)` of the same loaded results.
+ *
+ * The defaults are a parameter rather than recomputed here because every call
+ * site already holds the one `filterDefaults` memo for the current result set
+ * (`SearchResults` computes it for its own filter state and passes it to
+ * `RefineSidebar`); deriving them again here re-scanned every loaded result,
+ * twice per filter change, for no new information.
  *
  * It exists because the phone toolbar's refine trigger is an icon with a
  * badge: with the sections behind a sheet, the count is the only thing that
@@ -265,10 +284,8 @@ export function defaultFilters(
  */
 export function activeFilterCount(
     filters: ResultFilters,
-    results: SearchResult[],
-    quickFilters: QuickFilter[],
+    defaults: ResultFilters,
 ): number {
-    const defaults = defaultFilters(results, quickFilters);
     const changed = [
         filters.title !== defaults.title,
         ...(["categories", "downloadTypes", "indexers"] as const).map(
@@ -381,6 +398,14 @@ export function filterResults(
     quickFilters: QuickFilter[],
 ): SearchResult[] {
     const titleMatcher = makeTitleMatcher(filters.title);
+    // Both matchers are built once for the whole scan rather than per result:
+    // the selected quick filters, like the title matcher, depend only on
+    // `filters` and `quickFilters`, so grouping them inside the predicate
+    // rebuilt the same map for every loaded result.
+    const selectedQuickFilters = selectedQuickFilterGroups(
+        filters.quickFilters,
+        quickFilters,
+    );
     return results.filter(
         (result) =>
             titleMatcher(result.title) &&
@@ -399,11 +424,7 @@ export function filterResults(
             ) &&
             inRange(result.seeders ?? result.grabs, filters.grabs) &&
             inRange(ageInDays(result), filters.age) &&
-            matchesQuickFilters(
-                result.title,
-                filters.quickFilters,
-                quickFilters,
-            ),
+            matchesQuickFilters(result.title, selectedQuickFilters),
     );
 }
 
@@ -449,12 +470,18 @@ function makeTitleMatcher(query: string): (title: string) => boolean {
         );
 }
 
-function matchesQuickFilters(
-    title: string,
+/**
+ * The currently selected quick filters, bucketed by their group -- the
+ * per-scan half of `matchesQuickFilters`, which depends only on the selection
+ * and the configured filters and never on a result. Exported so its own
+ * behavior (and the fact that it is computed once per `filterResults` call
+ * rather than once per result) is directly testable.
+ */
+export function selectedQuickFilterGroups(
     selected: Record<string, boolean>,
     filters: QuickFilter[],
-): boolean {
-    const selectedByGroup = filters
+): QuickFilter[][] {
+    const byGroup = filters
         .filter((filter) => selected[quickFilterKey(filter)])
         .reduce<Partial<Record<QuickFilter["group"], QuickFilter[]>>>(
             (groups, filter) => {
@@ -463,7 +490,14 @@ function matchesQuickFilters(
             },
             {},
         );
-    return Object.values(selectedByGroup).every((groupFilters) =>
+    return Object.values(byGroup);
+}
+
+function matchesQuickFilters(
+    title: string,
+    selectedByGroup: QuickFilter[][],
+): boolean {
+    return selectedByGroup.every((groupFilters) =>
         groupFilters[0].group === "custom"
             ? groupFilters.every((filter) =>
                   filter.terms.every((term) => matchesTerm(title, term)),

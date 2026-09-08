@@ -13,6 +13,7 @@ import {
     TableRow,
     Tooltip,
 } from "@mui/material";
+import type {SxProps, Theme} from "@mui/material";
 import type {
     FocusEvent as ReactFocusEvent,
     KeyboardEvent as ReactKeyboardEvent,
@@ -60,6 +61,68 @@ type ResultColumn = {
 // there), restated here because this is the one cell whose left padding also
 // carries the nesting indent and therefore cannot be set from the table.
 const TITLE_CELL_PADDING_X = 1;
+
+/**
+ * The body cells' style blocks. Every rule below used to be authored as one
+ * `sx` object per cell per row, rebuilt whenever a row rendered; there are
+ * only three shapes, two of which are constant, so they are built here once
+ * instead. The declarations, their values and their order are unchanged --
+ * the keys that were `undefined` in the shared object simply do not appear in
+ * the shape that never set them, which emits the same CSS.
+ */
+const BODY_CELL_SX: SxProps<Theme> = {whiteSpace: "nowrap"};
+
+/**
+ * The recency flag's second, independent property: the age column's
+ * accent-teal text color (the mock's `ageColor: isNew ? ACC_HI : ...`, read
+ * from the theme as `primary.light` so the `dark-dyschromatopsia` variant
+ * composes with it). Only the flagged state is styled -- an unflagged row
+ * keeps exactly the color it had before FM-041, so the default rendering is
+ * unchanged.
+ */
+const RECENT_AGE_CELL_SX: SxProps<Theme> = {
+    color: "primary.light",
+    whiteSpace: "nowrap",
+};
+
+/**
+ * The recency flag's left-edge accent stripe, drawn on the row's first cell --
+ * see the cell's own comment below. A module-level callback rather than an
+ * inline one so its identity is stable across every row and every render.
+ */
+const RECENT_SELECT_CELL_SX = (theme: Theme) => ({
+    boxShadow: `inset 3px 0 0 ${theme.alpha(theme.palette.primary.main, 0.4)}`,
+});
+
+/**
+ * The title cell, the one body cell whose style depends on the row: it carries
+ * the per-level nesting indent on top of the shared 8px horizontal padding.
+ *
+ * FM-042 (ADR-0011, sub-decision E-title (i)): `overflowWrap` is the modern
+ * spelling of legacy's `.text-break` (`type.less:31-34`'s `word-wrap:
+ * break-word; word-break: break-word`, applied to the title cell by
+ * `search-result.html:3`). Release titles are dot-separated with no spaces, so
+ * `white-space: normal` alone would not wrap them -- `overflow-wrap: anywhere`
+ * is what lets a long, unbroken title wrap across multiple lines instead of
+ * spilling into the next column. Not ellipsis and not a clamp: both were
+ * presented and neither was selected: the owner's stated reason is that this
+ * component has no `<Tooltip>`/`title=` recovery affordance anywhere, so
+ * hiding a title's tail would have no way back.
+ *
+ * FM-175: the padding is the same 8px as every other body cell, but it is
+ * authored here rather than in the table's `sx` because only this cell adds
+ * the nesting indent on top of it -- a descendant selector on the table would
+ * outrank a per-cell `pl` and flatten the hierarchy. One nesting level is
+ * still 16px, unchanged; only the level-0 base moved from 16px to 8px.
+ */
+function titleCellSx(nestingLevel: number): SxProps<Theme> {
+    return {
+        overflowWrap: "anywhere",
+        pl: TITLE_CELL_PADDING_X + nestingLevel * 2,
+        pr: TITLE_CELL_PADDING_X,
+        whiteSpace: "normal",
+    };
+}
 
 // FM-179: the cover thumbnail's fixed box, in px.
 //
@@ -259,11 +322,7 @@ export const ResultRow = memo(function ResultRow({
             <TableCell
                 data-label="Select"
                 padding="checkbox"
-                sx={(theme) => ({
-                    boxShadow: recent
-                        ? `inset 3px 0 0 ${theme.alpha(theme.palette.primary.main, 0.4)}`
-                        : undefined,
-                })}
+                sx={recent ? RECENT_SELECT_CELL_SX : undefined}
             >
                 <Checkbox
                     checked={selected}
@@ -311,51 +370,13 @@ export const ResultRow = memo(function ResultRow({
                         data-label={column.label}
                         data-testid={column.testId}
                         key={column.id}
-                        sx={{
-                            // The recency flag's second, independent property:
-                            // the age column's accent-teal text color (the
-                            // mock's `ageColor: isNew ? ACC_HI : ...`, read
-                            // from the theme as `primary.light` so the
-                            // `dark-dyschromatopsia` variant composes with it).
-                            // Only the flagged state is styled -- an unflagged
-                            // row keeps exactly the color it had before this
-                            // task, so the default rendering is unchanged.
-                            color:
-                                recent && column.id === "epoch"
-                                    ? "primary.light"
-                                    : undefined,
-                            // FM-042 (ADR-0011, sub-decision E-title (i)):
-                            // the modern spelling of legacy's `.text-break`
-                            // (`type.less:31-34`'s `word-wrap: break-word;
-                            // word-break: break-word`, applied to the title
-                            // cell by `search-result.html:3`). Release
-                            // titles are dot-separated with no spaces, so
-                            // `white-space: normal` alone would not wrap
-                            // them -- `overflow-wrap: anywhere` is what lets
-                            // a long, unbroken title wrap across multiple
-                            // lines instead of spilling into the next
-                            // column. Not ellipsis and not a clamp: both
-                            // were presented and neither was selected: the
-                            // owner's stated reason is that this component
-                            // has no `<Tooltip>`/`title=` recovery
-                            // affordance anywhere, so hiding a title's tail
-                            // would have no way back.
-                            overflowWrap: isTitle ? "anywhere" : undefined,
-                            // FM-175: the title cell's own horizontal padding
-                            // is 8px, the same as every other body cell, but
-                            // it is authored here rather than in the table's
-                            // `sx` because only this cell adds the nesting
-                            // indent on top of it -- a descendant selector on
-                            // the table would outrank a per-cell `pl` and
-                            // flatten the hierarchy. One nesting level is
-                            // still 16px, unchanged; only the level-0 base
-                            // moved from 16px to 8px.
-                            pl: isTitle
-                                ? TITLE_CELL_PADDING_X + nestingLevel * 2
-                                : undefined,
-                            pr: isTitle ? TITLE_CELL_PADDING_X : undefined,
-                            whiteSpace: isTitle ? "normal" : "nowrap",
-                        }}
+                        sx={
+                            isTitle
+                                ? titleCellSx(nestingLevel)
+                                : recent && column.id === "epoch"
+                                  ? RECENT_AGE_CELL_SX
+                                  : BODY_CELL_SX
+                        }
                     >
                         {isTitle ? (
                             // FM-150: `nowrap`, not the previous `wrap`. The

@@ -89,6 +89,7 @@ export function RefineSidebar({
     clearRange,
     collapsed,
     drawerOpen,
+    filterDefaults,
     filteredCount,
     filters,
     indexerOpen,
@@ -118,6 +119,14 @@ export function RefineSidebar({
     // unpersisted (the rationale lives with the shell that renders the drawer):
     // only the state's owner moved, its lifecycle did not change.
     drawerOpen: boolean;
+    /**
+     * `defaultFilters(results, quickFilters)` for the loaded results, owned by
+     * `SearchResults.tsx` (which already memoizes it for its own filter state)
+     * and handed down rather than derived again here: "Clear all" only needs
+     * to know whether `filters` differs from it, and re-deriving it in this
+     * component re-scanned every loaded result on every filter change.
+     */
+    filterDefaults: ResultFilters;
     /**
      * FM-181: how many results the current filters leave. The compact sheet's
      * footer button counts them ("Show 12 results"), so a reader adjusting
@@ -181,8 +190,8 @@ export function RefineSidebar({
     // dimensions this disables "Clear all" on, so the two cannot disagree
     // about whether anything is active.
     const activeCount = useMemo(
-        () => activeFilterCount(filters, results, quickFilters),
-        [filters, results, quickFilters],
+        () => activeFilterCount(filters, filterDefaults),
+        [filterDefaults, filters],
     );
     // FM maintenance: the field is debounced (`useDebouncedFilterValue`) so a
     // burst of typing commits once instead of running the whole filter / sort

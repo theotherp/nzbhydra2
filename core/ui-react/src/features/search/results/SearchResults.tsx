@@ -13,7 +13,9 @@ import {
     TableHead,
     TableRow,
     Typography,
+    useTheme,
 } from "@mui/material";
+import type {SxProps, Theme} from "@mui/material";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
 import {
     flexRender,
@@ -304,6 +306,356 @@ function columnTrackRules(
 // count.
 const TABLE_COLUMN_COUNT = tableColumnWidths(0).length;
 
+/**
+ * The results table's own style block, hoisted out of the `Table`'s JSX so
+ * it is built from a `useMemo` on its actual inputs (theme, row density and
+ * the two column-track sets) rather than as a fresh ~40-rule object on every
+ * render. The window virtualizer re-renders `SearchResults` on every scroll
+ * offset change, and an `sx` callback in the JSX rebuilt and re-serialized
+ * all of this per scroll frame. The rules themselves -- and their order,
+ * which decides which of two equally specific selectors wins -- are
+ * unchanged.
+ */
+function resultsTableSx(
+    theme: Theme,
+    compactRows: boolean,
+    narrowColumnWidths: Array<number | string | undefined>,
+    pixelColumnWidths: Array<number | string | undefined>,
+): SxProps<Theme> {
+    return {
+        tableLayout: "fixed",
+        width: "100%",
+        ...columnTrackRules(narrowColumnWidths),
+        [theme.breakpoints.up(TABLE_PIXEL_TRACK_BREAKPOINT)]:
+            columnTrackRules(pixelColumnWidths),
+        // FM-162: the two virtualization spacer rows carry nothing but height
+        // -- no padding, no card separator at <768px. Declared here rather than
+        // on the rows themselves because the body-cell padding rule below is a
+        // descendant selector of this same `sx` and would otherwise win.
+        "& tbody > tr[data-virtual-spacer]": {
+            border: 0,
+        },
+        "& tbody > tr[data-virtual-spacer] > td": {
+            border: 0,
+            padding: 0,
+        },
+        "& tbody > tr > td": {
+            paddingBottom: compactRows ? COMPACT_ROW_PADDING_Y : ROW_PADDING_Y,
+            paddingTop: compactRows ? COMPACT_ROW_PADDING_Y : ROW_PADDING_Y,
+            // FM-175: top, not the table default `middle`. A wrapped title
+            // makes its row two or three lines tall while every other cell
+            // still holds one line, and a vertically centred row then floats
+            // Indexer/Category/Size halfway down the block with nothing to read
+            // them against. Aligned to the top, each cell's first line box
+            // starts at the same y as the title's first line, which is the "a
+            // title's first line sits level with the Indexer text" the owner
+            // asked for and the only reading of it that survives wrapping (the
+            // block's centre cannot: the taller the title, the further its
+            // first line is from it).
+            verticalAlign: "top",
+        },
+        // FM-179: the one row shape that reads better centred. A row with a
+        // cover tile has a 56px object in its title cell and one line of text
+        // in every other cell; top-aligned, Indexer/Size/Actions cling to the
+        // tile's upper edge with 40px of empty cell under them, which is the
+        // same complaint FM-175's rule above answers for wrapped titles,
+        // mirrored. Centred, they line up with the tile -- and with the title's
+        // first line, which the title cell's own stack centres on the tile in
+        // `ResultRow`. Rows without a tile are untouched FM-175.
+        "& tbody > tr[data-has-cover] > td": {
+            verticalAlign: "middle",
+        },
+        // FM-175 (owner request, 2026-09-02): 8px horizontal body padding, half
+        // MUI's stock 16px, so the width the table spends on gutters goes to
+        // the title instead -- 8 cells' worth is ~112px, a third of the Title
+        // column. A deviation from stock `MuiTableCell` density, and
+        // deliberately authored here rather than in `theme.ts`: this is the one
+        // table in the application whose content is squeezed (ADR-0011 forbids
+        // it a horizontal scrollbar), so every other table keeps the stock
+        // padding. Three cells are excluded, each for its own reason: the
+        // checkbox cell keeps MUI's `padding="checkbox"` box (`0 0 0 4px`),
+        // which is already tighter than 8px and is what the header checkbox is
+        // positioned against; Title sets its own left padding in `ResultRow`
+        // because it also carries the per-level nesting indent, and this
+        // descendant selector would outrank it; and Actions is handled just
+        // below.
+        '& tbody > tr > td:not([data-label="Select"]):not([data-label="Title"]):not([data-label="Actions"])':
+            {
+                paddingLeft: ROW_PADDING_X,
+                paddingRight: ROW_PADDING_X,
+            },
+        // FM-175: the Actions cell spends its right padding too. It is the last
+        // cell in the row, its content is right-aligned icon buttons that
+        // already carry 4px of their own padding, and the 8px would otherwise
+        // sit between the last icon and the table's edge doing nothing. The
+        // header cell above drops the same padding so the "ACTIONS" label stays
+        // flush with the icons beneath it.
+        '& tbody > tr > td[data-label="Actions"]': {
+            paddingLeft: ROW_PADDING_X,
+            paddingRight: 0,
+        },
+        // FM-175: the row checkbox's visible square lines up with the header's.
+        // Both cells carry MUI's `padding="checkbox"` 4px left inset, so the
+        // two boxes share an x only if the row's `Checkbox` adds nothing of its
+        // own -- its stock 9px padding is exactly the 9px offset the header's
+        // flat 17x17 `p: 0` square (`SelectionMenu.tsx`) does not have.
+        // Removing the padding rather than pulling the control left with a
+        // negative margin keeps it inside its cell, clear of the recency stripe
+        // the same cell draws as an inset shadow on its left edge. The control
+        // keeps its 20px `size="small"` box, its ripple and ADR-0013's focus
+        // ring, all of which are drawn on this root; only the dead space around
+        // it goes. Authored here rather than in `ResultRow` because the compact
+        // branch below reaches every `.MuiCheckbox-root` in the body as a
+        // descendant of this same `sx` and would outrank a per-instance `sx` --
+        // at this specificity the alignment holds at both densities instead of
+        // drifting 2px when compact rows are on.
+        '& tbody > tr > td[data-label="Select"] .MuiCheckbox-root': {
+            padding: 0,
+        },
+        // FM-175: the row's icons drop from a 20px glyph in a 28px button to a
+        // 16px glyph in a 24px one (the theme's `MuiIconButton` 4px padding is
+        // untouched, so the box follows the glyph). At 16px they are the scale
+        // of the 12-13px text beside them instead of half again as tall, which
+        // is what stops the Actions cell and the title's expand controls from
+        // setting every row's height. Scoped to this table's body by descendant
+        // selector: `MuiSvgIcon`'s own `fontSize="small"` step is a theme-level
+        // token and every other icon in the application keeps it.
+        '& tbody > tr > td[data-label="Title"] .MuiIconButton-root .MuiSvgIcon-root, & tbody > tr > td[data-label="Actions"] .MuiSvgIcon-root':
+            {fontSize: ROW_ICON_GLYPH_SIZE},
+        // "Compact rows" tightens the row's own controls proportionally as well
+        // as its padding: the row checkbox and the action/expand buttons are
+        // what actually set the row's height at this density, so trimming their
+        // vertical padding is what makes the compact table measurably shorter.
+        // Descendant `sx` from this one `Table`, so `DownloadActions.tsx` (a
+        // different capability's file) is untouched and `ResultRow`'s
+        // memoization is not involved at all.
+        ...(compactRows
+            ? {
+                  "& tbody .MuiCheckbox-root": {
+                      padding: 0.25,
+                  },
+                  "& tbody .MuiButton-root": {
+                      fontSize: COMPACT_ACTION_FONT_SIZE,
+                      minHeight: 0,
+                      paddingBottom: 0,
+                      paddingTop: 0,
+                  },
+                  // FM-150: since the expand and download controls became icon
+                  // buttons, the `.MuiButton-root` rule above no longer reaches
+                  // the controls that set a row's height -- these do, together
+                  // with the detail links that were always icons.
+                  "& tbody .MuiIconButton-root": {
+                      padding: 0.25,
+                  },
+                  "& tbody .MuiChip-root": {
+                      fontSize: COMPACT_CHIP_FONT_SIZE,
+                      height: "18px",
+                  },
+                  '& tbody td[data-label="Actions"] .MuiStack-root': {
+                      gap: 0.25,
+                  },
+              }
+            : {}),
+        "& td, & th": {
+            fontSize: TABLE_CELL_FONT_SIZE,
+        },
+        '& [data-label="Title"]': {
+            fontSize: denseControlFontSize,
+        },
+        // FM-042 (ADR-0011, Option E): the table never scrolls horizontally and
+        // carries no `min-width` floor, so at and above the stacking breakpoint
+        // it is always exactly as wide as its flex-layout box, with the
+        // re-proportioned `<colgroup>` below doing the work of keeping every
+        // header legible. Below the breakpoint the table renders as unrelated
+        // stacked cards instead (`C-REFINE-SURFACE`'s shared
+        // `useCompactRefineSurface()` moves its docked/drawer branch to the
+        // same threshold, so the sidebar and the table switch layouts
+        // together). The threshold itself -- legacy's measured 767px stacking
+        // point, `tables.less:91` -- is expressed as the same raw pixel value
+        // (768) passed to `theme.breakpoints.down` here as
+        // `useCompactRefineSurface()` passes to its own raw `down` call, rather
+        // than through `theme.ts`'s out-of-scope named `sm`/`md` tokens, so the
+        // two branches switch at the same computed width.
+        [theme.breakpoints.down(768)]: {
+            display: "block",
+            "& thead": {display: "none"},
+            "& tbody": {display: "block"},
+            "& tr": {
+                borderTop: `2px solid ${theme.palette.divider}`,
+                display: "block",
+                "&:first-of-type": {
+                    borderTop: "none",
+                },
+            },
+            "& td": {
+                alignItems: "center",
+                border: "none",
+                display: "flex",
+                flexDirection: "row",
+                gap: 1,
+                justifyContent: "space-between",
+                textAlign: "right",
+                "&::before": {
+                    color: theme.palette.text.secondary,
+                    content: "attr(data-label)",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textAlign: "left",
+                    textTransform: "uppercase",
+                },
+            },
+            '& td[data-label="Title"]': {
+                display: "block",
+                textAlign: "left",
+            },
+            '& td[data-label="Title"]::before': {
+                content: "none",
+            },
+            // Owner (2026-09-07): on a phone the Actions icons are tapped, not
+            // clicked, and the 4px gap the desktop row uses (and the 2px the
+            // compact-rows branch above sets) left them too close to hit
+            // reliably. Same `tbody` selector as that branch so this later rule
+            // wins at equal specificity, on a phone with compact rows on too.
+            '& tbody td[data-label="Actions"] .MuiStack-root': {gap: 1},
+        },
+    };
+}
+
+/**
+ * The three sticky header cells' style blocks, hoisted for the same reason as
+ * `resultsTableSx` above: each was an `sx` callback rebuilt per header cell
+ * per render, and the virtualizer re-renders this component on every scroll
+ * offset change. Their only inputs are the theme and the *measured* toolbar
+ * height the sticky `top` is derived from (plus, for a column header, whether
+ * it is the `epoch` column with its halved padding), so a `useMemo` on those
+ * covers every render. The rules and their order are unchanged.
+ */
+function headerSelectCellSx(
+    theme: Theme,
+    toolbarHeight: number,
+): SxProps<Theme> {
+    return {
+        backgroundColor: STICKY_BACKGROUND,
+        // FM-042 (ADR-0011): `border-collapse: collapse` (kept, so FM-041's
+        // inset recency stripe is undisturbed) means the table paints this
+        // row's border, which does not travel with a sticky `<th>` -- drawn as
+        // an inset `box-shadow` on the cell instead, verified against a real
+        // Chromium build to actually remain visible while pinned.
+        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+        position: "sticky",
+        py: HEADER_CELL_PADDING_Y,
+        top: toolbarHeight,
+        zIndex: HEADER_STICKY_Z_INDEX,
+    };
+}
+
+function headerColumnCellSx(
+    theme: Theme,
+    toolbarHeight: number,
+    isAgeColumn: boolean,
+): SxProps<Theme> {
+    return {
+        backgroundColor: STICKY_BACKGROUND,
+        // FM-042 (ADR-0011): see the checkbox header cell's comment above for
+        // why this is a `box-shadow` rather than the collapsed table's own
+        // border.
+        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+        overflow: "hidden",
+        position: "sticky",
+        // FM-150: Age is the one header whose label no longer fits the column
+        // the owner asked for -- "AGE ▼" measures 34.9px against the 29px the
+        // 5% track leaves once this padding is taken, so it rendered clipped.
+        // Halving its own padding buys the 8px that makes the header legible
+        // again without touching any column's width.
+        px: isAgeColumn ? AGE_HEADER_CELL_PADDING_X : HEADER_CELL_PADDING_X,
+        py: HEADER_CELL_PADDING_Y,
+        textOverflow: "ellipsis",
+        top: toolbarHeight,
+        whiteSpace: "nowrap",
+        zIndex: HEADER_STICKY_Z_INDEX,
+    };
+}
+
+function headerActionsCellSx(
+    theme: Theme,
+    toolbarHeight: number,
+): SxProps<Theme> {
+    return {
+        backgroundColor: STICKY_BACKGROUND,
+        // FM-042 (ADR-0011): see the checkbox header cell's comment above for
+        // why this is a `box-shadow` rather than the collapsed table's own
+        // border.
+        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+        color: HEADER_LABEL_COLOR,
+        fontSize: HEADER_LABEL_FONT_SIZE,
+        fontWeight: HEADER_LABEL_FONT_WEIGHT,
+        letterSpacing: HEADER_LABEL_LETTER_SPACING,
+        overflow: "hidden",
+        // FM-175: the one header cell that does not take the `px: 1` above,
+        // because the Actions *body* cell drops its right padding entirely. A
+        // label right-aligned 16px -- or even 8px -- inside the column whose
+        // icons sit flush against the table's edge reads as a misaligned
+        // header, so this cell matches the body cell's box rather than the
+        // other headers'.
+        pl: HEADER_CELL_PADDING_X,
+        position: "sticky",
+        pr: 0,
+        py: HEADER_CELL_PADDING_Y,
+        textOverflow: "ellipsis",
+        textTransform: "uppercase",
+        top: toolbarHeight,
+        whiteSpace: "nowrap",
+        zIndex: HEADER_STICKY_Z_INDEX,
+    };
+}
+
+/**
+ * The header sort button's style block. It has exactly two shapes -- the
+ * left-aligned Title header's and every other header's -- and neither depends
+ * on the theme or on any state, so both are module constants rather than an
+ * object rebuilt per header per render.
+ *
+ * A native `<button>` keeps its intrinsic shrink-to-fit width even with
+ * `display: flex` (buttons never stretch to fill their containing block the
+ * way a `<div>` does), so a bare `textAlign` here has nothing to act on and
+ * the label just hugs the cell's left edge regardless of alignment -- the
+ * fixed `width: "100%"` plus `justifyContent` is what actually right-aligns a
+ * non-Title header against its column's right-aligned body content.
+ *
+ * The mock gives the Title sort button `padding:0 6px` and every other
+ * column's `0 4px` (`uimock/NZBHydra Search.dc.html:270-277`). FM-175 drops
+ * Title's to zero -- a mock-pixel deviation, which ADR-0014 allows freely.
+ * Title is the one left-aligned header, so its own padding is what decides
+ * where the word "TITLE" starts, and the owner asked for the titles beneath it
+ * to start at the same x. The body cell can only offer its 8px padding edge;
+ * 6px of button padding on top of the header's own 8px would leave the label
+ * 6px adrift of every title in the column. The right-aligned headers keep
+ * their 4px, which is what holds them off their cell's right edge.
+ */
+function sortButtonSx(isTitle: boolean): SxProps<Theme> {
+    return {
+        alignItems: "center",
+        color: HEADER_LABEL_COLOR,
+        display: "flex",
+        flexShrink: 0,
+        fontSize: HEADER_LABEL_FONT_SIZE,
+        fontWeight: HEADER_LABEL_FONT_WEIGHT,
+        justifyContent: isTitle ? "flex-start" : "flex-end",
+        letterSpacing: HEADER_LABEL_LETTER_SPACING,
+        maxWidth: "100%",
+        minWidth: 0,
+        overflow: "hidden",
+        px: isTitle ? 0 : 0.5,
+        textOverflow: "ellipsis",
+        textTransform: "uppercase",
+        whiteSpace: "nowrap",
+        width: "100%",
+    };
+}
+
+const TITLE_SORT_BUTTON_SX = sortButtonSx(true);
+const COLUMN_SORT_BUTTON_SX = sortButtonSx(false);
+
 // FM-162: above this many *available* results, "Load all results" asks first.
 // A single search legitimately reports tens of thousands of available results,
 // and loading them is an unbounded commitment on the server (every remaining
@@ -574,6 +926,20 @@ export function SearchResults({
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
     );
+    // The selected results themselves, for `DownloadActions`. Memoized rather
+    // than filtered inline in the JSX because the window virtualizer below
+    // re-renders this component on every scroll offset change: as an inline
+    // expression this scanned every loaded result and handed `DownloadActions`
+    // a brand-new array -- which it filters again -- once per scroll frame,
+    // for a value that can only change when the selection or the loaded
+    // results do.
+    const selectedResults = useMemo(
+        () =>
+            data.searchResults.filter((result) =>
+                selected.has(result.searchResultId),
+            ),
+        [data.searchResults, selected],
+    );
     const columns = useMemo<ColumnDef<SearchResult>[]>(
         () => [
             {accessorKey: "title", header: "Title"},
@@ -803,10 +1169,17 @@ export function SearchResults({
         const filteredIds = new Set(
             filteredResults.map((result) => result.searchResultId),
         );
-        setSelected(
-            (current) =>
-                new Set([...current].filter((id) => filteredIds.has(id))),
-        );
+        setSelected((current) => {
+            const kept = [...current].filter((id) => filteredIds.has(id));
+            // The common case by far -- a filter change that prunes nothing
+            // (and every re-run for a selection that was already inside the
+            // filtered set). Returning the *same* Set lets React bail out of
+            // the update instead of re-rendering the whole results tree with
+            // an identically-populated new one, which also keeps every
+            // `selected`-derived memo below (`DownloadActions`' results, the
+            // selection status) from being invalidated for nothing.
+            return kept.length === current.size ? current : new Set(kept);
+        });
     }, [filteredResults]);
 
     useEffect(() => {
@@ -1052,11 +1425,37 @@ export function SearchResults({
             status={currentSelectionStatus}
         />
     );
+    // The results table's and its sticky header cells' style blocks, built
+    // once per change of their actual inputs rather than per render: the
+    // window virtualizer re-renders this component on every scroll offset
+    // change, and as inline `sx` callbacks these ~40 table rules plus one
+    // object per header cell were rebuilt and re-serialized per scroll frame.
+    // The emitted CSS is unchanged -- see the builders at module level.
+    const theme = useTheme();
+    const tableSx = useMemo(
+        () =>
+            resultsTableSx(
+                theme,
+                compactRows,
+                narrowColumnWidths,
+                pixelColumnWidths,
+            ),
+        [compactRows, narrowColumnWidths, pixelColumnWidths, theme],
+    );
+    const headerCellSx = useMemo(
+        () => ({
+            actions: headerActionsCellSx(theme, toolbarHeight),
+            age: headerColumnCellSx(theme, toolbarHeight, true),
+            column: headerColumnCellSx(theme, toolbarHeight, false),
+            select: headerSelectCellSx(theme, toolbarHeight),
+        }),
+        [theme, toolbarHeight],
+    );
     // FM-181: how many refine dimensions are active, for the phone toolbar's
     // badge. The same function `RefineSidebar` disables its "Clear all" on.
     const activeFilters = useMemo(
-        () => activeFilterCount(filters, data.searchResults, quickFilters),
-        [data.searchResults, filters, quickFilters],
+        () => activeFilterCount(filters, filterDefaults),
+        [filterDefaults, filters],
     );
     useLayoutEffect(() => {
         const node = toolbarRef.current;
@@ -1647,10 +2046,7 @@ export function SearchResults({
                                         );
                                     }}
                                     onSaveSearch={onSaveSearch}
-                                    results={data.searchResults.filter(
-                                        (result) =>
-                                            selected.has(result.searchResultId),
-                                    )}
+                                    results={selectedResults}
                                     // FM-159 (ADR-0017): the *live* config,
                                     // so a downloader added, removed, or
                                     // edited in Config -> Downloading becomes
@@ -1715,6 +2111,7 @@ export function SearchResults({
                             clearRange={clearRange}
                             collapsed={sidebarCollapsed}
                             drawerOpen={refineDrawerOpen}
+                            filterDefaults={filterDefaults}
                             filteredCount={filteredResults.length}
                             filters={filters}
                             indexerOpen={indexerOpen}
@@ -1766,289 +2163,7 @@ export function SearchResults({
                                 // function of the viewport; this is the number
                                 // that used to be readable by counting them.
                                 data-row-count={rowDescriptors.length}
-                                sx={(theme) => ({
-                                    tableLayout: "fixed",
-                                    width: "100%",
-                                    ...columnTrackRules(narrowColumnWidths),
-                                    [theme.breakpoints.up(
-                                        TABLE_PIXEL_TRACK_BREAKPOINT,
-                                    )]: columnTrackRules(pixelColumnWidths),
-                                    // FM-162: the two virtualization spacer
-                                    // rows carry nothing but height -- no
-                                    // padding, no card separator at <768px.
-                                    // Declared here rather than on the rows
-                                    // themselves because the body-cell padding
-                                    // rule below is a descendant selector of
-                                    // this same `sx` and would otherwise win.
-                                    "& tbody > tr[data-virtual-spacer]": {
-                                        border: 0,
-                                    },
-                                    "& tbody > tr[data-virtual-spacer] > td": {
-                                        border: 0,
-                                        padding: 0,
-                                    },
-                                    "& tbody > tr > td": {
-                                        paddingBottom: compactRows
-                                            ? COMPACT_ROW_PADDING_Y
-                                            : ROW_PADDING_Y,
-                                        paddingTop: compactRows
-                                            ? COMPACT_ROW_PADDING_Y
-                                            : ROW_PADDING_Y,
-                                        // FM-175: top, not the table default
-                                        // `middle`. A wrapped title makes its
-                                        // row two or three lines tall while
-                                        // every other cell still holds one
-                                        // line, and a vertically centred row
-                                        // then floats Indexer/Category/Size
-                                        // halfway down the block with nothing
-                                        // to read them against. Aligned to
-                                        // the top, each cell's first line box
-                                        // starts at the same y as the title's
-                                        // first line, which is the "a title's
-                                        // first line sits level with the
-                                        // Indexer text" the owner asked for
-                                        // and the only reading of it that
-                                        // survives wrapping (the block's
-                                        // centre cannot: the taller the
-                                        // title, the further its first line
-                                        // is from it).
-                                        verticalAlign: "top",
-                                    },
-                                    // FM-179: the one row shape that reads
-                                    // better centred. A row with a cover tile
-                                    // has a 56px object in its title cell and
-                                    // one line of text in every other cell;
-                                    // top-aligned, Indexer/Size/Actions cling
-                                    // to the tile's upper edge with 40px of
-                                    // empty cell under them, which is the
-                                    // same complaint FM-175's rule above
-                                    // answers for wrapped titles, mirrored.
-                                    // Centred, they line up with the tile --
-                                    // and with the title's first line, which
-                                    // the title cell's own stack centres on
-                                    // the tile in `ResultRow`. Rows without a
-                                    // tile are untouched FM-175.
-                                    "& tbody > tr[data-has-cover] > td": {
-                                        verticalAlign: "middle",
-                                    },
-                                    // FM-175 (owner request, 2026-09-02): 8px
-                                    // horizontal body padding, half MUI's
-                                    // stock 16px, so the width the table
-                                    // spends on gutters goes to the title
-                                    // instead -- 8 cells' worth is ~112px, a
-                                    // third of the Title column. A deviation
-                                    // from stock `MuiTableCell` density, and
-                                    // deliberately authored here rather than
-                                    // in `theme.ts`: this is the one table in
-                                    // the application whose content is
-                                    // squeezed (ADR-0011 forbids it a
-                                    // horizontal scrollbar), so every other
-                                    // table keeps the stock padding.
-                                    //
-                                    // Three cells are excluded, each for its
-                                    // own reason: the checkbox cell keeps
-                                    // MUI's `padding="checkbox"` box
-                                    // (`0 0 0 4px`), which is already tighter
-                                    // than 8px and is what the header
-                                    // checkbox is positioned against; Title
-                                    // sets its own left padding in
-                                    // `ResultRow` because it also carries the
-                                    // per-level nesting indent, and this
-                                    // descendant selector would outrank it;
-                                    // and Actions is handled just below.
-                                    '& tbody > tr > td:not([data-label="Select"]):not([data-label="Title"]):not([data-label="Actions"])':
-                                        {
-                                            paddingLeft: ROW_PADDING_X,
-                                            paddingRight: ROW_PADDING_X,
-                                        },
-                                    // FM-175: the Actions cell spends its
-                                    // right padding too. It is the last cell
-                                    // in the row, its content is
-                                    // right-aligned icon buttons that already
-                                    // carry 4px of their own padding, and the
-                                    // 8px would otherwise sit between the
-                                    // last icon and the table's edge doing
-                                    // nothing. The header cell above drops
-                                    // the same padding so the "ACTIONS" label
-                                    // stays flush with the icons beneath it.
-                                    '& tbody > tr > td[data-label="Actions"]': {
-                                        paddingLeft: ROW_PADDING_X,
-                                        paddingRight: 0,
-                                    },
-                                    // FM-175: the row checkbox's visible
-                                    // square lines up with the header's.
-                                    // Both cells carry MUI's
-                                    // `padding="checkbox"` 4px left inset, so
-                                    // the two boxes share an x only if the
-                                    // row's `Checkbox` adds nothing of its
-                                    // own -- its stock 9px padding is exactly
-                                    // the 9px offset the header's flat 17x17
-                                    // `p: 0` square (`SelectionMenu.tsx`)
-                                    // does not have. Removing the padding
-                                    // rather than pulling the control left
-                                    // with a negative margin keeps it inside
-                                    // its cell, clear of the recency stripe
-                                    // the same cell draws as an inset shadow
-                                    // on its left edge. The control keeps its
-                                    // 20px `size="small"` box, its ripple and
-                                    // ADR-0013's focus ring, all of which are
-                                    // drawn on this root; only the dead space
-                                    // around it goes. Authored here rather
-                                    // than in `ResultRow` because the compact
-                                    // branch below reaches every
-                                    // `.MuiCheckbox-root` in the body as a
-                                    // descendant of this same `sx` and would
-                                    // outrank a per-instance `sx` -- at this
-                                    // specificity the alignment holds at both
-                                    // densities instead of drifting 2px when
-                                    // compact rows are on.
-                                    '& tbody > tr > td[data-label="Select"] .MuiCheckbox-root':
-                                        {padding: 0},
-                                    // FM-175: the row's icons drop from a
-                                    // 20px glyph in a 28px button to a 16px
-                                    // glyph in a 24px one (the theme's
-                                    // `MuiIconButton` 4px padding is
-                                    // untouched, so the box follows the
-                                    // glyph). At 16px they are the scale of
-                                    // the 12-13px text beside them instead of
-                                    // half again as tall, which is what stops
-                                    // the Actions cell and the title's expand
-                                    // controls from setting every row's
-                                    // height. Scoped to this table's body by
-                                    // descendant selector: `MuiSvgIcon`'s own
-                                    // `fontSize="small"` step is a
-                                    // theme-level token and every other icon
-                                    // in the application keeps it.
-                                    '& tbody > tr > td[data-label="Title"] .MuiIconButton-root .MuiSvgIcon-root, & tbody > tr > td[data-label="Actions"] .MuiSvgIcon-root':
-                                        {fontSize: ROW_ICON_GLYPH_SIZE},
-                                    // "Compact rows" tightens the row's own
-                                    // controls proportionally as well as its
-                                    // padding: the row checkbox and the
-                                    // action/expand buttons are what
-                                    // actually set the row's height at this
-                                    // density, so trimming their vertical
-                                    // padding is what makes the compact
-                                    // table measurably shorter. Descendant
-                                    // `sx` from this one `Table`, so
-                                    // `DownloadActions.tsx` (a different
-                                    // capability's file) is untouched and
-                                    // `ResultRow`'s memoization is not
-                                    // involved at all.
-                                    ...(compactRows
-                                        ? {
-                                              "& tbody .MuiCheckbox-root": {
-                                                  padding: 0.25,
-                                              },
-                                              "& tbody .MuiButton-root": {
-                                                  fontSize:
-                                                      COMPACT_ACTION_FONT_SIZE,
-                                                  minHeight: 0,
-                                                  paddingBottom: 0,
-                                                  paddingTop: 0,
-                                              },
-                                              // FM-150: since the expand and
-                                              // download controls became icon
-                                              // buttons, the `.MuiButton-root`
-                                              // rule above no longer reaches
-                                              // the controls that set a row's
-                                              // height -- these do, together
-                                              // with the detail links that
-                                              // were always icons.
-                                              "& tbody .MuiIconButton-root": {
-                                                  padding: 0.25,
-                                              },
-                                              "& tbody .MuiChip-root": {
-                                                  fontSize:
-                                                      COMPACT_CHIP_FONT_SIZE,
-                                                  height: "18px",
-                                              },
-                                              '& tbody td[data-label="Actions"] .MuiStack-root':
-                                                  {gap: 0.25},
-                                          }
-                                        : {}),
-                                    "& td, & th": {
-                                        fontSize: TABLE_CELL_FONT_SIZE,
-                                    },
-                                    '& [data-label="Title"]': {
-                                        fontSize: denseControlFontSize,
-                                    },
-                                    // FM-042 (ADR-0011, Option E): the
-                                    // table never scrolls horizontally
-                                    // and carries no `min-width` floor,
-                                    // so at and above the stacking
-                                    // breakpoint it is always exactly as
-                                    // wide as its flex-layout box, with
-                                    // the re-proportioned `<colgroup>`
-                                    // below doing the work of keeping
-                                    // every header legible. Below the
-                                    // breakpoint the table renders as
-                                    // unrelated stacked cards instead
-                                    // (`C-REFINE-SURFACE`'s shared
-                                    // `useCompactRefineSurface()` moves
-                                    // its docked/drawer branch to the
-                                    // same threshold, so the sidebar and
-                                    // the table switch layouts together).
-                                    // The threshold itself -- legacy's
-                                    // measured 767px stacking point,
-                                    // `tables.less:91` -- is expressed as
-                                    // the same raw pixel value (768)
-                                    // passed to `theme.breakpoints.down`
-                                    // here as `useCompactRefineSurface()`
-                                    // passes to its own raw `down` call,
-                                    // rather than through `theme.ts`'s
-                                    // out-of-scope named `sm`/`md`
-                                    // tokens, so the two branches switch
-                                    // at the same computed width.
-                                    [theme.breakpoints.down(768)]: {
-                                        display: "block",
-                                        "& thead": {display: "none"},
-                                        "& tbody": {display: "block"},
-                                        "& tr": {
-                                            borderTop: `2px solid ${theme.palette.divider}`,
-                                            display: "block",
-                                            "&:first-of-type": {
-                                                borderTop: "none",
-                                            },
-                                        },
-                                        "& td": {
-                                            alignItems: "center",
-                                            border: "none",
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            gap: 1,
-                                            justifyContent: "space-between",
-                                            textAlign: "right",
-                                            "&::before": {
-                                                color: theme.palette.text
-                                                    .secondary,
-                                                content: "attr(data-label)",
-                                                fontSize: "0.7rem",
-                                                fontWeight: 700,
-                                                textAlign: "left",
-                                                textTransform: "uppercase",
-                                            },
-                                        },
-                                        '& td[data-label="Title"]': {
-                                            display: "block",
-                                            textAlign: "left",
-                                        },
-                                        '& td[data-label="Title"]::before': {
-                                            content: "none",
-                                        },
-                                        // Owner (2026-09-07): on a phone the
-                                        // Actions icons are tapped, not
-                                        // clicked, and the 4px gap the
-                                        // desktop row uses (and the 2px the
-                                        // compact-rows branch above sets)
-                                        // left them too close to hit
-                                        // reliably. Same `tbody` selector as
-                                        // that branch so this later rule
-                                        // wins at equal specificity, on a
-                                        // phone with compact rows on too.
-                                        '& tbody td[data-label="Actions"] .MuiStack-root':
-                                            {gap: 1},
-                                    },
-                                })}
+                                sx={tableSx}
                             >
                                 {/* FM-042 (ADR-0011) established that this
                                         table never scrolls horizontally and
@@ -2174,41 +2289,7 @@ export function SearchResults({
                                                 <TableCell
                                                     data-label="Select"
                                                     padding="checkbox"
-                                                    sx={(theme) => ({
-                                                        backgroundColor:
-                                                            STICKY_BACKGROUND,
-                                                        // FM-042
-                                                        // (ADR-0011):
-                                                        // `border-collapse:
-                                                        // collapse`
-                                                        // (kept, so
-                                                        // FM-041's inset
-                                                        // recency stripe
-                                                        // is undisturbed)
-                                                        // means the
-                                                        // table paints
-                                                        // this row's
-                                                        // border, which
-                                                        // does not
-                                                        // travel with a
-                                                        // sticky `<th>`
-                                                        // -- drawn as an
-                                                        // inset
-                                                        // `box-shadow`
-                                                        // on the cell
-                                                        // instead,
-                                                        // verified
-                                                        // against a real
-                                                        // Chromium build
-                                                        // to actually
-                                                        // remain visible
-                                                        // while pinned.
-                                                        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
-                                                        position: "sticky",
-                                                        py: HEADER_CELL_PADDING_Y,
-                                                        top: toolbarHeight,
-                                                        zIndex: HEADER_STICKY_Z_INDEX,
-                                                    })}
+                                                    sx={headerCellSx.select}
                                                 >
                                                     <SelectionMenu
                                                         idPrefix="header"
@@ -2262,47 +2343,14 @@ export function SearchResults({
                                                                     label
                                                                 }
                                                                 key={header.id}
-                                                                sx={(
-                                                                    theme,
-                                                                ) => ({
-                                                                    backgroundColor:
-                                                                        STICKY_BACKGROUND,
-                                                                    // FM-042 (ADR-0011): see the
-                                                                    // checkbox header cell's comment
-                                                                    // above for why this is a
-                                                                    // `box-shadow` rather than the
-                                                                    // collapsed table's own border.
-                                                                    boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
-                                                                    overflow:
-                                                                        "hidden",
-                                                                    position:
-                                                                        "sticky",
-                                                                    // FM-150: Age is the one header
-                                                                    // whose label no longer fits the
-                                                                    // column the owner asked for --
-                                                                    // "AGE ▼" measures 34.9px against
-                                                                    // the 29px the 5% track leaves
-                                                                    // once this padding is taken, so
-                                                                    // it rendered clipped. Halving
-                                                                    // its own padding buys the 8px
-                                                                    // that makes the header legible
-                                                                    // again without touching any
-                                                                    // column's width.
-                                                                    px:
-                                                                        header
-                                                                            .column
-                                                                            .id ===
-                                                                        "epoch"
-                                                                            ? AGE_HEADER_CELL_PADDING_X
-                                                                            : HEADER_CELL_PADDING_X,
-                                                                    py: HEADER_CELL_PADDING_Y,
-                                                                    textOverflow:
-                                                                        "ellipsis",
-                                                                    top: toolbarHeight,
-                                                                    whiteSpace:
-                                                                        "nowrap",
-                                                                    zIndex: HEADER_STICKY_Z_INDEX,
-                                                                })}
+                                                                sx={
+                                                                    header
+                                                                        .column
+                                                                        .id ===
+                                                                    "epoch"
+                                                                        ? headerCellSx.age
+                                                                        : headerCellSx.column
+                                                                }
                                                             >
                                                                 {header.isPlaceholder ? null : (
                                                                     <Button
@@ -2325,86 +2373,11 @@ export function SearchResults({
                                                                         data-testid={`sort-${header.column.id}`}
                                                                         onClick={header.column.getToggleSortingHandler()}
                                                                         size="small"
-                                                                        sx={{
-                                                                            alignItems:
-                                                                                "center",
-                                                                            color: HEADER_LABEL_COLOR,
-                                                                            // A native `<button>` keeps its
-                                                                            // intrinsic shrink-to-fit width
-                                                                            // even with `display: flex`
-                                                                            // (buttons never stretch to fill
-                                                                            // their containing block the way
-                                                                            // a `<div>` does), so a bare
-                                                                            // `textAlign` here has nothing to
-                                                                            // act on and the label just hugs
-                                                                            // the cell's left edge regardless
-                                                                            // of alignment -- the fixed
-                                                                            // `width: "100%"` plus
-                                                                            // `justifyContent` below is what
-                                                                            // actually right-aligns a
-                                                                            // non-Title header against its
-                                                                            // column's right-aligned body
-                                                                            // content.
-                                                                            display:
-                                                                                "flex",
-                                                                            flexShrink: 0,
-                                                                            fontSize:
-                                                                                HEADER_LABEL_FONT_SIZE,
-                                                                            fontWeight:
-                                                                                HEADER_LABEL_FONT_WEIGHT,
-                                                                            justifyContent:
-                                                                                isTitle
-                                                                                    ? "flex-start"
-                                                                                    : "flex-end",
-                                                                            letterSpacing:
-                                                                                HEADER_LABEL_LETTER_SPACING,
-                                                                            maxWidth:
-                                                                                "100%",
-                                                                            minWidth: 0,
-                                                                            overflow:
-                                                                                "hidden",
-                                                                            // The mock gives the Title
-                                                                            // sort button `padding:0
-                                                                            // 6px` and every other
-                                                                            // column's `0 4px`
-                                                                            // (`uimock/NZBHydra
-                                                                            // Search.dc.html:270-277`).
-                                                                            // FM-175 drops Title's to
-                                                                            // zero -- a mock-pixel
-                                                                            // deviation, which
-                                                                            // ADR-0014 allows freely.
-                                                                            // Title is the one
-                                                                            // left-aligned header, so
-                                                                            // its own padding is what
-                                                                            // decides where the word
-                                                                            // "TITLE" starts, and the
-                                                                            // owner asked for the
-                                                                            // titles beneath it to
-                                                                            // start at the same x.
-                                                                            // The body cell can only
-                                                                            // offer its 8px padding
-                                                                            // edge; 6px of button
-                                                                            // padding on top of the
-                                                                            // header's own 8px would
-                                                                            // leave the label 6px
-                                                                            // adrift of every title
-                                                                            // in the column. The
-                                                                            // right-aligned headers
-                                                                            // keep their 4px, which
-                                                                            // is what holds them off
-                                                                            // their cell's right
-                                                                            // edge.
-                                                                            px: isTitle
-                                                                                ? 0
-                                                                                : 0.5,
-                                                                            textOverflow:
-                                                                                "ellipsis",
-                                                                            textTransform:
-                                                                                "uppercase",
-                                                                            whiteSpace:
-                                                                                "nowrap",
-                                                                            width: "100%",
-                                                                        }}
+                                                                        sx={
+                                                                            isTitle
+                                                                                ? TITLE_SORT_BUTTON_SX
+                                                                                : COLUMN_SORT_BUTTON_SX
+                                                                        }
                                                                     >
                                                                         {flexRender(
                                                                             header
@@ -2433,55 +2406,7 @@ export function SearchResults({
                                                 <TableCell
                                                     align="right"
                                                     data-label="Actions"
-                                                    sx={(theme) => ({
-                                                        backgroundColor:
-                                                            STICKY_BACKGROUND,
-                                                        // FM-042 (ADR-0011): see the
-                                                        // checkbox header cell's comment
-                                                        // above for why this is a
-                                                        // `box-shadow` rather than the
-                                                        // collapsed table's own border.
-                                                        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
-                                                        color: HEADER_LABEL_COLOR,
-                                                        fontSize:
-                                                            HEADER_LABEL_FONT_SIZE,
-                                                        fontWeight:
-                                                            HEADER_LABEL_FONT_WEIGHT,
-                                                        letterSpacing:
-                                                            HEADER_LABEL_LETTER_SPACING,
-                                                        overflow: "hidden",
-                                                        // FM-175: the one
-                                                        // header cell that
-                                                        // does not take the
-                                                        // `px: 1` above,
-                                                        // because the Actions
-                                                        // *body* cell drops
-                                                        // its right padding
-                                                        // entirely. A label
-                                                        // right-aligned 16px
-                                                        // -- or even 8px --
-                                                        // inside the column
-                                                        // whose icons sit
-                                                        // flush against the
-                                                        // table's edge reads
-                                                        // as a misaligned
-                                                        // header, so this
-                                                        // cell matches the
-                                                        // body cell's box
-                                                        // rather than the
-                                                        // other headers'.
-                                                        pl: HEADER_CELL_PADDING_X,
-                                                        position: "sticky",
-                                                        pr: 0,
-                                                        py: HEADER_CELL_PADDING_Y,
-                                                        textOverflow:
-                                                            "ellipsis",
-                                                        textTransform:
-                                                            "uppercase",
-                                                        top: toolbarHeight,
-                                                        whiteSpace: "nowrap",
-                                                        zIndex: HEADER_STICKY_Z_INDEX,
-                                                    })}
+                                                    sx={headerCellSx.actions}
                                                 >
                                                     Actions
                                                 </TableCell>

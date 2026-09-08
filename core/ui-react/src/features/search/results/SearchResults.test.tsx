@@ -7,6 +7,7 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
+import {createElement} from "react";
 import type {MockedFunction} from "vitest";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
@@ -15,6 +16,28 @@ import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {SearchResults} from "./SearchResults";
+
+const {downloadActionsResults} = vi.hoisted(() => ({
+    downloadActionsResults: [] as unknown[],
+}));
+
+// Records the `results` array `DownloadActions` is handed on each render, so a
+// test can assert that a re-render which prunes nothing from the selection
+// hands it the *same* array rather than a freshly filtered one. Deliberately
+// transparent: the real component is rendered with the real props, so every
+// other test in this file behaves exactly as it did without the wrapper.
+vi.mock("./DownloadActions", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("./DownloadActions")>();
+    return {
+        ...actual,
+        DownloadActions: (
+            props: Parameters<typeof actual.DownloadActions>[0],
+        ) => {
+            downloadActionsResults.push(props.results);
+            return createElement(actual.DownloadActions, props);
+        },
+    };
+});
 
 const response = {
     searchResults: [],
@@ -495,6 +518,64 @@ describe("SearchResults", () => {
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
+    });
+
+    // Maintenance (performance): the selected results are derived once and
+    // reused, not filtered out of `data.searchResults` inline in the JSX --
+    // the window virtualizer re-renders this component on every scroll offset
+    // change, so an inline filter rescanned every loaded result and handed
+    // `DownloadActions` (which filters it again) a new array per scroll frame.
+    // The selection-pruning effect cooperates by returning the *same* `Set`
+    // when a filter change prunes nothing, so the derivation is not
+    // invalidated -- and neither is any other `selected`-keyed memo -- by an
+    // update that changed no selection.
+    it("should hand DownloadActions the same selected-results array across a filter change that prunes nothing", async () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Movie WEB",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            grabs: 3,
+                            epoch: 1_700_000_000,
+                            age: "2 days",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Beta Movie BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 2 * 1024 * 1024,
+                            seeders: 8,
+                            epoch: 1_600_000_000,
+                            age: "3 years",
+                        },
+                    ],
+                }}
+            />,
+        );
+        downloadActionsResults.length = 0;
+        const rows = screen.getAllByTestId("search-result-row");
+        fireEvent.click(within(rows[0]).getByRole("checkbox"));
+        const selectedResults = downloadActionsResults.at(-1);
+        expect(selectedResults).toHaveLength(1);
+
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "movie"},
+        });
+        await settleFilterCommits();
+
+        // The filter kept both rows, so it pruned nothing from the selection.
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        expect(within(rows[0]).getByRole("checkbox")).toBeChecked();
+        expect(downloadActionsResults.at(-1)).toBe(selectedResults);
     });
 
     it("should render no inline column-header filter control beside a sortable header", () => {

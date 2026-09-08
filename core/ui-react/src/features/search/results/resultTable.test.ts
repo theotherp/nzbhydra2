@@ -17,6 +17,7 @@ import {
     kify,
     quickFilterKey,
     quickFiltersFromSafeConfig,
+    selectedQuickFilterGroups,
     selectionAfterClick,
     selectionStatus,
     selectVisibleResults,
@@ -54,42 +55,47 @@ describe("activeFilterCount", () => {
     const base = () => defaultFilters(results, quickFilters);
 
     it("should count nothing for the defaults the sidebar clears back to", () => {
-        expect(activeFilterCount(base(), results, quickFilters)).toBe(0);
+        expect(activeFilterCount(base(), base())).toBe(0);
     });
 
     it("should ignore the order of a derived multi-select's own default", () => {
         const reversed = base();
         reversed.indexers = [...reversed.indexers].reverse();
         reversed.categories = [...reversed.categories].reverse();
-        expect(activeFilterCount(reversed, results, quickFilters)).toBe(0);
+        expect(activeFilterCount(reversed, base())).toBe(0);
     });
 
     it("should count each changed dimension once, however many values changed", () => {
-        expect(
-            activeFilterCount(
-                {...base(), title: "movie"},
-                results,
-                quickFilters,
-            ),
-        ).toBe(1);
+        expect(activeFilterCount({...base(), title: "movie"}, base())).toBe(1);
         // Both indexers deselected is still one active dimension.
-        expect(
-            activeFilterCount({...base(), indexers: []}, results, quickFilters),
-        ).toBe(1);
+        expect(activeFilterCount({...base(), indexers: []}, base())).toBe(1);
         expect(
             activeFilterCount(
                 {...base(), size: {min: "100", max: "900"}},
-                results,
-                quickFilters,
+                base(),
             ),
         ).toBe(1);
         expect(
             activeFilterCount(
                 {...base(), quickFilters: {"quality|q1080p": true}},
-                results,
-                quickFilters,
+                base(),
             ),
         ).toBe(1);
+    });
+
+    // Maintenance (performance): the defaults are a parameter rather than
+    // re-derived from the results here, because all three call sites already
+    // hold the one `filterDefaults` memo for the loaded results. This pins
+    // that the count really is measured against the defaults it is handed.
+    it("should compare against the defaults it is handed", () => {
+        // Same categories, one different indexer: exactly one dimension of
+        // `base()` differs from these defaults.
+        const otherDefaults = defaultFilters(
+            [results[0], {...results[1], indexer: "Elsewhere"}],
+            quickFilters,
+        );
+        expect(activeFilterCount(base(), otherDefaults)).toBe(1);
+        expect(activeFilterCount(otherDefaults, otherDefaults)).toBe(0);
     });
 
     it("should count every one of the eight dimensions it covers", () => {
@@ -105,10 +111,144 @@ describe("activeFilterCount", () => {
                     size: {min: "", max: "3"},
                     title: "movie",
                 },
-                results,
-                quickFilters,
+                base(),
             ),
         ).toBe(8);
+    });
+});
+
+// Maintenance (performance): the selected quick filters are bucketed by group
+// once per `filterResults` call rather than once per result, which is what the
+// grouping actually depends on (the selection and the configured filters, not
+// the result being tested).
+describe("selectedQuickFilterGroups", () => {
+    const quickFilters: QuickFilter[] = [
+        {group: "source", id: "web", label: "WEB", terms: ["web"]},
+        {group: "source", id: "dvd", label: "DVD", terms: ["dvd"]},
+        {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
+        {group: "custom", id: "Mine", label: "Mine", terms: ["mine"]},
+    ];
+
+    it("should bucket only the selected filters, by group", () => {
+        expect(
+            selectedQuickFilterGroups(
+                {
+                    "source|web": true,
+                    "source|dvd": true,
+                    "quality|q1080p": false,
+                },
+                quickFilters,
+            ).map((group) => group.map((filter) => quickFilterKey(filter))),
+        ).toEqual([["source|web", "source|dvd"]]);
+    });
+
+    it("should bucket nothing when nothing is selected", () => {
+        expect(selectedQuickFilterGroups({}, quickFilters)).toEqual([]);
+    });
+
+    it("should keep each group separate so filterResults ANDs across groups", () => {
+        expect(
+            selectedQuickFilterGroups(
+                {
+                    "source|web": true,
+                    "quality|q1080p": true,
+                    "custom|Mine": true,
+                },
+                quickFilters,
+            ).map((group) => group.map((filter) => quickFilterKey(filter))),
+        ).toEqual([["source|web"], ["quality|q1080p"], ["custom|Mine"]]);
+    });
+
+    it("should be computed once per filterResults scan, not once per result", () => {
+        // Every read of a filter's `id` is a `quickFilterKey` call, and
+        // `quickFilterKey` is only reached while the selection is being
+        // bucketed -- so the read count is the direct evidence that the
+        // bucketing does not run per result. Before this was hoisted out of
+        // the per-result predicate it grew with the result count.
+        let idReads = 0;
+        const counted: QuickFilter[] = [
+            {
+                group: "source",
+                get id() {
+                    idReads++;
+                    return "web";
+                },
+                label: "WEB",
+                terms: ["web"],
+            },
+            {
+                group: "quality",
+                get id() {
+                    idReads++;
+                    return "q1080p";
+                },
+                label: "1080p",
+                terms: ["1080p"],
+            },
+        ];
+        const loaded = (count: number) =>
+            Array.from({length: count}, (_, index) => ({
+                searchResultId: String(index),
+                title: "Example WEB 1080p",
+                indexer: "One",
+                category: "Movies",
+                size: 1024 * 1024,
+                grabs: 1,
+                epoch: 1_700_000_000,
+            }));
+        const filters = {
+            ...defaultFilters(loaded(1), counted),
+            quickFilters: {"source|web": true, "quality|q1080p": true},
+        };
+
+        idReads = 0;
+        expect(filterResults(loaded(4), filters, counted)).toHaveLength(4);
+        const readsForFour = idReads;
+        idReads = 0;
+        expect(filterResults(loaded(40), filters, counted)).toHaveLength(40);
+        expect(idReads).toBe(readsForFour);
+        expect(readsForFour).toBe(counted.length);
+    });
+
+    it("should keep filterResults' quick-filter semantics unchanged", () => {
+        const titles = [
+            "Example WEB 1080p",
+            "Example DVD 1080p",
+            "Example WEB 720p",
+            "Example mine WEB 1080p",
+        ];
+        const loaded = titles.map((title, index) => ({
+            searchResultId: String(index),
+            title,
+            indexer: "One",
+            category: "Movies",
+            size: 1024 * 1024,
+            grabs: 1,
+            epoch: 1_700_000_000,
+        }));
+        const base = defaultFilters(loaded, quickFilters);
+        const matching = (selection: Record<string, boolean>) =>
+            filterResults(
+                loaded,
+                {...base, quickFilters: selection},
+                quickFilters,
+            ).map((result) => result.title);
+        // Within a group the selected filters are ORed ...
+        expect(matching({"source|web": true, "source|dvd": true})).toEqual([
+            "Example WEB 1080p",
+            "Example DVD 1080p",
+            "Example WEB 720p",
+            "Example mine WEB 1080p",
+        ]);
+        // ... and across groups they are ANDed.
+        expect(matching({"source|dvd": true, "quality|q1080p": true})).toEqual([
+            "Example DVD 1080p",
+        ]);
+        // A custom filter's own terms must all match.
+        expect(matching({"custom|Mine": true})).toEqual([
+            "Example mine WEB 1080p",
+        ]);
+        expect(matching({})).toHaveLength(titles.length);
     });
 });
 
@@ -332,6 +472,42 @@ describe("result table transformations", () => {
                 },
             ),
         ).toHaveLength(2);
+    });
+
+    // Maintenance (performance): `groupResults` appends to each bucket with
+    // `push` instead of rebuilding it (`[...bucket, result]`), which copied
+    // every member already in a group for each further member. This pins the
+    // output the rewrite has to keep identical: a group of more than two
+    // members, in the order the results arrived, with the groups themselves in
+    // first-seen order and each duplicate bucket in arrival order too.
+    it("should keep every member of a multi-member group in arrival order, groups in first-seen order", () => {
+        const grouped = groupResults(
+            [
+                {...results[0], searchResultId: "a1", title: "Alpha", hash: 1},
+                {...results[0], searchResultId: "b1", title: "Beta", hash: 3},
+                {...results[0], searchResultId: "a2", title: "Alpha", hash: 1},
+                {...results[0], searchResultId: "a3", title: "Alpha", hash: 1},
+                {...results[0], searchResultId: "a4", title: "Alpha", hash: 2},
+                {...results[0], searchResultId: "b2", title: "Beta", hash: 3},
+                {...results[0], searchResultId: "a5", title: "Alpha", hash: 1},
+            ],
+            {
+                groupTorrentAndUsenet: true,
+                groupEpisodes: false,
+                episodeRequested: false,
+            },
+        );
+        expect(
+            grouped.map((group) => [
+                group.key,
+                group.duplicateGroups.map((duplicates) =>
+                    duplicates.map((result) => result.searchResultId),
+                ),
+            ]),
+        ).toEqual([
+            ["title:alpha", [["a1", "a2", "a3", "a5"], ["a4"]]],
+            ["title:beta", [["b1", "b2"]]],
+        ]);
     });
 
     it("should group eligible TV episodes only when no episode was requested", () => {

@@ -115,6 +115,10 @@ function Harness({
                 }
                 collapsed={collapsed}
                 drawerOpen={drawerOpen}
+                // The owner (`SearchResults.tsx` in the app) memoizes this for
+                // the loaded results and hands it down; the harness derives it
+                // from the same two inputs.
+                filterDefaults={defaultFilters(loadedResults, quickFilters)}
                 filteredCount={
                     filterResults(loadedResults, filters, quickFilters).length
                 }
