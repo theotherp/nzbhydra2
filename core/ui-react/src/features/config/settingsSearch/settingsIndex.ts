@@ -1,5 +1,6 @@
 import {settingRowTestId, settingTestId} from "../components/settings";
 import {CONFIG_TABS, configTabHref, type ConfigTab} from "../configTabs";
+import {CSRF_HELP} from "../main/mainSettings";
 
 /**
  * `C-CONFIG-SETTINGS-INDEX`: searchable metadata for every setting the eight
@@ -237,7 +238,7 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             advanced: true,
-            help: "Use CSRF protection.",
+            help: `Use CSRF protection. ${CSRF_HELP}`,
             label: "Use CSRF protection",
             path: "main.useCsrf",
         },

@@ -1,4 +1,10 @@
-import {dismissWelcomeDialog, expect, searchForResult, test} from "./fixtures";
+import {
+    csrfHeaders,
+    dismissWelcomeDialog,
+    expect,
+    searchForResult,
+    test,
+} from "./fixtures";
 import {
     captureVisualRegion,
     expectVisualGeometry,
@@ -63,7 +69,9 @@ test("should serve the React shell and its entry bundle to a cookie-less browser
 test("should still answer the logout flow with the React shell document", async ({
     page,
 }) => {
-    const response = await page.request.post("logout");
+    const response = await page.request.post("logout", {
+        headers: await csrfHeaders(page),
+    });
 
     expect(response.status()).toBe(200);
     const body = await response.text();
@@ -382,7 +390,10 @@ test.describe("Theme selection", () => {
     ): Promise<void> {
         const response = await page.request.put(THEME_PREFERENCE_URL, {
             data: JSON.stringify(preference),
-            headers: {"content-type": "application/json"},
+            headers: {
+                "content-type": "application/json",
+                ...(await csrfHeaders(page)),
+            },
         });
         expect(response.ok()).toBe(true);
     }
@@ -405,7 +416,7 @@ test.describe("Theme selection", () => {
         await hydra.configureMockIndexers(["1", "2"]);
         await page.request.put(
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
-            {data: true},
+            {data: true, headers: await csrfHeaders(page)},
         );
         await page.goto("/");
         await dismissWelcomeDialog(page);

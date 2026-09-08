@@ -608,7 +608,10 @@ def start_local_services(
         core_command = [
             java,
             "-DinternalApiKey=internalApiKey",
-            "-Dmain.useCsrf=false",
+            # No `-Dmain.useCsrf=false`: the property is an override for tests that need CSRF off, and
+            # forcing it here meant the system tests never exercised the protection real users run with.
+            # The run starts from an empty data folder, so `main.useCsrf` keeps its `baseConfig.yml`
+            # default of true and the browser tests go through the real CSRF handshake.
             "-Dmanagement.endpoint.shutdown.enabled=true",
             f"-Dnzbhydra.changelogUrl=http://127.0.0.1:{MOCKSERVER_PORT}/changelog",
             f"-Dnzbhydra.repositoryBaseUrl=http://127.0.0.1:{MOCKSERVER_PORT}/repos/theotherp/nzbhydra2",

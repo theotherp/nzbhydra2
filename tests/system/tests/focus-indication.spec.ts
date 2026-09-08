@@ -98,7 +98,7 @@
  * search bar's constraint chips are clickable, so the interactive `Chip` the
  * rule was authored for now exists and is walked to below.
  */
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {csrfHeaders, dismissWelcomeDialog, expect, test} from "./fixtures";
 import {
     captureVisualRegion,
     visualEvidencePath,
@@ -614,7 +614,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // exactly as `results.spec.ts` does for the same reason.
         await page.request.put(
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
-            {data: true},
+            {data: true, headers: await csrfHeaders(page)},
         );
     });
 

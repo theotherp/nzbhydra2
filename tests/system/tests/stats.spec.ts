@@ -1,6 +1,6 @@
 import type {Page} from "@playwright/test";
 
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {csrfHeaders, dismissWelcomeDialog, expect, test} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
 
 const statisticSwitches = [
@@ -389,7 +389,10 @@ async function clearThemePreference(page: Page): Promise<void> {
         "/internalapi/genericstorage/themePreference?forUser=true",
         {
             data: JSON.stringify(""),
-            headers: {"content-type": "application/json"},
+            headers: {
+                "content-type": "application/json",
+                ...(await csrfHeaders(page)),
+            },
         },
     );
     expect(response.ok()).toBe(true);

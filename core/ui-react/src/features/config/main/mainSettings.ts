@@ -103,6 +103,15 @@ export const SSL_VERIFICATION_WIKI = `${WIKI}/SSL-verification-errors`;
 export const MEMORY_WIKI = `${WIKI}/Memory-requirements`;
 export const CSRF_WIKI =
     "https://en.wikipedia.org/wiki/Cross-site_request_forgery";
+/**
+ * Shared by the switch's help text and the settings-search index so the two cannot drift. Protection is enforced from
+ * the config value, so turning this off is the escape hatch for a script that cannot send the header.
+ */
+export const CSRF_HELP =
+    "This UI handles it for you. Scripts that call /internalapi with POST, PUT or DELETE " +
+    "using basic auth or a session must send the X-XSRF-TOKEN header with the value of the " +
+    "HYDRA-XSRF-TOKEN cookie; the apikey-authenticated API (/api, /torznab/api, /rss and the " +
+    "download links) is unaffected. Takes effect on next restart.";
 export const H2_RETENTION_TIME =
     "https://www.h2database.com/html/commands.html#set_retention_time";
 export const H2_WRITE_DELAY =

@@ -2,6 +2,7 @@ import {randomUUID} from "node:crypto";
 
 import type {Page} from "@playwright/test";
 import {
+    csrfHeaders,
     dismissWelcomeDialog,
     expect,
     openRefineMultiselect,
@@ -845,7 +846,10 @@ async function clearThemePreference(page: Page): Promise<void> {
         "/internalapi/genericstorage/themePreference?forUser=true",
         {
             data: JSON.stringify(""),
-            headers: {"content-type": "application/json"},
+            headers: {
+                "content-type": "application/json",
+                ...(await csrfHeaders(page)),
+            },
         },
     );
     expect(response.ok()).toBe(true);

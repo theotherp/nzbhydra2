@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import {
+    csrfHeaders,
     dismissWelcomeDialog,
     expect,
     searchForResult,
@@ -27,7 +28,7 @@ test.describe("Search results", () => {
         // afterward.
         await page.request.put(
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
-            {data: true},
+            {data: true, headers: await csrfHeaders(page)},
         );
         // FM-095: with the legacy shell and its selector gone this is simply
         // the application's root. It reached here through
@@ -4157,7 +4158,7 @@ test.describe("Search results", () => {
     }) => {
         await page.request.put(
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
-            {data: false},
+            {data: false, headers: await csrfHeaders(page)},
         );
 
         await page.route("**/internalapi/search", (route) =>

@@ -20,6 +20,9 @@ services:
             - ../../../core/target:/app:ro
             - /tmp/hydraMigration/defaultDataFolder:/data
         entrypoint: /bin/sh
+        # `-Dmain.useCsrf=false` stays here on purpose, unlike in docker-compose-jvm-coverage.yaml: this rig
+        # starts the core on an H2 2.1 fixture data folder and drives the database migration through endpoints
+        # this repository cannot exercise outside Docker, so the CSRF path is left to the other rigs, which do verify it.
         command:
             - -c
             - |

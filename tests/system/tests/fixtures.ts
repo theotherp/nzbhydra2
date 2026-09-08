@@ -253,6 +253,41 @@ export async function openRefineMultiselect(
     ).toBeVisible();
 }
 
+/** Must match `SecurityConfig`'s cookie name and the application transport's header. */
+const CSRF_COOKIE_NAME = "HYDRA-XSRF-TOKEN";
+const CSRF_HEADER_NAME = "X-XSRF-TOKEN";
+
+/**
+ * The header the application's own transport puts on every unsafe request, read from the same
+ * cookie it reads (`api/transport.ts`).
+ *
+ * A spec that writes through `page.request` is talking to the page's session -- which is the whole
+ * reason it uses `page.request` rather than the `hydra` fixture, whose writes carry the internal
+ * API key and would therefore act as a different user. Speaking to that session means presenting
+ * its CSRF token, or `SecurityConfig` answers 403. The `hydra` fixture needs none of this: the
+ * internal API key exempts its requests.
+ *
+ * The token is handed out on any GET of the application, so a context that has not loaded a page
+ * yet -- a `beforeEach` that arranges per-user state before its first `goto` -- gets one here.
+ */
+export async function csrfHeaders(page: Page): Promise<Record<string, string>> {
+    const readToken = async (): Promise<string | undefined> =>
+        (await page.context().cookies()).find(
+            (cookie) => cookie.name === CSRF_COOKIE_NAME,
+        )?.value;
+
+    let token = await readToken();
+    if (token === undefined) {
+        await page.request.get(testEnvironment.playwrightBaseUrl);
+        token = await readToken();
+    }
+    expect(
+        token,
+        `The application handed out no ${CSRF_COOKIE_NAME} cookie, so no unsafe request can be made`,
+    ).toBeTruthy();
+    return {[CSRF_HEADER_NAME]: token as string};
+}
+
 export async function dismissWelcomeDialog(page: Page): Promise<void> {
     const welcomeDialog = page
         .getByRole("dialog")

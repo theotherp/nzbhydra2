@@ -1,6 +1,9 @@
 package org.nzbhydra.auth;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
@@ -51,13 +54,23 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ForwardedHeaderFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.filter.UrlHandlerFilter;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,6 +86,57 @@ public class SecurityConfig {
     private static final String OIDC_REGISTRATION_ID = "nzbhydra2";
     private static final int JWKS_TIMEOUT_MS = 15_000;
     private static final String OIDC_AUTHORIZATION_REQUEST_NOT_FOUND = "authorization_request_not_found";
+    private static final String CSRF_COOKIE_NAME = "HYDRA-XSRF-TOKEN";
+    /**
+     * System property that overrides {@code main.useCsrf} from the config. Only tests set it; production leaves it
+     * unset so that the config value governs.
+     */
+    private static final String USE_CSRF_PROPERTY = "main.useCsrf";
+    private static final String INTERNAL_API_KEY_PARAMETER = "internalApiKey";
+
+    /**
+     * Paths that are only ever called by clients which cannot send the {@code X-XSRF-TOKEN} header:
+     * <ul>
+     *     <li>{@code /api}, {@code /rss}, {@code /torznab/api} and their per-indexer variants are the Newznab and
+     *     Torznab API that Sonarr, Radarr, NZB clients and the like call. They authenticate with the {@code apikey}
+     *     parameter, never with a session cookie, and {@link org.nzbhydra.api.ExternalApi} maps them without a method
+     *     restriction, so a client may POST. {@code /api/**} also covers
+     *     {@link org.nzbhydra.api.stats.ExternalApiStats}.</li>
+     *     <li>{@code /getnzb/api/**} and {@code /gettorrent/api/**} are the apikey-authenticated download links handed
+     *     to download clients. Their siblings {@code /getnzb/user/**} and {@code /gettorrent/user/**} are mapped
+     *     without a method restriction too, but they authenticate the logged-in user (ROLE_USER) and the browser only
+     *     ever fetches them with GET, so they deliberately stay protected.</li>
+     *     <li>{@code /websocket/**} is the SockJS endpoint. Its fallback transports POST to
+     *     {@code /websocket/{server}/{session}/xhr_send} and sockjs-client cannot attach a header to those requests.</li>
+     *     <li>{@code /actuator/**} is called by monitoring and by the system test runner (POST /actuator/shutdown).
+     *     The only unsafe actuator endpoint, shutdown, is disabled unless
+     *     {@code management.endpoint.shutdown.enabled=true} is passed explicitly, which no production start does.</li>
+     * </ul>
+     * Everything else, {@code /internalapi/**} and the form login and logout above all, stays protected: the React
+     * transport sends the token from the {@value #CSRF_COOKIE_NAME} cookie on every unsafe request.
+     */
+    private static final List<String> CSRF_EXEMPT_PATH_PATTERNS = List.of(
+            "/api",
+            "/api/**",
+            "/rss",
+            "/rss/**",
+            "/torznab/api",
+            "/torznab/api/**",
+            "/getnzb/api/**",
+            "/gettorrent/api/**",
+            "/websocket/**",
+            "/actuator/**");
+
+    /**
+     * Additionally skipped by the {@link CsrfCookieFilter}, but deliberately <em>not</em> exempt from CSRF itself:
+     * these are the asset handlers from {@code WebConfiguration.addResourceHandlers} worth skipping (the React bundle
+     * lives under {@code /static/react/assets}; {@code /swagger-ui/**} is left alone). Putting a {@code Set-Cookie} on
+     * every asset response would keep them from being cached by a reverse proxy, and nothing fetching them reads the token.
+     */
+    private static final List<String> CSRF_COOKIE_SKIPPED_PATH_PATTERNS = List.of(
+            "/static/**",
+            "/additionalStatic/**",
+            "/favicon.*");
 
     @Autowired
     private ConfigProvider configProvider;
@@ -91,16 +155,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        boolean useCsrf = Boolean.parseBoolean(System.getProperty("main.useCsrf"));
-        if (configProvider.getBaseConfig().getMain().isUseCsrf() && useCsrf) {
+        if (isCsrfEnabled()) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-            csrfTokenRepository.setCookieName("HYDRA-XSRF-TOKEN");
+            csrfTokenRepository.setCookieName(CSRF_COOKIE_NAME);
+            //The cookie path is deliberately left unset: CookieCsrfTokenRepository then uses the request's context
+            //path, which is main.urlBase (see application.properties), so the cookie covers a non-root URL base.
             //https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
             CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
             requestHandler.setCsrfRequestAttributeName(null);
+            RequestMatcher exemptMatcher = csrfExemptRequestMatcher();
             http.csrf(csrf -> csrf
                     .csrfTokenRepository(csrfTokenRepository)
-                    .csrfTokenRequestHandler(requestHandler));
+                    .csrfTokenRequestHandler(requestHandler)
+                    .ignoringRequestMatchers(exemptMatcher));
+            //Spring Security defers loading the token, so a plain GET of the SPA shell would never write the cookie
+            //and the first unsafe request would have no token to send. Resolving the token here forces the repository
+            //to save it. Setting csrfRequestAttributeName to null alone does not do this - it only names the request
+            //attribute; the value behind it stays a lazy supplier (CsrfTokenRequestAttributeHandler.SupplierCsrfToken).
+            http.addFilterAfter(new CsrfCookieFilter(csrfCookieSkippedRequestMatcher(exemptMatcher)), CsrfFilter.class);
         } else {
             logger.info("CSRF is disabled");
             http.csrf(csrf -> csrf.disable());
@@ -211,6 +283,96 @@ public class SecurityConfig {
         http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
         http.addFilterAfter(UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build(), ForwardedHeaderFilter.class);
         return http.build();
+    }
+
+
+    /**
+     * CSRF protection is governed by {@code main.useCsrf} from the config. The {@value #USE_CSRF_PROPERTY} system
+     * property is an explicit override for tests only: absent the config decides, {@code false} disables it whatever
+     * the config says and {@code true} enables it.
+     */
+    private boolean isCsrfEnabled() {
+        String override = System.getProperty(USE_CSRF_PROPERTY);
+        if (override != null) {
+            logger.info("CSRF protection is {} by the system property {}", Boolean.parseBoolean(override) ? "enabled" : "disabled", USE_CSRF_PROPERTY);
+            return Boolean.parseBoolean(override);
+        }
+        return configProvider.getBaseConfig().getMain().isUseCsrf();
+    }
+
+    private RequestMatcher csrfExemptRequestMatcher() {
+        List<RequestMatcher> matchers = new ArrayList<>(pathMatchers(CSRF_EXEMPT_PATH_PATTERNS));
+        matchers.add(internalApiKeyRequestMatcher());
+        return new OrRequestMatcher(matchers);
+    }
+
+    /**
+     * What the {@link CsrfCookieFilter} skips: everything CSRF itself ignores, plus the static assets. The two lists
+     * are deliberately separate - a static asset must still not be able to opt out of CSRF protection.
+     */
+    private RequestMatcher csrfCookieSkippedRequestMatcher(RequestMatcher exemptMatcher) {
+        List<RequestMatcher> matchers = new ArrayList<>(pathMatchers(CSRF_COOKIE_SKIPPED_PATH_PATTERNS));
+        matchers.add(exemptMatcher);
+        return new OrRequestMatcher(matchers);
+    }
+
+    private List<RequestMatcher> pathMatchers(List<String> patterns) {
+        PathPatternRequestMatcher.Builder matcherBuilder = PathPatternRequestMatcher.withDefaults();
+        return patterns.stream()
+                .map(matcherBuilder::matcher)
+                .map(RequestMatcher.class::cast)
+                .toList();
+    }
+
+    /**
+     * The wrapper and the system tests call arbitrary endpoints, {@code /internalapi/control/shutdown} among them, by
+     * appending the internal API key as a request parameter; {@link HeaderAuthenticationFilter} authenticates them
+     * from it without any session. Matching on the key rather than enumerating those paths keeps the exemption in step
+     * with whatever the wrapper calls next. The key itself is compared, not just its presence - otherwise any request
+     * could opt out of CSRF by appending a made-up value. Without the system property (the normal case when Hydra is
+     * started without the wrapper) nothing matches.
+     */
+    private RequestMatcher internalApiKeyRequestMatcher() {
+        String internalApiKey = System.getProperty(INTERNAL_API_KEY_PARAMETER);
+        if (!StringUtils.hasText(internalApiKey)) {
+            //An empty or blank key would otherwise exempt every request that sends an empty internalApiKey parameter
+            return request -> false;
+        }
+        byte[] expected = internalApiKey.getBytes(StandardCharsets.UTF_8);
+        return request -> {
+            String sent = request.getParameter(INTERNAL_API_KEY_PARAMETER);
+            return sent != null && MessageDigest.isEqual(sent.getBytes(StandardCharsets.UTF_8), expected);
+        };
+    }
+
+    /**
+     * Resolves the deferred {@link CsrfToken} so that {@link CookieCsrfTokenRepository} actually writes the cookie,
+     * which is what Spring's SPA guidance calls a {@code CsrfCookieFilter}. Skipped for the exempt paths and the
+     * static assets - neither reads the cookie, and there is no reason to put a {@code Set-Cookie} on every API and
+     * asset response.
+     */
+    private static class CsrfCookieFilter extends OncePerRequestFilter {
+
+        private final RequestMatcher skippedMatcher;
+
+        CsrfCookieFilter(RequestMatcher skippedMatcher) {
+            this.skippedMatcher = skippedMatcher;
+        }
+
+        @Override
+        protected boolean shouldNotFilter(HttpServletRequest request) {
+            return skippedMatcher.matches(request);
+        }
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken != null) {
+                //Renders the token into the response cookie
+                csrfToken.getToken();
+            }
+            filterChain.doFilter(request, response);
+        }
     }
 
 

@@ -1,4 +1,10 @@
-import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
+import {
+    csrfHeaders,
+    dismissWelcomeDialog,
+    expect,
+    test,
+    testEnvironment,
+} from "./fixtures";
 import {
     captureVisualRegion,
     expectVisualGeometry,
@@ -37,7 +43,7 @@ test.describe("Search", () => {
         // dialog, and `results.spec.ts` owns its dedicated coverage.
         await page.request.put(
             "/internalapi/genericstorage/isGroupEpisodesHelpShown?forUser=true",
-            {data: true},
+            {data: true, headers: await csrfHeaders(page)},
         );
         // React is the served default now, but the navigation stays explicit so
         // every test below states which shell it is about.
@@ -813,7 +819,9 @@ test.describe("Search", () => {
             await page.goto("/");
             await expect(page).toHaveURL(/\/$/);
         });
-        const enableDemo = await page.request.put("/internalapi/demomode");
+        const enableDemo = await page.request.put("/internalapi/demomode", {
+            headers: await csrfHeaders(page),
+        });
         expect(enableDemo.status()).toBe(200);
         try {
             await page
@@ -849,6 +857,7 @@ test.describe("Search", () => {
         } finally {
             const disableDemo = await page.request.delete(
                 "/internalapi/demomode",
+                {headers: await csrfHeaders(page)},
             );
             expect(disableDemo.status()).toBe(200);
         }

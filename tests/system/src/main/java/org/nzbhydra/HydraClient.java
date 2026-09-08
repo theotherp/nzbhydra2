@@ -44,6 +44,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HydraClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraClient.class);
+    /** Must match {@code SecurityConfig}'s cookie name and the application transport's header. */
+    private static final String CSRF_COOKIE_NAME = "HYDRA-XSRF-TOKEN";
+    private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
     @Value("${nzbhydra.host}")
     private String nzbhydraHost;
     @Value("${nzbhydra.port}")
@@ -122,6 +125,7 @@ public class HydraClient {
         if (!"GET".equals(method)) {
             mutatingRequests.incrementAndGet();
         }
+        addCsrfTokenIfNeeded(method, options, requestHeaders);
         RequestBody body = createRequestBody(requestBody);
         if (body == null && (method.equals("POST") || method.equals("PUT") || method.equals("PATCH"))) {
             body = RequestBody.create(new byte[0], null);
@@ -338,6 +342,30 @@ public class HydraClient {
         }
     }
 
+    /**
+     * A request made on a {@link Session} is acting as the browser does: it authenticates with the session cookie
+     * rather than with the internal API key, so an unsafe method has to present the CSRF token the same way the
+     * application's own transport does - from the {@value #CSRF_COOKIE_NAME} cookie into the
+     * {@value #CSRF_HEADER_NAME} header (see {@code SecurityConfig} and {@code core/ui-react/src/api/transport.ts}).
+     * Every other call here carries the internal API key or hits the Newznab API, both of which are exempt, and a
+     * session that has not been handed a token yet - or an instance running with CSRF off - simply adds no header.
+     *
+     * <p>The deliberate gap is an unsafe call made with basic auth but no {@link Session} - {@code putWithBasicAuth}
+     * and its siblings. There is no cookie jar to take a token from, so nothing can be sent. The only caller is
+     * {@code AuthorizationSystemTest} on its {@code isV1Migration()} branch, which only runs under the unused
+     * {@code v1Migration} Spring profile, so the requests are never made against a CSRF-enabled instance. A
+     * session-less basic-auth write against an instance with CSRF on would have to fetch a token first.
+     */
+    private static void addCsrfTokenIfNeeded(String method, RequestOptions options, Map<String, String> requestHeaders) {
+        if ("GET".equals(method) || "HEAD".equals(method) || options.session == null) {
+            return;
+        }
+        String token = options.session.cookieValue(CSRF_COOKIE_NAME);
+        if (token != null) {
+            requestHeaders.putIfAbsent(CSRF_HEADER_NAME, token);
+        }
+    }
+
     private static String basicAuthorization(String username, String password) {
         return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
@@ -348,6 +376,10 @@ public class HydraClient {
 
         public boolean hasCookie(String name) {
             return cookieJar.hasCookie(name);
+        }
+
+        private String cookieValue(String name) {
+            return cookieJar.cookieValue(name);
         }
     }
 
@@ -414,6 +446,14 @@ public class HydraClient {
 
         private synchronized boolean hasCookie(String name) {
             return cookies.stream().anyMatch(cookie -> cookie.name().equals(name) && cookie.expiresAt() > System.currentTimeMillis());
+        }
+
+        private synchronized String cookieValue(String name) {
+            return cookies.stream()
+                    .filter(cookie -> cookie.name().equals(name) && cookie.expiresAt() > System.currentTimeMillis())
+                    .map(Cookie::value)
+                    .findFirst()
+                    .orElse(null);
         }
     }
 

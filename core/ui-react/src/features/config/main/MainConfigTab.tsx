@@ -17,6 +17,7 @@ import {
 } from "../components";
 import {
     apiKeyValidator,
+    CSRF_HELP,
     CSRF_WIKI,
     H2_RETENTION_TIME,
     H2_WRITE_DELAY,
@@ -244,7 +245,7 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                     help={[
                         "Use ",
                         {href: CSRF_WIKI, text: "CSRF protection"},
-                        ".",
+                        `. ${CSRF_HELP}`,
                     ]}
                     label="Use CSRF protection"
                     name="main.useCsrf"
