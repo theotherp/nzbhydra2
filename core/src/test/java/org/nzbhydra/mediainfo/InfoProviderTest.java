@@ -154,4 +154,22 @@ public class InfoProviderTest {
         assertThat(info).isEqualTo(mostInfo);
     }
 
+    @Test
+    void shouldSaveTvInfoFromTitleSearchWhenNotYetInDatabase() throws Exception {
+        when(tvInfoRepositoryMock.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(anyString(), anyString(), anyString(), anyString())).thenReturn(Collections.emptyList());
+
+        testee.search("title", MediaIdType.TVTITLE);
+
+        verify(tvInfoRepositoryMock).save(any(TvInfo.class));
+    }
+
+    @Test
+    void shouldNotSaveTvInfoFromTitleSearchWhenAlreadyInDatabase() throws Exception {
+        when(tvInfoRepositoryMock.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(anyString(), anyString(), anyString(), anyString())).thenReturn(Collections.singletonList(new TvInfo("tvdbId", "tvrageId", "tvmazeId", "imdbId", "title", null, null)));
+
+        testee.search("title", MediaIdType.TVTITLE);
+
+        verify(tvInfoRepositoryMock, never()).save(any(TvInfo.class));
+    }
+
 }

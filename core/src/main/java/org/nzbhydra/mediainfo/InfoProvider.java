@@ -192,7 +192,7 @@ public class InfoProvider {
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     for (MediaInfo mediaInfo : infos) {
                         TvInfo tvInfo = new TvInfo(mediaInfo);
-                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(tvInfo.getTvrageId().orElse("-1"), tvInfo.getTvmazeId().orElse("-1"), tvInfo.getTvdbId().orElse("-1"), tvInfo.getImdbId().orElse("-1")) == null) {
+                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(tvInfo.getTvrageId().orElse("-1"), tvInfo.getTvmazeId().orElse("-1"), tvInfo.getTvdbId().orElse("-1"), tvInfo.getImdbId().orElse("-1")).isEmpty()) {
                             tvInfoRepository.save(tvInfo);
                         }
                     }
