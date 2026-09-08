@@ -3615,3 +3615,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (140 files / 2017 tests), `build`, `validate:migration`, `validate:focus-affordances`, `knip` green; `git diff --check -- core/ui-react` clean.
 - **Commit:** `6a2f99479`
 - **Note:** backlog item 28 of `docs/code-quality-backlog-2026-09.md`. The existing per-tab wiring tests (`IndexersConfigTab.test.tsx`, `DownloadingConfigTab.test.tsx`) pass unchanged.
+
+### 2026-09-08 — Split the theme module into tokens, palettes and component overrides
+
+- **Why not a packet:** structural split of one module with the export surface and every importer unchanged; identity proven by a normalised serialisation of all four themes, a byte-identical stylesheet dump of a real page render under each theme, and a digest test whose pinned values equal the pre-split theme's. Implemented by a subagent, reviewed by a fresh subagent that re-derived the identity itself (found the palette guard had lost its end bound and stale "below/above" prose; both fixed).
+- **Paths:** `core/ui-react/src/app/{theme,themeTokens,themePalettes,themeComponents}.ts`, `themeComposition.test.ts`, `theme.test.ts`, `core/ui-react/scripts/validate-focus-affordances.mjs`, `core/ui-react/AGENTS.md`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (143 files / 2037 tests), `build`, `validate:migration`, `validate:focus-affordances` (402 files), `knip` green; `git diff --check -- core/ui-react` clean.
+- **Commit:** `b03e8d47d`
+- **Note:** backlog item 30 of `docs/code-quality-backlog-2026-09.md`. Recorded, not fixed: about twenty feature-code comments still cite `app/theme.ts` for overrides that now live in `themeComponents.ts`; the digest test's normaliser rewrites `(0, ident)` broadly, harmless today. The MUI module augmentations deliberately stay in `theme.ts`.
