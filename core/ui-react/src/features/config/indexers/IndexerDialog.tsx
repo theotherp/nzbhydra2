@@ -34,6 +34,7 @@ import {
     type SettingOption,
     type SettingValidator,
 } from "../components";
+import {useConnectionFailurePrompt} from "../connectionFailurePrompt";
 import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {CapsCheckDialog, type CapsCheckRequest} from "./CapsCheckDialog";
 import {ColorSetting} from "./ColorSetting";
@@ -71,19 +72,6 @@ import {
 } from "./indexerSettings";
 
 const INDEXER_DIALOG_TEST_ID = "config-indexer-dialog";
-
-/** `handleConnectionCheckFail` (`config-fields-service.js:2557-2588`). */
-const CONNECTION_FAILED_TITLE = "Connection check failed";
-const ADD_ANYWAY_QUESTION = "Do you want to add it anyway?";
-const UNCHECKED_MESSAGE =
-    "The connection to the indexer could not be tested, sorry. Please check the log.";
-const CHECKED_YES_LABEL = "I know what I'm doing";
-const UNCHECKED_YES_LABEL = "I'll risk it";
-const DISABLE_LABEL = "Add it, but disabled";
-const RETRY_LABEL = "Aahh, let me try again";
-/** Shown when the server reports a failure without saying why. */
-const UNEXPLAINED_FAILURE =
-    "The indexer rejected the connection but gave no reason.";
 
 const CONNECTION_OK_TOAST = "Connection to the indexer tested successfully";
 /** Legacy's spelling, kept verbatim (`formly-indexers.js:1406`). */
@@ -170,6 +158,7 @@ export function IndexerDialog({
     transport: ApiTransport;
 }) {
     const dialogs = useDialogs();
+    const askToAddAnyway = useConnectionFailurePrompt("indexer");
     const toasts = useToasts();
     const [checkingConnection, setCheckingConnection] = useState(false);
     const [capsRequest, setCapsRequest] = useState<CapsCheckRequest | null>(
@@ -363,25 +352,7 @@ export function IndexerDialog({
             toasts.showToast({message: CONNECTION_OK_TOAST, severity: "info"});
             return await checkCapsBeforeClose(entry);
         }
-        // `handleConnectionCheckFail`'s two branches: the server ran the check
-        // and can say what went wrong, or the check never happened at all.
-        const answer = await dialogs.confirm({
-            title: CONNECTION_FAILED_TITLE,
-            message:
-                result.kind === "failed"
-                    ? result.message === ""
-                        ? UNEXPLAINED_FAILURE
-                        : result.message
-                    : UNCHECKED_MESSAGE,
-            details: [ADD_ANYWAY_QUESTION],
-            confirmLabel:
-                result.kind === "failed"
-                    ? CHECKED_YES_LABEL
-                    : UNCHECKED_YES_LABEL,
-            denyLabel: DISABLE_LABEL,
-            cancelLabel: RETRY_LABEL,
-            testId: "config-indexer-connection-failed",
-        });
+        const answer = await askToAddAnyway(result);
         if (answer === "confirmed") {
             // Legacy resolves without a value here, so the entry is committed
             // as edited and the capability check is skipped entirely.

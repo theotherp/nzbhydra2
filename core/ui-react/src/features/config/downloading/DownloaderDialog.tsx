@@ -15,7 +15,6 @@ import {FormProvider, useForm} from "react-hook-form";
 import {checkDownloaderConnection} from "../../../api/config/downloaderConnection";
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
-import {useDialogs} from "../../../components/dialogs/dialogs";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
     AdvancedDisclosureContext,
@@ -27,6 +26,7 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {useConnectionFailurePrompt} from "../connectionFailurePrompt";
 import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {
     connectionSettingsChanged,
@@ -42,19 +42,6 @@ import {
 } from "./downloadingSettings";
 
 const DOWNLOADER_DIALOG_TEST_ID = "config-downloader-dialog";
-
-/** `handleConnectionCheckFail` (`config-fields-service.js:2557-2588`). */
-const CONNECTION_FAILED_TITLE = "Connection check failed";
-const ADD_ANYWAY_QUESTION = "Do you want to add it anyway?";
-const UNCHECKED_MESSAGE =
-    "The connection to the downloader could not be tested, sorry. Please check the log.";
-const CHECKED_YES_LABEL = "I know what I'm doing";
-const UNCHECKED_YES_LABEL = "I'll risk it";
-const DISABLE_LABEL = "Add it, but disabled";
-const RETRY_LABEL = "Aahh, let me try again";
-/** Shown when the server reports a failure without saying why. */
-const UNEXPLAINED_FAILURE =
-    "The downloader rejected the connection but gave no reason.";
 
 /**
  * `F-CONFIG-DOWNLOADING`'s downloader editor — legacy's
@@ -101,7 +88,7 @@ export function DownloaderDialog({
     onSubmit: (entry: DownloaderValues) => void;
     transport: ApiTransport;
 }) {
-    const dialogs = useDialogs();
+    const askToAddAnyway = useConnectionFailurePrompt("downloader");
     const toasts = useToasts();
     const [checking, setChecking] = useState(false);
     const draft = useForm<ConfigValues>({
@@ -157,25 +144,7 @@ export function DownloaderDialog({
             });
             return entry;
         }
-        // `handleConnectionCheckFail`'s two branches: the server ran the check
-        // and can say what went wrong, or the check never happened at all.
-        const answer = await dialogs.confirm({
-            title: CONNECTION_FAILED_TITLE,
-            message:
-                result.kind === "failed"
-                    ? result.message === ""
-                        ? UNEXPLAINED_FAILURE
-                        : result.message
-                    : UNCHECKED_MESSAGE,
-            details: [ADD_ANYWAY_QUESTION],
-            confirmLabel:
-                result.kind === "failed"
-                    ? CHECKED_YES_LABEL
-                    : UNCHECKED_YES_LABEL,
-            denyLabel: DISABLE_LABEL,
-            cancelLabel: RETRY_LABEL,
-            testId: "config-downloader-connection-failed",
-        });
+        const answer = await askToAddAnyway(result);
         if (answer === "confirmed") {
             return entry;
         }
