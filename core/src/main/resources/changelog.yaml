@@ -20,6 +20,8 @@
       -   type: "note"
           text: "If you have scripts or tools that call /internalapi with POST, PUT or DELETE using basic auth or a session, they now need to send the header X-XSRF-TOKEN with the value of the HYDRA-XSRF-TOKEN cookie. The API that Sonarr, Radarr and NZB clients use (/api, /torznab/api, /rss and the apikey download links) is not affected and needs no change. If that is not an option you can turn off &quot;Use CSRF protection&quot; in the main config."
       -   type: "feature"
+          text: "New external API under /externalapi/v1 for scripts and dashboards: statistics, search, download and notification history, the current log file and creating or downloading backups. It only needs your API key (header X-Api-Key or the apikey parameter), no session and no CSRF token, so it is the replacement if the CSRF change broke a tool of yours. Browse it in the built-in API documentation at &lt;your Hydra URL&gt;/swagger-ui/index.html and pick the &quot;externalapi&quot; entry; see docs/external-api.md in the repository."
+      -   type: "feature"
           text: "Send user agent NZBHydra2 when sending results to the downloader."
       -   type: "fix"
           text: "Searches with excluded words (e.g. \"--word\") were executed again for every page instead of using the cached results."

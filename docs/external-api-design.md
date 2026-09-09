@@ -1,6 +1,7 @@
 # External API v1 — design
 
-Status: approved for implementation, 2026-09-09. Owner decision: stats consumers must stop using `/internalapi`
+Status: implemented 2026-09-09; the *As built* section at the end records where the implementation deviates from the
+design below and why. Owner decision: stats consumers must stop using `/internalapi`
 (CSRF is enforced there since 36d8c8a0b) and `/api` keeps its Newznab specification, so a separate, stable,
 API-key-authenticated surface is added under `/externalapi`.
 
@@ -70,12 +71,13 @@ serialised). Query parameters are the only input; there are no request bodies in
 | `page` | int ≥ 1 | 1 | |
 | `limit` | int 1..500 | 100 | above 500 → 400 |
 | `from` | ISO-8601 instant | none | inclusive lower bound on the entry time |
-| `to` | ISO-8601 instant | none | exclusive upper bound |
+| `to` | ISO-8601 instant | none | inclusive upper bound (`History` filters with `<=`) |
 | `order` | `asc` \| `desc` | `desc` | by entry time |
 
 Route-specific optional filters, all case-insensitive substring matches unless stated:
 
-- searches: `query`, `username`, `ip`, `userAgent`, `indexer` (an indexer name among the selected ones).
+- searches: `query`, `username`, `ip`, `userAgent`. (No `indexer` filter in v1: the selected indexers live in a
+  collection table `History.getHistory` cannot join; an additive v1 change later.)
 - downloads: `title`, `indexer` (exact name), `status` (one of `FileDownloadStatus`), `username`, `ip`, `userAgent`.
 - notifications: `eventType` (one of `NotificationEventType`), `messageType` (one of `NotificationMessageType`).
 
@@ -97,8 +99,10 @@ An unknown enum value → 400.
 ## Contract classes
 
 Package `org.nzbhydra.externalapi.v1` in `shared/mapping` (so the system tests, which depend on `mapping` only, can
-deserialise them). Lombok `@Data @NoArgsConstructor @AllArgsConstructor`, `@ReflectionMarker` for the native image,
-`@Schema(description = ...)` on every class and field so the swagger UI is self-explanatory. Fields are listed in the
+deserialise them). Lombok `@Data @NoArgsConstructor @AllArgsConstructor`, `@ReflectionMarker` for the native image
+(enums included), `@Schema(description = ...)` on every class and field so the swagger UI is self-explanatory
+(`shared/mapping` depends on `swagger-annotations-jakarta` for that), and `@JsonFormat(shape = STRING, timezone =
+"UTC")` on every `Instant` because `WebConfiguration` builds its own `JsonMapper` outside Spring's date settings. Fields are listed in the
 order they are serialised.
 
 ```
@@ -119,6 +123,8 @@ ExternalStatsResponse     { Instant after; Instant before; boolean includeDisabl
                                                             searchSharesPerUser, searchSharesPerIp;
                             List<ExternalUserAgentShare> userAgentSearchShares, userAgentDownloadShares;
                             ExternalDownloadsPerAgeStats downloadsPerAgeStats; }
+   — `ExternalDownloadsPerAgeStats { List<ExternalDownloadPerAge> downloadsPerAge; ... }` with
+     `ExternalDownloadPerAge` mirroring the internal element type.
    — each nested class mirrors the corresponding `org.nzbhydra.historystats.stats.*` class field for field, with
      the same names and primitive/boxed types. The mapping is explicit (no `convertValue` from the internal class),
      so a rename inside the internal class breaks compilation, not the contract.
@@ -139,7 +145,9 @@ ExternalSearchHistoryEntry { int id; Instant time; String source; String searchT
                              List<ExternalIdentifier> identifiers; List<String> selectedIndexers;
                              String username; String ip; String userAgent; }
 ExternalDownloadHistoryEntry { int id; Instant time; String title; String indexer; String category;
-                               Long sizeBytes; Integer ageDays; String accessType; String accessSource;
+                               Long sizeBytes; Integer ageDays;   // category and sizeBytes are always null in
+                                                                  // v1: the download entity stores neither;
+                                                                  // kept so they can be filled additively String accessType; String accessSource;
                                String status; String error; String externalId;
                                String username; String ip; String userAgent; }
 ExternalNotificationHistoryEntry { int id; Instant time; String eventType; String messageType; String title;
@@ -162,9 +170,12 @@ Package `org.nzbhydra.externalapi` in `core`:
 - `ExternalApiV1Controller` (`@RestController`, `@RequestMapping("/externalapi/v1")`, `@Secured("ROLE_ADMIN")` on
   the class, `@Tag(name = "External API v1")`, `@Operation`/`@ApiResponse` on every method, a class-level
   `@SecurityRequirement(name = "apiKey")`).
-- `ExternalApiConfiguration`: a springdoc `GroupedOpenApi` bean `externalapi` (paths `/externalapi/**`) and an
-  `OpenAPI` customiser declaring the `apiKey` security scheme (`in: header`, name `X-Api-Key`) plus title/version
-  for that group; the default group keeps everything else.
+- `ExternalApiConfiguration`: two springdoc `GroupedOpenApi` beans, `externalapi` (paths `/externalapi/**`) and
+  `all` (`/**`; once any group exists the swagger selector offers only groups, so this keeps every other endpoint
+  reachable), and a global `OpenAPI` customiser declaring the `apiKey` security scheme (`in: header`, name
+  `X-Api-Key`) so `components.securitySchemes` exists in every document including `core/openapi.json`. Every
+  operation carries an explicit `operationId` prefixed `external` so it cannot collide with internal controllers'
+  method names.
 - `ExternalApiExceptionHandler` (`@RestControllerAdvice(assignableTypes = ExternalApiV1Controller.class)`): maps
   `IllegalArgumentException`/`MethodArgumentTypeMismatchException`/`ConstraintViolation` → 400,
   `ExternalBackupNotFoundException` → 404, `InterruptedException` from stats → 503, everything else → 500, always
@@ -179,10 +190,11 @@ Package `org.nzbhydra.externalapi` in `core`:
 
 ## Swagger UI
 
-`WebConfiguration.addResourceHandlers` maps `/swagger-ui/**` to the webjar `swagger-ui/4.10.3`, while springdoc 3.1.0
-ships a much newer swagger-ui and serves `/swagger-ui/index.html` itself. Verify against a running instance whether
-`/swagger-ui/index.html` currently works; if it does not, remove that resource handler (springdoc registers its own)
-and re-verify. The user docs refer to `<base url>/swagger-ui/index.html` and to selecting the "externalapi" group.
+`WebConfiguration.addResourceHandlers` used to map `/swagger-ui/**` to the webjar `swagger-ui/4.10.3`, which springdoc
+3.1.0 no longer ships, so `/swagger-ui/index.html` was a 404. Because `WebConfiguration` extends
+`WebMvcConfigurationSupport`, springdoc's own `WebMvcConfigurer` is never consulted; the handler now delegates to
+springdoc's `SwaggerWebMvcConfigurer` bean (null-guarded for the bare unit test), which registers the right webjar
+and the index-page transformer. Verified on a running instance. The user docs refer to `<base url>/swagger-ui/index.html` and to selecting the "externalapi" group.
 Both `/v3/api-docs/**` and `/swagger-ui/**` stay behind the normal UI login (admin area), which is intended: the
 docs are for the person who administers the instance.
 
@@ -237,10 +249,34 @@ and `"apikey=apikey"` where the query form is under test.
 - No JPA entity, `Page`, `FilterModel`, `SortModel`, `StatsRequest`, `StatsResponse` or any
   `org.nzbhydra.historystats.stats.*` type appears in a controller signature or in `openapi.json` under
   `/externalapi/**`.
-- 404 on auth failure has an empty body and no `Set-Cookie`, `WWW-Authenticate` or redirect.
+- 404 on auth failure has an empty body and no `Set-Cookie`, `WWW-Authenticate` or redirect. This requires the key
+  filter to run before `CsrfFilter`: with `setCsrfRequestAttributeName(null)` Spring resolves the deferred token
+  eagerly inside `CsrfFilter`, which writes the cookie on every request that reaches it.
 - The key never appears in any log line at any level.
 - `/externalapi/**` is CSRF-exempt and excluded from the CSRF cookie filter; `/internalapi/**` is untouched.
 - `openapi.json` and the generated React types are regenerated and `check:api` passes; `validate:migration`
   passes (no React source change).
 - Native image: every new class Jackson touches carries `@ReflectionMarker`.
 - The system test class passes against a running instance and is listed by the runner.
+
+## As built (2026-09-09)
+
+- `ExternalApiKeyFilter` is registered before `CsrfFilter` (see the cookie note above) and matches with the same
+  `PathPatternRequestMatcher` the authorization rule uses, so encoded prefixes get the same bodyless 404.
+- The key filter installs its authentication in a fresh `SecurityContext` rather than mutating the current one, so a
+  request that carries both a browser session and a valid key never writes `externalApi`/`ROLE_ADMIN` into that
+  session (the API key is a lower-trust credential than an admin password). A valid-key response still receives the
+  XSRF cookie because `CsrfFilter` resolves the token eagerly; that is accepted.
+- `shared/mapping` depends on `swagger-annotations-jakarta` at `provided` scope with an explicit version property
+  rather than a parent-managed compile dependency: the managed form shifted Maven's mediation of `jaxb-core` in
+  core's test scope and broke the offline build. Annotations whose class is absent are dropped by the JVM, so
+  consumers of the mapping jar without swagger on the classpath are unaffected (verified against the system tests'
+  classpath).
+- `BackupAndRestore.getBackupFolder()` became public for the download route.
+- Regenerating `core/openapi.json` also picked up three internal paths that had drifted out of the committed file
+  (`/internalapi/debuginfos/{clearlog,rotatelog}`, `/internalapi/systemtest/reset`) and `FilterDefinition.isBoolean`.
+- System tests: `tests/system/src/test/java/org/nzbhydra/ExternalApiV1SystemTest.java`, 19 cases, run with
+  `mvn -o -pl org.nzbhydra:mapping install -DskipTests -q` first (the runner packages core without installing the
+  mapping module the system tests resolve) and then
+  `python3 misc/run_gui_systemtest.py --runtime local --skip-install --java-test ExternalApiV1SystemTest`.
+- User documentation: `docs/external-api.md`.
