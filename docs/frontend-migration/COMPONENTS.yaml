@@ -331,6 +331,13 @@ components:
       still describe the same table at the basis. Title still declares no width and absorbs the difference (289px of content at two downloaders, accepted by that request below FM-175's 340px floor).
       FM-187 (owner request 2026-09-05) made the count downloaders plus one more slot for the row's send-to-black-hole button, reserved by resultTable.ts's blackHoleSlot(results,
       settings) -- results-aware rather than config-only because sendMagnetLinks defaults to true, and read from the unfiltered loaded results so refining never shifts the columns.
+      FM-192 split the region's one component into siblings under the same directory -- ResultsAlerts, ResultsToolbar (which owns the sticky
+      toolbar and exports the STICKY_BACKGROUND both pinned regions share), ResultsTable (the table itself, plus every style block and colgroup
+      track constant that only it consumes -- ADR-0014, no shared *Styles.ts) and ResultsPagingFooter, with useResultDisplayChoices (all ten
+      persisted choices and the single ADR-0054 hydra.search-results.table write) and useResultSelection (the selection state, its status and its
+      handlers). SearchResults.tsx stays the region's only export and is now the data pipeline and the composition; the RefineSidebar invocation
+      stayed with it because it is driven by the refine-filter state that pipeline owns. Rendered output, test ids, memo boundaries and dependency
+      arrays are unchanged -- proven by base-vs-after outerHTML and emotion-stylesheet captures in five states.
   - id: C-HISTORY-REFINE-BAR
     responsibility: Shared stats-history refine sections and filter state -- the single filter surface beside every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select
       checkboxes, boolean, number range) with active-filter count and clear-all. It owns state and options only -- HistoryFilterValues filtered server-side through C-HISTORY-REQUEST rather than over already-loaded rows, and options each

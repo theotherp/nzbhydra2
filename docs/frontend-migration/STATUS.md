@@ -1735,6 +1735,21 @@ byte-identical, re-derived by the reviewer. Vitest 2047/2047, the six real-backe
 `entryCount` from the render-captured watch array where the others read `getValues()`, and FM-192/FM-193 still carry
 the stale "focus-affordances red at base" line. Candidates for a future quickfix.
 
+FM-192 (Split The Results Region Into Four Components And Two Hooks) took `SearchResults.tsx` from 2708 lines to
+1193: `ResultsAlerts`, `ResultsToolbar`, `ResultsTable` and `ResultsPagingFooter` are siblings under `results/`, and
+`useResultDisplayChoices` (all ten persisted choices plus the single ADR-0054 write, key set and dependency array
+token-identical to base) and `useResultSelection` own the two state clusters. `ResultsTable` took the table-only
+boundary; `RefineSidebar` stayed with the pipeline that owns filter state; the two render-time ref writes and the
+pruning effect stayed at the call site so the shift-click anchor is written at the same point. Pure code motion:
+every base line is claimed by exactly one destination and every moved run is token-identical, re-derived by the
+reviewer with an independent AST matcher; the only dependency-array changes are two added `useState` setters forced by
+the hook boundary, provably inert. `outerHTML` and emotion sheet byte-identical base-vs-after in five states
+(idle, loaded, selection active, refine open, phone 390x844), re-run by the reviewer; `SearchResults.test.tsx`
+byte-unchanged at 143/143. Vitest 2047/2047, real-backend results/search/downloads specs 64/64. Third of the
+2026-09-08 code-quality batch (backlog item 23). Passed 2026-09-09 first cycle; minor findings, not corrected: a
+stray line count in the handoff prose, and FM-193 still carries the stale "focus-affordances red at base" line.
+Noted, not a defect: `ResultsTable` imports `STICKY_BACKGROUND` from `ResultsToolbar`, a sibling edge ADR-0014 forces.
+
 ## Active
 
 None.
@@ -1762,10 +1777,9 @@ None.
 
 ## Upcoming
 
-- FM-192: Split `SearchResults.tsx` at its verified seams into `ResultsAlerts`, `ResultsToolbar`, `ResultsTable` and
-  `ResultsPagingFooter` plus `useResultDisplayChoices` and `useResultSelection`, rendered output proven byte-identical.
-  Third of the 2026-09-08 code-quality batch (FM-190 and FM-191 done); FM-193 (the settings index becomes the source of
-  labels and help) is a planned packet with no dependency on it. Backlog items 23, 29.
+- FM-193: Invert `settingsIndex.ts` so the index is the source of labels and help and the setting components read
+  from it, with an ordered index dump and all eight tabs' rendered output proven byte-identical. Last of the 2026-09-08
+  code-quality batch (FM-190, FM-191 and FM-192 done). Backlog item 29.
 
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).
