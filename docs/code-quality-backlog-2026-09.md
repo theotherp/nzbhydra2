@@ -60,7 +60,7 @@ Status values: `open`, `in progress`, `done <sha>`, `skipped (<reason>)`.
 | 26 | `SearchResultAcceptor.titleWordCache`: a field declared concurrent, replaced with a plain HashMap by every caller thread, guarded by a singleton-wide synchronized on the hot path. Make it a local map. | `searching/SearchResultAcceptor.java:51, 63, 318-328` | done (413b2b80d) |
 | 27 | `IndexerWebAccess` builds a thread pool per HTTP call and leaks the thread on timeout. | `indexers/IndexerWebAccess.java:86-127` | done (f9538c730) |
 | 28 | Connection-failure dialog duplicated verbatim between `IndexerDialog` and `DownloaderDialog`; extract one helper. | `ui-react/src/features/config/indexers/IndexerDialog.tsx:75-86, 336-399`, `downloading/DownloaderDialog.tsx:45-57, 138-186` | done (6a2f99479) |
-| 29 | Invert `settingsIndex.ts`: make the index the source of labels and help and have the setting components read from it. | `ui-react/src/features/config/settingsSearch/settingsIndex.ts` | in progress |
+| 29 | Invert `settingsIndex.ts`: make the index the source of labels and help and have the setting components read from it. | `ui-react/src/features/config/settingsSearch/settingsIndex.ts` | done (dfefe7289) |
 | 30 | Split `theme.ts` into tokens, palettes and components. | `ui-react/src/app/theme.ts` | done (b03e8d47d) |
 
 ## Verified but not scheduled
