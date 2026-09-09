@@ -98,6 +98,7 @@ public class UpdateManager implements InitializingBean {
     private PackageInfo packageInfo;
 
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
+    protected Supplier<List<BlockedVersion>> blockedVersionsCache = Suppliers.memoizeWithExpiration(getBlockedVersionsSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
 
@@ -190,11 +191,27 @@ public class UpdateManager implements InitializingBean {
     }
 
     private boolean isVersionNotBlocked(SemanticVersion version) throws UpdateException {
-        if (getBlockedVersions().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(version))) {
+        if (blockedVersionsCache.get().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(version))) {
             logger.debug("Version {} is in the list of blocked updates", version);
             return false;
         }
         return true;
+    }
+
+    /**
+     * The blocked versions list is a nice-to-have: when it can't be retrieved (e.g. no internet connection) we must not
+     * fail the whole update check but simply assume that no version is blocked. The negative result is cached like the
+     * releases so that an unreachable GitHub isn't contacted again on every single update info request.
+     */
+    protected Supplier<List<BlockedVersion>> getBlockedVersionsSupplier() {
+        return () -> {
+            try {
+                return getBlockedVersions();
+            } catch (UpdateException e) {
+                logger.warn("Unable to retrieve the list of blocked versions, will assume that no version is blocked. Error: {}", e.getMessage());
+                return Collections.emptyList();
+            }
+        };
     }
 
     protected Supplier<List<Release>> getReleasesSupplier() {
@@ -445,6 +462,7 @@ public class UpdateManager implements InitializingBean {
 
     public void resetCache() {
         releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
+        blockedVersionsCache = Suppliers.memoizeWithExpiration(getBlockedVersionsSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     }
 
     @Override

@@ -102,6 +102,15 @@ public class MockGithub {
         return new String(Files.readAllBytes(new File("news.json").toPath()));
     }
 
+    /**
+     * Used by the system tests: an empty list means no version is blocked, so the update check never depends on GitHub.
+     */
+    @RequestMapping(value = "/blockedVersions.json", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String emptyBlockedVersions() throws Exception {
+        logger.info("Returning empty blocked versions list");
+        return "[]";
+    }
+
     @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)
     public String blockedVersions() throws Exception {
         logger.info("Returning blocked versions");

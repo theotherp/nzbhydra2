@@ -616,6 +616,9 @@ def start_local_services(
             f"-Dnzbhydra.changelogUrl=http://127.0.0.1:{MOCKSERVER_PORT}/changelog",
             f"-Dnzbhydra.repositoryBaseUrl=http://127.0.0.1:{MOCKSERVER_PORT}/repos/theotherp/nzbhydra2",
             f"-Dnzbhydra.newsUrl=http://127.0.0.1:{MOCKSERVER_PORT}/static/news.json",
+            # Without this the update check tries to reach raw.githubusercontent.com and fails the whole
+            # /internalapi/updates/infos request (500) whenever the machine has no internet access.
+            f"-Dnzbhydra.blockedVersionsUrl=http://127.0.0.1:{MOCKSERVER_PORT}/blockedVersions.json",
             f"-Dnzbhydra.tmdb.apiBaseUrl=http://127.0.0.1:{MOCKSERVER_PORT}/3",
             "-Dnzbhydra.tmdb.apikey=system-test-tmdb-api-key",
             "-jar",

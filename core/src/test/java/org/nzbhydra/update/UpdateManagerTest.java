@@ -21,6 +21,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -122,6 +123,28 @@ public class UpdateManagerTest {
         assertThat(testee.isUpdateAvailable()).isFalse();
     }
 
+
+    @Test
+    void shouldStillReturnUpdateInfoWhenBlockedVersionsCannotBeRetrieved() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenThrow(new IOException("Failed to connect to raw.githubusercontent.com"));
+
+        final UpdateManager.UpdateInfo updateInfo = testee.getUpdateInfo();
+
+        assertThat(updateInfo.getLatestVersion()).isEqualTo("2.0.0");
+        assertThat(updateInfo.isUpdateAvailable()).isTrue();
+    }
+
+    @Test
+    void shouldNotOfferBlockedVersionAsUpdate() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(new BlockedVersion("2.0.0", "comment")))
+        );
+
+        final UpdateManager.UpdateInfo updateInfo = testee.getUpdateInfo();
+
+        assertThat(updateInfo.getLatestVersion()).isEqualTo("2.0.0");
+        assertThat(updateInfo.isUpdateAvailable()).isFalse();
+    }
 
     @Test
     void shouldGetChangesForVersion() throws Exception {
