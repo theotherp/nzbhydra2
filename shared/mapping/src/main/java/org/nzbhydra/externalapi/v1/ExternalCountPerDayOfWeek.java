@@ -16,9 +16,9 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "A count per day of the week")
 public class ExternalCountPerDayOfWeek {
 
-    @Schema(description = "The short English day name: Mon, Tue, Wed, Thu, Fri, Sat or Sun")
+    @Schema(description = "The short English day name: Mon, Tue, Wed, Thu, Fri, Sat or Sun", example = "Mon")
     private String day;
 
-    @Schema(description = "How many events fell on that day")
+    @Schema(description = "How many events fell on that day", example = "17")
     private Integer count;
 }

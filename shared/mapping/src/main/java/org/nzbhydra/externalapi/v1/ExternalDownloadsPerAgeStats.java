@@ -19,16 +19,16 @@ import java.util.List;
 @Schema(description = "How old the downloaded content was")
 public class ExternalDownloadsPerAgeStats {
 
-    @Schema(description = "Percentage of downloads whose content was older than 1000 days")
+    @Schema(description = "Percentage of downloads whose content was older than 1000 days", example = "12")
     private Integer percentOlder1000;
 
-    @Schema(description = "Percentage of downloads whose content was older than 2000 days")
+    @Schema(description = "Percentage of downloads whose content was older than 2000 days", example = "5")
     private Integer percentOlder2000;
 
-    @Schema(description = "Percentage of downloads whose content was older than 3000 days")
+    @Schema(description = "Percentage of downloads whose content was older than 3000 days", example = "1")
     private Integer percentOlder3000;
 
-    @Schema(description = "Average age of the downloaded content in days")
+    @Schema(description = "Average age of the downloaded content in days", example = "420")
     private Integer averageAge;
 
     @Schema(description = "The number of downloads per age in days")

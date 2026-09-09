@@ -16,9 +16,9 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "A count per hour of the day")
 public class ExternalCountPerHourOfDay {
 
-    @Schema(description = "The hour of the day, 0 to 23")
+    @Schema(description = "The hour of the day, 0 to 23", example = "21")
     private Integer hour;
 
-    @Schema(description = "How many events fell in that hour")
+    @Schema(description = "How many events fell in that hour", example = "9")
     private Integer count;
 }

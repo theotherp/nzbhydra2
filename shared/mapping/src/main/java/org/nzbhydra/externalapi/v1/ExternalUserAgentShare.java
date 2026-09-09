@@ -16,12 +16,12 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "A user agent's share of all searches or downloads")
 public class ExternalUserAgentShare {
 
-    @Schema(description = "The user agent as sent by the client")
+    @Schema(description = "The user agent as sent by the client", example = "Sonarr/4.0.0 (example)")
     private String userAgent;
 
-    @Schema(description = "Number of searches or downloads made with it")
+    @Schema(description = "Number of searches or downloads made with it", example = "34")
     private Integer count;
 
-    @Schema(description = "Percentage of all searches or downloads it accounts for")
+    @Schema(description = "Percentage of all searches or downloads it accounts for", example = "68.0")
     private float percentage;
 }

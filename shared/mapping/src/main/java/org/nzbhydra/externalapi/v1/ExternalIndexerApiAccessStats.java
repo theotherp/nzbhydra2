@@ -16,15 +16,15 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "How often an indexer was called and how well those calls went")
 public class ExternalIndexerApiAccessStats {
 
-    @Schema(description = "The name of the indexer")
+    @Schema(description = "The name of the indexer", example = "Example Indexer")
     private String indexerName;
 
-    @Schema(description = "Percentage of calls that succeeded")
+    @Schema(description = "Percentage of calls that succeeded", example = "98.5")
     private Double percentSuccessful;
 
-    @Schema(description = "Percentage of calls that failed to connect")
+    @Schema(description = "Percentage of calls that failed to connect", example = "1.5")
     private Double percentConnectionError;
 
-    @Schema(description = "Average number of calls per day in the time range")
+    @Schema(description = "Average number of calls per day in the time range", example = "42.0")
     private Double averageAccessesPerDay;
 }

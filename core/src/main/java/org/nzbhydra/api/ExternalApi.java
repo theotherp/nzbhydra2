@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -68,6 +70,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @RestController
+@Tag(name = "Newznab API", description = "The Newznab/Torznab API and the JSON stats and history endpoints under /api")
 public class ExternalApi {
 
     private static final int MAX_CACHE_SIZE = 5;
@@ -116,6 +119,27 @@ public class ExternalApi {
      * @param mock        If set to any value then the search should be mocked (will return a number of mocked results).
      * @return Newznab results.
      */
+    @Operation(summary = "Newznab/Torznab search and NZB download API",
+            description = """
+                    The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the \
+                    Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the \
+                    Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name \
+                    (/api/{indexerName}) restricts the search to that one configured indexer.
+
+                    The parameters are the Newznab ones, taken from the query string:
+                    * apikey — the API key from the main configuration, required
+                    * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+                    * q — the search string
+                    * cat — comma separated Newznab category IDs, e.g. 5030,5040
+                    * o — the output format, xml (default) or json
+                    * limit and offset — paging, limit defaults to 100
+                    * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+                    * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when \
+                    not searching by query
+                    * id — the GUID of a result for t=get, t=details and t=getnfo
+
+                    The answer is the Newznab XML (or JSON) the specification describes, including its error \
+                    format; this document does not repeat it.""")
     @RequestMapping(value = {"/api", "/rss", "/torznab/api", "/torznab/api/{indexerName}", "/api/{indexerName}"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, @PathVariable(value = "indexerName", required = false) String indexerName, @PathVariable(value = "mock", required = false) String mock) throws Exception {
         int searchRequestId = random.nextInt(100000);

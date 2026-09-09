@@ -16,12 +16,12 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "An indexer's share of all downloads in the time range")
 public class ExternalIndexerDownloadShare {
 
-    @Schema(description = "The name of the indexer")
+    @Schema(description = "The name of the indexer", example = "Example Indexer")
     private String indexerName;
 
-    @Schema(description = "Number of downloads from this indexer")
+    @Schema(description = "Number of downloads from this indexer", example = "34")
     private long total;
 
-    @Schema(description = "Percentage of all downloads that came from this indexer")
+    @Schema(description = "Percentage of all downloads that came from this indexer", example = "68.0")
     private float share;
 }

@@ -2,7 +2,9 @@ package org.nzbhydra.externalapi;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -103,7 +105,14 @@ public class ExternalApiV1Controller {
     }
 
     @Operation(operationId = "externalPing", summary = "Verify the API key and the reachability of the instance")
-    @ApiResponse(responseCode = "200", description = "The key was accepted")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The key was accepted", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "The instance answers", value = ExternalApiExamples.PING))),
+            @ApiResponse(responseCode = "500", description = "The request failed unexpectedly",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "Something went wrong, the log has the details", value = ExternalApiExamples.ERROR_INTERNAL)))})
     @GetMapping(value = "/ping", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalPingResponse ping() {
         return new ExternalPingResponse(version, Instant.now());
@@ -112,25 +121,31 @@ public class ExternalApiV1Controller {
     @Operation(operationId = "externalStats", summary = "Aggregated statistics for a time range",
             description = "Every section that was not requested is null in the response.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "The statistics were calculated"),
+            @ApiResponse(responseCode = "200", description = "The statistics were calculated", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "All sections for two indexers", value = ExternalApiExamples.STATS))),
             @ApiResponse(responseCode = "400", description = "A parameter was invalid",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class))),
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "limit, order or an instant was not accepted", value = ExternalApiExamples.ERROR_INVALID_PARAMETER))),
             @ApiResponse(responseCode = "503", description = "The calculation took too long and was aborted",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class)))})
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "The stats calculation hit its timeout", value = ExternalApiExamples.ERROR_STATS_TIMEOUT)))})
     @GetMapping(value = "/stats", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalStatsResponse stats(
             @Parameter(description = "Start of the time range. " + INSTANT_DESCRIPTION + ". Defaults to 30 days ago.",
-                    schema = @Schema(type = "string", format = "date-time"))
+                    example = "2026-08-10T10:00:00Z", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String after,
             @Parameter(description = "End of the time range. " + INSTANT_DESCRIPTION + ". Defaults to now.",
-                    schema = @Schema(type = "string", format = "date-time"))
+                    example = "2026-09-09T10:00:00Z", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String before,
-            @Parameter(description = "Whether disabled indexers are included")
+            @Parameter(description = "Whether disabled indexers are included", example = "false")
             @RequestParam(required = false, defaultValue = "false") boolean includeDisabled,
             @Parameter(description = "Limits the calculation to the named sections. Repeat for more than one. "
-                    + "All sections are calculated when the parameter is absent.")
+                    + "All sections are calculated when the parameter is absent.",
+                    array = @ArraySchema(schema = @Schema(implementation = ExternalStatsSection.class)),
+                    example = "[\"INDEXER_API_ACCESS\", \"AVG_RESPONSE_TIMES\"]")
             @RequestParam(required = false) List<ExternalStatsSection> section) throws InterruptedException {
         Instant resolvedAfter = parseInstant(after, "after", Instant.now().minus(DEFAULT_STATS_RANGE_DAYS, ChronoUnit.DAYS));
         Instant resolvedBefore = parseInstant(before, "before", Instant.now());
@@ -147,26 +162,29 @@ public class ExternalApiV1Controller {
 
     @Operation(operationId = "externalSearchHistory", summary = "Search history, newest first unless order=asc")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "The page was read"),
+            @ApiResponse(responseCode = "200", description = "The page was read", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "Two searches", value = ExternalApiExamples.SEARCH_HISTORY))),
             @ApiResponse(responseCode = "400", description = "A parameter was invalid",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class)))})
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "limit, order or an instant was not accepted", value = ExternalApiExamples.ERROR_INVALID_PARAMETER)))})
     @GetMapping(value = "/history/searches", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalPage<ExternalSearchHistoryEntry> searchHistory(
-            @Parameter(description = "The page to return, 1 based") @RequestParam(required = false) Integer page,
-            @Parameter(description = "How many entries a page holds, at most 500") @RequestParam(required = false) Integer limit,
-            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "The page to return, 1 based", example = "1") @RequestParam(required = false) Integer page,
+            @Parameter(description = "How many entries a page holds, at most 500", example = "100") @RequestParam(required = false) Integer limit,
+            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T00:00:00Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String from,
-            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T23:59:59Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String to,
-            @Parameter(description = "asc or desc, by entry time", schema = @Schema(allowableValues = {"asc", "desc"}))
+            @Parameter(description = "asc or desc, by entry time", example = "desc", schema = @Schema(allowableValues = {"asc", "desc"}))
             @RequestParam(required = false) String order,
-            @Parameter(description = "Case-insensitive substring of the search query") @RequestParam(required = false) String query,
-            @Parameter(description = "Case-insensitive substring of the user name") @RequestParam(required = false) String username,
-            @Parameter(description = "Case-insensitive substring of the IP") @RequestParam(required = false) String ip,
-            @Parameter(description = "Case-insensitive substring of the user agent") @RequestParam(required = false) String userAgent) {
+            @Parameter(description = "Case-insensitive substring of the search query", example = "example show") @RequestParam(required = false) String query,
+            @Parameter(description = "Case-insensitive substring of the user name", example = "alice") @RequestParam(required = false) String username,
+            @Parameter(description = "Case-insensitive substring of the IP", example = "192.0.2.10") @RequestParam(required = false) String ip,
+            @Parameter(description = "Case-insensitive substring of the user agent", example = "Sonarr/4.0.0 (example)") @RequestParam(required = false) String userAgent) {
         CommonParams common = historyRequestMapper.commonParams(page, limit, from, to, order);
         HistoryRequest request = historyRequestMapper.forSearches(common, query, username, ip, userAgent);
         return historyMapper.toPage(history.getHistory(request, History.SEARCH_TABLE, SearchEntity.class),
@@ -175,28 +193,31 @@ public class ExternalApiV1Controller {
 
     @Operation(operationId = "externalDownloadHistory", summary = "Download history, newest first unless order=asc")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "The page was read"),
+            @ApiResponse(responseCode = "200", description = "The page was read", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "Two downloads", value = ExternalApiExamples.DOWNLOAD_HISTORY))),
             @ApiResponse(responseCode = "400", description = "A parameter was invalid",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class)))})
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "limit, order or an instant was not accepted", value = ExternalApiExamples.ERROR_INVALID_PARAMETER)))})
     @GetMapping(value = "/history/downloads", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalPage<ExternalDownloadHistoryEntry> downloadHistory(
-            @Parameter(description = "The page to return, 1 based") @RequestParam(required = false) Integer page,
-            @Parameter(description = "How many entries a page holds, at most 500") @RequestParam(required = false) Integer limit,
-            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "The page to return, 1 based", example = "1") @RequestParam(required = false) Integer page,
+            @Parameter(description = "How many entries a page holds, at most 500", example = "100") @RequestParam(required = false) Integer limit,
+            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T00:00:00Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String from,
-            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T23:59:59Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String to,
-            @Parameter(description = "asc or desc, by entry time", schema = @Schema(allowableValues = {"asc", "desc"}))
+            @Parameter(description = "asc or desc, by entry time", example = "desc", schema = @Schema(allowableValues = {"asc", "desc"}))
             @RequestParam(required = false) String order,
-            @Parameter(description = "Case-insensitive substring of the result title") @RequestParam(required = false) String title,
-            @Parameter(description = "The exact name of the indexer") @RequestParam(required = false) String indexer,
-            @Parameter(description = "The state the download ended in") @RequestParam(required = false) FileDownloadStatus status,
-            @Parameter(description = "Case-insensitive substring of the user name") @RequestParam(required = false) String username,
-            @Parameter(description = "Case-insensitive substring of the IP") @RequestParam(required = false) String ip,
-            @Parameter(description = "Case-insensitive substring of the user agent") @RequestParam(required = false) String userAgent) {
+            @Parameter(description = "Case-insensitive substring of the result title", example = "Example.Show.S01E01") @RequestParam(required = false) String title,
+            @Parameter(description = "The exact name of the indexer", example = "Example Indexer") @RequestParam(required = false) String indexer,
+            @Parameter(description = "The state the download ended in", example = "NZB_ADDED") @RequestParam(required = false) FileDownloadStatus status,
+            @Parameter(description = "Case-insensitive substring of the user name", example = "alice") @RequestParam(required = false) String username,
+            @Parameter(description = "Case-insensitive substring of the IP", example = "192.0.2.10") @RequestParam(required = false) String ip,
+            @Parameter(description = "Case-insensitive substring of the user agent", example = "Sonarr/4.0.0 (example)") @RequestParam(required = false) String userAgent) {
         CommonParams common = historyRequestMapper.commonParams(page, limit, from, to, order);
         HistoryRequest request = historyRequestMapper.forDownloads(common, title, indexer,
                 status == null ? null : status.name(), username, ip, userAgent);
@@ -206,24 +227,27 @@ public class ExternalApiV1Controller {
 
     @Operation(operationId = "externalNotificationHistory", summary = "Notification history, newest first unless order=asc")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "The page was read"),
+            @ApiResponse(responseCode = "200", description = "The page was read", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "Two notifications", value = ExternalApiExamples.NOTIFICATION_HISTORY))),
             @ApiResponse(responseCode = "400", description = "A parameter was invalid",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class)))})
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "limit, order or an instant was not accepted", value = ExternalApiExamples.ERROR_INVALID_PARAMETER)))})
     @GetMapping(value = "/history/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalPage<ExternalNotificationHistoryEntry> notificationHistory(
-            @Parameter(description = "The page to return, 1 based") @RequestParam(required = false) Integer page,
-            @Parameter(description = "How many entries a page holds, at most 500") @RequestParam(required = false) Integer limit,
-            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "The page to return, 1 based", example = "1") @RequestParam(required = false) Integer page,
+            @Parameter(description = "How many entries a page holds, at most 500", example = "100") @RequestParam(required = false) Integer limit,
+            @Parameter(description = "Only entries at or after this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T00:00:00Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String from,
-            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION,
+            @Parameter(description = "Only entries at or before this time. " + INSTANT_DESCRIPTION, example = "2026-09-09T23:59:59Z",
                     schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(required = false) String to,
-            @Parameter(description = "asc or desc, by entry time", schema = @Schema(allowableValues = {"asc", "desc"}))
+            @Parameter(description = "asc or desc, by entry time", example = "desc", schema = @Schema(allowableValues = {"asc", "desc"}))
             @RequestParam(required = false) String order,
-            @Parameter(description = "What happened") @RequestParam(required = false) NotificationEventType eventType,
-            @Parameter(description = "How the notification was shown") @RequestParam(required = false) NotificationMessageType messageType) {
+            @Parameter(description = "What happened", example = "RESULT_DOWNLOAD") @RequestParam(required = false) NotificationEventType eventType,
+            @Parameter(description = "How the notification was shown", example = "INFO") @RequestParam(required = false) NotificationMessageType messageType) {
         CommonParams common = historyRequestMapper.commonParams(page, limit, from, to, order);
         HistoryRequest request = historyRequestMapper.forNotifications(common,
                 eventType == null ? null : eventType.name(), messageType == null ? null : messageType.name());
@@ -233,7 +257,15 @@ public class ExternalApiV1Controller {
 
     @Operation(operationId = "externalCurrentLogFile", summary = "The current log file, whole content",
             description = "Not anonymised: the log may contain API keys, user names and IPs.")
-    @ApiResponse(responseCode = "200", description = "The log file was read")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The log file was read",
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            schema = @Schema(type = "string"),
+                            examples = @ExampleObject(name = "Two log lines", value = ExternalApiExamples.CURRENT_LOG_FILE))),
+            @ApiResponse(responseCode = "500", description = "The current log file could not be determined",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "The log file is not readable", value = ExternalApiExamples.ERROR_INTERNAL)))})
     @GetMapping(value = "/log/current", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<FileSystemResource> currentLogFile() {
         File logfile = logContentProvider.getCurrentLogfile(false);
@@ -247,7 +279,14 @@ public class ExternalApiV1Controller {
     }
 
     @Operation(operationId = "externalCreateBackup", summary = "Create a backup now")
-    @ApiResponse(responseCode = "201", description = "The backup was created")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "The backup was created", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "The created backup", value = ExternalApiExamples.BACKUP_ENTRY))),
+            @ApiResponse(responseCode = "500", description = "The backup could not be created",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "Writing the backup failed", value = ExternalApiExamples.ERROR_INTERNAL)))})
     @PostMapping(value = "/backups", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ExternalBackupEntry> createBackup() throws Exception {
         File backupFile = backupAndRestore.backup(true);
@@ -261,7 +300,14 @@ public class ExternalApiV1Controller {
     }
 
     @Operation(operationId = "externalListBackups", summary = "List the existing backups, newest first")
-    @ApiResponse(responseCode = "200", description = "The backup folder was read")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The backup folder was read", useReturnTypeSchema = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(name = "Two backups", value = ExternalApiExamples.BACKUP_LIST))),
+            @ApiResponse(responseCode = "500", description = "The backup folder could not be read",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "Something went wrong, the log has the details", value = ExternalApiExamples.ERROR_INTERNAL)))})
     @GetMapping(value = "/backups", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalBackupListResponse listBackups() {
         File backupFolder = backupAndRestore.getBackupFolder();
@@ -272,15 +318,22 @@ public class ExternalApiV1Controller {
         return new ExternalBackupListResponse(entries);
     }
 
-    @Operation(operationId = "externalDownloadBackup", summary = "Download one backup")
+    @Operation(operationId = "externalDownloadBackup", summary = "Download one backup",
+            description = "The whole ZIP is streamed. Example request:\n\n" + ExternalApiExamples.BACKUP_DOWNLOAD_REQUEST)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "The backup file"),
+            @ApiResponse(responseCode = "200", description = "The backup file",
+                    content = @Content(mediaType = "application/zip",
+                            schema = @Schema(type = "string", format = "binary"),
+                            examples = @ExampleObject(name = "A backup ZIP", description = "The binary ZIP file, offered as an attachment named like the backup",
+                                    value = "PK\u0003\u0004..."))),
             @ApiResponse(responseCode = "404", description = "No such backup",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ExternalApiError.class)))})
+                            schema = @Schema(implementation = ExternalApiError.class),
+                            examples = @ExampleObject(name = "The file name is not in the backup folder", value = ExternalApiExamples.ERROR_NOT_FOUND)))})
     @GetMapping(value = "/backups/{filename}", produces = "application/zip")
     public ResponseEntity<FileSystemResource> downloadBackup(
-            @Parameter(description = "The file name as returned by GET /externalapi/v1/backups")
+            @Parameter(description = "The file name as returned by GET /externalapi/v1/backups",
+                    example = "nzbhydra-2026-09-09-10-00-00.zip")
             @PathVariable String filename) {
         //Validated against the listing, never against the file system, so no name can escape the backup folder
         BackupEntry entry = backupAndRestore.getExistingBackups().stream()

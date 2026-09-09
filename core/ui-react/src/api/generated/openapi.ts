@@ -1593,7 +1593,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Download one backup */
+        /**
+         * Download one backup
+         * @description The whole ZIP is streamed. Example request:
+         *
+         *     GET /externalapi/v1/backups/nzbhydra-2026-09-09-10-00-00.zip HTTP/1.1
+         *     Host: 127.0.0.1:5076
+         *     X-Api-Key: your-api-key
+         *     Accept: application/zip
+         */
         get: operations["externalDownloadBackup"];
         put?: never;
         post?: never;
@@ -1754,12 +1762,131 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         get: operations["api"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         put: operations["api_2"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         post: operations["api_1"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         delete: operations["api_3"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         options: operations["api_6"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         head: operations["api_5"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         patch: operations["api_4"];
         trace?: never;
     };
@@ -1770,12 +1897,131 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         get: operations["api_7"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         put: operations["api_9"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         post: operations["api_8"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         delete: operations["api_10"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         options: operations["api_13"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         head: operations["api_12"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         patch: operations["api_11"];
         trace?: never;
     };
@@ -1786,12 +2032,131 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         get: operations["api_14"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         put: operations["api_16"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         post: operations["api_15"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         delete: operations["api_17"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         options: operations["api_20"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         head: operations["api_19"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         patch: operations["api_18"];
         trace?: never;
     };
@@ -1802,12 +2167,131 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         get: operations["api_21"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         put: operations["api_23"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         post: operations["api_22"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         delete: operations["api_24"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         options: operations["api_27"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         head: operations["api_26"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         patch: operations["api_25"];
         trace?: never;
     };
@@ -1818,12 +2302,131 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         get: operations["api_28"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         put: operations["api_30"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         post: operations["api_29"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         delete: operations["api_31"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         options: operations["api_34"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         head: operations["api_33"];
+        /**
+         * Newznab/Torznab search and NZB download API
+         * @description The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name (/api/{indexerName}) restricts the search to that one configured indexer.
+         *
+         *     The parameters are the Newznab ones, taken from the query string:
+         *     * apikey — the API key from the main configuration, required
+         *     * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+         *     * q — the search string
+         *     * cat — comma separated Newznab category IDs, e.g. 5030,5040
+         *     * o — the output format, xml (default) or json
+         *     * limit and offset — paging, limit defaults to 100
+         *     * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+         *     * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when not searching by query
+         *     * id — the GUID of a result for t=get, t=details and t=getnfo
+         *
+         *     The answer is the Newznab XML (or JSON) the specification describes, including its error format; this document does not repeat it.
+         */
         patch: operations["api_32"];
         trace?: never;
     };
@@ -2058,12 +2661,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         get: operations["apiStats"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         put: operations["apiStats_2"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         post: operations["apiStats_1"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         delete: operations["apiStats_3"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         options: operations["apiStats_6"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         head: operations["apiStats_5"];
+        /**
+         * Aggregated statistics as JSON
+         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
+         */
         patch: operations["apiStats_4"];
         trace?: never;
     };
@@ -2074,12 +2705,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         get: operations["indexerStatuses_7"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         put: operations["indexerStatuses_9"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         post: operations["indexerStatuses_8"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         delete: operations["indexerStatuses_10"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         options: operations["indexerStatuses_13"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         head: operations["indexerStatuses_12"];
+        /**
+         * The status and API hit limits of every configured indexer
+         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
+         */
         patch: operations["indexerStatuses_11"];
         trace?: never;
     };
@@ -2090,12 +2749,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         get: operations["apiHistorySearches"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         put: operations["apiHistorySearches_2"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         post: operations["apiHistorySearches_1"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         delete: operations["apiHistorySearches_3"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         options: operations["apiHistorySearches_6"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         head: operations["apiHistorySearches_5"];
+        /**
+         * Search history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
+         */
         patch: operations["apiHistorySearches_4"];
         trace?: never;
     };
@@ -2106,12 +2793,40 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         get: operations["apiHistoryDownloads"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         put: operations["apiHistoryDownloads_2"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         post: operations["apiHistoryDownloads_1"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         delete: operations["apiHistoryDownloads_3"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         options: operations["apiHistoryDownloads_6"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         head: operations["apiHistoryDownloads_5"];
+        /**
+         * Download history as JSON
+         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
+         */
         patch: operations["apiHistoryDownloads_4"];
         trace?: never;
     };
@@ -3124,18 +3839,48 @@ export interface components {
             name?: string;
             fullPath?: string;
         };
+        /** @description The body of every error answer except the bodyless 404 of a missing or wrong API key */
+        ExternalApiError: {
+            /**
+             * Format: int32
+             * @description The HTTP status code, repeated here so a client that only reads the body has it
+             * @example 400
+             */
+            status?: number;
+            /**
+             * @description INVALID_PARAMETER (400), NOT_FOUND (404), STATS_TIMEOUT (503) or INTERNAL_ERROR (500)
+             * @example INVALID_PARAMETER
+             */
+            code?: string;
+            /**
+             * @description A human readable explanation. Not a stable contract; use the code.
+             * @example limit must be between 1 and 500 but was 501
+             */
+            message?: string;
+            /**
+             * Format: date-time
+             * @description When the error was produced
+             * @example 2026-09-09T10:00:00Z
+             */
+            timestamp?: string;
+        };
         /** @description One backup ZIP in the configured backup folder */
         ExternalBackupEntry: {
-            /** @description The file name, e.g. nzbhydra-2026-09-09-12-00-00.zip. Pass it to GET /externalapi/v1/backups/{filename} to download the file. */
+            /**
+             * @description The file name, e.g. nzbhydra-2026-09-09-12-00-00.zip. Pass it to GET /externalapi/v1/backups/{filename} to download the file.
+             * @example nzbhydra-2026-09-09-10-00-00.zip
+             */
             filename?: string;
             /**
              * Format: date-time
              * @description When the file was created, as reported by the file system
+             * @example 2026-09-09T10:00:00Z
              */
             createdAt?: string;
             /**
              * Format: int64
              * @description The file's size in bytes
+             * @example 1048576
              */
             sizeBytes?: number;
         };
@@ -3383,45 +4128,37 @@ export interface components {
             /** Format: date-time */
             creationDate?: string;
         };
-        /** @description The body of every error answer except the bodyless 404 of a missing or wrong API key */
-        ExternalApiError: {
-            /**
-             * Format: int32
-             * @description The HTTP status code, repeated here so a client that only reads the body has it
-             */
-            status?: number;
-            /** @description INVALID_PARAMETER (400), NOT_FOUND (404), STATS_TIMEOUT (503) or INTERNAL_ERROR (500) */
-            code?: string;
-            /** @description A human readable explanation. Not a stable contract; use the code. */
-            message?: string;
-            /**
-             * Format: date-time
-             * @description When the error was produced
-             */
-            timestamp?: string;
-        };
         /** @description An indexer's average response time and how it compares to the others */
         ExternalAverageResponseTime: {
-            /** @description The name of the indexer */
+            /**
+             * @description The name of the indexer
+             * @example Example Indexer
+             */
             indexer?: string;
             /**
              * Format: double
              * @description Average response time in milliseconds
+             * @example 812.5
              */
             avgResponseTime?: number;
             /**
              * Format: double
              * @description Difference in milliseconds to the average of all indexers
+             * @example -137.5
              */
             delta?: number;
         };
         /** @description A count per day of the week */
         ExternalCountPerDayOfWeek: {
-            /** @description The short English day name: Mon, Tue, Wed, Thu, Fri, Sat or Sun */
+            /**
+             * @description The short English day name: Mon, Tue, Wed, Thu, Fri, Sat or Sun
+             * @example Mon
+             */
             day?: string;
             /**
              * Format: int32
              * @description How many events fell on that day
+             * @example 17
              */
             count?: number;
         };
@@ -3430,11 +4167,13 @@ export interface components {
             /**
              * Format: int32
              * @description The hour of the day, 0 to 23
+             * @example 21
              */
             hour?: number;
             /**
              * Format: int32
              * @description How many events fell in that hour
+             * @example 9
              */
             count?: number;
         };
@@ -3443,11 +4182,13 @@ export interface components {
             /**
              * Format: int32
              * @description The age of the content in days
+             * @example 12
              */
             age?: number;
             /**
              * Format: int32
              * @description How many downloads had that age
+             * @example 4
              */
             count?: number;
         };
@@ -3456,21 +4197,25 @@ export interface components {
             /**
              * Format: int32
              * @description Percentage of downloads whose content was older than 1000 days
+             * @example 12
              */
             percentOlder1000?: number;
             /**
              * Format: int32
              * @description Percentage of downloads whose content was older than 2000 days
+             * @example 5
              */
             percentOlder2000?: number;
             /**
              * Format: int32
              * @description Percentage of downloads whose content was older than 3000 days
+             * @example 1
              */
             percentOlder3000?: number;
             /**
              * Format: int32
              * @description Average age of the downloaded content in days
+             * @example 420
              */
             averageAge?: number;
             /** @description The number of downloads per age in days */
@@ -3478,106 +4223,135 @@ export interface components {
         };
         /** @description How often an indexer was called and how well those calls went */
         ExternalIndexerApiAccessStats: {
-            /** @description The name of the indexer */
+            /**
+             * @description The name of the indexer
+             * @example Example Indexer
+             */
             indexerName?: string;
             /**
              * Format: double
              * @description Percentage of calls that succeeded
+             * @example 98.5
              */
             percentSuccessful?: number;
             /**
              * Format: double
              * @description Percentage of calls that failed to connect
+             * @example 1.5
              */
             percentConnectionError?: number;
             /**
              * Format: double
              * @description Average number of calls per day in the time range
+             * @example 42
              */
             averageAccessesPerDay?: number;
         };
         /** @description An indexer's share of all downloads in the time range */
         ExternalIndexerDownloadShare: {
-            /** @description The name of the indexer */
+            /**
+             * @description The name of the indexer
+             * @example Example Indexer
+             */
             indexerName?: string;
             /**
              * Format: int64
              * @description Number of downloads from this indexer
+             * @example 34
              */
             total?: number;
             /**
              * Format: float
              * @description Percentage of all downloads that came from this indexer
+             * @example 68
              */
             share?: number;
         };
         /** @description How much unique content an indexer contributed compared to the others */
         ExternalIndexerScore: {
-            /** @description The name of the indexer */
+            /**
+             * @description The name of the indexer
+             * @example Example Indexer
+             */
             indexerName?: string;
             /**
              * Format: int32
              * @description Average uniqueness score over the involved searches
+             * @example 62
              */
             averageUniquenessScore?: number;
             /**
              * Format: int64
              * @description Number of searches this indexer took part in
+             * @example 120
              */
             involvedSearches?: number;
             /**
              * Format: int64
              * @description Downloads of results only this indexer provided
+             * @example 8
              */
             uniqueDownloads?: number;
             /**
              * Format: int64
              * @description Downloads of results this indexer provided, exclusive or not
+             * @example 34
              */
             providedDownloads?: number;
             /**
              * Format: int32
              * @description Percentage of downloaded results this indexer also had
+             * @example 71
              */
             coveragePercent?: number;
             /**
              * Format: int32
              * @description Percentage of downloaded results only this indexer had
+             * @example 23
              */
             exclusivePercent?: number;
             /**
              * Format: double
              * @description Contribution to results that several indexers provided
+             * @example 12.5
              */
             sharedContribution?: number;
             /**
              * Format: int32
              * @description Shared contribution as a percentage
+             * @example 25
              */
             sharedContributionPercent?: number;
             /**
              * Format: int64
              * @description Observations recorded before the corrected scoring was introduced
+             * @example 40
              */
             legacyObservations?: number;
             /**
              * Format: int64
              * @description Observations recorded with the corrected scoring
+             * @example 80
              */
             correctedObservations?: number;
         };
         /** @description A user's or IP's share of all searches or downloads */
         ExternalSharePerUserOrIp: {
-            /** @description The user name or the IP address */
+            /**
+             * @description The user name or the IP address
+             * @example alice
+             */
             key?: string;
             /**
              * Format: int32
              * @description Number of searches or downloads made by it
+             * @example 34
              */
             count?: number;
             /**
              * Format: float
              * @description Percentage of all searches or downloads it accounts for
+             * @example 68
              */
             percentage?: number;
         };
@@ -3586,23 +4360,30 @@ export interface components {
             /**
              * Format: date-time
              * @description Start of the time range the statistics were calculated for, inclusive
+             * @example 2026-08-10T10:00:00Z
              */
             after?: string;
             /**
              * Format: date-time
              * @description End of the time range the statistics were calculated for
+             * @example 2026-09-09T10:00:00Z
              */
             before?: string;
-            /** @description Whether disabled indexers were included */
+            /**
+             * @description Whether disabled indexers were included
+             * @example false
+             */
             includeDisabled?: boolean;
             /**
              * Format: int32
              * @description How many indexers are configured
+             * @example 2
              */
             numberOfConfiguredIndexers?: number;
             /**
              * Format: int32
              * @description How many of the configured indexers are enabled
+             * @example 2
              */
             numberOfEnabledIndexers?: number;
             /** @description Section INDEXER_API_ACCESS: how often each indexer was called and how well */
@@ -3640,59 +4421,81 @@ export interface components {
         };
         /** @description How many downloads from an indexer succeeded and how many failed */
         ExternalSuccessfulDownloadsPerIndexer: {
-            /** @description The name of the indexer */
+            /**
+             * @description The name of the indexer
+             * @example Example Indexer
+             */
             indexerName?: string;
             /**
              * Format: int32
              * @description Number of downloads from this indexer
+             * @example 34
              */
             countAll?: number;
             /**
              * Format: int32
              * @description Number of downloads that succeeded
+             * @example 33
              */
             countSuccessful?: number;
             /**
              * Format: int32
              * @description Number of downloads that failed
+             * @example 1
              */
             countError?: number;
             /**
              * Format: float
              * @description Percentage of downloads that succeeded
+             * @example 97.1
              */
             percentSuccessful?: number;
         };
         /** @description A user agent's share of all searches or downloads */
         ExternalUserAgentShare: {
-            /** @description The user agent as sent by the client */
+            /**
+             * @description The user agent as sent by the client
+             * @example Sonarr/4.0.0 (example)
+             */
             userAgent?: string;
             /**
              * Format: int32
              * @description Number of searches or downloads made with it
+             * @example 34
              */
             count?: number;
             /**
              * Format: float
              * @description Percentage of all searches or downloads it accounts for
+             * @example 68
              */
             percentage?: number;
         };
         /** @description Proof that the API key was accepted and that the instance is up */
         ExternalPingResponse: {
-            /** @description The running NZBHydra2 version, e.g. 8.9.1 */
+            /**
+             * @description The running NZBHydra2 version, e.g. 8.9.1
+             * @example 9.0.0
+             */
             version?: string;
             /**
              * Format: date-time
              * @description The instance's current time
+             * @example 2026-09-09T10:00:00Z
              */
             serverTime?: string;
         };
         /** @description One identifier a search was made with */
         ExternalIdentifier: {
-            /** @description The kind of identifier, e.g. IMDB, TVDB, TVRAGE or TVMAZE */
+            /**
+             * @description The name of a media ID type: IMDB, TMDB, TVDB, TVRAGE, TVMAZE, TVIMDB, TRAKT or TVTITLE
+             * @example IMDB
+             */
             key?: string;
-            /** @description The identifier itself */
+            /**
+             * @description The identifier itself
+             * @example tt0000000
+             */
             value?: string;
         };
         /** @description One page of a paged answer */
@@ -3700,21 +4503,25 @@ export interface components {
             /**
              * Format: int32
              * @description The page that was returned, 1 based
+             * @example 1
              */
             page?: number;
             /**
              * Format: int32
              * @description How many entries a page holds at most
+             * @example 100
              */
             limit?: number;
             /**
              * Format: int64
              * @description How many entries match the filter in total, over all pages
+             * @example 2
              */
             totalElements?: number;
             /**
              * Format: int32
              * @description How many pages the filter yields at the current limit
+             * @example 1
              */
             totalPages?: number;
             /** @description The entries of this page */
@@ -3725,61 +4532,98 @@ export interface components {
             /**
              * Format: int32
              * @description The internal ID of the search
+             * @example 1234
              */
             id?: number;
             /**
              * Format: date-time
              * @description When the search was made
+             * @example 2026-09-09T09:58:00Z
              */
             time?: string;
-            /** @description Where the search came from: INTERNAL (the web interface) or API */
+            /**
+             * @description Where the search came from: INTERNAL (the web interface) or API
+             * @example API
+             */
             source?: string;
-            /** @description The kind of search: SEARCH, TVSEARCH, MOVIE, BOOK or MUSIC */
+            /**
+             * @description The kind of search: SEARCH, TVSEARCH, MOVIE, BOOK or MUSIC
+             * @example TVSEARCH
+             */
             searchType?: string;
-            /** @description The name of the category that was searched in */
+            /**
+             * @description The name of the category that was searched in
+             * @example TV HD
+             */
             category?: string;
-            /** @description The search query */
+            /**
+             * @description The search query
+             * @example example show
+             */
             query?: string;
-            /** @description The title that was searched for, if the search was made by title */
+            /**
+             * @description The title that was searched for, if the search was made by title
+             * @example Example Show
+             */
             title?: string;
-            /** @description The author that was searched for, for book searches */
+            /**
+             * @description The author that was searched for, for book searches
+             * @example Ex Ample
+             */
             author?: string;
             /**
              * Format: int32
              * @description The season that was searched for, for TV searches
+             * @example 1
              */
             season?: number;
-            /** @description The episode that was searched for, for TV searches */
+            /**
+             * @description The episode that was searched for, for TV searches
+             * @example 1
+             */
             episode?: string;
             /**
              * Format: int32
              * @description Minimum age of the results in days, if one was requested
+             * @example 0
              */
             minAge?: number;
             /**
              * Format: int32
              * @description Maximum age of the results in days, if one was requested
+             * @example 1500
              */
             maxAge?: number;
             /**
              * Format: int32
              * @description Minimum size of the results in megabytes, if one was requested
+             * @example 100
              */
             minSize?: number;
             /**
              * Format: int32
              * @description Maximum size of the results in megabytes, if one was requested
+             * @example 20000
              */
             maxSize?: number;
             /** @description The identifiers the search was made with, e.g. an IMDB ID */
             identifiers?: components["schemas"]["ExternalIdentifier"][];
             /** @description The names of the indexers that were searched, sorted alphabetically */
             selectedIndexers?: string[];
-            /** @description The user who made the search, if users are configured */
+            /**
+             * @description The user who made the search, if users are configured
+             * @example alice
+             */
             username?: string;
-            /** @description The IP the search came from */
+            /**
+             * @description The IP the search came from
+             * @example 192.0.2.10
+             */
             ip?: string;
-            /** @description The user agent the search was made with */
+            /**
+             * @description The user agent the search was made with
+             * @example Sonarr/4.0.0 (example)
+             */
             userAgent?: string;
         };
         /** @description One notification from the notification history */
@@ -3787,24 +4631,41 @@ export interface components {
             /**
              * Format: int32
              * @description The internal ID of the notification
+             * @example 77
              */
             id?: number;
             /**
              * Format: date-time
              * @description When the notification was created
+             * @example 2026-09-09T09:59:01Z
              */
             time?: string;
-            /** @description What happened, e.g. RESULT_DOWNLOAD or INDEXER_DISABLED */
+            /**
+             * @description What happened, e.g. RESULT_DOWNLOAD or INDEXER_DISABLED
+             * @example RESULT_DOWNLOAD
+             */
             eventType?: string;
-            /** @description How the notification was shown: NONE, INFO, SUCCESS, WARNING or ERROR */
+            /**
+             * @description How the notification was shown: INFO, SUCCESS, WARNING or FAILURE
+             * @example INFO
+             */
             messageType?: string;
-            /** @description The title of the notification */
+            /**
+             * @description The title of the notification
+             * @example Result downloaded
+             */
             title?: string;
-            /** @description The body of the notification */
+            /**
+             * @description The body of the notification
+             * @example Example.Show.S01E01.1080p.WEB-DL-EXMPL was downloaded from Example Indexer
+             */
             body?: string;
             /** @description The Apprise URLs the notification was sent to, split on commas and line breaks */
             urls?: string[];
-            /** @description Whether the notification was displayed in the web interface */
+            /**
+             * @description Whether the notification was displayed in the web interface
+             * @example true
+             */
             displayed?: boolean;
         };
         /** @description One page of a paged answer */
@@ -3812,21 +4673,25 @@ export interface components {
             /**
              * Format: int32
              * @description The page that was returned, 1 based
+             * @example 1
              */
             page?: number;
             /**
              * Format: int32
              * @description How many entries a page holds at most
+             * @example 100
              */
             limit?: number;
             /**
              * Format: int64
              * @description How many entries match the filter in total, over all pages
+             * @example 2
              */
             totalElements?: number;
             /**
              * Format: int32
              * @description How many pages the filter yields at the current limit
+             * @example 1
              */
             totalPages?: number;
             /** @description The entries of this page */
@@ -3837,16 +4702,24 @@ export interface components {
             /**
              * Format: int32
              * @description The internal ID of the download
+             * @example 4321
              */
             id?: number;
             /**
              * Format: date-time
              * @description When the download was made
+             * @example 2026-09-09T09:59:00Z
              */
             time?: string;
-            /** @description The title of the downloaded result */
+            /**
+             * @description The title of the downloaded result
+             * @example Example.Show.S01E01.1080p.WEB-DL-EXMPL
+             */
             title?: string;
-            /** @description The name of the indexer the result came from */
+            /**
+             * @description The name of the indexer the result came from
+             * @example Example Indexer
+             */
             indexer?: string;
             /** @description Always null: the download history does not store the category of the search the result came from. Reserved so that it can be filled without a new API version. */
             category?: string;
@@ -3858,23 +4731,48 @@ export interface components {
             /**
              * Format: int32
              * @description The age of the result in days at the time it was downloaded
+             * @example 12
              */
             ageDays?: number;
-            /** @description How the file was accessed: REDIRECT or PROXY */
+            /**
+             * @description How the file was accessed: REDIRECT (to the indexer) or PROXY (through NZBHydra)
+             * @example REDIRECT
+             */
             accessType?: string;
-            /** @description Where the download came from: INTERNAL (the web interface) or API */
+            /**
+             * @description Where the download came from: INTERNAL (the web interface) or API
+             * @example API
+             */
             accessSource?: string;
-            /** @description The state the download ended in, e.g. NZB_ADDED or CONTENT_DOWNLOAD_SUCCESSFUL */
+            /**
+             * @description The state the download ended in, e.g. NZB_ADDED or CONTENT_DOWNLOAD_SUCCESSFUL
+             * @example NZB_ADDED
+             */
             status?: string;
-            /** @description The error message if the download failed */
+            /**
+             * @description The error message if the download failed
+             * @example The indexer did not answer within 10 seconds
+             */
             error?: string;
-            /** @description The ID the download client gave the download, if it reported one */
+            /**
+             * @description The ID the download client gave the download, if it reported one
+             * @example SABnzbd_nzo_example
+             */
             externalId?: string;
-            /** @description The user who made the download, if users are configured */
+            /**
+             * @description The user who made the download, if users are configured
+             * @example alice
+             */
             username?: string;
-            /** @description The IP the download came from */
+            /**
+             * @description The IP the download came from
+             * @example 192.0.2.10
+             */
             ip?: string;
-            /** @description The user agent the download was made with */
+            /**
+             * @description The user agent the download was made with
+             * @example Sonarr/4.0.0 (example)
+             */
             userAgent?: string;
         };
         /** @description One page of a paged answer */
@@ -3882,21 +4780,25 @@ export interface components {
             /**
              * Format: int32
              * @description The page that was returned, 1 based
+             * @example 1
              */
             page?: number;
             /**
              * Format: int32
              * @description How many entries a page holds at most
+             * @example 100
              */
             limit?: number;
             /**
              * Format: int64
              * @description How many entries match the filter in total, over all pages
+             * @example 2
              */
             totalElements?: number;
             /**
              * Format: int32
              * @description How many pages the filter yields at the current limit
+             * @example 1
              */
             totalPages?: number;
             /** @description The entries of this page */
@@ -3908,8 +4810,13 @@ export interface components {
             backups?: components["schemas"]["ExternalBackupEntry"][];
         };
         NewznabParameters: {
+            /** @description The API key from the main configuration. Required unless the instance runs without one. */
             apikey?: string;
-            /** @enum {string} */
+            /**
+             * @description What to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo or stats.
+             * @example tvsearch
+             * @enum {string}
+             */
             t?:
                 | "SEARCH"
                 | "TVSEARCH"
@@ -3921,41 +4828,124 @@ export interface components {
                 | "DETAILS"
                 | "GETNFO"
                 | "STATS";
+            /**
+             * @description The search string.
+             * @example example show
+             */
             q?: string;
+            /**
+             * @description Newznab category IDs to search in, comma separated.
+             * @example [
+             *       5030,
+             *       5040
+             *     ]
+             */
             cat?: number[];
+            /** @description TVRage ID of the series to search for. */
             rid?: string;
+            /**
+             * @description TVDB ID of the series to search for.
+             * @example 0000000
+             */
             tvdbid?: string;
+            /** @description TVMaze ID of the series to search for. */
             tvmazeid?: string;
             traktId?: string;
+            /**
+             * @description IMDb ID of the movie to search for, without the leading tt.
+             * @example 0000000
+             */
             imdbid?: string;
+            /**
+             * @description TMDb ID of the movie to search for.
+             * @example 0000000
+             */
             tmdbid?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description The season to search for, for tvsearch.
+             * @example 1
+             */
             season?: number;
+            /**
+             * @description The episode to search for, for tvsearch.
+             * @example 1
+             */
             ep?: string;
+            /**
+             * @description The author to search for, for book searches.
+             * @example Ex Ample
+             */
             author?: string;
+            /**
+             * @description The title to search for instead of a query.
+             * @example Example Show
+             */
             title?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description How many results to skip, for paging.
+             * @example 0
+             */
             offset?: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description How many results to return at most.
+             * @example 100
+             */
             limit?: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Minimum age of the results in days.
+             * @example 0
+             */
             minage?: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Maximum age of the results in days.
+             * @example 1500
+             */
             maxage?: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Minimum size of the results in megabytes.
+             * @example 100
+             */
             minsize?: number;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Maximum size of the results in megabytes.
+             * @example 20000
+             */
             maxsize?: number;
+            /** @description The GUID of a result, for t=get, t=details and t=getnfo. */
             id?: string;
+            /**
+             * @description Whether the results are returned unprocessed.
+             * @example false
+             */
             raw?: boolean;
-            /** @enum {string} */
+            /**
+             * @description The output format: xml (default) or json.
+             * @example xml
+             * @enum {string}
+             */
             o?: "XML" | "JSON";
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description How long a repeated search may be answered from the cache, in minutes.
+             * @example 5
+             */
             cachetime?: number;
             /** Format: int32 */
             password?: number;
+            /** @description Not supported, accepted and ignored. */
             genre?: string;
             attrs?: string[];
+            /**
+             * @description Whether the extended result attributes are returned.
+             * @example true
+             */
             extended?: boolean;
             indexers?: string[];
         };
@@ -5395,6 +6385,15 @@ export interface operations {
                     "application/json": components["schemas"]["ExternalBackupListResponse"];
                 };
             };
+            /** @description The backup folder could not be read */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
         };
     };
     externalCreateBackup: {
@@ -5413,6 +6412,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExternalBackupEntry"];
+                };
+            };
+            /** @description The backup could not be created */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
                 };
             };
         };
@@ -6426,13 +7434,28 @@ export interface operations {
     externalStats: {
         parameters: {
             query?: {
-                /** @description Start of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to 30 days ago. */
+                /**
+                 * @description Start of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to 30 days ago.
+                 * @example 2026-08-10T10:00:00Z
+                 */
                 after?: string;
-                /** @description End of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to now. */
+                /**
+                 * @description End of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to now.
+                 * @example 2026-09-09T10:00:00Z
+                 */
                 before?: string;
-                /** @description Whether disabled indexers are included */
+                /**
+                 * @description Whether disabled indexers are included
+                 * @example false
+                 */
                 includeDisabled?: boolean;
-                /** @description Limits the calculation to the named sections. Repeat for more than one. All sections are calculated when the parameter is absent. */
+                /**
+                 * @description Limits the calculation to the named sections. Repeat for more than one. All sections are calculated when the parameter is absent.
+                 * @example [
+                 *       "INDEXER_API_ACCESS",
+                 *       "AVG_RESPONSE_TIMES"
+                 *     ]
+                 */
                 section?: (
                     | "INDEXER_API_ACCESS"
                     | "INDEXER_SCORES"
@@ -6505,6 +7528,15 @@ export interface operations {
                     "application/json": components["schemas"]["ExternalPingResponse"];
                 };
             };
+            /** @description The request failed unexpectedly */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
         };
     };
     externalCurrentLogFile: {
@@ -6525,28 +7557,64 @@ export interface operations {
                     "text/plain": string;
                 };
             };
+            /** @description The current log file could not be determined */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
         };
     };
     externalSearchHistory: {
         parameters: {
             query?: {
-                /** @description The page to return, 1 based */
+                /**
+                 * @description The page to return, 1 based
+                 * @example 1
+                 */
                 page?: number;
-                /** @description How many entries a page holds, at most 500 */
+                /**
+                 * @description How many entries a page holds, at most 500
+                 * @example 100
+                 */
                 limit?: number;
-                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T00:00:00Z
+                 */
                 from?: string;
-                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T23:59:59Z
+                 */
                 to?: string;
-                /** @description asc or desc, by entry time */
+                /**
+                 * @description asc or desc, by entry time
+                 * @example desc
+                 */
                 order?: "asc" | "desc";
-                /** @description Case-insensitive substring of the search query */
+                /**
+                 * @description Case-insensitive substring of the search query
+                 * @example example show
+                 */
                 query?: string;
-                /** @description Case-insensitive substring of the user name */
+                /**
+                 * @description Case-insensitive substring of the user name
+                 * @example alice
+                 */
                 username?: string;
-                /** @description Case-insensitive substring of the IP */
+                /**
+                 * @description Case-insensitive substring of the IP
+                 * @example 192.0.2.10
+                 */
                 ip?: string;
-                /** @description Case-insensitive substring of the user agent */
+                /**
+                 * @description Case-insensitive substring of the user agent
+                 * @example Sonarr/4.0.0 (example)
+                 */
                 userAgent?: string;
             };
             header?: never;
@@ -6578,17 +7646,35 @@ export interface operations {
     externalNotificationHistory: {
         parameters: {
             query?: {
-                /** @description The page to return, 1 based */
+                /**
+                 * @description The page to return, 1 based
+                 * @example 1
+                 */
                 page?: number;
-                /** @description How many entries a page holds, at most 500 */
+                /**
+                 * @description How many entries a page holds, at most 500
+                 * @example 100
+                 */
                 limit?: number;
-                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T00:00:00Z
+                 */
                 from?: string;
-                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T23:59:59Z
+                 */
                 to?: string;
-                /** @description asc or desc, by entry time */
+                /**
+                 * @description asc or desc, by entry time
+                 * @example desc
+                 */
                 order?: "asc" | "desc";
-                /** @description What happened */
+                /**
+                 * @description What happened
+                 * @example RESULT_DOWNLOAD
+                 */
                 eventType?:
                     | "VIP_RENEWAL_REQUIRED"
                     | "INDEXER_DISABLED"
@@ -6598,7 +7684,10 @@ export interface operations {
                     | "RESULT_DOWNLOAD"
                     | "RESULT_DOWNLOAD_COMPLETION"
                     | "EXTERNAL_TOOL_CONFIGURATION";
-                /** @description How the notification was shown */
+                /**
+                 * @description How the notification was shown
+                 * @example INFO
+                 */
                 messageType?: "INFO" | "SUCCESS" | "WARNING" | "FAILURE";
             };
             header?: never;
@@ -6630,21 +7719,45 @@ export interface operations {
     externalDownloadHistory: {
         parameters: {
             query?: {
-                /** @description The page to return, 1 based */
+                /**
+                 * @description The page to return, 1 based
+                 * @example 1
+                 */
                 page?: number;
-                /** @description How many entries a page holds, at most 500 */
+                /**
+                 * @description How many entries a page holds, at most 500
+                 * @example 100
+                 */
                 limit?: number;
-                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T00:00:00Z
+                 */
                 from?: string;
-                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                /**
+                 * @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z
+                 * @example 2026-09-09T23:59:59Z
+                 */
                 to?: string;
-                /** @description asc or desc, by entry time */
+                /**
+                 * @description asc or desc, by entry time
+                 * @example desc
+                 */
                 order?: "asc" | "desc";
-                /** @description Case-insensitive substring of the result title */
+                /**
+                 * @description Case-insensitive substring of the result title
+                 * @example Example.Show.S01E01
+                 */
                 title?: string;
-                /** @description The exact name of the indexer */
+                /**
+                 * @description The exact name of the indexer
+                 * @example Example Indexer
+                 */
                 indexer?: string;
-                /** @description The state the download ended in */
+                /**
+                 * @description The state the download ended in
+                 * @example NZB_ADDED
+                 */
                 status?:
                     | "NONE"
                     | "REQUESTED"
@@ -6658,11 +7771,20 @@ export interface operations {
                     | "CONTENT_DOWNLOAD_SUCCESSFUL"
                     | "CONTENT_DOWNLOAD_ERROR"
                     | "CONTENT_DOWNLOAD_WARNING";
-                /** @description Case-insensitive substring of the user name */
+                /**
+                 * @description Case-insensitive substring of the user name
+                 * @example alice
+                 */
                 username?: string;
-                /** @description Case-insensitive substring of the IP */
+                /**
+                 * @description Case-insensitive substring of the IP
+                 * @example 192.0.2.10
+                 */
                 ip?: string;
-                /** @description Case-insensitive substring of the user agent */
+                /**
+                 * @description Case-insensitive substring of the user agent
+                 * @example Sonarr/4.0.0 (example)
+                 */
                 userAgent?: string;
             };
             header?: never;
@@ -6696,7 +7818,10 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The file name as returned by GET /externalapi/v1/backups */
+                /**
+                 * @description The file name as returned by GET /externalapi/v1/backups
+                 * @example nzbhydra-2026-09-09-10-00-00.zip
+                 */
                 filename: string;
             };
             cookie?: never;

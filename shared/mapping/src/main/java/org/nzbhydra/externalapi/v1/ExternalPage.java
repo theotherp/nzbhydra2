@@ -20,16 +20,16 @@ import java.util.List;
 @Schema(description = "One page of a paged answer")
 public class ExternalPage<T> {
 
-    @Schema(description = "The page that was returned, 1 based")
+    @Schema(description = "The page that was returned, 1 based", example = "1")
     private int page;
 
-    @Schema(description = "How many entries a page holds at most")
+    @Schema(description = "How many entries a page holds at most", example = "100")
     private int limit;
 
-    @Schema(description = "How many entries match the filter in total, over all pages")
+    @Schema(description = "How many entries match the filter in total, over all pages", example = "2")
     private long totalElements;
 
-    @Schema(description = "How many pages the filter yields at the current limit")
+    @Schema(description = "How many pages the filter yields at the current limit", example = "1")
     private int totalPages;
 
     @Schema(description = "The entries of this page")

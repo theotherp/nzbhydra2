@@ -16,9 +16,9 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "How many downloads were made of content of a given age")
 public class ExternalDownloadPerAge {
 
-    @Schema(description = "The age of the content in days")
+    @Schema(description = "The age of the content in days", example = "12")
     private Integer age;
 
-    @Schema(description = "How many downloads had that age")
+    @Schema(description = "How many downloads had that age", example = "4")
     private Integer count;
 }

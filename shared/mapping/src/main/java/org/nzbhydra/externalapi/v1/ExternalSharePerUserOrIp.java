@@ -16,12 +16,12 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "A user's or IP's share of all searches or downloads")
 public class ExternalSharePerUserOrIp {
 
-    @Schema(description = "The user name or the IP address")
+    @Schema(description = "The user name or the IP address", example = "alice")
     private String key;
 
-    @Schema(description = "Number of searches or downloads made by it")
+    @Schema(description = "Number of searches or downloads made by it", example = "34")
     private Integer count;
 
-    @Schema(description = "Percentage of all searches or downloads it accounts for")
+    @Schema(description = "Percentage of all searches or downloads it accounts for", example = "68.0")
     private float percentage;
 }

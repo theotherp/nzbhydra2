@@ -45,9 +45,11 @@ Searching, downloading, changing the configuration and managing indexers are not
 ## Where to find the details
 
 The exact routes, parameters and response fields are documented in the swagger UI that ships with NZBHydra. Open
-`/swagger-ui/index.html` on your instance while logged in as an admin, choose the *externalapi* definition in the
-selector at the top, and you can read every call and try it directly from the browser after entering your key with
-the *Authorize* button. The same description is available as OpenAPI JSON under `/v3/api-docs/externalapi` if you
-prefer to generate a client from it.
+`/swagger-ui/index.html` on your instance while logged in as an admin. The selector at the top offers two
+definitions, *externalapi* (this API) and *newznab* (the Newznab/Torznab API that Sonarr and friends use); choose
+*externalapi* and you can read every call, see an example request and answer for it, and try it directly from the
+browser after entering your key with the *Authorize* button. The same description is available as OpenAPI JSON under
+`/v3/api-docs/externalapi` if you prefer to generate a client from it. Nothing else NZBHydra maps is documented
+there: what the web interface itself calls is not a public interface.
 
 If something you need is missing, open an issue and say what you want to build with it.

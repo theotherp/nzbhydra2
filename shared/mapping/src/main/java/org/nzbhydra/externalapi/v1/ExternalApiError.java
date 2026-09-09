@@ -20,16 +20,16 @@ import java.time.Instant;
 @Schema(description = "The body of every error answer except the bodyless 404 of a missing or wrong API key")
 public class ExternalApiError {
 
-    @Schema(description = "The HTTP status code, repeated here so a client that only reads the body has it")
+    @Schema(description = "The HTTP status code, repeated here so a client that only reads the body has it", example = "400")
     private int status;
 
-    @Schema(description = "INVALID_PARAMETER (400), NOT_FOUND (404), STATS_TIMEOUT (503) or INTERNAL_ERROR (500)")
+    @Schema(description = "INVALID_PARAMETER (400), NOT_FOUND (404), STATS_TIMEOUT (503) or INTERNAL_ERROR (500)", example = "INVALID_PARAMETER")
     private String code;
 
-    @Schema(description = "A human readable explanation. Not a stable contract; use the code.")
+    @Schema(description = "A human readable explanation. Not a stable contract; use the code.", example = "limit must be between 1 and 500 but was 501")
     private String message;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
-    @Schema(description = "When the error was produced")
+    @Schema(description = "When the error was produced", example = "2026-09-09T10:00:00Z")
     private Instant timestamp;
 }

@@ -16,9 +16,9 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Schema(description = "One identifier a search was made with")
 public class ExternalIdentifier {
 
-    @Schema(description = "The kind of identifier, e.g. IMDB, TVDB, TVRAGE or TVMAZE")
+    @Schema(description = "The name of a media ID type: IMDB, TMDB, TVDB, TVRAGE, TVMAZE, TVIMDB, TRAKT or TVTITLE", example = "IMDB")
     private String key;
 
-    @Schema(description = "The identifier itself")
+    @Schema(description = "The identifier itself", example = "tt0000000")
     private String value;
 }

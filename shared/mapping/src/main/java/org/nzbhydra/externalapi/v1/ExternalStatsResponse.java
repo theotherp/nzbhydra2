@@ -24,20 +24,20 @@ import java.util.List;
 public class ExternalStatsResponse {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
-    @Schema(description = "Start of the time range the statistics were calculated for, inclusive")
+    @Schema(description = "Start of the time range the statistics were calculated for, inclusive", example = "2026-08-10T10:00:00Z")
     private Instant after;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC")
-    @Schema(description = "End of the time range the statistics were calculated for")
+    @Schema(description = "End of the time range the statistics were calculated for", example = "2026-09-09T10:00:00Z")
     private Instant before;
 
-    @Schema(description = "Whether disabled indexers were included")
+    @Schema(description = "Whether disabled indexers were included", example = "false")
     private boolean includeDisabled;
 
-    @Schema(description = "How many indexers are configured")
+    @Schema(description = "How many indexers are configured", example = "2")
     private Integer numberOfConfiguredIndexers;
 
-    @Schema(description = "How many of the configured indexers are enabled")
+    @Schema(description = "How many of the configured indexers are enabled", example = "2")
     private Integer numberOfEnabledIndexers;
 
     @Schema(description = "Section INDEXER_API_ACCESS: how often each indexer was called and how well")

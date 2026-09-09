@@ -2,6 +2,7 @@ package org.nzbhydra.mapping.newznab;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,46 +19,71 @@ import java.util.Set;
 @AllArgsConstructor
 public class NewznabParameters {
 
+    @Schema(description = "The API key from the main configuration. Required unless the instance runs without one.")
     private String apikey;
 
+    @Schema(description = "What to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo or stats.", example = "tvsearch")
     private ActionAttribute t;
 
+    @Schema(description = "The search string.", example = "example show")
     private String q;
 
+    @Schema(description = "Newznab category IDs to search in, comma separated.", example = "[5030, 5040]")
     private List<Integer> cat = new ArrayList<>();
 
+    @Schema(description = "TVRage ID of the series to search for.")
     private String rid;
+    @Schema(description = "TVDB ID of the series to search for.", example = "0000000")
     private String tvdbid;
+    @Schema(description = "TVMaze ID of the series to search for.")
     private String tvmazeid;
     private String traktId; //LATER implement?
+    @Schema(description = "IMDb ID of the movie to search for, without the leading tt.", example = "0000000")
     private String imdbid;
+    @Schema(description = "TMDb ID of the movie to search for.", example = "0000000")
     private String tmdbid;
+    @Schema(description = "The season to search for, for tvsearch.", example = "1")
     private Integer season;
+    @Schema(description = "The episode to search for, for tvsearch.", example = "1")
     private String ep;
+    @Schema(description = "The author to search for, for book searches.", example = "Ex Ample")
     private String author;
+    @Schema(description = "The title to search for instead of a query.", example = "Example Show")
     private String title;
 
+    @Schema(description = "How many results to skip, for paging.", example = "0")
     private Integer offset = 0;
+    @Schema(description = "How many results to return at most.", example = "100")
     private Integer limit = 100;
+    @Schema(description = "Minimum age of the results in days.", example = "0")
     private Integer minage;
+    @Schema(description = "Maximum age of the results in days.", example = "1500")
     private Integer maxage;
+    @Schema(description = "Minimum size of the results in megabytes.", example = "100")
     private Integer minsize;
+    @Schema(description = "Maximum size of the results in megabytes.", example = "20000")
     private Integer maxsize;
 
+    @Schema(description = "The GUID of a result, for t=get, t=details and t=getnfo.")
     private String id;
 
+    @Schema(description = "Whether the results are returned unprocessed.", example = "false")
     private boolean raw;
 
+    @Schema(description = "The output format: xml (default) or json.", example = "xml")
     private OutputType o = OutputType.XML;
 
+    @Schema(description = "How long a repeated search may be answered from the cache, in minutes.", example = "5")
     private Integer cachetime;
 
     private Integer password;
 
     //Not (yet) supported
+    @Schema(description = "Not supported, accepted and ignored.")
     private String genre;
 
     private List<String> attrs = new ArrayList<>();
+    @Schema(description = "Whether the extended result attributes are returned.", example = "true")
     private boolean extended;
 
     //Hydra-specific
