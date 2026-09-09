@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
+import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
 import org.nzbhydra.update.UpdateManager;
@@ -37,6 +38,8 @@ public class NewsWeb {
     private UpdateManager updateManager;
     @Autowired
     private UserNewsProvider userNewsProvider;
+    @Autowired
+    private UserInfosProvider userInfosProvider;
 
     @GetMapping("/internalapi/news")
     @Secured({"ROLE_USER"})
@@ -81,7 +84,9 @@ public class NewsWeb {
     @Secured({"ROLE_USER"})
     public List<UserNewsEntryForWeb> getUnreadUserNews(Principal principal) {
         String username = principal != null ? principal.getName() : "anonymous";
-        return userNewsProvider.getUnreadUserNewsForUser(username).stream()
+        //Some entries are only meant for admins. When no auth is configured every user may see the admin area
+        boolean maySeeAdmin = Boolean.TRUE.equals(userInfosProvider.getUserInfos(principal).getMaySeeAdmin());
+        return userNewsProvider.getUnreadUserNewsForUser(username, maySeeAdmin).stream()
                 .map(entry -> new UserNewsEntryForWeb(
                         entry.getId(),
                         entry.getTitle(),

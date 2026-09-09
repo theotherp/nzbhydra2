@@ -9,6 +9,8 @@
           text: "The database library H2 was updated from 2.1 to 2.4. On the first start after the update the existing database is migrated once. This happens automatically, needs nothing installed and may take a few minutes for large databases. The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days."
       -   type: "note"
           text: "During the migration the cached search results are discarded (downloads, history and stats are kept). If Sonarr, Radarr etc. made a search shortly before the update they may need to search again before they can download."
+      -   type: "feature"
+          text: "Admins running Hydra in docker get a one-time notice after startup about giving the container time to shut down, so the database file is compacted."
       -   type: "note"
           text: "If you run Hydra in docker make sure the container is stopped gracefully (e.g. stop_grace_period: 120s). Killing the process does not corrupt the database but skips the cleanup of the database file on shutdown, so the file stays larger than necessary."
       -   type: "note"
