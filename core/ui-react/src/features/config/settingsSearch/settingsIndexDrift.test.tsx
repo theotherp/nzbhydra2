@@ -13,6 +13,7 @@ import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {ShowAdvancedContext} from "../advancedFields";
 import {AuthConfigTab} from "../auth/AuthConfigTab";
 import {CategoriesConfigTab} from "../categories/CategoriesConfigTab";
+import {settingHelpId} from "../components/settings";
 import {DownloadingConfigTab} from "../downloading/DownloadingConfigTab";
 import {ExternalToolsConfigTab} from "../external-tools/ExternalToolsConfigTab";
 import {IndexersConfigTab} from "../indexers/IndexersConfigTab";
@@ -36,6 +37,14 @@ import {settingsIndexForTab, type SettingsIndexEntry} from "./settingsIndex";
  *       task that reshapes a list and drops the anchor search navigates to
  *       fails here, by name. Neither (a) nor (b) can see a section anchor:
  *       (a) filters `kind === "row"`, and (b) matches only `config-setting-*`.
+ *   (d) every rendered row's label and help *text* are the ones the index
+ *       declares. Before FM-193 those were two hand-kept copies and this is
+ *       the direction that would have caught them disagreeing; now that the
+ *       tabs read the index, it is what proves they still do. A control that
+ *       goes back to a literal, or that stops passing the help along, passes
+ *       (a) to (c) untouched — all three compare ids and flags, never a
+ *       string — while search, the review-changes panel and the feedback
+ *       banner go on quoting words no row on screen uses.
  *
 
  * Direction (b) is the one that matters most and the one that is easiest to
@@ -299,6 +308,83 @@ function indexRows(tab: string): SettingsIndexEntry[] {
 }
 
 /**
+ * The text of a labelling element, minus the parts a screen reader is told to
+ * ignore — which here is exactly MUI's required marker, an `aria-hidden`
+ * asterisk. Reading it this way states the rule ("what the user is told this
+ * row is called") instead of naming an internal MUI class, which ADR-0014
+ * keeps out of feature code and this file has no more business knowing.
+ */
+function announcedText(element: Element): string {
+    const copy = element.cloneNode(true) as HTMLElement;
+    for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) {
+        decoration.remove();
+    }
+    return (copy.textContent ?? "").trim();
+}
+
+/**
+ * Direction (d)'s reading of a row's label: the control's accessible name, by
+ * whichever of the two mechanisms MUI used for that control kind. A text-
+ * shaped control gets a real `<label for>`; a `select` gets a `<div>` the
+ * combobox points at with `aria-labelledby`, because a `<label>` may not wrap
+ * a `role="combobox"`. Both are the name the user is given, so both are what
+ * the index has to agree with.
+ */
+function renderedLabel(row: HTMLElement): string {
+    const labelled = row.querySelector("[aria-labelledby]");
+    if (labelled !== null) {
+        const named = (labelled.getAttribute("aria-labelledby") ?? "")
+            .split(/\s+/)
+            .map((id) => row.querySelector(`[id="${id}"]`))
+            .filter(
+                (element): element is Element =>
+                    element !== null && element !== labelled,
+            );
+        if (named.length > 0) {
+            return named.map(announcedText).join(" ").trim();
+        }
+    }
+    const label = row.querySelector("label");
+    return label === null ? "" : announcedText(label);
+}
+
+/**
+ * Direction (d)'s reading of a row's help. `SettingRow` gives the help node
+ * the id `aria-describedby` points at, so this is the text the control itself
+ * declares as its description — and it is read as `textContent`, which inlines
+ * a link's text exactly the way `flattenHelp` does, so the string search
+ * matches over and the string on screen are compared as the same thing.
+ */
+function renderedHelpText(row: HTMLElement, path: string): string {
+    const help = row.querySelector(`[id="${settingHelpId(path)}"]`);
+    return help === null ? "" : (help.textContent ?? "");
+}
+
+/** Direction (d) over one rendered tab; the messages are the assertion. */
+function labelAndHelpMismatches(tab: string): string[] {
+    return indexRows(tab)
+        .filter((entry) => !entry.conditional)
+        .flatMap((entry) => {
+            const row = screen.queryByTestId(entry.anchorTestId);
+            if (row === null) {
+                // Direction (a) owns "indexed but not rendered"; reporting it
+                // again here would only duplicate that failure.
+                return [];
+            }
+            const label = renderedLabel(row);
+            const helpText = renderedHelpText(row, entry.path);
+            return [
+                label === entry.label
+                    ? null
+                    : `${entry.path} is indexed with the label ${JSON.stringify(entry.label)} but renders ${JSON.stringify(label)}`,
+                helpText === entry.helpText
+                    ? null
+                    : `${entry.path} is indexed with the help ${JSON.stringify(entry.helpText)} but renders ${JSON.stringify(helpText)}`,
+            ].filter((message): message is string => message !== null);
+        });
+}
+
+/**
  * Direction (c)'s subject. A list section contributes one entry pointing at the
  * list itself, and its anchor is *not* a `config-setting-*` id, so neither of
  * the directions above can see it: (a) filters `kind === "row"`, and (b) only
@@ -489,7 +575,56 @@ describe("C-CONFIG-SETTINGS-INDEX drift", () => {
 
             expect(wrong).toEqual([]);
         });
+
+        /**
+         * Direction (d). Since FM-193 the index *is* the label and the help
+         * and each control reads them back through `indexedSetting()`, so this
+         * is not a comparison of two copies — it is the assertion that the
+         * reading actually happened. Which is also its honest limit: editing a
+         * string here now changes the row too, by construction, and no test
+         * can (or should) object to that; what this catches is a control that
+         * went back to a literal or dropped the help on the way to the DOM,
+         * either of which leaves every id-and-flag direction above green.
+         *
+         * Conditional rows are excluded for the same reason direction (a)
+         * excludes them — no single fixture renders them all — and the rows
+         * that never render under the default fixture are skipped rather than
+         * reported, because "indexed but not rendered" is direction (a)'s
+         * failure and duplicating it here would only obscure a real mismatch.
+         */
+        it(`should render this index's label and help text for every ${tabCase.label} setting`, () => {
+            renderTab(tabCase, tabCase.values);
+
+            expect(
+                labelAndHelpMismatches(tabCase.tab),
+                `settings whose rendered text is not what settingsIndex.ts declares — search, the review-changes panel and the feedback banner quote the index, so these settings are described to the user in words their row does not use`,
+            ).toEqual([]);
+        });
     }
+
+    /**
+     * Direction (d), like (b), is worth nothing if it compares nothing: every
+     * row it cannot find is skipped, so a selector that stopped matching would
+     * leave it silently green over an empty list. The pin is lower than
+     * direction (b)'s because this one compares only the non-conditional rows
+     * over each tab's default fixture, where (b) counts every row every
+     * fixture renders.
+     */
+    it("should compare a non-trivial number of rendered labels and help texts", () => {
+        let compared = 0;
+        for (const tabCase of TAB_CASES) {
+            renderTab(tabCase, tabCase.values);
+            compared += indexRows(tabCase.tab)
+                .filter((entry) => !entry.conditional)
+                .filter(
+                    (entry) =>
+                        screen.queryByTestId(entry.anchorTestId) !== null,
+                ).length;
+            cleanup();
+        }
+
+        expect(compared).toBeGreaterThan(80);
+    });
 
     /**
      * Direction (b) is only worth anything if it is actually looking at rows.

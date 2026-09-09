@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {CONFIG_TABS} from "../configTabs";
 import {
+    indexedSetting,
     SETTINGS_INDEX,
     settingsIndexForTab,
     settingsIndexHref,
@@ -108,6 +109,59 @@ describe("C-CONFIG-SETTINGS-INDEX shape", () => {
             "indexers",
             "notificationConfig.entries",
         ]);
+    });
+});
+
+describe("C-CONFIG-SETTINGS-INDEX as the source of labels and help", () => {
+    it("should keep a link in the help it hands a control, not prose", () => {
+        const host = entry("main.host");
+
+        expect(host.help).toEqual([
+            "I strongly recommend ",
+            {
+                href: "https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies",
+                text: "using a reverse proxy",
+            },
+            " instead of exposing this directly. Requires restart.",
+        ]);
+    });
+
+    it("should derive the searched text from that help, link text inlined", () => {
+        // The href is not words on screen, so it is not searchable; the link
+        // text is, and it reads continuously with the runs either side of it.
+        expect(entry("main.host").helpText).toBe(
+            "I strongly recommend using a reverse proxy instead of exposing this directly. Requires restart.",
+        );
+        expect(settingMatchesQuery(entry("main.host"), "reverse proxy")).toBe(
+            true,
+        );
+        expect(settingMatchesQuery(entry("main.host"), "wiki/Exposing")).toBe(
+            false,
+        );
+    });
+
+    it("should hand a control the path, label and help of that path", () => {
+        expect(indexedSetting("main.logging.logGc")).toEqual({
+            help: "Enable garbage collection logging. Only for debugging of memory issues.",
+            label: "Log GC",
+            name: "main.logging.logGc",
+        });
+    });
+
+    it("should hand over no help for a setting that has none", () => {
+        expect(indexedSetting("main.startupBrowser")).toEqual({
+            help: undefined,
+            label: "Open browser on startup",
+            name: "main.startupBrowser",
+        });
+    });
+
+    it("should refuse a path it does not index rather than render an empty label", () => {
+        // A real `ConfigValues` path, deliberately unindexed: FM-155 (ADR-0049)
+        // took the theme out of the config UI and left the Java field behind.
+        expect(() => indexedSetting("main.theme")).toThrow(
+            "Setting is not in the settings index: main.theme",
+        );
     });
 });
 

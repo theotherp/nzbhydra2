@@ -11,6 +11,7 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {AuthUsersSection} from "./AuthUsersSection";
 import {
     AUTH_TYPE_OPTIONS,
@@ -50,40 +51,29 @@ export function AuthConfigTab() {
         <Box data-testid="config-auth">
             <ConfigFieldset label="Main">
                 <SelectSetting
-                    label="Auth type"
-                    name="auth.authType"
+                    {...indexedSetting("auth.authType")}
                     options={AUTH_TYPE_OPTIONS}
                     tooltip={AUTH_TYPE_TOOLTIP}
                 />
                 {headerFieldsVisible ? (
                     <TextSetting
+                        {...indexedSetting("auth.authHeader")}
                         advanced
-                        help="Name of header that provides the username in requests from secure sources."
-                        label="Auth header"
-                        name="auth.authHeader"
                     />
                 ) : null}
                 {ipRangesVisible ? (
                     <ChipsSetting
+                        {...indexedSetting("auth.authHeaderIpRanges")}
                         advanced
-                        help='IP ranges from which the auth header will be accepted. Apply with return key. Use IPv4 or IPv6 ranges like "192.168.0.1-192.168.0.100", CIDRs like 192.168.0.0/24 or single IP addresses like "127.0.0.1".'
-                        label="Secure IP ranges"
-                        name="auth.authHeaderIpRanges"
                     />
                 ) : null}
                 {headerFieldsVisible ? (
-                    <SwitchSetting
-                        help="Remember users with cookie for 14 days."
-                        label="Remember users"
-                        name="auth.rememberUsers"
-                    />
+                    <SwitchSetting {...indexedSetting("auth.rememberUsers")} />
                 ) : null}
                 {headerFieldsVisible ? (
                     <NumberSetting
+                        {...indexedSetting("auth.rememberMeValidityDays")}
                         advanced
-                        help="How long users are remembered."
-                        label="Cookie expiry"
-                        name="auth.rememberMeValidityDays"
                         unit="days"
                     />
                 ) : null}
@@ -91,67 +81,43 @@ export function AuthConfigTab() {
 
             {oidcVisible ? (
                 <ConfigFieldset label="OpenID Connect" tooltip={OIDC_TOOLTIP}>
-                    <TextSetting
-                        help="OIDC issuer URI used for provider discovery, for example https://idp.example.com/realms/master. Requires restart."
-                        label="Issuer URI"
-                        name="auth.oidcIssuerUri"
-                    />
+                    <TextSetting {...indexedSetting("auth.oidcIssuerUri")} />
                     {explicitOidcEndpointsVisible ? (
                         <>
                             <TextSetting
+                                {...indexedSetting("auth.oidcAuthorizationUri")}
                                 advanced
-                                help="Manual provider authorization endpoint. Required only when issuer URI is empty. Requires restart."
-                                label="Authorization URI"
-                                name="auth.oidcAuthorizationUri"
                             />
                             <TextSetting
+                                {...indexedSetting("auth.oidcTokenUri")}
                                 advanced
-                                help="Manual provider token endpoint. Required only when issuer URI is empty. Requires restart."
-                                label="Token URI"
-                                name="auth.oidcTokenUri"
                             />
                             <TextSetting
+                                {...indexedSetting("auth.oidcUserInfoUri")}
                                 advanced
-                                help="Manual provider user info endpoint. Required only when issuer URI is empty. Requires restart."
-                                label="User info URI"
-                                name="auth.oidcUserInfoUri"
                             />
                             <TextSetting
+                                {...indexedSetting("auth.oidcJwkSetUri")}
                                 advanced
-                                help="Manual provider JWK set endpoint. Required only when issuer URI is empty. Requires restart."
-                                label="JWK set URI"
-                                name="auth.oidcJwkSetUri"
                             />
                         </>
                     ) : null}
                     <TextSetting
-                        help="OIDC client ID. Requires restart."
-                        label="Client ID"
-                        name="auth.oidcClientId"
+                        {...indexedSetting("auth.oidcClientId")}
                         required
                     />
                     <SecretInput
-                        help="OIDC client secret. Requires restart."
-                        label="Client secret"
-                        name="auth.oidcClientSecret"
+                        {...indexedSetting("auth.oidcClientSecret")}
                         required
                     />
                     <TextSetting
-                        help="Claim used to match OIDC users to Hydra users, for example preferred_username, email or sub. Requires restart."
-                        label="Username claim"
-                        name="auth.oidcUsernameClaim"
+                        {...indexedSetting("auth.oidcUsernameClaim")}
                         required
                     />
-                    <ChipsSetting
-                        help="OIDC scopes. Must include openid. Apply with return key. Requires restart."
-                        label="Scopes"
-                        name="auth.oidcScopes"
-                    />
+                    <ChipsSetting {...indexedSetting("auth.oidcScopes")} />
                     <TextSetting
+                        {...indexedSetting("auth.oidcRedirectUri")}
                         advanced
-                        help="Redirect URI template. Register the resolved URL at the provider. The default is {baseUrl}/login/oauth2/code/{registrationId}. Requires restart."
-                        label="Redirect URI"
-                        name="auth.oidcRedirectUri"
                         required
                     />
                 </ConfigFieldset>
@@ -162,36 +128,16 @@ export function AuthConfigTab() {
                     label="Restrictions"
                     tooltip={RESTRICTIONS_TOOLTIP}
                 >
+                    <SwitchSetting {...indexedSetting("auth.restrictSearch")} />
+                    <SwitchSetting {...indexedSetting("auth.restrictStats")} />
+                    <SwitchSetting {...indexedSetting("auth.restrictAdmin")} />
                     <SwitchSetting
-                        help="Restrict access to searching."
-                        label="Restrict searching"
-                        name="auth.restrictSearch"
+                        {...indexedSetting("auth.restrictDetailsDl")}
                     />
                     <SwitchSetting
-                        help="Restrict access to stats."
-                        label="Restrict stats"
-                        name="auth.restrictStats"
+                        {...indexedSetting("auth.restrictIndexerSelection")}
                     />
-                    <SwitchSetting
-                        help="Restrict access to admin functions."
-                        label="Restrict admin"
-                        name="auth.restrictAdmin"
-                    />
-                    <SwitchSetting
-                        help="Restrict NZB details, comments and download links."
-                        label="Restrict NZB details & DL"
-                        name="auth.restrictDetailsDl"
-                    />
-                    <SwitchSetting
-                        help="Restrict visibility of indexer selection box in search. Affects only GUI."
-                        label="Restrict indexer selection box"
-                        name="auth.restrictIndexerSelection"
-                    />
-                    <SwitchSetting
-                        help="Allow access to stats via external API."
-                        label="Allow stats access"
-                        name="auth.allowApiStats"
-                    />
+                    <SwitchSetting {...indexedSetting("auth.allowApiStats")} />
                 </ConfigFieldset>
             ) : null}
 

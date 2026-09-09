@@ -9,6 +9,7 @@ import {
     SwitchSetting,
     type SettingOption,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {CategoriesTable} from "./CategoriesTable";
 import {CATEGORIES_HELP_LINES, type CategoryValues} from "./categoriesSettings";
 
@@ -52,21 +53,17 @@ export function CategoriesConfigTab() {
     return (
         <Box data-testid="config-categories">
             <SwitchSetting
-                help="Preset min and max sizes depending on the selected category"
-                label="Category sizes"
-                name="categoriesConfig.enableCategorySizes"
+                {...indexedSetting("categoriesConfig.enableCategorySizes")}
                 tooltip="Preset range of minimum and maximum sizes for its categories. When you select a category in the search area the appropriate fields are filled with these values."
             />
             <SelectSetting
-                help="Set a default category."
-                label="Default category"
-                name="categoriesConfig.defaultCategory"
+                {...indexedSetting("categoriesConfig.defaultCategory")}
                 options={defaultCategoryOptions}
             />
             <SwitchSetting
-                help="Use search category for items with N/A category"
-                label="Overwrite N/A with search category"
-                name="categoriesConfig.overwriteNaWithSearchCategory"
+                {...indexedSetting(
+                    "categoriesConfig.overwriteNaWithSearchCategory",
+                )}
                 tooltip="Some indexers may return N/A as category for a result or the category mapping may have failed. With this option enabled the selected search category will be used."
             />
             <HelpBlock

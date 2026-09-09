@@ -549,10 +549,12 @@ components:
     classification: feature_specific
     state: done
   - id: C-CONFIG-SETTINGS-INDEX
-    responsibility: A hand-maintained, post-parity metadata index over every setting the eight config tabs render directly -- per row its config path, label, help text, tab, fieldset, advanced flag, and a `conditional` marker for rows whose
+    responsibility: The declaration of every setting the eight config tabs render directly -- per row its config path, label, structured `HelpContent`, tab, fieldset, advanced flag, and a `conditional` marker for rows whose
       rendering depends on another field -- because the tabs define fields as JSX, not data, and search/labelling features need the metadata as values. Created by FM-099 (settings search) and consumed by FM-100 (review-changes labels) and
-      FM-101 (invalid-field listing). Kept honest by FM-099's two-directional drift test rendering each tab and comparing `config-setting-*` testids against the index, so an unindexed new setting fails a named test rather than silently
-      missing from search. It never reads or writes config values; dialog-internal fields are out of its vocabulary and list sections contribute one navigable entry each.
+      FM-101 (invalid-field listing). Since FM-193 the label and the help are declared here and read back by each control through `indexedSetting(path)`, rather than copied out of the tab JSX, so a search hit quotes the row it navigates to
+      by construction; `helpText`, the flat string matching runs over, is derived from the same `HelpContent` the control renders. Kept honest by FM-099's drift test rendering each tab and comparing `config-setting-*` testids against the
+      index in both directions, plus FM-193's fourth direction asserting each rendered row's label and help text from the DOM. It never reads or writes config values; dialog-internal fields are out of its vocabulary and keep their literals,
+      and list sections contribute one navigable entry each whose label and help are search-only prose no control renders.
     legacy: []
     target: core/ui-react/src/features/config/settingsSearch
     consumers:
@@ -560,7 +562,11 @@ components:
     classification: feature_specific
     state: done
     note: "FM-155 removed the `main.theme` entry with the dropdown behind it (ADR-0049); the drift test is what makes removing the row and the entry a single
-      atomic change, and `config-main.spec.ts` additionally asserts that the running search answers \"No matching setting\" for \"theme\"."
+      atomic change, and `config-main.spec.ts` additionally asserts that the running search answers \"No matching setting\" for \"theme\". FM-193 inverted the
+      dependency: the 134 indexed rows spread `indexedSetting(path)` for their `name`, `label` and `help`, `SettingProps.label` stays required and nothing looks
+      anything up on its own, and `main/mainSettings.ts` is unchanged -- `CSRF_HELP` and the wiki/H2/Apprise link URLs are now imported by the index instead of
+      by the tabs. No string moved: base and after dumps of the ordered index (path, label, flattened help, tab, fieldset, advanced, conditional, anchorTestId,
+      kind) are byte-identical, as are all eight tabs' rendered `outerHTML` and emotion sheets with the advanced toggle on and off."
   - id: C-REFINE-MULTISELECT
     responsibility: Controlled, presentational collapsible multiselect for refine surfaces -- a caption toggle button (refineSectionLabel typography, aria-expanded)
       over a Collapse of full-width toggle rows (aria-pressed, data-filter-value, optional mono count). It renders entries in the order given and holds no state,

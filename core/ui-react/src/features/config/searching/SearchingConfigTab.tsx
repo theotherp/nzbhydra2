@@ -12,6 +12,7 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {
     CUSTOM_MAPPINGS_HEADLINE,
     CUSTOM_MAPPINGS_TOOLTIP,
@@ -20,7 +21,6 @@ import {
 import {languageOptions} from "./languages";
 import {
     APPLY_RESTRICTIONS_OPTIONS,
-    CACHED_QUERIES_WIKI,
     percentValidator,
     preselectQuickFilterOptions,
     SEARCH_SOURCE_OPTIONS,
@@ -67,37 +67,28 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="Settings that control how communication with indexers is done and how to handle errors while doing that."
             >
                 <NumberSetting
-                    help="Any web call to an indexer taking longer than this is aborted."
-                    label="Timeout when accessing indexers"
+                    {...indexedSetting("searching.timeout")}
                     minimum={1}
-                    name="searching.timeout"
                     unit="seconds"
                 />
                 <TextSetting
-                    help="Used when accessing indexers."
-                    label="User agent"
-                    name="searching.userAgent"
+                    {...indexedSetting("searching.userAgent")}
                     required
                     tooltip="Some indexers don't seem to like Hydra and disable access based on the user agent. You can change it here if you want. Please leave it as it is if you have no problems. This allows indexers to gather better statistics on how their API services are used."
                 />
-                <ChipsSetting
-                    help="Used to map the user agent from accessing services to the service names. Apply words with return key."
-                    label="Map user agents"
-                    name="searching.userAgents"
+                <ChipsSetting {...indexedSetting("searching.userAgents")} />
+                <SwitchSetting
+                    {...indexedSetting(
+                        "searching.ignoreLoadLimitingForInternalSearches",
+                    )}
                 />
                 <SwitchSetting
-                    help="When enabled load limiting defined for indexers will be ignored for internal searches."
-                    label="Ignore load limiting internally"
-                    name="searching.ignoreLoadLimitingForInternalSearches"
+                    {...indexedSetting(
+                        "searching.ignoreLoadLimitingForConcreteApiSearches",
+                    )}
                 />
                 <SwitchSetting
-                    help="When enabled load limiting defined for indexers will be ignored for API searches that have identifiers or a query."
-                    label="Ignore load limiting for concrete API searches"
-                    name="searching.ignoreLoadLimitingForConcreteApiSearches"
-                />
-                <SwitchSetting
-                    label="Ignore temporary errors"
-                    name="searching.ignoreTemporarilyDisabled"
+                    {...indexedSetting("searching.ignoreTemporarilyDisabled")}
                     tooltip="By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers."
                 />
             </ConfigFieldset>
@@ -107,14 +98,10 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="Settings that control the handling of newznab categories (e.g. 2000 for Movies)."
             >
                 <SwitchSetting
-                    help="Map newznab categories from API searches to configured categories and use all configured newznab categories in searches."
-                    label="Transform newznab categories"
-                    name="searching.transformNewznabCategories"
+                    {...indexedSetting("searching.transformNewznabCategories")}
                 />
                 <SwitchSetting
-                    help="If disabled no categories will be included in queries to torznab indexers (trackers)."
-                    label="Send categories to trackers"
-                    name="searching.sendTorznabCategories"
+                    {...indexedSetting("searching.sendTorznabCategories")}
                 />
             </ConfigFieldset>
             <ConfigFieldset
@@ -124,28 +111,20 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                 }
             >
                 <SelectSetting
+                    {...indexedSetting("searching.alwaysConvertIds")}
                     advanced
-                    help="When enabled media ID conversions will always be done even when an indexer supports the already known ID(s)."
-                    label="Convert media IDs for..."
-                    name="searching.alwaysConvertIds"
                     options={SEARCH_SOURCE_OPTIONS}
                 />
                 <SelectSetting
-                    help="Generate queries for indexers which do not support ID based searches."
-                    label="Generate queries"
-                    name="searching.generateQueries"
+                    {...indexedSetting("searching.generateQueries")}
                     options={SEARCH_SOURCE_OPTIONS}
                 />
                 <SelectSetting
-                    help="When no results were found for a query ID search again using a generated query (on indexer level)."
-                    label="Fallback to generated queries"
-                    name="searching.idFallbackToQueryGeneration"
+                    {...indexedSetting("searching.idFallbackToQueryGeneration")}
                     options={SEARCH_SOURCE_OPTIONS}
                 />
                 <SelectSetting
-                    help="Used for movie query generation and autocomplete only."
-                    label="Language"
-                    name="searching.language"
+                    {...indexedSetting("searching.language")}
                     // A stored code this build has no label for stays in the
                     // list rather than being dropped, so the select never
                     // silently rewrites the configured language.
@@ -153,9 +132,7 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                     required
                 />
                 <SwitchSetting
-                    help="Replace diacritics (e.g. è) and german umlauts and special characters (ä, ö, ü and ß) in external request queries."
-                    label="Replace umlauts and diacritics"
-                    name="searching.replaceUmlauts"
+                    {...indexedSetting("searching.replaceUmlauts")}
                 />
             </ConfigFieldset>
             <ConfigFieldset
@@ -165,49 +142,37 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                 }
             >
                 <SelectSetting
-                    help="For which type of search word/regex filters will be applied"
-                    label="Apply word filters"
-                    name="searching.applyRestrictions"
+                    {...indexedSetting("searching.applyRestrictions")}
                     options={APPLY_RESTRICTIONS_OPTIONS}
                 />
                 {restrictionsApply ? (
                     <ChipsSetting
-                        help="Results with any of these words in the title will be ignored. Title is converted to lowercase before. Apply words with return key."
-                        label="Forbidden words"
-                        name="searching.forbiddenWords"
+                        {...indexedSetting("searching.forbiddenWords")}
                         tooltip="One forbidden word in a result title dismisses the result."
                     />
                 ) : null}
                 {restrictionsApply ? (
                     <TextSetting
+                        {...indexedSetting("searching.forbiddenRegex")}
                         advanced
-                        help="Must not be present in a title (case is ignored)."
-                        label="Forbidden regex"
-                        name="searching.forbiddenRegex"
                     />
                 ) : null}
                 {restrictionsApply ? (
                     <ChipsSetting
-                        help="Only results with titles that contain *all* words will be used. Title is converted to lowercase before. Apply words with return key."
-                        label="Required words"
-                        name="searching.requiredWords"
+                        {...indexedSetting("searching.requiredWords")}
                         tooltip="If any of the required words is not found anywhere in a result title it's also dismissed."
                     />
                 ) : null}
                 {restrictionsApply ? (
                     <TextSetting
+                        {...indexedSetting("searching.requiredRegex")}
                         advanced
-                        help="Must be present in a title (case is ignored)."
-                        label="Required regex"
-                        name="searching.requiredRegex"
                     />
                 ) : null}
                 {restrictionsApply ? (
                     <ChipsSetting
+                        {...indexedSetting("searching.forbiddenGroups")}
                         advanced
-                        help="Posts from any groups containing any of these words will be ignored. Apply words with return key."
-                        label="Forbidden groups"
-                        name="searching.forbiddenGroups"
                     />
                 ) : null}
                 {/*
@@ -217,10 +182,8 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                  * visible when word filters are off.
                  */}
                 <ChipsSetting
+                    {...indexedSetting("searching.forbiddenPosters")}
                     advanced
-                    help="Posts from any posters containing any of these words will be ignored. Apply words with return key."
-                    label="Forbidden posters"
-                    name="searching.forbiddenPosters"
                 />
                 {/*
                  * Free text, as legacy has it: the backend compares the
@@ -229,47 +192,31 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                  * reproduce.
                  */}
                 <ChipsSetting
-                    help="If an indexer returns the language in the results only those results with configured languages will be used. Apply words with return key."
-                    label="Languages to keep"
-                    name="searching.languagesToKeep"
+                    {...indexedSetting("searching.languagesToKeep")}
                 />
                 <NumberSetting
-                    help="Results older than this are ignored. Can be overwritten per search. Apply words with return key."
-                    label="Maximum results age"
-                    name="searching.maxAge"
+                    {...indexedSetting("searching.maxAge")}
                     unit="days"
                 />
-                <NumberSetting
-                    help="Torznab results with fewer seeders will be ignored."
-                    label="Minimum # seeders"
-                    name="searching.minSeeders"
-                />
+                <NumberSetting {...indexedSetting("searching.minSeeders")} />
                 <SwitchSetting
-                    help="Not all indexers provide this information"
-                    label="Ignore passworded releases"
-                    name="searching.ignorePassworded"
+                    {...indexedSetting("searching.ignorePassworded")}
                     tooltip="Some indexers provide information if a release is passworded. If you select to ignore these releases only those will be ignored of which I know for sure that they're actually passworded."
                 />
             </ConfigFieldset>
             <ConfigFieldset label="Result processing">
                 <SwitchSetting
+                    {...indexedSetting("searching.wrapApiErrors")}
                     advanced
-                    help="When enabled accessing tools will think the search was completed successfully but without results."
-                    label="Wrap API errors in empty results page"
-                    name="searching.wrapApiErrors"
                     tooltip="In (hopefully) rare cases Hydra may crash when processing an API search request. You can enable to return an empty search page in these cases (if Hydra hasn't crashed altogether ). This means that the calling tool (e.g. Sonarr) will think that the indexer (Hydra) is fine but just didn't return a result. That way Hydra won't be disabled as indexer but on the downside you may not be directly notified that an error occurred."
                 />
                 <ChipsSetting
-                    help='Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Allows wildcards ("*"). Apply words with return key.'
-                    label="Remove trailing..."
-                    name="searching.removeTrailing"
+                    {...indexedSetting("searching.removeTrailing")}
                     tooltip="Hydra contains a predefined list of words which will be removed if a search result title ends with them. This allows better duplicate detection and cleans up the titles. Trailing words will be removed until none of the defined strings are found at the end of the result title."
                 />
                 <SwitchSetting
+                    {...indexedSetting("searching.useOriginalCategories")}
                     advanced
-                    help="Enable to use the category descriptions provided by the indexer."
-                    label="Use original categories"
-                    name="searching.useOriginalCategories"
                     tooltip="Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results."
                 />
             </ConfigFieldset>
@@ -282,62 +229,52 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
             </ConfigFieldset>
             <ConfigFieldset label="Result display">
                 <SwitchSetting
+                    {...indexedSetting("searching.loadAllCachedOnInternal")}
                     advanced
-                    help="Load all results already retrieved from indexers. Might make sorting / filtering a bit slower."
-                    label="Display all retrieved results"
-                    name="searching.loadAllCachedOnInternal"
                 />
                 <NumberSetting
+                    {...indexedSetting("searching.loadLimitInternal")}
                     advanced
-                    help="Determines the number of results fetched from indexers per search request. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500."
-                    label="Results fetched per request"
                     maximum={500}
-                    name="searching.loadLimitInternal"
                     required
                     unit="results per page"
                 />
                 <NumberSetting
-                    help="Determines width of covers in search results (when enabled in display options)."
-                    label="Cover width"
-                    name="searching.coverSize"
+                    {...indexedSetting("searching.coverSize")}
                     required
                     unit="px"
                 />
                 <SwitchSetting
-                    help="Analyze movie release titles and show a quality score (1-10) with details on hover."
-                    label="Show movie quality indicator"
-                    name="searching.showMovieQualityIndicator"
+                    {...indexedSetting("searching.showMovieQualityIndicator")}
                 />
             </ConfigFieldset>
             <ConfigFieldset label="Quick filters">
                 <SwitchSetting
-                    help="Show quick filter buttons for movie and TV results."
-                    label="Show quick filters"
-                    name="searching.showQuickFilterButtons"
+                    {...indexedSetting("searching.showQuickFilterButtons")}
                 />
                 {showQuickFilterButtons ? (
                     <SwitchSetting
+                        {...indexedSetting(
+                            "searching.alwaysShowQuickFilterButtons",
+                        )}
                         advanced
-                        help="Show all quick filter buttons for all types of searches."
-                        label="Always show quick filters"
-                        name="searching.alwaysShowQuickFilterButtons"
                     />
                 ) : null}
                 {showQuickFilterButtons ? (
                     <ChipsSetting
+                        {...indexedSetting(
+                            "searching.customQuickFilterButtons",
+                        )}
                         advanced
-                        help="Enter in the format DisplayName=Required1,Required2. Prefix words with ! to exclude them. Surround with / to mark as a regex. Apply values with enter key."
-                        label="Custom quick filters"
-                        name="searching.customQuickFilterButtons"
                         tooltip='E.g. use WEB=webdl,web-dl. for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
                     />
                 ) : null}
                 {showQuickFilterButtons ? (
                     <MultiSelectSetting
+                        {...indexedSetting(
+                            "searching.preselectQuickFilterButtons",
+                        )}
                         advanced
-                        help="Choose which quickfilters will be selected by default."
-                        label="Preselect quickfilters"
-                        name="searching.preselectQuickFilterButtons"
                         options={preselectQuickFilterOptions(
                             customQuickFilterButtons,
                         )}
@@ -351,31 +288,29 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="Hydra tries to find duplicate results from different indexers using heuristics. You can control the parameters for that but usually the default values work quite well."
             >
                 <NumberSetting
-                    label="Duplicate size threshold"
-                    name="searching.duplicateSizeThresholdInPercent"
+                    {...indexedSetting(
+                        "searching.duplicateSizeThresholdInPercent",
+                    )}
                     required
                     step={0.01}
                     unit="%"
                     validate={percentValidator}
                 />
                 <NumberSetting
-                    label="Duplicate age threshold"
-                    name="searching.duplicateAgeThreshold"
+                    {...indexedSetting("searching.duplicateAgeThreshold")}
                     required
                     unit="hours"
                 />
             </ConfigFieldset>
             <ConfigFieldset advanced label="Other">
                 <NumberSetting
-                    label="Store results for ..."
-                    name="searching.keepSearchResultsForDays"
+                    {...indexedSetting("searching.keepSearchResultsForDays")}
                     required
                     tooltip="Found results are stored in the database for this long until they're deleted. After that any links to Hydra results still stored elsewhere become invalid. You can increase the limit if you want, the disc space needed is negligible (about 75 MB for 7 days on my server)."
                     unit="days"
                 />
                 <NumberSetting
-                    label="recent searches in search bar"
-                    name="searching.historyForSearching"
+                    {...indexedSetting("searching.historyForSearching")}
                     required
                     // Legacy's tooltip names the affordance with an inline
                     // glyphicon `<span>` (`config-fields-service.js:1585`);
@@ -383,13 +318,7 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                     tooltip="The number of recent searches shown in the search bar dropdown (the clock icon)."
                 />
                 <NumberSetting
-                    help={[
-                        "When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See ",
-                        {href: CACHED_QUERIES_WIKI, text: "wiki"},
-                        ".",
-                    ]}
-                    label="Results cache time"
-                    name="searching.globalCacheTimeMinutes"
+                    {...indexedSetting("searching.globalCacheTimeMinutes")}
                     unit="minutes"
                 />
             </ConfigFieldset>

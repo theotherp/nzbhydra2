@@ -1,24 +1,62 @@
-import {settingRowTestId, settingTestId} from "../components/settings";
+import {
+    settingRowTestId,
+    settingTestId,
+    type ConfigFieldPath,
+    type HelpContent,
+    type SettingProps,
+} from "../components/settings";
 import {CONFIG_TABS, configTabHref, type ConfigTab} from "../configTabs";
-import {CSRF_HELP} from "../main/mainSettings";
+import {
+    CSRF_HELP,
+    CSRF_WIKI,
+    H2_RETENTION_TIME,
+    H2_WRITE_DELAY,
+    MEMORY_WIKI,
+    REVERSE_PROXY_WIKI,
+    SSL_VERIFICATION_WIKI,
+    SSL_WIKI,
+} from "../main/mainSettings";
+import {
+    APPRISE_API_URL,
+    APPRISE_CLI_URL,
+} from "../notifications/notificationsSettings";
+import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
- * `C-CONFIG-SETTINGS-INDEX`: searchable metadata for every setting the eight
- * configuration tabs render *directly*.
+ * `C-CONFIG-SETTINGS-INDEX`: the label and help of every setting the eight
+ * configuration tabs render *directly*, declared once, here.
  *
  * The tabs define their fields as JSX, not as data (ADR-0002: "a small typed
- * field vocabulary, not a generic schema framework"), so there is nothing to
- * read the labels and help text off at runtime. This module is therefore
- * hand-maintained, and its only defence against rotting is
- * `settingsIndexDrift.test.tsx`, which renders every tab and compares the
- * rendered `config-setting-*` test ids against this array in both directions.
- * A future task that adds a setting without indexing it fails that test by
- * name rather than silently missing from search.
+ * field vocabulary, not a generic schema framework"), so there is no schema to
+ * read a label off at runtime. Until FM-193 this module answered that by
+ * *copying* every label and help string out of the tab JSX, which meant the
+ * two could disagree without anything noticing: the drift test compares
+ * `config-setting-*` ids, not text, so a wrong label here produced a search
+ * result quoting words no row on screen contains. `CSRF_HELP`
+ * (`main/mainSettings.ts`) was the one-off fix for exactly that, for one
+ * string.
+ *
+ * The dependency now runs the other way. This array holds the label and the
+ * structured `HelpContent` — links intact, so nothing has to be flattened by
+ * hand and no href is lost — and each tab reads them back by config path
+ * through `indexedSetting()`. Search, the review-changes panel and the
+ * feedback banner therefore quote what the user sees by construction, and
+ * `helpText` (the flat string matching runs over) is derived from the same
+ * value the control renders rather than transcribed beside it.
+ *
+ * `settingsIndexDrift.test.tsx` still guards the parts a shared value cannot:
+ * that every indexed setting is rendered, that every rendered setting is
+ * indexed, that every section anchor exists, that `advanced` and `fieldset`
+ * describe the DOM — and, since FM-193, that the rendered row's label and help
+ * text are the ones this array declares, which is what catches a control that
+ * stops reading from the index.
  *
  * Out of its vocabulary, deliberately: dialog-internal fields (the indexer,
  * downloader, external-tool and custom-mapping editors) and the per-entry
- * fields of a list section. A list section contributes exactly one navigable
- * entry, pointing at the list itself.
+ * fields of a list section. Those keep their literals at the call site. A list
+ * section contributes exactly one navigable entry, pointing at the list
+ * itself, and its `label`/`help` are search-only prose: no control renders
+ * them, so they are declared here and nowhere else.
  */
 
 /** The kind of thing an entry points at. */
@@ -52,7 +90,19 @@ export type SettingsIndexEntry = {
     conditional: boolean;
     /** Enclosing `ConfigFieldset` label, or `null` for a tab-level row. */
     fieldset: string | null;
-    /** The row's help text as plain prose, with any link text inlined. */
+    /**
+     * The help the row's control renders, verbatim — the same structured
+     * `HelpContent` a tab used to declare inline, so a link keeps its href and
+     * `C-EXTERNAL-LINKS` still gets a link rather than prose. `undefined` for
+     * a setting with no help.
+     */
+    help: HelpContent | undefined;
+    /**
+     * `help` as plain prose with any link text inlined: what
+     * `settingsSearchMatching.ts` runs its substring over. Derived from `help`,
+     * never stated beside it, so the text search matches cannot drift from the
+     * text on screen.
+     */
     helpText: string;
     kind: SettingsIndexKind;
     label: string;
@@ -66,10 +116,27 @@ type EntryInput = {
     advanced?: boolean;
     conditional?: boolean;
     fieldset?: string | null;
-    help?: string;
+    help?: HelpContent;
     label: string;
     path: string;
 };
+
+/**
+ * `help` as the flat string search matches over. A `HelpLink` contributes its
+ * link text and nothing else, which is what the reader sees: the href is not
+ * words on screen, so matching it would produce hits on a URL nobody read.
+ */
+function flattenHelp(help: HelpContent | undefined): string {
+    if (help === undefined) {
+        return "";
+    }
+    if (typeof help === "string") {
+        return help;
+    }
+    return help
+        .map((part) => (typeof part === "string" ? part : part.text))
+        .join("");
+}
 
 /**
  * The per-tab collector. Tab and fieldset are ambient while a tab's rows are
@@ -98,7 +165,8 @@ function tabEntries(
                     anchorTestId: settingRowTestId(row.path),
                     conditional: row.conditional === true,
                     fieldset: fieldsetLabel,
-                    helpText: row.help ?? "",
+                    help: row.help,
+                    helpText: flattenHelp(row.help),
                     kind: "row",
                     label: row.label,
                     path: row.path,
@@ -112,7 +180,8 @@ function tabEntries(
                 anchorTestId: entry.anchorTestId,
                 conditional: entry.conditional === true,
                 fieldset: entry.fieldset ?? null,
-                helpText: entry.help ?? "",
+                help: entry.help,
+                helpText: flattenHelp(entry.help),
                 kind: "section",
                 label: entry.label,
                 path: entry.path,
@@ -135,14 +204,25 @@ function repeatAnchor(path: string): string {
 const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
     fieldset("Hosting", {}, [
         {
-            help: "I strongly recommend using a reverse proxy instead of exposing this directly. Requires restart.",
+            help: [
+                "I strongly recommend ",
+                {
+                    href: REVERSE_PROXY_WIKI,
+                    text: "using a reverse proxy",
+                },
+                " instead of exposing this directly. Requires restart.",
+            ],
             label: "Host",
             path: "main.host",
         },
         {help: "Requires restart.", label: "Port", path: "main.port"},
         {
             advanced: true,
-            help: "Adapt when using a reverse proxy. See wiki. Always use when calling Hydra, even locally.",
+            help: [
+                "Adapt when using a reverse proxy. See ",
+                {href: REVERSE_PROXY_WIKI, text: "wiki"},
+                ". Always use when calling Hydra, even locally.",
+            ],
             label: "URL base",
             path: "main.urlBase",
         },
@@ -154,7 +234,11 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             conditional: true,
-            help: "Requires restart. See wiki.",
+            help: [
+                "Requires restart. See ",
+                {href: SSL_WIKI, text: "wiki"},
+                ".",
+            ],
             label: "SSL keystore file",
             path: "main.sslKeyStore",
         },
@@ -214,7 +298,11 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             advanced: true,
-            help: "If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See wiki.",
+            help: [
+                "If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See ",
+                {href: SSL_VERIFICATION_WIKI, text: "wiki"},
+                ".",
+            ],
             label: "Verify SSL certificates",
             path: "main.verifySsl",
         },
@@ -232,13 +320,21 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             advanced: true,
-            help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See wiki.',
+            help: [
+                'Add a host if you get an "unrecognized_name" error. Apply words with return key. See ',
+                {href: SSL_VERIFICATION_WIKI, text: "wiki"},
+                ".",
+            ],
             label: "Disable SNI",
             path: "main.sniDisabledFor",
         },
         {
             advanced: true,
-            help: `Use CSRF protection. ${CSRF_HELP}`,
+            help: [
+                "Use ",
+                {href: CSRF_WIKI, text: "CSRF protection"},
+                `. ${CSRF_HELP}`,
+            ],
             label: "Use CSRF protection",
             path: "main.useCsrf",
         },
@@ -347,12 +443,20 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
             path: "main.databaseCompactTime",
         },
         {
-            help: "How long the db should retain old, persisted data. See here.",
+            help: [
+                "How long the db should retain old, persisted data. See ",
+                {href: H2_RETENTION_TIME, text: "here"},
+                ".",
+            ],
             label: "Database retention time",
             path: "main.databaseRetentionTime",
         },
         {
-            help: "Maximum delay between a commit and flushing the log, in milliseconds. See here.",
+            help: [
+                "Maximum delay between a commit and flushing the log, in milliseconds. See ",
+                {href: H2_WRITE_DELAY, text: "here"},
+                ".",
+            ],
             label: "Database write delay",
             path: "main.databaseWriteDelay",
         },
@@ -384,7 +488,11 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             advanced: true,
-            help: "256 should suffice except when working with big databases / many indexers. See wiki.",
+            help: [
+                "256 should suffice except when working with big databases / many indexers. See ",
+                {href: MEMORY_WIKI, text: "wiki"},
+                ".",
+            ],
             label: "JVM memory",
             path: "main.xmx",
         },
@@ -807,7 +915,11 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
             path: "searching.historyForSearching",
         },
         {
-            help: "When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See wiki.",
+            help: [
+                "When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See ",
+                {href: CACHED_QUERIES_WIKI, text: "wiki"},
+                ".",
+            ],
             label: "Results cache time",
             path: "searching.globalCacheTimeMinutes",
         },
@@ -968,13 +1080,25 @@ const NOTIFICATIONS_ENTRIES = tabEntries(
             {label: "Apprise type", path: "notificationConfig.appriseType"},
             {
                 conditional: true,
-                help: "URL of Apprise API to send notifications to.",
+                help: [
+                    "URL of ",
+                    {href: APPRISE_API_URL, text: "Apprise API"},
+                    " to send notifications to.",
+                ],
                 label: "Apprise API URL",
                 path: "notificationConfig.appriseApiUrl",
             },
             {
                 conditional: true,
-                help: "Full path of of Apprise runnable to execute.",
+                // "of of" is legacy's own wording
+                // (`config-fields-service.js:2422`), kept verbatim so the two
+                // UIs read identically during the parity comparison; see the
+                // handoff's follow-up work.
+                help: [
+                    "Full path of of ",
+                    {href: APPRISE_CLI_URL, text: "Apprise runnable"},
+                    " to execute.",
+                ],
                 label: "Apprise runnable",
                 path: "notificationConfig.appriseCliPath",
             },
@@ -1031,6 +1155,37 @@ export const SETTINGS_INDEX: readonly SettingsIndexEntry[] = [
     ...INDEXERS_ENTRIES,
     ...NOTIFICATIONS_ENTRIES,
 ];
+
+const SETTINGS_INDEX_BY_PATH = new Map(
+    SETTINGS_INDEX.map((entry) => [entry.path, entry]),
+);
+
+/**
+ * The three props a tab's control no longer states for itself: its config
+ * path, and the label and help this index declares for that path. Spread into
+ * the control (`<TextSetting {...indexedSetting("main.host")} required />`),
+ * so the row on screen and the search result quoting it cannot say different
+ * things.
+ *
+ * `SettingProps.label` stays required (ADR-0002) — this fills it rather than
+ * teaching any control to look anything up, which is why dialog-internal and
+ * per-entry fields, which are not in the index's vocabulary, keep their
+ * literals and are unaffected.
+ *
+ * Throws for an unindexed path. That is the intended failure: a setting the
+ * index does not know is a setting search cannot find, and the drift test's
+ * direction (b) would fail on it anyway — this just fails at the call site,
+ * where the missing entry can be seen.
+ */
+export function indexedSetting(
+    path: ConfigFieldPath,
+): Pick<SettingProps, "help" | "label" | "name"> {
+    const entry = SETTINGS_INDEX_BY_PATH.get(path);
+    if (entry === undefined) {
+        throw new Error(`Setting is not in the settings index: ${path}`);
+    }
+    return {help: entry.help, label: entry.label, name: path};
+}
 
 /** The entries belonging to one tab, by URL segment. */
 export function settingsIndexForTab(

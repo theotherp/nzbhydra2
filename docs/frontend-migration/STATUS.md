@@ -1750,6 +1750,21 @@ byte-unchanged at 143/143. Vitest 2047/2047, real-backend results/search/downloa
 stray line count in the handoff prose, and FM-193 still carries the stale "focus-affordances red at base" line.
 Noted, not a defect: `ResultsTable` imports `STICKY_BACKGROUND` from `ResultsToolbar`, a sibling edge ADR-0014 forces.
 
+FM-193 (Invert The Settings Index) made `settingsIndex.ts` the source of every indexed control's label and structured
+help: the index declares each entry's `HelpContent` with links intact, derives the flat search string from it, and
+exports `indexedSetting(path)`, which all 134 controls across seven tabs now spread instead of restating literals.
+A pre-change AST comparison of every control against the base index found zero drift in either direction, so the
+ordered index dump is byte-identical before and after (141 entries); all twenty tab captures (`outerHTML` and emotion
+sheet, advanced on and off, both Auth and both Notifications fixtures) are byte-identical, and every remaining prop on
+every control is unchanged — all re-derived by the reviewer. The drift test gained a rendered-DOM direction that
+catches a control reverted to a literal, and says plainly that an edit made in the index is by construction no longer
+a drift. `SettingProps.label` stays required, dialog fields keep literals, `mainSettings.ts` is byte-unchanged (its
+`CSRF_HELP` now has one importer, the index, which the acceptance criterion forces). Vitest 2061/2061, real-backend
+config specs 49/49 (re-run by the reviewer after the implementer's junit artefact turned out clobbered). Last of the
+2026-09-08 code-quality batch (backlog item 29). Passed 2026-09-09 first cycle; minor findings, not corrected: the
+packet's contract lines citing 146 entries and a red-at-base focus gate were stale, and its Out Of Scope bullet on
+`CSRF_HELP`'s two importers contradicted the acceptance criterion; the code took the honest reading.
+
 ## Active
 
 None.
@@ -1777,9 +1792,8 @@ None.
 
 ## Upcoming
 
-- FM-193: Invert `settingsIndex.ts` so the index is the source of labels and help and the setting components read
-  from it, with an ordered index dump and all eight tabs' rendered output proven byte-identical. Last of the 2026-09-08
-  code-quality batch (FM-190, FM-191 and FM-192 done). Backlog item 29.
+- The 2026-09-08 code-quality batch is complete: FM-190, FM-191, FM-192 and FM-193 are done (entries above). No task
+  packets are queued.
 
 - FM-188 (refine invert/all/none actions), FM-187 (per-row send-to-black-hole button), FM-186 (per-row
   send-to-downloader buttons) and FM-185 (themed date pickers) are complete (entries above).

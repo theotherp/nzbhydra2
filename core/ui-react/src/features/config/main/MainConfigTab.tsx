@@ -15,22 +15,15 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {
     apiKeyValidator,
-    CSRF_HELP,
-    CSRF_WIKI,
-    H2_RETENTION_TIME,
-    H2_WRITE_DELAY,
     HISTORY_USER_INFO_OPTIONS,
     ipValidator,
     LOG_LEVEL_OPTIONS,
     LOG_MARKER_OPTIONS,
-    MEMORY_WIKI,
     portValidator,
     PROXY_TYPE_OPTIONS,
-    REVERSE_PROXY_WIKI,
-    SSL_VERIFICATION_WIKI,
-    SSL_WIKI,
     timeOfDayValidator,
     urlBaseValidator,
 } from "./mainSettings";
@@ -68,66 +61,39 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
         <Box data-testid="config-main">
             <ConfigFieldset label="Hosting">
                 <TextSetting
-                    help={[
-                        "I strongly recommend ",
-                        {
-                            href: REVERSE_PROXY_WIKI,
-                            text: "using a reverse proxy",
-                        },
-                        " instead of exposing this directly. Requires restart.",
-                    ]}
-                    label="Host"
-                    name="main.host"
+                    {...indexedSetting("main.host")}
                     placeholder="IPv4 address to bind to"
                     required
                     validate={ipValidator}
                 />
                 <NumberSetting
-                    help="Requires restart."
-                    label="Port"
-                    name="main.port"
+                    {...indexedSetting("main.port")}
                     placeholder="5076"
                     required
                     validate={portValidator}
                 />
                 <TextSetting
+                    {...indexedSetting("main.urlBase")}
                     advanced
-                    help={[
-                        "Adapt when using a reverse proxy. See ",
-                        {href: REVERSE_PROXY_WIKI, text: "wiki"},
-                        ". Always use when calling Hydra, even locally.",
-                    ]}
-                    label="URL base"
-                    name="main.urlBase"
                     placeholder="/nzbhydra"
                     tooltip='If you use Hydra behind a reverse proxy you might want to set the URL base to a value like "/nzbhydra". If you accesses Hydra with tools running outside your network (for example from your phone) set the external URL so that it matches the full Hydra URL. That way the NZB links returned in the search results refer to your global URL and not your local address.'
                     validate={urlBaseValidator}
                 />
                 <SwitchSetting
+                    {...indexedSetting("main.ssl")}
                     advanced
-                    help="Requires restart."
-                    label="Use SSL"
-                    name="main.ssl"
                     tooltip="You can use SSL but I recommend using a reverse proxy with SSL. See the wiki for notes regarding reverse proxies and SSL. It's more secure and can be configured better."
                 />
                 {ssl ? (
                     <>
                         <FileBrowserSetting
-                            help={[
-                                "Requires restart. See ",
-                                {href: SSL_WIKI, text: "wiki"},
-                                ".",
-                            ]}
-                            label="SSL keystore file"
+                            {...indexedSetting("main.sslKeyStore")}
                             mode="file"
-                            name="main.sslKeyStore"
                             required
                             transport={transport}
                         />
                         <SecretInput
-                            help="Requires restart."
-                            label="SSL keystore password"
-                            name="main.sslKeyStorePassword"
+                            {...indexedSetting("main.sslKeyStorePassword")}
                         />
                     </>
                 ) : null}
@@ -139,39 +105,30 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy."
             >
                 <SelectSetting
-                    label="Use proxy"
-                    name="main.proxyType"
+                    {...indexedSetting("main.proxyType")}
                     options={PROXY_TYPE_OPTIONS}
                 />
                 {proxyEnabled ? (
                     <>
                         <TextSetting
-                            help="IPv4 only"
-                            label="SOCKS proxy host"
-                            name="main.proxyHost"
+                            {...indexedSetting("main.proxyHost")}
                             placeholder="Set to use a SOCKS proxy"
                         />
                         <NumberSetting
-                            label="Proxy port"
-                            name="main.proxyPort"
+                            {...indexedSetting("main.proxyPort")}
                             placeholder="1080"
                         />
                         <SecretInput
-                            label="Proxy username"
-                            name="main.proxyUsername"
+                            {...indexedSetting("main.proxyUsername")}
                         />
                         <SecretInput
-                            label="Proxy password"
-                            name="main.proxyPassword"
+                            {...indexedSetting("main.proxyPassword")}
                         />
                         <SwitchSetting
-                            label="Bypass local network addresses"
-                            name="main.proxyIgnoreLocal"
+                            {...indexedSetting("main.proxyIgnoreLocal")}
                         />
                         <ChipsSetting
-                            help="Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key."
-                            label="Bypass domains"
-                            name="main.proxyIgnoreDomains"
+                            {...indexedSetting("main.proxyIgnoreDomains")}
                         />
                     </>
                 ) : null}
@@ -187,69 +144,32 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
              */}
             <ConfigFieldset label="UI">
                 <SwitchSetting
+                    {...indexedSetting("main.indexerSelectionAsCheckboxes")}
                     advanced
-                    help="Show indexer selection on the search page as a checkbox list with a separate action menu instead of a multiselect dropdown."
-                    label="Indexer checkbox list"
-                    name="main.indexerSelectionAsCheckboxes"
                 />
             </ConfigFieldset>
 
             <ConfigFieldset label="Security">
                 <ApiKeySetting
-                    help="Alphanumeric only."
-                    label="API key"
-                    name="main.apiKey"
+                    {...indexedSetting("main.apiKey")}
                     required
                     validate={apiKeyValidator}
                 />
-                <TextSetting
+                <TextSetting {...indexedSetting("main.dereferer")} advanced />
+                <SwitchSetting {...indexedSetting("main.verifySsl")} advanced />
+                <ChipsSetting
+                    {...indexedSetting("main.verifySslDisabledFor")}
                     advanced
-                    help="Redirect external links to hide your instance. Insert $s for escaped target URL and $us for unescaped target URL. Use empty value to disable."
-                    label="Dereferer"
-                    name="main.dereferer"
                 />
                 <SwitchSetting
+                    {...indexedSetting("main.disableSslLocally")}
                     advanced
-                    help={[
-                        "If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See ",
-                        {href: SSL_VERIFICATION_WIKI, text: "wiki"},
-                        ".",
-                    ]}
-                    label="Verify SSL certificates"
-                    name="main.verifySsl"
                 />
                 <ChipsSetting
+                    {...indexedSetting("main.sniDisabledFor")}
                     advanced
-                    help="Add hosts for which to disable SSL verification. Apply words with return key."
-                    label="Disable SSL for..."
-                    name="main.verifySslDisabledFor"
                 />
-                <SwitchSetting
-                    advanced
-                    help="Disable SSL for local hosts."
-                    label="Disable SSL locally"
-                    name="main.disableSslLocally"
-                />
-                <ChipsSetting
-                    advanced
-                    help={[
-                        'Add a host if you get an "unrecognized_name" error. Apply words with return key. See ',
-                        {href: SSL_VERIFICATION_WIKI, text: "wiki"},
-                        ".",
-                    ]}
-                    label="Disable SNI"
-                    name="main.sniDisabledFor"
-                />
-                <SwitchSetting
-                    advanced
-                    help={[
-                        "Use ",
-                        {href: CSRF_WIKI, text: "CSRF protection"},
-                        `. ${CSRF_HELP}`,
-                    ]}
-                    label="Use CSRF protection"
-                    name="main.useCsrf"
-                />
+                <SwitchSetting {...indexedSetting("main.useCsrf")} advanced />
             </ConfigFieldset>
 
             {/*
@@ -264,48 +184,32 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="The base settings should suffice for most users. If you want you can enable logging of IP adresses for failed logins and NZB downloads."
             >
                 <SelectSetting
-                    help="Takes effect on next restart."
-                    label="Logfile level"
-                    name="main.logging.logfilelevel"
+                    {...indexedSetting("main.logging.logfilelevel")}
                     options={LOG_LEVEL_OPTIONS}
                 />
                 <NumberSetting
-                    help="How many daily log files will be kept."
-                    label="Max log history"
-                    name="main.logging.logMaxHistory"
+                    {...indexedSetting("main.logging.logMaxHistory")}
                 />
                 <SelectSetting
-                    help="Takes effect on next restart."
-                    label="Console log level"
-                    name="main.logging.consolelevel"
+                    {...indexedSetting("main.logging.consolelevel")}
                     options={LOG_LEVEL_OPTIONS}
                 />
+                <SwitchSetting {...indexedSetting("main.logging.logGc")} />
                 <SwitchSetting
-                    help="Enable garbage collection logging. Only for debugging of memory issues."
-                    label="Log GC"
-                    name="main.logging.logGc"
-                />
-                <SwitchSetting
-                    label="Log IP addresses"
-                    name="main.logging.logIpAddresses"
+                    {...indexedSetting("main.logging.logIpAddresses")}
                 />
                 {logIpAddresses ? (
                     <SwitchSetting
-                        help="Try to map logged IP addresses to host names."
-                        label="Map hosts"
-                        name="main.logging.mapIpToHost"
+                        {...indexedSetting("main.logging.mapIpToHost")}
                         tooltip="Enabling this may cause NZBHydra to load very, very slowly when accessed remotely."
                     />
                 ) : null}
                 <SwitchSetting
-                    label="Log user names"
-                    name="main.logging.logUsername"
+                    {...indexedSetting("main.logging.logUsername")}
                 />
                 {debugLogging ? (
                     <MultiSelectSetting
-                        help="Select certain sections for more output on debug level. Please enable only when asked for."
-                        label="Log markers"
-                        name="main.logging.markersToLog"
+                        {...indexedSetting("main.logging.markersToLog")}
                         options={LOG_MARKER_OPTIONS}
                     />
                 ) : null}
@@ -317,9 +221,7 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                  * behaviour, not an oversight.
                  */}
                 <SelectSetting
-                    help="Only affects if value is displayed in the search/download history."
-                    label="History user info"
-                    name="main.logging.historyUserInfoType"
+                    {...indexedSetting("main.logging.historyUserInfoType")}
                     options={HISTORY_USER_INFO_OPTIONS}
                 />
             </ConfigFieldset>
@@ -333,74 +235,55 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                  * `backup` can still be entered by hand.
                  */}
                 <FileBrowserSetting
-                    help="Either relative to the NZBHydra data folder or an absolute folder."
-                    label="Backup folder"
+                    {...indexedSetting("main.backupFolder")}
                     mode="folder"
-                    name="main.backupFolder"
                     transport={transport}
                 />
                 <NumberSetting
-                    label="Backup every..."
-                    name="main.backupEveryXDays"
+                    {...indexedSetting("main.backupEveryXDays")}
                     unit="days"
                 />
-                <SwitchSetting
-                    label="Backup before update"
-                    name="main.backupBeforeUpdate"
-                />
+                <SwitchSetting {...indexedSetting("main.backupBeforeUpdate")} />
             </ConfigFieldset>
 
             <ConfigFieldset label="Updates">
                 <SwitchSetting
-                    label="Install updates automatically"
-                    name="main.updateAutomatically"
+                    {...indexedSetting("main.updateAutomatically")}
                 />
                 <SwitchSetting
+                    {...indexedSetting("main.updateToPrereleases")}
                     advanced
-                    label="Install prereleases"
-                    name="main.updateToPrereleases"
                 />
                 <NumberSetting
+                    {...indexedSetting("main.deleteBackupsAfterWeeks")}
                     advanced
-                    label="Delete backups after..."
-                    name="main.deleteBackupsAfterWeeks"
                     unit="weeks"
                 />
                 <SwitchSetting
+                    {...indexedSetting("main.showUpdateBannerOnDocker")}
                     advanced
-                    help="If enabled a banner will be shown when new versions are available even when NZBHydra is run inside docker or is installed using a package manager (where you wouldn't let NZBHydra update itself)."
-                    label="Show update banner when managed externally"
-                    name="main.showUpdateBannerOnDocker"
                 />
                 <SwitchSetting
+                    {...indexedSetting("main.showWhatsNewBanner")}
                     advanced
-                    help="Please keep it enabled, I put some effort into the changelog ;-)"
-                    label="Show info banner after automatic updates"
-                    name="main.showWhatsNewBanner"
                 />
             </ConfigFieldset>
 
             <ConfigFieldset advanced label="History">
                 <SwitchSetting
-                    help="Controls search and download history."
-                    label="Keep history"
-                    name="main.keepHistory"
+                    {...indexedSetting("main.keepHistory")}
                     tooltip="If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won't be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours."
                 />
                 {keepHistory ? (
                     <>
                         <NumberSetting
-                            help="Only keep history (searches, downloads) for a certain time. Will decrease database size and may improve performance a bit. Rather reduce how long stats are kept."
-                            label="Keep history for..."
+                            {...indexedSetting("main.keepHistoryForWeeks")}
                             minimum={1}
-                            name="main.keepHistoryForWeeks"
                             unit="weeks"
                         />
                         <NumberSetting
-                            help="Only keep stats for a certain time. Will decrease database size."
-                            label="Keep stats for..."
+                            {...indexedSetting("main.keepStatsForWeeks")}
                             minimum={1}
-                            name="main.keepStatsForWeeks"
                             unit="weeks"
                         />
                     </>
@@ -413,85 +296,45 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="You should not change these values unless you're either told to or really know what you're doing."
             >
                 <NumberSetting
-                    help="The time the database is given to compact (reduce size) when shutting down. Reduce this if shutting down NZBHydra takes too long (database size may increase). Takes effect on next restart."
-                    label="Database compact time"
+                    {...indexedSetting("main.databaseCompactTime")}
                     minimum={200}
-                    name="main.databaseCompactTime"
                     unit="ms"
                 />
                 <NumberSetting
-                    help={[
-                        "How long the db should retain old, persisted data. See ",
-                        {href: H2_RETENTION_TIME, text: "here"},
-                        ".",
-                    ]}
-                    label="Database retention time"
-                    name="main.databaseRetentionTime"
+                    {...indexedSetting("main.databaseRetentionTime")}
                     unit="ms"
                 />
                 <NumberSetting
-                    help={[
-                        "Maximum delay between a commit and flushing the log, in milliseconds. See ",
-                        {href: H2_WRITE_DELAY, text: "here"},
-                        ".",
-                    ]}
-                    label="Database write delay"
-                    name="main.databaseWriteDelay"
+                    {...indexedSetting("main.databaseWriteDelay")}
                     unit="ms"
                 />
             </ConfigFieldset>
 
             <ConfigFieldset label="Other">
+                <SwitchSetting {...indexedSetting("main.startupBrowser")} />
+                <SwitchSetting {...indexedSetting("main.showNews")} advanced />
                 <SwitchSetting
-                    label="Open browser on startup"
-                    name="main.startupBrowser"
-                />
-                <SwitchSetting
+                    {...indexedSetting("main.disableTour")}
                     advanced
-                    help="Hydra will occasionally show news when opened. You can always find them in the system section"
-                    label="Show news"
-                    name="main.showNews"
                 />
+                <SwitchSetting {...indexedSetting("main.proxyImages")} />
                 <SwitchSetting
+                    {...indexedSetting("main.checkOpenPort")}
                     advanced
-                    help="Hide the guided tour button and prevent starting the tour."
-                    label="Disable guided tour"
-                    name="main.disableTour"
-                />
-                <SwitchSetting
-                    help="Download images from indexers and info providers (e.g. TMBD) and serve them via NZBHydra. Will only affect searches via UI, not API searches."
-                    label="Proxy images"
-                    name="main.proxyImages"
-                />
-                <SwitchSetting
-                    advanced
-                    help="Check if NZBHydra is reachable from the internet and not protected"
-                    label="Check for open port"
-                    name="main.checkOpenPort"
                 />
                 <NumberSetting
+                    {...indexedSetting("main.xmx")}
                     advanced
-                    help={[
-                        "256 should suffice except when working with big databases / many indexers. See ",
-                        {href: MEMORY_WIKI, text: "wiki"},
-                        ".",
-                    ]}
-                    label="JVM memory"
                     minimum={128}
-                    name="main.xmx"
                     unit="MB"
                 />
                 <TextSetting
+                    {...indexedSetting("main.customVmOptions")}
                     advanced
-                    help='Additional JVM options to pass to the main process. Separate multiple options with spaces. Example: "-Djava.net.preferIPv6Addresses=true -Dother.property=value"'
-                    label="Custom VM options"
-                    name="main.customVmOptions"
                 />
                 <TextSetting
+                    {...indexedSetting("main.scheduledRestartTime")}
                     advanced
-                    help="Time of day when NZBHydra should automatically restart. Leave empty to disable. May help with keeping database size low(er)."
-                    label="Scheduled restart time"
-                    name="main.scheduledRestartTime"
                     placeholder="HH:mm"
                     validate={timeOfDayValidator}
                 />

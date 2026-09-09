@@ -10,6 +10,7 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {DownloadersSection} from "./DownloadersSection";
 import {
     downloadersOf,
@@ -54,33 +55,25 @@ export function DownloadingConfigTab({transport}: {transport: ApiTransport}) {
                 tooltip="Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd, torbox). Torrent downloaders are not supported."
             >
                 <FileBrowserSetting
-                    help="Allow torrents to be saved in this folder from the search results. Ignored if not set."
-                    label="Torrent black hole"
+                    {...indexedSetting("downloading.saveTorrentsTo")}
                     mode="folder"
-                    name="downloading.saveTorrentsTo"
                     transport={transport}
                 />
                 <FileBrowserSetting
-                    help="Allow NZBs to be saved in this folder from the search results. Ignored if not set."
-                    label="NZB black hole"
+                    {...indexedSetting("downloading.saveNzbsTo")}
                     mode="folder"
-                    name="downloading.saveNzbsTo"
                     transport={transport}
                 />
                 <SelectSetting
+                    {...indexedSetting("downloading.nzbAccessType")}
                     advanced
-                    help="How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Proxying is recommended as it allows fallback for failed downloads (see below).."
-                    label="NZB access type"
-                    name="downloading.nzbAccessType"
                     options={NZB_ACCESS_TYPE_OPTIONS}
                     tooltip="NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer's API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option)."
                 />
                 {showsExternalUrl(showDownloaderStatus, downloaders) ? (
                     <TextSetting
+                        {...indexedSetting("downloading.externalUrl")}
                         advanced
-                        help="Used for links when sending links to the downloader and as link target for the downloader icon in the footer (when set)."
-                        label="External URL"
-                        name="downloading.externalUrl"
                         tooltip={
                             "When using \"Add links\" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that's not accessible by the downloader (e.g. when it's inside a docker container). Set the URL for NZBHydra that's accessible by the downloader here and it will be used instead. "
                         }
@@ -88,29 +81,21 @@ export function DownloadingConfigTab({transport}: {transport: ApiTransport}) {
                 ) : null}
                 {nzbAccessType === "REDIRECT" ? null : (
                     <SelectSetting
-                        help="Fallback to similar results when a download fails. Only available when proxying NZBs (see above)."
-                        label="Fallback for failed downloads"
-                        name="downloading.fallbackForFailed"
+                        {...indexedSetting("downloading.fallbackForFailed")}
                         options={FALLBACK_FOR_FAILED_OPTIONS}
                         tooltip="When you or an external program tries to download an NZB from NZBHydra the download may fail because the indexer is offline or its download limit has been reached. You can use this setting for NZBHydra to try and fall back on results from other indexers. It will search for results with the same name that were the result from the same search as where the download originated from. It will *not* execute another search."
                     />
                 )}
                 <SwitchSetting
-                    help="Enable to send magnet links to the associated program on the server machine. Won't work with docker"
-                    label="Send magnet links"
-                    name="downloading.sendMagnetLinks"
+                    {...indexedSetting("downloading.sendMagnetLinks")}
                 />
                 <SwitchSetting
+                    {...indexedSetting("downloading.updateStatuses")}
                     advanced
-                    help="Query your downloader for status updates of downloads"
-                    label="Update statuses"
-                    name="downloading.updateStatuses"
                 />
                 <SwitchSetting
+                    {...indexedSetting("downloading.showDownloaderStatus")}
                     advanced
-                    help="Show footer with downloader status"
-                    label="Show downloader footer"
-                    name="downloading.showDownloaderStatus"
                 />
                 {/*
                  * Legacy additionally *wrote* the first downloader's name into
@@ -123,9 +108,7 @@ export function DownloadingConfigTab({transport}: {transport: ApiTransport}) {
                  */}
                 {showsPrimaryDownloader(showDownloaderStatus, downloaders) ? (
                     <SelectSetting
-                        help="This downloader's state will be shown in the footer."
-                        label="Primary downloader"
-                        name="downloading.primaryDownloader"
+                        {...indexedSetting("downloading.primaryDownloader")}
                         options={primaryDownloaderOptions(
                             downloaders,
                             primaryDownloader,

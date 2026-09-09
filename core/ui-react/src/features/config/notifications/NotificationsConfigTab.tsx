@@ -13,10 +13,9 @@ import {
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {NotificationEntriesSection} from "./NotificationEntriesSection";
 import {
-    APPRISE_API_URL,
-    APPRISE_CLI_URL,
     APPRISE_TYPE_OPTIONS,
     NOTIFICATIONS_HELP_LINES,
 } from "./notificationsSettings";
@@ -53,65 +52,46 @@ export function NotificationsConfigTab({transport}: {transport: ApiTransport}) {
             />
             <ConfigFieldset label="Main">
                 <SelectSetting
-                    label="Apprise type"
-                    name="notificationConfig.appriseType"
+                    {...indexedSetting("notificationConfig.appriseType")}
                     options={APPRISE_TYPE_OPTIONS}
                 />
                 {appriseType === "API" ? (
                     <TextSetting
-                        help={[
-                            "URL of ",
-                            {href: APPRISE_API_URL, text: "Apprise API"},
-                            " to send notifications to.",
-                        ]}
-                        label="Apprise API URL"
-                        name="notificationConfig.appriseApiUrl"
+                        {...indexedSetting("notificationConfig.appriseApiUrl")}
                     />
                 ) : null}
                 {appriseType === "CLI" ? (
                     <FileBrowserSetting
-                        // "of of" is legacy's own wording
-                        // (`config-fields-service.js:2422`), kept verbatim so
-                        // the two UIs read identically during the parity
-                        // comparison; see the handoff's follow-up work.
-                        help={[
-                            "Full path of of ",
-                            {href: APPRISE_CLI_URL, text: "Apprise runnable"},
-                            " to execute.",
-                        ]}
-                        label="Apprise runnable"
+                        {...indexedSetting("notificationConfig.appriseCliPath")}
                         mode="file"
-                        name="notificationConfig.appriseCliPath"
                         transport={transport}
                     />
                 ) : null}
                 <SwitchSetting
-                    help="If enabled notifications will be shown on the GUI."
-                    label="Display notifications"
-                    name="notificationConfig.displayNotifications"
+                    {...indexedSetting(
+                        "notificationConfig.displayNotifications",
+                    )}
                 />
                 {displayNotifications === true ? (
                     <NumberSetting
-                        help="Max number of notifications to show on the GUI. If more have piled up a notification will indicate this and link to the notification history."
-                        label="Show max notifications"
-                        name="notificationConfig.displayNotificationsMax"
+                        {...indexedSetting(
+                            "notificationConfig.displayNotificationsMax",
+                        )}
                     />
                 ) : null}
                 <NumberSetting
-                    help="Show a warning with search results when an indexer has this many API hits or fewer remaining."
-                    label="Warn when API hits left"
-                    name="notificationConfig.indexerHitLimitWarningThreshold"
+                    {...indexedSetting(
+                        "notificationConfig.indexerHitLimitWarningThreshold",
+                    )}
                 />
                 <NumberSetting
-                    help="Show a warning with search results when an indexer has this many downloads or fewer remaining."
-                    label="Warn when downloads left"
-                    name="notificationConfig.indexerDownloadLimitWarningThreshold"
+                    {...indexedSetting(
+                        "notificationConfig.indexerDownloadLimitWarningThreshold",
+                    )}
                 />
                 {displayNotifications === true ? (
                     <ChipsSetting
-                        help='Apply values with return key. Surround with "/" for regex (e.g. /contains[0-9]This/). Case insensitive.'
-                        label="Hide if message contains..."
-                        name="notificationConfig.filterOuts"
+                        {...indexedSetting("notificationConfig.filterOuts")}
                     />
                 ) : null}
             </ConfigFieldset>

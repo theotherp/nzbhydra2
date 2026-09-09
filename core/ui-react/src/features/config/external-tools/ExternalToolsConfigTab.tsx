@@ -2,6 +2,7 @@ import {Box} from "@mui/material";
 
 import {ApiTransport} from "../../../api/transport";
 import {ConfigFieldset, SwitchSetting} from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {ExternalToolsSection} from "./ExternalToolsSection";
 
 /**
@@ -20,9 +21,7 @@ export function ExternalToolsConfigTab({transport}: {transport: ApiTransport}) {
         <Box data-testid="config-external-tools">
             <ConfigFieldset label="External Tool Sync Settings">
                 <SwitchSetting
-                    help="Automatically sync indexers to external tools when configuration is saved"
-                    label="Sync on config change"
-                    name="externalTools.syncOnConfigChange"
+                    {...indexedSetting("externalTools.syncOnConfigChange")}
                 />
             </ConfigFieldset>
             <ConfigFieldset label="External tools">
