@@ -260,6 +260,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internalapi/debuginfos/rotatelog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["rotateLog"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internalapi/debuginfos/clearlog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["clearLog"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internalapi/config": {
         parameters: {
             query?: never;
@@ -270,6 +302,22 @@ export interface paths {
         get: operations["getConfig"];
         put: operations["setConfig"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internalapi/systemtest/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -622,6 +670,24 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["restoreFromUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the existing backups, newest first */
+        get: operations["externalListBackups"];
+        put?: never;
+        /** Create a backup now */
+        post: operations["externalCreateBackup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1404,6 +1470,131 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getHostData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Aggregated statistics for a time range
+         * @description Every section that was not requested is null in the response.
+         */
+        get: operations["externalStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verify the API key and the reachability of the instance */
+        get: operations["externalPing"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/log/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The current log file, whole content
+         * @description Not anonymised: the log may contain API keys, user names and IPs.
+         */
+        get: operations["externalCurrentLogFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/history/searches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search history, newest first unless order=asc */
+        get: operations["externalSearchHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/history/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notification history, newest first unless order=asc */
+        get: operations["externalNotificationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/history/downloads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download history, newest first unless order=asc */
+        get: operations["externalDownloadHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/externalapi/v1/backups/{filename}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download one backup */
+        get: operations["externalDownloadBackup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2506,6 +2697,11 @@ export interface components {
             warningMessages?: string[];
             newConfig?: components["schemas"]["BaseConfig"];
         };
+        ResetResult: {
+            successful?: boolean;
+            /** Format: int64 */
+            durationMs?: number;
+        };
         SearchRequestParameters: {
             query?: string;
             /** Format: int32 */
@@ -2665,7 +2861,7 @@ export interface components {
         FilterDefinition: {
             filterValue?: unknown;
             filterType?: unknown;
-            boolean?: boolean;
+            isBoolean?: boolean;
         };
         HistoryRequest: {
             distinct?: boolean;
@@ -2705,13 +2901,13 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            /** Format: int64 */
+            offset?: number;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int64 */
-            offset?: number;
             sort?: components["schemas"]["SortObject"];
             unpaged?: boolean;
         };
@@ -2746,8 +2942,8 @@ export interface components {
             userAgent?: string;
         };
         SortObject: {
-            sorted?: boolean;
             empty?: boolean;
+            sorted?: boolean;
             unsorted?: boolean;
         };
         NotificationEntityTO: {
@@ -2927,6 +3123,21 @@ export interface components {
         FileSystemSubEntry: {
             name?: string;
             fullPath?: string;
+        };
+        /** @description One backup ZIP in the configured backup folder */
+        ExternalBackupEntry: {
+            /** @description The file name, e.g. nzbhydra-2026-09-09-12-00-00.zip. Pass it to GET /externalapi/v1/backups/{filename} to download the file. */
+            filename?: string;
+            /**
+             * Format: date-time
+             * @description When the file was created, as reported by the file system
+             */
+            createdAt?: string;
+            /**
+             * Format: int64
+             * @description The file's size in bytes
+             */
+            sizeBytes?: number;
         };
         UserNewsEntryForWeb: {
             id?: string;
@@ -3171,6 +3382,530 @@ export interface components {
             filename?: string;
             /** Format: date-time */
             creationDate?: string;
+        };
+        /** @description The body of every error answer except the bodyless 404 of a missing or wrong API key */
+        ExternalApiError: {
+            /**
+             * Format: int32
+             * @description The HTTP status code, repeated here so a client that only reads the body has it
+             */
+            status?: number;
+            /** @description INVALID_PARAMETER (400), NOT_FOUND (404), STATS_TIMEOUT (503) or INTERNAL_ERROR (500) */
+            code?: string;
+            /** @description A human readable explanation. Not a stable contract; use the code. */
+            message?: string;
+            /**
+             * Format: date-time
+             * @description When the error was produced
+             */
+            timestamp?: string;
+        };
+        /** @description An indexer's average response time and how it compares to the others */
+        ExternalAverageResponseTime: {
+            /** @description The name of the indexer */
+            indexer?: string;
+            /**
+             * Format: double
+             * @description Average response time in milliseconds
+             */
+            avgResponseTime?: number;
+            /**
+             * Format: double
+             * @description Difference in milliseconds to the average of all indexers
+             */
+            delta?: number;
+        };
+        /** @description A count per day of the week */
+        ExternalCountPerDayOfWeek: {
+            /** @description The short English day name: Mon, Tue, Wed, Thu, Fri, Sat or Sun */
+            day?: string;
+            /**
+             * Format: int32
+             * @description How many events fell on that day
+             */
+            count?: number;
+        };
+        /** @description A count per hour of the day */
+        ExternalCountPerHourOfDay: {
+            /**
+             * Format: int32
+             * @description The hour of the day, 0 to 23
+             */
+            hour?: number;
+            /**
+             * Format: int32
+             * @description How many events fell in that hour
+             */
+            count?: number;
+        };
+        /** @description How many downloads were made of content of a given age */
+        ExternalDownloadPerAge: {
+            /**
+             * Format: int32
+             * @description The age of the content in days
+             */
+            age?: number;
+            /**
+             * Format: int32
+             * @description How many downloads had that age
+             */
+            count?: number;
+        };
+        /** @description How old the downloaded content was */
+        ExternalDownloadsPerAgeStats: {
+            /**
+             * Format: int32
+             * @description Percentage of downloads whose content was older than 1000 days
+             */
+            percentOlder1000?: number;
+            /**
+             * Format: int32
+             * @description Percentage of downloads whose content was older than 2000 days
+             */
+            percentOlder2000?: number;
+            /**
+             * Format: int32
+             * @description Percentage of downloads whose content was older than 3000 days
+             */
+            percentOlder3000?: number;
+            /**
+             * Format: int32
+             * @description Average age of the downloaded content in days
+             */
+            averageAge?: number;
+            /** @description The number of downloads per age in days */
+            downloadsPerAge?: components["schemas"]["ExternalDownloadPerAge"][];
+        };
+        /** @description How often an indexer was called and how well those calls went */
+        ExternalIndexerApiAccessStats: {
+            /** @description The name of the indexer */
+            indexerName?: string;
+            /**
+             * Format: double
+             * @description Percentage of calls that succeeded
+             */
+            percentSuccessful?: number;
+            /**
+             * Format: double
+             * @description Percentage of calls that failed to connect
+             */
+            percentConnectionError?: number;
+            /**
+             * Format: double
+             * @description Average number of calls per day in the time range
+             */
+            averageAccessesPerDay?: number;
+        };
+        /** @description An indexer's share of all downloads in the time range */
+        ExternalIndexerDownloadShare: {
+            /** @description The name of the indexer */
+            indexerName?: string;
+            /**
+             * Format: int64
+             * @description Number of downloads from this indexer
+             */
+            total?: number;
+            /**
+             * Format: float
+             * @description Percentage of all downloads that came from this indexer
+             */
+            share?: number;
+        };
+        /** @description How much unique content an indexer contributed compared to the others */
+        ExternalIndexerScore: {
+            /** @description The name of the indexer */
+            indexerName?: string;
+            /**
+             * Format: int32
+             * @description Average uniqueness score over the involved searches
+             */
+            averageUniquenessScore?: number;
+            /**
+             * Format: int64
+             * @description Number of searches this indexer took part in
+             */
+            involvedSearches?: number;
+            /**
+             * Format: int64
+             * @description Downloads of results only this indexer provided
+             */
+            uniqueDownloads?: number;
+            /**
+             * Format: int64
+             * @description Downloads of results this indexer provided, exclusive or not
+             */
+            providedDownloads?: number;
+            /**
+             * Format: int32
+             * @description Percentage of downloaded results this indexer also had
+             */
+            coveragePercent?: number;
+            /**
+             * Format: int32
+             * @description Percentage of downloaded results only this indexer had
+             */
+            exclusivePercent?: number;
+            /**
+             * Format: double
+             * @description Contribution to results that several indexers provided
+             */
+            sharedContribution?: number;
+            /**
+             * Format: int32
+             * @description Shared contribution as a percentage
+             */
+            sharedContributionPercent?: number;
+            /**
+             * Format: int64
+             * @description Observations recorded before the corrected scoring was introduced
+             */
+            legacyObservations?: number;
+            /**
+             * Format: int64
+             * @description Observations recorded with the corrected scoring
+             */
+            correctedObservations?: number;
+        };
+        /** @description A user's or IP's share of all searches or downloads */
+        ExternalSharePerUserOrIp: {
+            /** @description The user name or the IP address */
+            key?: string;
+            /**
+             * Format: int32
+             * @description Number of searches or downloads made by it
+             */
+            count?: number;
+            /**
+             * Format: float
+             * @description Percentage of all searches or downloads it accounts for
+             */
+            percentage?: number;
+        };
+        /** @description Aggregated statistics for a time range. A section that was not requested is null. */
+        ExternalStatsResponse: {
+            /**
+             * Format: date-time
+             * @description Start of the time range the statistics were calculated for, inclusive
+             */
+            after?: string;
+            /**
+             * Format: date-time
+             * @description End of the time range the statistics were calculated for
+             */
+            before?: string;
+            /** @description Whether disabled indexers were included */
+            includeDisabled?: boolean;
+            /**
+             * Format: int32
+             * @description How many indexers are configured
+             */
+            numberOfConfiguredIndexers?: number;
+            /**
+             * Format: int32
+             * @description How many of the configured indexers are enabled
+             */
+            numberOfEnabledIndexers?: number;
+            /** @description Section INDEXER_API_ACCESS: how often each indexer was called and how well */
+            indexerApiAccessStats?: components["schemas"]["ExternalIndexerApiAccessStats"][];
+            /** @description Section INDEXER_SCORES: how much unique content each indexer contributed */
+            indexerScores?: components["schemas"]["ExternalIndexerScore"][];
+            /** @description Section AVG_RESPONSE_TIMES: average response time per indexer */
+            avgResponseTimes?: components["schemas"]["ExternalAverageResponseTime"][];
+            /** @description Section INDEXER_DOWNLOAD_SHARES: share of all downloads per indexer */
+            indexerDownloadShares?: components["schemas"]["ExternalIndexerDownloadShare"][];
+            /** @description Section DOWNLOADS_PER_DAY_OF_WEEK: downloads per day of the week */
+            downloadsPerDayOfWeek?: components["schemas"]["ExternalCountPerDayOfWeek"][];
+            /** @description Section DOWNLOADS_PER_HOUR_OF_DAY: downloads per hour of the day */
+            downloadsPerHourOfDay?: components["schemas"]["ExternalCountPerHourOfDay"][];
+            /** @description Section SEARCHES_PER_DAY_OF_WEEK: searches per day of the week */
+            searchesPerDayOfWeek?: components["schemas"]["ExternalCountPerDayOfWeek"][];
+            /** @description Section SEARCHES_PER_HOUR_OF_DAY: searches per hour of the day */
+            searchesPerHourOfDay?: components["schemas"]["ExternalCountPerHourOfDay"][];
+            /** @description Section SUCCESSFUL_DOWNLOADS_PER_INDEXER: successful and failed downloads per indexer */
+            successfulDownloadsPerIndexer?: components["schemas"]["ExternalSuccessfulDownloadsPerIndexer"][];
+            /** @description Section DOWNLOAD_SHARES_PER_USER: share of all downloads per user */
+            downloadSharesPerUser?: components["schemas"]["ExternalSharePerUserOrIp"][];
+            /** @description Section DOWNLOAD_SHARES_PER_IP: share of all downloads per IP */
+            downloadSharesPerIp?: components["schemas"]["ExternalSharePerUserOrIp"][];
+            /** @description Section SEARCH_SHARES_PER_USER: share of all searches per user */
+            searchSharesPerUser?: components["schemas"]["ExternalSharePerUserOrIp"][];
+            /** @description Section SEARCH_SHARES_PER_IP: share of all searches per IP */
+            searchSharesPerIp?: components["schemas"]["ExternalSharePerUserOrIp"][];
+            /** @description Section USER_AGENT_SEARCH_SHARES: share of all searches per user agent */
+            userAgentSearchShares?: components["schemas"]["ExternalUserAgentShare"][];
+            /** @description Section USER_AGENT_DOWNLOAD_SHARES: share of all downloads per user agent */
+            userAgentDownloadShares?: components["schemas"]["ExternalUserAgentShare"][];
+            /** @description Section DOWNLOADS_PER_AGE: how old the downloaded content was */
+            downloadsPerAgeStats?: components["schemas"]["ExternalDownloadsPerAgeStats"];
+        };
+        /** @description How many downloads from an indexer succeeded and how many failed */
+        ExternalSuccessfulDownloadsPerIndexer: {
+            /** @description The name of the indexer */
+            indexerName?: string;
+            /**
+             * Format: int32
+             * @description Number of downloads from this indexer
+             */
+            countAll?: number;
+            /**
+             * Format: int32
+             * @description Number of downloads that succeeded
+             */
+            countSuccessful?: number;
+            /**
+             * Format: int32
+             * @description Number of downloads that failed
+             */
+            countError?: number;
+            /**
+             * Format: float
+             * @description Percentage of downloads that succeeded
+             */
+            percentSuccessful?: number;
+        };
+        /** @description A user agent's share of all searches or downloads */
+        ExternalUserAgentShare: {
+            /** @description The user agent as sent by the client */
+            userAgent?: string;
+            /**
+             * Format: int32
+             * @description Number of searches or downloads made with it
+             */
+            count?: number;
+            /**
+             * Format: float
+             * @description Percentage of all searches or downloads it accounts for
+             */
+            percentage?: number;
+        };
+        /** @description Proof that the API key was accepted and that the instance is up */
+        ExternalPingResponse: {
+            /** @description The running NZBHydra2 version, e.g. 8.9.1 */
+            version?: string;
+            /**
+             * Format: date-time
+             * @description The instance's current time
+             */
+            serverTime?: string;
+        };
+        /** @description One identifier a search was made with */
+        ExternalIdentifier: {
+            /** @description The kind of identifier, e.g. IMDB, TVDB, TVRAGE or TVMAZE */
+            key?: string;
+            /** @description The identifier itself */
+            value?: string;
+        };
+        /** @description One page of a paged answer */
+        ExternalPageExternalSearchHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The page that was returned, 1 based
+             */
+            page?: number;
+            /**
+             * Format: int32
+             * @description How many entries a page holds at most
+             */
+            limit?: number;
+            /**
+             * Format: int64
+             * @description How many entries match the filter in total, over all pages
+             */
+            totalElements?: number;
+            /**
+             * Format: int32
+             * @description How many pages the filter yields at the current limit
+             */
+            totalPages?: number;
+            /** @description The entries of this page */
+            entries?: components["schemas"]["ExternalSearchHistoryEntry"][];
+        };
+        /** @description One search from the search history */
+        ExternalSearchHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The internal ID of the search
+             */
+            id?: number;
+            /**
+             * Format: date-time
+             * @description When the search was made
+             */
+            time?: string;
+            /** @description Where the search came from: INTERNAL (the web interface) or API */
+            source?: string;
+            /** @description The kind of search: SEARCH, TVSEARCH, MOVIE, BOOK or MUSIC */
+            searchType?: string;
+            /** @description The name of the category that was searched in */
+            category?: string;
+            /** @description The search query */
+            query?: string;
+            /** @description The title that was searched for, if the search was made by title */
+            title?: string;
+            /** @description The author that was searched for, for book searches */
+            author?: string;
+            /**
+             * Format: int32
+             * @description The season that was searched for, for TV searches
+             */
+            season?: number;
+            /** @description The episode that was searched for, for TV searches */
+            episode?: string;
+            /**
+             * Format: int32
+             * @description Minimum age of the results in days, if one was requested
+             */
+            minAge?: number;
+            /**
+             * Format: int32
+             * @description Maximum age of the results in days, if one was requested
+             */
+            maxAge?: number;
+            /**
+             * Format: int32
+             * @description Minimum size of the results in megabytes, if one was requested
+             */
+            minSize?: number;
+            /**
+             * Format: int32
+             * @description Maximum size of the results in megabytes, if one was requested
+             */
+            maxSize?: number;
+            /** @description The identifiers the search was made with, e.g. an IMDB ID */
+            identifiers?: components["schemas"]["ExternalIdentifier"][];
+            /** @description The names of the indexers that were searched, sorted alphabetically */
+            selectedIndexers?: string[];
+            /** @description The user who made the search, if users are configured */
+            username?: string;
+            /** @description The IP the search came from */
+            ip?: string;
+            /** @description The user agent the search was made with */
+            userAgent?: string;
+        };
+        /** @description One notification from the notification history */
+        ExternalNotificationHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The internal ID of the notification
+             */
+            id?: number;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             */
+            time?: string;
+            /** @description What happened, e.g. RESULT_DOWNLOAD or INDEXER_DISABLED */
+            eventType?: string;
+            /** @description How the notification was shown: NONE, INFO, SUCCESS, WARNING or ERROR */
+            messageType?: string;
+            /** @description The title of the notification */
+            title?: string;
+            /** @description The body of the notification */
+            body?: string;
+            /** @description The Apprise URLs the notification was sent to, split on commas and line breaks */
+            urls?: string[];
+            /** @description Whether the notification was displayed in the web interface */
+            displayed?: boolean;
+        };
+        /** @description One page of a paged answer */
+        ExternalPageExternalNotificationHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The page that was returned, 1 based
+             */
+            page?: number;
+            /**
+             * Format: int32
+             * @description How many entries a page holds at most
+             */
+            limit?: number;
+            /**
+             * Format: int64
+             * @description How many entries match the filter in total, over all pages
+             */
+            totalElements?: number;
+            /**
+             * Format: int32
+             * @description How many pages the filter yields at the current limit
+             */
+            totalPages?: number;
+            /** @description The entries of this page */
+            entries?: components["schemas"]["ExternalNotificationHistoryEntry"][];
+        };
+        /** @description One download from the download history */
+        ExternalDownloadHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The internal ID of the download
+             */
+            id?: number;
+            /**
+             * Format: date-time
+             * @description When the download was made
+             */
+            time?: string;
+            /** @description The title of the downloaded result */
+            title?: string;
+            /** @description The name of the indexer the result came from */
+            indexer?: string;
+            /** @description Always null: the download history does not store the category of the search the result came from. Reserved so that it can be filled without a new API version. */
+            category?: string;
+            /**
+             * Format: int64
+             * @description Always null: the download history does not store the size of the result. Reserved so that it can be filled without a new API version.
+             */
+            sizeBytes?: number;
+            /**
+             * Format: int32
+             * @description The age of the result in days at the time it was downloaded
+             */
+            ageDays?: number;
+            /** @description How the file was accessed: REDIRECT or PROXY */
+            accessType?: string;
+            /** @description Where the download came from: INTERNAL (the web interface) or API */
+            accessSource?: string;
+            /** @description The state the download ended in, e.g. NZB_ADDED or CONTENT_DOWNLOAD_SUCCESSFUL */
+            status?: string;
+            /** @description The error message if the download failed */
+            error?: string;
+            /** @description The ID the download client gave the download, if it reported one */
+            externalId?: string;
+            /** @description The user who made the download, if users are configured */
+            username?: string;
+            /** @description The IP the download came from */
+            ip?: string;
+            /** @description The user agent the download was made with */
+            userAgent?: string;
+        };
+        /** @description One page of a paged answer */
+        ExternalPageExternalDownloadHistoryEntry: {
+            /**
+             * Format: int32
+             * @description The page that was returned, 1 based
+             */
+            page?: number;
+            /**
+             * Format: int32
+             * @description How many entries a page holds at most
+             */
+            limit?: number;
+            /**
+             * Format: int64
+             * @description How many entries match the filter in total, over all pages
+             */
+            totalElements?: number;
+            /**
+             * Format: int32
+             * @description How many pages the filter yields at the current limit
+             */
+            totalPages?: number;
+            /** @description The entries of this page */
+            entries?: components["schemas"]["ExternalDownloadHistoryEntry"][];
+        };
+        /** @description The existing backups, newest first */
+        ExternalBackupListResponse: {
+            /** @description The backup files in the configured backup folder, newest first */
+            backups?: components["schemas"]["ExternalBackupEntry"][];
         };
         NewznabParameters: {
             apikey?: string;
@@ -3526,8 +4261,6 @@ export interface components {
             empty?: boolean;
         };
         SearchResultEntity: {
-            /** Format: int64 */
-            id?: number;
             indexer: components["schemas"]["IndexerEntity"];
             /** Format: date-time */
             firstFound?: string;
@@ -3541,6 +4274,8 @@ export interface components {
             pubDate?: string;
             /** Format: int32 */
             indexerSearchEntityId?: number;
+            /** Format: int64 */
+            id?: number;
         };
     };
     responses: never;
@@ -4001,6 +4736,46 @@ export interface operations {
             };
         };
     };
+    rotateLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GenericResponse"];
+                };
+            };
+        };
+    };
+    clearLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GenericResponse"];
+                };
+            };
+        };
+    };
     getConfig: {
         parameters: {
             query?: never;
@@ -4041,6 +4816,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConfigValidationResult"];
+                };
+            };
+        };
+    };
+    reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetResult"];
                 };
             };
         };
@@ -4578,6 +5373,46 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["GenericResponse"];
+                };
+            };
+        };
+    };
+    externalListBackups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The backup folder was read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalBackupListResponse"];
+                };
+            };
+        };
+    };
+    externalCreateBackup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The backup was created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalBackupEntry"];
                 };
             };
         };
@@ -5584,6 +6419,306 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    externalStats: {
+        parameters: {
+            query?: {
+                /** @description Start of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to 30 days ago. */
+                after?: string;
+                /** @description End of the time range. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z. Defaults to now. */
+                before?: string;
+                /** @description Whether disabled indexers are included */
+                includeDisabled?: boolean;
+                /** @description Limits the calculation to the named sections. Repeat for more than one. All sections are calculated when the parameter is absent. */
+                section?: (
+                    | "INDEXER_API_ACCESS"
+                    | "INDEXER_SCORES"
+                    | "AVG_RESPONSE_TIMES"
+                    | "INDEXER_DOWNLOAD_SHARES"
+                    | "DOWNLOADS_PER_DAY_OF_WEEK"
+                    | "DOWNLOADS_PER_HOUR_OF_DAY"
+                    | "SEARCHES_PER_DAY_OF_WEEK"
+                    | "SEARCHES_PER_HOUR_OF_DAY"
+                    | "DOWNLOADS_PER_AGE"
+                    | "SUCCESSFUL_DOWNLOADS_PER_INDEXER"
+                    | "DOWNLOAD_SHARES_PER_USER"
+                    | "DOWNLOAD_SHARES_PER_IP"
+                    | "SEARCH_SHARES_PER_USER"
+                    | "SEARCH_SHARES_PER_IP"
+                    | "USER_AGENT_SEARCH_SHARES"
+                    | "USER_AGENT_DOWNLOAD_SHARES"
+                )[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The statistics were calculated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalStatsResponse"];
+                };
+            };
+            /** @description A parameter was invalid */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
+            /** @description The calculation took too long and was aborted */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
+        };
+    };
+    externalPing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The key was accepted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalPingResponse"];
+                };
+            };
+        };
+    };
+    externalCurrentLogFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The log file was read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    externalSearchHistory: {
+        parameters: {
+            query?: {
+                /** @description The page to return, 1 based */
+                page?: number;
+                /** @description How many entries a page holds, at most 500 */
+                limit?: number;
+                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                from?: string;
+                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                to?: string;
+                /** @description asc or desc, by entry time */
+                order?: "asc" | "desc";
+                /** @description Case-insensitive substring of the search query */
+                query?: string;
+                /** @description Case-insensitive substring of the user name */
+                username?: string;
+                /** @description Case-insensitive substring of the IP */
+                ip?: string;
+                /** @description Case-insensitive substring of the user agent */
+                userAgent?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The page was read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalPageExternalSearchHistoryEntry"];
+                };
+            };
+            /** @description A parameter was invalid */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
+        };
+    };
+    externalNotificationHistory: {
+        parameters: {
+            query?: {
+                /** @description The page to return, 1 based */
+                page?: number;
+                /** @description How many entries a page holds, at most 500 */
+                limit?: number;
+                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                from?: string;
+                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                to?: string;
+                /** @description asc or desc, by entry time */
+                order?: "asc" | "desc";
+                /** @description What happened */
+                eventType?:
+                    | "VIP_RENEWAL_REQUIRED"
+                    | "INDEXER_DISABLED"
+                    | "INDEXER_REENABLED"
+                    | "UPDATE_INSTALLED"
+                    | "AUTH_FAILURE"
+                    | "RESULT_DOWNLOAD"
+                    | "RESULT_DOWNLOAD_COMPLETION"
+                    | "EXTERNAL_TOOL_CONFIGURATION";
+                /** @description How the notification was shown */
+                messageType?: "INFO" | "SUCCESS" | "WARNING" | "FAILURE";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The page was read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalPageExternalNotificationHistoryEntry"];
+                };
+            };
+            /** @description A parameter was invalid */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
+        };
+    };
+    externalDownloadHistory: {
+        parameters: {
+            query?: {
+                /** @description The page to return, 1 based */
+                page?: number;
+                /** @description How many entries a page holds, at most 500 */
+                limit?: number;
+                /** @description Only entries at or after this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                from?: string;
+                /** @description Only entries at or before this time. An ISO-8601 instant, e.g. 2026-09-09T12:00:00Z */
+                to?: string;
+                /** @description asc or desc, by entry time */
+                order?: "asc" | "desc";
+                /** @description Case-insensitive substring of the result title */
+                title?: string;
+                /** @description The exact name of the indexer */
+                indexer?: string;
+                /** @description The state the download ended in */
+                status?:
+                    | "NONE"
+                    | "REQUESTED"
+                    | "INTERNAL_ERROR"
+                    | "NZB_DOWNLOAD_SUCCESSFUL"
+                    | "NZB_DOWNLOAD_ERROR"
+                    | "NZB_ADDED"
+                    | "NZB_NOT_ADDED"
+                    | "NZB_ADD_ERROR"
+                    | "NZB_ADD_REJECTED"
+                    | "CONTENT_DOWNLOAD_SUCCESSFUL"
+                    | "CONTENT_DOWNLOAD_ERROR"
+                    | "CONTENT_DOWNLOAD_WARNING";
+                /** @description Case-insensitive substring of the user name */
+                username?: string;
+                /** @description Case-insensitive substring of the IP */
+                ip?: string;
+                /** @description Case-insensitive substring of the user agent */
+                userAgent?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The page was read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalPageExternalDownloadHistoryEntry"];
+                };
+            };
+            /** @description A parameter was invalid */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
+                };
+            };
+        };
+    };
+    externalDownloadBackup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The file name as returned by GET /externalapi/v1/backups */
+                filename: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The backup file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
+            };
+            /** @description No such backup */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalApiError"];
                 };
             };
         };

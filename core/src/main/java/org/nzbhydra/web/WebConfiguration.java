@@ -11,6 +11,7 @@ import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,18 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Autowired
     private Jaxb2Marshaller marshaller;
 
+    /**
+     * springdoc registers the swagger UI's static resources through a {@link org.springframework.web.servlet.config.annotation.WebMvcConfigurer},
+     * and this class extends {@link WebMvcConfigurationSupport} directly, which never consults those. So the
+     * registration is forwarded here instead of being replicated: springdoc then serves {@code /swagger-ui/**} from
+     * whatever swagger-ui webjar it brings, with its own index page transformer, and nothing pins a version that a
+     * springdoc update would silently invalidate (which is what happened to the hardcoded 4.10.3 path this replaced).
+     *
+     * <p>Null when this class is instantiated outside a container, as {@code WebConfigurationTest} does.
+     */
+    @Autowired
+    private ObjectProvider<org.springdoc.webmvc.ui.SwaggerWebMvcConfigurer> swaggerWebMvcConfigurer;
+
     private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
     @SneakyThrows
@@ -98,10 +111,9 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             .setCacheControl(CacheControl.noCache())
             .resourceChain(false);
 
-        //Otherwise swagger is not loaded using /swagger-ui/index.html
-        registry.addResourceHandler("/swagger-ui/**")
-            // Must match the dependency for swagger-ui
-            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
+        if (swaggerWebMvcConfigurer != null) {
+            swaggerWebMvcConfigurer.ifAvailable(configurer -> configurer.addResourceHandlers(registry));
+        }
 
         registry.setOrder(0);
     }

@@ -9,10 +9,14 @@ import org.mockito.Mockito;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.externalapi.ExternalApiKeyFilter;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -43,6 +48,7 @@ class SecurityConfigTest {
     private static final String USE_CSRF_PROPERTY = "main.useCsrf";
     private static final String INTERNAL_API_KEY_PROPERTY = "internalApiKey";
     private static final String INTERNAL_API_KEY = "the-internal-api-key";
+    private static final String API_KEY = "the-api-key";
 
     private String previousUseCsrfProperty;
     private String previousInternalApiKeyProperty;
@@ -202,6 +208,55 @@ class SecurityConfigTest {
         }
     }
 
+    /**
+     * The whole external API surface is invisible without the key, and it must stay that way through the real filter
+     * chain: no 401, no redirect to the login page, no hint that the path exists.
+     */
+    @Test
+    void shouldAnswerExternalApiRequestsWithoutAKeyWithAnEmptyNotFound() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(true)) {
+            MockMvc mockMvc = mockMvc(context);
+
+            assertBodylessNotFound(mockMvc.perform(get("/externalapi/v1/ping")));
+            assertBodylessNotFound(mockMvc.perform(get("/externalapi/v1/ping").param("apikey", "guessed")));
+            assertBodylessNotFound(mockMvc.perform(get("/externalapi/v1/nothing")));
+            assertBodylessNotFound(mockMvc.perform(post("/externalapi/v1/backups")));
+        }
+    }
+
+    /**
+     * Not just an empty body: the 404 must give a client nothing at all, and a {@value #CSRF_COOKIE_NAME} cookie
+     * would be something. That is why {@link SecurityConfig} registers the key filter before {@link CsrfFilter},
+     * which writes the cookie as it resolves the deferred token. Asserted through the real filter chain because the
+     * filter on its own cannot show what the filters around it do.
+     */
+    private void assertBodylessNotFound(ResultActions resultActions) throws Exception {
+        MockHttpServletResponse response = resultActions
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(""))
+            .andReturn().getResponse();
+
+        assertThat(response.getCookies()).isEmpty();
+        assertThat(response.getHeader("Set-Cookie")).isNull();
+        assertThat(response.getHeaderNames()).doesNotContain("Set-Cookie", "WWW-Authenticate", "Location");
+    }
+
+    /**
+     * The reason the external API exists: a script with the key and no browser can POST without first fetching a CSRF
+     * token, which {@code /internalapi} has required since CSRF protection was actually turned on.
+     */
+    @Test
+    void shouldNotRequireCsrfTokenForUnsafeExternalApiRequestsAuthenticatedByTheApiKey() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(true)) {
+            MockMvc mockMvc = mockMvc(context);
+
+            mockMvc.perform(post("/externalapi/v1/backups").header("X-Api-Key", API_KEY))
+                .andExpect(status().isOk());
+            mockMvc.perform(post("/externalapi/v1/backups").param("apikey", API_KEY))
+                .andExpect(status().isOk());
+        }
+    }
+
     private Cookie tokenCookie(MockMvc mockMvc) throws Exception {
         Cookie cookie = mockMvc.perform(get("/")).andReturn().getResponse().getCookie(CSRF_COOKIE_NAME);
         assertThat(cookie).as("The SPA shell must hand out a CSRF token cookie").isNotNull();
@@ -225,6 +280,7 @@ class SecurityConfigTest {
         //then mean either a CSRF rejection or a missing role. With NONE every request is permitted and a 403 can only
         //come from the CSRF filter, which is what these tests are about.
         baseConfig.getAuth().setAuthType(AuthType.NONE);
+        baseConfig.getMain().setApiKey(API_KEY);
 
         ConfigProvider configProvider = Mockito.mock(ConfigProvider.class);
         Mockito.when(configProvider.getBaseConfig()).thenReturn(baseConfig);
@@ -238,6 +294,7 @@ class SecurityConfigTest {
         context.getBeanFactory().registerSingleton("hydraAnonymousAuthenticationFilter", anonymousFilter);
         context.getBeanFactory().registerSingleton("authAndAccessEventHandler", accessDeniedHandler());
         context.getBeanFactory().registerSingleton("asyncSupportFilter", new AsyncSupportFilter());
+        context.getBeanFactory().registerSingleton("externalApiKeyFilter", new ExternalApiKeyFilter(configProvider, false));
         AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(context);
         reader.register(SecurityConfig.class);
         reader.register(EndpointsUnderTest.class);
@@ -280,7 +337,8 @@ class SecurityConfigTest {
             "/getnzb/api/**",
             "/gettorrent/api/**",
             "/internalapi/config",
-            "/internalapi/control/shutdown"})
+            "/internalapi/control/shutdown",
+            "/externalapi/**"})
         public String anyEndpoint() {
             return "reached";
         }

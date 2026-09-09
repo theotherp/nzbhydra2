@@ -125,6 +125,9 @@
         <spring.boot.devtools.version>4.1.0</spring.boot.devtools.version>
         <spring.boot.maven.version>4.1.0</spring.boot.maven.version>
         <springdoc-openapi.version>3.1.0</springdoc-openapi.version>
+        <!--Must match what springdoc-openapi ${springdoc-openapi.version} pulls in, so that the @Schema annotations
+            the mapping module carries are the ones springdoc reads on core's classpath-->
+        <swagger-annotations.version>2.2.52</swagger-annotations.version>
         <spring.oxm.version>7.0.8</spring.oxm.version>
         <spring-data-commons.version>4.1.0</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>

@@ -10,6 +10,7 @@ import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.externalapi.ExternalApiKeyFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,11 @@ public class SecurityConfig {
      *     ever fetches them with GET, so they deliberately stay protected.</li>
      *     <li>{@code /websocket/**} is the SockJS endpoint. Its fallback transports POST to
      *     {@code /websocket/{server}/{session}/xhr_send} and sockjs-client cannot attach a header to those requests.</li>
+     *     <li>{@code /externalapi/**} is the API-key-authenticated automation surface
+     *     ({@link org.nzbhydra.externalapi.ExternalApiV1Controller}). Its clients are scripts and dashboards that have
+     *     the key and no session, exactly like {@code /api}, and creating a backup is a POST. Nothing there can be
+     *     reached without the key: {@link org.nzbhydra.externalapi.ExternalApiKeyFilter} answers every other request
+     *     with an empty 404.</li>
      *     <li>{@code /actuator/**} is called by monitoring and by the system test runner (POST /actuator/shutdown).
      *     The only unsafe actuator endpoint, shutdown, is disabled unless
      *     {@code management.endpoint.shutdown.enabled=true} is passed explicitly, which no production start does.</li>
@@ -124,6 +130,7 @@ public class SecurityConfig {
             "/torznab/api/**",
             "/getnzb/api/**",
             "/gettorrent/api/**",
+            ExternalApiKeyFilter.PATH_PATTERN,
             "/websocket/**",
             "/actuator/**");
 
@@ -132,8 +139,17 @@ public class SecurityConfig {
      * these are the asset handlers from {@code WebConfiguration.addResourceHandlers} worth skipping (the React bundle
      * lives under {@code /static/react/assets}; {@code /swagger-ui/**} is left alone). Putting a {@code Set-Cookie} on
      * every asset response would keep them from being cached by a reverse proxy, and nothing fetching them reads the token.
+     *
+     * <p>{@code /externalapi/**} is listed although the exempt list above already covers it, and it is worth being
+     * precise about what that buys: a successful external API call does still get a token cookie, because
+     * {@link CsrfFilter} resolves the deferred token as it runs and that writes it. The entry only keeps
+     * {@link CsrfCookieFilter} from touching the response as well, and it must not depend on the two lists staying in
+     * step. The 404 for a missing or wrong key carries no cookie at all for a different reason:
+     * {@link org.nzbhydra.externalapi.ExternalApiKeyFilter} is registered before {@link CsrfFilter} and answers it
+     * before that filter ever runs.
      */
     private static final List<String> CSRF_COOKIE_SKIPPED_PATH_PATTERNS = List.of(
+            ExternalApiKeyFilter.PATH_PATTERN,
             "/static/**",
             "/additionalStatic/**",
             "/favicon.*");
@@ -150,6 +166,8 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
     @Autowired
     private AsyncSupportFilter asyncSupportFilter;
+    @Autowired
+    private ExternalApiKeyFilter externalApiKeyFilter;
     private HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Bean
@@ -185,6 +203,15 @@ public class SecurityConfig {
                     baseConfig.getAuth());
             http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
         }
+        //Before CsrfFilter, and so before the HeaderAuthenticationFilter that sits after the basic auth filter, for two
+        //reasons: the external API key must be the only credential that surface ever looks at, and CsrfFilter resolves
+        //the deferred CSRF token as it runs (CsrfTokenRequestAttributeHandler with a null request attribute name asks
+        //the supplier for the parameter name), which writes the HYDRA-XSRF-TOKEN cookie. Rejecting earlier keeps the
+        //404 for a missing key free of any Set-Cookie header. SecurityContextHolderFilter is ordered before CsrfFilter
+        //and therefore still runs first, so the authentication set below stays in a request-scoped context, and the
+        //trailing slash handling of UrlHandlerFilter is registered before the security context filter, so
+        ///externalapi/v1/ping/ reaches this filter as well.
+        http.addFilterBefore(externalApiKeyFilter, CsrfFilter.class);
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC || NzbHydra.isNativeBuild()) {
             http = http
@@ -243,6 +270,9 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers("/actuator/**")
                             .hasRole("ADMIN")
+                            //Only ExternalApiKeyFilter ever hands out that role here; everything else it 404s
+                            .requestMatchers(ExternalApiKeyFilter.PATH_PATTERN)
+                            .hasRole("ADMIN")
                             .requestMatchers("/static/**")
                             .permitAll()
                             .anyRequest()
@@ -274,7 +304,12 @@ public class SecurityConfig {
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+            //The external API stays key-only even when no authentication is configured at all
+            http.authorizeHttpRequests(requests -> requests
+                    .requestMatchers(ExternalApiKeyFilter.PATH_PATTERN)
+                    .hasRole("ADMIN")
+                    .anyRequest()
+                    .permitAll());
         }
         http.exceptionHandling(handling -> handling.accessDeniedHandler(authAndAccessEventHandler));
 

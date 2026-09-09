@@ -18,6 +18,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.externalapi.ExternalApiKeyFilter;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockServletContext;
@@ -190,6 +191,7 @@ class OidcLoginComponentTest {
         context.getBeanFactory().registerSingleton("hydraAnonymousAuthenticationFilter", anonymousFilter);
         context.getBeanFactory().registerSingleton("authAndAccessEventHandler", Mockito.mock(AuthAndAccessEventHandler.class));
         context.getBeanFactory().registerSingleton("asyncSupportFilter", new AsyncSupportFilter());
+        context.getBeanFactory().registerSingleton("externalApiKeyFilter", new ExternalApiKeyFilter(configProvider, false));
         new AnnotatedBeanDefinitionReader(context).register(SecurityConfig.class);
         context.refresh();
         return context;

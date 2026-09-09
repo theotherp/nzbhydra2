@@ -67,6 +67,22 @@
             <scope>test</scope>
         </dependency>
 
+        <!--Only the @Schema annotations on the external API contract classes need this, and only at compile time:
+            springdoc reads them on core's classpath, where springdoc brings the same artifact itself, and an
+            annotation whose class is absent is simply not reported by reflection, so a consumer of this module that
+            has no swagger on its classpath (the system tests) still deserialises the classes.
+
+            Deliberately "provided" and versioned here rather than compile-scoped or managed in the parent: either of
+            those puts the artifact into core's own dependency graph and shifts Maven's version mediation there,
+            which downgraded com.sun.xml.bind:jaxb-core in core's test scope from 4.0.0 to 3.0.2. The version comes
+            from the parent's swagger-annotations.version property, which is pinned to what springdoc pulls in.-->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>${swagger-annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
 

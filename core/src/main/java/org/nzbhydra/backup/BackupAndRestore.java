@@ -163,7 +163,7 @@ public class BackupAndRestore {
     }
 
     @Reflective
-    protected File getBackupFolder() {
+    public File getBackupFolder() {
         final String backupFolder = configProvider.getBaseConfig().getMain().getBackupFolder();
         if (backupFolder.contains(File.separator)) {
             return new File(backupFolder);
