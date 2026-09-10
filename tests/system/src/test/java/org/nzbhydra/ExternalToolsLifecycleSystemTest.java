@@ -301,7 +301,8 @@ public class ExternalToolsLifecycleSystemTest {
     }
 
     private int createTag(String host, String label) {
-        HydraResponse response = hydraClient.post(host + "/api/v3/tag", Map.of("label", label), apiHeaders());
+        //Radarr answers with 201, which HydraResponse.status() would treat as a failed call
+        HydraResponse response = hydraClient.post(host + "/api/v3/tag", Map.of("label", label), apiHeaders()).dontRaiseIfUnsuccessful();
         assertThat(response.status()).as("Creating tag: %s", response.body()).isIn(200, 201);
         return ((Number) response.as(Map.class).get("id")).intValue();
     }
@@ -318,7 +319,7 @@ public class ExternalToolsLifecycleSystemTest {
         indexer.put("tags", List.of(tagId));
         //Radarr tests the indexer on every save. The instance under test answers, but forceSave keeps this step from
         //depending on it, like the "Save anyway" a user would click.
-        HydraResponse putResponse = hydraClient.put(host + "/api/v3/indexer/" + indexerId, indexer, apiHeaders(), "forceSave=true");
+        HydraResponse putResponse = hydraClient.put(host + "/api/v3/indexer/" + indexerId, indexer, apiHeaders(), "forceSave=true").dontRaiseIfUnsuccessful();
         assertThat(putResponse.status()).as("Tagging indexer: %s", putResponse.body()).isIn(200, 202);
     }
 
