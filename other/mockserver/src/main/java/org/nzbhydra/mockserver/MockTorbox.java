@@ -29,7 +29,10 @@ public class MockTorbox {
         request.put("category", category);
         request.put("file", file == null ? null : new String(file.getBytes(), StandardCharsets.UTF_8));
         LAST_TORRENT_REQUEST.set(request);
-        return Map.of("success", true, "data", Map.of("usenetdownload_id", "mock-torrent-123"));
+        //Shaped like the real answer to a torrent add: a hash and a torrent ID. Core reads the hash as the download ID and
+        //rejects a success without either, so answering with a usenetdownload_id here fails the torrent system test.
+        return Map.of("success", true, "error", "", "detail", "Torrent Added Successfully",
+            "data", Map.of("hash", "mock-torrent-hash-123", "torrent_id", 123, "auth_id", "mock-auth"));
     }
 
     @GetMapping("/torbox/recording")

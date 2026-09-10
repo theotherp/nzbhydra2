@@ -47,24 +47,33 @@ class SecurityConfigTest {
     private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
     private static final String USE_CSRF_PROPERTY = "main.useCsrf";
     private static final String INTERNAL_API_KEY_PROPERTY = "internalApiKey";
+    private static final String NATIVE_BUILD_PROPERTY = "HYDRA_NATIVE_BUILD";
     private static final String INTERNAL_API_KEY = "the-internal-api-key";
     private static final String API_KEY = "the-api-key";
 
     private String previousUseCsrfProperty;
     private String previousInternalApiKeyProperty;
+    private String previousNativeBuildProperty;
 
     @BeforeEach
     void rememberProperties() {
         previousUseCsrfProperty = System.getProperty(USE_CSRF_PROPERTY);
         previousInternalApiKeyProperty = System.getProperty(INTERNAL_API_KEY_PROPERTY);
+        previousNativeBuildProperty = System.getProperty(NATIVE_BUILD_PROPERTY);
         System.clearProperty(USE_CSRF_PROPERTY);
         System.setProperty(INTERNAL_API_KEY_PROPERTY, INTERNAL_API_KEY);
+        //This tests the JVM security configuration. The native build workflow exports HYDRA_NATIVE_BUILD=true for its
+        //unit test step as well, and SecurityConfig then adds its role rules even though the auth type is NONE, so
+        //e.g. POST /actuator/shutdown answers 401 instead of reaching the CSRF filter. NzbHydra.isNativeBuild() lets
+        //the property override the environment; OidcLoginComponentTest does the same.
+        System.setProperty(NATIVE_BUILD_PROPERTY, "false");
     }
 
     @AfterEach
     void restoreProperties() {
         restoreProperty(USE_CSRF_PROPERTY, previousUseCsrfProperty);
         restoreProperty(INTERNAL_API_KEY_PROPERTY, previousInternalApiKeyProperty);
+        restoreProperty(NATIVE_BUILD_PROPERTY, previousNativeBuildProperty);
     }
 
     private static void restoreProperty(String key, String previousValue) {
