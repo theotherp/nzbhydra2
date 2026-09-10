@@ -185,6 +185,16 @@ public class UserNewsProviderTest {
     }
 
     @Test
+    void shouldNotIncludeBuiltInNewsWhenDisabledByProperty() {
+        testee.setRunInDockerSupplier(() -> true);
+        testee.setBuiltInNewsEnabled(false);
+
+        List<UserNewsEntry> news = testee.getAllUserNews();
+
+        assertThat(news).noneMatch(x -> UserNewsProvider.DOCKER_STOP_GRACE_PERIOD_NEWS_ID.equals(x.getId()));
+    }
+
+    @Test
     void shouldNotIncludeBuiltInDockerNewsWhenNotRunInDocker() {
         testee.setRunInDockerSupplier(() -> false);
 

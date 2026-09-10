@@ -6,6 +6,7 @@ import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;
 
@@ -46,6 +47,14 @@ public class UserNewsProvider {
      */
     private BooleanSupplier runInDockerSupplier = DebugInfosProvider::isRunInDocker;
 
+    /**
+     * The built-in entries are shown as a modal dialog on the first visit, which the browser system tests cannot work
+     * around: their core runs in docker, and the state reset between specs brings the dialog back every time. The
+     * systemtest profile turns them off, like {@code nzbhydra.welcomeShown} does for the welcome dialog.
+     */
+    @Value("${nzbhydra.userNews.builtInEnabled:true}")
+    private boolean builtInNewsEnabled = true;
+
     public List<UserNewsEntry> getAllUserNews() {
         Map<String, UserNewsEntry> entriesById = new LinkedHashMap<>();
         for (UserNewsEntry entry : getUserNewsFromFile()) {
@@ -60,6 +69,9 @@ public class UserNewsProvider {
 
     List<UserNewsEntry> getBuiltInUserNews() {
         List<UserNewsEntry> entries = new ArrayList<>();
+        if (!builtInNewsEnabled) {
+            return entries;
+        }
         if (runInDockerSupplier.getAsBoolean()) {
             entries.add(new UserNewsEntry(DOCKER_STOP_GRACE_PERIOD_NEWS_ID, DOCKER_STOP_GRACE_PERIOD_NEWS_TITLE, DOCKER_STOP_GRACE_PERIOD_NEWS_BODY, true));
         }
@@ -94,6 +106,10 @@ public class UserNewsProvider {
 
     void setRunInDockerSupplier(BooleanSupplier runInDockerSupplier) {
         this.runInDockerSupplier = runInDockerSupplier;
+    }
+
+    void setBuiltInNewsEnabled(boolean builtInNewsEnabled) {
+        this.builtInNewsEnabled = builtInNewsEnabled;
     }
 
     public void markNewsAsShownForUser(String username, String newsId) {
