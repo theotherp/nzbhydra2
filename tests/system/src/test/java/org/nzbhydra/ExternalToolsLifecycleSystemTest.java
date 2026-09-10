@@ -74,9 +74,10 @@ public class ExternalToolsLifecycleSystemTest {
     public void tearDown() {
         // Hydra's own configuration is re-established by BaselineExtension before the next test and after this class.
         // The indexers this class created live in Sonarr and Radarr, outside anything the baseline reaches, so they
-        // are removed here - by the prefix this class owns, never wholesale.
+        // are removed here - by the prefix this class owns, never wholesale. The same goes for the tags.
         removeOwnedIndexers(sonarrHostExternal);
         removeOwnedIndexers(radarrHostExternal);
+        removeOwnedTags(radarrHostExternal);
     }
 
     @Test
@@ -99,6 +100,31 @@ public class ExternalToolsLifecycleSystemTest {
         ArrIndexer indexer = awaitIndexer(radarrHostExternal, testName);
         assertIndexerConfiguration(indexer, "Newznab", "usenet", "2000,2040", 31, false, true, false);
         assertThat(indexer.fieldsByName()).containsEntry("removeYear", true);
+    }
+
+    /**
+     * #1078: a reconfiguration used to delete and recreate the entry, which lost everything the user had set on it in
+     * the tool itself. The tag stands in for such a setting because it needs nothing else to exist in Radarr, unlike
+     * a download client. The entry has to keep its ID as well, or Radarr's own references to it would break.
+     */
+    @Test
+    public void shouldKeepWhatWasSetInTheToolWhenReconfiguring() {
+        AddRequest request = createRequest(AddRequest.ExternalTool.Radarr, radarrHost, "2000", 23, false, true, true);
+        assertConfigurationSucceeded(request);
+        ArrIndexer created = awaitIndexer(radarrHostExternal, testName);
+        int tagId = createTag(radarrHostExternal, testName.toLowerCase());
+        tagIndexer(radarrHostExternal, created.id, tagId);
+
+        request.setPriority(30);
+        request.setCategories("2000,2040");
+        assertConfigurationSucceeded(request);
+
+        Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> assertThat(awaitIndexer(radarrHostExternal, testName).priority).isEqualTo(30));
+        ArrIndexer updated = awaitIndexer(radarrHostExternal, testName);
+        assertThat(updated.id).as("The entry must be updated in place, not recreated").isEqualTo(created.id);
+        assertThat(updated.tags).containsExactly(tagId);
+        assertThat(categoryValues(updated.fieldsByName().get("categories"))).containsExactly(2000, 2040);
+        assertThat(indexersNamed(radarrHostExternal, testName)).hasSize(1);
     }
 
     @Test
@@ -274,6 +300,40 @@ public class ExternalToolsLifecycleSystemTest {
         assertThat(failures).as("Failed to remove test-owned external indexers").isEmpty();
     }
 
+    private int createTag(String host, String label) {
+        HydraResponse response = hydraClient.post(host + "/api/v3/tag", Map.of("label", label), apiHeaders());
+        assertThat(response.status()).as("Creating tag: %s", response.body()).isIn(200, 201);
+        return ((Number) response.as(Map.class).get("id")).intValue();
+    }
+
+    /**
+     * Sets the tag the way the tool's own UI does: the complete entry is read and written back with the tag added,
+     * so this touches nothing Hydra manages.
+     */
+    private void tagIndexer(String host, int indexerId, int tagId) {
+        HydraResponse getResponse = hydraClient.get(host + "/api/v3/indexer/" + indexerId, apiHeaders());
+        assertThat(getResponse.status()).isEqualTo(200);
+        Map<String, Object> indexer = getResponse.as(new TypeReference<>() {
+        });
+        indexer.put("tags", List.of(tagId));
+        //Radarr tests the indexer on every save. The instance under test answers, but forceSave keeps this step from
+        //depending on it, like the "Save anyway" a user would click.
+        HydraResponse putResponse = hydraClient.put(host + "/api/v3/indexer/" + indexerId, indexer, apiHeaders(), "forceSave=true");
+        assertThat(putResponse.status()).as("Tagging indexer: %s", putResponse.body()).isIn(200, 202);
+    }
+
+    private void removeOwnedTags(String host) {
+        HydraResponse response = hydraClient.get(host + "/api/v3/tag", apiHeaders());
+        assertThat(response.status()).isEqualTo(200);
+        List<Map<String, Object>> tags = response.as(new TypeReference<>() {
+        });
+        for (Map<String, Object> tag : tags) {
+            if (String.valueOf(tag.get("label")).startsWith(TEST_PREFIX.toLowerCase())) {
+                hydraClient.delete(host + "/api/v3/tag/" + tag.get("id"), apiHeaders()).dontRaiseIfUnsuccessful();
+            }
+        }
+    }
+
     private Map<String, String> apiHeaders() {
         return Map.of("X-Api-Key", EXTERNAL_TOOL_API_KEY);
     }
@@ -312,6 +372,7 @@ public class ExternalToolsLifecycleSystemTest {
         public Boolean enableRss;
         public Boolean enableAutomaticSearch;
         public Boolean enableInteractiveSearch;
+        public List<Integer> tags;
         public List<ArrIndexerField> fields;
 
         public Map<String, Object> fieldsByName() {

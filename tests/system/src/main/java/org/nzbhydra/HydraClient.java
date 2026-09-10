@@ -222,6 +222,10 @@ public class HydraClient {
         return call("POST", endpoint, Collections.emptyMap(), body, parameters);
     }
 
+    public HydraResponse post(String endpoint, Object body, Map<String, String> headers, String... parameters) {
+        return call("POST", endpoint, headers, body, parameters);
+    }
+
     public HydraResponse postWithSession(String endpoint, Session session, Object body, String... parameters) {
         return call("POST", endpoint, Collections.emptyMap(), body, true, RequestOptions.withSession(session), parameters);
     }

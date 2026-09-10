@@ -11,13 +11,18 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -233,6 +238,165 @@ public class ExternalToolsTest {
                     .map(ExternalTools.XdarrAddRequestField::getValue)
                     .findFirst()
                     .orElseThrow(() -> new AssertionError("No field \"" + fieldName + "\" in posted body: " + postedBodies.get(0)));
+        }
+    }
+
+    /**
+     * #1078: configuring a tool used to delete every NZBHydra entry and create it again, which lost everything the user
+     * had set on the entry in the tool itself (tags, the download client). An entry with the name NZBHydra would give
+     * it is updated in place; only entries that no longer correspond to anything are deleted.
+     */
+    @Nested
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    class UpdatingExistingEntries {
+
+        private static final String EXISTING_ENTRY = """
+                {"id": 7, "name": "NZBHydra2", "downloadClientId": 3, "tags": [4, 5], "priority": 1, "enableRss": false,
+                 "fields": [
+                   {"name": "baseUrl", "value": "http://old-hydra:5076"},
+                   {"name": "apiKey", "value": "old-key"},
+                   {"name": "multiLanguages", "value": [1, 2]},
+                   {"name": "categories", "value": [9999]}
+                 ]}""";
+        private static final String STALE_ENTRY = """
+                {"id": 8, "name": "NZBHydra2 (Gone Indexer)", "fields": []}""";
+
+        @Mock
+        private WebAccess webAccessMock;
+        @Mock
+        private ConfigProvider configProviderMock;
+
+        @InjectMocks
+        private ExternalTools testee = new ExternalTools();
+
+        private final BaseConfig baseConfig = new BaseConfig();
+        private final List<String> postedBodies = new ArrayList<>();
+        private final Map<String, String> putBodiesByUrl = new LinkedHashMap<>();
+        private final List<String> deletedUrls = new ArrayList<>();
+
+        @BeforeEach
+        void setUp() throws Exception {
+            baseConfig.getMain().setApiKey("hydra-api-key");
+            //Configuring for usenet is refused unless at least one usenet indexer is enabled for API access
+            final IndexerConfig usenetIndexer = new IndexerConfig();
+            usenetIndexer.setName("Some Newznab");
+            usenetIndexer.setState(IndexerConfig.State.ENABLED);
+            usenetIndexer.setEnabledForSearchSource(SearchSourceRestriction.BOTH);
+            usenetIndexer.setSearchModuleType(SearchModuleType.NEWZNAB);
+            baseConfig.getIndexers().add(usenetIndexer);
+            when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
+            when(webAccessMock.callUrl(endsWith("/system/status"), anyMap())).thenReturn("{\"version\": \"4.0.0\"}");
+            when(webAccessMock.callUrl(endsWith("/api/v3/indexer"), anyMap())).thenReturn("[" + EXISTING_ENTRY + "," + STALE_ENTRY + "]");
+            when(webAccessMock.postToUrl(anyString(), any(), anyString(), anyMap(), anyInt())).thenAnswer(invocation -> {
+                postedBodies.add(invocation.getArgument(2));
+                return "{}";
+            });
+            when(webAccessMock.putToUrl(anyString(), any(), anyString(), anyMap(), anyInt())).thenAnswer(invocation -> {
+                putBodiesByUrl.put(invocation.getArgument(0), invocation.getArgument(2));
+                return "{}";
+            });
+            when(webAccessMock.deleteToUrl(anyString(), anyMap(), anyInt())).thenAnswer(invocation -> {
+                deletedUrls.add(invocation.getArgument(0));
+                return "";
+            });
+        }
+
+        @Test
+        void shouldUpdateTheEntryWithTheSameNameInPlace() throws Exception {
+            assertThat(testee.addNzbhydraAsIndexer(usenetAddRequest())).isTrue();
+
+            assertThat(postedBodies).isEmpty();
+            assertThat(putBodiesByUrl).containsOnlyKeys("http://radarr:7878/api/v3/indexer/7");
+            final ExternalTools.XdarrIndexer updated = Jackson.JSON_MAPPER.readValue(putBodiesByUrl.values().iterator().next(), ExternalTools.XdarrIndexer.class);
+            assertThat(updated.getId()).isEqualTo(7);
+            assertThat(updated.getName()).isEqualTo("NZBHydra2");
+            assertThat(testee.getMessages()).contains("Updated existing entry \"NZBHydra2\"");
+        }
+
+        @Test
+        void shouldKeepWhatTheUserSetInTheToolItself() throws Exception {
+            testee.addNzbhydraAsIndexer(usenetAddRequest());
+
+            final ExternalTools.XdarrIndexer updated = updatedEntry();
+            assertThat(updated.getDownloadClientId()).isEqualTo(3);
+            assertThat(updated.getTags()).containsExactly(4, 5);
+            //Only defaulted on creation because NZBHydra has no setting for it
+            assertThat(fieldValue(updated, "multiLanguages")).isEqualTo(List.of(1, 2));
+        }
+
+        @Test
+        void shouldStillApplyEverythingNzbhydraManages() throws Exception {
+            final AddRequest addRequest = usenetAddRequest();
+            addRequest.setPriority(12);
+            addRequest.setEnableRss(true);
+            addRequest.setCategories("5030,5040");
+            testee.addNzbhydraAsIndexer(addRequest);
+
+            final ExternalTools.XdarrIndexer updated = updatedEntry();
+            assertThat(updated.getPriority()).isEqualTo(12);
+            assertThat(updated.getEnableRss()).isTrue();
+            assertThat(fieldValue(updated, "baseUrl")).isEqualTo("http://hydra:5076");
+            assertThat(fieldValue(updated, "apiKey")).isEqualTo("hydra-api-key");
+            assertThat(fieldValue(updated, "categories")).isEqualTo(List.of(5030, 5040));
+        }
+
+        @Test
+        void shouldDeleteOnlyTheEntriesNothingCorrespondsToAnymore() throws Exception {
+            testee.addNzbhydraAsIndexer(usenetAddRequest());
+
+            assertThat(deletedUrls).containsExactly("http://radarr:7878/api/v3/indexer/8");
+            assertThat(testee.getMessages()).contains("Deleted stale entry \"NZBHydra2 (Gone Indexer)\"");
+        }
+
+        @Test
+        void shouldCreateAnEntryWhenNoneHasItsName() throws Exception {
+            final AddRequest addRequest = usenetAddRequest();
+            addRequest.setNzbhydraName("NZBHydra2 renamed");
+            when(webAccessMock.callUrl(endsWith("/api/v3/indexer"), anyMap())).thenReturn("[]");
+
+            assertThat(testee.addNzbhydraAsIndexer(addRequest)).isTrue();
+
+            assertThat(putBodiesByUrl).isEmpty();
+            assertThat(postedBodies).hasSize(1);
+            assertThat(testee.getMessages()).contains("Configured \"NZBHydra2 renamed\"");
+        }
+
+        @Test
+        void shouldStillDeleteEverythingForDeleteOnly() throws Exception {
+            final AddRequest addRequest = usenetAddRequest();
+            addRequest.setAddType(AddRequest.AddType.DELETE_ONLY);
+
+            testee.addNzbhydraAsIndexer(addRequest);
+
+            assertThat(deletedUrls).containsExactly("http://radarr:7878/api/v3/indexer/7", "http://radarr:7878/api/v3/indexer/8");
+            assertThat(postedBodies).isEmpty();
+            assertThat(putBodiesByUrl).isEmpty();
+        }
+
+        private ExternalTools.XdarrIndexer updatedEntry() {
+            assertThat(putBodiesByUrl).hasSize(1);
+            return Jackson.JSON_MAPPER.readValue(putBodiesByUrl.values().iterator().next(), ExternalTools.XdarrIndexer.class);
+        }
+
+        private Object fieldValue(ExternalTools.XdarrIndexer indexer, String fieldName) {
+            return indexer.getFields().stream()
+                    .filter(x -> fieldName.equals(x.getName()))
+                    .map(ExternalTools.XdarrAddRequestField::getValue)
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("No field \"" + fieldName + "\""));
+        }
+
+        private AddRequest usenetAddRequest() {
+            final AddRequest addRequest = new AddRequest();
+            addRequest.setExternalTool(AddRequest.ExternalTool.Radarr);
+            addRequest.setAddType(AddRequest.AddType.SINGLE);
+            addRequest.setConfigureForUsenet(true);
+            addRequest.setConfigureForTorrents(false);
+            addRequest.setXdarrHost("http://radarr:7878");
+            addRequest.setXdarrApiKey("radarr-api-key");
+            addRequest.setNzbhydraName("NZBHydra2");
+            addRequest.setNzbhydraHost("http://hydra:5076");
+            return addRequest;
         }
     }
 
