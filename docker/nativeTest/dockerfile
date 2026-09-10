@@ -12,7 +12,6 @@ COPY nzbhydra2wrapperPy3.py ./
 HEALTHCHECK --interval=5s --timeout=30s --retries=6 CMD curl --fail http://localhost:5076 || exit 1
 RUN ["chmod", "+x", "/app/core"]
 ENV NZBHYDRA_SKIP_BASE_PATH_CHECK=true
-ENV main_useCsrf=false
 ENV main_logging_logfilelevel=DEBUG
 CMD ["python3", "nzbhydra2wrapperPy3.py", "--datafolder", "/data", "--nobrowser", "--internalApiKey", "internalApiKey", "directstart"]
 
