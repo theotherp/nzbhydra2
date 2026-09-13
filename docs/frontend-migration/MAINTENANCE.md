@@ -3680,3 +3680,11 @@ their text and relative order are unchanged.
 - **Commit:** this commit
 - **Note:** cause: a `Switch` is a 38px box around a 20px thumb, so every switch row carried ~9px of transparent padding above and below its visible control that a text field's border-edged box does not. Fix: `SwitchSetting` pulls its `FormControlLabel` in by `my: -9px`; `SettingRow`'s margin goes 20px → 28px and its help/error text gets `mt: 0.75` off the control. Table cells (`SettingRowTableCellScope`) unchanged.
 - **Follow-up to the entry above (indexer up/down buttons):** with the owner's instances stopped, `python3 misc/run_gui_systemtest.py --runtime local --skip-install -- tests/config-indexers.spec.ts tests/config-custom-mappings.spec.ts` ran green (18 passed) incl. the new reorder round trip; the strip showed the down arrow clipped at the table's 900px floor, raised to 960 in this commit and re-captured.
+
+### 2026-09-13 — Split React/MUI/Emotion into a hashed `vendor` chunk
+
+- **Why not a packet:** build configuration only (`vite.config.ts`); no source, contract or rendering change.
+- **Paths:** `core/ui-react/vite.config.ts`, this ledger
+- **Gates:** `npm run build` (warning gone; entry `index.js` 1131 → 593 kB minified / 352 → 186 kB gzipped, `vendor-*.js` 606 kB / 184 kB), `typecheck`, `eslint vite.config.ts`, `prettier --check`, one vitest file to prove the shared config still loads.
+- **Commit:** this commit
+- **Note:** owner reported Vite's 500 kB chunk warning after the merge. The entry is pinned unhashed (ADR-0010) so it is re-downloaded on every release; the vendor chunk is content-hashed and survives updates in the cache. `chunkSizeWarningLimit` raised to 1000 for that expected chunk, with the comment stating that an *entry* chunk nearing it again is a real signal. `@mui/x-*` and `@mui/icons-material` deliberately not in the vendor chunk: the X packages belong to their lazy routes and the icons tree-shake per consumer.

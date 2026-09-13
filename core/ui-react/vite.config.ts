@@ -14,8 +14,24 @@ export default defineConfig({
     build: {
         outDir: process.env.VITE_OUT_DIR ?? "dist",
         emptyOutDir: true,
+        // The entry below is pinned to an unhashed name, so a browser has to
+        // re-download it on every Hydra release. The `vendor` chunk carved
+        // out in `manualChunks` is what keeps that download small: React,
+        // MUI core and Emotion change only when a dependency is upgraded, and
+        // as a content-hashed chunk they stay cached across releases. That
+        // chunk is expected to be well over Vite's default 500 kB warning
+        // threshold (~600 kB minified, ~185 kB gzipped); the limit is raised
+        // to say so rather than to hide a regression -- an *entry* chunk
+        // approaching it again is the signal the default was there to give.
+        chunkSizeWarningLimit: 1000,
         rollupOptions: {
             output: {
+                manualChunks: (id) =>
+                    /node_modules\/(react|react-dom|scheduler|@emotion\/[^/]+|@mui\/(material|system|utils|styled-engine|private-theming|types))\//.test(
+                        id,
+                    )
+                        ? "vendor"
+                        : undefined,
                 entryFileNames: "assets/[name].js",
                 // ADR-0010 (Option A, accepted): pin the entry stylesheet to
                 // `assets/index.css` -- unhashed -- so the hand-maintained
