@@ -1792,6 +1792,12 @@ None.
 
 ## Upcoming
 
+- FM-194: custom mapping model, ordering semantics and the batch chain test — the backend half of issue #902 and the
+  dependency-ready packet of the 2026-09-13 pair; FM-195 (the React Custom Mappings tab) stays planned in `tasks/` until
+  it is done. The owner split #902 by layer deliberately, against `tasks/README.md`'s rule, and decided no config
+  migration, no `configVersion` bump, and that `changelog.yaml` stays out of both allowlists because of an uncommitted
+  owner edit there — each handoff records its entries for the coordinator instead.
+
 - The 2026-09-08 code-quality batch is complete: FM-190, FM-191, FM-192 and FM-193 are done (entries above). No task
   packets are queued.
 
