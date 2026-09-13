@@ -5,6 +5,8 @@
     changes:
       -   type: "feature"
           text: "Complete rewrite of the UI."
+      -   type: "feature"
+          text: "Results from indexers that use language variants of the standard newznab categories (e.g. 2140 for German HD movies on treasure-maps or SceneNZBs) are now mapped to the matching category (Movies HD instead of just Movies) without adding those numbers to the categories config. For Hydra to include those categories when querying the indexer you still need to add the numbers to the categories config."
       -   type: "fix"
           text: "Search results could end up in the wrong category when two indexers use the same newznab category number for different things (e.g. 4050 for ebooks on one and PC software on another). Which category won depended on which indexer answered first. Changes to the categories config were also not applied to results until a restart."
       -   type: "fix"

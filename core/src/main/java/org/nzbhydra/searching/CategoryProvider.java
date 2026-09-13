@@ -238,6 +238,21 @@ public class CategoryProvider implements InitializingBean {
         return result;
     }
 
+    /**
+     * @return the standard newznab number for an indexer specific variant with a hundreds digit (2140 -> 2040), empty for
+     * numbers outside the newznab range or without a hundreds digit
+     */
+    static Optional<Integer> withoutHundredsDigit(int cat) {
+        if (cat < 1000 || cat >= 10000) {
+            return Optional.empty();
+        }
+        int hundreds = cat / 100 % 10;
+        if (hundreds == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(cat - hundreds * 100);
+    }
+
     public static boolean checkCategoryMatchingMainCategory(int cat, int possibleMainCat) {
         return possibleMainCat % 1000 == 0 && cat / 1000 == possibleMainCat / 1000;
     }
@@ -251,11 +266,19 @@ public class CategoryProvider implements InitializingBean {
             }
         }
 
-        //Try to find a category that matches any of the provided numbers
+        //Try to find a category that matches any of the provided numbers. Some indexers use variants of the standard
+        //numbers with a hundreds digit for languages (treasure-maps: 2140 = German HD movies, 5130 = German SD TV).
+        //The standard numbers never have a hundreds digit so those variants are also tried without it (2140 as 2040)
+        //before the general main category is used.
         for (Integer cat : cats) {
             if (categoryMapByNumber.containsKey(cat)) {
                 logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching directly {}", categoryMapByNumber.get(cat), cat);
                 return categoryMapByNumber.get(cat);
+            }
+            Optional<Integer> standardCat = withoutHundredsDigit(cat);
+            if (standardCat.isPresent() && categoryMapByNumber.containsKey(standardCat.get())) {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching {} as variant of {}", categoryMapByNumber.get(standardCat.get()), cat, standardCat.get());
+                return categoryMapByNumber.get(standardCat.get());
             }
         }
 

@@ -159,6 +159,31 @@ public class CategoryProviderTest {
         assertThat(testee.fromResultNewznabCategories(Arrays.asList(9999)).getName()).isEqualTo("N/A");
     }
 
+    @Test
+    void shouldMapIndexerSpecificVariantsWithHundredsDigitToStandardNumber() {
+        //treasure-maps style: 4130 is the "DE" variant of 4030 and is reported together with its main categories
+        assertThat(testee.fromResultNewznabCategories(new ArrayList<>(Arrays.asList(4000, 4100, 4130))).getName()).isEqualTo("4030");
+        //Variant of an unconfigured subcategory still falls back to the main category
+        assertThat(testee.fromResultNewznabCategories(new ArrayList<>(Arrays.asList(4000, 4100, 4120))).getName()).isEqualTo("4000");
+        //Variant main category alone maps to the standard main category
+        assertThat(testee.fromResultNewznabCategories(new ArrayList<>(Arrays.asList(4100))).getName()).isEqualTo("4000");
+        //Numbers outside the newznab range are not touched
+        assertThat(testee.fromResultNewznabCategories(new ArrayList<>(Arrays.asList(11_500))).getName()).isEqualTo("N/A");
+        //Same for incoming API searches
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4130), CategoriesConfig.allCategory).getName()).isEqualTo("4030");
+    }
+
+    @Test
+    void shouldStripHundredsDigit() {
+        assertThat(CategoryProvider.withoutHundredsDigit(2140)).contains(2040);
+        assertThat(CategoryProvider.withoutHundredsDigit(2100)).contains(2000);
+        assertThat(CategoryProvider.withoutHundredsDigit(2040)).isEmpty();
+        assertThat(CategoryProvider.withoutHundredsDigit(2000)).isEmpty();
+        assertThat(CategoryProvider.withoutHundredsDigit(999)).isEmpty();
+        assertThat(CategoryProvider.withoutHundredsDigit(10_100)).isEmpty();
+        assertThat(CategoryProvider.withoutHundredsDigit(100_150)).isEmpty();
+    }
+
 
     @Test
     void testcheckCategoryMatchingMainCategory() {
