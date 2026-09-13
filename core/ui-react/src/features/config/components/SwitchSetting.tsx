@@ -57,6 +57,16 @@ export function SwitchSetting({
                     />
                 }
                 label={label}
+                // A `Switch` is a 38px box around a 20px thumb: 9px of
+                // transparent padding above and below the visible control.
+                // In a column of text fields, whose box edge *is* their
+                // border, that padding read as an extra gap around every
+                // switch row (owner report 2026-09-13). Pulling the box
+                // back in by that much puts the switch's visible edges where
+                // a field's border sits, so `SettingRow`'s one margin spaces
+                // both kinds of row alike. The hover halo still paints; it
+                // overflows the box as it does everywhere else.
+                sx={{my: "-9px"}}
             />
         </SettingRow>
     );

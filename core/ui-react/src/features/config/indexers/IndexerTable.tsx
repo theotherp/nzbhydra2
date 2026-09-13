@@ -369,10 +369,13 @@ export function IndexerTable({
                     aria-label="Configured indexers"
                     data-testid="config-indexers-table"
                     // The five columns hold a name plus its markers and three
-                    // real form controls; below 900 the controls start
+                    // real form controls; below this the controls start
                     // squeezing their own labels, so the container scrolls
-                    // instead.
-                    sx={{minWidth: compact ? undefined : 900}}
+                    // instead. 900 before the priority column gained its two
+                    // move buttons (2026-09-13), which are kept as tight as
+                    // they go (below) so the whole row still fits a 1280px
+                    // laptop viewport without scrolling.
+                    sx={{minWidth: compact ? undefined : 940}}
                 >
                     <TableHead>
                         <TableRow>
@@ -647,8 +650,8 @@ const IndexerTableRow = memo(function IndexerTableRow({
     // width of its largest sensible value ("1000") so the buttons sit beside
     // it instead of pushing the column wider.
     const priority = (
-        <Stack direction="row" spacing={0.5} sx={{alignItems: "center"}}>
-            <Box sx={{width: 96}}>
+        <Stack direction="row" spacing={0.25} sx={{alignItems: "center"}}>
+            <Box sx={{width: 84}}>
                 <NumberSetting
                     label="Priority"
                     name={indexerFieldPath(index, "score")}
@@ -661,6 +664,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
                 disabled={!canMoveUp}
                 onClick={() => onMove(index, "up")}
                 size="small"
+                sx={{p: 0.5}}
             >
                 <ArrowUpwardIcon fontSize="small" />
             </IconButton>
@@ -670,6 +674,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
                 disabled={!canMoveDown}
                 onClick={() => onMove(index, "down")}
                 size="small"
+                sx={{p: 0.5}}
             >
                 <ArrowDownwardIcon fontSize="small" />
             </IconButton>
@@ -720,7 +725,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
             <TableCell>
                 <SettingRowTableCellScope>{state}</SettingRowTableCellScope>
             </TableCell>
-            <TableCell>
+            <TableCell sx={{pr: 1}}>
                 <SettingRowTableCellScope>{priority}</SettingRowTableCellScope>
             </TableCell>
         </TableRow>

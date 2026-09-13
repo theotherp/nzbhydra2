@@ -1963,7 +1963,7 @@ describe("SettingRow's table-cell opt-in", () => {
         );
 
         expect(screen.getByTestId("config-setting-a-b")).toHaveStyle({
-            marginBottom: "20px",
+            marginBottom: "28px",
         });
         const help = document.getElementById(settingHelpId("a.b"));
         expect(help?.parentElement).not.toHaveStyle({position: "absolute"});

@@ -129,7 +129,7 @@ export function SettingRow({
                 data-testid={`config-error-${name.replaceAll(".", "-")}`}
                 error
                 id={settingErrorId(name)}
-                sx={{maxWidth: settingColumnMaxWidth}}
+                sx={{maxWidth: settingColumnMaxWidth, mt: 0.75}}
             >
                 {error}
             </FormHelperText>
@@ -139,7 +139,7 @@ export function SettingRow({
             <FormHelperText
                 component="div"
                 id={settingHelpId(name)}
-                sx={{maxWidth: settingColumnMaxWidth}}
+                sx={{maxWidth: settingColumnMaxWidth, mt: 0.75}}
             >
                 <SettingHelp content={help} />
             </FormHelperText>
@@ -165,7 +165,13 @@ export function SettingRow({
         <Box
             data-testid={settingRowTestId(name)}
             sx={{
-                mb: inTableCell ? 0 : 2.5,
+                // Owner report (2026-09-13): 20px read as cramped in a long
+                // column of fields. 28px between rows, and the help text
+                // pushed a little further off its control (below), keep
+                // every row the same distance from the next -- the
+                // switch's own box padding is neutralised in
+                // `SwitchSetting` so a switch row is not wider still.
+                mb: inTableCell ? 0 : 3.5,
                 position: inTableCell ? "relative" : undefined,
             }}
         >
