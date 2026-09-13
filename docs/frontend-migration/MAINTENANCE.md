@@ -3729,3 +3729,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `eslint` (0 errors), `prettier`, vitest `SearchHistoryPage.test.tsx` (23 tests).
 - **Commit:** this commit
 - **Note:** owner report: "Related indexer searches" was the second table's `<caption>`, which MUI renders below the rows, so it read as a footer of the dialog. Investigation first confirmed the data itself was fine (a copy of the owner's dev database had every search's indexer searches with response times, and the details endpoint and dialog showed them). Both tables now get an `h3` above them ("Search request", "Indexer searches"). `IndexerStatusesPage` still uses a `<caption>`; left as is.
+
+### 2026-09-13 — Recent searches menu: title/query first, category, season, episode; no source, no identifiers
+
+- **Why not a packet:** description text of one menu; the Repeat/Refill actions and the values they carry are unchanged.
+- **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, its test
+- **Gates:** `core/ui-react` `typecheck`, `eslint` (0 errors), `prettier`, vitest `features/search/history` (3 files / 13 tests).
+- **Commit:** this commit
+- **Note:** owner request. Order is now Title (else Query), Category, Season, Episode, Author; the Source part and every identifier part are dropped from the description and from the accessible names ("Repeat: …"/"Refill: …"). `describeSource` removed as unused.

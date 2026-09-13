@@ -100,7 +100,9 @@ describe("RecentSearches", () => {
 
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         const label = await screen.findByText("Category:");
-        const value = screen.getByText("All");
+        // The category is no longer the first part, so its wrapper's own text
+        // is ", All" (separator plus value).
+        const value = screen.getByText(/All$/);
 
         expect(window.getComputedStyle(label).fontStyle).toBe("italic");
         expect(window.getComputedStyle(label).color).toMatch(
@@ -137,12 +139,12 @@ describe("RecentSearches", () => {
             });
             expect(row).toHaveAttribute("aria-keyshortcuts", "ArrowRight");
             expect(row).toHaveAccessibleName(
-                "Repeat: Category: All, Source: Internal, Query: recent query",
+                "Repeat: Query: recent query, Category: All",
             );
             expect(
                 screen.getByRole("button", {name: /^Refill:/}),
             ).toHaveAccessibleName(
-                "Refill: Category: All, Source: Internal, Query: recent query",
+                "Refill: Query: recent query, Category: All",
             );
         });
 

@@ -325,16 +325,22 @@ export function RecentSearches({
 
 type DescriptionPart = {label: string; value: string};
 
+/**
+ * Owner decision (2026-09-13): what the reader searched for comes first (the
+ * title, else the query), then the category, then season and episode. The
+ * source and the identifiers are deliberately not shown: they are noise in a
+ * menu whose only job is recognising a search to repeat. Refill and Repeat
+ * still carry every value, including the identifiers; only the description
+ * is shorter.
+ */
 function searchDescriptionParts(search: RecentSearch): DescriptionPart[] {
     const parts: (DescriptionPart | undefined)[] = [
+        search.title
+            ? {label: "Title", value: search.title}
+            : search.query
+              ? {label: "Query", value: search.query}
+              : undefined,
         {label: "Category", value: search.categoryName},
-        {label: "Source", value: describeSource(search.source)},
-        search.query ? {label: "Query", value: search.query} : undefined,
-        search.title ? {label: "Title", value: search.title} : undefined,
-        ...search.identifiers.map(({identifierKey, identifierValue}) => ({
-            label: identifierKey,
-            value: identifierValue,
-        })),
         search.season !== undefined
             ? {label: "Season", value: search.season.toString()}
             : undefined,
@@ -346,12 +352,4 @@ function searchDescriptionParts(search: RecentSearch): DescriptionPart[] {
 
 function plainTextDescription(parts: DescriptionPart[]): string {
     return parts.map(({label, value}) => `${label}: ${value}`).join(", ");
-}
-
-function describeSource(source: RecentSearch["source"]): string {
-    return source === "INTERNAL"
-        ? "Internal"
-        : source === "API"
-          ? "API"
-          : "Unknown";
 }
