@@ -185,7 +185,11 @@ public class CategoryProvider implements InitializingBean {
             return defaultCategory;
         }
         if (cats.size() == 1) {
-            return categoryMapByNumber.getOrDefault(cats.get(0), getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory));
+            Category directMatch = categoryMapByNumber.get(cats.get(0));
+            if (directMatch != null) {
+                return directMatch;
+            }
+            return getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
         }
 
         Category result = null;
