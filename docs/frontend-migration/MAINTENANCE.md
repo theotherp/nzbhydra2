@@ -3721,3 +3721,11 @@ their text and relative order are unchanged.
 - **Gates:** `mvn -o -pl core -DskipTests=false -Dtest=FileDownloadEntityTest,FileHandlerTest,DownloaderTest test` (4 + 12 + 6 skipped); full `mvn -o -pl core test -DskipTests=false` (see commit). Migration verified on the scratch database: three seeded rows (API+user, API+null, INTERNAL+user) → packaged app applied "version 9", rows read back as INTERNAL / API / INTERNAL.
 - **Commit:** this commit
 - **Note:** analysis for the owner: `DownloadUrlBuilder` appends `username=<session user>` to the API-style link `Downloader.sendToDownloader` hands to SABnzbd/NZBGet in link mode; when the client fetches it, `/getnzb/api` records source API while the Interceptor picks the username up from the parameter. Owner decision: "API" is only for results that came from an API call, so an API-sourced download with a known username is recorded as INTERNAL, and V9 rewrites the existing rows the same way (`ACCESS_SOURCE='API' AND USERNAME IS NOT NULL`). Caveat recorded: an API client authenticating with basic auth or a proxy header also sets a remote user and is now recorded as internal too.
+
+### 2026-09-13 — Search details dialog: headings above both tables instead of a bottom caption
+
+- **Why not a packet:** markup inside one dialog; the table `aria-label`s the system spec addresses are unchanged.
+- **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `eslint` (0 errors), `prettier`, vitest `SearchHistoryPage.test.tsx` (23 tests).
+- **Commit:** this commit
+- **Note:** owner report: "Related indexer searches" was the second table's `<caption>`, which MUI renders below the rows, so it read as a footer of the dialog. Investigation first confirmed the data itself was fine (a copy of the owner's dev database had every search's indexer searches with response times, and the details endpoint and dialog showed them). Both tables now get an `h3` above them ("Search request", "Indexer searches"). `IndexerStatusesPage` still uses a `<caption>`; left as is.

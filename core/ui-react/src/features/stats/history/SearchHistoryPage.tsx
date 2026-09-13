@@ -546,6 +546,16 @@ function DetailsDialog({
                 )}
                 {details.data && (
                     <Stack spacing={2}>
+                        {/*
+                         * Owner report (2026-09-13): the second table's
+                         * `<caption>` rendered below its rows (MUI puts
+                         * captions at the bottom), so the heading read as a
+                         * footer of the whole dialog. Both tables now carry a
+                         * heading above them instead.
+                         */}
+                        <Typography component="h3" variant="subtitle1">
+                            Search request
+                        </Typography>
                         <Table aria-label="Search request details">
                             <TableBody>
                                 <TableRow sx={rowRevealsCopyButtonsOnHover}>
@@ -612,8 +622,10 @@ function DetailsDialog({
                                 ))}
                             </TableBody>
                         </Table>
+                        <Typography component="h3" variant="subtitle1">
+                            Indexer searches
+                        </Typography>
                         <Table aria-label="Related indexer searches">
-                            <caption>Related indexer searches</caption>
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Indexer</TableCell>
