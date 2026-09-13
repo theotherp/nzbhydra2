@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -37,12 +39,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
 @Component
-public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingSingleton {
+public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingSingleton, BeanFactoryAware {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraTaskScheduler.class);
 
-    @Autowired
+    /**
+     * Resolved in {@link #afterSingletonsInstantiated()}, not injected. This class is a {@link BeanPostProcessor}, so it
+     * is created before the AOP post-processors are; any bean it needs at construction time is created then too and is
+     * therefore "not eligible for getting processed by all BeanPostProcessors" (Spring logs a warning per bean). Looked
+     * up by name because the WebSocket configuration registers three more schedulers of the same type.
+     */
     private ThreadPoolTaskScheduler scheduler;
+    private BeanFactory beanFactory;
     @Autowired
     private ConfigurableEnvironment environment;
 
@@ -60,11 +68,19 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     public void onShutdown() {
         taskSchedules.values().forEach(x -> x.cancel(false));
         shutdownRequested = true;
-        scheduler.shutdown();
+        if (scheduler != null) {
+            scheduler.shutdown();
+        }
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 
     @Override
     public void afterSingletonsInstantiated() {
+        scheduler = beanFactory.getBean(HydraTaskConfiguration.SCHEDULER_BEAN_NAME, ThreadPoolTaskScheduler.class);
         scheduleTasks();
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(5);

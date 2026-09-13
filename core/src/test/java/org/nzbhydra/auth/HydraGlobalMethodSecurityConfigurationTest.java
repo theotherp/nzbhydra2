@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +26,10 @@ public class HydraGlobalMethodSecurityConfigurationTest {
         when(configProvider.getBaseConfig()).thenReturn(config);
         MethodInvocation invocation = mock(MethodInvocation.class);
         when(invocation.getMethod()).thenReturn(SecuredEndpoint.class.getMethod("admin"));
-        var interceptor = new HydraGlobalMethodSecurityConfiguration(configProvider).securedMethodInterceptor();
+        @SuppressWarnings("unchecked")
+        ObjectProvider<ConfigProvider> configProviderProvider = mock(ObjectProvider.class);
+        when(configProviderProvider.getObject()).thenReturn(configProvider);
+        var interceptor = new HydraGlobalMethodSecurityConfiguration(configProviderProvider).securedMethodInterceptor();
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken("user", "password", AuthorityUtils.createAuthorityList("ROLE_USER")));
 

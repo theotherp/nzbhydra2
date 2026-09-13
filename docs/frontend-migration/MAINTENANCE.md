@@ -3688,3 +3688,11 @@ their text and relative order are unchanged.
 - **Gates:** `npm run build` (warning gone; entry `index.js` 1131 → 593 kB minified / 352 → 186 kB gzipped, `vendor-*.js` 606 kB / 184 kB), `typecheck`, `eslint vite.config.ts`, `prettier --check`, one vitest file to prove the shared config still loads.
 - **Commit:** this commit
 - **Note:** owner reported Vite's 500 kB chunk warning after the merge. The entry is pinned unhashed (ADR-0010) so it is re-downloaded on every release; the vendor chunk is content-hashed and survives updates in the cache. `chunkSizeWarningLimit` raised to 1000 for that expected chunk, with the comment stating that an *entry* chunk nearing it again is a real signal. `@mui/x-*` and `@mui/icons-material` deliberately not in the vendor chunk: the X packages belong to their lazy routes and the icons tree-shake per consumer.
+
+### 2026-09-13 — Silence the 18 "not eligible for getting processed by all BeanPostProcessors" startup warnings
+
+- **Why not a packet:** backend only; Spring wiring, no behaviour or API change.
+- **Paths:** `core/src/main/java/org/nzbhydra/tasks/{HydraTaskScheduler,HydraTaskConfiguration}.java`, `core/src/main/java/org/nzbhydra/auth/HydraGlobalMethodSecurityConfiguration.java`
+- **Gates:** `mvn -o -pl core compile`; packaged core started on a scratch data folder: 0 `BeanPostProcessorChecker` lines (18 before), "Started NzbHydra", tasks scheduled, actuator shutdown 200; `mvn -o -pl core test -DskipTests=false` (see commit).
+- **Commit:** this commit
+- **Note:** two causes. `HydraTaskScheduler` is a `BeanPostProcessor` that field-injected the `ThreadPoolTaskScheduler`, creating that bean and its configuration class before the AOP post-processors existed; it now looks the pool up by name in `afterSingletonsInstantiated` (by name, because the WebSocket configuration adds three more schedulers of the type). The remaining 16 came from `HydraGlobalMethodSecurityConfiguration`, whose `@Secured` advisor the auto-proxy creator collects while processing the first beans: its constructor-injected `ConfigProvider` pulled in the config handler, all validators and `BaseConfig`. It now resolves the config through an `ObjectProvider` on each authorization and is marked `ROLE_INFRASTRUCTURE` like the advisor it declares. Those beans were never proxied before, so no behaviour changes; they can be now.
