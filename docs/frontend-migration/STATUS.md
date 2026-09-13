@@ -1782,6 +1782,16 @@ Arr-less gate check — all green. Passed with minor findings, not corrected (op
 claims seed replayability its neighbours refute, and one inline fully-qualified `java.util.Arrays.stream` in
 `HistoryTest`. Candidates for a future quickfix.
 
+FM-194 (Custom Mapping Model, Ordering Semantics, And Batch Chain Test) is done — the backend half of issue #902.
+`CustomQueryAndTitleMapping` gained `name`, `enabled` (default true) and `examples` with no migration; relevant-mapping
+filtering separates the two directions (a `TITLE` mapping no longer reaches result titles and vice versa), skips disabled
+mappings, and applies the list top to bottom, stopping after the first applied whole-string mapping instead of applying
+none; `POST /internalapi/customMapping/test` is a batch at the same URL ({mappings, mappingIndex, examples} -> per-line
+thisMapping and chain answers with `appliedIndices`); the validator warns about duplicate enabled whole-string patterns.
+Passed with minor findings, not corrected: `appliedIndices` counts a mapping whose match an earlier mapping destroyed;
+`mappingIndex` beyond the list silently degrades to chain-only; pre-existing unguarded `getFrom()` in the validator.
+The React caller speaks the old contract until FM-195 lands, so the dialog's test button is knowingly broken in between.
+
 ## Review
 
 None.
@@ -1792,11 +1802,10 @@ None.
 
 ## Upcoming
 
-- FM-194: custom mapping model, ordering semantics and the batch chain test — the backend half of issue #902 and the
-  dependency-ready packet of the 2026-09-13 pair; FM-195 (the React Custom Mappings tab) stays planned in `tasks/` until
-  it is done. The owner split #902 by layer deliberately, against `tasks/README.md`'s rule, and decided no config
-  migration, no `configVersion` bump, and that `changelog.yaml` stays out of both allowlists because of an uncommitted
-  owner edit there — each handoff records its entries for the coordinator instead.
+- FM-195: the React Custom Mappings configuration tab — the second half of issue #902, dependency-ready now that FM-194
+  is done: new tab at `/config/customMappings`, section and dialog moved out of Searching, name/enabled/multi-line saved
+  examples, per-line result table for own-mapping and chain answers, move up/down reorder, disabled chip. `changelog.yaml`
+  stays out of its allowlist (uncommitted owner edit); the handoff records the entry for the coordinator.
 
 - The 2026-09-08 code-quality batch is complete: FM-190, FM-191, FM-192 and FM-193 are done (entries above). No task
   packets are queued.

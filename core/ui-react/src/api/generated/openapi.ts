@@ -2963,6 +2963,8 @@ export interface components {
                 | "MAGAZINE";
         };
         CustomQueryAndTitleMapping: {
+            name?: string;
+            enabled?: boolean;
             /** @enum {string} */
             searchType?: "BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH";
             /** @enum {string} */
@@ -2970,6 +2972,7 @@ export interface components {
             matchAll?: boolean;
             from?: string;
             to?: string;
+            examples?: string[];
         };
         DownloaderConfig: {
             apiKey?: string;
@@ -3816,13 +3819,28 @@ export interface components {
             messages?: string[];
         };
         TestRequest: {
-            mapping?: components["schemas"]["CustomQueryAndTitleMapping"];
-            exampleInput?: string;
+            mappings?: components["schemas"]["CustomQueryAndTitleMapping"][];
+            /** Format: int32 */
+            mappingIndex?: number;
+            examples?: string[];
         };
-        TestResponse: {
+        ChainResult: {
+            output?: string;
+            appliedIndices?: number[];
+            error?: string;
+        };
+        SingleMappingResult: {
+            match?: boolean;
             output?: string;
             error?: string;
-            match?: boolean;
+        };
+        TestResponse: {
+            results?: components["schemas"]["TestResult"][];
+        };
+        TestResult: {
+            input?: string;
+            thisMapping?: components["schemas"]["SingleMappingResult"];
+            chain?: components["schemas"]["ChainResult"];
         };
         DirectoryListingRequest: {
             fullPath?: string;
@@ -4089,10 +4107,10 @@ export interface components {
             remainingTimeFormatted?: string;
             downloadRateFormatted?: string;
             remainingSizeFormatted?: string;
-            downloadingTitleRemainingTimeFormatted?: string;
             freeDiskSpaceFormatted?: string;
             freeIncompleteDiskSpaceFormatted?: string;
             queueExceedsFreeDiskSpace?: boolean;
+            downloadingTitleRemainingTimeFormatted?: string;
         };
         ThreadCpuUsageChartData: {
             key?: string;

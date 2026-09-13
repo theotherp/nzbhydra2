@@ -2,7 +2,6 @@
 
 package org.nzbhydra.searching;
 
-import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,14 +18,18 @@ import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -37,6 +40,11 @@ public class CustomQueryAndTitleMappingHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomQueryAndTitleMappingHandler.class);
     private static final Pattern DIACRITICAL_MARKS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    /**
+     * Tests are run against a fixed search type so that every mapping in the list is evaluated regardless of its own search type.
+     */
+    private static final SearchType TEST_SEARCH_TYPE = SearchType.SEARCH;
+    static final int MAX_EXAMPLES = 200;
 
     @Autowired
     private ConfigProvider configProvider;
@@ -87,6 +95,17 @@ public class CustomQueryAndTitleMappingHandler {
     }
 
     public MetaData mapMetaData(MetaData metaData, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
+        applyMappings(metaData, customQueryAndTitleMappings);
+        return metaData;
+    }
+
+    /**
+     * Applies all mappings which are relevant for the given meta data, in the order they're configured in, stopping after the first applied
+     * mapping which matches the whole string.
+     *
+     * @return the indexes (into the given list) of the mappings which were applied, in the order they were applied
+     */
+    protected List<Integer> applyMappings(MetaData metaData, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
         if (metaData.getQuery().isPresent()) {
             if (configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
                 String oldQuery = metaData.getQuery().get();
@@ -98,58 +117,147 @@ public class CustomQueryAndTitleMappingHandler {
             }
         }
 
-        final List<CustomQueryAndTitleMapping> relevantMappings = customQueryAndTitleMappings.stream()
-                .filter(x -> metaData.getSearchType() == x.getSearchType() || metaData.type == MetaData.Type.RESULT_TITLE)
-                .filter(customQueryAndTitleMapping -> isDatasetMatch(metaData, customQueryAndTitleMapping))
-                .filter(customQueryAndTitleMapping -> {
-                    if (customQueryAndTitleMapping.getTo().contains("{season:") && metaData.getSeason().isEmpty()) {
-                        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no season information is available for {}", customQueryAndTitleMapping, metaData);
-                        return false;
-                    }
-                    if (customQueryAndTitleMapping.getTo().contains("{episode:") && metaData.getEpisode().isEmpty()) {
-                        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no episode information is available for {}", customQueryAndTitleMapping, metaData);
-                        return false;
-                    }
-                    return true;
-                })
-                .toList();
+        final List<Integer> relevantMappingIndexes = new ArrayList<>();
+        for (int index = 0; index < customQueryAndTitleMappings.size(); index++) {
+            final CustomQueryAndTitleMapping mapping = customQueryAndTitleMappings.get(index);
+            if (isRelevant(metaData, mapping)) {
+                relevantMappingIndexes.add(index);
+            }
+        }
 
-        if (relevantMappings.isEmpty()) {
+        if (relevantMappingIndexes.isEmpty()) {
             logger.debug(LoggingMarkers.CUSTOM_MAPPING, "No mappings found matching: {}", metaData);
-            return metaData;
-        }
-        if (relevantMappings.stream().filter(CustomQueryAndTitleMapping::isMatchAll).count() > 1) {
-            logger.error("Unable to map search request ({}) because multiple customQueryAndTitleMappings which match the whole string match it:\n{}", metaData, Joiner.on("\n").join(customQueryAndTitleMappings));
-            return metaData;
-        }
-        for (CustomQueryAndTitleMapping mapping : relevantMappings) {
-            mapMetaData(metaData, mapping);
+            return Collections.emptyList();
         }
 
-        return metaData;
+        final List<Integer> appliedMappingIndexes = new ArrayList<>();
+        for (Integer index : relevantMappingIndexes) {
+            final CustomQueryAndTitleMapping mapping = customQueryAndTitleMappings.get(index);
+            mapMetaData(metaData, mapping);
+            appliedMappingIndexes.add(index);
+            if (mapping.isMatchAll()) {
+                //The mappings in the list have already been matched, so this one was applied and no further mapping may change the value
+                logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Not applying any further mappings after having applied the mapping {} which matches the whole string", mapping);
+                break;
+            }
+        }
+
+        return appliedMappingIndexes;
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    /**
+     * Mappings for result titles and mappings for search requests must not be applied to the respective other direction. Without this
+     * separation a mapping configured for (search request) titles would be applied to result titles and vice versa.
+     */
+    private boolean isRelevant(MetaData metaData, CustomQueryAndTitleMapping mapping) {
+        if (!mapping.isEnabled()) {
+            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Skipping disabled mapping {}", mapping);
+            return false;
+        }
+        if (metaData.getType() == MetaData.Type.RESULT_TITLE) {
+            if (mapping.getAffectedValue() != AffectedValue.RESULT_TITLE) {
+                logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Skipping mapping {} because it doesn't affect result titles", mapping);
+                return false;
+            }
+        } else {
+            if (mapping.getAffectedValue() == AffectedValue.RESULT_TITLE) {
+                logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Skipping mapping {} because it only affects result titles", mapping);
+                return false;
+            }
+            if (metaData.getSearchType() != mapping.getSearchType()) {
+                logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Skipping mapping {} because its search type doesn't match {}", mapping, metaData.getSearchType());
+                return false;
+            }
+        }
+        if (!isDatasetMatch(metaData, mapping)) {
+            return false;
+        }
+        if (mapping.getTo().contains("{season:") && metaData.getSeason().isEmpty()) {
+            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no season information is available for {}", mapping, metaData);
+            return false;
+        }
+        if (mapping.getTo().contains("{episode:") && metaData.getEpisode().isEmpty()) {
+            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no episode information is available for {}", mapping, metaData);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Tests the mapping currently being edited and the whole list of mappings against a number of example inputs.
+     * <p>
+     * All mappings are evaluated as if they affected the query and as if they matched the search type of the test, using season 1 and
+     * episode 2, so that the test shows what the mappings do to the example line, not whether it would be used for a specific search.
+     */
     @Secured({"ROLE_ADMIN"})
     @PostMapping(value = "/internalapi/customMapping/test", produces = MediaType.APPLICATION_JSON_VALUE)
     public TestResponse testMapping(@RequestBody TestRequest testRequest) {
-        MetaData metaData = new MetaData();
-        final String exampleInput = testRequest.exampleInput;
-        if (!(testRequest.mapping.getFromPattern().matcher(exampleInput).matches() && testRequest.mapping.isMatchAll()) && !(testRequest.mapping.getFromPattern().matcher(exampleInput).find() && !testRequest.mapping.isMatchAll())) {
-            return new TestResponse(null, null, false);
+        final List<String> examples = testRequest.getExamples() == null ? Collections.emptyList() : testRequest.getExamples();
+        if (examples.size() > MAX_EXAMPLES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At most " + MAX_EXAMPLES + " examples may be tested at once but " + examples.size() + " were sent");
         }
-        //For the test it doesn't matter which is affected
-        testRequest.getMapping().setAffectedValue(AffectedValue.QUERY);
-        metaData.setQuery(exampleInput);
-        metaData.setSearchType(testRequest.mapping.getSearchType());
+        final List<CustomQueryAndTitleMapping> mappings = testRequest.getMappings() == null ? Collections.emptyList() : testRequest.getMappings();
+        final List<CustomQueryAndTitleMapping> mappingsForTest = mappings.stream().map(CustomQueryAndTitleMappingHandler::forTest).toList();
+        final Integer mappingIndex = testRequest.getMappingIndex();
+        final boolean testSingleMapping = mappingIndex != null && mappingIndex >= 0 && mappingIndex < mappingsForTest.size();
+
+        final List<TestResult> results = new ArrayList<>();
+        for (String example : examples) {
+            final SingleMappingResult thisMapping = testSingleMapping ? testSingleMapping(mappingsForTest.get(mappingIndex), example) : null;
+            results.add(new TestResult(example, thisMapping, testChain(mappingsForTest, example)));
+        }
+        return new TestResponse(results);
+    }
+
+    /**
+     * Returns a copy which is evaluated regardless of the affected value and search type configured for the mapping. Must be a copy because
+     * the mappings may come from the config and would be persisted with the changed values.
+     */
+    private static CustomQueryAndTitleMapping forTest(CustomQueryAndTitleMapping mapping) {
+        final CustomQueryAndTitleMapping copy = mapping.copy();
+        copy.setAffectedValue(AffectedValue.QUERY);
+        copy.setSearchType(TEST_SEARCH_TYPE);
+        return copy;
+    }
+
+    private SingleMappingResult testSingleMapping(CustomQueryAndTitleMapping mapping, String example) {
+        try {
+            final boolean matches = mapping.isMatchAll()
+                    ? mapping.getFromPattern().matcher(example).matches()
+                    : mapping.getFromPattern().matcher(example).find();
+            if (!matches) {
+                return new SingleMappingResult(false, null, null);
+            }
+            final MetaData metaData = newTestMetaData(example);
+            mapMetaData(metaData, mapping);
+            return new SingleMappingResult(true, metaData.getQuery().orElse(null), null);
+        } catch (Exception e) {
+            return new SingleMappingResult(false, null, getErrorMessage(e));
+        }
+    }
+
+    private ChainResult testChain(List<CustomQueryAndTitleMapping> mappingsForTest, String example) {
+        try {
+            final MetaData metaData = newTestMetaData(example);
+            final List<Integer> appliedIndices = applyMappings(metaData, mappingsForTest);
+            return new ChainResult(metaData.getQuery().orElse(null), appliedIndices, null);
+        } catch (Exception e) {
+            return new ChainResult(null, Collections.emptyList(), getErrorMessage(e));
+        }
+    }
+
+    private MetaData newTestMetaData(String example) {
+        final MetaData metaData = new MetaData();
+        metaData.setType(MetaData.Type.SEARCH_REQUEST);
+        metaData.setQuery(example);
+        metaData.setSearchType(TEST_SEARCH_TYPE);
         metaData.setSeason(1);
         metaData.setEpisode(2);
-        try {
-            mapMetaData(metaData, testRequest.mapping);
-            return new TestResponse(metaData.getQuery().get(), null, true);
-        } catch (Exception e) {
-            return new TestResponse(null, e.getMessage(), false);
-        }
+        return metaData;
+    }
+
+    private static String getErrorMessage(Exception e) {
+        return e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
     }
 
 
@@ -228,21 +336,67 @@ public class CustomQueryAndTitleMappingHandler {
         return false;
     }
 
+    /**
+     * The whole list of mappings as currently edited, the index of the mapping being edited (absent or negative if only the chain is to be
+     * tested) and the example inputs to run against them.
+     */
     @Data
     @ReflectionMarker
-    static class TestRequest {
-        private CustomQueryAndTitleMapping mapping;
-        private String exampleInput;
+    public static class TestRequest {
+        private List<CustomQueryAndTitleMapping> mappings = new ArrayList<>();
+        /**
+         * Boxed on purpose: a primitive would default to 0 for an absent value and silently test the first mapping.
+         */
+        private Integer mappingIndex;
+        private List<String> examples = new ArrayList<>();
     }
 
 
     @Data
     @ReflectionMarker
     @AllArgsConstructor
-    static class TestResponse {
-        private final String output;
-        private final String error;
-        private boolean isMatch;
+    @NoArgsConstructor
+    public static class TestResponse {
+        private List<TestResult> results = new ArrayList<>();
+    }
+
+    @Data
+    @ReflectionMarker
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class TestResult {
+        private String input;
+        /**
+         * Null if no (valid) mapping index was sent, i.e. only the chain was tested.
+         */
+        private SingleMappingResult thisMapping;
+        private ChainResult chain;
+    }
+
+    /**
+     * The result of running the edited mapping alone against an example. The boolean is serialized as "match".
+     */
+    @Data
+    @ReflectionMarker
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SingleMappingResult {
+        private boolean match;
+        private String output;
+        private String error;
+    }
+
+    /**
+     * The result of running the whole list of mappings against an example. The applied indices refer to the mappings as sent in the request.
+     */
+    @Data
+    @ReflectionMarker
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ChainResult {
+        private String output;
+        private List<Integer> appliedIndices = new ArrayList<>();
+        private String error;
     }
 
     @Data

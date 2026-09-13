@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.searching.AffectedValue;
 import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -48,12 +49,17 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
             }
         }
         final CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler = new CustomQueryAndTitleMappingHandler(newBaseConfig);
-        final SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setTitle("test title");
-        searchRequest.setQuery("test query");
         for (CustomQueryAndTitleMapping customCustomQueryAndTitleMapping : newConfig.getCustomMappings()) {
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.setTitle("test title");
+            searchRequest.setQuery("test query");
             try {
-                customQueryAndTitleMappingHandler.mapSearchRequest(searchRequest, Collections.singletonList(customCustomQueryAndTitleMapping));
+                //Disabled mappings and mappings for result titles are checked as well, using a copy so that the config isn't changed
+                final CustomQueryAndTitleMapping mappingToCheck = customCustomQueryAndTitleMapping.copy();
+                mappingToCheck.setEnabled(true);
+                mappingToCheck.setAffectedValue(AffectedValue.QUERY);
+                mappingToCheck.setSearchType(searchRequest.getSearchType());
+                customQueryAndTitleMappingHandler.mapSearchRequest(searchRequest, Collections.singletonList(mappingToCheck));
             } catch (Exception e) {
                 errors.add(String.format("Unable to process mapping %s:}\n%s", customCustomQueryAndTitleMapping.toString(), e.getMessage()));
             }
@@ -64,6 +70,7 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
                 errors.add("The group 'season' is not allowed in custom mapping input patterns.");
             }
         }
+        warnAboutDuplicateWholeStringMappings(newConfig.getCustomMappings(), warnings);
         final List<String> emptyTrailing = (newConfig.getRemoveTrailing().stream().filter(Strings::isNullOrEmpty)).toList();
         if (!emptyTrailing.isEmpty()) {
             errors.add("Trailing values to remove contains empty values");
@@ -79,6 +86,34 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
+    }
+
+    /**
+     * Mappings are applied top to bottom and no mapping is applied after one which matches the whole string, so a second enabled mapping
+     * with the same input pattern would never be used. That's not an error, just very likely a mistake.
+     */
+    private void warnAboutDuplicateWholeStringMappings(List<CustomQueryAndTitleMapping> mappings, List<String> warnings) {
+        for (int i = 0; i < mappings.size(); i++) {
+            final CustomQueryAndTitleMapping first = mappings.get(i);
+            if (!first.isEnabled() || !first.isMatchAll() || first.getFrom() == null) {
+                continue;
+            }
+            for (int j = i + 1; j < mappings.size(); j++) {
+                final CustomQueryAndTitleMapping second = mappings.get(j);
+                if (!second.isEnabled() || !second.isMatchAll()) {
+                    continue;
+                }
+                if (first.getFrom().equals(second.getFrom())) {
+                    warnings.add(String.format("The custom mappings %s and %s both match the whole string and use the same input pattern \"%s\". Only the former will be applied.",
+                            describe(first, i), describe(second, j), first.getFrom()));
+                }
+            }
+        }
+    }
+
+    private String describe(CustomQueryAndTitleMapping mapping, int index) {
+        final String name = Strings.emptyToNull(Strings.nullToEmpty(mapping.getName()).trim());
+        return name == null ? "#" + (index + 1) : "\"" + name + "\" (#" + (index + 1) + ")";
     }
 
     @Override
