@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -20,6 +21,7 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class NewznabJsonRoot extends NewznabResponse {
 
     @Override

@@ -9,64 +9,66 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="github-release-maven-plugin" />
-        <module name="sockslib" />
         <module name="classloader" />
-        <module name="loadtest" />
-        <module name="github-release-plugin" />
+        <module name="github-release-maven-plugin" />
         <module name="updater" />
-        <module name="mockserver" />
-      </profile>
-      <profile name="Annotation profile for mapping" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="mapping" />
-      </profile>
-      <profile name="Annotation profile for system" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="system" />
       </profile>
       <profile name="Annotation profile for core" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
         <module name="core" />
+      </profile>
+      <profile name="Annotation profile for mapping" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="mapping" />
       </profile>
       <profile name="Annotation profile for release-parser" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
         <module name="release-parser" />
+      </profile>
+      <profile name="Annotation profile for system" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="system" />
       </profile>
       <profile name="Annotation profile for nzbhydra2" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
+        <module name="sockslib" />
+        <module name="github-release-plugin" />
         <module name="discordreleaser" />
+        <module name="mockserver" />
+        <module name="h2legacy" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="assertions" target="1.5" />
       <module name="db-tool" target="21" />
     </bytecodeTargetLevel>
   </component>
@@ -76,13 +78,13 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="assertions" options="" />
       <module name="core" options="-parameters" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
+      <module name="h2legacy" options="" />
       <module name="loadtest" options="" />
       <module name="mapping" options="-parameters" />
-      <module name="mockserver" options="" />
+      <module name="mockserver" options="-parameters" />
       <module name="nzbhydra2" options="-parameters" />
       <module name="other" options="" />
       <module name="releases" options="-parameters" />
@@ -93,7 +95,12 @@
     </option>
   </component>
   <component name="TypeScriptCompiler">
+    <option name="memoryAutoIncrease" value="true" />
+    <option name="nodeInterpreterTextField" value="$USER_HOME$/.nvm/versions/node/v26.7.0/bin/node" />
     <option name="recompileOnChanges" value="true" />
     <option name="scopeName" value="All Places" />
+    <option name="typeScriptServiceDirectory" value="$PROJECT_DIR$/core/ui-react/node_modules/typescript/lib" />
+    <option name="useServicePoweredTypesEnabledManually" value="true" />
+    <option name="versionType" value="SERVICE_DIRECTORY" />
   </component>
 </project>

@@ -8,6 +8,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -18,6 +19,7 @@ import java.util.StringJoiner;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ReflectionMarker
 public class NewznabXmlError extends Xml {
 

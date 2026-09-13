@@ -16,7 +16,7 @@ run upx to compress image
 
 
 Maven-Plugin:
-https://docs.spring.io/spring-boot/docs/3.0.0/maven-plugin/reference/htmlsingle/#aot
+https://docs.spring.io/spring-boot/3.5/reference/packaging/aot.html
 
 Spring Boot 3 Native support:
 https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.introducing-graalvm-native-images
@@ -135,7 +135,7 @@ export MAVEN_HOME=/opt/maven
 export PATH=${M2_HOME}/bin:${PATH}
 curl -s "https://get.sdkman.io" | bash
 source "/root/.sdkman/bin/sdkman-init.sh"
-sdk install java 22.3.r17-grl
+sdk install java 25.0.3-graal
 mvn --batch-mode clean install -DskipTests -T 1C
 export HYDRA_NATIVE_BUILD=true
 mvn -pl org.nzbhydra:core -Pnative clean native:compile -DskipTests

@@ -67,7 +67,7 @@ public abstract class Indexer<T> {
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
-    private final Object dbLock = "";
+    private final Object dbLock = new Object();
 
     @Autowired
     protected ConfigProvider configProvider;

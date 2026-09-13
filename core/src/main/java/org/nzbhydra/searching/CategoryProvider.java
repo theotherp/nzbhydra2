@@ -79,6 +79,7 @@ public class CategoryProvider implements InitializingBean {
         if (categories != null) {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
             categoryMapByNumber.clear();
+            categoryMapByMultipleNumber.clear();
             for (Category category : categories) {
                 for (Integer integer : category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList()) {
                     categoryMapByNumber.put(integer, category);
@@ -89,6 +90,7 @@ public class CategoryProvider implements InitializingBean {
             logger.error("Configuration incomplete, categories not set");
             categoryMap = Collections.emptyMap();
             categoryMapByNumber = new HashMap<>();
+            categoryMapByMultipleNumber = new HashMap<>();
         }
     }
 
@@ -183,7 +185,11 @@ public class CategoryProvider implements InitializingBean {
             return defaultCategory;
         }
         if (cats.size() == 1) {
-            return categoryMapByNumber.getOrDefault(cats.get(0), getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory));
+            Category directMatch = categoryMapByNumber.get(cats.get(0));
+            if (directMatch != null) {
+                return directMatch;
+            }
+            return getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
         }
 
         Category result = null;
@@ -205,19 +211,15 @@ public class CategoryProvider implements InitializingBean {
         }
 
 
-        if (cats.size() == 1) {
-            //No main categories found, specific subcategory must've been supplied
+        //Only lists with more than one category get here, single ones are handled above
+        List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
+        if (matchingSubcategories.size() == 1) {
+            result = categoryMapByNumber.get(matchingSubcategories.get(0));
+        } else if (matchingSubcategories.isEmpty()) {
             result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-        } else {
-            List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
-            if (matchingSubcategories.size() == 1) {
-                result = categoryMapByNumber.get(matchingSubcategories.get(0));
-            } else if (matchingSubcategories.size() == 0) {
-                result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-            } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
-                //All match the sub category
-                result = categoryMapByNumber.get(matchingSubcategories.get(0));
-            }
+        } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
+            //All match the sub category
+            result = categoryMapByNumber.get(matchingSubcategories.get(0));
         }
         if (result != null) {
             logger.debug("Found category {} matching newznab categories {}", result.getName(), catsString);
@@ -240,6 +242,21 @@ public class CategoryProvider implements InitializingBean {
         return result;
     }
 
+    /**
+     * @return the standard newznab number for an indexer specific variant with a hundreds digit (2140 -> 2040), empty for
+     * numbers outside the newznab range or without a hundreds digit
+     */
+    static Optional<Integer> withoutHundredsDigit(int cat) {
+        if (cat < 1000 || cat >= 10000) {
+            return Optional.empty();
+        }
+        int hundreds = cat / 100 % 10;
+        if (hundreds == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(cat - hundreds * 100);
+    }
+
     public static boolean checkCategoryMatchingMainCategory(int cat, int possibleMainCat) {
         return possibleMainCat % 1000 == 0 && cat / 1000 == possibleMainCat / 1000;
     }
@@ -253,16 +270,23 @@ public class CategoryProvider implements InitializingBean {
             }
         }
 
-        //Try to find a category that matches any of the provided numbers
+        //Try to find a category that matches any of the provided numbers. Some indexers use variants of the standard
+        //numbers with a hundreds digit for languages (treasure-maps: 2140 = German HD movies, 5130 = German SD TV).
+        //The standard numbers never have a hundreds digit so those variants are also tried without it (2140 as 2040)
+        //before the general main category is used.
         for (Integer cat : cats) {
             if (categoryMapByNumber.containsKey(cat)) {
                 logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching directly {}", categoryMapByNumber.get(cat), cat);
                 return categoryMapByNumber.get(cat);
             }
+            Optional<Integer> standardCat = withoutHundredsDigit(cat);
+            if (standardCat.isPresent() && categoryMapByNumber.containsKey(standardCat.get())) {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching {} as variant of {}", categoryMapByNumber.get(standardCat.get()), cat, standardCat.get());
+                return categoryMapByNumber.get(standardCat.get());
+            }
         }
 
         //Let's try to find a more general one
-        Optional<Category> found = Optional.empty();
         for (Category category : categories) {
             List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList();
             for (Integer cat : cats) {

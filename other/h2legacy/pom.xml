@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress VulnerableLibrariesLocal -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>other</artifactId>
+        <version>3.0.0</version>
+    </parent>
+
+    <artifactId>h2legacy</artifactId>
+    <name>h2legacy</name>
+    <description>
+        H2 2.1.214, relocated from org.h2 to org.nzbhydra.h2legacy.org.h2 so that it can be loaded next to the
+        bundled H2 2.4.240. Needed to export database files written by H2 2.1/2.2 (MVStore "format:2") in-process,
+        without a java executable and without downloading anything.
+    </description>
+
+    <properties>
+        <h2.legacy.version>2.1.214</h2.legacy.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.legacy.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${project.build.directory}/generated-resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <!--
+                The error messages of H2 live in org/h2/util/data.zip, a zip inside the jar. Its entries are not
+                rewritten by the shade relocation while the string constants that look them up are, so the zip is
+                excluded below and the message files are extracted here instead. H2 falls back to loading them as
+                plain resources when data.zip is missing (org.h2.util.Utils#loadResource), and the shade relocation
+                moves them to org/nzbhydra/h2legacy/org/h2/res/ just like the constants that ask for them.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-h2-data-zip</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.h2database</groupId>
+                                    <artifactId>h2</artifactId>
+                                    <version>${h2.legacy.version}</version>
+                                    <includes>org/h2/util/data.zip</includes>
+                                    <outputDirectory>${project.build.directory}/h2data</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>extract-h2-messages</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <unzip src="${project.build.directory}/h2data/org/h2/util/data.zip"
+                                       dest="${project.build.directory}/generated-resources">
+                                    <patternset>
+                                        <include name="org/h2/res/_messages_*.prop"/>
+                                    </patternset>
+                                </unzip>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <!-- The relocated classes exist only in the shaded jar, i.e. after the package phase. A reactor build that
+                     stops at "test" (mvn test from the root) hands core this module's target/classes instead, which lacks
+                     them; run "mvn install" for this module first or exclude it from the reactor (-pl !org.nzbhydra:h2legacy). -->
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.h2database:h2</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.h2</pattern>
+                                    <shadedPattern>org.nzbhydra.h2legacy.org.h2</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>com.h2database:h2</artifact>
+                                    <excludes>
+                                        <!-- Console, web and pg server, extracted above where still needed -->
+                                        <!-- Replaced by the patched copy in src/main/java, see its javadoc -->
+                                        <exclude>org/h2/mvstore/type/MetaType.class</exclude>
+                                        <exclude>org/h2/util/data.zip</exclude>
+                                        <exclude>org/h2/server/**</exclude>
+                                        <exclude>org/h2/bnf/**</exclude>
+                                        <exclude>org/h2/fulltext/**</exclude>
+                                        <exclude>org/h2/jdbcx/**</exclude>
+                                        <exclude>org/h2/res/help.csv</exclude>
+                                        <exclude>org/h2/res/javadoc.properties</exclude>
+                                        <exclude>org/h2/res/*.png</exclude>
+                                        <!-- Command line tools; the engine itself needs only CompressTool, Csv,
+                                             SimpleResultSet, SimpleRowSource, TriggerAdapter and DeleteDbFiles -->
+                                        <exclude>org/h2/tools/Backup*</exclude>
+                                        <exclude>org/h2/tools/ChangeFileEncryption*</exclude>
+                                        <exclude>org/h2/tools/Console*</exclude>
+                                        <exclude>org/h2/tools/ConvertTraceFile*</exclude>
+                                        <exclude>org/h2/tools/CreateCluster*</exclude>
+                                        <exclude>org/h2/tools/GUIConsole*</exclude>
+                                        <exclude>org/h2/tools/MultiDimension*</exclude>
+                                        <exclude>org/h2/tools/Recover*</exclude>
+                                        <exclude>org/h2/tools/Restore*</exclude>
+                                        <exclude>org/h2/tools/RunScript*</exclude>
+                                        <exclude>org/h2/tools/Script*</exclude>
+                                        <exclude>org/h2/tools/Server*</exclude>
+                                        <exclude>org/h2/tools/Shell*</exclude>
+                                        <exclude>org/h2/tools/Upgrade*</exclude>
+                                        <!-- Must not be picked up by DriverManager for jdbc:h2: URLs -->
+                                        <exclude>META-INF/services/java.sql.Driver</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/versions/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

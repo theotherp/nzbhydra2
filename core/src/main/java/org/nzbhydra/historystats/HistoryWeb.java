@@ -16,10 +16,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @Transactional
-    @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/history/searches", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<SearchEntityTO> searchHistory(@RequestBody HistoryRequest requestData) {
         final Page<SearchEntity> page = history.getHistory(requestData, History.SEARCH_TABLE, SearchEntity.class);
         final List<SearchEntityTO> searchEntityTOS = page.getContent().stream()
@@ -43,13 +43,13 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @Transactional
-    @RequestMapping(value = "/internalapi/history/searches/details/{searchId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/history/searches/details/{searchId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public SearchDetails searchHistoryDetails(@PathVariable int searchId) {
         return history.getSearchDetails(searchId);
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/history/searches/forsearching", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntityTO> searchHistoryForSearchPage(HttpServletRequest request) {
         return history.getHistoryForSearching().stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, SearchEntityTO.class))
@@ -58,7 +58,7 @@ public class HistoryWeb {
 
 
     @Secured({"ROLE_STATS"})
-    @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/history/downloads", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<FileDownloadEntityTO> downloadHistory(@RequestBody HistoryRequest requestData) {
         final Page<FileDownloadEntity> page = history.getHistory(requestData, History.DOWNLOAD_TABLE, FileDownloadEntity.class);
         final List<FileDownloadEntityTO> downloadEntityTOS = page
@@ -69,7 +69,7 @@ public class HistoryWeb {
     }
 
     @Secured({"ROLE_STATS"})
-    @RequestMapping(value = "/internalapi/history/notifications", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/history/notifications", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<NotificationEntityTO> notificationHistory(@RequestBody HistoryRequest requestData) {
         final Page<NotificationEntity> page = history.getHistory(requestData, History.NOTIFICATION_TABLE, NotificationEntity.class);
 

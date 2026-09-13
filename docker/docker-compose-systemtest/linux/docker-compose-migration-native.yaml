@@ -1,0 +1,18 @@
+# Override for the native variant of the database migration test (runMigrationTestLinuxNative in
+# .github/workflows/system-test.yml):
+#   docker compose -f docker-compose.yaml -f docker-compose-migration-native.yaml up -d mockserver core
+# Runs the native core container image built by buildNative.yml (the same image runSystemTestsLinux
+# uses), with the H2 v2 fixture copied to /tmp/hydraMigration/defaultDataFolder beforehand. This is
+# where reflection metadata problems in the relocated, bundled H2 2.1 used for the in-process migration
+# would show up, since the native image builds its reflection metadata ahead of time.
+services:
+    core:
+        image: ${HYDRA_IMAGE:-ghcr.io/theotherp/hydradocker:latest}
+        container_name: core
+        # A failed migration must not be retried in a loop; the wait step reads the logs instead.
+        restart: "no"
+        # The graceful shutdown compacts the database; give it time before docker kills the process.
+        stop_grace_period: 90s
+        volumes:
+            - /tmp/hydraMigration/defaultDataFolder:/data
+            - /tmp/hydraBlackhole_migration:/hydraBlackhole

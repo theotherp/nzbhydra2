@@ -159,21 +159,21 @@ public class DuplicateMovieDownloadService {
     }
 
     private List<SearchResultEntity> getSearchResults(List<AddFilesRequest.SearchResult> searchResults) {
-        List<Long> ids = searchResults.stream()
+        List<Long> hashes = searchResults.stream()
                 .map(AddFilesRequest.SearchResult::getSearchResultId)
                 .map(this::parseSearchResultId)
                 .filter(Objects::nonNull)
                 .toList();
-        if (ids.isEmpty()) {
+        if (hashes.isEmpty()) {
             return List.of();
         }
-        return searchResultRepository.findAllById(ids);
+        return searchResultRepository.findAllByHashIn(hashes);
     }
 
     private Long parseSearchResultId(String id) {
         try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
+            return DownloadIdentifier.parse(id, true).searchResultId();
+        } catch (InvalidSearchResultIdException e) {
             return null;
         }
     }

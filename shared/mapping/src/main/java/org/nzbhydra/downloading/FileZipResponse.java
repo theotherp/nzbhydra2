@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Data
 @ReflectionMarker
@@ -20,4 +21,9 @@ public class FileZipResponse {
     private String message;
     private Collection<Long> addedIds;
     private Collection<Long> missedIds;
+    private Collection<String> invalidIds;
+
+    public FileZipResponse(boolean successful, String zipFilepath, String message, Collection<Long> addedIds, Collection<Long> missedIds) {
+        this(successful, zipFilepath, message, addedIds, missedIds, Collections.emptyList());
+    }
 }

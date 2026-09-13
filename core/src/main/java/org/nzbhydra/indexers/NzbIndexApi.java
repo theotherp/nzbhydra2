@@ -170,7 +170,7 @@ public class NzbIndexApi extends Indexer<NzbIndexRoot> {
     }
 
     protected UriComponentsBuilder getBaseUri() {
-        return UriComponentsBuilder.fromHttpUrl(config.getHost());
+        return UriComponentsBuilder.fromUriString(config.getHost());
     }
 
     @Component

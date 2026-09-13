@@ -5,10 +5,10 @@ package org.nzbhydra.springconfig;
 import org.apache.catalina.connector.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
@@ -22,8 +22,8 @@ public class GracefulSpringShutdown implements WebServerFactoryCustomizer<Config
 
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
-        if (factory instanceof TomcatServletWebServerFactory) {
-            ((TomcatServletWebServerFactory) factory).addConnectorCustomizers(new GracefulShutdown());
+        if (factory instanceof TomcatServletWebServerFactory serverFactory) {
+            serverFactory.addConnectorCustomizers(new GracefulShutdown());
         }
     }
 
@@ -46,9 +46,8 @@ public class GracefulSpringShutdown implements WebServerFactoryCustomizer<Config
 
                 this.connector.pause();
                 Executor executor = this.connector.getProtocolHandler().getExecutor();
-                if (executor instanceof ThreadPoolExecutor) {
+                if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
                     try {
-                        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
                         threadPoolExecutor.shutdown();
                         if (!threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
                             log.warn("Tomcat thread pool did not shut down gracefully within "

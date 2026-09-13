@@ -21,10 +21,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -55,26 +55,26 @@ public class IndexerWeb {
             HashMultimap.create());
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/checkCaps", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/indexer/checkCaps", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<CheckCapsResponse> checkCaps(@RequestBody CapsCheckRequest capsCheckRequest) {
         multimap.clear();
         return newznabChecker.checkCaps(capsCheckRequest);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/checkCapsMessages/{indexerName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/indexer/checkCapsMessages/{indexerName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<String> getCheckerMessages(@PathVariable String indexerName) {
         return multimap.get(indexerName);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/checkCapsMessages", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/indexer/checkCapsMessages", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Collection<String>> getCheckerMessages() {
         return multimap.asMap();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/indexer/checkConnection", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse testConnection(@RequestBody IndexerConfig indexerConfig) {
         if (indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB || indexerConfig.getSearchModuleType() == SearchModuleType.TORZNAB) {
             return newznabChecker.checkConnection(indexerConfig);
@@ -84,7 +84,7 @@ public class IndexerWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/readJackettConfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/indexer/readJackettConfig", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public JacketConfigReadResponse readJackettConfig(@RequestBody JacketConfigReadRequest configReadRequest) throws Exception {
         JacketConfigReadResponse response = new JacketConfigReadResponse();
         List<IndexerConfig> newConfigs = new ArrayList<>(configReadRequest.existingIndexers);
@@ -129,7 +129,7 @@ public class IndexerWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/indexer/readProwlarrConfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/indexer/readProwlarrConfig", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> readProwlarrConfig(@RequestBody ProwlarrConfigReadRequest configReadRequest) {
         ProwlarrConfigReadResponse response = new ProwlarrConfigReadResponse();
         List<IndexerConfig> foundProwlarrConfigs;

@@ -1,9 +1,9 @@
 package org.nzbhydra.historystats;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
@@ -20,10 +20,12 @@ import org.nzbhydra.historystats.stats.IndexerScore;
 import org.nzbhydra.historystats.stats.StatsRequest;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerApiAccessEntity;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchEntity;
@@ -31,10 +33,9 @@ import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
+import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -46,8 +47,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 public class StatsComponentTest {
 
@@ -72,14 +71,19 @@ public class StatsComponentTest {
     private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private IndexerApiAccessEntityShortRepository shortApiAccessRepository;
+    @Autowired
+    private IndexerLimitRepository indexerLimitRepository;
+    @Autowired
+    private IndexerUniquenessScoreEntityRepository uniquenessScoreRepository;
 
     @Autowired
     private Stats stats;
 
     @BeforeEach
     public void setUp() {
-//        indexerRepository.deleteAll();
-//        apiAccessRepository.deleteAll();
+        deleteAllRows();
         indexerConfig1 = new IndexerConfig();
         indexerConfig1.setName("indexer1");
         indexerConfig1.setSearchModuleType(SearchModuleType.NEWZNAB);
@@ -94,6 +98,29 @@ public class StatsComponentTest {
         searchModuleProvider.loadIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
         indexer1 = indexerRepository.findByName("indexer1");
         indexer2 = indexerRepository.findByName("indexer2");
+    }
+
+    @AfterEach
+    public void tearDown() {
+        //The Spring context is cached and shared with whichever test class runs next in this JVM, so this class must
+        //hand it an empty database no matter which method ran last or whether it failed.
+        deleteAllRows();
+    }
+
+    /**
+     * Removes every row the tests (and the indexer seeding in {@link #setUp()}) can create, children before parents so
+     * the foreign keys pointing at {@code indexer} and {@code searchresult} are gone before those rows are deleted.
+     */
+    private void deleteAllRows() {
+        downloadRepository.deleteAll();
+        searchResultRepository.deleteAll();
+        indexerSearchRepository.deleteAll();
+        searchRepository.deleteAll();
+        apiAccessRepository.deleteAll();
+        shortApiAccessRepository.deleteAll();
+        uniquenessScoreRepository.deleteAll();
+        indexerLimitRepository.deleteAll();
+        indexerRepository.deleteAll();
     }
 
     @Test
@@ -204,8 +231,10 @@ public class StatsComponentTest {
         downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<DownloadPerAge> downloadPerAges = stats.downloadsPerAge();
-        assertThat(downloadPerAges.get(34).getAge()).isEqualTo(3400);
-        assertThat(downloadPerAges.get(34).getCount()).isEqualTo(2);
+        assertThat(downloadPerAges)
+                .extracting(DownloadPerAge::getAge)
+                .containsExactly(0, 1000, 1500, 2000, 3400);
+        assertThat(downloadPerAges.get(4).getCount()).isEqualTo(2);
 
         DownloadPerAgeStats downloadPerAgeStats = stats.downloadsPerAgeStats();
         assertThat(downloadPerAgeStats.getAverageAge()).isEqualTo(1901);

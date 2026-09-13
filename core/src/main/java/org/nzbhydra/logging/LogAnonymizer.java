@@ -40,7 +40,7 @@ public class LogAnonymizer {
     public String getAnonymizedLog(String log) {
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             logger.debug("Removing username from log");
-            log = log.replaceAll("(?i)(user|username)([=:])" + userAuthConfig.getUsername(), "$1$2<USERNAME>");
+            log = log.replaceAll("(?i)(user|username)([=:])" + Pattern.quote(userAuthConfig.getUsername()), "$1$2<USERNAME>");
 
         }
         for (IndexerConfig indexerConfig : configProvider.getBaseConfig().getIndexers()) {

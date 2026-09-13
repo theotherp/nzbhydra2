@@ -2,9 +2,6 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import okhttp3.Call;
@@ -16,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,8 +43,7 @@ public class Experiments {
     @Test
     @Disabled
     void createSimpleYaml() throws IOException, InterruptedException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.registerModule(new Jdk8Module());
+        ObjectMapper objectMapper = new YAMLMapper();
 
         IndexerConfig indexerConfig = new IndexerConfig();
         indexerConfig.setCategoryMapping(new IndexerCategoryConfig());
@@ -61,7 +59,7 @@ public class Experiments {
     @Test
     @Disabled
     void createTestYaml() throws IOException, InterruptedException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        ObjectMapper objectMapper = new YAMLMapper();
 
         MainClass mainClass = new MainClass();
         MainClass.SubEntry subEntry = new MainClass.SubEntry();

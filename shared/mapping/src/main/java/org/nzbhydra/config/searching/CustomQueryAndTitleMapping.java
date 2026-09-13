@@ -7,6 +7,8 @@ import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.springnative.ReflectionMarker;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
@@ -14,11 +16,23 @@ import java.util.regex.Pattern;
 @ReflectionMarker
 public class CustomQueryAndTitleMapping {
 
+    /**
+     * Optional label shown in the UI. Older configs don't have it, in which case the mapping is described by its input pattern.
+     */
+    private String name;
+    /**
+     * Mappings can be disabled without deleting them. Older configs don't have the key, so the initializer makes them enabled.
+     */
+    private boolean enabled = true;
     private SearchType searchType;
     private AffectedValue affectedValue;
     private boolean matchAll;
     private String from;
     private String to;
+    /**
+     * Example inputs the user saved with the mapping so the test dialog can replay them. Older configs don't have the key.
+     */
+    private List<String> examples = new ArrayList<>();
     @JsonIgnore
     @DiffIgnore
     private Pattern fromPattern;
@@ -36,6 +50,23 @@ public class CustomQueryAndTitleMapping {
         this.from = split[2];
         this.to = split[3];
         this.matchAll = split.length == 4 || Boolean.parseBoolean(split[4]);
+    }
+
+    /**
+     * Returns a detached copy. Callers that need to change a mapping for an evaluation (e.g. forcing the affected value for a test run)
+     * must work on a copy because the instances in the list belong to the config and would be persisted with the changed values.
+     */
+    public CustomQueryAndTitleMapping copy() {
+        final CustomQueryAndTitleMapping copy = new CustomQueryAndTitleMapping();
+        copy.setName(name);
+        copy.setEnabled(enabled);
+        copy.setSearchType(searchType);
+        copy.setAffectedValue(affectedValue);
+        copy.setMatchAll(matchAll);
+        copy.setFrom(from);
+        copy.setTo(to);
+        copy.setExamples(examples == null ? new ArrayList<>() : new ArrayList<>(examples));
+        return copy;
     }
 
     @JsonIgnore

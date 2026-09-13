@@ -7,9 +7,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
@@ -25,7 +24,7 @@ public class ProxyImagesWeb {
         this.hydraOkHttp3ClientHttpRequestFactory = hydraOkHttp3ClientHttpRequestFactory;
     }
 
-    @RequestMapping(value = "/cache/{originalUrl}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/cache/{originalUrl}", produces = MediaType.IMAGE_JPEG_VALUE)
     @Cacheable(cacheNames = "images", cacheManager = "imageCacheManager")
     public byte[] proxyImage(@PathVariable String originalUrl) throws Exception {
         try (ClientHttpResponse response = hydraOkHttp3ClientHttpRequestFactory.createRequest(new URI(new String(Base64.getDecoder().decode(originalUrl), StandardCharsets.UTF_8)), HttpMethod.GET).execute()) {

@@ -2,19 +2,15 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.config.indexer.CapsCheckRequest;
 import org.nzbhydra.mediainfo.MediaInfoTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class MediaInfoTest {
 
     @Autowired
@@ -22,8 +18,6 @@ public class MediaInfoTest {
 
     @Test
     public void shouldAutocompleteTV() throws Exception {
-        CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
-
         List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/TV", "input=Lost").as(new TypeReference<>() {
         });
         Assertions.assertThat(checkCapsResponses).isNotEmpty();
@@ -35,13 +29,13 @@ public class MediaInfoTest {
 
     @Test
     public void shouldAutocompleteMovie() throws Exception {
-        CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
-
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=american beauty").as(new TypeReference<>() {
+        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=Hydra Browser Movie").as(new TypeReference<>() {
         });
         Assertions.assertThat(checkCapsResponses).isNotEmpty();
         MediaInfoTO mediaInfoTO = checkCapsResponses.get(0);
-        Assertions.assertThat(mediaInfoTO.getTmdbId()).isEqualTo("14");
+        Assertions.assertThat(mediaInfoTO.getTmdbId()).isEqualTo("424242");
+        Assertions.assertThat(mediaInfoTO.getTitle()).isEqualTo("Hydra Browser Movie");
+        Assertions.assertThat(mediaInfoTO.getYear()).isEqualTo(2000);
 
     }
 

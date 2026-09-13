@@ -1,6 +1,5 @@
 package org.nzbhydra.debuginfos;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -18,6 +17,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.database.DatabaseStatistics;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -32,10 +32,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
-import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -102,6 +103,8 @@ public class DebugInfosProvider {
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
     @Autowired
     private TempFileProvider tempFileProvider;
+    @Autowired
+    private DatabaseStatistics databaseStatistics;
 
 
     @PostConstruct
@@ -245,6 +248,7 @@ public class DebugInfosProvider {
         logNumberOfTableRows("INDEXERAPIACCESS_SHORT");
         logNumberOfTableRows("INDEXERNZBDOWNLOAD");
         logDatabaseFolderSize();
+        logger.info(databaseStatistics.getSummaryLine());
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
             logger.info("Container info: {}", updateManager.getPackageInfo());
@@ -429,7 +433,7 @@ public class DebugInfosProvider {
     }
 
 
-    private String getAnonymizedConfig() throws JsonProcessingException {
+    private String getAnonymizedConfig() throws JacksonException {
         return Jackson.SENSITIVE_YAML_MAPPER.writeValueAsString(configProvider.getBaseConfig());
     }
 

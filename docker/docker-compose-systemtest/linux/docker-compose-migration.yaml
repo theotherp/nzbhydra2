@@ -1,0 +1,29 @@
+# Override for the JVM variant of the database migration test (runMigrationTestLinuxJvm in
+# .github/workflows/system-test.yml):
+#   docker compose -f docker-compose.yaml -f docker-compose-migration.yaml up -d mockserver core
+# Runs the JVM core from core/target on a JRE image, with the H2 v2 fixture copied to
+# /tmp/hydraMigration/defaultDataFolder beforehand. The migration itself now runs entirely in-process
+# (the relocated, bundled H2 2.1 reads and rewrites the database within the single core JVM), so no
+# separate java processes and no extra JRE are needed for the migration to work -- this JVM variant
+# exists to prove the migration also works from the exec jar. The native variant
+# (docker-compose-migration-native.yaml) proves it works from the native image build, which is where
+# reflection metadata problems in the bundled H2 would show up.
+services:
+    core:
+        image: eclipse-temurin:17-jre
+        container_name: core
+        # A failed migration must not be retried in a loop; the wait step reads the logs instead.
+        restart: "no"
+        # The graceful shutdown compacts the database; give it time before docker kills the process.
+        stop_grace_period: 90s
+        volumes:
+            - ../../../core/target:/app:ro
+            - /tmp/hydraMigration/defaultDataFolder:/data
+        entrypoint: /bin/sh
+        # `-Dmain.useCsrf=false` stays here on purpose, unlike in docker-compose-jvm-coverage.yaml: this rig
+        # starts the core on an H2 2.1 fixture data folder and drives the database migration through endpoints
+        # this repository cannot exercise outside Docker, so the CSRF path is left to the other rigs, which do verify it.
+        command:
+            - -c
+            - |
+                java -DinternalApiKey=internalApiKey -Dmain.useCsrf=false -Dmain.logging.logfilelevel=DEBUG -jar /app/core-*-exec.jar directstart --datafolder /data

@@ -2,17 +2,15 @@
 
 package org.nzbhydra.config;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import com.google.common.base.Strings;
-
-import java.io.IOException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.jdk.StringDeserializer;
 
 public class EmptyStringToNullDeserializer extends StringDeserializer {
 
     @Override
-    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public String deserialize(JsonParser p, DeserializationContext ctxt) {
         return Strings.emptyToNull(super.deserialize(p, ctxt));
     }
 }

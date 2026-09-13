@@ -7,6 +7,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.DuplicateGroups.DuplicateGroup;
 import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,8 +36,40 @@ public class DuplicateDetector {
     @Autowired
     protected ConfigProvider configProvider;
 
+    /**
+     * Matches the given new items against the groups found so far and either adds them to a matching group or creates
+     * a new one for them. Items are processed newest first so that a single batch of new items is grouped in the same
+     * way as by {@link #detectDuplicates(Set)}. Over several rounds the grouping is a greedy heuristic just like the
+     * batch one: a new item is compared with all members of the existing groups, including older ones, so in rare
+     * fuzzy cases (sameness is not transitive) the result may differ from grouping all items at once.
+     */
+    public void addToGroups(DuplicateGroups duplicateGroups, Collection<SearchResultItem> newItems) {
+        List<SearchResultItem> newestFirst = newItems.stream().sorted(SearchResultItem.NEWEST_FIRST).toList();
+        int countDetectedDuplicates = 0;
+        for (SearchResultItem searchResultItem : newestFirst) {
+            if (duplicateGroups.getGroup(searchResultItem) != null) {
+                //Was already grouped in a previous round
+                continue;
+            }
+            DuplicateGroup matchingGroup = null;
+            for (DuplicateGroup group : duplicateGroups.getGroupsWithSameTitle(searchResultItem)) {
+                if (isSameAsAnyItemInBucket(searchResultItem, group.getItems())) {
+                    matchingGroup = group;
+                    break;
+                }
+            }
+            if (matchingGroup == null) {
+                duplicateGroups.createGroup(searchResultItem);
+            } else {
+                duplicateGroups.addToGroup(matchingGroup, searchResultItem);
+                countDetectedDuplicates++;
+            }
+        }
+        logger.debug("Duplicate detection for {} new search results found {} duplicates", newItems.size(), countDetectedDuplicates);
+    }
+
     public DuplicateDetectionResult detectDuplicates(Set<SearchResultItem> results) {
-        Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().toLowerCase().replaceAll("[ .\\-_]", "")));
+        Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> DuplicateGroups.normalizeTitle(x.getTitle())));
         Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
         List<LinkedHashSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 
@@ -52,23 +86,12 @@ public class DuplicateDetector {
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
                 for (LinkedHashSet<SearchResultItem> bucket : listOfBuckets) {
-                    if (bucket.stream().map(SearchResultItem::getIndexer).toList().contains(searchResultItem.getIndexer())) {
-                        continue;
-                    }
                     //And all searchResults in those buckets
-                    for (SearchResultItem other : bucket) {
-                        //Now we can check if the two searchResults are duplicates
-                        boolean same = testForSameness(searchResultItem, other);
-                        if (same) {
-                            //If they are the same we found a bucket for the result. We add it and continue
-                            foundBucket = true;
-                            bucket.add(searchResultItem);
-                            countDetectedDuplicates++;
-                            break;
-                        }
-                    }
-                    //If we already found a bucket for the result we can go on with the next
-                    if (foundBucket) {
+                    if (isSameAsAnyItemInBucket(searchResultItem, bucket)) {
+                        //If they are the same we found a bucket for the result. We add it and continue
+                        foundBucket = true;
+                        bucket.add(searchResultItem);
+                        countDetectedDuplicates++;
                         break;
                     }
                 }
@@ -94,6 +117,22 @@ public class DuplicateDetector {
         logger.debug("Duplicate detection for {} search results found {} duplicates", results.size(), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer, countDetectedDuplicates);
+    }
+
+    /**
+     * Returns true if the item is a duplicate of any of the bucket's items. A bucket which already contains an item
+     * of the same indexer can never match.
+     */
+    private boolean isSameAsAnyItemInBucket(SearchResultItem searchResultItem, Collection<SearchResultItem> bucket) {
+        if (bucket.stream().map(SearchResultItem::getIndexer).toList().contains(searchResultItem.getIndexer())) {
+            return false;
+        }
+        for (SearchResultItem other : bucket) {
+            if (testForSameness(searchResultItem, other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean testForSameness(SearchResultItem result1, SearchResultItem result2) {

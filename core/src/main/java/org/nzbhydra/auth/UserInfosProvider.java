@@ -4,6 +4,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -80,6 +81,20 @@ public class UserInfosProvider {
         bootstrappedData.setServerTimeZone(ZoneId.systemDefault().getId());
 
         return bootstrappedData;
+    }
+
+    public BootstrappedDataTO getBootstrapData(Principal principal, String baseUrl) {
+        BootstrappedDataTO bootstrappedData = getUserInfos(principal);
+        bootstrappedData.setSafeConfig(new SafeConfig(configProvider.getBaseConfig()));
+        bootstrappedData.setBaseUrl(normalizeBaseUrl(baseUrl));
+        return bootstrappedData;
+    }
+
+    private String normalizeBaseUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank() || "/".equals(baseUrl)) {
+            return "/";
+        }
+        return baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
     }
 
 }

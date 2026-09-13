@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -79,7 +78,6 @@ public class NzbGet extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
-    private Instant lastErrorLogged;
 
 
     //LATER Handle username / password and failed auth, return codes
@@ -88,9 +86,10 @@ public class NzbGet extends Downloader {
     public void initialize(DownloaderConfig downloaderConfig) {
         super.initialize(downloaderConfig);
         try {
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl());
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(downloaderConfig.getUrl());
             builder.path("jsonrpc");
             Map<String, String> headers = new HashMap<>();
+            headers.put("User-Agent", "NZBHydra2");
             if (downloaderConfig.getUsername().isPresent() && downloaderConfig.getPassword().isPresent()) {
                 headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername().get() + ":" + downloaderConfig.getPassword().get()).getBytes()));
             }
@@ -176,16 +175,9 @@ public class NzbGet extends Downloader {
         LinkedHashMap<String, Object> statusMap;
         try {
             statusMap = client.invoke("status", new Object[]{}, LinkedHashMap.class);
-            lastErrorLogged = null;
+            resetStatusErrorThrottle();
         } catch (Throwable e) {
-            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
-                logger.error("Error contacting NZBGet", e);
-                lastErrorLogged = Instant.now();
-            }
-            DownloaderStatus status = new DownloaderStatus();
-            status.setState(DownloaderStatus.State.OFFLINE);
-            addDownloadRate(0);
-            return status;
+            return handleStatusRequestError(logger, "Error contacting NZBGet", e);
         }
         DownloaderStatus status = getStatusFromMap(statusMap);
 
@@ -233,13 +225,16 @@ public class NzbGet extends Downloader {
         int remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB") - (Integer) statusMap.getOrDefault("PausedSizeMB", 0);
 //        status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
         status.setRemainingSizeInMegaBytes(remainingSizeMB);
+        status.setFreeDiskSpaceBytes(megabytesToBytes(statusMap.get("FreeDiskSpaceMB")));
+        //Only reported by NZBGet 24.3 and later
+        status.setFreeIncompleteDiskSpaceBytes(megabytesToBytes(statusMap.get("FreeInterDiskSpaceMB")));
 
         Integer downloadRateInBytes = (Integer) statusMap.get("DownloadRate");
 //        status.setDownloadRateFormatted(downloadRateInBytes > 0 ? (Converters.formatBytesPerSecond(downloadRateInBytes, true)) : "");
         int downloadRateInKilobytes = downloadRateInBytes / 1024;
         status.setDownloadRateInKilobytes(downloadRateInKilobytes);
         addDownloadRate(downloadRateInKilobytes);
-        status.setDownloadingRatesInKilobytes(downloadRates);
+        status.setDownloadingRatesInKilobytes(getDownloadRates());
 
         Boolean downloadPaused = (Boolean) statusMap.get("DownloadPaused");
         if (downloadPaused) {
@@ -260,6 +255,13 @@ public class NzbGet extends Downloader {
 //            status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
         }
         return status;
+    }
+
+    private static Long megabytesToBytes(Object megabytes) {
+        if (!(megabytes instanceof Number number)) {
+            return null;
+        }
+        return number.longValue() * 1024L * 1024L;
     }
 
     @Override

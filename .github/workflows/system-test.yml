@@ -4,37 +4,25 @@ on:
   push:
   workflow_dispatch:
 
+concurrency:
+  group: system-test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   waitForNative:
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+      actions: read
     uses: ./.github/workflows/buildNative.yml
   buildMockserver:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         name: "Check out source"
-        with:
-          # Check out last 15 commits
-          fetch-depth: 15
-
-      - name: "Get changed files in core module"
-        id: changed-files-specific
-        uses: tj-actions/changed-files@v35
-        with:
-          since_last_remote_commit: true
-          files: |
-            other/mockserver/**
-
-      - if: steps.changed-files-specific.outputs.any_changed == 'true'
-        run: |
-          echo "::notice::Will build new mock server container. Changed files since last push:"
-          echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
-
-      - if: steps.changed-files-specific.outputs.any_changed == 'false'
-        run: |
-          echo "::notice::Will skip build of new mock server container. No changed files since last push."
 
       - name: Set up JDK 17
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -42,7 +30,6 @@ jobs:
           cache: 'maven'
 
       - name: "Login to GitHub Container Registry"
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -50,7 +37,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Build and push mockserver container"
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           mvn --batch-mode install -DskipTests -T 1C
           cd other/mockserver/
@@ -61,20 +47,45 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+    # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
+    # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
+    # cancelled mid-suite, which discards the reporter's summary and leaves the
+    # failures to be reconstructed from the interleaved log.
+    timeout-minutes: 75
     env:
-      spring_profiles_active: build,systemtest,testdocker,${{ matrix.test.name }}
-      nzbhydra_port: ${{ matrix.test.port }}
-      nzbhydra.port: ${{ matrix.test.port }}
-      nzbhydra_name: ${{ matrix.test.name }}
-      NZBHYDRANAME: ${{ matrix.test.name }}
-      nzbhydra.name: ${{ matrix.test.name }}
+      spring_profiles_active: build,systemtest,testdocker,core
+        # The core runs in a container that mounts /tmp/hydraBlackhole_core at /hydraBlackhole; the tests read the host side.
+      BLACKHOLE_FOLDER_HYDRA: /hydraBlackhole
+      nzbhydra_port: 5076
+      nzbhydra.port: 5076
+      nzbhydra_name: core
+      NZBHYDRANAME: core
+      nzbhydra.name: core
+      HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
+      HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
+      MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+      MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:18989
+      SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
-      - run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
+      - run: echo Running test core with port 5076
       - uses: actions/checkout@v4
         name: "Check out source"
+
+      - name: Set artifact timestamp
+        run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -83,40 +94,113 @@ jobs:
           distribution: 'adopt'
           cache: 'maven'
 
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/system/package-lock.json
+
+      - name: Install Playwright dependencies
+        working-directory: tests/system
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium firefox
+
       - name: "Install maven"
         run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser
 
       - name: "Create docker network"
         run: docker network create systemtest
 
-      - name: "Copy v1Migration docker data"
-        run: |
-          mkdir -p /tmp/hydra/v1MigrationDataFolder
-          cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
+      -   name: "Prepare host folders shared with the core container"
+          # Docker creates a missing bind-mount source as root with mode 755. The container then writes the black-hole
+          # files as root and the Playwright tests, running as the runner user, cannot delete them (EACCES on unlink).
+          run: |
+              mkdir -p /tmp/hydraBlackhole_core /tmp/hydra/defaultDataFolder
+              chmod 777 /tmp/hydraBlackhole_core
 
       - name: "Run docker compose"
         run: |
           cd docker/docker-compose-systemtest/linux
-          docker compose up --quiet-pull -d
+          if ! docker compose up --quiet-pull -d; then
+            docker compose ps
+            docker compose logs --no-color
+            exit 1
+          fi
           cd ../../..
 
       - name: "Wait for healthy containers"
         run: |
+          wait_for_arr() {
+            local name="$1"
+            local port="$2"
+            for attempt in {1..30}; do
+              if curl --fail --silent --show-error --header "X-Api-Key: system-test-api-key-12345" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
+                echo "${name} is ready"
+                return
+              fi
+              sleep 2
+            done
+            echo "${name} did not become ready"
+            docker compose logs --no-color "${name}"
+            exit 1
+          }
+
           docker ps
-          sleep 10
-          docker ps
-          sleep 10
+          wait_for_arr sonarr 18989
+          wait_for_arr radarr 7878
           docker ps
           echo "Core container mounts:"
           docker container inspect -f '{{ .Mounts}}' core
-          echo "v1Migration container mounts:"
-          docker container inspect -f '{{ .Mounts}}' v1Migration
-
       - name: "Curl core"
         run: "curl --verbose http://127.0.0.1:5076"
 
       - name: "Run tests"
-        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dsurefire.runOrder=random
+
+      - name: "Convert JVM system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf "**/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Linux native core)"
+
+      - name: "Run Playwright system tests"
+        working-directory: tests/system
+        run: npm run test:full
+
+      - name: "Convert Playwright system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf tests/system/test-results/junit.xml -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Linux native core)"
+
+      - name: "Publish CTRF test report"
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Linux Native Core'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-linux-native'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Test GUI runner safety"
+        run: python3 -m unittest misc/test_run_gui_systemtest.py
+
+      - name: "Upload Playwright artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-native--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/system/playwright-report/**
+            tests/system/test-results/**
+          if-no-files-found: warn
 
       - name: "Write docker-compose logs"
         if: always()
@@ -127,7 +211,6 @@ jobs:
           docker compose logs --no-color sonarr > docker-compose-sonarr.log
           docker compose logs --no-color mockserver > docker-compose-mockserver.log
           docker compose logs --no-color core > docker-compose-core.log
-          docker compose logs --no-color v1Migration > docker-compose-v1Migration.log
           echo "Found log files:"
           find . -name "*.log"
           cd ../../..
@@ -137,14 +220,19 @@ jobs:
         # If the logs are larger than 1MB there's probably something wrong
         run: |
           shopt -s globstar
-          for d in ./**/*.log ; do (truncate --size=1M $d); done
+          for d in ./**/*.log; do
+            if [ -f "$d" ] && [ "$(stat -c%s "$d")" -gt 1048576 ]; then
+              truncate --size=1M "$d"
+            fi
+          done
 
       - name: "Check logs for unwanted strings"
         if: always()
         run: |
           # Add unwanted strings to this list (one per line)
           UNWANTED_STRINGS=(
-            "MissingReflectionRegistrationError"
+            "Missing[A-Za-z]*Registration"
+            "Unable to complete startup initialization"
           )
 
           FOUND_ISSUES=0
@@ -178,21 +266,23 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dataLinux${{ matrix.test.name }}
+          name: system-test--linux-native--core--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-test-logs
-          path: tests/**/*.log
+          name: system-test--linux-native--core--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-docker-logs
+          name: system-test--linux-native--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
@@ -200,16 +290,547 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: System test report ${{ matrix.test.name }}
+          name: System test report core ${{ github.sha }}
           path: "**/surefire-reports/*.xml"
           reporter: java-junit
 
+  runSystemTestsJvmCoverage:
+    needs: buildMockserver
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+    # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
+    # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
+    # cancelled mid-suite, which discards the reporter's summary and leaves the
+    # failures to be reconstructed from the interleaved log.
+    timeout-minutes: 75
+    env:
+      spring_profiles_active: build,systemtest,testdocker,core
+        # The core runs in a container that mounts /tmp/hydraBlackhole_core at /hydraBlackhole; the tests read the host side.
+      BLACKHOLE_FOLDER_HYDRA: /hydraBlackhole
+      nzbhydra_port: 5076
+      nzbhydra.port: 5076
+      nzbhydra_name: core
+      NZBHYDRANAME: core
+      nzbhydra.name: core
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
+      HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
+      MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+      MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:18989
+      SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
+    steps:
+      - uses: actions/checkout@v4
+        name: "Check out source"
+        with:
+          fetch-depth: 15
 
+      - name: Set artifact timestamp
+        run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
+      - name: "Detect changes affecting the JVM system tests"
+        id: changed
+        if: >-
+          github.event_name == 'push' &&
+          github.event.before != '0000000000000000000000000000000000000000'
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            jvm-system-tests:
+              - 'core/src/**'
+              - 'core/ui-react/**'
+              # React test files alone don't affect the JVM core -- only Playwright
+              # needs to run for those.
+              - '!core/ui-react/src/**/*.test.ts'
+              - '!core/ui-react/src/**/*.test.tsx'
+              - '!core/ui-react/src/**/*.spec.ts'
+              - '!core/ui-react/src/**/*.spec.tsx'
+              - 'core/pom.xml'
+              - 'shared/**'
+              - 'other/**'
+              - 'releases/**'
+              - 'tests/system/src/**'
+              - 'tests/pom.xml'
+              - 'tests/system/pom.xml'
+              - 'pom.xml'
+              - '.github/workflows/system-test.yml'
+
+      - name: "Decide whether the JVM system tests are needed"
+        id: build-decision
+        shell: bash
+        run: |
+          if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${{ steps.changed.outputs.jvm-system-tests }}" = "false" ]; then
+            echo "should-run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No changes under watched paths since the previous commit -- skipping the JVM system tests before Playwright."
+          else
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/system/package-lock.json
+
+      - name: Install Playwright dependencies
+        working-directory: tests/system
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium firefox
+
+      - name: "Build JVM core and test dependencies"
+        run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:core -am
+
+      - name: "Download JaCoCo agent"
+        run: |
+          mvn --batch-mode dependency:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.13:jar:runtime
+          cp ~/.m2/repository/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar core/target/jacoco-agent.jar
+
+      - name: "Create docker network"
+        run: docker network create systemtest
+
+      -   name: "Prepare host folders shared with the core container"
+          # Docker creates a missing bind-mount source as root with mode 755. The container then writes the black-hole
+          # files as root and the Playwright tests, running as the runner user, cannot delete them (EACCES on unlink).
+          run: |
+              mkdir -p /tmp/hydraBlackhole_core /tmp/hydra/defaultDataFolder
+              chmod 777 /tmp/hydraBlackhole_core
+
+      - name: "Run JVM core and supporting containers"
+        run: |
+          docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml up --quiet-pull -d mockserver sonarr radarr core
+
+      - name: "Wait for JVM core"
+        run: |
+          wait_for_arr() {
+            local name="$1"
+            local port="$2"
+            for attempt in {1..30}; do
+              if curl --fail --silent --show-error --header "X-Api-Key: system-test-api-key-12345" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
+                return
+              fi
+              sleep 2
+            done
+            docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color "${name}"
+            exit 1
+          }
+
+          wait_for_arr sonarr 18989
+          wait_for_arr radarr 7878
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color
+          exit 1
+
+      - name: "Build"
+        run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
+      - name: "Run system tests against JVM core"
+        if: steps.build-decision.outputs.should-run == 'true'
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dsurefire.runOrder=random
+
+      - name: "Convert JVM system test results to CTRF"
+        if: always() && steps.build-decision.outputs.should-run == 'true'
+        run: npx --yes junit-to-ctrf "**/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Linux JVM core)"
+
+      - name: "Run Playwright system tests against JVM core"
+        working-directory: tests/system
+        run: npm run test:full
+
+      - name: "Convert Playwright system test results to CTRF"
+        if: always()
+        run: npx --yes junit-to-ctrf tests/system/test-results/junit.xml -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Linux JVM core)"
+
+      - name: "Publish CTRF test report"
+        if: always()
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Linux JVM Core (coverage)'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-linux-jvm-coverage'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Upload Playwright artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-jvm-coverage--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/system/playwright-report/**
+            tests/system/test-results/**
+          if-no-files-found: warn
+
+      - name: "Stop JVM core"
+        if: always()
+        run: |
+          curl --fail --silent http://127.0.0.1:5076/internalapi/control/shutdown > /dev/null || true
+          for attempt in {1..30}; do
+            if [ -f /tmp/hydra/defaultDataFolder/jacoco-system.exec ]; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+      - name: "Generate system test coverage"
+        if: always()
+        run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:report -pl org.nzbhydra:nzbhydra2 -Djacoco.dataFile=/tmp/hydra/defaultDataFolder/jacoco-system.exec
+
+      - name: "Upload JVM system test coverage"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-jvm-coverage--core--coverage-report--${{ env.ARTIFACT_TIMESTAMP }}
+          path: core/target/site/jacoco/**
+          if-no-files-found: warn
+
+      - name: "Write JVM coverage Docker logs"
+        if: always()
+        run: docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color > jvm-system-coverage-docker.log
+
+      - name: "Upload JVM coverage logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-jvm-coverage--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
+          path: jvm-system-coverage-docker.log
+
+
+
+      # Starts a core with a data folder the previous code base wrote (H2 2.1, tests/system/instanceData/h2v2Migration,
+    # seeded by MigrationFixtureTool) and runs DatabaseMigrationSystemTest against it: the start-up migrates the
+    # database to H2 2.4 and the Flyway migrations, and the test proves the recorded history, downloads and download
+      # links survived. The migration now runs entirely in-process (a relocated, bundled H2 2.1, exported with
+      # reflection metadata for the native image), so it is verified against both runtimes: the JVM variant proves it
+      # from the exec jar, the native variant proves it from the native core container image, which is where
+      # reflection metadata problems would show up.
+  runMigrationTestLinuxJvm:
+      needs: buildMockserver
+      runs-on: ubuntu-latest
+      permissions:
+          contents: read
+          pull-requests: write
+          actions: read
+      timeout-minutes: 45
+      env:
+          spring_profiles_active: build,systemtest,testdocker,core
+          nzbhydra_port: 5076
+          nzbhydra.port: 5076
+          nzbhydra_name: core
+          NZBHYDRANAME: core
+          nzbhydra.name: core
+          HYDRA_INTERNAL_API_KEY: internalApiKey
+          HYDRA_EXTERNAL_URL: http://core:5076
+          MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+          MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+          MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
+          COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration.yaml
+      steps:
+          -   uses: actions/checkout@v4
+              name: "Check out source"
+
+          -   name: Set artifact timestamp
+              run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
+          -   name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: '17'
+                  distribution: 'adopt'
+                  cache: 'maven'
+
+          -   name: Set up Node 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+          -   name: "Build JVM core and test dependencies"
+              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:core -am
+
+          -   name: "Prepare the data folder from the H2 v2 fixture"
+              run: |
+                  mkdir -p "$MIGRATION_DATA_FOLDER/database"
+                  cp tests/system/instanceData/h2v2Migration/nzbhydra.yml "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/expectations.json "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/database/nzbhydra.mv.db "$MIGRATION_DATA_FOLDER/database/"
+                  # The container runs as root; the test on the runner reads the log and database files it writes.
+                  chmod -R a+rwX "$MIGRATION_DATA_FOLDER"
+                  echo "Fixture header: $(head -c 200 "$MIGRATION_DATA_FOLDER/database/nzbhydra.mv.db" | tr -c '[:print:]' ' ')"
+                  cat "$MIGRATION_DATA_FOLDER/expectations.json"
+
+          -   name: "Create docker network"
+              run: docker network create systemtest
+
+          -   name: "Run mockserver and JVM core with the fixture"
+              run: docker compose $COMPOSE_FILES up --quiet-pull -d mockserver core
+
+          -   name: "Wait for the migrated JVM core"
+              # The migration exports and re-imports the database in separate java processes; allow well over the usual
+              # start-up time.
+              run: |
+                  for attempt in {1..240}; do
+                    if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+                      echo "Core is up after $attempt attempts"
+                      exit 0
+                    fi
+                    if [ "$(docker inspect -f '{{.State.Running}}' core 2>/dev/null)" != "true" ]; then
+                      echo "::error::The core container stopped before becoming healthy"
+                      docker compose $COMPOSE_FILES logs --no-color core
+                      exit 1
+                    fi
+                    sleep 2
+                  done
+                  echo "::error::The core did not become healthy in time"
+                  docker compose $COMPOSE_FILES logs --no-color
+                  exit 1
+
+          -   name: "Run migration test"
+              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dgroups=migration -Dmigrationtest.datafolder=$MIGRATION_DATA_FOLDER -Dmigrationtest.mockserverExternalUrl=$MOCKSERVER_EXTERNAL_URL
+
+          -   name: "Convert migration test results to CTRF"
+              if: always()
+              run: npx --yes junit-to-ctrf "tests/system/target/surefire-reports/*.xml" -o ctrf/migration-tests.json -t "Database migration test (Linux JVM core)"
+
+          -   name: "Publish CTRF test report"
+              if: always()
+              uses: ctrf-io/github-test-reporter@v1
+              with:
+                  report-path: 'ctrf/*.json'
+                  title: 'Database Migration Test - Linux JVM Core'
+                  group-by: 'filePath'
+                  summary-report: true
+                  insights-report: true
+                  flaky-rate-report: true
+                  slowest-report: true
+                  fail-rate-report: true
+                  upload-artifact: true
+                  artifact-name: 'ctrf-report-migration-test-linux-jvm'
+                  fetch-previous-results: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          -   name: "Stop JVM core"
+              if: always()
+              run: |
+                  curl --fail --silent "http://127.0.0.1:5076/internalapi/control/shutdown?internalApiKey=internalApiKey" > /dev/null || true
+                  docker compose $COMPOSE_FILES stop core mockserver || true
+
+          -   name: "Write docker logs"
+              if: always()
+              run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
+
+          -   name: "Upload data folder artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--jvm--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: /tmp/hydraMigration
+
+          -   name: "Upload test logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--jvm--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: |
+                      tests/**/*.log
+                      tests/**/target/surefire-reports/**
+
+          -   name: "Upload docker logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--jvm--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: migration-test-docker.log
+
+      # Same as runMigrationTestLinuxJvm, but starts the core from the native container image built by
+      # buildNative.yml instead of the exec jar: this is where reflection metadata problems in the bundled H2 2.1
+      # used by the in-process migration would show up.
+  runMigrationTestLinuxNative:
+      needs: [ waitForNative, buildMockserver ]
+      runs-on: ubuntu-latest
+      permissions:
+          contents: read
+          pull-requests: write
+          actions: read
+      timeout-minutes: 45
+      env:
+          spring_profiles_active: build,systemtest,testdocker,core
+          nzbhydra_port: 5076
+          nzbhydra.port: 5076
+          nzbhydra_name: core
+          NZBHYDRANAME: core
+          nzbhydra.name: core
+          HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
+          HYDRA_INTERNAL_API_KEY: internalApiKey
+          HYDRA_EXTERNAL_URL: http://core:5076
+          MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+          MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+          RADARR_INTERNAL_URL: http://radarr:7878
+          RADARR_EXTERNAL_URL: http://127.0.0.1:7878
+          RADARR_API_KEY: system-test-api-key-12345
+          SONARR_PRESET_URL: http://localhost:18989
+          SONARR_INTERNAL_URL: http://sonarr:8989
+          SONARR_EXTERNAL_URL: http://127.0.0.1:18989
+          SONARR_API_KEY: system-test-api-key-12345
+          SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
+          MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
+          COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration-native.yaml
+      steps:
+          -   uses: actions/checkout@v4
+              name: "Check out source"
+
+          -   name: Set artifact timestamp
+              run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
+          -   name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: '17'
+                  distribution: 'adopt'
+                  cache: 'maven'
+
+          -   name: Set up Node 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+          -   name: "Install maven"
+              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser
+
+          -   name: "Prepare the data folder from the H2 v2 fixture"
+              run: |
+                  mkdir -p "$MIGRATION_DATA_FOLDER/database"
+                  cp tests/system/instanceData/h2v2Migration/nzbhydra.yml "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/expectations.json "$MIGRATION_DATA_FOLDER/"
+                  cp tests/system/instanceData/h2v2Migration/database/nzbhydra.mv.db "$MIGRATION_DATA_FOLDER/database/"
+                  # The container runs as root; the test on the runner reads the log and database files it writes.
+                  chmod -R a+rwX "$MIGRATION_DATA_FOLDER"
+                  echo "Fixture header: $(head -c 200 "$MIGRATION_DATA_FOLDER/database/nzbhydra.mv.db" | tr -c '[:print:]' ' ')"
+                  cat "$MIGRATION_DATA_FOLDER/expectations.json"
+
+          -   name: "Create docker network"
+              run: docker network create systemtest
+
+          -   name: "Run mockserver and native core with the fixture"
+              run: docker compose $COMPOSE_FILES up --quiet-pull -d mockserver core
+
+          -   name: "Wait for the migrated native core"
+              # The migration exports and re-imports the database within the core process; allow well over the
+              # usual start-up time.
+              run: |
+                  for attempt in {1..240}; do
+                    if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+                      echo "Core is up after $attempt attempts"
+                      exit 0
+                    fi
+                    if [ "$(docker inspect -f '{{.State.Running}}' core 2>/dev/null)" != "true" ]; then
+                      echo "::error::The core container stopped before becoming healthy"
+                      docker compose $COMPOSE_FILES logs --no-color core
+                      exit 1
+                    fi
+                    sleep 2
+                  done
+                  echo "::error::The core did not become healthy in time"
+                  docker compose $COMPOSE_FILES logs --no-color
+                  exit 1
+
+          -   name: "Run migration test"
+              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false -Dgroups=migration -Dmigrationtest.datafolder=$MIGRATION_DATA_FOLDER -Dmigrationtest.mockserverExternalUrl=$MOCKSERVER_EXTERNAL_URL
+
+          -   name: "Convert migration test results to CTRF"
+              if: always()
+              run: npx --yes junit-to-ctrf "tests/system/target/surefire-reports/*.xml" -o ctrf/migration-tests.json -t "Database migration test (Linux native core)"
+
+          -   name: "Publish CTRF test report"
+              if: always()
+              uses: ctrf-io/github-test-reporter@v1
+              with:
+                  report-path: 'ctrf/*.json'
+                  title: 'Database Migration Test - Linux Native Core'
+                  group-by: 'filePath'
+                  summary-report: true
+                  insights-report: true
+                  flaky-rate-report: true
+                  slowest-report: true
+                  fail-rate-report: true
+                  upload-artifact: true
+                  artifact-name: 'ctrf-report-migration-test-linux-native'
+                  fetch-previous-results: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          -   name: "Stop native core"
+              if: always()
+              run: |
+                  curl --fail --silent "http://127.0.0.1:5076/internalapi/control/shutdown?internalApiKey=internalApiKey" > /dev/null || true
+                  docker compose $COMPOSE_FILES stop core mockserver || true
+
+          -   name: "Write docker logs"
+              if: always()
+              run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
+
+          -   name: "Upload data folder artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--native--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: /tmp/hydraMigration
+
+          -   name: "Upload test logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--native--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: |
+                      tests/**/*.log
+                      tests/**/target/surefire-reports/**
+
+          -   name: "Upload docker logs artifact"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: system-test--migration--native--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
+                  path: migration-test-docker.log
 
 
   runSystemTestsWindows:
     needs: [ waitForNative, buildMockserver ]
     runs-on: windows-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     env:
       spring_profiles_active: build,systemtest,core,testwindows
       nzbhydra_port: 5076
@@ -221,13 +842,18 @@ jobs:
       - name: "Check out source"
         uses: actions/checkout@v4
 
+      - name: Set artifact timestamp
+        shell: pwsh
+        run: '"ARTIFACT_TIMESTAMP=$((Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ"))" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8'
+
       - name: "Download windows artifact from current workflow"
         id: "downloadArtifactThisBuild"
         continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          name: coreWindows
+          pattern: native-build--windows-latest--release-executable--*
           path: ./
+          merge-multiple: true
 
       - name: "Check if core.exe was downloaded"
         id: checkCoreExe
@@ -239,7 +865,8 @@ jobs:
         if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
         uses: dawidd6/action-download-artifact@v6
         with:
-          name: coreWindows
+          name: ^native-build--windows-latest--release-executable--.*$
+          name_is_regexp: true
           #Search for matching artifact in any of the last completed workflows
           search_artifacts: true
           workflow_conclusion: 'completed'
@@ -255,13 +882,6 @@ jobs:
       - name: "Install maven"
         run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,org.nzbhydra:mockserver
 
-      - name: "Copy mockserver"
-        run: |
-          copy other/mockserver/target/*-exec.jar exec.jar
-
-      - name: "List files in folder"
-        run: ls
-
       - name: "Add mockserver to /etc/hosts"
         run: |
           $file = "C:\Windows\System32\drivers\etc\hosts"
@@ -269,38 +889,46 @@ jobs:
           $hostfile += "127.0.0.1 mockserver"
           Set-Content -Path $file -Value $hostfile -Force
 
-      - name: "Start mock server and hydra, run tests"
-        uses: BerniWittmann/background-server-action@v1
-        with:
-          start: ./core.exe directstart, java -jar ./exec.jar
-          command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+      - name: "Run native system tests with restore supervision"
+        run: py misc\run_systemtest.py --skip-build --core-executable core.exe
 
-      - name: "Shutdown hydra"
-        uses: fjogeleit/http-request-action@v1
+      - name: "Convert system test results to CTRF"
         if: always()
-        continue-on-error: true
-        with:
-          method: "GET"
-          url: "http://127.0.0.1:5076/internalapi/control/shutdown"
+        shell: bash
+        run: |
+          npx --yes junit-to-ctrf "tests/system/target/surefire-reports/*.xml" -o ctrf/jvm-system-tests.json -t "JVM System Tests (Windows native core)"
+          npx --yes junit-to-ctrf "tests/system/test-results/junit.xml" -o ctrf/playwright-system-tests.json -t "Playwright System Tests (Windows native core)"
 
-      - name: "Shutdown mockserver"
-        uses: fjogeleit/http-request-action@v1
+      - name: "Publish CTRF test report"
         if: always()
-        continue-on-error: true
+        uses: ctrf-io/github-test-reporter@v1
         with:
-          method: "POST"
-          url: "http://127.0.0.1:5080/actuator/shutdown"
+          report-path: 'ctrf/*.json'
+          title: 'System Tests - Windows Native Core'
+          group-by: 'filePath'
+          summary-report: true
+          insights-report: true
+          flaky-rate-report: true
+          slowest-report: true
+          fail-rate-report: true
+          upload-artifact: true
+          artifact-name: 'ctrf-report-system-test-windows-native'
+          fetch-previous-results: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Check logs for unwanted strings"
+        if: always()
         shell: pwsh
         run: |
           # Add unwanted strings to this list (one per line)
           $unwantedStrings = @(
-            "MissingReflectionRegistrationError"
+            "Missing[A-Za-z]*Registration",
+            "Unable to complete startup initialization"
           )
 
           $foundIssues = $false
-          $logPaths = @("data", "tests")
+          $logPaths = @("misc\.systemtest-runs", "tests")
 
           foreach ($pattern in $unwantedStrings) {
             Write-Host "Searching for: $pattern"
@@ -337,21 +965,23 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: dataWindows
-          path: data
+          name: system-test--windows-native--restore-supervision--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
+          path: misc/.windows-systemtest-runs
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-test-logs
-          path: tests/**/*.log
+          name: system-test--windows-native--restore-supervision--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-docker-logs
+          name: system-test--windows-native--restore-supervision--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/*.log
 
       - name: "Create test Report"

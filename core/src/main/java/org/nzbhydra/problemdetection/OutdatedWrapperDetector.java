@@ -2,7 +2,6 @@
 
 package org.nzbhydra.problemdetection;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -13,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,9 +58,9 @@ public class OutdatedWrapperDetector implements ProblemDetector {
         List<String> wrapperFilenames = Arrays.asList("NZBHydra2.exe", "NZBHydra2 Console.exe", "nzbhydra2wrapper.py", "nzbhydra2wrapperPy3.py");
         Set<String> expectedHashes;
         try {
-            expectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes2.json"), new TypeReference<>() {
+            expectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes2.json").openStream(), new TypeReference<>() {
             });
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             logger.error("Error while trying to read wrapper hashes", e);
             return;
         }
@@ -89,8 +90,9 @@ public class OutdatedWrapperDetector implements ProblemDetector {
         if (outdatedWrapperFound) {
             genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
             genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
-            logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
-                    "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
+            logger.warn("""
+                    The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:
+                    Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.""");
         } else {
             genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
         }

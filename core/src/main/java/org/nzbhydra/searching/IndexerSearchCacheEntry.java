@@ -10,7 +10,6 @@ import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +23,11 @@ public class IndexerSearchCacheEntry {
     private IndexerSearchEntity indexerSearchEntity;
     private List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
     private int nextResultIndex = 0;
+    /**
+     * Number of {@link IndexerSearchResult}s that were already written to the database. Only the ones after that
+     * index need to be persisted again.
+     */
+    private int persistedResultCount = 0;
     /**
      * Tracks items already consumed via {@link #pop()} so they are not served again
      * after the list is rebuilt and re-sorted in {@link #addIndexerSearchResult}.
@@ -51,14 +55,7 @@ public class IndexerSearchCacheEntry {
         for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
             searchResultItems.addAll(indexerSearchResult.getSearchResultItems());
         }
-        searchResultItems.sort(Comparator.comparingLong(x -> {
-
-            final SearchResultItem searchResultItem = (SearchResultItem) x;
-            if (searchResultItem.getBestDate() == null) {
-                return 0;
-            }
-            return searchResultItem.getBestDate().getEpochSecond();
-        }).reversed());
+        searchResultItems.sort(SearchResultItem.NEWEST_FIRST);
 
         // After rebuilding and re-sorting, remove items that were already consumed
         // by the merge-sort loop and reset the index so only genuinely new items
@@ -83,6 +80,13 @@ public class IndexerSearchCacheEntry {
         SearchResultItem item = searchResultItems.get(nextResultIndex++);
         poppedItems.add(item);
         return item;
+    }
+
+    /**
+     * Returns true if the item was already handed out by {@link #pop()}.
+     */
+    public boolean isPopped(SearchResultItem item) {
+        return poppedItems.contains(item);
     }
 
     public boolean isMoreResultsAvailable() {

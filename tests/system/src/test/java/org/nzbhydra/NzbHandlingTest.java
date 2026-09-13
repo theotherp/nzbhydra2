@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -22,8 +20,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class NzbHandlingTest {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHandlingTest.class);
@@ -57,6 +54,11 @@ public class NzbHandlingTest {
         assertThat(response.body()).contains("Would download NZB");
     }
 
+    /**
+     * Sets {@code downloading.saveNzbsTo} and deliberately does not put it back: {@link BeforeAll#applyBaseline()}
+     * establishes both blackhole folders as unset, and {@link BaselineExtension} applies it before the next test and
+     * after this class. Restoring it here as well would only add a second writer of the same setting.
+     */
     @Test
     public void shouldSaveToBlackhole() throws Exception {
         final BaseConfig config = configManager.getCurrentConfig();

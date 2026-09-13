@@ -2,19 +2,16 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class DebugInfosTest {
 
     @Autowired

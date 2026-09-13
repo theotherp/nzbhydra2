@@ -4,7 +4,7 @@ package org.nzbhydra.webaccess;
 
 import okhttp3.Response;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.AbstractClientHttpResponse;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.Assert;
 
@@ -19,7 +19,7 @@ import java.io.InputStream;
  * @author Roy Clarkson
  * @since 4.3
  */
-class OkHttp3ClientHttpResponse extends AbstractClientHttpResponse {
+class OkHttp3ClientHttpResponse implements ClientHttpResponse {
 
     private final Response response;
 
@@ -33,8 +33,8 @@ class OkHttp3ClientHttpResponse extends AbstractClientHttpResponse {
 
 
     @Override
-    public int getRawStatusCode() {
-        return this.response.code();
+    public HttpStatusCode getStatusCode() {
+        return HttpStatusCode.valueOf(this.response.code());
     }
 
     @Override

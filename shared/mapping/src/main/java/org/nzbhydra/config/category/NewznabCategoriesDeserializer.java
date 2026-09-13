@@ -2,23 +2,27 @@
 
 package org.nzbhydra.config.category;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Splitter;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class NewznabCategoriesDeserializer extends JsonDeserializer<List<List<Integer>>> {
+public class NewznabCategoriesDeserializer extends ValueDeserializer<List<List<Integer>>> {
 
     @Override
-    public List<List<Integer>> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        List<String> list = p.readValueAs(new TypeReference<List<String>>() {
-        });
-
-        return list.stream().map(x -> Splitter.on("&").splitToList(x).stream().map(Integer::valueOf).collect(Collectors.toList())).collect(Collectors.toList());
+    public List<List<Integer>> deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+        List<List<Integer>> categories = new ArrayList<>();
+        while (p.nextToken() != JsonToken.END_ARRAY) {
+            categories.add(Splitter.on("&").splitToList(p.getString()).stream()
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toList()));
+        }
+        return categories;
     }
 }

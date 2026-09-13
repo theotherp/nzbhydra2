@@ -4,19 +4,22 @@ package org.nzbhydra.searching.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -46,8 +49,7 @@ public final class SearchEntity {
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
     private String categoryName;
 
@@ -56,6 +58,15 @@ public final class SearchEntity {
     private String episode;
     private String title;
     private String author;
+    private Integer minAge;
+    private Integer maxAge;
+    private Integer minSize;
+    private Integer maxSize;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "SEARCH_SELECTED_INDEXERS", joinColumns = @JoinColumn(name = "SEARCH_ENTITY_ID"))
+    @Column(name = "SELECTED_INDEXERS")
+    private Set<String> selectedIndexers;
 
     private String username;
     private String ip;

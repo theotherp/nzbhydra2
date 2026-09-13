@@ -4,6 +4,9 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.catalina.connector.ClientAbortException;
@@ -67,6 +70,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @RestController
+@Tag(name = "Newznab API", description = "The Newznab/Torznab API and the JSON stats and history endpoints under /api")
 public class ExternalApi {
 
     private static final int MAX_CACHE_SIZE = 5;
@@ -115,6 +119,27 @@ public class ExternalApi {
      * @param mock        If set to any value then the search should be mocked (will return a number of mocked results).
      * @return Newznab results.
      */
+    @Operation(summary = "Newznab/Torznab search and NZB download API",
+            description = """
+                    The entry point download clients such as Sonarr, Radarr, Lidarr and Readarr call. It follows the \
+                    Newznab specification (https://newznab.readthedocs.io/en/latest/misc/api/); /torznab/api is the \
+                    Torznab variant and /rss the same call with an RSS style answer. Appending an indexer name \
+                    (/api/{indexerName}) restricts the search to that one configured indexer.
+
+                    The parameters are the Newznab ones, taken from the query string:
+                    * apikey — the API key from the main configuration, required
+                    * t — what to do: search, tvsearch, movie, book, audio, caps, get, details, getnfo, stats
+                    * q — the search string
+                    * cat — comma separated Newznab category IDs, e.g. 5030,5040
+                    * o — the output format, xml (default) or json
+                    * limit and offset — paging, limit defaults to 100
+                    * minage, maxage — age of the results in days; minsize, maxsize — size in megabytes
+                    * imdbid, tmdbid, tvdbid, rid, tvmazeid, season, ep, author, title — what to search for when \
+                    not searching by query
+                    * id — the GUID of a result for t=get, t=details and t=getnfo
+
+                    The answer is the Newznab XML (or JSON) the specification describes, including its error \
+                    format; this document does not repeat it.""")
     @RequestMapping(value = {"/api", "/rss", "/torznab/api", "/torznab/api/{indexerName}", "/api/{indexerName}"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, @PathVariable(value = "indexerName", required = false) String indexerName, @PathVariable(value = "mock", required = false) String mock) throws Exception {
         int searchRequestId = random.nextInt(100000);
@@ -132,8 +157,7 @@ public class ExternalApi {
 
         if (!params.getIndexers().isEmpty() && indexerName != null) {
             logger.error("Received call with parameters set in path and request variables");
-            NewznabXmlError error = new NewznabXmlError("200", "Received call with parameters set in path and request variables");
-            return new ResponseEntity<Object>(error, HttpStatus.OK);
+            return errorResponse(params.getO(), "200", "Received call with parameters set in path and request variables");
         } else if (indexerName != null) {
             if (indexerName.equals("api")) {
                 logger.warn("The URL to access the NZBHydra API is very likely wrong. Make sure that it does not end with /api");
@@ -165,7 +189,7 @@ public class ExternalApi {
                     response = new NewznabXmlError("100", details.getErrorMessage());
                 }
             }
-            return new ResponseEntity<>(response, null, HttpStatus.OK);
+            return ResponseEntity.ok(response);
         }
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
@@ -189,8 +213,7 @@ public class ExternalApi {
 
 
         logger.error("Incorrect API request: {}", params);
-        NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
-        return new ResponseEntity<Object>(error, HttpStatus.OK);
+        return errorResponse(params.getO(), "200", "Unknown or incorrect parameter");
     }
 
     public static void setInMockingMode(boolean newValue) {
@@ -227,11 +250,13 @@ public class ExternalApi {
             }
         }
         //Remove oldest entry when max size is reached
-        if (cache.size() == MAX_CACHE_SIZE) {
+        while (cache.size() >= MAX_CACHE_SIZE) {
             Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().min(Comparator.comparing(o -> o.getValue().getLastUpdate()));
-            //Should always be the case anyway
+            if (keyToEvict.isEmpty()) {
+                break;
+            }
             logger.info("Removing oldest entry from cache because its limit of {} is reached", MAX_CACHE_SIZE);
-            keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
+            cache.remove(keyToEvict.get().getKey());
         }
 
         NewznabResponse searchResult = search(params, searchRequestId);
@@ -249,9 +274,9 @@ public class ExternalApi {
         DownloadResult downloadResult;
         try {
             logger.debug("Download request for GUID {}", params.getId());
-            downloadResult = fileHandler.getFileByGuid(Long.parseLong(params.getId()), SearchSource.API);
+            downloadResult = fileHandler.getFileByGuid(params.getId(), SearchSource.API);
         } catch (InvalidSearchResultIdException e) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
+            return errorResponse(params.getO(), "300", "Invalid or outdated search result ID");
         }
         if (!downloadResult.isSuccessful()) {
             throw new UnknownErrorException(downloadResult.getError());
@@ -280,10 +305,21 @@ public class ExternalApi {
         return torznab ? NewznabResponse.SearchType.TORZNAB : NewznabResponse.SearchType.NEWZNAB;
     }
 
+    private ResponseEntity<Object> errorResponse(OutputType outputType, String code, String description) {
+        if (outputType == OutputType.JSON) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new NewznabJsonError(code, description));
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(new NewznabXmlError(code, description));
+    }
+
     @ExceptionHandler(value = ExternalApiException.class)
-    public NewznabXmlError handler(ExternalApiException e) {
-        NewznabXmlError error = new NewznabXmlError(e.getStatusCode(), e.getMessage());
-        return error;
+    public ResponseEntity<Object> handler(ExternalApiException e, HttpServletRequest request) {
+        OutputType outputType = "json".equalsIgnoreCase(request.getParameter("o")) ? OutputType.JSON : OutputType.XML;
+        return errorResponse(outputType, e.getStatusCode(), e.getMessage());
     }
 
     @ExceptionHandler(value = Exception.class)

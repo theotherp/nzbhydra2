@@ -1,8 +1,7 @@
 package org.nzbhydra.web;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import jakarta.xml.bind.Marshaller;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.Nullable;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.stats.HistoryRequestConverter;
 import org.nzbhydra.api.stats.StatsRequestConverter;
@@ -12,6 +11,7 @@ import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -23,19 +23,24 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.accept.ApiVersionStrategy;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
@@ -44,9 +49,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("unchecked")
 @Configuration(proxyBeanMethods = false)
@@ -54,6 +57,21 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private Interceptor interceptor;
+
+    @Autowired
+    private Jaxb2Marshaller marshaller;
+
+    /**
+     * springdoc registers the swagger UI's static resources through a {@link org.springframework.web.servlet.config.annotation.WebMvcConfigurer},
+     * and this class extends {@link WebMvcConfigurationSupport} directly, which never consults those. So the
+     * registration is forwarded here instead of being replicated: springdoc then serves {@code /swagger-ui/**} from
+     * whatever swagger-ui webjar it brings, with its own index page transformer, and nothing pins a version that a
+     * springdoc update would silently invalidate (which is what happened to the hardcoded 4.10.3 path this replaced).
+     *
+     * <p>Null when this class is instantiated outside a container, as {@code WebConfigurationTest} does.
+     */
+    @Autowired
+    private ObjectProvider<org.springdoc.webmvc.ui.SwaggerWebMvcConfigurer> swaggerWebMvcConfigurer;
 
     private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
@@ -66,8 +84,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             try {
                 if (staticFolderFile.exists()) {
                     String fileStatic = staticFolderFile.toURI().toURL().toString();
-                    locations = new String[]{fileStatic};
-                    logger.warn("Found folder {}. Will load UI resources from there instead", staticFolderFile.getAbsolutePath());
+                    locations = new String[]{fileStatic, "classpath:/static/"};
+                    logger.warn("Found folder {}. Will load overridden UI resources from there before packaged resources", staticFolderFile.getAbsolutePath());
                 } else {
                     logger.debug("Static resources folder {} does not exist - using baked in resources", staticFolderFile);
                 }
@@ -76,39 +94,30 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             }
         }
         registry.addResourceHandler("/static/**")
-                .addResourceLocations(locations)
-                .setCacheControl(CacheControl.noCache())
-                .resourceChain(false);
+            .addResourceLocations(locations)
+            .setCacheControl(CacheControl.noCache())
+            .resourceChain(false);
         File additionalStatic = new File(NzbHydra.getDataFolder(), "additionalStatic");
         if (additionalStatic.exists()) {
             logger.warn("Files in the data/additionalStatic folder will be exposed");
         }
         registry.addResourceHandler("/additionalStatic/**")
-                .addResourceLocations(additionalStatic.toURI().toURL().toString())
-                .setCacheControl(CacheControl.noCache())
-                .resourceChain(false);
+            .addResourceLocations(additionalStatic.toURI().toURL().toString())
+            .setCacheControl(CacheControl.noCache())
+            .resourceChain(false);
 
         registry.addResourceHandler("/favicon.*")
-                .addResourceLocations("classpath:/static/img/")
-                .setCacheControl(CacheControl.noCache())
-                .resourceChain(false);
+            .addResourceLocations("classpath:/static/img/")
+            .setCacheControl(CacheControl.noCache())
+            .resourceChain(false);
 
-        //Otherwise swagger is not loaded using /swagger-ui/index.html
-        registry.addResourceHandler("/swagger-ui/**")
-                // Must match the dependency for swagger-ui
-                .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
-
-        registry.addResourceHandler("/bower_components/bootstrap-less/fonts/**")
-                .addResourceLocations("classpath:/static/fonts/");
+        if (swaggerWebMvcConfigurer != null) {
+            swaggerWebMvcConfigurer.ifAvailable(configurer -> configurer.addResourceHandlers(registry));
+        }
 
         registry.setOrder(0);
     }
 
-
-    @Override
-    protected void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
-    }
 
     @Override
     protected void addCorsMappings(CorsRegistry registry) {
@@ -118,8 +127,10 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping(ContentNegotiationManager mvcContentNegotiationManager,
+                                                                     @Nullable ApiVersionStrategy mvcApiVersionStrategy,
                                                                      FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
-        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping(mvcContentNegotiationManager, mvcConversionService, mvcResourceUrlProvider);
+        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping(mvcContentNegotiationManager,
+            mvcApiVersionStrategy, mvcConversionService, mvcResourceUrlProvider);
         handler.setOrder(1);
         return handler;
     }
@@ -146,40 +157,30 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     }
 
     /**
-     * Enable pretty printing of returned XML
-     */
-    @Bean
-    public Jaxb2Marshaller marshaller() {
-        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        Map<String, Boolean> map = new HashMap<>();
-        map.put(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        marshaller.setMarshallerProperties(map);
-        marshaller.setPackagesToScan("org.nzbhydra");
-        return marshaller;
-    }
-
-    /**
      * Enable pretty printing of returned JSON
      */
     @Override
-    protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
-                jacksonConverter.setPrettyPrint(true);
-                SimpleModule simpleModule = new SimpleModule();
-                simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
-                simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
-                jacksonConverter.getObjectMapper().registerModule(simpleModule);
-            }
-        }
-        converters.add(0, new NewznabAndTorznabResponseNamespaceFixer(marshaller()));
+    protected void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
+        simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
+        JsonMapper mapper = JsonMapper.builder()
+            .addModule(simpleModule)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            //Same leniency as Jackson.JSON_MAPPER: a missing or null primitive takes its Java default instead of being rejected
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
+        builder.registerDefaults()
+            .withJsonConverter(new JacksonJsonHttpMessageConverter(mapper))
+            .addCustomConverter(new NewznabAndTorznabResponseNamespaceFixer(marshaller));
     }
 
 
     private static class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
 
         private final Jaxb2Marshaller marshaller;
-        private final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+        private final JacksonJsonHttpMessageConverter jacksonConverter = new JacksonJsonHttpMessageConverter(
+            JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build());
 
 
         public NewznabAndTorznabResponseNamespaceFixer(Jaxb2Marshaller marshaller) {
@@ -211,7 +212,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
             NewznabResponse newznabResponse = (NewznabResponse) o;
             if (determineOutputType((NewznabResponse) o) == OutputType.JSON) {
-                jacksonConverter.setPrettyPrint(true);
                 jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);
             } else {
                 outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);

@@ -77,7 +77,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
         }
         query = cleanupQuery(query);
 
-        return UriComponentsBuilder.fromHttpUrl("https://anizb.org/api/").queryParam("q", query);
+        return UriComponentsBuilder.fromUriString("https://anizb.org/api/").queryParam("q", query);
     }
 
     private String addRequiredWordsToQuery(SearchRequest searchRequest, String query) {

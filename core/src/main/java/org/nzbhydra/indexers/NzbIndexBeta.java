@@ -183,7 +183,7 @@ public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
 
     protected UriComponentsBuilder getBaseUri() {
         //Hack but we need "/search" in the base URL because otherwise the connection check will fail and okhttp can't do 307 redirects right now
-        return UriComponentsBuilder.fromHttpUrl(config.getHost().replace("/search", "/"));
+        return UriComponentsBuilder.fromUriString(config.getHost().replace("/search", "/"));
     }
 
     @Component

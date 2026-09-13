@@ -1,0 +1,632 @@
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
+import {ThemeProvider} from "@mui/material/styles";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+
+import {DEFAULT_QUERY_STALE_TIME_MS} from "../../../app/queryDefaults";
+import {createHydraTheme} from "../../../app/theme";
+import type {StatsQuery, StatsParseResult} from "../../../api/stats/mainStats";
+import {ApiTransport} from "../../../api/transport";
+import type {BootstrapData} from "../../../bootstrap";
+import {toDateInputValue} from "./dateRange";
+import {StatsDashboardPage} from "./StatsDashboardPage";
+
+const {getStatsMock} = vi.hoisted(() => ({getStatsMock: vi.fn()}));
+
+vi.mock("../../../api/stats/mainStats", async () => {
+    const actual = await vi.importActual<
+        typeof import("../../../api/stats/mainStats")
+    >("../../../api/stats/mainStats");
+    return {...actual, getStats: getStatsMock};
+});
+
+function bootstrap(overrides: Partial<BootstrapData> = {}): BootstrapData {
+    return {
+        baseUrl: "/hydra/",
+        username: "stats",
+        authType: null,
+        showLogout: true,
+        maySeeSearch: true,
+        adminRestricted: true,
+        statsRestricted: true,
+        maySeeStats: true,
+        searchRestricted: true,
+        maySeeDetailsDl: false,
+        maySeeAdmin: false,
+        authConfigured: true,
+        showIndexerSelection: false,
+        safeConfig: {logging: {historyUserInfoType: "BOTH"}},
+        serverTimeZone: "UTC",
+        ...overrides,
+    };
+}
+
+function renderPage(
+    overrides: Partial<BootstrapData> = {},
+    // A client carried over from an earlier render stands for the application
+    // cache surviving a tab switch; by default each test starts empty.
+    existingClient?: QueryClient,
+) {
+    const transport = new ApiTransport("/hydra/", vi.fn());
+    // FM-121: the dashboard holds its reading in react-query, so it needs a
+    // client. It is configured with the application's own default `staleTime`
+    // rather than react-query's, so what the re-entry test below measures is
+    // the real default and not a number invented here.
+    const queryClient =
+        existingClient ??
+        new QueryClient({
+            defaultOptions: {
+                queries: {staleTime: DEFAULT_QUERY_STALE_TIME_MS},
+            },
+        });
+    render(
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={createHydraTheme()}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <StatsDashboardPage
+                        bootstrap={bootstrap(overrides)}
+                        transport={transport}
+                    />
+                </LocalizationProvider>
+            </ThemeProvider>
+        </QueryClientProvider>,
+    );
+    return {queryClient};
+}
+
+function resultOf(result: StatsParseResult["result"]): StatsParseResult {
+    return {result, malformedFamilies: []};
+}
+
+/** A promise plus externally callable resolve/reject, for tests that need to
+ * control exactly when an in-flight `getStats` call settles relative to a
+ * later, overlapping call. */
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+    return {promise, resolve, reject};
+}
+
+beforeEach(() => {
+    getStatsMock.mockReset();
+});
+
+afterEach(() => {
+    vi.useRealTimers();
+});
+
+/**
+ * The `aria-hidden` `<input>` behind one of the MUI X pickers FM-185 put on
+ * the Custom range. The field itself is a list of contenteditable sections;
+ * this input is its keyboard/autofill entry point, holding and accepting the
+ * value in the field's *display* format -- which for these two is
+ * `YYYY-MM-DD`, the same string `toDateInputValue` produces.
+ */
+function pickerInput(testId: string): HTMLInputElement {
+    const input = screen.getByTestId(testId).querySelector("input");
+    if (!input) throw new Error(`No picker input inside ${testId}`);
+    return input;
+}
+
+describe("StatsDashboardPage", () => {
+    it("loads with every family selected on the default 30-day window", async () => {
+        getStatsMock.mockResolvedValue(
+            resultOf({
+                searchesPerDayOfWeek: [{day: "Mon", count: 4}],
+                downloadsPerDayOfWeek: [{day: "Mon", count: 2}],
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+        const query = getStatsMock.mock.calls[0][1] as StatsQuery;
+        expect(query.includeDisabled).toBe(false);
+        expect(Object.values(query.families).every(Boolean)).toBe(true);
+        expect(
+            screen.getByTestId("stats-tile-total-searches"),
+        ).toHaveTextContent("4");
+    });
+
+    it("re-enabling one family requests only that family and merges without discarding prior families", async () => {
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
+                indexerDownloadShares: [
+                    {indexerName: "Alpha", total: 5, share: 100},
+                ],
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+
+        fireEvent.click(screen.getByTestId("stats-family-menu-button"));
+        fireEvent.click(
+            screen.getByRole("checkbox", {name: "Avg. response times"}),
+        );
+        // Deselecting clears that family's own display without a request.
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("stats-chart-response-times"),
+            ).not.toBeInTheDocument(),
+        );
+        expect(
+            screen.getByTestId("stats-chart-indexer-download-shares"),
+        ).toBeInTheDocument();
+
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 150}],
+            }),
+        );
+        fireEvent.click(screen.getByTestId("stats-family-menu-button"));
+        fireEvent.click(screen.getByTestId("stats-family-avgResponseTimes"));
+
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        const secondQuery = getStatsMock.mock.calls[1][1] as StatsQuery;
+        expect(secondQuery.families.avgResponseTimes).toBe(true);
+        expect(
+            Object.entries(secondQuery.families).filter(
+                ([key]) => key !== "avgResponseTimes",
+            ),
+        ).toSatisfy((entries: [string, boolean][]) =>
+            entries.every(([, value]) => value === false),
+        );
+        await screen.findByTestId("stats-chart-response-times");
+        // Prior family survives the single-family refresh.
+        expect(
+            screen.getByTestId("stats-chart-indexer-download-shares"),
+        ).toBeInTheDocument();
+    });
+
+    it("keeps previously loaded families when a refresh fails, and offers retry", async () => {
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+
+        getStatsMock.mockRejectedValueOnce(new Error("network down"));
+        fireEvent.click(screen.getByTestId("stats-refresh-button"));
+
+        await screen.findByText(
+            "The last refresh failed; showing previously loaded statistics.",
+        );
+        expect(
+            screen.getByTestId("stats-chart-response-times"),
+        ).toBeInTheDocument();
+
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
+            }),
+        );
+        fireEvent.click(screen.getByRole("button", {name: "Retry"}));
+        await waitFor(() =>
+            expect(
+                screen.queryByText(
+                    "The last refresh failed; showing previously loaded statistics.",
+                ),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
+    it("applies a date preset immediately and re-requests", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("stats-date-preset-last7"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        const query = getStatsMock.mock.calls[1][1] as StatsQuery;
+        const days =
+            (query.before.getTime() - query.after.getTime()) /
+            (24 * 60 * 60 * 1000);
+        expect(Math.round(days)).toBe(8);
+    });
+
+    // FM-121 fix: the query key is day-granular (`statsQueryKey`), but a
+    // preset's range used to carry the mount's time-of-day (`new Date() - N
+    // days`) while a Custom range is always midnight to midnight
+    // (`dateRange.ts`'s `parseDateInput`). Entering Custom right after a
+    // preset prefills from that preset's own days -- the default state a
+    // user lands on -- so a preset and that freshly entered Custom range
+    // hashed to the identical key while actually asking for different
+    // instants: the preset's cached reading would silently stand in for the
+    // wider midnight-to-midnight window Custom claims, under-reporting
+    // whatever happened in the truncated hours. Fixed by truncating every
+    // preset-derived range to day boundaries before it becomes `range`
+    // state, so the key and the actual request always describe the same
+    // window.
+    it("serves a preset's own request for exactly the midnight-to-midnight window its day-granular key implies", async () => {
+        vi.setSystemTime(new Date("2024-06-15T15:30:00"));
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("stats-date-preset-last7"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        const presetQuery = getStatsMock.mock.calls[1][1] as StatsQuery;
+
+        // Entering Custom right after a preset prefills from that preset's
+        // own days -- confirming this is the exact default-state scenario
+        // the finding describes, not a contrived one.
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        const afterInput = pickerInput("stats-custom-after");
+        expect(afterInput.value).toBe(toDateInputValue(presetQuery.after));
+
+        // Switching to Custom on those prefilled days must not refetch (the
+        // day-granular key did not change) -- so what is on screen right
+        // now is the preset's own reading, unchanged.
+        expect(getStatsMock).toHaveBeenCalledTimes(2);
+
+        // For that reuse to be correct rather than a silent under-report,
+        // the preset's own request must already have asked for the full
+        // day -- midnight to midnight -- matching exactly what Custom's
+        // `parseDateInput` would send for the same two days, not a slice
+        // starting or ending partway through a day as a raw
+        // `new Date() +/- N days` does.
+        expect(presetQuery.after.getTime()).toBe(
+            new Date(
+                `${toDateInputValue(presetQuery.after)}T00:00:00`,
+            ).getTime(),
+        );
+        expect(presetQuery.before.getTime()).toBe(
+            new Date(
+                `${toDateInputValue(presetQuery.before)}T00:00:00`,
+            ).getTime(),
+        );
+    });
+
+    /*
+     * FM-185 replaced the two `<input type="date">` fields with MUI X
+     * `DatePicker`s. What must not move is the instant a chosen day becomes:
+     * the native input reported "2026-01-01" and `dateRange.ts`'s
+     * `parseDateInput` turned that into `new Date("2026-01-01T00:00:00")` --
+     * local midnight. The expectation below is that derivation written out by
+     * hand rather than the picker's own value formatted back, so a picker that
+     * silently produced UTC midnight, or the instant of the click, would fail
+     * here.
+     */
+    it("sends the same instant for a picked day as the native date input did", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        const callsBefore = getStatsMock.mock.calls.length;
+
+        // Typed entry, calendar closed.
+        fireEvent.change(pickerInput("stats-custom-after"), {
+            target: {value: "2026-01-01"},
+        });
+        await waitFor(() =>
+            expect(getStatsMock.mock.calls.length).toBeGreaterThan(callsBefore),
+        );
+        const typedQuery = getStatsMock.mock.calls.at(-1)?.[1] as StatsQuery;
+        expect(typedQuery.after.toISOString()).toBe(
+            new Date("2026-01-01T00:00:00").toISOString(),
+        );
+
+        // The same value chosen from the calendar rather than typed. The
+        // button that opens it is the only affordance the picker adds, and it
+        // carries its own accessible name.
+        const openCalendar = within(
+            screen.getByTestId("stats-custom-after"),
+        ).getByRole("button", {name: /^Choose date/});
+        fireEvent.click(openCalendar);
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("gridcell", {
+                name: "15",
+            }),
+        );
+        await waitFor(() => {
+            const picked = getStatsMock.mock.calls.at(-1)?.[1] as StatsQuery;
+            expect(picked.after.toISOString()).toBe(
+                new Date("2026-01-15T00:00:00").toISOString(),
+            );
+        });
+        expect(pickerInput("stats-custom-after").value).toBe("2026-01-15");
+    });
+
+    it("flags an incomplete custom range inline and never sends it", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        fireEvent.change(pickerInput("stats-custom-after"), {
+            target: {value: "2099-01-01"},
+        });
+
+        expect(
+            await screen.findByText(
+                "The After date must be earlier than the Before date.",
+            ),
+        ).toBeInTheDocument();
+        // Still just the one initial request -- the invalid range was never sent.
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+    });
+
+    /*
+     * The field reports every intermediate value typed into it, and most of
+     * them are valid ranges: the year of "2020-01-01" walks
+     * through 0002, 0020 and 0202. Each one used to become the range, and so a
+     * new query key and a full stats recalculation the reader never asked for.
+     */
+    it("recalculates once for a typed custom date, not once per keystroke", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+        fireEvent.click(screen.getByTestId("stats-date-preset-custom"));
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        vi.useFakeTimers();
+        const afterInput = pickerInput("stats-custom-after");
+        for (const year of ["0002", "0020", "0202", "2020"]) {
+            fireEvent.change(afterInput, {target: {value: `${year}-01-01`}});
+        }
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(1000);
+        vi.useRealTimers();
+
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+        expect((getStatsMock.mock.calls[1][1] as StatsQuery).after).toEqual(
+            new Date("2020-01-01T00:00:00"),
+        );
+        // And nothing else follows the one adoption.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        });
+        expect(getStatsMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("ignores a stale request's late completion once a newer request has superseded it", async () => {
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Initial", avgResponseTime: 1}],
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+
+        const stale = deferred<StatsParseResult>();
+        getStatsMock.mockReturnValueOnce(stale.promise);
+        fireEvent.click(screen.getByTestId("stats-refresh-button"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+
+        const newer = deferred<StatsParseResult>();
+        getStatsMock.mockReturnValueOnce(newer.promise);
+        fireEvent.click(screen.getByTestId("stats-refresh-button"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(3));
+
+        // The newer request resolves first...
+        newer.resolve(
+            resultOf({
+                avgResponseTimes: [{indexer: "Newer", avgResponseTime: 42}],
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                within(screen.getByTestId("stats-indexers-table")).getByText(
+                    "Newer",
+                ),
+            ).toBeInTheDocument(),
+        );
+
+        // ...then the stale request completes after -- its data must not
+        // overwrite what the newer request already set.
+        stale.resolve(
+            resultOf({
+                avgResponseTimes: [{indexer: "Stale", avgResponseTime: 999}],
+            }),
+        );
+        // A real timer-flushed `act` (not just microtask ticks) is required
+        // here: this is what actually exercises the `requestIdRef` staleness
+        // guard's effect on the committed render, rather than merely letting
+        // the stale promise's `.then` callback run unobserved.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+
+        expect(
+            within(screen.getByTestId("stats-indexers-table")).getByText(
+                "Newer",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText("Stale")).not.toBeInTheDocument();
+        // Only the permanent disclaimer alert (ADR-0051) remains -- no error
+        // banner was raised for the superseded request.
+        expect(screen.getAllByRole("alert")).toEqual([
+            screen.getByTestId("stats-disclaimer"),
+        ]);
+    });
+
+    it("swallows a superseded request's abort rejection without surfacing an error banner", async () => {
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Initial", avgResponseTime: 1}],
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+
+        const stale = deferred<StatsParseResult>();
+        getStatsMock.mockReturnValueOnce(stale.promise);
+        fireEvent.click(screen.getByTestId("stats-refresh-button"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(2));
+
+        getStatsMock.mockResolvedValueOnce(
+            resultOf({
+                avgResponseTimes: [{indexer: "Newer", avgResponseTime: 42}],
+            }),
+        );
+        fireEvent.click(screen.getByTestId("stats-refresh-button"));
+        await waitFor(() => expect(getStatsMock).toHaveBeenCalledTimes(3));
+        await waitFor(() =>
+            expect(
+                within(screen.getByTestId("stats-indexers-table")).getByText(
+                    "Newer",
+                ),
+            ).toBeInTheDocument(),
+        );
+
+        // Simulate what a real AbortController-driven fetch does once its
+        // signal is aborted: the superseded request's promise rejects with
+        // an AbortError after being superseded.
+        stale.reject(new DOMException("aborted", "AbortError"));
+        // See the identical note in the previous test: a real timer-flushed
+        // `act` is what actually exercises the staleness guard's effect on
+        // the committed render for a rejection, not just a resolution.
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+
+        // Only the permanent disclaimer alert (ADR-0051) remains -- no error
+        // banner was raised for the swallowed abort.
+        expect(screen.getAllByRole("alert")).toEqual([
+            screen.getByTestId("stats-disclaimer"),
+        ]);
+        expect(
+            within(screen.getByTestId("stats-indexers-table")).getByText(
+                "Newer",
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it("shows an empty-data state when every selected family has no entries for the range", async () => {
+        // A real backend response always carries `after`/`before`, so `stats`
+        // never has zero keys even when every selected family came back with
+        // no entries -- this reproduces that shape directly.
+        getStatsMock.mockResolvedValue(
+            resultOf({
+                after: new Date("2024-01-01T00:00:00Z"),
+                before: new Date("2024-01-02T00:00:00Z"),
+            }),
+        );
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+
+        expect(
+            await screen.findByText(
+                "No statistics are available for the selected range.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByTestId("stats-tile-total-searches"),
+        ).not.toBeInTheDocument();
+    });
+
+    // FM-121: the reading now lives in the application's query cache, which
+    // outlives this component, so re-entering `/stats/stats` within the
+    // default `staleTime` must show the held statistics rather than the
+    // full-page "Calculating stats…" every visit used to start with.
+    it("re-renders a re-entered dashboard from the cache with no refetch", async () => {
+        getStatsMock.mockResolvedValue(
+            resultOf({
+                avgResponseTimes: [{indexer: "Alpha", avgResponseTime: 100}],
+            }),
+        );
+        const {queryClient} = renderPage();
+        await screen.findByTestId("stats-chart-response-times");
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+
+        // The tab switch away and back: this component unmounts, the cache
+        // does not.
+        cleanup();
+        renderPage({}, queryClient);
+
+        expect(screen.queryByText("Calculating stats\u2026")).toBeNull();
+        expect(
+            screen.getByTestId("stats-chart-response-times"),
+        ).toBeInTheDocument();
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+        expect(getStatsMock).toHaveBeenCalledTimes(1);
+    });
+
+    // ADR-0051: the disclaimer alert is permanently visible and must not
+    // depend on the stats query -- it has to render before the very first
+    // response settles, not only once the dashboard has data or has failed.
+    it("shows the disclaimer alert immediately, during the initial loading state, independently of the stats query", async () => {
+        const inFlight = deferred<StatsParseResult>();
+        getStatsMock.mockReturnValueOnce(inFlight.promise);
+        renderPage();
+
+        expect(screen.getByTestId("stats-disclaimer")).toHaveTextContent(
+            "Don't read too much into these stats.",
+        );
+        // The dashboard itself has not appeared yet -- this really is the
+        // loading branch, not a race that happened to resolve first.
+        expect(screen.queryByTestId("stats-dashboard")).not.toBeInTheDocument();
+
+        inFlight.resolve(resultOf({}));
+        await screen.findByTestId("stats-dashboard");
+        expect(screen.getByTestId("stats-disclaimer")).toBeInTheDocument();
+    });
+
+    it("shows the disclaimer alert on the initial-load error state, with no stale disclaimer button left behind", async () => {
+        getStatsMock.mockRejectedValueOnce(new Error("network down"));
+        renderPage();
+
+        expect(
+            await screen.findByText("Unable to load statistics."),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId("stats-disclaimer")).toHaveTextContent(
+            "Don't read too much into these stats.",
+        );
+        expect(
+            screen.queryByTestId("stats-disclaimer-button"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("replaces the old info-icon popover with the permanent disclaimer alert once loaded", async () => {
+        getStatsMock.mockResolvedValue(resultOf({}));
+        renderPage();
+        await screen.findByTestId("stats-dashboard");
+
+        const disclaimer = screen.getByTestId("stats-disclaimer");
+        expect(disclaimer).toHaveTextContent(
+            "Don't read too much into these stats. Which indexer is picked for a download depends on its score",
+        );
+        expect(disclaimer).toHaveAttribute("role", "alert");
+        expect(
+            screen.queryByTestId("stats-disclaimer-button"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("hides user/host share cards the bootstrap config says cannot exist", async () => {
+        getStatsMock.mockResolvedValue(
+            resultOf({
+                searchSharesPerUser: [{key: "bob", count: 1, percentage: 100}],
+                searchSharesPerIp: [
+                    {key: "1.2.3.4", count: 1, percentage: 100},
+                ],
+            }),
+        );
+        renderPage({safeConfig: {logging: {historyUserInfoType: "NONE"}}});
+        await screen.findByTestId("stats-dashboard");
+        expect(
+            screen.queryByTestId("stats-section-sources"),
+        ).not.toBeInTheDocument();
+    });
+});

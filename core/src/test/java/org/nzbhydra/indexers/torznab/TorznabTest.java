@@ -236,5 +236,43 @@ public class TorznabTest {
         assertThat(integers.get(1)).isEqualTo(2040);
     }
 
+    @Test
+    void shouldIgnoreUnparsableNumericTorznabAttributes() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setSize(456L);
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("seeders", "N/A"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("peers", ""));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("grabs", "unknown"));
+        rssItem.getEnclosures().add(new NewznabXmlEnclosure("http://indexer.com/abc", 1L, "application/x-bittorrent"));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+        assertThat(item.getSeeders()).isNull();
+        assertThat(item.getPeers()).isNull();
+        assertThat(item.getGrabs()).isNull();
+        assertThat(item.getSize()).isEqualTo(456L);
+    }
+
+    @Test
+    void shouldNotStoreNullSizeAttribute() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setSize(null);
+        rssItem.getEnclosures().add(new NewznabXmlEnclosure("http://indexer.com/abc", 1L, "application/x-bittorrent"));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+        assertThat(item.getAttributes()).doesNotContainKey("size");
+    }
+
+    @Test
+    void shouldIgnoreUnparsableCategories() {
+        NewznabXmlItem item = buildBasicRssItem();
+        item.setCategory("notANumber");
+        item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "N/A"), new NewznabAttribute("category", "2000")));
+
+        List<Integer> integers = testee.tryAndGetCategoryAsNumber(item);
+
+        assertThat(integers).containsExactly(2000);
+    }
 
 }

@@ -1,4 +1,3 @@
-version: '3'
 networks:
     systemtest:
         external: true
@@ -13,35 +12,41 @@ services:
         networks: [ "systemtest" ]
         restart: unless-stopped
     sonarr:
-        image: lscr.io/linuxserver/sonarr:latest
+        image: ghcr.io/linuxserver/sonarr:latest
         container_name: sonarr
         environment:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - SONARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../sonarr/data:/config
         ports:
-            - "8989:8989"
+            - "18989:8989"
+        extra_hosts:
+            - "host.docker.internal:${SYSTEMTEST_HOST_ADDRESS:-host-gateway}"
         networks: [ "systemtest" ]
         restart: unless-stopped
     radarr:
-        image: lscr.io/linuxserver/radarr:latest
+        image: ghcr.io/linuxserver/radarr:latest
         container_name: radarr
         environment:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - RADARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../radarr/data:/config
         ports:
             - "7878:7878"
+        extra_hosts:
+            - "host.docker.internal:${SYSTEMTEST_HOST_ADDRESS:-host-gateway}"
         networks: [ "systemtest" ]
         restart: unless-stopped
     core:
         depends_on:
             - mockserver
-        image: ghcr.io/theotherp/hydradocker:latest
+        image: ${HYDRA_IMAGE:-ghcr.io/theotherp/hydradocker:latest}
         container_name: core
         ports:
             - "5076:5076"
@@ -50,19 +55,5 @@ services:
         volumes:
             - /tmp/hydra/defaultDataFolder:/data
             - /tmp/hydraBlackhole_core:/hydraBlackhole
-        networks: [ "systemtest" ]
-        restart: unless-stopped
-    v1Migration:
-        depends_on:
-            - mockserver
-        image: ghcr.io/theotherp/hydradocker:latest
-        container_name: v1Migration
-        ports:
-            - "5077:5076"
-        environment:
-            - spring_profiles_active=build,systemtest
-        volumes:
-            - /tmp/hydra/v1MigrationDataFolder:/data
-            - /tmp/hydraBlackhole_v1Migration:/hydraBlackhole
         networks: [ "systemtest" ]
         restart: unless-stopped

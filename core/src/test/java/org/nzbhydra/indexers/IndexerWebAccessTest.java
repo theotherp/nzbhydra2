@@ -12,18 +12,25 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.WebAccess;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.springframework.oxm.Unmarshaller;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -52,9 +59,10 @@ public class IndexerWebAccessTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        String xml = "<?xml version=\"1.0\" ?>\n" +
-                "<metadata>\n" +
-                "</metadata>";
+        String xml = """
+                <?xml version="1.0" ?>
+                <metadata>
+                </metadata>""";
         when(webAccessMock.callUrl(anyString(), headersCaptor.capture(), timeoutCaptor.capture())).thenReturn(xml);
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.setSearching(searchingConfigMock);
@@ -120,6 +128,57 @@ public class IndexerWebAccessTest {
         testee.get(new URI("http://127.0.0.1"), indexerConfig);
 
         assertThat(timeoutCaptor.getValue()).isEqualTo(100);
+    }
+
+    /**
+     * ADR-0019: the message built here reaches the connection-check dialog, the per-indexer search-result error and
+     * the stored {@code IndexerConfig.lastError}, so it must carry the response message and code but not the body.
+     * The original {@link WebAccessException} must still be the cause so {@code IndexerChecker} can read the body.
+     */
+    @Test
+    void shouldNotIncludeResponseBodyInUnreachableMessage() throws Exception {
+        indexerConfig.setName("testindexer");
+        WebAccessException webAccessException = new WebAccessException("Bad Request", "<error code=\"100\" description=\"Incorrect parameter\"/>", 400);
+        when(webAccessMock.callUrl(anyString(), headersCaptor.capture(), timeoutCaptor.capture())).thenThrow(webAccessException);
+
+        assertThatThrownBy(() -> testee.get(new URI("http://127.0.0.1"), indexerConfig))
+                .isInstanceOf(IndexerUnreachableException.class)
+                .hasMessage("Error while communicating with indexer testindexer. Server returned: Bad Request. Code: 400")
+                .matches(t -> !t.getMessage().contains("<"), "message contains no markup from the response body")
+                .matches(t -> t.getCause() == webAccessException, "cause is the original WebAccessException instance");
+    }
+
+    /**
+     * A thread pool is built for every call. When the call ran into the timeout the pool used to only be
+     * {@code shutdown()}, which lets the running web access - and its thread - live on until the indexer answers.
+     */
+    @Test
+    void shouldNotLeaveThreadRunningWhenCallTimesOut() throws Exception {
+        indexerConfig.setTimeout(0); //The call is given one second more than this
+        AtomicReference<Thread> callingThread = new AtomicReference<>();
+        CountDownLatch callInterrupted = new CountDownLatch(1);
+        when(webAccessMock.callUrl(anyString(), any(), anyInt())).thenAnswer(invocation -> {
+            callingThread.set(Thread.currentThread());
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e) {
+                callInterrupted.countDown();
+                throw e;
+            }
+            return "";
+        });
+
+        assertThatThrownBy(() -> testee.get(new URI("http://127.0.0.1"), indexerConfig))
+                .isInstanceOf(IndexerUnreachableException.class)
+                .hasMessage("Indexer did not complete request within 0 seconds");
+
+        assertThat(callInterrupted.await(5, TimeUnit.SECONDS)).as("Web access was interrupted after the timeout").isTrue();
+        Thread thread = callingThread.get();
+        assertThat(thread).isNotNull();
+        for (int i = 0; i < 50 && thread.isAlive(); i++) {
+            Thread.sleep(100);
+        }
+        assertThat(thread.isAlive()).as("Executor thread of the timed out call is gone").isFalse();
     }
 
 

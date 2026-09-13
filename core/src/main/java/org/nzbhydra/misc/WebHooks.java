@@ -20,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,15 +40,15 @@ public class WebHooks {
     public void onSearchEvent(SearchEvent searchEvent) throws IOException {
         String searchHook = System.getProperty("nzbhydra.hooks.search");
         if (!Strings.isNullOrEmpty(searchHook)) {
-            if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
+            if (searchEvent.searchRequest().getSource() == SearchSource.INTERNAL) {
                 try {
                     OkHttpClient client = requestFactory.getOkHttpClient(URI.create(searchHook).getHost());
-                    String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.getSearchRequest());
+                    String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.searchRequest());
                     Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();
 
                     logger.debug("Called search web hook with response {}", response);
-                } catch (IOException e) {
+                } catch (JacksonException | IOException e) {
                     logger.error("Unable to execute webhook to {} on search event", searchHook);
                 }
             }
@@ -69,7 +70,7 @@ public class WebHooks {
                     response.close();
 
                     logger.debug("Called download web hook with response {}", response);
-                } catch (IOException e) {
+                } catch (JacksonException | IOException e) {
                     logger.error("Unable to execute webhook to {} on download event", downloadHook);
                 }
             }

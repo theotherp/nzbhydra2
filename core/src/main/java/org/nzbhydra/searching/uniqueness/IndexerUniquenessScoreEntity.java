@@ -3,6 +3,7 @@
 package org.nzbhydra.searching.uniqueness;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +17,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.springnative.ReflectionMarker;
 
+import java.time.Instant;
 
 @Entity
 @Data
@@ -41,6 +43,15 @@ public final class IndexerUniquenessScoreEntity {
     @Column(name = "hasresult")
     private boolean hasResult;
 
+    @Column(name = "observation_id")
+    private String observationId;
+
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
+    private Instant recordedAt;
+
+    @Column(name = "data_version")
+    private Integer dataVersion;
+
     public IndexerUniquenessScoreEntity() {
     }
 
@@ -49,5 +60,12 @@ public final class IndexerUniquenessScoreEntity {
         this.involved = involved;
         this.have = have;
         this.hasResult = hasResult;
+    }
+
+    public IndexerUniquenessScoreEntity(IndexerEntity indexer, int involved, int have, boolean hasResult, String observationId, Instant recordedAt, int dataVersion) {
+        this(indexer, involved, have, hasResult);
+        this.observationId = observationId;
+        this.recordedAt = recordedAt;
+        this.dataVersion = dataVersion;
     }
 }

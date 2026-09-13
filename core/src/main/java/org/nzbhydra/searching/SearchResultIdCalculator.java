@@ -3,16 +3,16 @@ package org.nzbhydra.searching;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class SearchResultIdCalculator {
 
-    public static long calculateSearchResultId(SearchResultEntity result) {
+    public static long calculateSearchResultHash(SearchResultEntity result) {
         long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid() + result.getTitle() + result.getLink()));
         return hash;
     }
 
-    public static long calculateSearchResultId(SearchResultItem result) {
+    public static long calculateSearchResultHash(SearchResultItem result) {
         long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid()) + result.getTitle() + result.getLink());
         return hash;
     }
@@ -94,7 +94,7 @@ public class SearchResultIdCalculator {
      * @return 64 bit hash of the given string
      */
     public static long hash64(final String text) {
-        final byte[] bytes = text.getBytes(Charset.defaultCharset());
+        final byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         return hash64(bytes, bytes.length);
     }
 

@@ -112,9 +112,9 @@ public class IndexerChecker {
                 logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
                 searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
-                if (xmlResponse instanceof NewznabXmlError) {
-                    errorMessage = "Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription();
-                    logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
+                if (xmlResponse instanceof NewznabXmlError error) {
+                    errorMessage = "Indexer returned message: " + error.getDescription();
+                    logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), error.getDescription());
                     continue;
                 }
 
@@ -185,8 +185,21 @@ public class IndexerChecker {
                 });
     }
 
+    /**
+     * Sets the hit and download limits reported by the indexer, if any, and if not already configured.
+     */
+    static void applyLimits(IndexerConfig indexerConfig, Integer apiMax, Integer downloadsMax) {
+        logger.info("Determined an api hit limit of {} and a download limit of {}", apiMax, downloadsMax);
+        if (indexerConfig.getHitLimit().isEmpty() && apiMax != null && apiMax > -1) {
+            indexerConfig.setHitLimit(apiMax);
+        }
+        if (indexerConfig.getDownloadLimit().isEmpty() && downloadsMax != null && downloadsMax > -1) {
+            indexerConfig.setDownloadLimit(downloadsMax);
+        }
+    }
+
     static UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path(indexerConfig.getApiPath().orElse("/api"));
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(indexerConfig.getHost()).path(indexerConfig.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
             builder.queryParam("apikey", indexerConfig.getApiKey());
         }
@@ -274,15 +287,7 @@ public class IndexerChecker {
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(SingleCheckCapsResponse::getIdType).collect(Collectors.toSet());
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
-            if (responseWithLimits.isPresent()) {
-                logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
-                if (indexerConfig.getHitLimit().isEmpty() && responseWithLimits.get().apiMax > -1) {
-                    indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
-                }
-                if (indexerConfig.getDownloadLimit().isEmpty() && responseWithLimits.get().downloadsMax > -1) {
-                    indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
-                }
-            }
+            responseWithLimits.ifPresent(response -> applyLimits(indexerConfig, response.getApiMax(), response.getDownloadsMax()));
             if (supportedIds.isEmpty()) {
                 logger.info("Indexer {} does not support searching by any IDs", indexerConfig.getName());
             } else {
@@ -395,8 +400,8 @@ public class IndexerChecker {
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
         Object response = indexerWebAccess.get(uri, indexerConfig);
         if (!(response instanceof CapsXmlRoot)) {
-            if (response instanceof NewznabXmlRoot) {
-                NewznabXmlError error = ((NewznabXmlRoot) response).getError();
+            if (response instanceof NewznabXmlRoot root) {
+                NewznabXmlError error = root.getError();
                 if (error != null) {
                     throw new IndexerAccessException("Indexer reported error during caps check: " + error);
                 }
@@ -479,7 +484,10 @@ public class IndexerChecker {
                     notSupported = true;
                 }
             } else if (e.getCause() instanceof final WebAccessException webAccessException) {
-                notSupported = webAccessException.getBody() != null && webAccessException.getBody().toLowerCase().contains("function not available");
+                //ADR-0019 removed the response body from the exception message, so both markers must be read off the
+                //body here; the message check below only still covers the parse-failure path.
+                final String body = webAccessException.getBody() == null ? null : webAccessException.getBody().toLowerCase();
+                notSupported = body != null && (body.contains("function not available") || body.contains("incorrect parameter"));
             }
             if (e.getMessage() != null && e.getMessage().contains("Incorrect parameter")) {
                 notSupported = true;
@@ -491,8 +499,8 @@ public class IndexerChecker {
         }
         searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
-        if (response instanceof NewznabXmlError) {
-            String errorDescription = ((NewznabXmlError) response).getDescription();
+        if (response instanceof NewznabXmlError error) {
+            String errorDescription = error.getDescription();
             if (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getIdType());
                 eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Doesn't support " + request.getIdType()));

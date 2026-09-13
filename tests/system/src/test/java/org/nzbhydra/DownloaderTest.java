@@ -10,16 +10,13 @@ import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.hydraconfigure.ConfigManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ContextConfiguration(classes = {TestConfig.class})
+@SystemTest
 public class DownloaderTest {
 
     @Autowired

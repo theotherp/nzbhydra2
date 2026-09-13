@@ -3,7 +3,6 @@ package org.nzbhydra.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -27,7 +26,6 @@ import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Disabled("Works only locally for some reason") //https://github.com/theotherp/nzbhydra2/actions/runs/19800247988/job/56726483125
 public class ConfigWebTest {

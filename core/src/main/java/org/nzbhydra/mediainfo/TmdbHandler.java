@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -24,6 +25,8 @@ public class TmdbHandler {
 
     @Value("${nzbhydra.tmdb.apikey:}")
     protected String tmdbApiKey;
+    @Value("${nzbhydra.tmdb.apiBaseUrl:https://api.themoviedb.org/3}")
+    protected String tmdbApiBaseUrl;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -49,7 +52,7 @@ public class TmdbHandler {
     }
 
     public List<TmdbSearchResult> search(String title, Integer year) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/search/movie?query=%s&year=%s&api_key=%s".formatted(title, year == null ? "null" : year, tmdbApiKey);
+        String url = "%s/search/movie?query=%s&year=%s&api_key=%s".formatted(tmdbApiBaseUrl, title, year == null ? "null" : year, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -62,14 +65,14 @@ public class TmdbHandler {
                     return result;
                 }).toList();
 
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with title " + title, e);
         }
     }
 
     private TmdbSearchResult getMovieByImdbId(String imdbId) throws InfoProviderException {
         final String correctImdbId = imdbId.startsWith("tt") ? imdbId : "tt" + imdbId;
-        String url = "https://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=%s".formatted(correctImdbId, tmdbApiKey);
+        String url = "%s/find/%s?external_source=imdb_id&api_key=%s".formatted(tmdbApiBaseUrl, correctImdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -81,14 +84,14 @@ public class TmdbHandler {
             fillFromMap(list.get(0), result);
             result.setImdbId(correctImdbId);
             return result;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with IMDB ID " + imdbId, e);
         }
     }
 
 
     private TmdbSearchResult getMovieByTmdbId(String tmdbId) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/movie/%s?api_key=%s".formatted(tmdbId, tmdbApiKey);
+        String url = "%s/movie/%s?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -96,7 +99,7 @@ public class TmdbHandler {
             fillFromMap(map, result);
             result.setImdbId(getImdbId(tmdbId));
             return result;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with TMDB ID " + tmdbId, e);
         }
 
@@ -110,12 +113,12 @@ public class TmdbHandler {
     }
 
     private String getImdbId(String tmdbId) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/movie/%s/external_ids?api_key=%s".formatted(tmdbId, tmdbApiKey);
+        String url = "%s/movie/%s/external_ids?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
             return Optional.ofNullable(map.get("imdb_id")).map(x -> String.valueOf(map.get("imdb_id"))).orElse(null);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with ID " + tmdbId, e);
         }
     }

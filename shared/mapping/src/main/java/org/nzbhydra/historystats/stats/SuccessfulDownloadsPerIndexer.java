@@ -11,8 +11,8 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @NoArgsConstructor
 public class SuccessfulDownloadsPerIndexer {
     private String indexerName;
-    private int countAll;
-    private int countSuccessful;
-    private int countError;
+    private Integer countAll;
+    private Integer countSuccessful;
+    private Integer countError;
     private Float percentSuccessful;
 }

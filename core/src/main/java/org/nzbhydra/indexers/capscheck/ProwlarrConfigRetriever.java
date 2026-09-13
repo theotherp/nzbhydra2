@@ -3,7 +3,6 @@
 package org.nzbhydra.indexers.capscheck;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.Jackson;
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.type.TypeReference;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -44,8 +44,10 @@ public class ProwlarrConfigRetriever {
             prowlarrIndexers = webAccess.callUrl(uri.toString(), new TypeReference<>() {
             });
         } catch (WebAccessException e) {
-            String message = "Error accessing Prowlarr: " + e.getMessage();
-            logger.error(message);
+            //ADR-0019: this message is shown in the Prowlarr import UI, so it must not carry the response body
+            String message = "Error accessing Prowlarr: " + e.getShortMessage();
+            //The log keeps the full diagnostic form including the body
+            logger.error("Error accessing Prowlarr: {}", e.getMessage());
             throw new IndexerAccessException(message, e);
         }
 

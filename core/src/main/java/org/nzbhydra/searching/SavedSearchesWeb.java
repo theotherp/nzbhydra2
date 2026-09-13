@@ -27,10 +27,11 @@ import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
@@ -47,13 +48,13 @@ public class SavedSearchesWeb {
     private BaseConfigHandler baseConfigHandler;
 
     @Secured({"ROLE_STATS"})
-    @RequestMapping(value = "/internalapi/savedsearches", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/savedsearches", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SavedSearch> getSavedSearches() {
         return configProvider.getBaseConfig().getSearching().getSavedSearches();
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/savedsearches/{index}", method = RequestMethod.DELETE)
+    @DeleteMapping("/internalapi/savedsearches/{index}")
     public void deleteSearch(@PathVariable int index) {
         List<SavedSearch> savedSearches = configProvider.getBaseConfig().getSearching().getSavedSearches();
         if (index >= 0 && index < savedSearches.size()) {
@@ -63,7 +64,7 @@ public class SavedSearchesWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/savedsearches", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/savedsearches", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void saveSearch(@RequestBody SavedSearchRequest request) {
         if (request == null || request.getRequest() == null) {
             return;

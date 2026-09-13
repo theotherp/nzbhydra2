@@ -2,6 +2,7 @@
 
 package org.nzbhydra.mapping.newznab.xml;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -25,11 +26,13 @@ public abstract class Xml extends NewznabResponse {
 
 
     @Override
+    @JsonIgnore
     public String getContentHeader() {
         return "application/xml";
     }
 
     @Override
+    @JsonIgnore
     public NewznabResponse.SearchType getSearchType() {
         return searchType;
     }

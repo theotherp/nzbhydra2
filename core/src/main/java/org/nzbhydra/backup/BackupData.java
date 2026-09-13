@@ -1,5 +1,6 @@
 package org.nzbhydra.backup;
 
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 
 
 @ReflectionMarker
+@EqualsAndHashCode
 public class BackupData implements Serializable {
 
     protected LocalDateTime lastBackup;

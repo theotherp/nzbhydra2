@@ -3,7 +3,7 @@ package org.nzbhydra.indexers;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +18,12 @@ public interface IndexerRepository extends JpaRepository<IndexerEntity, Integer>
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM INDEXER WHERE ID = :id", nativeQuery = true)
+    @NativeQuery("DELETE FROM INDEXER WHERE ID = :id")
     void deleteByIdNative(@Param("id") int id);
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM INDEXER", nativeQuery = true)
+    @NativeQuery("DELETE FROM INDEXER")
     void deleteAllNative();
 
     @Override

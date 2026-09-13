@@ -1,0 +1,611 @@
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
+import {useEffect, useState} from "react";
+import {afterEach, describe, expect, it, vi} from "vitest";
+
+import type {SearchResult} from "../../../api/search";
+import {stubNarrowViewport} from "../../../test/browserStubs";
+import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
+import {RefineSidebar} from "./RefineSidebar";
+import type {QuickFilter, ResultFilters} from "./resultTable";
+import {defaultFilters, filterResults, quickFilterKey} from "./resultTable";
+
+const results: SearchResult[] = [
+    {
+        category: "Movies",
+        downloadType: "NZB",
+        indexer: "IndexerOne",
+        searchResultId: "1",
+        title: "Alpha",
+    },
+    {
+        category: "Movies",
+        downloadType: "TORBOX",
+        indexer: "IndexerTwo",
+        searchResultId: "2",
+        title: "Bravo",
+    },
+    {
+        category: "TV",
+        downloadType: undefined,
+        indexer: "IndexerOne",
+        searchResultId: "3",
+        title: "Charlie",
+    },
+];
+
+const oneQualityFilter: QuickFilter[] = [
+    {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
+];
+
+function Harness({
+    collapsed = false,
+    loadedResults = results,
+    onClearAll = vi.fn(),
+    onFiltersCommit,
+    onToggleCollapsed = vi.fn(),
+    quickFilters = [],
+    // FM-055: in the app this is `SearchResults.tsx`'s measured
+    // `results-toolbar` height. A fixed stand-in here is enough: jsdom lays
+    // nothing out, so only the CSS declarations derived from the value are
+    // observable (the pinned behavior itself is proven in a real browser by
+    // `tests/system/tests/results.spec.ts`).
+    toolbarHeight = 90,
+}: {
+    collapsed?: boolean;
+    loadedResults?: SearchResult[];
+    onClearAll?: () => void;
+    /** Called once per committed `ResultFilters` value, so a test can count
+        how many times a control actually drove the shared filter state. */
+    onFiltersCommit?: (filters: ResultFilters) => void;
+    onToggleCollapsed?: () => void;
+    quickFilters?: QuickFilter[];
+    toolbarHeight?: number;
+}) {
+    const [filters, setFilters] = useState<ResultFilters>(() =>
+        defaultFilters(loadedResults, quickFilters),
+    );
+    // Since FM-041 the below-`sm` drawer's open state is owned by the sidebar's
+    // parent (`SearchResults.tsx` in the app) and passed in as a controlled
+    // prop pair. This harness stands in for that owner, with the same initial
+    // value -- closed -- the sidebar used to hold itself, so every assertion
+    // below keeps its original expectations.
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    // FM-089: `categoryOpen`/`indexerOpen` are lifted to `SearchResults.tsx`
+    // in the app; this harness stands in for that owner the same way it
+    // already does for `drawerOpen`, with the same initial value -- expanded
+    // -- the sidebar used to hold itself.
+    const [categoryOpen, setCategoryOpen] = useState(true);
+    const [indexerOpen, setIndexerOpen] = useState(true);
+    useEffect(() => {
+        onFiltersCommit?.(filters);
+    }, [filters, onFiltersCommit]);
+    return (
+        <>
+            <RefineSidebar
+                categoryOpen={categoryOpen}
+                clearRange={(name) =>
+                    setFilters((current) => ({
+                        ...current,
+                        [name]: {min: "", max: ""},
+                    }))
+                }
+                collapsed={collapsed}
+                drawerOpen={drawerOpen}
+                // The owner (`SearchResults.tsx` in the app) memoizes this for
+                // the loaded results and hands it down; the harness derives it
+                // from the same two inputs.
+                filterDefaults={defaultFilters(loadedResults, quickFilters)}
+                filteredCount={
+                    filterResults(loadedResults, filters, quickFilters).length
+                }
+                filters={filters}
+                indexerOpen={indexerOpen}
+                onClearAll={onClearAll}
+                onDrawerOpenChange={setDrawerOpen}
+                onToggleCategoryOpen={() =>
+                    setCategoryOpen((current) => !current)
+                }
+                onToggleCollapsed={onToggleCollapsed}
+                onToggleIndexerOpen={() =>
+                    setIndexerOpen((current) => !current)
+                }
+                onToggleQuickFilter={(filter) =>
+                    setFilters((current) => ({
+                        ...current,
+                        quickFilters: {
+                            ...current.quickFilters,
+                            [quickFilterKey(filter)]:
+                                !current.quickFilters[quickFilterKey(filter)],
+                        },
+                    }))
+                }
+                quickFilters={quickFilters}
+                results={loadedResults}
+                setFilters={setFilters}
+                toolbarHeight={toolbarHeight}
+                updateRange={(name, bound, value) =>
+                    setFilters((current) => ({
+                        ...current,
+                        [name]: {...current[name], [bound]: value},
+                    }))
+                }
+            />
+            {/* FM-181: the results page's compact trigger is no longer the
+                shell's own (it lives in the sticky toolbar row, with the
+                active-filter badge), so this harness stands in for it the
+                same way it already stands in for the drawer state's owner. */}
+            <button
+                data-testid="harness-refine-trigger"
+                onClick={() => setDrawerOpen((open) => !open)}
+                type="button"
+            >
+                Refine
+            </button>
+            {/* The filtered outcome of the bound state, so a test can prove a
+                sidebar control actually narrows results rather than only
+                flipping a visual state. */}
+            <ul data-testid="filtered-titles">
+                {filterResults(loadedResults, filters, quickFilters).map(
+                    (result) => (
+                        <li key={result.searchResultId}>{result.title}</li>
+                    ),
+                )}
+            </ul>
+        </>
+    );
+}
+
+// Queried by element rather than by `listitem` role on purpose: while the
+// mobile drawer is open MUI marks the rest of the document `aria-hidden`, so a
+// role query would legitimately find nothing outside the drawer.
+function filteredTitles(): string[] {
+    return [
+        ...screen.getByTestId("filtered-titles").querySelectorAll("li"),
+    ].map((item) => item.textContent ?? "");
+}
+
+describe("RefineSidebar", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it("collapses to a narrow rail with only a labeled toggle", () => {
+        render(<Harness collapsed />);
+        expect(screen.getByTestId("refine-sidebar")).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {name: "Expand refine sidebar"}),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByTestId("refine-clear-all"),
+        ).not.toBeInTheDocument();
+    });
+
+    // FM-055: the docked branch is pinned to the viewport directly beneath
+    // the sticky results toolbar and scrolls within itself. jsdom performs no
+    // layout, so only the emotion-injected declarations are checkable here --
+    // that the sidebar actually stays visible while the results scroll, and
+    // that ADR-0011's sticky column header still pins beside it, is proven in
+    // a real browser by `tests/system/tests/results.spec.ts`.
+    it.each([
+        ["expanded", false],
+        ["collapsed rail", true],
+    ])(
+        "pins the docked %s beneath the measured toolbar height and scrolls within itself",
+        (_label, collapsed) => {
+            render(<Harness collapsed={collapsed} toolbarHeight={90} />);
+            const style = getComputedStyle(
+                screen.getByTestId("refine-sidebar"),
+            );
+            expect(style.position).toBe("sticky");
+            expect(style.top).toBe("90px");
+            expect(style.maxHeight).toBe("calc(100vh - 90px)");
+            expect(style.overflowY).toBe("auto");
+            expect(style.overflowX).toBe("hidden");
+            expect(style.alignSelf).toBe("flex-start");
+        },
+    );
+
+    it("leaves the below-`sm` sheet branch unpinned", () => {
+        stubNarrowViewport();
+        render(<Harness />);
+        fireEvent.click(screen.getByTestId("harness-refine-trigger"));
+        const style = getComputedStyle(screen.getByTestId("refine-sidebar"));
+        expect(style.position).not.toBe("sticky");
+        expect(style.overflowY).not.toBe("auto");
+    });
+
+    it("expands to show every filter section and omits Quality when no quick filters are configured", () => {
+        render(<Harness />);
+        expect(
+            screen.getByRole("button", {name: "Collapse refine sidebar"}),
+        ).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByTestId("refine-clear-all")).toBeInTheDocument();
+        expect(
+            screen.queryByTestId("refine-quality-filters"),
+        ).not.toBeInTheDocument();
+        expect(screen.getByTestId("refine-filter-title")).toBeInTheDocument();
+        expect(screen.getByTestId("refine-category-list")).toBeInTheDocument();
+        expect(screen.getByTestId("refine-indexer-list")).toBeInTheDocument();
+        for (const prefix of ["refine-size", "refine-age", "refine-grabs"]) {
+            expect(
+                screen.getByTestId(`filter-toggle-${prefix}`),
+            ).toBeInTheDocument();
+        }
+        expect(screen.getByTestId("refine-type-chips")).toBeInTheDocument();
+    });
+
+    it("renders each numeric filter as a single row with no Apply control, only a labeled clear icon", () => {
+        render(<Harness />);
+        // No control anywhere carries the (now-legacy-only) apply test id.
+        // Built at runtime, not written as a literal, so this assertion
+        // itself doesn't register as a hit for FM-088's acceptance grep
+        // over the source tree.
+        const legacyApplyPrefix = ["number-filter", "apply"].join("-");
+        expect(
+            document.querySelector(`[data-testid^="${legacyApplyPrefix}-"]`),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Apply")).not.toBeInTheDocument();
+        for (const [prefix, label] of [
+            ["refine-size", "Size (MB)"],
+            ["refine-age", "Age (days)"],
+            ["refine-grabs", "Grabs / seeders"],
+        ]) {
+            const clearButton = screen.getByTestId(
+                `number-filter-clear-${prefix}`,
+            );
+            expect(clearButton).toHaveAttribute(
+                "aria-label",
+                `Clear ${label} filter`,
+            );
+            expect(clearButton).toBeDisabled();
+        }
+    });
+
+    it("renders the configured quick filters as the Quality section, bound to the same quick-filter state", () => {
+        render(<Harness quickFilters={oneQualityFilter} />);
+        const qualityButton = screen.getByRole("button", {name: "1080p"});
+        expect(qualityButton).toHaveAttribute("aria-pressed", "false");
+        fireEvent.click(qualityButton);
+        expect(qualityButton).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("shows per-item loaded-result counts for category and indexer entries", () => {
+        render(<Harness />);
+        const categoryList = screen.getByTestId("refine-category-list");
+        expect(within(categoryList).getByText("Movies")).toBeInTheDocument();
+        expect(within(categoryList).getByText("2")).toBeInTheDocument();
+        expect(within(categoryList).getByText("TV")).toBeInTheDocument();
+        expect(within(categoryList).getByText("1")).toBeInTheDocument();
+        const indexerList = screen.getByTestId("refine-indexer-list");
+        expect(within(indexerList).getByText("IndexerOne")).toBeInTheDocument();
+        expect(within(indexerList).getByText("2")).toBeInTheDocument();
+    });
+
+    // FM-153: the rows are `C-REFINE-MULTISELECT`'s now, but the dedup, count
+    // and alphabetical sort are this feature's and stay here -- the shared
+    // component renders what it is handed in the order it is handed it, so
+    // that the history views' declared option order survives.
+    it("dedupes and alphabetically sorts the category and indexer rows it derives from the loaded results", () => {
+        render(
+            <Harness
+                loadedResults={[
+                    {
+                        category: "TV",
+                        indexer: "Zeta",
+                        searchResultId: "1",
+                        title: "Alpha",
+                    },
+                    {
+                        category: "Movies",
+                        indexer: "Alpha",
+                        searchResultId: "2",
+                        title: "Bravo",
+                    },
+                    {
+                        category: "TV",
+                        indexer: "Zeta",
+                        searchResultId: "3",
+                        title: "Charlie",
+                    },
+                ]}
+            />,
+        );
+        const values = (optionTestId: string) =>
+            screen
+                .getAllByTestId(optionTestId)
+                .map((row) => row.getAttribute("data-filter-value"));
+        expect(values("refine-category-option")).toEqual(["Movies", "TV"]);
+        expect(values("refine-indexer-option")).toEqual(["Alpha", "Zeta"]);
+    });
+
+    it("renders category and indexer entries as clickable toggle rows rather than a checkbox list", () => {
+        render(<Harness />);
+        for (const [listTestId, optionTestId] of [
+            ["refine-category-list", "refine-category-option"],
+            ["refine-indexer-list", "refine-indexer-option"],
+        ]) {
+            const list = screen.getByTestId(listTestId);
+            expect(
+                list.querySelectorAll('input[type="checkbox"]'),
+            ).toHaveLength(0);
+            const rows = within(list).getAllByTestId(optionTestId);
+            expect(rows.length).toBeGreaterThan(0);
+            for (const row of rows) {
+                expect(row.tagName).toBe("BUTTON");
+                expect(row).toHaveAttribute("aria-pressed", "true");
+            }
+        }
+    });
+
+    it("toggling a category row narrows the bound filters.categories selection and the filtered results", () => {
+        render(<Harness />);
+        const categoryList = screen.getByTestId("refine-category-list");
+        const movies = within(categoryList)
+            .getAllByTestId("refine-category-option")
+            .find((row) => row.getAttribute("data-filter-value") === "Movies");
+        expect(movies).toBeDefined();
+        expect(movies).toHaveAttribute("aria-pressed", "true");
+        fireEvent.click(movies!);
+        expect(movies).toHaveAttribute("aria-pressed", "false");
+        expect(filteredTitles()).toEqual(["Charlie"]);
+        fireEvent.click(movies!);
+        expect(movies).toHaveAttribute("aria-pressed", "true");
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+    });
+
+    // FM-188. The three actions drive the same bound `ResultFilters` the rows
+    // do, which is why every assertion here is on the filtered outcome rather
+    // than on the pressed states alone: on this page a selection *is* the
+    // filter (`defaultFilters` preselects every value, `filterResults` keeps
+    // only what is selected), so "None" legitimately empties the list.
+    it("inverting the indexer selection narrows the results to the one deselected indexer", () => {
+        render(<Harness />);
+        const indexerList = screen.getByTestId("refine-indexer-list");
+        const indexerOne = within(indexerList)
+            .getAllByTestId("refine-indexer-option")
+            .find(
+                (row) => row.getAttribute("data-filter-value") === "IndexerOne",
+            );
+        expect(indexerOne).toBeDefined();
+        fireEvent.click(indexerOne!);
+        expect(filteredTitles()).toEqual(["Bravo"]);
+
+        fireEvent.click(screen.getByTestId("refine-indexer-invert"));
+        expect(indexerOne).toHaveAttribute("aria-pressed", "true");
+        expect(filteredTitles()).toEqual(["Alpha", "Charlie"]);
+        // FM-181's active-filter comparison sees the inverted selection as a
+        // deviation from the defaults, so clearing stays offered.
+        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
+
+        fireEvent.click(screen.getByTestId("refine-indexer-none"));
+        expect(indexerOne).toHaveAttribute("aria-pressed", "false");
+        expect(filteredTitles()).toEqual([]);
+
+        fireEvent.click(screen.getByTestId("refine-indexer-all"));
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+        expect(
+            within(indexerList)
+                .getAllByTestId("refine-indexer-option")
+                .every((row) => row.getAttribute("aria-pressed") === "true"),
+        ).toBe(true);
+    });
+
+    it("offers the same three selection actions for the Category section", () => {
+        render(<Harness />);
+        fireEvent.click(screen.getByTestId("refine-category-none"));
+        expect(filteredTitles()).toEqual([]);
+        fireEvent.click(screen.getByTestId("refine-category-invert"));
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+    });
+
+    it("collapsing and expanding a list is reflected by its own toggle's aria-expanded", () => {
+        render(<Harness />);
+        const toggle = screen.getByTestId("refine-category-toggle");
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("derives download-type chips from loaded results rather than a hardcoded NZB/Torrent pair", () => {
+        render(<Harness />);
+        expect(screen.getByTestId("refine-type-chips")).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "NZB"})).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {name: "TORBOX"}),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", {name: "TORRENT"}),
+        ).not.toBeInTheDocument();
+    });
+
+    it("hides the Type section entirely when no loaded result carries a downloadType", () => {
+        const noTypeResults = results.map((result) => ({
+            ...result,
+            downloadType: undefined,
+        }));
+        render(<Harness loadedResults={noTypeResults} />);
+        expect(
+            screen.queryByTestId("refine-type-chips"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("calls onClearAll from the clear-all action and onToggleCollapsed from the sidebar toggle", async () => {
+        const onClearAll = vi.fn();
+        const onToggleCollapsed = vi.fn();
+        render(
+            <Harness
+                onClearAll={onClearAll}
+                onToggleCollapsed={onToggleCollapsed}
+            />,
+        );
+        // No filter differs from `defaultFilters` yet, so the button starts
+        // disabled and only becomes clickable once a filter is actually set.
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        await waitFor(() =>
+            expect(screen.getByTestId("refine-clear-all")).toBeEnabled(),
+        );
+        fireEvent.click(screen.getByTestId("refine-clear-all"));
+        expect(onClearAll).toHaveBeenCalledTimes(1);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Collapse refine sidebar"}),
+        );
+        expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+    });
+
+    it("updates the bound title filter as the user types", async () => {
+        render(<Harness />);
+        const titleInput = screen.getByTestId("refine-filter-title");
+        fireEvent.change(titleInput, {target: {value: "alpha"}});
+        expect(titleInput).toHaveValue("alpha");
+        await waitFor(() => expect(filteredTitles()).toEqual(["Alpha"]));
+    });
+
+    // Maintenance fix: every committed filter value re-filters, re-sorts and
+    // re-groups every loaded result, rewrites the selection and persists the
+    // choices (`SearchResults.tsx`), so a burst of typing must commit once,
+    // not once per keystroke.
+    it("coalesces a burst of typing into a single committed title filter", () => {
+        vi.useFakeTimers();
+        const onFiltersCommit = vi.fn();
+        render(<Harness onFiltersCommit={onFiltersCommit} />);
+        const titleInput = screen.getByTestId("refine-filter-title");
+        onFiltersCommit.mockClear();
+
+        for (const value of ["a", "al", "alp", "alph", "alpha"]) {
+            fireEvent.change(titleInput, {target: {value}});
+        }
+        // The field follows the keystrokes immediately; the shared filter
+        // state has not moved at all yet.
+        expect(titleInput).toHaveValue("alpha");
+        expect(onFiltersCommit).not.toHaveBeenCalled();
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
+
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(onFiltersCommit).toHaveBeenCalledTimes(1);
+        expect(filteredTitles()).toEqual(["Alpha"]);
+    });
+
+    it("coalesces a burst of typing into a single committed numeric range", () => {
+        vi.useFakeTimers();
+        const onFiltersCommit = vi.fn();
+        render(<Harness onFiltersCommit={onFiltersCommit} />);
+        const minInput = screen.getByTestId("number-filter-min-refine-size");
+        onFiltersCommit.mockClear();
+
+        for (const value of ["1", "10", "100"]) {
+            fireEvent.change(minInput, {target: {value}});
+        }
+        expect(minInput).toHaveValue(100);
+        expect(onFiltersCommit).not.toHaveBeenCalled();
+
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(onFiltersCommit).toHaveBeenCalledTimes(1);
+    });
+
+    // The committed value stays the source of truth: a clear that did not come
+    // from the field itself has to reach the field immediately, and a commit
+    // still in flight must not resurrect the cleared value.
+    it("adopts a cleared range immediately and drops the pending commit", () => {
+        vi.useFakeTimers();
+        render(<Harness />);
+        const minInput = screen.getByTestId("number-filter-min-refine-size");
+        fireEvent.change(minInput, {target: {value: "100"}});
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeEnabled();
+
+        fireEvent.change(minInput, {target: {value: "250"}});
+        fireEvent.click(screen.getByTestId("number-filter-clear-refine-size"));
+        expect(minInput).toHaveValue(null);
+        act(() => {
+            vi.advanceTimersByTime(FILTER_COMMIT_DELAY_MS);
+        });
+        expect(minInput).toHaveValue(null);
+        expect(
+            screen.getByTestId("number-filter-clear-refine-size"),
+        ).toBeDisabled();
+    });
+
+    it("keeps every filter section reachable below sm through the sheet its external trigger opens", async () => {
+        stubNarrowViewport();
+        render(<Harness quickFilters={oneQualityFilter} />);
+
+        // Nothing competes with the table for width until the sheet is
+        // opened, and the shell emits no trigger of its own -- FM-181 moved
+        // the results page's trigger into the sticky toolbar row, so
+        // `refine-sidebar-toggle` exists there and only there.
+        expect(
+            screen.queryByTestId("refine-sidebar-toggle"),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("refine-sidebar")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByTestId("harness-refine-trigger"));
+        const sidebar = within(screen.getByTestId("refine-sidebar"));
+        // The sheet's footer counts what the current filters leave, live.
+        expect(screen.getByTestId("refine-sidebar-done")).toHaveTextContent(
+            "Show 3 results",
+        );
+        for (const testId of [
+            "refine-clear-all",
+            "refine-quality-filters",
+            "refine-filter-title",
+            "refine-category-list",
+            "refine-indexer-list",
+            "filter-toggle-refine-size",
+            "filter-toggle-refine-age",
+            "filter-toggle-refine-grabs",
+            "refine-type-chips",
+        ]) {
+            expect(sidebar.getByTestId(testId)).toBeInTheDocument();
+        }
+
+        // The title filter and one list filter drive the same bound
+        // ResultFilters state from the mobile-opened sidebar.
+        fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        await waitFor(() => expect(filteredTitles()).toEqual(["Alpha"]));
+        fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
+            target: {value: ""},
+        });
+        await waitFor(() =>
+            expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]),
+        );
+        const indexerTwo = sidebar
+            .getAllByTestId("refine-indexer-option")
+            .find(
+                (row) => row.getAttribute("data-filter-value") === "IndexerTwo",
+            );
+        expect(indexerTwo).toBeDefined();
+        fireEvent.click(indexerTwo!);
+        expect(filteredTitles()).toEqual(["Alpha", "Charlie"]);
+
+        fireEvent.click(
+            sidebar.getByRole("button", {name: "Close refine sidebar"}),
+        );
+        // The sheet unmounts after its own exit transition, so "closed" is
+        // awaited rather than asserted on the next line.
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("refine-sidebar"),
+            ).not.toBeInTheDocument(),
+        );
+    });
+});

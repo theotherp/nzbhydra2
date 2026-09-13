@@ -3,6 +3,7 @@
 package org.nzbhydra.searching.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import jakarta.persistence.Column;
@@ -15,14 +16,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.searching.SearchResultIdCalculator;
 
 import java.time.Instant;
 
@@ -31,26 +36,31 @@ import java.time.Instant;
 @Getter
 @Table(name = "searchresult"
     , indexes = {
-    @Index(columnList = "indexer_id,indexerguid", unique = true)}
+    //Not unique: the same indexer GUID may be stored again with a changed title or link (see V8 migration)
+    @Index(columnList = "indexer_id,indexerguid"),
+    @Index(name = "SEARCHRESULT_HASH_INDEX", columnList = "hash", unique = true),
+    @Index(name = "SEARCHRESULT_FIRST_FOUND_INDEX", columnList = "first_found")}
 )
 public final class SearchResultEntity {
 
-
-    @GenericGenerator(
-        name = "search-result-sequence",
-        strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-        parameters = {@org.hibernate.annotations.Parameter(
-            name = "sequence_name",
-            value = "HIBERNATE_SEQUENCE"
-        ),
-            @org.hibernate.annotations.Parameter(
-                name = "increment_size",
-                value = "1"
-            )}
-    )
+    /**
+     * Internal, sequential primary key. Only used for JPA relations and foreign keys so that inserts append to the
+     * end of the primary key index instead of landing on random pages. Never exposed to the outside.
+     */
     @Id
-    @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "searchresult_seq")
+    @SequenceGenerator(name = "searchresult_seq", sequenceName = "SEARCHRESULT_SEQ", allocationSize = 50)
+    @JsonIgnore
     private long id;
+
+    /**
+     * Externally visible identifier of the result, calculated by {@link SearchResultIdCalculator} from the indexer,
+     * GUID, title and link. This is what download links, the API and the UI use (and what used to be the primary
+     * key), so it is serialized as {@code id}.
+     */
+    @Column(name = "HASH", nullable = false)
+    @JsonProperty("id")
+    private long hash;
 
     @ManyToOne
     @NotNull
@@ -79,6 +89,10 @@ public final class SearchResultEntity {
     @Column(name = "INDEXERSEARCHENTITY")
     private Integer indexerSearchEntityId;
 
+    @Transient
+    @Getter(AccessLevel.NONE)
+    private Integer downloadSearchId;
+
     public SearchResultEntity() {
     }
 
@@ -95,6 +109,17 @@ public final class SearchResultEntity {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public void setHash(long hash) {
+        this.hash = hash;
+    }
+
+    @PrePersist
+    void calculateHashIfMissing() {
+        if (hash == 0) {
+            hash = SearchResultIdCalculator.calculateSearchResultHash(this);
+        }
     }
 
     public void setIndexer(IndexerEntity indexer) {
@@ -137,6 +162,15 @@ public final class SearchResultEntity {
         this.indexerSearchEntityId = indexerSearchEntityId;
     }
 
+    public void setDownloadSearchId(Integer downloadSearchId) {
+        this.downloadSearchId = downloadSearchId;
+    }
+
+    @JsonIgnore
+    public Integer getDownloadSearchId() {
+        return downloadSearchId;
+    }
+
     @JsonIgnore
     public boolean isMagnetLink() {
         return link != null && link.startsWith("magnet:");
@@ -151,8 +185,8 @@ public final class SearchResultEntity {
             return false;
         }
         SearchResultEntity that = (SearchResultEntity) o;
-        if (this.id != 0 || that.id != 0) {
-            return this.id == that.id;
+        if (this.hash != 0 || that.hash != 0) {
+            return this.hash == that.hash;
         }
         return Objects.equal(indexer, that.indexer) &&
                 Objects.equal(indexerGuid, that.indexerGuid);
@@ -160,7 +194,7 @@ public final class SearchResultEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(hash);
     }
 
     @Override

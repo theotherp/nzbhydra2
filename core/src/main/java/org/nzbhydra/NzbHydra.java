@@ -1,6 +1,5 @@
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -25,7 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.web.embedded.tomcat.ConnectorStartFailedException;
+import org.springframework.boot.tomcat.ConnectorStartFailedException;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -42,6 +41,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,9 @@ import java.util.Map;
 @ImportRuntimeHints(NativeHints.class)
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
-    AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+        AopAutoConfiguration.class,
+        org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration.class},
+        excludeName = "org.springframework.boot.actuate.autoconfigure.endpoint.jackson.Jackson2EndpointAutoConfiguration")
 @ComponentScan
 @RestController
 @EnableCaching
@@ -168,10 +170,8 @@ public class NzbHydra {
             System.exit(1);
         }
         if (isOsWindows()) {
-            String programFiles = Strings.nullToEmpty(System.getenv("PROGRAMFILES")).toLowerCase();
-            String programFilesx86 = Strings.nullToEmpty(System.getenv("PROGRAMFILES(X86)")).toLowerCase();
             //It may happen that the yaml file is written empty due to some weird write right constraints in c:\program files or c:\program files (x86)
-            if (dataFolderFile.getAbsolutePath().toLowerCase().contains(programFiles) || dataFolderFile.getAbsolutePath().toLowerCase().contains(programFilesx86)) {
+            if (isInProgramFilesFolder(dataFolderFile.getAbsolutePath(), System.getenv("PROGRAMFILES"), System.getenv("PROGRAMFILES(X86)"))) {
                 logger.error("NZBHydra 2 may not work properly when run your windows program files folder. Please put it somewhere else");
                 System.exit(1);
             }
@@ -195,10 +195,7 @@ public class NzbHydra {
             hydraApplication.setHeadless(true);
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
-            //Is thrown by SpringApplicationAotProcessor
-            if (!(e instanceof SpringApplication.AbandonedRunException)) {
-                handleException(e);
-            }
+            handleException(e);
         }
     }
 
@@ -216,7 +213,7 @@ public class NzbHydra {
         setApplicationProperty("main.sslKeyStorePassword", "MAIN_SSL_KEY_STORE_PASSWORD", baseConfig.getMain().getSslKeyStorePassword());
         setApplicationProperty("main.databaseCompactTime", "MAIN_DATABASE_COMPACT_TIME", String.valueOf(baseConfig.getMain().getDatabaseCompactTime()));
         setApplicationProperty("main.databaseRetentionTime", "MAIN_DATABASE_RETENTION_TIME", String.valueOf(baseConfig.getMain().getDatabaseRetentionTime()));
-        setApplicationProperty("main.databaseWriteDelay", "MAIN_DATABASE_WRITE_DELA", String.valueOf(baseConfig.getMain().getDatabaseWriteDelay()));
+        setApplicationProperty("main.databaseWriteDelay", "MAIN_DATABASE_WRITE_DELAY", String.valueOf(baseConfig.getMain().getDatabaseWriteDelay()));
         setApplicationProperty("main.logging.consolelevel", "MAIN_LOGGING_CONSOLELEVEL", baseConfig.getMain().getLogging().getConsolelevel());
         setApplicationProperty("main.logging.logfilelevel", "MAIN_LOGGING_LOGFILELEVEL", baseConfig.getMain().getLogging().getLogfilelevel());
         setApplicationProperty("main.logging.logMaxHistory", "MAIN_LOGGING_LOG_MAX_HISTORY", String.valueOf(baseConfig.getMain().getLogging().getLogMaxHistory()));
@@ -259,29 +256,42 @@ public class NzbHydra {
     }
 
     private static void handleException(Exception e) throws Exception {
-        String msg;
         if (e.getClass().getName().contains("SilentExitException")) { //Sometimes thrown by spring boot devtools
             return;
         }
-        if (e instanceof YAMLException || e instanceof JsonProcessingException) {
-            msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
-            logger.error(msg);
-        }
-        if (e instanceof ConnectorStartFailedException) {
-            msg = "The selected port is already in use. Either shut the other application down or select another port";
-            logger.error(msg);
-        }
-        if (e.getMessage() != null && e.getMessage().contains("Detected applied migration not resolved locally")) {
-            msg = "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
-            logger.error(msg);
-        } else {
-            msg = "An unexpected error occurred during startup:\n" + e;
-            logger.error("An unexpected error occurred during startup", e);
-        }
-        logger.error("FATAL: " + msg, e);
+        logger.error("FATAL: " + startupErrorMessage(e), e);
 
         //Rethrow so that spring exception handlers can handle this
         throw e;
+    }
+
+    /**
+     * Returns the message to show the user for an error which occurred during startup.
+     */
+    static String startupErrorMessage(Throwable e) {
+        if (e instanceof YAMLException || e instanceof JacksonException) {
+            return "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
+        }
+        if (e instanceof ConnectorStartFailedException) {
+            return "The selected port is already in use. Either shut the other application down or select another port";
+        }
+        if (e.getMessage() != null && e.getMessage().contains("Detected applied migration not resolved locally")) {
+            return "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
+        }
+        return "An unexpected error occurred during startup:\n" + e;
+    }
+
+    /**
+     * Returns true if the data folder is located in one of the given program files folders. Folders which are not set
+     * are ignored (an unset environment variable must not match everything).
+     */
+    static boolean isInProgramFilesFolder(String dataFolderPath, String programFiles, String programFilesx86) {
+        String lowerCaseDataFolderPath = Strings.nullToEmpty(dataFolderPath).toLowerCase();
+        return isInFolder(lowerCaseDataFolderPath, programFiles) || isInFolder(lowerCaseDataFolderPath, programFilesx86);
+    }
+
+    private static boolean isInFolder(String lowerCaseDataFolderPath, String folder) {
+        return !Strings.isNullOrEmpty(folder) && lowerCaseDataFolderPath.contains(folder.toLowerCase());
     }
 
     public static boolean isOsWindows() {
@@ -334,7 +344,9 @@ public class NzbHydra {
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");
             } else {
-                if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+                if (!isNativeBuild()
+                        && configProvider.getBaseConfig().getMain().isStartupBrowser()
+                        && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
                     if (wasRestarted) {
                         logger.info("Not opening browser after restart");
                         return;
@@ -367,8 +379,13 @@ public class NzbHydra {
     }
 
     public static boolean isNativeBuild() {
-        String hydraNativeBuildEnv = System.getenv("HYDRA_NATIVE_BUILD");
         String hydraNativeBuildProperty = System.getProperty("HYDRA_NATIVE_BUILD");
-        return hydraNativeBuildEnv != null || hydraNativeBuildProperty != null;
+        if (hydraNativeBuildProperty != null) {
+            //An explicit "false" system property overrides the environment. The native build workflow exports
+            //HYDRA_NATIVE_BUILD=true for the whole job, unit tests included, and a test of the plain JVM configuration
+            //(e.g. OidcLoginComponentTest) needs a way to opt out of that.
+            return !"false".equalsIgnoreCase(hydraNativeBuildProperty.trim());
+        }
+        return System.getenv("HYDRA_NATIVE_BUILD") != null;
     }
 }

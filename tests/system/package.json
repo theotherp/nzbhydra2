@@ -4,12 +4,15 @@
   "description": "System tests for NZBHydra2",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke.spec.ts",
+    "test:full": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "playwright:install": "playwright install"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "@types/node": "^20.0.0"
+    "@playwright/test": "1.62.1",
+    "@types/node": "^20.0.0",
+    "typescript": "5.8.3"
   }
 }

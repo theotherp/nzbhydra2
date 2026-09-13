@@ -26,7 +26,7 @@ public class NotificationEntityTest {
         final NotificationEntityTO to = Jackson.JSON_MAPPER.convertValue(testee, NotificationEntityTO.class);
         final String jsonTO = Jackson.JSON_MAPPER.writeValueAsString(to);
         final String jsonEntity = Jackson.JSON_MAPPER.writeValueAsString(testee);
-        assertThat(jsonTO).isEqualTo(jsonEntity);
+        assertThat(Jackson.JSON_MAPPER.readTree(jsonTO)).isEqualTo(Jackson.JSON_MAPPER.readTree(jsonEntity));
     }
 
 }

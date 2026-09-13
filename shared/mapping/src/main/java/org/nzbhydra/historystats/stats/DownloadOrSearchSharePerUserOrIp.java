@@ -11,6 +11,6 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @NoArgsConstructor
 public class DownloadOrSearchSharePerUserOrIp {
     private String key = null;
-    private int count;
+    private Integer count;
     private float percentage;
 }

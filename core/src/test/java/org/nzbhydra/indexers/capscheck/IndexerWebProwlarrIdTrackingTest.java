@@ -2,7 +2,6 @@
 
 package org.nzbhydra.indexers.capscheck;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -13,6 +12,8 @@ import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.IndexerWeb.ProwlarrConfigReadRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class IndexerWebProwlarrIdTrackingTest {
     @InjectMocks
     private IndexerWeb testee = new IndexerWeb();
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new JsonMapper();
 
     @Test
     void shouldNotRemoveIndexerFromDifferentProwlarrInstance() throws Exception {

@@ -3,7 +3,6 @@
 package org.nzbhydra.notifications;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -93,7 +93,7 @@ public class NotificationHandler {
             final String messageBody;
             try {
                 messageBody = Jackson.JSON_MAPPER.writeValueAsString(new AppriseMessage(configEntry.getAppriseUrls(), notificationBody, notificationTitle, configEntry.getMessageType().name().toLowerCase()));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Unable to generate notification body", e);
             }
 
@@ -147,7 +147,7 @@ public class NotificationHandler {
 
     private void callAppriseApi(NotificationConfig notificationConfig, String messageBody) {
         try {
-            final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notify");
+            final String notifyUrl = UriComponentsBuilder.fromUriString(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notify");
             logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", notifyUrl, messageBody);
             webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
         } catch (IOException e) {

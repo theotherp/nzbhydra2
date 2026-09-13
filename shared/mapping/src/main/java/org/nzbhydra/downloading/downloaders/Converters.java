@@ -39,6 +39,20 @@ public class Converters {
         return formatBytes(value, precise) + "/s";
     }
 
+    /**
+     * Formats free disk space the way the footer shows it: terabytes with one decimal ("1.2 TB"), everything smaller as a
+     * whole number ("955 GB", "199 MB").
+     */
+    public static String formatDiskSpace(long bytes) {
+        if (bytes < 1) {
+            return "0 B";
+        }
+        if (bytes >= T) {
+            return new DecimalFormat("#,##0.0").format((double) bytes / (double) T) + " TB";
+        }
+        return formatBytes(bytes, false);
+    }
+
     public static String formatBytes(long value, boolean precise) {
         final long[] dividers = new long[]{T, G, M, K, 1};
         final String[] units = new String[]{"TB", "GB", "MB", "KB", "B"};

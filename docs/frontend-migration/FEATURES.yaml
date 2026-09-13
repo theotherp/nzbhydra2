@@ -1,0 +1,2172 @@
+schema_version: 2
+features:
+  - id: F-PLATFORM-SHELL
+    name: Application shell, navigation, footer, and permission-aware links
+    routes:
+      - /*
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/header-controller.js
+      - core/ui-src/html/states/header.html
+      - core/ui-src/js/directives/footer.js
+    target: core/ui-react/src/app
+    tests:
+      - core/ui-react/src/app/AppShell.test.tsx
+      - core/ui-react/src/app/theme.test.ts
+      - core/ui-react/src/app/ThemePreferenceProvider.test.tsx
+      - core/ui-react/src/App.test.tsx
+      - core/ui-react/src/app/sessionExpiry.test.ts
+      - core/ui-react/src/app/status/SessionExpiredDialog.test.tsx
+      - tests/system/tests/smoke.spec.ts
+      - tests/system/tests/session-expiry.spec.ts
+      - tests/system/tests/focus-indication.spec.ts
+    selectors:
+      - app-shell-logo
+      - app-shell-nav
+      - app-shell-theme-selector
+      - app-shell-theme-option-{{themePreference}}
+      - shell-loginout
+      - session-expired-dialog
+      - session-expired-reload
+    parity: partial
+    gaps:
+      # 2026-08-23: `navigation` and `live status` removed. They were never
+      # gaps -- `26648aff5` (the governance compaction) decomposed this
+      # record's own *name* ("Application shell, navigation, footer, and
+      # permission-aware links") into gap entries; `footer` and
+      # `permission-aware links` were cleared earlier, these two were missed.
+      # The downloader-status footer entry went with them: it named FM-081 as
+      # the task that would migrate `downloaderStatusFooter.js`, and FM-081
+      # shipped it (STATUS.md, `C-DOWNLOADER-STATUS`), so the line described
+      # a forward reference that had already been discharged.
+      - deliberate - FM-080 reproduces `footer.js`'s content-padding compensation for the update banners it added by measuring their real rendered height rather than legacy's pixel bookkeeping, per ADR-0014
+      - deliberate - FM-154/FM-155 (ADR-0049) put theme selection in the nav bar beside the login/logout control rather than in Config > Main, and offer Auto/Grey/Bright/Dark/Dark (Dyschromatopsia) rather than legacy's fixed four; the choice applies immediately and FM-155 persists it per user through C-THEME-PREFERENCE (server record, with a localStorage seed that only shortens the wrong-theme flash)
+      - deliberate - FM-184 (ADR-0056) hands the application-wide keyboard focus ring to `@mui/material` 9.4's `theme.focusVisible` instead of authoring one rule per control family; ADR-0013's measured 3px/3px geometry is kept by passing it to the theme rather than taking MUI's 2px/2px defaults, and MUI decides which family insets (Tab by 9px, MenuItem/ListItemButton/Autocomplete option by 3px) and on which node it paints (the icon `svg` for Checkbox/Radio, the track for Switch). Legacy authored no focus indication at all, so this is a deliberate divergence in the same direction ADR-0013 already recorded
+      - deliberate - FM-171 mounts `C-SESSION-EXPIRY`'s session-expired dialog in the shell, a capability legacy has no counterpart for (`nzbhydra.js` and `header-controller.js` carry no 401 handling; issue #1080's server half, `88db9bc87`, is what made an expired session answer a background request with a plain 401 rather than a redirect). Its action is a Reload button rather than an automatic reload, because the full navigation that completes the OIDC/form login also destroys unsaved form state, and no decision entry asks for the automatic behavior
+      - "deliberate - FM-180 (ADR-0055) gives up legacy's `@body-bg: #000000` / `@input-bg: rgb(15, 17, 19)` parity for both near-black themes after an owner report (2026-09-03) that page, cards and tables read as one flat black with no row dividers: `dark` and `dark-dyschromatopsia` share one layered ground (page `#101010`, cards/tables `#1e1e1e`, raised controls `#262626`, app bar level with the cards, input fill `#141414`, row dividers at 10% white), with elevation overlays still off per FM-117, and `dark`'s `text.secondary`/`surfaces.mutedText`/`text.primary` re-authored where the lighter control surface cost a recorded 4.5:1 floor"
+      - "deliberate - FM-183 keeps `@mui/material` 9's changed component defaults rather than pinning 7.3.9's in the theme (ADR-0014, and the FM-183 packet forbids an override added for that purpose) -- the `ListItemIcon` min-width default moved 56px to 36px, which reaches exactly one rendered site, the folder/file rows of `FileBrowserSetting`'s dialog (plain `List` + `ListItemButton`), whose labels now start 36px rather than 56px after the row's content edge, measured in the 9.4.0 DOM (`min-width: 36px`, 24px glyph, label at +36px) against `ListItemIcon.js`'s `minWidth: 56` in 7.3.9 and `theme.spacing(4.5)` in 9.4.0; `IndexerSelectionButton`'s menu is NOT affected, because `MenuItem` pins its `ListItemIcon` to 36px in 7.3.9 and 9.4.0 alike (`MenuItem.js`, both versions) and the captured menu is pixel-identical before and after. A `TextField select`'s label renders as a `<div>` The other forced rendering delta is `CheckCircleOutline`: 7.3.9's legacy module shipped an older cut of the check (one unit thicker, drawn first) that no 9.4.0 module carries, so `DownloadHistoryPage`'s status icon now draws the newer cut -- sub-pixel, same drawing, pinned in `legacyOutlineIcons.test.tsx`; the other four legacy families map byte-for-byte onto their `*OutlineOutlined` files."
+      - "deliberate - the `bright` theme reuses the shell's `banner-grey-dark.png` masthead rather than legacy's separate `banner-bright.png`, because MUI paints the app bar `primary.main` under `palette.mode: \"light\"` and the white/green wordmark reads on that green ground; legacy switched the asset per theme"
+  - id: F-AUTH-LOGIN
+    name: Form login, logout, password confirmation, and session refresh
+    routes:
+      - /login
+    legacy_sources:
+      - core/ui-src/js/login-controller.js
+      - core/ui-src/js/hydra-auth-service.js
+      - core/ui-src/html/states/login.html
+    target: core/ui-react/src/features/auth
+    tests:
+      - core/ui-react/src/features/auth/LoginPage.test.tsx
+      - core/ui-react/src/features/auth/LoginOutButton.test.tsx
+      - core/ui-react/src/features/auth/session.test.ts
+      - core/ui-react/src/router.test.tsx
+      - core/ui-react/src/app/AppShell.test.tsx
+      - tests/system/tests/smoke.spec.ts
+    selectors:
+      - login-username
+      - login-password
+      - login-submit
+      - shell-loginout
+    parity: partial
+    gaps:
+      - deliberate - OpenID Connect sign-in; login.html/login-controller.js carry no OIDC affordance in the legacy SPA, sign-in happens entirely in server-side redirects the SPA never renders
+      - deliberate - every session transition re-enters the application through a full document navigation, because the route tree, the navigation, and the affordance itself are built once from the server-rendered bootstrap (ADR-0017 keeps only the safe config reactive); legacy changed state in place
+      - deliberate - legacy's post-logout toasts ("Logged out", "Logged out. Close your browser to make sure session is closed.") and its post-BASIC-challenge "Login successful!" are not shown, because the full navigation that follows discards them
+      - deliberate - the anonymous affordance is not suppressed for the rest of the page's life after a logout (legacy's `event !== "loggedOut"` branch); the next page's bootstrap decides instead
+      - deliberate - the user name for a BASIC challenge's `old_username` is carried across the full navigation in session storage; legacy kept it in the header controller's scope, which a navigation would have discarded
+      - deliberate - a failed logout or BASIC challenge is reported as a "Logout failed!"/"Login failed!" toast; legacy left both to the global HTTP error growl the React app has no equivalent of
+      - deliberate - the login form's two placeholder-only inputs carry visible MUI labels (ADR-0014)
+      - "deliberate - logging out of a BASIC session does not end it (verified live): the browser replays the cached `Authorization` header on the full navigation that follows the logout, so the server renders an authenticated bootstrap again and the header still reads `Logout {username}`. Legacy could not end the session either, but hid the affordance in place and so at least looked logged out. Recorded as a permanent shared limitation, not a React gap: `POST /loggedout` (`MainWeb.java:92`) is dead server code no UI has ever called — a case-insensitive sweep of `core/ui-src` finds only AngularJS `user:loggedOut` *events*, never the endpoint — so this is not an endpoint React failed to adopt. React already implements legacy's actual BASIC mechanism (`session.ts`'s `askForPassword` -> `internalapi/askpassword?old_username=`). Owner ruling 2026-08-23."
+  - id: F-SEARCH-FORM
+    name: Search workspace, URL criteria, categories, limits, and submission
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-request-service.js
+      - core/ui-src/html/states/search.html
+    target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+      - tests/system/tests/smoke.spec.ts
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - search-query
+      - search-submit
+      - search-category-control
+      - search-category-option-{{category.name}}
+      - additional-query
+      - autocomplete-popup
+      - autocomplete-option
+      - search-advanced-toggle
+      - search-advanced-panel
+      # FM-087's constraint-chip row: the live status chips the search bar
+      # renders for constraints whose fields sit inside the Advanced panel.
+      # FM-146: the row itself renders only while Advanced is open or a chip
+      # has something to show (`advancedOpen || hasChips`), so it is absent
+      # from the DOM on the collapsed, empty default form. FM-149 (owner
+      # follow-up 2026-08-30) puts that predicate on the row's own `Collapse`
+      # (`unmountOnExit`), so the row's space animates in and out with the
+      # Advanced panel instead of appearing in one frame -- still absent from
+      # the DOM once collapsed.
+      - search-chips
+      - search-chip-age
+      - search-chip-size
+    parity: partial
+    gaps:
+      - "deliberate - the guided tour is retired rather than migrated. ADR-0022 (accepted 2026-08-22) withdraws legacy's `angular-ui-tour` walkthrough instead of reproducing it, and FM-095 removed the AngularJS sources it lived in (`guided-tour-service.js`, `angular-ui-tour.js`). Its backend surface (`GuidedTourWeb`/`DemoDataProvider`) is deliberately left standing; ADR-0022 defers that removal and no FM packet may take it."
+  - id: F-SEARCH-MEDIA
+    name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/html/states/search.html
+    target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/media.test.ts
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - additional-query
+      - autocomplete-popup
+      - autocomplete-option
+      - season-episode-pair
+      # FM-087's constraint chips for the media criteria.
+      - search-chip-title
+      - search-chip-season
+      - search-chip-episode
+      - search-chip-filter
+    parity: partial
+  - id: F-SEARCH-INDEXERS
+    name: Indexer selection by individual source, type, group, and preselection
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/directives/multiselect-dropdown.js
+      - core/ui-src/html/states/search.html
+    target: core/ui-react/src/features/search
+    tests:
+      - tests/system/tests/search.spec.ts
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+    selectors:
+      # FM-087's indexer-count chip (warning-coloured while nothing is
+      # selected); the selection itself carries no test id of its own.
+      - search-chip-indexers
+    parity: partial
+    gaps:
+      - deliberate - the search form's indexer-selection checkboxes are not tinted with the indexer's configured colour (legacy's `indexer-input.js:41-42`); the owner named result rows for FM-096, and the setting's help text promises only search results
+  - id: F-SEARCH-RECENT
+    name: Recent-search dropdown, refill, repeat, and drag-to-search
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-history-service.js
+      - core/ui-src/html/search-searchhistory-dropdown.html
+    target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/recentSearches.test.ts
+      - core/ui-react/src/features/search/history/RecentSearches.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors: []
+    parity: partial
+    gaps:
+      - keyboard-refill hint and aria-keyshortcuts announcement not yet verified with a real screen reader (NVDA/JAWS/VoiceOver)
+  - id: F-SEARCH-PROGRESS
+    name: Live search progress, cancellation, and early result display
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-service.js
+      - core/ui-src/html/search-state.html
+    target: core/ui-react/src/features/search
+    tests:
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - search-status-modal
+    parity: done
+    gaps:
+      - deliberate - Cancel does not send a server-side cancellation request;
+        the backend keeps searching after the client abandons the submission.
+        Its own text already said "legacy parity — only the client stops
+        waiting", i.e. legacy behaves identically; reclassified 2026-08-23
+        from a bare gap, which read as outstanding work.
+      - deliberate - Two-button layout (separate Cancel and "Show early results" buttons)
+        instead of legacy's single button that morphs from Cancel to "Show
+        results" once indexers finish; recorded as deliberate by FM-083.
+  - id: F-SEARCH-RESULTS
+    name: Result processing, display, indexer outcomes, and malformed-result resilience
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/search-result.js
+      - core/ui-src/html/states/search-results.html
+      - core/ui-src/html/directives/search-result.html
+    target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/features/search/results/resultTable.test.ts
+      - core/ui-react/src/features/search/results/ResultDetailLinks.test.tsx
+    selectors:
+      - search-results
+      - indexer-limit-warnings
+      - search-results-summary
+      - results-rejected-trigger
+      - results-rejected-popover
+      - search-results-table
+      - search-result-row
+      - search-result-title
+      - search-result-details
+      - result-links
+      - result-nfo
+      - result-binsearch-link
+      - result-comments-link
+      - result-details-link
+      - nfo-dialog
+      - nfo-dialog-content
+      - display-options-toggle
+      - display-options
+      - search-result-indexer-swatch
+      - search-result-cover
+      - search-result-cover-tile
+      - search-result-cover-popover
+      # 2026-09-03 (FM-181, owner request): below the 768px stacking
+      # breakpoint the toolbar is one sticky row and paging moves under the
+      # last card into this footer, which also names the available count.
+      # `results-load-more`/`results-load-all` keep their ids, labels and
+      # disabled/aria-busy rules; they are inside `results-toolbar` at 768px
+      # and up and inside `results-paging-footer` below it -- exactly one
+      # copy either way. `search-results-summary` reads `{filtered} /
+      # {total}` there, plus `results-rejected-trigger` when anything was
+      # rejected; the desktop phrase is unchanged.
+      - results-paging-footer
+      # 2026-08-31 (FM-150, owner request): the table's width budget moved --
+      # Age 8% -> 5% and Size 9% -> 8%, both surrendered to Title (35% -> 39%)
+      # -- so those two columns are now sized for the values users see, not for
+      # `9999d`/`999.99 GB`. The expand controls that share the Title cell are
+      # icon buttons from the same request; see F-SEARCH-GROUP-SELECTION.
+      # 2026-09-02 (FM-175, owner request): the same budget is now pixel
+      # tracks -- every column but Title has a fixed width sized for its own
+      # header label, and Title has none, so it takes the whole remainder
+      # (345px of content at 1280x800 beside the docked sidebar, from 317px).
+      # Body cells carry 8px horizontal padding instead of MUI's 16px, the
+      # Actions cell none on its right, and the row's icons and checkbox are
+      # sized to the text rather than to MUI's defaults, which is what makes
+      # the row roughly 22px shorter. Below 1280px the tracks become the same
+      # shape as percentages so the table keeps shrinking (ADR-0011).
+      # 2026-09-03 (FM-179, owner request): the cover is a 56px-tall framed
+      # tile (`search-result-cover-tile`) with a footprint reserved before the
+      # image loads, so a covered row no longer reflows; the full-size image
+      # opens in `search-result-cover-popover` on hover, focus and tap, which
+      # is what closes FM-177's enlarge gap. Rows that render a tile carry
+      # `data-has-cover` and middle-align; every other row keeps FM-175's top
+      # alignment.
+      # 2026-09-05 (FM-186, owner request): the Actions track is no longer a
+      # constant. It is `actionsTrackWidth(count)` = 140 + 28 * the enabled
+      # downloader count (`resultTable.ts`) -- one 24px send button plus its
+      # 4px gap per downloader on top of FM-175's 140px icon inventory -- and
+      # both width sets are derived from it, the percentages as that width
+      # over the 936px basis table. Title still declares no width and absorbs
+      # the difference: 345px of content with no downloader, 317px with one,
+      # 289px with two, the last accepted by that request below FM-175's
+      # 340px floor. The buttons themselves are F-SEARCH-DOWNLOADS'
+      # `result-send-to-downloader`.
+      # 2026-09-05 (FM-187, owner request): the count is no longer the
+      # downloader count alone. It is `downloaders.length` plus one slot for
+      # F-SEARCH-DOWNLOADS' `result-send-to-black-hole` button, reserved by
+      # `blackHoleSlot(results, settings)` (`resultTable.ts`) -- true iff a
+      # loaded result would render that button. Derived from the *unfiltered*
+      # loaded results, so a refine filter never shifts the columns, and from
+      # the results at all rather than the config, because `sendMagnetLinks`
+      # defaults to true (`baseConfig.yml:281-283`) and a config-only rule
+      # would cost every NZB-only install 28px of Title for a button no row
+      # shows. FM-176's expand slots reserve from the rendered rows likewise.
+    parity: partial
+    gaps:
+      - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
+        that is off by default, where legacy defaulted it on (`search-results-controller.js:153`); the separate `poster` field
+        is not built
+      - deliberate - FM-096 (owner decision 2026-08-23) replaces legacy's whole-`tbody` `rgba(colour,0.5)` row tint with a bounded, outlined swatch beside the indexer name; an arbitrary user colour at 0.5 alpha behind row text cannot meet WCAG contrast on the dark palette and collides with the FM-054 recency stripe, the nested-row `action.hover` background, and the Downloaded chip
+  - id: F-SEARCH-SORT-FILTER
+    name: Result sorting, column filters, quick filters, and persisted choices
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/dataTableDirectives.js
+      - core/ui-src/html/states/search-results.html
+    target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/features/search/results/resultTable.test.ts
+      - core/ui-react/src/features/search/results/RefineSidebar.test.tsx
+      - core/ui-react/src/features/search/results/groupEpisodesHelp.test.ts
+    selectors:
+      - sort-{{column}}
+      - freetext-filter-{{column}}
+      - number-filter-min-{{column}}
+      - number-filter-max-{{column}}
+      # number-filter-apply-{{column}} removed by FM-088: the React
+      # NumericFilter's Apply button had no onClick (min/max already commit
+      # on every keystroke) and was dropped. The id remains legacy-only,
+      # still exercised by results.spec.ts's AngularJS-UI test at line 77.
+      - number-filter-clear-{{column}}
+      - filter-toggle-indexer
+      - filter-toggle-category
+      - filter-toggle-size
+      - filter-toggle-grabs
+      - filter-toggle-age
+      - refine-sidebar
+      - refine-sidebar-toggle
+      - refine-sidebar-drawer
+      - refine-sidebar-close
+      # 2026-09-03 (FM-181, owner request): below 768px the shared shell's
+      # branch is a bottom sheet whose footer carries clear-all as a text
+      # button (same id, same "Clear all filters" name) beside this new done
+      # control, which counts what the live filters leave ("Show N results")
+      # and dismisses the sheet. `refine-sidebar-toggle` is rendered by the
+      # toolbar there, not by the shell (`trigger="external"`): an icon in a
+      # MUI Badge showing `activeFilterCount` (`resultTable.ts`), the same
+      # comparison `refine-clear-all`'s disabled state is derived from.
+      - refine-sidebar-done
+      - refine-clear-all
+      - refine-filter-title
+      - refine-quality-filters
+      - refine-category-toggle
+      - refine-category-list
+      - refine-category-option
+      - refine-indexer-toggle
+      - refine-indexer-list
+      - refine-indexer-option
+      # 2026-09-07 (FM-188, owner request): the Invert / All / None row at the
+      # top of each expanded C-REFINE-MULTISELECT section. Opt-in on that
+      # component and enabled here only -- this page preselects every value
+      # (`defaultFilters`) and keeps only what is selected (`filterResults`),
+      # so the whole-set actions are meaningful; the history views' sections
+      # start empty and deliberately carry no such row (ADR-0016).
+      - refine-category-invert
+      - refine-category-all
+      - refine-category-none
+      - refine-indexer-invert
+      - refine-indexer-all
+      - refine-indexer-none
+      - refine-type-chips
+      - filter-toggle-refine-size
+      - filter-toggle-refine-age
+      - filter-toggle-refine-grabs
+      - display-options-toggle
+      - display-options
+      # 2026-09-03 (FM-182, ADR-0054): below 768px `thead` is hidden and with
+      # it the only sort control, so this icon button (row 1, between the
+      # count and Display) and its menu are the phone's entry point to the
+      # same `sorting` state the desktop headers write -- no separate
+      # persistence path, no hidden desktop copy.
+      - results-sort-toggle
+      - results-sort-menu
+      - results-sort-column-{{column}}
+      - results-sort-direction-asc
+      - results-sort-direction-desc
+      # 2026-09-02 (FM-176/FM-178, ADR-0054): the `hydra.search-results.table`
+      # payload's persisted keys are `sorting`, `sidebarCollapsed`,
+      # `refineCategoryOpen`, `refineIndexerOpen`, `compactRows`,
+      # `highlightRecent`, `showDuplicateControls`, `showCovers` (FM-177),
+      # `groupEpisodes`, and `groupTorrentAndUsenet`
+      # -- browser-local, per ADR-0054, not server-side per-user preferences
+      # (`storedChoices.ts`).
+      # 2026-09-08 (FM-189): the two grouping options joined that payload so
+      # a new search (which remounts `SearchResults`) no longer resets them;
+      # they default to legacy's own `true`/`false` respectively.
+      # `filters` left this payload entirely with FM-178: every refine
+      # filter resets on a new search (see the gap line below), so none of
+      # them can usefully outlive one.
+      - group-episodes-help-dialog
+      # 2026-09-01: shipped by FM-162, whose FEATURES edit was scoped to gap
+      # lines only. The virtualized table's spacer rows above/below the
+      # rendered window.
+      - results-virtual-spacer-top
+      - results-virtual-spacer-bottom
+    parity: done
+    gaps:
+      # 2026-08-23: narrowed from the bare phrase "server-backed preferences",
+      # which overstated the gap. Legacy keeps sorting and every display
+      # toggle in `localStorageService` (client-side), exactly as the React
+      # results view does. Its ONLY server-backed preference in this feature
+      # is the one below, adopted by FM-091 (all remaining gaps deliberate).
+      - "deliberate - FM-091: the group-episodes help dialog's body drops
+        legacy's \"upper left\" locator phrase for the \"Display options\"
+        control (`search-results-controller.js:186`), since the React
+        layout does not fix that control to a corner"
+      # 2026-09-01 (FM-162): FM-091's results-derived eligibility is gone.
+      # It made the dialog appear for any broad search that happened to
+      # return TV-categorized results and never appear for a TV category an
+      # installation had renamed, which the owner saw live on 2026-08-31.
+      - "deliberate - FM-162: eligibility follows legacy's own predicate on
+        the *searched* category (`search-results-controller.js:178`, read
+        from git history: `groupEpisodes && categoryLower.indexOf(\"tv\") >
+        -1 && $stateParams.episode === undefined`), threaded from
+        `SearchPage.tsx`; it additionally accepts a category whose
+        configured `searchType` is `TVSEARCH` whatever its name, so a TV
+        category renamed \"Series\" or \"Anime\" behaves like the stock ones
+        (`groupEpisodesHelp.ts:isGroupEpisodesHelpEligible`)"
+      - "deliberate - FM-091: the server-backed
+        `isGroupEpisodesHelpShown` flag is written only after the dialog
+        closes, not on open as legacy did
+        (`search-results-controller.js:184-191`), following FM-079's
+        acknowledge-after-close precedent"
+      - "deliberate - FM-089: the refine sidebar's Category and Indexer
+        sections now remember their own expand/collapse state
+        (`refineCategoryOpen`/`refineIndexerOpen`) across reloads, folded
+        into the same `hydra.search-results.table` payload
+        `sidebarCollapsed` already uses; legacy had no such per-section
+        memory for these two lists"
+      - "deliberate - FM-178 (owner request 2026-09-02; legacy parity):
+        every refine filter -- title, size/grabs/age ranges, quick filters,
+        and the indexer/category/download-type selections -- resets to its
+        defaults (plus the configured quick-filter preselection) whenever
+        `searchRequestId` changes and is no longer written to the
+        `hydra.search-results.table` payload; legacy's column filters lived
+        in the per-search controller and were never stored
+        (`dataTableDirectives.js`), only `sorting` was. This supersedes
+        `MAINTENANCE.md`'s two per-key scoping ledger entries
+        (`24329c640`, `27efd28f5`), which generalize into this one
+        whole-filter-set reset"
+  - id: F-SEARCH-GROUP-SELECTION
+    name: Duplicate, title, and episode grouping with selection and shift-selection
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/search-result.js
+      - core/ui-src/js/directives/selection-button.js
+    target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+    selectors:
+      - search-result-row
+      - results-bulk-actions
+      - header-selection-menu
+      # 2026-09-03 (FM-181, owner request): `toolbar-selection-menu` renders
+      # on the same JavaScript branch as the stacked card layout (below
+      # 768px) instead of a `display: {xs, sm}` CSS switch, which had hidden
+      # it from 600px up while `thead` was already hidden from 767px down --
+      # leaving no select-all at all between the two. It sits at the start of
+      # row 1 now, reachable before anything is selected;
+      # `results-bulk-actions` is row 2 and exists only while
+      # `selected.size > 0`, carrying `results-selection-count`.
+      - toolbar-selection-menu
+      - results-selection-count
+      - display-options-toggle
+      - display-options
+      # 2026-08-31 (FM-150): the "Expand group"/"Expand duplicates" toggles are
+      # icon buttons now; their accessible names (and so every
+      # `getByRole("button", {name})` that addresses them) are unchanged. Rows
+      # that carry fewer toggles than the widest row pad with this invisible,
+      # same-sized placeholder instead, so
+      # every title at one nesting level starts at the same x.
+      # 2026-09-02 (FM-175, owner request): that shared x is now the header
+      # "TITLE" label's own, and both toggles (and the spacer, which keeps the
+      # identical anatomy) render a 16px glyph in a 24px button. One nesting
+      # level is still 16px; only the level-0 base moved 16px -> 8px.
+      # 2026-09-02 (FM-176, owner request): the padding is positional now.
+      # Slot 1 (left) is always the "Expand group" toggle and slot 2 (right)
+      # always "Expand duplicates"; a row without one renders this spacer in
+      # its place, so a duplicate toggle never appears where a neighbouring
+      # row shows its group toggle. Slot 2 exists only while the display
+      # option "Show duplicate expand controls" is on -- off (the default,
+      # matching legacy's "Show duplicate display triggers",
+      # `search-results-controller.js:162,205`) no duplicate toggle renders,
+      # nothing is reserved for one, and duplicate groups stay collapsed
+      # under their first row.
+      - search-result-expand-spacer
+    parity: partial
+  - id: F-SEARCH-DOWNLOADS
+    name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/nzb-download-service.js
+      - core/ui-src/js/directives/addable-nzb.js
+      - core/ui-src/js/directives/addable-nzbs.js
+      - core/ui-src/js/directives/download-nzbs-button.js
+      - core/ui-src/js/directives/download-nzbzip-button.js
+      - core/ui-src/js/directives/copy-links-button.js
+      - core/ui-src/js/directives/save-or-send-torrent.js
+    target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/downloads.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/domain/downloads/actions.test.ts
+    selectors:
+      # 2026-08-29 (FM-128): `send-to-downloader` does ship, but it is not
+      # legacy's per-row `addable-nzb` control of the same name -- it is the
+      # single bulk-bar button in `DownloadActions.tsx` (the
+      # `send-to-downloader` control), which acts on the current selection.
+      # `download-torrent` was rendered all along (`DownloadActions.tsx`,
+      # `DirectDownloadActions`) and simply went unlisted.
+      # 2026-08-31 (FM-150, owner request): in a *search result* row these two
+      # are an icon button (`DirectDownloadActions`' opt-in `iconOnly` form) on
+      # the detail-links line rather than an "NZB"/"Torrent" text button; the
+      # download-history row still renders the text form. Same testids, same
+      # anchor, same `href`/`onClick`; the type is told apart by tooltip and by
+      # the unchanged `Download NZB`/`Download TORRENT` labels. (Corrected
+      # 2026-08-31 by FM-160: `download` did not in fact survive as a shared
+      # contract detail -- see below.)
+      # 2026-08-31 (FM-160, owner-reported): the anchor no longer carries
+      # `download`; it now carries `target="_blank"`/`rel="noopener"` instead,
+      # restoring legacy parity (`master:core/ui-src/html/directives/
+      # search-result.html:112` gettorrent, `:124` getnzb). The backend
+      # (`NzbHandlingWeb.getnzb/user/{guid}` ->
+      # `FileHandler.getFileByGuid(...).getAsResponseEntity()`) answers file
+      # content, a 302 redirect to the indexer, or an error; browsers drop the
+      # `download` attribute on a cross-origin redirect, so with it set the
+      # indexer redirect navigated the app in-tab instead of downloading,
+      # destroying the results view. `target="_blank"` sends redirects and
+      # errors to a disposable tab while content still downloads via the
+      # server's `Content-Disposition` header.
+      # 2026-09-03 (FM-181, owner request): below 768px the bulk row is a
+      # split send button plus an overflow menu. `send-to-downloader` keeps
+      # its id and disabled rule (its text is "Send to downloader" there);
+      # `send-to-downloader-options` opens `send-to-downloader-menu`, whose
+      # `menuitemradio` groups bind the same downloader and category state
+      # the desktop `Select`s do; `results-more-actions` opens
+      # `results-more-actions-menu` with ZIP, black hole and copy links under
+      # their unchanged gating and disabled rules. `save-search` moves to
+      # toolbar row 1 as an icon there, keeping its `#save-search` id, so it
+      # stays reachable without a selection.
+      # 2026-09-05 (FM-186, owner request): legacy's per-row `addable-nzb`
+      # control is migrated. Every row's Actions cell renders one
+      # `result-send-to-downloader` icon button per enabled, compatible
+      # downloader (`data-downloader` names it; `aria-label` and tooltip are
+      # both `Send to {name}`), placed after the direct-download icon in the
+      # non-wrapping icon group. It sends that one result through the same
+      # flow the bulk bar uses (`sendFlow.ts`'s `runSendFlow` -- duplicate
+      # probe, confirmation, client-side category resolution, `addNzbs`), and
+      # raises the row's `Downloaded` chip only when the response's
+      # `addedIds` names this result, exactly as legacy's `-success` icon
+      # variant did. The Actions `<colgroup>` track grows with the enabled
+      # downloader count (`actionsTrackWidth` in `resultTable.ts`).
+      # 2026-09-05 (FM-187, owner request, ruled "Show for torrent and NZB"):
+      # legacy's per-row `save-or-send-file` control is migrated with it.
+      # Every non-TORBOX row's Actions cell renders one
+      # `result-send-to-black-hole` icon button, last in the same
+      # non-wrapping icon group -- for a TORRENT when `saveTorrentsTo` or
+      # `sendMagnetLinks` is set, for an NZB when `saveNzbsTo` is, and absent
+      # rather than disabled otherwise (legacy's `ng-if="::enableButton"`).
+      # `aria-label` and tooltip are legacy's own strings verbatim (`Save
+      # torrent to black hole or send magnet link` / `Save NZB to black
+      # hole`), and one click PUTs `[downloadId]` to
+      # `API-DOWNLOAD-SAVE-SEND-TORRENTS` or `API-DOWNLOAD-SAVE-NZBS`. The
+      # row's `Downloaded` chip is raised only when the response's `addedIds`
+      # names this result -- stricter than legacy, which read `successful`
+      # alone and so marked a *skipped* file as downloaded. Its Actions
+      # `<colgroup>` slot is reserved by `blackHoleSlot` (`resultTable.ts`)
+      # from the unfiltered loaded results, not from the config alone,
+      # because `sendMagnetLinks` defaults to true.
+      - result-send-to-black-hole
+      - result-send-to-downloader
+      - send-to-downloader
+      - send-to-downloader-options
+      - send-to-downloader-menu
+      - results-more-actions
+      - results-more-actions-menu
+      - download-nzb
+      - download-torrent
+      - results-bulk-actions
+    parity: partial
+    gaps:
+      - deliberate - no per-row category picker; legacy's `addable-nzb` could be configured to ask for a category per send (`alwaysAsk`, `addable-nzb-modal.html` through `DownloaderCategoriesService.openCategorySelection`). React's row control always resolves the downloader's configured default, which is what the bulk bar's unset category choice does too; the bulk bar's category `Select` remains the only place a category is chosen (FM-186).
+      - deliberate - no per-downloader icon override; legacy let a downloader configure an `iconCssClass` that replaced the row icon with that Font Awesome glyph (`addable-nzb.js`). React ships no Font Awesome, so the row icon is always the downloader type's own mark (FM-186).
+    # 2026-08-23: `download-history route migration` removed -- that route is
+    # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
+    # claimed missing capability that exists.
+    # 2026-08-29 (FM-128): `parity: partial` is substantiated rather than
+    # promoted. Until FM-128 the bulk actions were not merely partial but
+    # broken on success -- a safe-integer bound in the shared response schema
+    # rejected every live response (see the four API-DOWNLOAD-* notes). That
+    # is fixed and now covered at both levels.
+    # 2026-09-05 (FM-186): the per-row send control that kept this record
+    # short of parity now ships; what remains partial is the two narrower
+    # gaps above (the per-send category prompt and the icon override).
+    # 2026-09-05 (FM-187): the row's send-to-black-hole control ships too, so
+    # every legacy row action in `search-result.html:100-131` now has a React
+    # equivalent. The two gaps above are unchanged and still hold this record
+    # at `partial`.
+  - id: F-SEARCH-PAGING
+    name: Load next batch or all remaining indexer results without repeating offsets
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/search-service.js
+      - core/ui-src/html/states/search-results.html
+    target: core/ui-react/src/features/search/results
+    tests:
+      - core/ui-react/src/api/search.test.ts
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - tests/system/tests/results.spec.ts
+      - tests/system/tests/focus-indication.spec.ts
+    selectors:
+      - results-load-more
+      - results-load-all
+      # 2026-09-01: shipped by FM-162, whose FEATURES edit was scoped to gap
+      # lines only. Above the load-all-confirm-threshold, "Load all results"
+      # asks for confirmation first before committing to the unbounded fetch.
+      - results-load-all-confirmation
+      # 2026-09-03 (FM-181): below the 768px stacking breakpoint these two
+      # buttons render inside F-SEARCH-RESULTS' `results-paging-footer` under
+      # the last card instead of inside `results-toolbar`; ids, labels and
+      # disabled/aria-busy rules are the same, one copy either way.
+    parity: partial
+  - id: F-SEARCH-SAVED
+    name: Save an executed search for later reuse
+    routes:
+      - /
+      - /stats/saved-searches
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/saved-searches-controller.js
+      - core/ui-src/html/states/saved-searches.html
+    target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/savedSearches.test.ts
+      - core/ui-react/src/features/search/history/savedSearchCriteria.test.ts
+      - tests/system/tests/search.spec.ts
+    selectors: []
+    parity: partial
+  - id: F-SEARCH-TOUR
+    name: Guided search tour and demo-mode lifecycle
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/guided-tour-service.js
+      - core/ui-src/js/angular-ui-tour.js
+    target: null
+    tests: []
+    selectors: []
+    parity: retired
+    gaps:
+      - deliberate - the guided search tour and demo mode are retired, not reproduced in React (ADR-0022); the legacy implementation is ~2,300 lines of cross-state step choreography and vendored `angular-ui-tour.js` that does not port mechanically, and no React tour or demo mode is built
+  - id: F-CONFIG-SHELL
+    name: Configuration settings navigation, advanced fields, whole-config save, validation, dirty state, and API help
+    routes:
+      - /config
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/config/config-controller.js
+      - core/ui-src/js/config/config-service.js
+      - core/ui-src/html/states/config.html
+    target: core/ui-react/src/features/config
+    tests:
+      - tests/system/tests/config.spec.ts
+      - tests/system/tests/config-control-treatment.spec.ts
+      - tests/system/tests/external-tools.spec.ts
+      - core/ui-react/src/features/config/ConfigShell.test.tsx
+      - core/ui-react/src/features/config/ConfigFeedbackBanner.test.tsx
+      - core/ui-react/src/features/config/configFormState.test.ts
+      - core/ui-react/src/features/config/fieldsetNav.test.tsx
+      - core/ui-react/src/features/config/settingsSearch/settingsIndex.test.ts
+      - core/ui-react/src/features/config/settingsSearch/settingsIndexDrift.test.tsx
+      - core/ui-react/src/features/config/reviewChanges/reviewChangesDiff.test.ts
+      - core/ui-react/src/router.test.tsx
+    selectors:
+      # FM-097: the per-section badges follow the tab's own URL segment --
+      # `config-nav-dirty-<tab>` (unsaved changes in that section) and
+      # `config-nav-invalid-<tab>` (validation errors in it), one pair per
+      # `config-tab-<tab>` below. The fixed selectors are listed here.
+      - config-shell
+      # FM-117 (ADR-0036): the tab body, which is the `Paper` the config
+      # fields now sit on -- the same ground the dialogs already used.
+      - config-tab-body
+      - config-nav
+      - config-nav-open
+      - config-save-bar
+      - config-dirty-summary
+      - config-discard
+      - config-tab-main
+      - config-tab-auth
+      - config-tab-searching
+      - config-tab-categories
+      - config-tab-downloading
+      - config-tab-externalTools
+      - config-tab-indexers
+      - config-tab-notifications
+      - config-tab-placeholder
+      - config-advanced-toggle
+      - config-api-help
+      - config-save
+      # FM-101 is the authority for the two validation ids below: they are
+      # re-homed from the acknowledge dialogs they used to name onto the
+      # persistent banners that replaced them, keeping the ids because the
+      # thing they identify -- "where the server's validation errors are" and
+      # "where its warnings are" -- is unchanged. Each entry of the
+      # client-side invalid list additionally carries
+      # `config-invalid-field-<path with dots as dashes>`, the same stem as the
+      # `config-setting-<path>` row it navigates to.
+      - config-validation-errors
+      - config-validation-warnings
+      - config-invalid-field-main-host
+      - config-invalid-field-main-urlBase
+      - config-restart-required
+      - config-unsaved-changes
+      - config-api-help-dialog
+      - restart-progress-dialog
+      - restart-progress-message
+      # FM-099: the settings search in the sticky bar. `config-search` is the
+      # input itself (not the Autocomplete root), so it can be filled and
+      # tabbed to directly. Each option in the grouped listbox carries
+      # `config-search-option-<path with dots as dashes>` -- the same stem as
+      # the `config-setting-<path>` row it navigates to, so a selector for a
+      # result can be predicted from the setting's own selector.
+      - config-search
+      - config-search-option-main-urlBase
+      - config-search-option-searching-coverSize
+      # FM-100: the review-changes panel behind the (now clickable) dirty
+      # summary. Each row carries `config-review-entry-<id>`, where the id is
+      # the setting's own path for a setting row -- the same stem as its
+      # `config-setting-<path>` row -- and `<list path>.<entry name>` for a
+      # list-section entry, with every non-alphanumeric run collapsed to a
+      # dash. `config-review-empty` replaces the table when every dirty path
+      # turned out to hold its original value.
+      - config-review-changes
+      - config-review-close
+      - config-review-save
+      - config-review-empty
+      - config-review-entry-main-apiKey
+      - config-review-entry-main-updateAutomatically
+      - config-review-entry-indexers-Mock1
+      # FM-102 / ADR-0028: the "on this page" list of the active tab's
+      # mounted fieldsets, a sibling below the nav's `Tabs` (never a `Tabs`
+      # child), headed with the active tab's name. Each entry carries
+      # `config-nav-anchor-<fieldset label lowercased>` -- the same suffix as
+      # `config-fieldset-<label>`, but a distinct prefix so a role/text
+      # locator in a per-tab spec cannot match both a legend and its anchor.
+      - config-nav-anchor-hosting
+      - config-nav-anchor-logging
+    parity: done
+    gaps:
+      - deliberate - FM-097 dropped legacy's pristine/dirty colour switch on the Save button (success while clean, `btn-info` once dirty -- `config.html`'s `ng-class`) and, with it, the `pulse2` infinite 1s pulse animation legacy applied
+        to the button whenever dirty (`icons.less`'s `pulse2`/`@keyframes pulse2`); `ConfigSaveBar`'s worded dirty-count summary and its dirty-only Discard button carry that signal in words instead of a hue or motion, per that component's
+        own doc comment and `C-CONFIG-FORM`'s dirty-state derivation, so the state is still communicated -- never dropped outright
+  - id: F-CONFIG-MAIN
+    name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
+    routes:
+      - /config/main
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/js/file-selection-service.js
+    target: core/ui-react/src/features/config/main
+    tests:
+      - tests/system/tests/config-main.spec.ts
+      - tests/system/tests/external-tools.spec.ts
+      - core/ui-react/src/features/config/main/MainConfigTab.test.tsx
+      - core/ui-react/src/features/config/components/configFields.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, so these are new. Every
+      # setting derives its selectors from its config path with the dots replaced
+      # by dashes (`main.logging.logGc` -> `main-logging-logGc`), so a selector is
+      # predictable from `config-fields-service.js` without a lookup table:
+      # `config-setting-<path>` (row), `config-input-<path>` (control),
+      # `config-error-<path>` (validation message), `config-tooltip-<path>`,
+      # `config-secret-reveal-<path>`, `config-apikey-generate-<path>`, and
+      # `config-file-browse-<path>`. FM-098 adds two more of the same kind:
+      # `config-advanced-chip-<path>` on an advanced row revealed through its
+      # fieldset's expander (ADR-0027 -- absent in the toggle-on state), and
+      # `config-advanced-expander-<fieldset label lowercased>` -- the same
+      # suffix as `config-fieldset-<label>` -- for the expander a fieldset
+      # shows for the advanced rows the global toggle hides from it, and for
+      # the one an advanced fieldset shows in place of itself (whose own
+      # `config-fieldset-<label>` exists only once it is expanded).
+      # The fixed selectors are listed below.
+      - config-main
+      - config-fieldset-hosting
+      - config-fieldset-proxy
+      - config-fieldset-ui
+      - config-fieldset-security
+      - config-fieldset-logging
+      - config-fieldset-backup
+      - config-fieldset-updates
+      - config-fieldset-history
+      - config-fieldset-database
+      - config-fieldset-other
+      - config-file-browser-dialog
+      - config-file-browser-path
+      - config-file-browser-up
+      - config-file-browser-folder
+      - config-file-browser-file
+      - config-file-browser-select
+    parity: done
+    gaps:
+      - "deliberate - FM-155 (ADR-0049) removes the Theme dropdown from the UI fieldset: the theme is a per-user preference (C-THEME-PREFERENCE, nav-bar selector) rather than an instance-wide config field, so this tab renders 52 of legacy's 53 fields. The deprecated Java `MainConfig.theme` stays untouched and is deliberately not migrated into the per-user record -- safe config does not expose `main.theme` and a full config read is admin-only, so no uniform per-user seed exists"
+  - id: F-CONFIG-AUTH
+    name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
+    routes:
+      - /config/auth
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+    target: core/ui-react/src/features/config/auth
+    tests:
+      - tests/system/tests/config-auth.spec.ts
+      - core/ui-react/src/features/config/auth/AuthConfigTab.test.tsx
+      - core/ui-react/src/features/config/auth/AuthUsersSection.test.tsx
+      - core/ui-react/src/features/config/auth/authSettings.test.ts
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-auth-authType`, `config-input-auth-oidcClientSecret`,
+      # etc).
+      #
+      # FM-105 replaced the Users repeat section with a table and a modal
+      # editor, and with it the
+      # `config-repeat-entry-auth-users-<index>`, `config-repeat-add-auth-users`
+      # and `config-repeat-remove-auth-users-<index>` ids this record used to
+      # list, along with every `config-input-auth-users-<index>-<field>` a row
+      # exposed. The Users section is no longer a `RepeatSection` consumer, so
+      # `RepeatSection.test.tsx` is no longer one of this feature's tests
+      # either (the component itself stays, for its other consumers).
+      #
+      # `config-repeat-auth-users` is the one id from that set that stayed: it
+      # is this section's settings-search anchor, derived by `settingsIndex.ts`
+      # from the config path, and it now sits on the container that wraps the
+      # table. FM-105 dropped it with the repeat section and the loss went
+      # unnoticed until 2026-08-26 (see MAINTENANCE.md), because it broke
+      # nothing but the silent half of search navigation.
+      #
+      # The table: `config-users-table`, `config-users-empty`,
+      # `config-users-add`, `config-user-entry-<index>`,
+      # `config-user-username-<index>`, `config-user-rights-<index>`,
+      # `config-user-right-<index>-<right>` (`maySeeAdmin`, `maySeeStats`,
+      # `maySeeDetailsDl`, `showIndexerSelection`, or `none`),
+      # `config-user-password-<index>`, `config-user-edit-<index>`, and
+      # `config-user-delete-<index>`; the delete confirmation is
+      # `config-user-delete-confirm`.
+      #
+      # The dialog: `config-user-dialog`, `-cancel`, `-submit`, and its fields
+      # under the draft path `auth.userDraft`
+      # (`config-input-auth-userDraft-username`, `-password`, and the
+      # `config-setting-auth-userDraft-<right>` switches). The draft path
+      # exists so the dialog's controls never collide with the row that opened
+      # them; nothing ever saves it.
+      #
+      # The fixed selectors are listed below.
+      - config-auth
+      - config-fieldset-main
+      - config-fieldset-openid connect
+      - config-fieldset-restrictions
+      - config-fieldset-users
+    parity: done
+    gaps:
+      - deliberate - a config seeded with duplicate `auth.users[].username` values outside the UI cannot be saved from the Users dialog until the duplicate is renamed unique. `UserDialog.tsx`'s `uniqueUsername` validator refuses to submit
+        a username matching any of `otherUsernames`, so editing (or merely resaving) either duplicate row trips it. The refusal exists because the backend resolves a user by plain `String.equals` identity --
+        `findCorrespondingOldUserConfig` (`filter`+`findFirst`) hands a submitted `***UNCHANGED***` password marker to whichever stored record its stream reaches first when two rows share a username, so the wrong user's hash could
+        otherwise apply; `reviewChangesDiff.ts`'s `listKeys` independently refuses to key such a list at all and falls back to positional comparison the moment two `username`s collide. Refusing the save is deliberate -- FM-105's
+        alternative was silent misassignment of credentials, not a friendlier one
+  - id: F-CONFIG-SEARCHING
+    name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
+    routes:
+      - /config/searching
+      # FM-195: the custom-mapping list is the same feature on its own tab. The
+      # settings it edits are still stored under `searching.customMappings`.
+      - /config/customMappings
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/html/custom-mapping-help.html
+    target:
+      - core/ui-react/src/features/config/searching
+      - core/ui-react/src/features/config/customMappings
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+      - tests/system/tests/config-searching.spec.ts
+      - tests/system/tests/config-custom-mappings.spec.ts
+      - core/ui-react/src/features/config/searching/SearchingConfigTab.test.tsx
+      - core/ui-react/src/features/config/customMappings/CustomMappingsConfigTab.test.tsx
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-searching-timeout`,
+      # `config-input-searching-loadLimitInternal`, etc), and the nine
+      # fieldsets follow `config-fieldset-<lowercased label>`.
+      # FM-195 moved the custom-mapping list off this tab onto its own,
+      # `/config/customMappings`, whose body is `config-custom-mappings` and
+      # whose nav entry is `config-tab-customMappings`. The list itself is the
+      # one section edited through a modal transaction, so it is not
+      # `RepeatSection`; it reuses that component's naming with `edit`, `up`
+      # and `down` verbs added. The selector stem is derived from the *config*
+      # path, which did not move, so every id below still reads
+      # `searching-customMappings`:
+      # `config-repeat-searching-customMappings` (the list, and the anchor
+      # `settingsIndex.ts` navigates a search hit to),
+      # `config-repeat-entry-searching-customMappings-<index>` (one mapping's
+      # summary), `config-repeat-add-searching-customMappings`,
+      # `config-repeat-edit-searching-customMappings-<index>`,
+      # `config-repeat-remove-searching-customMappings-<index>`,
+      # `config-repeat-up-searching-customMappings-<index>` and
+      # `config-repeat-down-searching-customMappings-<index>` (FM-195's
+      # reorder, disabled at the first and last entry), and
+      # `config-custom-mapping-value-<index>-<field>` for one summarized value
+      # (`affectedValue`, `searchType`, `matchAll`, `from`, `to`).
+      # `config-custom-mapping-disabled-<index>` is the chip a switched-off
+      # mapping carries (FM-195, FM-194's `enabled` field).
+      # The dialog's own controls are `config-custom-mapping-dialog`,
+      # `-help`, `-name`, `-affectedValue`, `-searchType`, `-matchAll`,
+      # `-enabled`, `-from`, `-to`, `-examples`, `-test`, `-cancel`, and
+      # `-submit`. FM-195 retired two of FM-063's ids with the contract they
+      # belonged to: `-exampleInput` (one line, not saved) became `-examples`
+      # (a `multiline` field saved with the mapping), and the single-valued
+      # `-result` field became `config-custom-mapping-results`, a table with
+      # one `config-custom-mapping-result-<line index>` row per example line
+      # holding the input, this mapping's output, the whole list's output and
+      # which mappings applied. `config-custom-mapping-error` carries a
+      # whole-request refusal (no example lines, no input pattern, more than
+      # the endpoint's 200-line limit, or a failed request) in its place.
+      # FM-131's advanced wrapper is gone with the move, and with it
+      # `config-advanced-expander-custom mappings of queries, search titles and
+      # result titles` and `config-fieldset-custom mappings of queries, search
+      # titles and result titles`: the tab renders the section directly,
+      # because a whole tab hidden while the global advanced toggle is off
+      # could not be reached at all.
+      - config-searching
+      - config-custom-mappings
+    parity: done
+    gaps: []
+  - id: F-CONFIG-CATEGORIES
+    name: Category CRUD, mappings, presets, restrictions, and size limits
+    routes:
+      - /config/categories
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+    target: core/ui-react/src/features/config/categories
+    tests:
+      - tests/system/tests/config-categories.spec.ts
+      - core/ui-react/src/features/config/categories/CategoriesConfigTab.test.tsx
+      - core/ui-react/src/features/config/categories/categoriesSettings.test.ts
+    selectors:
+      # FM-119 (ADR-0034) moved category editing from an in-place accordion
+      # (FM-107's two-`TableRow`s-per-entry expansion, kept mounted while
+      # collapsed) to a modal transaction, the same shape `F-CONFIG-AUTH`'s
+      # `AuthUsersSection`/`UserDialog` and `F-CONFIG-DOWNLOADING`'s
+      # `DownloaderTable`/`DownloaderDialog` already use. The catalog table now
+      # renders summary cells only: `config-category-entry-<index>` (the row),
+      # `config-category-name-<index>`, `config-category-searchType-<index>`,
+      # `config-category-newznabCategories-<index>`, and
+      # `config-category-size-<index>` (present only while
+      # `enableCategorySizes` is on). `config-category-edit-<index>` is a
+      # row's only control, opening `config-category-dialog` for that entry
+      # (`config-repeat-add-categoriesConfig-categories` is
+      # `config-categories-add`, unchanged since FM-107). The fourth
+      # repeat-section id, `config-repeat-categoriesConfig-categories`, is
+      # deliberately kept on the table's container: `settingsIndex.ts` derives
+      # this section's search anchor from the config path through its own
+      # `repeatAnchor` helper, so FM-099's settings search and FM-102's "on
+      # this page" list would break silently without it.
+      #
+      # The dialog's fields bind to `categoriesConfig.categoryDraft.<field>`
+      # (`CATEGORY_DRAFT_PATH`/`categoryDraftFieldPath`, `categoriesSettings.ts`)
+      # rather than to a configuration index -- a throwaway `useForm` over a
+      # `structuredClone`d entry, discarded on Cancel/Escape/backdrop and
+      # committed synchronously on Submit, exactly as `DownloaderDialog`'s and
+      # `UserDialog`'s own drafts do. Its own controls are
+      # `config-category-dialog`, `-delete` (absent for a brand-new entry),
+      # `-cancel`, `-reset`, and `-submit`. `config-category-delete-confirm` is
+      # the shared confirmation dialog, invoked from the dialog's Delete.
+      # `name` being `required` is enforced by the draft form's own
+      # `trigger()` refusing to commit a blank one (`DownloaderDialog.tsx`'s
+      # precedent) -- the successor to FM-107's always-mounted-fields
+      # guarantee, which a modal cannot carry forward, since a blank name
+      # unmounted from the DOM would otherwise block the save with nothing on
+      # screen saying why. Add still pushes a default entry into the shared
+      # form immediately, the same instant its dialog opens (so
+      # `C-CONFIG-REVIEW`'s change summary has something to report right
+      # away), but a Cancel/Escape/backdrop close on that specific transaction
+      # undoes the push -- so a category the admin never finished naming can
+      # never outlive the dialog that was supposed to name it.
+      #
+      # A refused or stored-invalid newznab token is a chip at
+      # `config-input-categoriesConfig-categoryDraft-newznabCategories-chip-<token>`
+      # inside the dialog, and a plain (non-interactive) one at
+      # `config-category-newznabCategories-<index>` on the summary row; the
+      # refusal message reuses `C-CONFIG-FIELDS`'s existing `config-error-<path>`
+      # row id, rooted at the draft path while the dialog is open.
+      #
+      # FM-113: a nameless category is refused server-side. `PUT
+      # /internalapi/config` answers `ok: false` with `Category number <n> does
+      # not have a name` (the row named by position, counting from one, since it
+      # has no name to quote) through `ConfigValidationResult.errorMessages`,
+      # which `ConfigFeedbackBanner` already renders -- no selector, no field
+      # attribution, no client change. `CategoriesConfig.setCategories` sorts
+      # nameless entries last instead of throwing on them, which is what let the
+      # validator get a turn at all: before FM-113 the sort threw inside
+      # Jackson's request-body binding and the endpoint answered 500. The tab
+      # itself cannot reach either path -- Name is `required`, so
+      # `CategoryDialog`'s own `trigger()` refuses to commit a blank one (see
+      # above) -- so this is API hardening for every *other* caller (scripts,
+      # hand-crafted requests, restored or
+      # hand-edited `nzbhydra.yml`), and its system-test case works at the API
+      # boundary by design.
+      - config-categories
+      - config-categories-help
+      - config-fieldset-categories
+      - config-categories-table
+      # FM-126 (ADR-0038) reconciles this record: `config-categories-scroller`
+      # was recorded here but existed nowhere in `src` -- the scrolling
+      # `TableContainer` carried no test id at all. It now names
+      # `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element on this table, so the
+      # recorded selector and the shipped one are the same thing.
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge currently clipping content; they are shared with the
+      # other four surfaces ADR-0038 names.
+      - config-categories-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
+      - config-categories-add
+      - config-categories-empty
+      - config-repeat-categoriesConfig-categories
+    parity: done
+    gaps: []
+  - id: F-CONFIG-DOWNLOADING
+    name: Download behavior, black holes, downloader CRUD, validation, and connection checks
+    routes:
+      - /config/downloading
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-downloaders.js
+      - core/ui-src/html/config/downloader-config.html
+      - core/ui-src/html/config/downloader-config-box.html
+    target: core/ui-react/src/features/config/downloading
+    tests:
+      - tests/system/tests/config-downloading.spec.ts
+      - tests/system/tests/downloads.spec.ts
+      - core/ui-react/src/features/config/downloading/DownloadingConfigTab.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, so these are new. The
+      # general settings use the `C-CONFIG-FIELDS` path convention
+      # (`config-setting-downloading-nzbAccessType`,
+      # `config-input-downloading-externalUrl`, ...). The downloader list reuses
+      # the repeat-section stems with `downloading-downloaders` as the path, and
+      # adds an edit action of its own because entries are edited through a
+      # modal transaction rather than in place: `config-repeat-add-*`,
+      # `config-repeat-add-option-<path>-<NZBGET|SABNZBD|TORBOX>`,
+      # `config-repeat-entry-<path>-<index>`, `config-repeat-edit-<path>-<index>`,
+      # and `config-downloader-value-<index>-<field>` for a row's summary values.
+      # FM-118 reshaped the list into a table (`DownloaderTable.tsx`, ADR-0033,
+      # bespoke rather than shared with `IndexerTable`): the edit action is now
+      # the row's Name cell button and the summary values are its Type and URL
+      # cells, but every one of the ids above is unchanged. The dialog's own
+      # controls bind to the draft path
+      # `downloading.downloaderDraft`, so they read
+      # `config-input-downloading-downloaderDraft-<field>` and never collide
+      # with the list row behind them.
+      - config-downloading
+      - config-fieldset-general
+      - config-fieldset-downloaders
+      - config-repeat-downloading-downloaders
+      - config-downloader-dialog
+      - config-downloader-dialog-cancel
+      - config-downloader-dialog-checking
+      - config-downloader-dialog-delete
+      - config-downloader-dialog-reset
+      - config-downloader-dialog-submit
+      - config-downloader-connection-failed
+    parity: done
+    gaps:
+      - deliberate - the tab does not write downloaders[0].name into primaryDownloader on view (legacy's optionsFunctionAfter mutates the model behind the admin's back, which would break FM-058's load-and-save-unedited invariant)
+      - deliberate - the downloader list is shown in configured order, not legacy's orderBy ['name'] (the sort breaks on duplicate names and decouples display order from the array indices being edited)
+  - id: F-CONFIG-EXTERNAL-TOOLS
+    name: External-tool CRUD, validation, connection tests, sync options, and manual sync
+    routes:
+      - /config/externalTools
+    legacy_sources:
+      - core/ui-src/js/config/formly-external-tools.js
+      - core/ui-src/js/external-tool-request-service.js
+      - core/ui-src/html/config/external-tool-config.html
+      - core/ui-src/html/config/external-tool-config-box.html
+    target: core/ui-react/src/features/config/external-tools
+    tests:
+      - tests/system/tests/external-tools.spec.ts
+      - core/ui-react/src/features/config/external-tools/ExternalToolsConfigTab.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, and the ones the
+      # system test used to rely on (`.nav-tabs a`, `.dropdown-menu li`,
+      # `.has-error`, `.btn-danger .glyphicon-remove`, `.growl-message`) were
+      # Bootstrap classes, not contracts; FM-065 replaces them. The sync switch
+      # uses the `C-CONFIG-FIELDS` path convention
+      # (`config-setting-externalTools-syncOnConfigChange`,
+      # `config-input-externalTools-syncOnConfigChange`). The tool list reuses
+      # the repeat-section stems with `externalTools-externalTools` as the path
+      # and adds an edit action of its own, because entries are edited through
+      # a modal transaction rather than in place: `config-repeat-add-*`,
+      # `config-repeat-add-option-<path>-<SONARR|RADARR|LIDARR|READARR|CUSTOM>`,
+      # `config-repeat-entry-<path>-<index>`, `config-repeat-edit-<path>-<index>`,
+      # `config-repeat-remove-<path>-<index>`, and
+      # `config-external-tool-value-<index>-<type|host>` for a row's summary
+      # values. The index in all of these is the entry's index in the
+      # configuration array, not its position in the name-ordered display. The
+      # dialog's own controls bind to the draft path
+      # `externalTools.externalToolDraft`, so they read
+      # `config-input-externalTools-externalToolDraft-<field>` and never collide
+      # with the list row behind them.
+      - config-external-tools
+      - config-external-tools-empty
+      - config-external-tools-sync-all
+      - config-fieldset-external tool sync settings
+      - config-fieldset-external tools
+      - config-repeat-externalTools-externalTools
+      - config-external-tool-dialog
+      - config-external-tool-dialog-busy
+      - config-external-tool-dialog-cancel
+      - config-external-tool-dialog-delete
+      - config-external-tool-dialog-reset
+      - config-external-tool-dialog-submit
+      - config-external-tool-dialog-test
+    parity: done
+    gaps:
+      - deliberate - the "Configure NZBHydra in ..." wizard (config-service.js:100-233, configure-in-modal.html) and with it API-CONFIG-EXTERNAL-DIALOG and API-CONFIG-EXTERNAL-MESSAGES; the wizard has no trigger anywhere in the legacy UI, so there is no reachable behavior to reproduce
+      - deliberate - the per-type and torrent-only fields appear as soon as the type or the torrent switch changes, where legacy computed the box's field set once on open and only showed them after reopening
+      - deliberate - the API key is a C-SECRET-INPUT rather than legacy's plain text input; the backend does not mask this value, so the control just round-trips it opaquely
+      - deliberate - "Test connection" is always rendered and disabled until the entry has a host and an API key, where legacy removed the button entirely
+      - deliberate - the dialog rejects a non-numeric "Minimum seeders" or "Categories" before submitting, where legacy sent any text and let the backend fail
+  - id: F-CONFIG-INDEXERS
+    name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
+    routes:
+      - /config/indexers
+    legacy_sources:
+      - core/ui-src/js/config/formly-indexers.js
+      - core/ui-src/js/caps-check-request-service.js
+      - core/ui-src/js/indexer-config-import-request-service.js
+      - core/ui-src/html/config/indexer-config.html
+      - core/ui-src/html/config/indexer-config-box.html
+      - core/ui-src/html/config/indexer-config-selection.html
+      - core/ui-src/html/checker-state.html
+      - core/ui-src/js/directives/indexer-input.js
+      - core/ui-src/js/directives/indexer-state-switch.js
+    target: core/ui-react/src/features/config/indexers
+    tests:
+      - tests/system/tests/config-indexers.spec.ts
+      - core/ui-react/src/features/config/indexers/IndexersConfigTab.test.tsx
+      - core/ui-react/src/features/config/indexers/AddIndexerDialog.test.tsx
+      - core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx
+      - core/ui-react/src/features/config/indexers/indexerSettings.test.ts
+    selectors:
+      # FM-067 additions: the two bulk-recheck actions and their failure
+      # acknowledgement, the two import entry points on the add surface
+      # (`config-indexer-import-<jackett|prowlarr>`), the import dialog and its
+      # own controls, and the dialog reporting what an import did. The import
+      # dialog's two fields bind to the draft path `indexerImport`, so they
+      # read `config-input-indexerImport-<host|apiKey>` and never collide with
+      # the edit dialog's `indexerDraft` controls.
+      # Legacy config markup carries no stable selectors, so these are new
+      # (FM-066). A list row's own controls use the `C-CONFIG-FIELDS` path
+      # convention against the entry's *configuration* index, not its display
+      # position: `config-input-indexers-<index>-state` and
+      # `config-input-indexers-<index>-score`. The row also emits
+      # `config-indexer-entry-<index>`, `config-indexer-edit-<index>` (the name
+      # button that opens the editor), `config-indexer-incomplete-<index>`,
+      # `config-indexer-caps-incomplete-<index>`, and
+      # `config-indexer-vip-warning-<index>`.
+      # The add chooser (FM-104: a filterable gallery, not the two anchor
+      # menus FM-066 introduced) emits `config-indexer-preset-filter` and one
+      # `config-indexer-preset-<newznab|torznab|special>-<slug>` per preset,
+      # where the slug is the lower-cased label with non-alphanumerics
+      # collapsed to dashes (`nzbgeek`, `torbox-newznab`, `custom-newznab`,
+      # `custom-torznab`, `jackett-cardigann`, `torbox`); the custom-newznab
+      # and custom-torznab items are the blank-entry choices and render first
+      # in their groups. A filter matching no preset at all shows
+      # `config-indexer-preset-no-matches`; the two importer buttons below are
+      # narrowed by the same filter text against their own labels but are
+      # never treated as members of a preset group.
+      # The edit dialog's controls bind to the draft path `indexerDraft`, so
+      # they read `config-input-indexerDraft-<field>` /
+      # `config-setting-indexerDraft-<field>` and never collide with the list
+      # row behind them; its banners are
+      # `config-indexer-banner-<incomplete-config|incomplete-caps>`.
+      # FM-151 (owner request 2026-08-31): the wide table's search-source,
+      # state, and priority cells wrap their `C-CONFIG-FIELDS` control in
+      # `SettingRowTableCellScope` so the shared `SettingRow` drops its
+      # reserved bottom margin and renders help/error text out of flow
+      # (`position: absolute`) instead of adding to the cell's box height.
+      # FM-151 also lifted the name cell's status chips below the edit
+      # button the same way, but nothing reserved the space they still
+      # occupied visually, so a chip-bearing row's chips crossed into the
+      # row below; FM-173 (owner report 2026-09-01) reverses that lift --
+      # the name cell now stacks the button and its chips in normal flow,
+      # same as the compact branch always has, so a chip-bearing wide row
+      # grows instead of overlapping the divider. No selector changed --
+      # every control keeps its help text, error wiring, and
+      # `aria-describedby`, and the compact (< sm) stacked layout is
+      # untouched.
+      - config-indexers
+      - config-indexers-empty
+      - config-indexer-add
+      - config-indexer-add-dialog
+      - config-indexer-add-dialog-cancel
+      - config-indexer-preset-filter
+      - config-indexer-preset-no-matches
+      - config-indexer-dialog
+      - config-indexer-dialog-cancel
+      - config-indexer-dialog-checking
+      - config-indexer-dialog-delete
+      - config-indexer-dialog-info
+      - config-indexer-dialog-reset
+      - config-indexer-dialog-submit
+      - config-indexer-torznab-note
+      - config-indexer-check-caps
+      - config-indexer-connection-failed
+      # FM-167 additions to the caps-check progress dialog, all new and none
+      # replacing an existing one: `config-indexer-caps-leave` is the exit the
+      # bulk recheck offers (Escape runs the same path; a backdrop click still
+      # dismisses nothing), `config-indexer-caps-progress` is the status row
+      # holding either "n of m indexers have reported" or the plain
+      # "Checking capabilities…" a one-indexer check shows, and
+      # `config-indexer-caps-announcement` is the off-screen polite live region
+      # carrying only the lines the last poll added.
+      # `config-indexer-caps-messages` keeps its testid, order, and content and
+      # is no longer a live region itself. The exit is absent for the caps
+      # check `IndexerDialog` raises from inside an open entry, whose commit
+      # transaction awaits the check's outcome.
+      - config-indexer-caps-dialog
+      - config-indexer-caps-leave
+      - config-indexer-caps-progress
+      - config-indexer-caps-announcement
+      - config-indexer-caps-messages
+      - config-indexer-caps-incomplete
+      - config-indexer-caps-failed
+      - config-indexers-recheck-incomplete
+      - config-indexers-recheck-all
+      - config-indexers-recheck-failed
+      - config-indexer-import-jackett
+      - config-indexer-import-prowlarr
+      - config-indexer-import-dialog
+      - config-indexer-import-dialog-cancel
+      - config-indexer-import-dialog-submit
+      - config-indexer-import-warning
+      - config-indexer-import-error
+      - config-indexer-import-running
+      - config-indexer-import-result
+      # FM-092 additions: the colour field's native-input picker trigger and
+      # its clear button, both fixed strings (not path-derived, since the
+      # field itself already carries `config-input-indexerDraft-color`).
+      - config-indexer-color-picker
+      - config-indexer-color-clear
+      # FM-103 additions: the list surface became a table. Every row selector
+      # above is unchanged and still keyed by the entry's *configuration*
+      # index, including the two path-derived controls; the row now also emits
+      # `config-indexer-type-<index>` and carries a third path-derived control,
+      # `config-input-indexers-<index>-enabledForSearchSource`. The header sort
+      # buttons are `config-indexers-sort-<name|state|priority>`.
+      # `config-indexers-empty` still marks the zero-indexers state and now
+      # holds the message plus its hint; a filter that matches nothing is the
+      # separate `config-indexers-no-matches`. Below `sm` the table keeps one
+      # column and each entry stacks (ADR-0029), so the three header sort
+      # buttons are absent there and `config-indexers-sort` — a named "Sort by"
+      # select offering the same seven orderings — is present instead. Every
+      # per-entry selector is identical in both layouts.
+      - config-indexers-table
+      - config-indexers-filter
+      - config-indexers-shown-count
+      - config-indexers-no-matches
+      - config-indexers-enable-shown
+      - config-indexers-disable-shown
+      - config-indexers-sort
+      # FM-126 (ADR-0038): the table scrolls inside `config-indexers-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - config-indexers-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
+      # 2026-09-13 (MAINTENANCE.md): each row carries `config-indexer-up-<index>`
+      # and `config-indexer-down-<index>` beside its priority field. They move
+      # the row past the neighbour *shown* above or below it by rewriting the
+      # priority (one more than the row above, one less than the row below),
+      # disabled at the ends of the shown list; present in both layouts.
+    parity: done
+    gaps:
+      - deliberate - the colour field's swatch shows the committed colour but not legacy's field-background tint at 0.5 alpha (color-control.html); ADR-0014 does not reproduce a mock's per-field styling literal
+      - deliberate - the two bulk-recheck actions are two buttons side by side; legacy hides "for all indexers" inside a split button's dropdown (recheck-all-caps.html)
+      - deliberate - a bulk recheck merges only updateIndexerModel's nine fields into each matching entry and requires a non-empty name on both sides, so a nameless entry can never absorb a result
+      - deliberate - a failed bulk recheck shows an acknowledgement; legacy has no rejection handler there and fell through to RequestsErrorHandler's generic error modal
+      - deliberate - the import dialog asks only for host and API key; legacy's IMPORT_CONFIG box also rendered username, schedule, preselect, colour, groups, VIP expiry, and categories, none of which the importers read
+      - deliberate - an import's counts and a bulk check's outcome are reported in one acknowledgement dialog rather than as consecutive growls, because C-TOAST-SERVICE shows one toast at a time and the later lines would replace the earlier ones
+      - deliberate - the import dialog states before it runs that the response replaces the whole list; legacy said nothing and the admin discovered it afterwards
+      - deliberate - a failed import falls back to the transport's status-derived message where legacy used the response's statusText, which ApiTransport does not carry; a request with no HTTP response still reaches legacy's "Unknown error occurred"
+      - deliberate - "Add it, but disabled" on a failed connection check sets state DISABLED_USER; legacy sets model.enabled = false, a field IndexerConfig does not have, so the button did nothing there
+      - deliberate - an empty "Hit reset time" is valid; legacy's timeOfDay validator rejects the empty value its own help text recommends for a rolling counter
+      - deliberate - a successful capability check writes back only updateIndexerModel's nine fields, not the server's whole IndexerConfig, because the response carries credentials resolved from the ***UNCHANGED*** markers
+      - deliberate - name uniqueness is checked against the other indexers; legacy's expression compares the typed value with the two-way-bound model, so renaming an existing indexer onto another's name was never rejected
+      - deliberate - a picked preset's `info` prose is passed to the dialog rather than merged into the entry; legacy extends the model with it and writes an `info` key the backend has no field for into the saved config
+      - deliberate - the list is a table with a name filter, header sorting, and bulk enable/disable over the shown rows (FM-103); legacy has a fixed stack in one order with no filter, sort, or bulk state action
+      - deliberate - a bulk enable skips an entry whose configuration is incomplete, exactly as that entry's own state switch refuses to be operated; legacy has no bulk state action at all
+      - deliberate - a sort by a column that is also inline-editable (state, priority) is deferred while a control in the table has focus, so a row does not move out from under an edit in progress; legacy's orderBy re-sorted on every keystroke
+      - deliberate - the search-source select is on the list without being gated by the advanced toggle, though the same field is advanced inside the edit dialog; a column the toggle empties would leave a headed blank cell in every row
+      - deliberate - neither the filter nor the sort is persisted; both are momentary view state, as the packet scopes them
+      - deliberate - below sm the table keeps one column and each entry stacks, with sorting moved to a named "Sort by" select, because five columns need about 900px and even three overflow a 390px phone once a VIP-expiry chip or the search-source control is in one of them (ADR-0029; measured, not estimated)
+      - deliberate - the caps check cannot be cancelled and reports no completion count, so the dialog's progress counts reporting rather than completion (FM-167) - POST /internalapi/indexer/checkCaps is synchronous over IndexerChecker's executor.invokeAll, there is no abort endpoint, and CheckCapsResponse carries no counters, so FM-167's exit stops this browser's waiting only and its progress counts the indexers that have published a message rather than the ones that have finished
+      - deliberate - leaving a running caps check discards that check's results; they are not applied when the abandoned request finally answers, because the form has moved on and the admin can check again
+      - deliberate - the caps-check exit is offered wherever the dialog is raised, including from inside an open indexer editor; there, stopping the wait abandons the commit attempt the check was gating and returns the admin to the still-open editor with the entry uncommitted and nothing written, rather than acknowledging a failure that did not happen
+      - deliberate - the add surface is a filterable, grouped gallery with every preset a directly clickable item (FM-104), replacing legacy's two "Choose from presets" anchor menus; filtering is a substring match over the label and never reorders, and a group with no matches hides its own heading rather than showing an empty one
+      - deliberate - the backend's caps-check message multimap (`IndexerWeb.checkCaps`) is cleared only at the START of a new check, not on the previous one's completion, so a check abandoned via the FM-167 exit keeps its threads appending to that multimap; a subsequent check's message list can therefore carry the prior run's lines too and inflate the reported count, which the client's `Math.max` clamp absorbs by inflating `m` rather than surfacing the discrepancy (`tests/system/tests/config-indexers.spec.ts` ~:1058)
+  - id: F-CONFIG-NOTIFICATIONS
+    name: Notification transports, GUI filtering, event rules, templates, and tests
+    routes:
+      - /config/notifications
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/js/notifications-service.js
+    target: core/ui-react/src/features/config/notifications
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/config-notifications.spec.ts
+      - core/ui-react/src/features/config/notifications/NotificationsConfigTab.test.tsx
+      - core/ui-react/src/features/config/notifications/notificationEvents.test.ts
+      - core/ui-react/src/features/config/notifications/notificationTemplate.test.ts
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-notificationConfig-appriseType`,
+      # `config-input-notificationConfig-entries-<index>-bodyTemplate`, etc).
+      # The entries repeat section additionally uses:
+      # `config-repeat-notificationConfig-entries` (the list),
+      # `config-repeat-entry-notificationConfig-entries-<index>` (one entry),
+      # `config-repeat-add-notificationConfig-entries` (the "Add new
+      # notification" menu button),
+      # `config-repeat-add-option-notificationConfig-entries-<EVENT_TYPE>`
+      # (one menu entry per NotificationEventType constant -- new in FM-062),
+      # and `config-repeat-remove-notificationConfig-entries-<index>`.
+      # FM-106 turned each entry into an accordion owned by
+      # `NotificationEntriesSection` rather than by `RepeatSection`; every
+      # selector above kept its meaning, and
+      # `config-repeat-toggle-notificationConfig-entries-<index>` (the entry's
+      # expand control, carrying its summary) was added. The fixed
+      # selectors are listed below;
+      # `config-notification-test-notificationConfig-entries-<index>` is the
+      # per-entry test-send action,
+      # `config-notification-test-result-<index>` its inline outcome
+      # (rendered only while it describes the entry's current fields),
+      # `config-notification-unknown-event-<index>` the warning shown for an
+      # entry whose stored event type this build has no templates for,
+      # `config-notification-variable-<index>-<name>` one insertable variable
+      # chip per name the backend event substitutes, and
+      # `config-notification-preview-<index>` the sample-value preview
+      # (`-title` / `-body` for its two rendered rows). The chip and preview
+      # selectors are absent for an unknown event type, which has neither
+      # variables nor samples.
+      - config-notifications
+      - config-notifications-help
+      - config-fieldset-main
+      - config-fieldset-notifications
+    parity: done
+    gaps: []
+  - id: F-STATS-SHELL
+    name: Statistics and history tab shell with keep-history visibility rules
+    routes:
+      - /stats
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/html/states/stats.html
+    target: core/ui-react/src/features/stats
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - tests/system/tests/search-history.spec.ts
+      - core/ui-react/src/features/stats/StatsShell.test.tsx
+      - core/ui-react/src/App.test.tsx
+      - core/ui-react/src/router.test.tsx
+    selectors: []
+    parity: partial
+    # 2026-08-23: `remaining history and aggregate-stat content` removed --
+    # the four history routes (`F-HISTORY-*`) and the statistics dashboard are
+    # migrated, so this entry claimed missing capability that exists.
+    # 2026-08-27 (FM-121): the shell is the component of one `/stats` parent
+    # layout route (`features/stats/routes.tsx`) rendering the matched tab
+    # through `<Outlet/>`, not a wrapper seven sibling routes each mounted, so
+    # it survives a tab switch. Every URL, the bare `/stats` alias, the stats
+    # login guard and the `$tab` fallback are unchanged.
+  - id: F-STATS-MAIN
+    name: Aggregate statistics, date ranges, switches, and charts
+    routes:
+      - /stats/stats
+    legacy_sources:
+      - core/ui-src/js/stats-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/js/stats-request-service.js
+      - core/ui-src/html/states/main-stats.html
+    target: core/ui-react/src/features/stats/dashboard
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - core/ui-react/src/api/stats/mainStats.test.ts
+      - core/ui-react/src/features/stats/dashboard/derivations.test.ts
+      - core/ui-react/src/features/stats/dashboard/dateRange.test.ts
+      - core/ui-react/src/features/stats/dashboard/persistence.test.ts
+      - core/ui-react/src/features/stats/dashboard/StatsDashboardPage.test.tsx
+      - core/ui-react/src/features/stats/dashboard/formatting.test.ts
+      - core/ui-react/src/features/stats/dashboard/charts/chartSizing.test.ts
+      - core/ui-react/src/features/stats/dashboard/charts/HorizontalBarChart.test.tsx
+      - core/ui-react/src/features/stats/dashboard/sections/IndexersSection.test.tsx
+      - core/ui-react/src/features/stats/dashboard/sections/DownloadAgeSection.test.tsx
+      - core/ui-react/src/router.test.tsx
+    # 2026-09-02 (FM-172, ADR-0053): three readability fixes, no contract
+    # change. A horizontal bar chart derives its category-label margin from
+    # the width the card gives it (capped at half that width) instead of a
+    # flat 140px, so an indexer name is elided only where it does not fit;
+    # every percentage the feature renders goes through `formatPercent` --
+    # one decimal and a trailing `%` -- and `averageAge`/`uniquenessScore`
+    # stop rendering raw doubles; the bar value label's fill is a per-theme
+    # palette token (`palette.charts.barLabel`) measured at >= 4.5:1 against
+    # that theme's `charts.categorical[0]`, the only colour a bar label ever
+    # paints on.
+    # 2026-08-27 (FM-121): the dashboard holds its `StatsResult` in react-query
+    # instead of `useState`, so re-entering `/stats/stats` within the
+    # application's default `staleTime` shows the held reading instead of
+    # recalculating from scratch. `API-STATS-QUERY`'s semantics are unchanged:
+    # the query function merges each response into the held value field by
+    # field, and a single-family toggle still requests only that family.
+    # 2026-09-04 (FM-185): the Custom range's two fields are MUI X
+    # `DatePicker`s (`YYYY-MM-DD` typed entry) so the calendar renders in-page
+    # from the active palette in every browser, Firefox included -- its native
+    # `type="date"` panel is drawn at browser level and follows the OS theme,
+    # which no page-level `color-scheme` reaches. `stats-custom-after` and
+    # `stats-custom-before` now sit on the field root rather than on its
+    # input; the two `YYYY-MM-DD` strings, the 400 ms commit, both error
+    # messages and the request instants are unchanged.
+    selectors:
+      # Controls header: stats-dashboard, stats-controls-header,
+      # stats-date-preset-<last7|last30|last90|lastYear|allTime|custom>,
+      # stats-custom-after, stats-custom-before, stats-include-disabled-toggle,
+      # stats-family-menu-button, stats-refresh-button, stats-disclaimer.
+      # One checkbox per family, keyed by its request boolean:
+      # stats-family-<indexerApiAccessStats|avgIndexerUniquenessScore|
+      # avgResponseTimes|indexerDownloadShares|downloadsPerDayOfWeek|
+      # downloadsPerHourOfDay|searchesPerDayOfWeek|searchesPerHourOfDay|
+      # downloadsPerAgeStats|successfulDownloadsPerIndexer|
+      # downloadSharesPerUser|downloadSharesPerIp|searchSharesPerUser|
+      # searchSharesPerIp|userAgentSearchShares|userAgentDownloadShares>.
+      - stats-overview-tiles
+      - stats-tile-total-searches
+      - stats-tile-total-downloads
+      - stats-tile-download-success-rate
+      - stats-tile-avg-response-time
+      - stats-section-indexers
+      - stats-indexers-details-toggle
+      - stats-indexers-table
+      - stats-indexer-row
+      # One card per source-share family, keyed the same way:
+      # stats-chart-<search-user|download-user|search-ip|download-ip|
+      # search-agent|download-agent>.
+      - stats-chart-indexer-download-shares
+      - stats-chart-response-times
+      - stats-section-activity
+      - stats-chart-activity-day-of-week
+      - stats-chart-activity-hour-of-day
+      - stats-section-sources
+      - stats-section-download-age
+      - stats-age-average
+      - stats-age-older-1000
+      - stats-age-older-2000
+      - stats-age-older-3000
+      - stats-chart-downloads-per-age
+      # FM-164: each chart card carries two further ids derived from its own:
+      # `<card-id>-chart` wraps the mounted chart and `<card-id>-placeholder`
+      # the reserved-height slot standing in for it before the card is
+      # reached. Exactly one of the two exists at a time, and the placeholder
+      # never carries the card's own id, so asserting the chart arm still
+      # fails when a chart does not draw.
+      - stats-chart-*-chart
+      - stats-chart-*-placeholder
+      # FM-169 (ADR-0038): each of these tables now renders through
+      # `TableScrollAffordance` with its own measured `minWidth` floor, so
+      # narrow viewports scroll the table's own container with a scroll-edge
+      # cue rather than wrapping a heading or pushing the page sideways.
+      - stats-indexers-scroller
+      - stats-indexer-download-shares-scroller
+      - stats-response-times-scroller
+      - stats-activity-day-of-week-scroller
+      - stats-activity-hour-of-day-scroller
+      # One scroller per source-share card, keyed the same way as its chart:
+      # stats-chart-<search-user|download-user|search-ip|download-ip|
+      # search-agent|download-agent>-scroller.
+      - stats-chart-*-scroller
+      - stats-downloads-per-age-scroller
+    parity: done
+    gaps:
+      - deliberate - the presentation is redesigned per ADR-0021 (overview tiles, one consolidated indexer table, grouped activity bar charts, sorted horizontal-bar share lists, no pie/donut charts, legacy's inline switches replaced by a grouped "Statistics" selection menu); only the `POST /internalapi/stats` data/request contract is pinned to legacy
+      - deliberate - the four user/host share families' default selection is gated on `historyUserInfoType` consistently for both search and download dimensions (username-or-both for the two user families, IP-or-both for the two host families), rather than reproducing legacy's `statsSwichState` default, which gated `searchSharesPerUser` on the IP flag instead of the user flag
+      - deliberate - deselecting a family immediately clears its already-rendered cards/columns rather than leaving the last-fetched values on screen (matching the family's calculation being skipped from that point on)
+      - deliberate - the date range is chosen from fixed presets (Last 7/30/90 days, Last year, All time) plus a validated Custom After/Before pair, replacing legacy's two free-standing date pickers with no preset shortcuts
+      - deliberate - a chart card below the fold mounts its chart only once it reaches the viewport (400px ahead), holding a placeholder of the chart's own computed height until then, so the page is the same height at first paint as it is fully drawn; legacy mounted every chart at once. Charts mount eagerly wherever `IntersectionObserver` is absent, and the accessible table arm behind "View data" is never gated, so no statistic is unreachable (ADR-0021)
+  - id: F-STATS-INDEXERS
+    name: Indexer status, errors, counters, and VIP expiry
+    routes:
+      - /stats/indexers
+    legacy_sources:
+      - core/ui-src/js/indexer-statuses-controller.js
+      - core/ui-src/html/states/indexer-statuses.html
+    target: core/ui-react/src/features/stats/indexers
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - tests/system/tests/search-history.spec.ts
+    # FM-169 (ADR-0038): the table renders through `TableScrollAffordance`
+    # with a measured `minWidth` floor, so a narrow viewport scrolls the
+    # table's own container with a scroll-edge cue rather than wrapping a
+    # heading or pushing the page sideways.
+    selectors:
+      - indexer-statuses-scroller
+    parity: partial
+  - id: F-HISTORY-SEARCHES
+    name: Search-history paging, filtering, details, and repeat
+    routes:
+      - /stats/searches
+    legacy_sources:
+      - core/ui-src/js/search-history-controller.js
+      - core/ui-src/js/search-history-service.js
+      - core/ui-src/html/states/search-history.html
+    target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/searchHistory.test.ts
+      - core/ui-react/src/api/history/filters.test.ts
+      - core/ui-react/src/api/history/request.test.ts
+      - core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/search-history.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
+    selectors:
+      - search-history-refresh
+      - search-history-table
+      - search-history-row
+      - search-history-repeat
+      - search-history-category
+      - search-history-source
+      - search-history-details
+      # FM-126 (ADR-0038): the table scrolls inside `search-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - search-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
+      - history-refine-bar
+      - history-refine-toggle
+      - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
+      - history-refine-time
+      - history-refine-time-after
+      - history-refine-time-before
+      - history-refine-query
+      - history-refine-query-input
+      - history-refine-category
+      - history-refine-category-toggle
+      - history-refine-category-list
+      - history-refine-category-option
+      - history-refine-source
+      - history-refine-source-select
+      - history-refine-user-agent
+      - history-refine-user-agent-input
+      - history-refine-username
+      - history-refine-username-input
+      - history-refine-ip
+      - history-refine-ip-input
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
+      - search-history-page-status
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on the four free-text/
+      # identifier values this route offers a copy affordance on -- the
+      # Query and Additional-parameters columns, the row-level User agent
+      # column, and the IP address column -- plus the search-details
+      # dialog's Host and User agent rows. No `search-history-copy-*` id
+      # exists for Time, Category, Source, or Details: those columns are
+      # short/enumerated or already actionable, per the component's
+      # selection rule.
+      - search-history-copy-query
+      - search-history-copy-additional-parameters
+      - search-history-copy-user-agent
+      - search-history-copy-ip
+      - search-history-details-copy-host
+      - search-history-details-copy-user-agent
+    parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in SearchHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where SearchHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
+      - capability added - FM-170 gives Query, Additional parameters, User agent, and IP address (row and details-dialog) a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
+      - 'deliberate - FM-174 (owner request 2026-09-01) declutters the row: the `<key> ID` identifier lines left the Additional-parameters cell and its copy text, and the Details dialog gained the entry''s full criteria instead (each identifier as the same external link the row used to render, season/episode/author, the size and age lines, and the selected indexers), so no value the row dropped became unreachable. This is a deliberate delta from legacy, which printed exactly one linked identifier inline in the row (`search-history-controller.js:150-217`) and offered none of them in its details modal. The same task gave size and age one line each (`Size: 100 MB - 200 MB`, `Age: up to 10 days`) instead of separate Minimum/Maximum rows, dropped the misleading `Selected indexers: None` line for the ordinary empty selection, and moved Repeat out of the Query column into an icon-only button beside Details carrying legacy''s own tooltip sentence (`search-history.html:76-92`).'
+  - id: F-HISTORY-SAVED-SEARCHES
+    name: Saved-search listing, links, reuse, and deletion
+    routes:
+      - /stats/saved-searches
+    legacy_sources:
+      - core/ui-src/js/saved-searches-controller.js
+      - core/ui-src/html/states/saved-searches.html
+    target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/savedSearches.test.ts
+      - core/ui-react/src/features/stats/history/SavedSearchesPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors: []
+    parity: partial
+  - id: F-HISTORY-DOWNLOADS
+    name: Download-history paging, filtering, links, and repeat actions
+    routes:
+      - /stats/downloads
+    legacy_sources:
+      - core/ui-src/js/download-history-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/html/states/download-history.html
+    target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/history/downloads.test.ts
+      - core/ui-react/src/api/history/filters.test.ts
+      - core/ui-react/src/api/history/request.test.ts
+      - core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
+      - core/ui-react/src/domain/downloads/actions.test.ts
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/downloads.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
+    selectors:
+      - download-history-refresh
+      - download-history-table
+      - download-history-row
+      - download-history-indexer
+      - download-history-status
+      # FM-126 (ADR-0038): the table scrolls inside `download-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - download-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
+      - download-nzb
+      - download-torrent
+      - history-refine-bar
+      - history-refine-toggle
+      - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
+      - history-refine-time
+      - history-refine-time-after
+      - history-refine-time-before
+      - history-refine-indexer
+      - history-refine-indexer-toggle
+      - history-refine-indexer-list
+      - history-refine-indexer-option
+      - history-refine-title
+      - history-refine-title-input
+      - history-refine-result
+      - history-refine-result-toggle
+      - history-refine-result-list
+      - history-refine-result-option
+      - history-refine-source
+      - history-refine-source-select
+      - history-refine-age
+      - history-refine-age-min
+      - history-refine-age-max
+      - history-refine-username
+      - history-refine-username-input
+      - history-refine-ip
+      - history-refine-ip-input
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
+      - download-history-page-status
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on this route's two
+      # free-text/identifier values -- Title and IP address. No
+      # `download-history-copy-*` id exists for Time, Indexer, Result,
+      # Source, Age, or Username: those columns are short/enumerated or
+      # already actionable, per the component's selection rule.
+      - download-history-copy-title
+      - download-history-copy-ip
+    parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in DownloadHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where DownloadHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
+      - capability added - FM-170 gives Title and IP address a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
+  - id: F-HISTORY-NOTIFICATIONS
+    name: Notification-history paging and filtering
+    routes:
+      - /stats/notifications
+    legacy_sources:
+      - core/ui-src/js/notification-history-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/html/states/notification-history.html
+    target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/history/notifications.test.ts
+      - core/ui-react/src/api/history/filters.test.ts
+      - core/ui-react/src/api/history/request.test.ts
+      - core/ui-react/src/features/stats/history/NotificationHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/HistoryPager.test.tsx
+      - core/ui-react/src/features/stats/shared/pageSize.test.ts
+      - core/ui-react/src/features/stats/history/useHistoryFilterCriteria.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineSurface.test.tsx
+      - core/ui-react/src/domain/links/textLinks.test.ts
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/notification-history.spec.ts
+    # 2026-09-04 (FM-185): the refine surface's two Time fields are MUI X
+    # `DateTimePicker`s (`ampm={false}`, `YYYY-MM-DD HH:mm` typed entry) for
+    # the same in-page calendar. `history-refine-time-after` and
+    # `history-refine-time-before` now sit on the field root rather than on
+    # its input; the stored `YYYY-MM-DDTHH:mm` strings, the URL parameters,
+    # the active-filter summary and the request body are unchanged.
+    selectors:
+      - notification-history-refresh
+      - notification-history-table
+      - notification-history-row
+      - notification-history-type
+      - notification-history-title
+      - notification-history-body
+      - notification-history-urls
+      - notification-history-page-status
+      # FM-126 (ADR-0038): the table scrolls inside `notification-history-scroller`
+      # -- `C-TABLE-SCROLL-AFFORDANCE`'s scrolling element -- and
+      # `table-scroll-affordance-start`/`-end` are its edge fades, present on
+      # exactly the edge that is currently clipping content and gone once that
+      # edge is scrolled to its limit. The two fade ids are shared by every
+      # surface the component is used on, like `history-refine-bar`'s are.
+      - notification-history-scroller
+      - table-scroll-affordance-start
+      - table-scroll-affordance-end
+      - history-refine-bar
+      - history-refine-toggle
+      - history-refine-clear-all
+      # FM-137 (ADR-0046): the chrome ids the shared refine surface added when
+      # the horizontal bar became a docked column. `history-refine-summary` is
+      # the active-filter sentence in the shell's header summary slot (the
+      # expanded column and the open drawer -- the collapsed rail and the
+      # compact trigger carry it in their own accessible name and visible text
+      # instead), and `history-refine-drawer`/`-close` are the sub-768px
+      # branch's overlay and its close button.
+      - history-refine-summary
+      - history-refine-drawer
+      - history-refine-close
+      # 2026-09-03 (FM-181): the sub-768px branch is the shared bottom sheet
+      # now; `history-refine-done` is its pinned "Show N results" footer button.
+      - history-refine-done
+      - history-refine-time
+      - history-refine-time-after
+      - history-refine-time-before
+      - history-refine-event-type
+      - history-refine-event-type-toggle
+      - history-refine-event-type-list
+      - history-refine-event-type-option
+      # FM-166: `C-HISTORY-PAGER`'s ids, shared by all three history routes.
+      # `history-pager` is the strip itself and `history-page-size` its "Rows
+      # per page" control; the status line's id stays per route because
+      # `notification-history-page-status` is an existing spec contract.
+      - history-pager
+      - history-page-size
+      # FM-170: `C-COPY-VALUE-BUTTON` instances on this route's three
+      # free-text values -- Title, Body, and URLs. No
+      # `notification-history-copy-*` id exists for Time or Type: those
+      # columns are short/enumerated, per the component's selection rule.
+      - notification-history-copy-title
+      - notification-history-copy-body
+      - notification-history-copy-urls
+    parity: partial
+    gaps:
+      - deliberate - FM-165 holds the committed filter values, the sort column and direction, and the page number in the route's search parameters, so a filtered, sorted, paged view is a shareable link and Back restores it; legacy kept all three in NotificationHistoryController's scope and gave none of them a URL. A parameter at its default is omitted, so every pre-FM-165 link resolves exactly as it did.
+      - "deliberate - FM-166 replaces legacy's Previous/Next pair with the shared `C-HISTORY-PAGER`: first/previous/numbered-with-ellipsis/next/last, `aria-current=\"page\"` on the current page, a total in the status line, and a 25/50/100 page-size choice carried in the URL. The size defaults to 25 where NotificationHistoryController asked for a fixed `limit = 100` and offered no control at all -- a reader who wants 100 rows now says so once and keeps it in a link, and one who wants fewer finally can. Legacy hid the whole strip on a single-page result; the strip stays with its edge controls disabled."
+      - capability added - FM-170 gives Title, Body, and URLs a one-click `C-COPY-VALUE-BUTTON` copy affordance; legacy offered no clipboard action anywhere on this route, only a careful manual selection across the cell.
+  - id: F-SYSTEM-SHELL
+    name: System administration tab shell
+    routes:
+      - /system
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/html/states/system.html
+    target: core/ui-react/src/features/system
+    tests:
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-072; legacy's tab strip (`system.html:1-5`) carries no stable
+      # selector at all. `<tab>` is the URL segment, so the eight are
+      # `system-tab-control`, `system-tab-updates`, `system-tab-log`,
+      # `system-tab-tasks`, `system-tab-backup`, `system-tab-bugreport`,
+      # `system-tab-news`, and `system-tab-about`.
+      - system-shell
+      - system-tab-<tab>
+    parity: done
+    gaps:
+      - deliberate - bare /system redirects to /system/control, where legacy's root.system state was abstract and had no URL of its own; the target is legacy's own default tab (activeTab 0)
+      - deliberate - the shell is a route subtree that stays mounted across tab changes, where legacy re-rendered system.html and re-ran SystemController for every root.system.* state
+  - id: F-SYSTEM-CONTROL
+    name: Restart, shutdown, configuration reload, and legacy migration
+    routes:
+      - /system/control
+    legacy_sources:
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/js/nzbhydra-control-service.js
+      - core/ui-src/js/restart-service.js
+      - core/ui-src/js/migration-service.js
+    target: core/ui-react/src/features/system/control
+    tests:
+      - core/ui-react/src/features/system/control/SystemControlTab.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-072; legacy's four buttons (`system.html:10-22`) carry no
+      # stable selector. The system test asserts the three actions are present
+      # and enabled but never clicks Restart or Shutdown -- it runs against a
+      # shared instance.
+      - system-control
+      - system-restart
+      - system-shutdown
+      - system-reload-config
+    parity: done
+    gaps:
+      - deliberate - the "Migrate from NZBHydra 1" button (system.html:19-22, migration-service.js); all three /internalapi/migration/* endpoints are recorded in APIS.yaml unverified_legacy_calls with no backend mapping, so the legacy button cannot succeed and there is no reachable behavior to reproduce
+      - deliberate - a failed shutdown and a failed config reload are error toasts, where legacy used growl.info for both failures and its severity for a failure was plainly unintended
+      - deliberate - a config reload answering HTTP 200 with successful=false is reported as a failure carrying the server's message; legacy's promise resolves on any HTTP 200 and claimed success for a reload the server had refused
+      - deliberate - a failed reload with no server message falls back to "Unable to reload the config."; legacy passed the whole response object's `message` to growl.error, which is undefined for a transport-level failure
+      - deliberate - Shutdown and "Reload config from file" are disabled while their own request is in flight; legacy left both live, so a second command could be sent before the first was answered
+  - id: F-SYSTEM-UPDATES
+    name: Update status, history, ignore, install, and restart handoff
+    routes:
+      - /system/updates
+    legacy_sources:
+      - core/ui-src/js/update-service.js
+      - core/ui-src/js/directives/hydra-updates.js
+    target: core/ui-react/src/features/system/updates
+    tests:
+      - core/ui-react/src/features/system/updates/SystemUpdatesTab.test.tsx
+      - core/ui-react/src/services/updates/updateOffers.test.ts
+      - core/ui-react/src/services/updates/updateInstall.test.ts
+      - core/ui-react/src/api/system/updates.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-073; legacy's updates.html carries no stable selector. The
+      # beta block's changelog button needs its own value because the release
+      # block already owns `system-updates-changelog`.
+      - system-updates
+      - system-updates-install
+      - system-updates-install-beta
+      - system-updates-force
+      - system-updates-changelog
+      - system-updates-changelog-beta
+      - system-updates-changelog-dialog
+      - system-updates-external-warning
+      - system-updates-wrapper-warning
+      - system-update-progress-dialog
+      - system-version-history
+    parity: done
+    gaps:
+      - deliberate - ignoring a version (API-UPDATES-IGNORE); legacy offers no control for it on this page either (only hydra-checks-footer.js does), so only the "The latest version was ignored by you." text is reproduced here; the actual ignore control is the footer banner FM-080 shipped under F-PLATFORM-LIVE-STATUS
+      - deliberate - the automatic-update changelog notice (API-UPDATES-AUTOMATIC-HISTORY, API-UPDATES-ACK-HISTORY, showChangesFromAutomaticUpdate); it is a footer flow FM-080 implemented under F-PLATFORM-LIVE-STATUS rather than on this page
+      - deliberate - a failed install is an error toast, where legacy used growl.info for a failure it plainly meant as an error
+      - deliberate - the version history and the changelog dialog report their own load failure in place; legacy's version-history request had no failure handling at all and left the list silently empty
+      - deliberate - a second install click is ignored while one is running; legacy left both install buttons live behind its blocking modal
+  - id: F-SYSTEM-LOG
+    name: Raw and structured log viewing, filtering, tailing, and downloads
+    routes:
+      - /system/log
+    legacy_sources:
+      - core/ui-src/js/directives/hydra-log.js
+      - core/ui-src/html/directives/log.html
+    target: core/ui-react/src/features/system/logs
+    tests:
+      - core/ui-react/src/features/system/logs/SystemLogTab.test.tsx
+      - core/ui-react/src/api/system/logs.test.ts
+      - core/ui-react/src/domain/date-time/dateTime.test.ts
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-074; legacy's log.html carries no stable selector. The three
+      # view IDs address the view bodies -- the view tabs themselves are
+      # addressed by their role and label, like legacy's uib-tabset headings.
+      # `system-log-file-<index>` is per position in the server's file list.
+      - system-log
+      - system-log-view-formatted
+      - system-log-view-raw
+      - system-log-view-files
+      - system-log-table
+      - system-log-row
+      - system-log-entry-dialog
+      - system-log-older
+      - system-log-newer
+      - system-log-refresh-toggle
+      - system-log-tail-toggle
+      - system-log-file-<index>
+    parity: done
+    gaps:
+      - deliberate - filtering log entries; legacy's hydra-log.js offers none either, and the record's name predates the inventory of the directive
+      - deliberate - the paging buttons are rendered once, above the table; legacy repeats the same pair below it, which would make each selector address two elements
+      - deliberate - the older/newer offset moves before the page is loaded, so a failed page reports its failure in place and stays reachable through the paging buttons; legacy committed currentJsonIndex only in getOlderFormatted's success callback (and unconditionally in getNewerFormatted)
+      - deliberate - turning tailing on turns the five-second refresh on with it; legacy let tailing be switched on alone, where it silently did nothing until the refresh was enabled too
+      - deliberate - a refresh only scrolls to the end while tailing is on; legacy scrolled to the end on every raw-view load and refresh, which made its tail toggle almost inconsequential
+      - deliberate - the entry dialog also shows the whole log record as text, in addition to legacy's message, accessing IP address, accessing username, and stacktrace sections
+      - deliberate - the level is a labelled chip; legacy showed an unlabelled icon for INFO, WARN, and ERROR only, and nothing at all for any other level
+      - deliberate - the raw view fetches and renders the entire current log file, unbounded, on every load and every 5s auto-refresh; ADR-0047 (accepted 2026-08-29) considered a server-side tail parameter and a client-side last-N bound and ruled to leave it as is, matching legacy's `hydra-log.js`
+  - id: F-SYSTEM-TASKS
+    name: Scheduled task list and manual execution
+    routes:
+      - /system/tasks
+    legacy_sources:
+      - core/ui-src/js/directives/tasks.js
+      - core/ui-src/html/directives/tasks.html
+    target: core/ui-react/src/features/system/tasks
+    tests:
+      - core/ui-react/src/features/system/tasks/SystemTasksTab.test.tsx
+      - core/ui-react/src/features/system/tasks/relativeTime.test.ts
+      - core/ui-react/src/api/system/tasks.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-077; legacy's tasks.html carries no stable selector.
+      # `system-task-run` is shared across every row's run button, the same
+      # per-row (not per-index) style as `system-backup-row`.
+      - system-tasks
+      - system-tasks-table
+      - system-task-run
+    parity: partial
+    gaps:
+      - deliberate - the run action's accessible/visible name is the task name itself (legacy's play-icon link read the same way); no separate "Run" label is added
+      - deliberate - a relative-time formatter (Intl.RelativeTimeFormat) was added local to this feature rather than to the shared C-DATE-TIME module, since no earlier C-DATE-TIME consumer needed the relative half of legacy's humanizeDate/reformatDateSeconds pairing -- only the absolute half
+  - id: F-SYSTEM-BACKUP
+    name: Backup listing, creation, download, upload, and restore
+    routes:
+      - /system/backup
+    legacy_sources:
+      - core/ui-src/js/backup-service.js
+      - core/ui-src/js/directives/backup.js
+      - core/ui-src/html/directives/backup.html
+    target: core/ui-react/src/features/system/backups
+    tests:
+      - core/ui-react/src/features/system/backups/SystemBackupTab.test.tsx
+      - core/ui-react/src/api/system/backup.test.ts
+      - core/ui-react/src/api/transport.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-075; legacy's backup.html carries no stable selector. The
+      # per-row IDs are by position in the server's newest-first list.
+      - system-backup
+      - system-backup-create-download
+      - system-backup-create-only
+      - system-backup-upload
+      - system-backup-upload-progress
+      - system-backup-table
+      - system-backup-row
+      - system-backup-download-<index>
+      - system-backup-restore-<index>
+      - system-backup-restore-confirm
+    parity: partial
+    gaps:
+      - deliberate - restoring from a listed backup asks for confirmation first, naming the file and the restart; legacy restored from an unlabelled glyphicon click with no confirmation at all (backup.html:40-41)
+      - deliberate - the two creating actions are side-by-side buttons; legacy hid "Just create backup" in a uib-dropdown split button (backup.html:3-13), the same replacement FM-066/067 made
+      - deliberate - a creation or restore the server refuses inside an HTTP 200 GenericResponse is reported as an error toast; legacy ignored the body of both calls entirely and only growled on an HTTP error
+      - deliberate - the upload progress bar shows loaded kB, the total, and a percentage, and is indeterminate until the browser can compute the total; legacy always rendered a determinate bar whose max was undefined until the first
+        progress event (backup.html:20-23)
+      - deliberate - the file chooser accepts .zip/application/zip; legacy's ngf-select accepted any file and let the server reject it. A file chosen anyway is still answered by the server, which is what the refusal path renders
+  - id: F-SYSTEM-BUGREPORT
+    name: Debug archive, upload, sensitive logging, thread diagnostics, heap dump, and SQL tools
+    routes:
+      - /system/bugreport
+    legacy_sources:
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/html/bugreport.html
+    target: core/ui-react/src/features/system/bugreport
+    tests:
+      - core/ui-react/src/features/system/bugreport/SystemBugreportTab.test.tsx
+      - core/ui-react/src/api/system/debug.test.ts
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-076; legacy's bugreport.html carries no stable selector.
+      - system-bugreport
+      - system-debug-download
+      - system-debug-upload
+      - system-debug-upload-result
+      - system-thread-dump
+      - system-sensitive-toggle
+      - system-heap-dump
+      - system-endpoints
+      - system-sql-input
+      - system-sql-query
+      - system-sql-execute
+      - system-sql-output
+      - system-cpu-chart
+      - system-cpu-chart-table
+    parity: partial
+    gaps:
+      - deliberate - the upload action is a plain button beside the download instead of legacy's split-button dropdown (bugreport.html:38-48), which hid its single item
+      - deliberate - the returned share URL is rendered as a React anchor's href and text; legacy assembled the anchor as an HTML string for ng-bind-html (system-controller.js:118), an injection-shaped hazard not reproduced
+      - deliberate - the thread dump reports its outcome; legacy reported nothing (system-controller.js:126-131)
+      - deliberate - the CPU chart is @mui/x-charts rather than nvd3 (ADR-0021), with the latest sample per thread reachable as an accessible table
+  - id: F-SYSTEM-NEWS
+    name: Read-only news list
+    routes:
+      - /system/news
+    legacy_sources:
+      - core/ui-src/js/directives/hydra-news.js
+      - core/ui-src/js/directives/hydra-checks-footer.js
+    target: core/ui-react/src/features/system/news
+    tests:
+      - core/ui-react/src/features/system/news/NewsPage.test.tsx
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/news.spec.ts
+      - tests/system/tests/system.spec.ts
+    selectors: []
+    parity: partial
+    gaps:
+      - deliberate - FM-072 moved the page inside F-SYSTEM-SHELL and behind the admin gate, matching legacy's root.system.news loginRequired(..., "admin") resolve (nzbhydra.js:557-582); the URL and the API-NEWS-LIST endpoint's own ROLE_USER protection are unchanged
+  - id: F-SYSTEM-ABOUT
+    name: Version, update, and runtime information
+    routes:
+      - /system/about
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/html/about.html
+    target: core/ui-react/src/features/system/about
+    tests:
+      - core/ui-react/src/features/system/about/SystemAboutTab.test.tsx
+      - core/ui-react/src/features/system/SystemShell.test.tsx
+      - tests/system/tests/system.spec.ts
+    selectors:
+      # New in FM-073; legacy's about.html carries no stable selector.
+      - system-about
+    parity: done
+    gaps:
+      - deliberate - the sponsor link (https://www.newsgroup.ninja/) is routed through C-EXTERNAL-LINKS' dereferer like every other external target on the page; legacy left that one link un-dereferered while dereferering the four others
+      - deliberate - a failed API-UPDATES-SIMPLE-INFOS request reports itself in place of the version block; legacy resolved the value in the route and rendered an empty version silently
+  - id: F-PLATFORM-LIVE-STATUS
+    name: Cross-route downloader status, notifications, welcome, warnings, and startup checks
+    routes:
+      - /*
+    legacy_sources:
+      - core/ui-src/js/directives/downloaderStatusFooter.js
+      - core/ui-src/js/directives/hydra-checks-footer.js
+    target: core/ui-react/src/app/status
+    tests:
+      - core/ui-react/src/app/status/StartupChecks.test.tsx
+      - core/ui-react/src/app/status/startupCheckRunner.test.ts
+      - core/ui-react/src/app/status/vipExpiry.test.ts
+      - core/ui-react/src/services/preferences/serverPreferences.test.ts
+      - core/ui-react/src/api/preferences.test.ts
+      - core/ui-react/src/app/status/UpdateFooterBanners.test.tsx
+      - core/ui-react/src/api/system/updates.test.ts
+      - core/ui-react/src/app/status/DownloaderStatusFooter.test.tsx
+      - core/ui-react/src/app/status/downloaderFooter.test.ts
+      - core/ui-react/src/app/status/NotificationToasts.test.tsx
+      - core/ui-react/src/api/live/downloaderStatus.test.ts
+      - core/ui-react/src/api/live/notifications.test.ts
+      - core/ui-react/src/api/live/transport.test.ts
+      - core/ui-react/src/app/AppShell.test.tsx
+      - tests/system/tests/smoke.spec.ts
+    selectors:
+      # New in FM-079; legacy's welcome, news, user-news, and warning modals
+      # carry no stable selector. `startup-check-dialog` addresses all five
+      # admin warnings, which differ only in title and body.
+      - welcome-dialog
+      - news-dialog
+      - user-news-dialog
+      - startup-check-dialog
+      # New in FM-080; legacy's checks-footer.html carries no stable selector
+      # for the update banner or the automatic-update notice either.
+      - update-footer
+      - update-footer-install
+      - update-footer-ignore
+      - update-footer-changelog
+      - automatic-update-footer
+      # New in FM-081; legacy's downloader-status-footer.html carries only the
+      # container id `downloader-status-footer`, which is kept as the footer's
+      # own selector. The state indicator and the queue count are new.
+      - downloader-status-footer
+      - downloader-status-state
+      - downloader-status-queue
+      - notification-toasts
+      - notification-toast
+    parity: done
+    gaps:
+      - deliberate - the welcome dialog's "migrate your data" link to the NZBHydra 1 (python) migration wizard; the link fires MigrationService.migrate, whose /internalapi/migration/* calls have no backend mapping (same reachability ruling as F-SYSTEM-CONTROL's migrate button), so there is no reachable behavior to reproduce
+      - deliberate - the announcements are shown one at a time in a fixed order and the sequence waits for each one to be closed; legacy opened its modals from independent, concurrent callbacks, so several could stack on top of
+        each other in an order decided by response timing
+      - deliberate - a one-shot acknowledgement (API-NEWS-SAVE-SHOWN, API-UPDATES-ACK-WRAPPER, and every stored flag cleared through C-SERVER-PREFERENCES) is sent only after its dialog was closed; legacy sent the news
+        acknowledgement while opening the dialog and cleared each stored flag without waiting for the warning to be seen
+      - deliberate - closing a user news notice dismisses it (API-USER-NEWS-DISMISS) however it was closed; legacy dismissed only on its OK button, so an escape- or backdrop-closed notice came back on the next load
+      - deliberate - a stored flag counts as raised only for a value that means true; legacy's `response.data !== "" && response.data` also accepted the string "false" that its own clearing write left behind, which made every
+        cleared warning reappear on every load
+      - deliberate - FAILED_BACKUP shows the stored record's message and time and then clears it; legacy's display condition (`response.data && !response.data`) is unsatisfiable dead code, so the warning could never appear
+      - "deliberate - the dialogs are feature-owned bodies rendered as MUI dialogs rather than C-DIALOG-SERVICE confirmations, because each one carries structure C-DIALOG-SERVICE's plain-text message cannot hold: real anchors
+        for the links legacy injected as HTML, sanitized server-authored news, and the wrapper warning's file lists"
+      - deliberate - FM-080's footer banners compensate the main content area's bottom padding by measuring their own rendered height (a `ResizeObserver`, with an initial synchronous measurement), rather than reproducing legacy's
+        `footer.js` pixel bookkeeping (`updateFooterBottom`/`updatePaddingBottom`), per ADR-0014
+      - deliberate - FM-080's "Ignore this update" only hides the banner for the current app load (no refetch); the ignored version is still recorded server-side through API-UPDATES-IGNORE, matching legacy's own scope
+      - deliberate - FM-081 turns every newline in a notification body into a line break and renders it as text; legacy's body.replace("\n", "<br>") replaced only the first newline and injected the result as growl HTML
+      - deliberate - ADR-0037/FM-127 - the pile-up toast's "Go to the notification history" link is dropped; the toast names the notification history as the place to view the piled-up notifications but no longer links to it, because a persistent toast's own interactive content would be untabbable behind any open modal's FocusTrap (the record never claimed the link was reachable while a modal was open - this drops it in every case, not only that one)
+      - deliberate - FM-081's rate graph really stops self-advancing once the window holds nothing but the last known rate; legacy's _.every compared its {x, y} point objects to a number, so that stop condition could never fire
+        and the interval ran until new data arrived
+      - deliberate - FM-081's rate graph is a themed @mui/x-charts sparkline hidden from assistive technology (ADR-0021), without legacy's nvd3 hover tooltip; the rate, remaining time, and queue text beside it are the accessible
+        surface
+      - deliberate - FM-081's downloader footer and FM-080's update banners stack by measuring their own rendered heights; legacy's footer.js moved the update footer with hardcoded 20/38 pixel offsets and padded the page with
+        fixed padding-bottom-N classes
+      - deliberate - FM-081's state indicator is a MUI icon carrying the state as its accessible name as well as its tooltip; legacy rendered a bare glyphicon whose state was reachable only by hovering
+      - deliberate - FM-085 replaced FM-081's one-connection-per-subscription behavior with a single shared SockJS/STOMP client per base URL, pooled module-scoped across every subscriber (C-LIVE-TRANSPORT, API-LIVE-SOCKJS note); an idle admin session now opens one server websocket session instead of one per live subscription

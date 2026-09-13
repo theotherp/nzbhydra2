@@ -20,6 +20,7 @@ import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.AddUDlResponse;
+import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxAddUdlData;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxDownload;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
@@ -80,6 +81,7 @@ public class Torbox extends Downloader {
         this.restTemplate = new RestTemplate(torboxHttpRequestFactory);
         this.restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().add("Authorization", "Bearer " + downloaderConfig.getApiKey());
+            request.getHeaders().add("User-Agent", "NZBHydra2");
             return execution.execute(request, body);
         });
     }
@@ -114,15 +116,15 @@ public class Torbox extends Downloader {
 
     @Override
     public String addLink(String link, String title, DownloadType downloadType, String category) throws DownloaderException {
-        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link", downloadType);
+        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link", downloadType, category);
     }
 
     @Override
     public String addContent(byte[] content, String title, DownloadType downloadType, String category) throws DownloaderException {
-        return sendAddRequest(content, title, "file", "data", downloadType);
+        return sendAddRequest(content, title, "file", "data", downloadType, category);
     }
 
-    private String sendAddRequest(byte[] value, String title, String addType, String descInLog, DownloadType downloadType) throws DownloaderException {
+    private String sendAddRequest(byte[] value, String title, String addType, String descInLog, DownloadType downloadType, String category) throws DownloaderException {
         log.debug("Sending {} for \"{}\" to torbox", descInLog, title);
         UriComponentsBuilder url;
         // We have no way of knowing if the original search result was a torrent or usenet result. Kinda hacky, I know...
@@ -151,23 +153,58 @@ public class Torbox extends Downloader {
             } else {
                 map.add(addType, value);
             }
-            map.add("name", title);
+        }
+        map.add("name", title);
+        if (category != null) {
+            map.add("category", category);
         }
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         try {
             ResponseEntity<AddUDlResponse> entity = restTemplate.postForEntity(url.toUriString(), request, AddUDlResponse.class);
             AddUDlResponse dlResponse = entity.getBody();
+            if (dlResponse == null) {
+                log.error("Error adding {} for \"{}\" to torbox: torbox returned an empty response", descInLog, title);
+                throw new DownloaderException("Torbox returned an empty response");
+            }
             if (dlResponse.isSuccess()) {
+                final String downloadId = extractDownloadId(dlResponse.getData(), resultType);
+                if (downloadId == null) {
+                    log.error("Error adding {} for \"{}\" to torbox: torbox reported success but did not return a download ID", descInLog, title);
+                    throw new DownloaderException("Torbox did not return a download ID for " + title);
+                }
                 log.info("Successfully added \"{}\" to torbox", title);
-                return dlResponse.getData().getUsenetdownload_id();
+                return downloadId;
             }
             log.error("Error adding {} for NZB {} to torbox. Error: {}\nDetail:{}", descInLog, title, dlResponse.getError(), dlResponse.getDetail());
             throw new DownloaderException("Torbox returned error: " + dlResponse.getError());
 
+        } catch (DownloaderException e) {
+            //Already logged and carries a specific message, don't hide it behind the generic one below
+            throw e;
         } catch (Exception e) {
             log.error("Unexpected response when sending add request for {} to torbox", title, e);
             throw new DownloaderException("Error sending " + descInLog + " to torbox", e);
         }
+    }
+
+    /**
+     * The usenet endpoint answers with a usenet download ID, the torrent endpoint with a hash and a numeric torrent ID.
+     * For torrents the hash is preferred: torbox's torrent and usenet ID spaces are independent and we only ever list
+     * usenet entries (by numeric ID), so a stored torrent ID could equals-match an unrelated usenet entry while a hash
+     * cannot. Returns null only when torbox reported success without any usable identifier.
+     */
+    @Nullable
+    private static String extractDownloadId(@Nullable TorboxAddUdlData data, ResultType resultType) {
+        if (data == null) {
+            return null;
+        }
+        if (resultType == ResultType.TORBOX_USENET || resultType == ResultType.NZB) {
+            return data.getUsenetdownload_id();
+        }
+        if (data.getHash() != null) {
+            return data.getHash();
+        }
+        return data.getTorrent_id() == null ? null : String.valueOf(data.getTorrent_id());
     }
 
     private static ResultType determineResultType(byte[] value, String title, DownloadType downloadType) throws DownloaderException {
@@ -198,7 +235,7 @@ public class Torbox extends Downloader {
                 .downloaderType(DownloaderType.TORBOX)
                 .state(downloadingEntries.isEmpty() ? DownloaderStatus.State.IDLE : DownloaderStatus.State.DOWNLOADING)
                 .url(BASE_URL)
-                .downloadingRatesInKilobytes(downloadRates)
+                .downloadingRatesInKilobytes(getDownloadRates())
                 .downloadRateInKilobytes(downloadSpeedKb)
                 .elementsInQueue(downloadingEntries.size());
         if (!downloadingEntries.isEmpty()) {
@@ -313,9 +350,9 @@ public class Torbox extends Downloader {
     }
 
 
-    private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);
-        return builder;
+    UriComponentsBuilder getBaseUrl() {
+        String url = downloaderConfig.getUrl();
+        return UriComponentsBuilder.fromUriString(url == null || url.isBlank() ? BASE_API_URL : url);
     }
 
 

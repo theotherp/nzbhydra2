@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -39,6 +38,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -116,7 +117,7 @@ public class BackupAndRestore {
         URI uri = URI.create("jar:" + backupZip.toPath().toUri());
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
             Path nf = fs.getPath("nzbhydra.yml");
-            try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+            try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardOpenOption.CREATE)) {
                 writer.write(configReaderWriter.getAsYamlString(configProvider.getBaseConfig()));
                 logger.debug("Successfully wrote config to backup ZIP");
                 backupCertificates(fs);
@@ -164,7 +165,7 @@ public class BackupAndRestore {
     }
 
     @Reflective
-    protected File getBackupFolder() {
+    public File getBackupFolder() {
         final String backupFolder = configProvider.getBaseConfig().getMain().getBackupFolder();
         if (backupFolder.contains(File.separator)) {
             return new File(backupFolder);
@@ -179,16 +180,51 @@ public class BackupAndRestore {
             return Collections.emptyList();
         }
         for (File file : backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"))) {
-            try {
-                entries.add(new BackupEntry(file.getName(), Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toInstant()));
-            } catch (IOException e) {
-                logger.error("Unable to read creation date of file {}", file, e);
-            }
+            entries.add(new BackupEntry(file.getName(), determineBackupTimestamp(file)));
         }
         entries.sort((o1, o2) -> o2.getCreationDate().compareTo(o1.getCreationDate()));
         return entries;
     }
 
+    /**
+     * Determines the best available timestamp for a backup file. On some filesystems (e.g. Btrfs on
+     * Synology, many NFS/SMB mounts, some container storage drivers) the filesystem's creation time is
+     * not available and {@link BasicFileAttributes#creationTime()} returns the epoch (1970-01-01), which
+     * would make retention logic believe every backup was created at the same instant. We therefore
+     * prefer the timestamp that NZBHydra2 itself encoded into the filename (the most reliable source
+     * since it's fully under our control), then fall back to the filesystem creation time if it's usable,
+     * and finally to the last-modified time.
+     */
+    protected Instant determineBackupTimestamp(File file) {
+        Instant creationTime = Instant.EPOCH;
+        try {
+            creationTime = Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+        } catch (IOException e) {
+            logger.error("Unable to read creation date of file {}", file, e);
+        }
+        return determineBackupTimestamp(file.getName(), creationTime, Instant.ofEpochMilli(file.lastModified()));
+    }
+
+    /**
+     * Pure decision logic, split out from {@link #determineBackupTimestamp(File)} so it can be unit
+     * tested without depending on filesystem behaviour that can't be controlled portably (creation time
+     * in particular - it cannot be forced to the epoch on most filesystems).
+     */
+    protected Instant determineBackupTimestamp(String filename, Instant creationTime, Instant lastModified) {
+        Matcher matcher = FILE_PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            try {
+                return LocalDateTime.parse(matcher.group(1), DATE_PATTERN).atZone(ZoneId.systemDefault()).toInstant();
+            } catch (Exception e) {
+                logger.warn("Unable to parse timestamp from backup filename {}", filename, e);
+            }
+        }
+        if (!creationTime.equals(Instant.EPOCH)) {
+            return creationTime;
+        }
+        logger.debug("Filesystem did not report a usable creation time for {}, falling back to last modified time", filename);
+        return lastModified;
+    }
 
     private void backupDatabase(File targetFile, boolean triggeredByUsed) {
         final String tempPath;
@@ -287,7 +323,7 @@ public class BackupAndRestore {
         systemControl.exitWithReturnCode(SystemControl.RESTORE_RETURN_CODE);
     }
 
-    private static void extractZip(File zipFile, File targetFolder) throws IOException {
+    static void extractZip(File zipFile, File targetFolder) throws IOException {
         logger.info("Extracting from file {} to folder {}", zipFile.getCanonicalPath(), targetFolder.getCanonicalPath());
         Path dest = targetFolder.toPath().toAbsolutePath().normalize();
         targetFolder.mkdir();

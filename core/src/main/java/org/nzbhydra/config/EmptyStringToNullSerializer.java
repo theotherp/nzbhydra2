@@ -2,12 +2,10 @@
 
 package org.nzbhydra.config;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.base.Strings;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 public class EmptyStringToNullSerializer extends StdScalarSerializer<Object> {
 
@@ -16,7 +14,7 @@ public class EmptyStringToNullSerializer extends StdScalarSerializer<Object> {
     }
 
     @Override
-    public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(Object value, JsonGenerator gen, SerializationContext provider) {
         gen.writeString(Strings.emptyToNull((String) value));
     }
 }

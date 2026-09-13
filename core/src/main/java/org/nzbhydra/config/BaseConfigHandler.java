@@ -62,14 +62,16 @@ public class BaseConfigHandler {
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         configReaderWriter.save(baseConfig);
 
-        delayedSaveTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                saveToSave();
-            }
-        };
-        Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
-        delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
+        if (!NzbHydra.isNativeBuild()) {
+            delayedSaveTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    saveToSave();
+                }
+            };
+            Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
+            delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
+        }
         initialized = true;
     }
 
@@ -99,15 +101,18 @@ public class BaseConfigHandler {
 
     public void save(boolean saveInstantly) {
         saveLock.lock();
-        if (saveInstantly) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Saving instantly");
-            configReaderWriter.save(baseConfig);
-            toSave = null;
-        } else {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Delaying save");
-            toSave = baseConfig;
+        try {
+            if (saveInstantly) {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Saving instantly");
+                configReaderWriter.save(baseConfig);
+                toSave = null;
+            } else {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Delaying save");
+                toSave = baseConfig;
+            }
+        } finally {
+            saveLock.unlock();
         }
-        saveLock.unlock();
     }
 
     public void load() throws IOException {
@@ -118,17 +123,22 @@ public class BaseConfigHandler {
     @PreDestroy
     public void onShutdown() {
         saveToSave();
-        delayedSaveTimerTask.cancel();
+        if (delayedSaveTimerTask != null) {
+            delayedSaveTimerTask.cancel();
+        }
     }
 
     private void saveToSave() {
         saveLock.lock();
-        if (toSave != null) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Executing delayed save");
-            configReaderWriter.save(toSave);
-            toSave = null;
+        try {
+            if (toSave != null) {
+                logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Executing delayed save");
+                configReaderWriter.save(toSave);
+                toSave = null;
+            }
+        } finally {
+            saveLock.unlock();
         }
-        saveLock.unlock();
     }
 
 

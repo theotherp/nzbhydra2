@@ -2,25 +2,31 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.nzbhydra.config.EmptyStringToNullDeserializer;
 import org.nzbhydra.config.EmptyStringToNullSerializer;
 import org.nzbhydra.config.sensitive.SensitiveDataModule;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 public class Jackson {
 
-    public static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
-    public static final ObjectMapper SENSITIVE_YAML_MAPPER = new ObjectMapper(new YAMLFactory());
-    public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    public static final ObjectMapper YAML_MAPPER = YAMLMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
+    public static final ObjectMapper SENSITIVE_YAML_MAPPER = YAMLMapper.builder()
+            .addModule(new SensitiveDataModule())
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
+    public static final ObjectMapper JSON_MAPPER = JsonMapper.builder()
+            .addModule(createSimpleModule())
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
     public static final ObjectWriter YAML_WRITER;
 
     static {
@@ -29,24 +35,14 @@ public class Jackson {
         DefaultPrettyPrinter defaultPrettyPrinter = new DefaultPrettyPrinter();
         defaultPrettyPrinter.indentObjectsWith(indenter);
         defaultPrettyPrinter.indentArraysWith(indenter);
-        YAML_MAPPER.registerModule(new Jdk8Module());
-        YAML_MAPPER.registerModule(new JavaTimeModule());
-        YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        YAML_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        YAML_WRITER = YAML_MAPPER.writer(defaultPrettyPrinter);
+        YAML_WRITER = YAML_MAPPER.writer().with(defaultPrettyPrinter);
+    }
 
-        SENSITIVE_YAML_MAPPER.registerModule(new Jdk8Module());
-        SENSITIVE_YAML_MAPPER.registerModule(new JavaTimeModule());
-        SENSITIVE_YAML_MAPPER.registerModule(new SensitiveDataModule());
-
-        JSON_MAPPER.registerModule(new Jdk8Module());
-        JSON_MAPPER.registerModule(new JavaTimeModule());
-        JSON_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
+    private static SimpleModule createSimpleModule() {
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
         simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
-        JSON_MAPPER.registerModule(simpleModule);
+        return simpleModule;
     }
 
 

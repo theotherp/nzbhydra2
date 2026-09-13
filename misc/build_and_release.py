@@ -641,31 +641,12 @@ def commit_maven_versions(ctx: BuildContext) -> None:
     )
 
 
-@step("build_frontend_assets", "Build frontend assets (gulp index)")
-def build_frontend_assets(ctx: BuildContext) -> None:
-    """Build minified frontend assets before backend build."""
-    if ctx.dry_run == DryRunMode.PRINT:
-        console.print("  [cyan]PRINT mode: Skipping frontend build[/cyan]")
-        return
-    run_command(
-        ctx,
-        ["npx", "gulp", "index"],
-        "Building frontend assets",
-        cwd=PROJECT_ROOT / "core" / "ui-src",
-    )
-
-
-@step("stage_frontend_assets", "Stage frontend assets for commit")
-def stage_frontend_assets(ctx: BuildContext) -> None:
-    """Stage built frontend assets for release commit."""
-    if ctx.dry_run == DryRunMode.PRINT:
-        console.print("  [cyan]PRINT mode: Skipping staging frontend assets[/cyan]")
-        return
-    run_command(
-        ctx,
-        ["git", "add", "core/src/main/resources/static"],
-        "Staging frontend assets",
-    )
+# FM-095: the two frontend steps that used to sit here -- `build_frontend_assets`
+# (`npx gulp index` in `core/ui-src`) and `stage_frontend_assets` (`git add` of the
+# built output under `core/src/main/resources/static`) -- are gone with the legacy
+# AngularJS UI. The React UI needs neither: `core/pom.xml` builds it with npm during
+# the Maven build below, straight into `target/classes/static/react`, so nothing is
+# ever checked in and there is nothing to stage.
 
 
 @step("build_core_jar", "Build core JAR")
@@ -728,47 +709,21 @@ def _build_windows_executable(ctx: BuildContext, log_file: Path) -> str | None:
     build_ctx.log_file = log_file
 
     try:
-        if not ctx.is_windows:
-            console.print("  [yellow]⚠[/yellow] Skipping Windows build on non-Windows platform")
-            return None
-
-        # Build with 10 minute timeout
+        # The helper starts win11-ltsc only when needed and copies its artifacts back.
         run_command(
             build_ctx,
-            ["cmd", "/c", "buildCore.cmd"],
-            "Building Windows executable",
+            ["python3", str(PROJECT_ROOT / "misc" / "build_windows_vm.py"), "--version", ctx.version],
+            "Building Windows executable in VM",
             cwd=PROJECT_ROOT,
-            timeout_seconds=600,  # 10 minutes
+            timeout_seconds=1800,  # 30 minutes
         )
 
-        # Copy executable and DLLs
         if ctx.dry_run.should_execute_local():
-            import shutil
-
             windows_include = PROJECT_ROOT / "releases" / "windows-release" / "include"
             core_exe = PROJECT_ROOT / "core" / "target" / "core.exe"
-            if core_exe.exists():
-                shutil.copy(core_exe, windows_include)
-                console.print(f"  [green]✓[/green] Copied core.exe to windows-release/include")
-            else:
+            if not (windows_include / "core.exe").exists():
                 return f"Windows executable not found: {core_exe}"
-
-            for dll in (PROJECT_ROOT / "core" / "target").glob("*.dll"):
-                shutil.copy(dll, windows_include)
-            console.print(f"  [green]✓[/green] Copied DLLs to windows-release/include")
-
-            # Verify version
-            exe_path = windows_include / "core.exe"
-            result = run_command(
-                build_ctx,
-                [str(exe_path), "-version"],
-                "Verifying Windows executable version",
-            )
-            if result:
-                actual_version = result.stdout.strip()
-                if actual_version != ctx.version:
-                    return f"Windows version mismatch: expected {ctx.version}, got {actual_version}"
-                console.print(f"  [green]✓[/green] Windows version verified: {actual_version}")
+            console.print("  [green]✓[/green] Copied Windows executable and DLLs to windows-release/include")
 
         return None
     except Exception as e:

@@ -9,10 +9,12 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
+import org.nzbhydra.indexers.status.IndexerStatusesAndLimits;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
@@ -40,8 +42,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static org.nzbhydra.misc.NumberParsing.parseFloatOrNull;
 
 @Component
 public class InternalSearchResultProcessor {
@@ -61,6 +66,8 @@ public class InternalSearchResultProcessor {
     private UrlCalculator urlCalculator;
     @Autowired
     private DownloadUrlBuilder downloadUrlBuilder;
+    @Autowired
+    private IndexerStatusesAndLimits indexerStatusesAndLimits;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -70,6 +77,7 @@ public class InternalSearchResultProcessor {
         searchResponse.setNumberOfRejectedResults(searchResult.getNumberOfRejectedResults());
         searchResponse.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
         searchResponse.setIndexerSearchMetaDatas(createIndexerSearchMetaDatas(searchResult));
+        searchResponse.setIndexerLimitWarnings(createIndexerLimitWarnings(searchResponse.getIndexerSearchMetaDatas()));
         searchResponse.setNotPickedIndexersWithReason(searchResult.getIndexerSelectionResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
         searchResponse.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
         searchResponse.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
@@ -82,6 +90,35 @@ public class InternalSearchResultProcessor {
 
         logger.debug(LoggingMarkers.PERFORMANCE, "Creating web response for search results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
+    }
+
+    private List<String> createIndexerLimitWarnings(List<IndexerSearchMetaData> indexerSearchMetaDatas) {
+        BaseConfig baseConfig = configProvider.getBaseConfig();
+        Set<String> searchedIndexerNames = indexerSearchMetaDatas.stream()
+                .map(IndexerSearchMetaData::getIndexerName)
+                .collect(Collectors.toSet());
+
+        List<String> warnings = new ArrayList<>();
+        for (IndexerStatusesAndLimits.IndexerStatus status : indexerStatusesAndLimits.getSortedStatuses()) {
+            if (!searchedIndexerNames.contains(status.getIndexer())) {
+                continue;
+            }
+            addLimitWarning(warnings, status.getIndexer(), status.getApiHitLimit(), status.getApiHits(),
+                    baseConfig.getNotificationConfig().getIndexerHitLimitWarningThreshold(), "API hits");
+            addLimitWarning(warnings, status.getIndexer(), status.getDownloadHitLimit(), status.getDownloadHits(),
+                    baseConfig.getNotificationConfig().getIndexerDownloadLimitWarningThreshold(), "downloads");
+        }
+        return warnings;
+    }
+
+    private void addLimitWarning(List<String> warnings, String indexerName, Integer limit, Integer used, int threshold, String limitType) {
+        if (limit == null || used == null) {
+            return;
+        }
+        int remaining = limit - used;
+        if (remaining >= 0 && remaining <= threshold) {
+            warnings.add(String.format("%s has %d %s left.", indexerName, remaining, limitType));
+        }
     }
 
     private List<IndexerSearchMetaData> createIndexerSearchMetaDatas(org.nzbhydra.searching.SearchResult searchResult) {
@@ -139,7 +176,7 @@ public class InternalSearchResultProcessor {
                     .indexer(item.getIndexer().getName())
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore())
-                    .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
+                    .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), item.getSearchId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
                     .poster(item.getPoster().map(originalUrl -> {
                         if (!baseConfig.getMain().isProxyImages()) {
@@ -148,6 +185,7 @@ public class InternalSearchResultProcessor {
                         return "cache/" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
                     }).orElse(null))
                     .searchResultId(item.getSearchResultId().toString())
+                    .downloadId(new DownloadIdentifier(item.getSearchResultId(), item.getSearchId()).toString())
                     .size(item.getSize())
                     .title(item.getTitle())
                     .source(item.getSource().orElse(null));
@@ -161,9 +199,11 @@ public class InternalSearchResultProcessor {
             if (item.getAttributes().containsKey("showtitle")) {
                 builder.showtitle(item.getAttributes().get("showtitle"));
             }
-            if (item.getAttributes().containsKey("downloadvolumefactor") && item.getAttributes().containsKey("uploadvolumefactor")) {
-                final float dl = Float.parseFloat(item.getAttributes().get("downloadvolumefactor"));
-                final float ul = Float.parseFloat(item.getAttributes().get("uploadvolumefactor"));
+            final Float dlFactor = parseFloatOrNull(item.getAttributes().get("downloadvolumefactor"));
+            final Float ulFactor = parseFloatOrNull(item.getAttributes().get("uploadvolumefactor"));
+            if (dlFactor != null && ulFactor != null) {
+                final float dl = dlFactor;
+                final float ul = ulFactor;
                 if (Float.compare(dl, 0F) == 0) {
                     builder.torrentDownloadFactor("Freelech");
                 } else {
@@ -174,7 +214,7 @@ public class InternalSearchResultProcessor {
                 }
             }
 
-            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getId() == item.getSearchResultId()).findFirst();
+            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getHash() == item.getSearchResultId()).findFirst();
             if (matchingDownload.isPresent()) {
                 builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.get().getTime(), ZoneId.of("UTC"))));
             }

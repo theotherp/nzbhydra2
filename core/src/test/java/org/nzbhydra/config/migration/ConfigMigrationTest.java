@@ -2,9 +2,6 @@
 
 package org.nzbhydra.config.migration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,6 +10,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.MainConfig;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,12 +39,10 @@ public class ConfigMigrationTest {
     private TypeReference<HashMap<String, Object>> typeRef
             = new TypeReference<HashMap<String, Object>>() {
     };
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new JsonMapper();
 
     @BeforeEach
     public void setUp() {
-
-        objectMapper.registerModule(new Jdk8Module());
     }
 
     @Test

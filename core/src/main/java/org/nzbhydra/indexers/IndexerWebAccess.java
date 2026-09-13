@@ -18,8 +18,8 @@ import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
-import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,8 @@ public class IndexerWebAccess {
     protected ConfigProvider configProvider;
     @Autowired
     protected WebAccess webAccess;
-    protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    @Autowired
+    protected Unmarshaller unmarshaller;
     @Autowired
     private UpdateManager updateManager;
 
@@ -82,47 +83,56 @@ public class IndexerWebAccess {
             headers.put("Authorization", "Bearer " + indexerConfig.getApiKey());
         }
 
-        Future<T> future;
         ExecutorService executorService = MdcThreadPoolExecutor.newWithInheritedMdc(1);
         try {
-            future = executorService.submit(() -> {
-                String response = webAccess.callUrl(uri.toString(), headers, timeout);
-                if (responseType == String.class) {
-                    return (T) response;
-                }
-                if (responseType == NzbIndexRoot.class || responseType == TorboxSearchResponse.class) {
-                    // TODO 23.03.2024: Make more generic
-                    return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
+            Future<T> future;
+            try {
+                future = executorService.submit(() -> {
+                    String response = webAccess.callUrl(uri.toString(), headers, timeout);
+                    if (responseType == String.class) {
+                        return (T) response;
+                    }
+                    if (responseType == NzbIndexRoot.class || responseType == TorboxSearchResponse.class) {
+                        // TODO 23.03.2024: Make more generic
+                        return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
 
+                    }
+                    //Fall back to XML
+                    return unmarshalXml(response);
+                });
+            } catch (RejectedExecutionException e) {
+                logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName(), e);
+                throw new IndexerProgramErrorException("Unexpected error in hydra code. Sorry...");
+            }
+            try {
+                return future.get(timeout + 1, TimeUnit.SECONDS); //Give it one second more than the actual timeout
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof SocketTimeoutException) {
+                    throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());
                 }
-                //Fall back to XML
-                return unmarshalXml(response);
-            });
-        } catch (RejectedExecutionException e) {
-            logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName(), e);
-            throw new IndexerProgramErrorException("Unexpected error in hydra code. Sorry...");
+                if (e.getCause() instanceof HydraUnmarshallingFailureException) {
+                    throw new IndexerAccessException("Unable to parse indexer output: " + e.getCause().getMessage(), e.getCause());
+                }
+                logger.debug("Indexer communication error", e.getCause());
+                //ADR-0019: this message reaches the connection-check dialog, the search-result error and the stored
+                //IndexerConfig.lastError, so it must not carry the indexer's response body. The cause is passed on
+                //unchanged so IndexerChecker can still read the body off it.
+                final String serverMessage = e.getCause() instanceof WebAccessException webAccessException ? webAccessException.getShortMessage() : e.getCause().getMessage();
+                throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + serverMessage, e.getCause());
+            } catch (TimeoutException e) {
+                future.cancel(true);
+                throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
+            } catch (Exception e) {
+                throw new RuntimeException("Unexpected error while accessing indexer", e);
+            }
         } finally {
-            executorService.shutdown();
-        }
-        try {
-            return future.get(timeout + 1, TimeUnit.SECONDS); //Give it one second more than the actual timeout
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof SocketTimeoutException) {
-                throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());
-            }
-            if (e.getCause() instanceof HydraUnmarshallingFailureException) {
-                throw new IndexerAccessException("Unable to parse indexer output: " + e.getCause().getMessage(), e.getCause());
-            }
-            logger.debug("Indexer communication error", e.getCause());
-            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getCause().getMessage(), e.getCause());
-        } catch (TimeoutException e) {
-            throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error while accessing indexer", e);
+            //shutdownNow() and not shutdown(): a call that ran into the timeout above must be interrupted, otherwise its thread lives on until the call returns
+            executorService.shutdownNow();
         }
     }
 
-    private <T> @NotNull T unmarshalXml(String response) throws IOException, HydraUnmarshallingFailureException {
+    @NotNull
+    private <T> T unmarshalXml(String response) throws IOException, HydraUnmarshallingFailureException {
         try {
             try (StringReader reader = new StringReader(response)) {
                 final StreamSource source = new StreamSource(reader);

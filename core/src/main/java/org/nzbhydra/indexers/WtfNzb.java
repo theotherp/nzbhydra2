@@ -33,7 +33,7 @@ public class WtfNzb extends Newznab {
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path("/api_fast");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(config.getHost()).path("/api_fast");
         String query = generateQueryIfApplicable(searchRequest, searchRequest.getQuery().orElse(null));
         if (query == null) {
             throw new IndexerSearchAbortedException("Search without query and query generation not supported");

@@ -1,0 +1,340 @@
+import {Box, Button, Collapse, Stack} from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import {
+    denseControlFontSize,
+    monoFontFamily,
+    refineRowBackgrounds,
+} from "../../app/theme";
+
+// FM-129: the count beside a toggle row's label, one step under the row's own
+// `denseControlFontSize` text so the count reads as an annotation of the label
+// rather than as a second column of equal weight. It stays a local named
+// constant rather than joining a shared token: this is the only
+// count-beside-a-label site in the application, and the size only has to hold
+// its relationship to the row label next to it. FM-153 moved it here with the
+// rows themselves, from `features/search/results/filterControls.tsx`.
+const ROW_COUNT_FONT_SIZE = "11.5px";
+
+// FM-188: the selection actions are stock text `Button`s; only their density
+// is stated here, so that three of them fit the 216px inner width of the 248px
+// docked refine column without wrapping. The row text reads as secondary to
+// the entries it acts on -- these are shortcuts for the rows below, not a
+// filter dimension of their own.
+const selectionActionSx = {
+    color: "text.secondary",
+    fontSize: denseControlFontSize,
+    minWidth: 0,
+    px: 0.75,
+} as const;
+
+/**
+ * One option of a `RefineMultiselect`, in the order it is to be rendered.
+ *
+ * `count` is optional and only the results sidebar supplies it: its options are
+ * derived from the loaded results and so have a number of loaded results to
+ * annotate them with. The history views declare their options up front and have
+ * no such number, so their rows render the label alone.
+ */
+export type RefineMultiselectEntry = {
+    count?: number;
+    label: string;
+    value: string;
+};
+
+/**
+ * FM-188: `invert`, `all` and `none` are the ids of the optional selection
+ * action row and are supplied only by a consumer that enables it (`all` is the
+ * "All" button's id, not an id for the whole set). Each is applied only where
+ * it is supplied, so a consumer that wants none of them keeps exactly the three
+ * ids this type has always required.
+ */
+export type RefineMultiselectTestIds = {
+    all?: string;
+    invert?: string;
+    list: string;
+    none?: string;
+    option: string;
+    toggle: string;
+};
+
+/**
+ * `C-REFINE-MULTISELECT` (ADR-0050): a refine surface's collapsible
+ * multi-select -- a caption button carrying the section's name and
+ * `aria-expanded` over a `Collapse` of flat, full-width toggle rows.
+ *
+ * Controlled and presentational in the strict sense ADR-0046 draws for these
+ * surfaces: it holds no state and derives nothing. `entries` render in exactly
+ * the order given, with no sorting, dedup, or counting of its own -- the
+ * results sidebar derives its options from the loaded results and sorts them,
+ * the history views declare theirs and depend on that declared order surviving,
+ * and neither rule can live in here without breaking the other. Open state and
+ * selection are the consumer's too, so whether either persists is decided where
+ * it is owned (the results page persists both through
+ * `hydra.search-results.table`; the history views persist neither).
+ *
+ * The rows carry no visible checkbox: the row itself is the control, with
+ * `aria-pressed` on a real `button` rather than `role="option"` /
+ * `aria-selected` inside a `role="listbox"`. Each row is an independently
+ * operable toggle with no roving focus, no active-descendant management, and no
+ * single-selection semantics, which is exactly the toggle-button pattern -- and
+ * it is the pattern the refine surfaces' quality and type pills already use, so
+ * the whole panel exposes one consistent affordance.
+ *
+ * FM-054 (ADR-0014): the active/hover backgrounds are computed with the theme's
+ * own `theme.alpha()` (colorSpace-aware -- see `theme.ts`'s note on why the
+ * standalone `@mui/system` `alpha()` cannot decompose an `oklch()` token)
+ * rather than restated as `oklch(... / N)` literals, so they stay tied to
+ * `primary.main` and compose with the `dark-dyschromatopsia` variant
+ * automatically.
+ *
+ * FM-188's `selectionActions` row does not weaken any of that: it is opt-in,
+ * renders nothing at all when the prop is absent, and each of its three
+ * payloads is computed inside its own click handler from the `entries` and
+ * `selected` props as they are at that moment. Nothing is memoized, stored, or
+ * derived ahead of a click.
+ */
+export function RefineMultiselect({
+    entries,
+    groupLabel,
+    label,
+    onChange,
+    onToggleOpen,
+    open,
+    selected,
+    selectionActions = false,
+    testId,
+    testIds,
+}: {
+    entries: readonly RefineMultiselectEntry[];
+    // Opt-in `role="group"` with this as the group's accessible name, for
+    // consumers whose options need to announce themselves as one named set.
+    // The history views carry it (their `checkboxes` dimensions have always
+    // exposed a named group); the results sidebar passes nothing and its rows
+    // stay a bare list of toggles, exactly as they have always rendered.
+    groupLabel?: string;
+    label: string;
+    onChange: (values: string[]) => void;
+    onToggleOpen: () => void;
+    open: boolean;
+    selected: readonly string[];
+    // FM-188: opt-in "Invert / All / None" row above the entries. Off by
+    // default because the two consumers' selection models are opposites: the
+    // results sidebar preselects every value and a selection *is* the filter,
+    // so operating on the whole set is a real shortcut, while a history
+    // dimension starts empty and an empty selection filters nothing (ADR-0016)
+    // -- there "All" and "None" would be two spellings of "no filter" and
+    // "Invert" would have no state to invert on arrival.
+    selectionActions?: boolean;
+    // The section container's own id, for consumers whose specs query the
+    // section as a whole (the history views' `history-refine-<id>`). Omitted on
+    // the results sidebar, whose sections have never carried one.
+    testId?: string;
+    testIds: RefineMultiselectTestIds;
+}) {
+    return (
+        <Box data-testid={testId}>
+            <Button
+                aria-expanded={open}
+                data-testid={testIds.toggle}
+                onClick={onToggleOpen}
+                size="small"
+                // The section caption's own typography role, spread from the
+                // theme rather than restated: this caption is a `Button` (the
+                // section is collapsible), so it cannot take `Typography`'s
+                // `variant` prop the way a static section caption does, and
+                // consuming the variant here is what keeps the two identical.
+                sx={(theme) => ({
+                    ...theme.typography.refineSectionLabel,
+                    justifyContent: "space-between",
+                    mb: 1,
+                    minWidth: 0,
+                    px: 0,
+                    py: 0,
+                    width: "100%",
+                })}
+            >
+                {label}
+                {open ? (
+                    <ExpandLessIcon fontSize="small" />
+                ) : (
+                    <ExpandMoreIcon fontSize="small" />
+                )}
+            </Button>
+            <Collapse in={open}>
+                {/* FM-188: inside the `Collapse`, so the section's caption
+                    button stays the only control reachable while it is
+                    collapsed, and above the entries rather than inside their
+                    `Stack`, so the option list a consumer queries by
+                    `testIds.list` (and names through `groupLabel`) still
+                    contains options only. Every payload is computed here, from
+                    the current `entries` and `selected` props -- the component
+                    derives and remembers nothing. */}
+                {selectionActions && (
+                    <Stack direction="row" sx={{mb: 0.5}}>
+                        <Button
+                            data-testid={testIds.invert}
+                            disabled={entries.length === 0}
+                            onClick={() =>
+                                onChange(
+                                    entries
+                                        .filter(
+                                            (entry) =>
+                                                !selected.includes(entry.value),
+                                        )
+                                        .map((entry) => entry.value),
+                                )
+                            }
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            Invert
+                        </Button>
+                        <Button
+                            data-testid={testIds.all}
+                            disabled={entries.length === 0}
+                            onClick={() =>
+                                onChange(entries.map((entry) => entry.value))
+                            }
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            All
+                        </Button>
+                        <Button
+                            data-testid={testIds.none}
+                            disabled={entries.length === 0}
+                            onClick={() => onChange([])}
+                            size="small"
+                            sx={selectionActionSx}
+                            variant="text"
+                        >
+                            None
+                        </Button>
+                    </Stack>
+                )}
+                <Stack
+                    aria-label={groupLabel}
+                    data-testid={testIds.list}
+                    role={groupLabel === undefined ? undefined : "group"}
+                    sx={{gap: 0.25}}
+                >
+                    {entries.map((entry) => {
+                        const active = selected.includes(entry.value);
+                        return (
+                            <Button
+                                aria-pressed={active}
+                                data-filter-value={entry.value}
+                                data-testid={testIds.option}
+                                key={entry.value}
+                                onClick={() =>
+                                    onChange(
+                                        active
+                                            ? selected.filter(
+                                                  (value) =>
+                                                      value !== entry.value,
+                                              )
+                                            : [...selected, entry.value],
+                                    )
+                                }
+                                // A toggle in *row* shape, at the 8px action
+                                // radius rather than a stadium: a full-width
+                                // list row is not a pill, and the stadium
+                                // corners are reserved for the quality/type
+                                // pills. `borderRadius` was
+                                // `theme.shape.borderRadius` here, which `sx`
+                                // multiplies by 8 (see `pillRadius` in
+                                // `app/theme.ts`) and so rendered 64px.
+                                //
+                                // The selected treatment stays deliberately
+                                // quieter than the pills' (12% fill and
+                                // `text.primary`, not their 16% and
+                                // `primary.light`) and borderless: the results
+                                // sidebar's `defaultFilters` starts with every
+                                // category and indexer selected, so "active" is
+                                // the resting state for whole columns of these
+                                // rows at once. Painting them in the pills'
+                                // full selected language turns the sidebar into
+                                // a wall of teal -- verified on a live search
+                                // before settling here.
+                                //
+                                // FM-161 moved the four state fills behind
+                                // `refineRowBackgrounds`, which states the
+                                // resting pair unchanged and adds the two
+                                // hovers this row had been missing: an
+                                // unselected row now lifts neutrally and a
+                                // selected one deepens in the selection's own
+                                // hue, so what a click is about to do is
+                                // legible from the colour under the cursor.
+                                // The alphas live in `app/theme.ts` with the
+                                // per-theme measurements that justify them.
+                                sx={(theme) => {
+                                    const rowBackground =
+                                        refineRowBackgrounds(theme);
+                                    return {
+                                        backgroundColor: active
+                                            ? rowBackground.selected
+                                            : rowBackground.unselected,
+                                        borderRadius: 1,
+                                        color: active
+                                            ? "text.primary"
+                                            : "text.secondary",
+                                        fontSize: denseControlFontSize,
+                                        fontWeight: 400,
+                                        gap: 1,
+                                        justifyContent: "space-between",
+                                        lineHeight: 1.35,
+                                        minWidth: 0,
+                                        px: 1,
+                                        py: 0.75,
+                                        textAlign: "left",
+                                        width: "100%",
+                                        "&:hover": {
+                                            backgroundColor: active
+                                                ? rowBackground.selectedHover
+                                                : rowBackground.unselectedHover,
+                                        },
+                                    };
+                                }}
+                            >
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        minWidth: 0,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                    }}
+                                    // Long labels (history's notification
+                                    // event types) ellipsize in the narrow
+                                    // refine column; the native title keeps
+                                    // the full text reachable on hover
+                                    // without altering the rendered row.
+                                    title={entry.label}
+                                >
+                                    {entry.label}
+                                </Box>
+                                {entry.count !== undefined && (
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            color: "surfaces.mutedText",
+                                            flexShrink: 0,
+                                            fontFamily: monoFontFamily,
+                                            fontSize: ROW_COUNT_FONT_SIZE,
+                                        }}
+                                    >
+                                        {entry.count}
+                                    </Box>
+                                )}
+                            </Button>
+                        );
+                    })}
+                </Stack>
+            </Collapse>
+        </Box>
+    );
+}

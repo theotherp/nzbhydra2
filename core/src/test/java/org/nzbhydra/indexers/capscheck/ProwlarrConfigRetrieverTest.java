@@ -2,7 +2,6 @@
 
 package org.nzbhydra.indexers.capscheck;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +14,7 @@ import org.nzbhydra.indexers.capscheck.ProwlarrConfigRetriever.ProwlarrIndexer;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,6 +137,26 @@ public class ProwlarrConfigRetrieverTest {
                 .isInstanceOf(IndexerAccessException.class)
                 .hasMessageContaining("Error accessing Prowlarr")
                 .hasMessageContaining("Unauthorized");
+    }
+
+    /**
+     * ADR-0019: the composed message travels on to {@code IndexerWeb.readProwlarrConfig}'s error response and into the
+     * Prowlarr import UI, so it must not carry Prowlarr's response body.
+     * The existing {@code shouldThrowIndexerAccessExceptionOnWebAccessError} above is unaffected by the change because
+     * it throws a {@link WebAccessException} with an empty body, for which the long and short forms coincide.
+     */
+    @Test
+    void shouldNotIncludeResponseBodyInProwlarrErrorMessage() throws Exception {
+        WebAccessException webAccessException = new WebAccessException("Unauthorized", "{\"message\":\"API Key invalid\"}", 401);
+        when(webAccessMock.callUrl(any(), any(TypeReference.class)))
+                .thenThrow(webAccessException);
+
+        assertThatThrownBy(() -> testee.retrieveIndexers(prowlarrConfig))
+                .isInstanceOf(IndexerAccessException.class)
+                .hasMessage("Error accessing Prowlarr: Unauthorized. Code: 401")
+                .matches(t -> !t.getMessage().contains("{"), "message contains no JSON from the response body")
+                .matches(t -> !t.getMessage().contains("API Key invalid"), "message contains no text from the response body")
+                .matches(t -> t.getCause() == webAccessException, "cause is the original WebAccessException instance");
     }
 
     @Test

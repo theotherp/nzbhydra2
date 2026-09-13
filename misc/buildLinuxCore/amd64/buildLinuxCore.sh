@@ -1,29 +1,36 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-# Prepares and runs the docker container to build the core executable
+# Builds the linux amd64 core executable locally in docker (no remote/WSL sync).
+# Run from the project main folder: misc/buildLinuxCore/amd64/buildLinuxCore.sh
+# The docker image is (re)built from ./dockerfile every run; docker's layer cache keeps that cheap.
 
 if [[ ! -d "${PWD}/core" ]] ; then
   echo "${PWD}/core not found - you must be in the project main folder"
   exit 1
 fi
 
-echo Removing old amd64 executable
+AMD64_DIR="${PWD}/misc/buildLinuxCore/amd64"
+
+echo "Removing old amd64 executable"
 rm -f releases/linux-amd64-release/include/executables/core
 
-echo Syncing with build directory
-rsync -ru --delete --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "venv*" ${PWD}/ /home/user/nzbhydra2/
+echo "Building docker image hydrabuild-amd64"
+docker build -t hydrabuild-amd64 "${AMD64_DIR}"
 
-echo Running build script using docker
-docker run -v /home/user/nzbhydra2/:/nzbhydra2:rw -v /home/user/.m2/repository:/home/user/.m2/repository:rw --rm hydrabuild:latest
+echo "Running build in docker"
+# Mount the working copy and the host maven cache directly; no rsync to a build directory.
+docker run --rm \
+  -v "${PWD}/:/nzbhydra2:rw" \
+  -v "${HOME}/.m2/repository:/root/.m2/repository:rw" \
+  hydrabuild-amd64
 
-if [[ ! -f /home/user/nzbhydra2/core/target/core ]] ; then
+if [[ ! -f "${PWD}/core/target/core" ]] ; then
   echo "ERROR: core executable does not exist after build"
   exit 1
 fi
 
-echo Copying executable to target directories
-cp /home/user/nzbhydra2/core/target/core ${PWD}/core/target/
-cp /home/user/nzbhydra2/core/target/core ${PWD}/releases/linux-amd64-release/include/executables/
+echo "Copying executable to releases/linux-amd64-release/include/executables/"
+cp "${PWD}/core/target/core" "${PWD}/releases/linux-amd64-release/include/executables/"
 
 echo "amd64 build completed successfully"

@@ -5,6 +5,7 @@ target/
 *.ipr
 *.iml
 *.db
+!tests/system/instanceData/*/database/nzbhydra.mv.db
 /bower_components
 /node_modules
 /nzbhydra.db.*
@@ -19,19 +20,26 @@ pom.xml.versionsBackup
 javacore*
 heapdump*
 /ui
-*token*
+/*token*
 *.env
 
 !/.idea/compiler.xml
 !/.idea/vcs.xml
 !/.idea/misc.xml
+.idea/codeStyles/
 misc/rsyncToServers.sh
 misc/build-logs
 misc/.build-release-state.json
+misc/.windows-systemtest-data-*
+misc/.windows-systemtest-history
+misc/.windows-systemtest-runs
+misc/windows-systemtest-logs
+misc/.gui-systemtest-runs
 /nzbhydra.yml
 /results
 other/wrapper/pyInstaller/windows/build
 other/wrapper/pyInstaller/windows_console/build
+.venv
 
 **/.DS_Store
 core/ui-src/hydra-ng
@@ -45,4 +53,13 @@ org.eclipse.m2e.core.prefs
 org.eclipse.jdt.apt.core.prefs
 .playwright
 .playwright-mcp
-opencode.json
+.agentbridge
+.mcp
+.mnemosyne/
+.playwright-cli
+uimock/
+__pycache__
+
+# CTRF test reports generated in CI for ctrf-io/github-test-reporter (see .github/workflows/)
+ctrf/
+misc/.migration-test-runs

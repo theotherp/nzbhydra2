@@ -9,7 +9,6 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -24,7 +23,6 @@ public class IndexerStatusesCleanupTask {
     ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
     private BaseConfigHandler baseConfigHandler;
 
-    @Autowired
     public IndexerStatusesCleanupTask(ConfigProvider configProvider, BaseConfigHandler baseConfigHandler) {
         this.configProvider = configProvider;
         this.baseConfigHandler = baseConfigHandler;

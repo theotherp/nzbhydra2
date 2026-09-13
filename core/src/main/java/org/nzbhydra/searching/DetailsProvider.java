@@ -23,7 +23,7 @@ public class DetailsProvider {
     }
 
     public DetailsResult getDetails(long resultId) {
-        Optional<SearchResultEntity> searchResult = searchResultRepository.findById(resultId);
+        Optional<SearchResultEntity> searchResult = searchResultRepository.findByHash(resultId);
         if (searchResult.isEmpty()) {
             return null;
         }

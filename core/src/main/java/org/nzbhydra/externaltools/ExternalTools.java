@@ -4,8 +4,6 @@ package org.nzbhydra.externaltools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,8 +61,20 @@ public class ExternalTools {
     @Autowired
     private UrlCalculator urlCalculator;
 
+    /**
+     * Fields this class only fills with a default when it creates an entry. On an update the value the entry already
+     * has wins, because there is no way to set them in NZBHydra and the user may have changed them in the tool.
+     */
+    private static final Set<String> FIELDS_DEFAULTED_ONLY_ON_CREATION = Set.of("multiLanguages", "requiredFlags", "animeStandardFormatSearch");
+
     private final List<String> messages = new ArrayList<>();
     private final Map<IndexerConfig, Integer> indexerPrioritiesMapped = new HashMap<>();
+    /**
+     * The tool's NZBHydra entries as found at the start of the run. Every entry that is matched by name is updated in
+     * place and removed from this list; whatever is left afterwards is stale (e.g. an indexer that no longer exists in
+     * NZBHydra or a switch between the single and per-indexer modes) and is deleted at the end.
+     */
+    private final List<XdarrIndexer> unmatchedExistingEntries = new ArrayList<>();
 
 
     public boolean addNzbhydraAsIndexer(AddRequest addRequest) throws IOException {
@@ -69,6 +82,7 @@ public class ExternalTools {
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received request: {}", addRequest);
             messages.clear();
             indexerPrioritiesMapped.clear();
+            unmatchedExistingEntries.clear();
 
             if (failOnUnknownVersion(addRequest)) {
                 return false;
@@ -85,7 +99,7 @@ public class ExternalTools {
                 }
             }
 
-            if (deleteIndexers(addRequest)) {
+            if (loadExistingEntriesOrDeleteThem(addRequest)) {
                 return false;
             }
 
@@ -132,6 +146,8 @@ public class ExternalTools {
                 }
             }
 
+            deleteStaleEntries(addRequest);
+
             messages.add("Configuration of " + addRequest.getExternalTool() + " finished successfully");
             return true;
         } catch (Exception e) {
@@ -144,7 +160,14 @@ public class ExternalTools {
         }
     }
 
-    private boolean deleteIndexers(AddRequest addRequest) throws IOException {
+    /**
+     * Reads the tool's existing NZBHydra entries. For {@link AddRequest.AddType#DELETE_ONLY} they are deleted right
+     * away; otherwise they are kept so that {@link #executeConfigurationRequest} can update them in place instead of
+     * deleting and recreating them, which lost everything the user had set on the entry in the tool itself (#1078).
+     *
+     * @return true if the run is finished (delete only or an error), false if the configuration should continue
+     */
+    private boolean loadExistingEntriesOrDeleteThem(AddRequest addRequest) throws IOException {
         final List<XdarrIndexer> configuredNzbhydraIndexers;
         try {
             configuredNzbhydraIndexers = getConfiguredNzbhydraIndexers(addRequest);
@@ -153,24 +176,56 @@ public class ExternalTools {
             return true;
         }
         logger.info("Found {} configured NZBHydra indexer entries", configuredNzbhydraIndexers.size());
-        for (XdarrIndexer indexer : configuredNzbhydraIndexers) {
-            logger.debug("Deleting indexer entry {}", indexer.getName());
-            try {
-                webAccess.deleteToUrl(getExternalToolUrl(addRequest) + "/indexer/" + indexer.getId(), getAuthHeaders(addRequest), 10);
-            } catch (WebAccessException e) {
-                handleXdarrError(addRequest, e);
-            }
-            messages.add("Deleted existing entry \"" + indexer.getName() + "\"");
-        }
         if (addRequest.getAddType() == AddRequest.AddType.DELETE_ONLY) {
+            for (XdarrIndexer indexer : configuredNzbhydraIndexers) {
+                deleteEntry(addRequest, indexer, "Deleted existing entry");
+            }
             if (configuredNzbhydraIndexers.isEmpty()) {
                 messages.add("No NZBHydra entries found");
             }
-        }
-        if (addRequest.getAddType() == AddRequest.AddType.DELETE_ONLY) {
             return true;
         }
+        unmatchedExistingEntries.addAll(configuredNzbhydraIndexers);
         return false;
+    }
+
+    private void deleteStaleEntries(AddRequest addRequest) throws IOException {
+        for (XdarrIndexer indexer : new ArrayList<>(unmatchedExistingEntries)) {
+            deleteEntry(addRequest, indexer, "Deleted stale entry");
+        }
+        unmatchedExistingEntries.clear();
+    }
+
+    private void deleteEntry(AddRequest addRequest, XdarrIndexer indexer, String messagePrefix) throws IOException {
+        logger.debug("Deleting indexer entry {}", indexer.getName());
+        try {
+            webAccess.deleteToUrl(getExternalToolUrl(addRequest) + "/indexer/" + indexer.getId(), getAuthHeaders(addRequest), 10);
+        } catch (WebAccessException e) {
+            handleXdarrError(addRequest, e);
+        }
+        messages.add(messagePrefix + " \"" + indexer.getName() + "\"");
+    }
+
+    /**
+     * Carries over what the entry in the tool has and NZBHydra does not manage: the ID (the update is a PUT on it),
+     * tags, the download client and the fields that are only defaulted on creation. Everything NZBHydra does manage is
+     * taken from the freshly built request, so a changed configuration still reaches the tool.
+     */
+    private void mergeIntoExistingEntry(XdarrIndexer built, XdarrIndexer existing) {
+        built.setId(existing.getId());
+        built.setTags(existing.getTags() == null ? new ArrayList<>() : existing.getTags());
+        built.setDownloadClientId(existing.getDownloadClientId());
+        final Map<String, XdarrAddRequestField> mergedFields = new LinkedHashMap<>();
+        for (XdarrAddRequestField field : existing.getFields()) {
+            mergedFields.put(field.getName(), field);
+        }
+        for (XdarrAddRequestField field : built.getFields()) {
+            if (FIELDS_DEFAULTED_ONLY_ON_CREATION.contains(field.getName()) && mergedFields.containsKey(field.getName())) {
+                continue;
+            }
+            mergedFields.put(field.getName(), field);
+        }
+        built.setFields(new ArrayList<>(mergedFields.values()));
     }
 
     private boolean failOnUnknownVersion(AddRequest addRequest) throws IOException {
@@ -234,12 +289,13 @@ public class ExternalTools {
             nameInXdarr += " (" + indexer.getName() + ")";
         }
         xdarrAddRequest.setName(nameInXdarr);
+        final String entryName = nameInXdarr;
         xdarrAddRequest.setProtocol(backendType == BackendType.Newznab ? "usenet" : "torrent");
         xdarrAddRequest.setSupportsRss(true);
         xdarrAddRequest.setSupportsSearch(true);
 
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiKey", configProvider.getBaseConfig().getMain().getApiKey()));
-        xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories(), addRequest)));
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories())));
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
         if (externalTool == AddRequest.ExternalTool.Sonarr) {
@@ -263,7 +319,7 @@ public class ExternalTools {
             }
 
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost() + "/torznab"));
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? Integer.parseInt(addRequest.getMinimumSeeders()) : 1));
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", parseMinimumSeeders(addRequest.getMinimumSeeders())));
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
         }
@@ -297,20 +353,32 @@ public class ExternalTools {
 
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiPath", "/api"));
 
+        final Optional<XdarrIndexer> existingEntry = unmatchedExistingEntries.stream().filter(x -> entryName.equals(x.getName())).findFirst();
+        if (existingEntry.isPresent()) {
+            unmatchedExistingEntries.remove(existingEntry.get());
+            mergeIntoExistingEntry(xdarrAddRequest, existingEntry.get());
+        }
+
         final String body;
         try {
             body = Jackson.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(xdarrAddRequest);
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Built request body: {}", body);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.error("Unable to write request", e);
             throw new IOException("Unable to write request", e);
         }
         final String response;
         try {
-            final String url = getExternalToolUrl(addRequest) + "/indexer";
-            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Calling URL {} with data\n{} and body\n{}", url, xdarrAddRequest, body);
-
-            response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
+            final String url;
+            if (existingEntry.isPresent()) {
+                url = getExternalToolUrl(addRequest) + "/indexer/" + existingEntry.get().getId();
+                logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Updating existing entry {} via URL {} with data\n{} and body\n{}", nameInXdarr, url, xdarrAddRequest, body);
+                response = webAccess.putToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
+            } else {
+                url = getExternalToolUrl(addRequest) + "/indexer";
+                logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Calling URL {} with data\n{} and body\n{}", url, xdarrAddRequest, body);
+                response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
+            }
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
             if (response == null) {
                 throw new WebAccessException("No response available from tool");
@@ -318,18 +386,65 @@ public class ExternalTools {
                 throw new WebAccessException("If you configured " + addRequest.getExternalTool().name() + " to use an URL base make sure to add it in the URL.");
             }
             final Map requestResponse = Jackson.JSON_MAPPER.readValue(response, Map.class);
-            messages.add("Configured \"" + nameInXdarr + "\"");
+            messages.add((existingEntry.isPresent() ? "Updated existing entry \"" : "Configured \"") + nameInXdarr + "\"");
         } catch (WebAccessException e) {
             handleXdarrError(addRequest, e);
         }
     }
 
-    private Object mapCategories(String categoriesString, AddRequest addRequest) {
+    /**
+     * The external tools expect a list of numeric category IDs. The value is entered as free text, so it is read
+     * leniently about shape and strictly about content: tokens are trimmed and empty ones are dropped (so
+     * "5030, 5040" and a trailing separator are accepted), while a token that is not a number is refused by name
+     * instead of letting {@link Integer#parseInt(String)} throw a "For input string" the blanket catch in
+     * {@link #addNzbhydraAsIndexer(AddRequest)} would turn into an unattributed "Unexpected error". Null and empty
+     * mean "no categories", which is what {@code ExternalToolConfig} defaults to.
+     */
+    private Object mapCategories(String categoriesString) throws IOException {
         if (Strings.isNullOrEmpty(categoriesString)) {
             return Collections.emptyList();
-        } else {
-            return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
         }
+        final List<Integer> categories = new ArrayList<>();
+        for (String token : categoriesString.split(",")) {
+            final String category = token.trim();
+            if (category.isEmpty()) {
+                continue;
+            }
+            try {
+                categories.add(Integer.parseInt(category));
+            } catch (NumberFormatException e) {
+                throw failWithMessage("Categories must be comma-separated whole numbers but \"" + categoriesString + "\" contains \"" + category + "\"");
+            }
+        }
+        return categories;
+    }
+
+    /**
+     * An empty or blank value means "use the default", exactly as an absent one does: {@code ExternalToolConfig}
+     * ships {@code minimumSeeders = "1"}. Over HTTP an empty string is already turned into null by the web mapper
+     * ({@code WebConfiguration}'s {@code EmptyStringToNullDeserializer}), but the automatic sync builds its request
+     * from the stored configuration in Java and reaches this method with whatever was saved. Anything that is
+     * neither blank nor a number is refused by name; see {@link #mapCategories(String)}.
+     */
+    private int parseMinimumSeeders(String minimumSeeders) throws IOException {
+        if (minimumSeeders == null || minimumSeeders.isBlank()) {
+            return 1;
+        }
+        try {
+            return Integer.parseInt(minimumSeeders.trim());
+        } catch (NumberFormatException e) {
+            throw failWithMessage("Minimum seeders must be a whole number but was \"" + minimumSeeders + "\"");
+        }
+    }
+
+    /**
+     * The module's convention for a rejected request (see {@link #failOnUnknownVersion(AddRequest)}): record the
+     * reason for the UI, then abort so nothing is written into the external tool.
+     */
+    private IOException failWithMessage(String message) {
+        messages.add("Error: " + message);
+        logger.error(message);
+        return new IOException(message);
     }
 
     private List<XdarrIndexer> getConfiguredNzbhydraIndexers(AddRequest addRequest) throws IOException {
@@ -365,7 +480,8 @@ public class ExternalTools {
             messages.add("Error: " + errorMessage);
             throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);
         } else {
-            messages.add(e.getMessage());
+            //ADR-0019: this entry is returned to the user in the messages list, so it carries no response body
+            messages.add(e.getShortMessage());
             throw e;
         }
     }

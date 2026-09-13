@@ -49,6 +49,17 @@ public class DownloaderStatus {
     private long remainingSeconds;
     private long remainingSizeInMegaBytes;
 
+    /**
+     * Free space on the volume the downloader writes completed downloads to (SABnzbd's complete folder, NZBGet's DestDir).
+     * Null when the downloader did not report it.
+     */
+    private Long freeDiskSpaceBytes;
+    /**
+     * Free space on the volume the downloader writes downloads in progress to (SABnzbd's temporary folder, NZBGet's InterDir).
+     * Null when the downloader did not report it (NZBGet before 24.3).
+     */
+    private Long freeIncompleteDiskSpaceBytes;
+
     private State state;
 
     private String url;
@@ -69,6 +80,26 @@ public class DownloaderStatus {
 
     public String getRemainingTimeFormatted() {
         return Converters.formatTime(remainingSeconds);
+    }
+
+    public String getFreeDiskSpaceFormatted() {
+        return freeDiskSpaceBytes == null ? "" : Converters.formatDiskSpace(freeDiskSpaceBytes);
+    }
+
+    public String getFreeIncompleteDiskSpaceFormatted() {
+        return freeIncompleteDiskSpaceBytes == null ? "" : Converters.formatDiskSpace(freeIncompleteDiskSpaceBytes);
+    }
+
+    /**
+     * True if what is left to download does not fit into the free space of either reported volume.
+     */
+    public boolean isQueueExceedsFreeDiskSpace() {
+        long remainingBytes = remainingSizeInMegaBytes * 1024L * 1024L;
+        if (remainingBytes <= 0) {
+            return false;
+        }
+        return (freeDiskSpaceBytes != null && remainingBytes > freeDiskSpaceBytes)
+            || (freeIncompleteDiskSpaceBytes != null && remainingBytes > freeIncompleteDiskSpaceBytes);
     }
 
     public String getDownloadingTitleRemainingTimeFormatted() {

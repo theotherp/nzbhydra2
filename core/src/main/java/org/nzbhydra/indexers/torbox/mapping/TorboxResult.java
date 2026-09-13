@@ -4,13 +4,12 @@ package org.nzbhydra.indexers.torbox.mapping;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import lombok.Data;
 import org.nzbhydra.springnative.ReflectionMarker;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
 import java.util.List;
 
 @Data
@@ -46,10 +45,10 @@ public class TorboxResult {
     private String nzb;
     private String age;
 
-    public static class TorboxResultTypeDeserializer extends JsonDeserializer<TorboxResultType> {
+    public static class TorboxResultTypeDeserializer extends ValueDeserializer<TorboxResultType> {
         @Override
-        public TorboxResultType deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            String value = p.getText().toUpperCase();
+        public TorboxResultType deserialize(JsonParser p, DeserializationContext ctxt) {
+            String value = p.getString().toUpperCase();
 
             return TorboxResultType.valueOf(value);
         }

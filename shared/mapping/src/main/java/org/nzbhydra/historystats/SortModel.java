@@ -11,6 +11,6 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @NoArgsConstructor
 public class SortModel {
     private String column;
-    private int sortMode;
+    private Integer sortMode;
 
 }

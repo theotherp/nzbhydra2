@@ -1,265 +1,928 @@
-import {expect, test} from "@playwright/test";
+import {APIRequestContext, Locator, Page, Response} from "@playwright/test";
+
+import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
+import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+
+type Json = Record<string, unknown>;
+
+const TEST_TOOL_PREFIX = "UI System Test";
+const LIST = "externalTools-externalTools";
+const DIALOG = "config-external-tool-dialog";
+const DRAFT = "config-input-externalTools-externalToolDraft";
+const DIALOG_TITLE = "External Tool Configuration";
+/** Reachable but not an *arr instance, so the backend's test fails quickly. */
+const BROKEN_URL = `${testEnvironment.mockserverInternalUrl}/definitely-not-sonarr`;
+
+/**
+ * `AddRequest`'s ten `boolean` primitives. A flag the UI dropped would silently
+ * disable a feature in the *arr instance being written to, so every request
+ * this tab sends is checked for all of them.
+ */
+const addRequestBooleans = [
+    "configureForUsenet",
+    "configureForTorrents",
+    "enableRss",
+    "enableAutomaticSearch",
+    "enableInteractiveSearch",
+    "removeYearFromSearchString",
+    "addUsenet",
+    "addTorrent",
+    "addDisabledIndexers",
+    "useHydraPriorities",
+];
 
 test.describe("External Tools Configuration", () => {
-    test.beforeEach(async ({page}) => {
-        // Navigate to the config page
-        await page.goto("/");
-        // Wait for the page to load
-        await page.waitForLoadState("networkidle");
+    test.beforeEach(async ({page, hydra}) => {
+        await hydra.configureMockIndexers(["1", "2", "3"]);
+        await hydra.assertUniqueIndexerCredentials();
+        const config = await hydra.getConfig();
+        config.externalTools = {syncOnConfigChange: false, externalTools: []};
+        await hydra.saveConfig(config);
+        await openExternalTools(page);
     });
 
-    test("should display External Tools tab in configuration", async ({page}) => {
-        // Navigate to config page
-        await page.click("a[href=\"/config/main\"]");
-        await page.waitForSelector(".nav-tabs");
+    test.afterEach(async ({request}) => {
+        const results = await Promise.allSettled([
+            deleteTestOwnedIndexers(request, testEnvironment.sonarrExternalUrl),
+            deleteTestOwnedIndexers(request, testEnvironment.radarrExternalUrl),
+        ]);
+        const failures = results.filter(
+            (result): result is PromiseRejectedResult =>
+                result.status === "rejected",
+        );
+        expect(
+            failures.map((failure) => String(failure.reason)),
+            "External-tool cleanup failures",
+        ).toEqual([]);
+    });
 
-        // Check that External Tools tab exists
-        await expect(page.locator(".nav-tabs").locator("text=External Tools")).toBeVisible();
+    test("should display External Tools tab in configuration", async ({
+        page,
+    }) => {
+        await page.goto("/config/main");
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("config-shell")).toBeVisible();
+
+        await expect(page.getByTestId("config-tab-externalTools")).toHaveText(
+            "External Tools",
+        );
     });
 
     test("should navigate to External Tools configuration", async ({page}) => {
-        // Navigate to External Tools config
-        await page.goto("/config/externalTools");
-        await page.waitForLoadState("networkidle");
-
-        // Check that the sync settings are visible
-        await expect(page.locator(".bootstrap-switch-id-formly_1_horizontalSwitch_syncOnConfigChange_0")).toBeVisible();
-
-        // Check that the "Add external tool" button is present
-        await expect(page.locator("button:has-text(\"Add external tool\")")).toBeVisible();
+        await expect(syncOnConfigChange(page)).toBeVisible();
+        await expect(page.getByTestId(`config-repeat-add-${LIST}`)).toHaveText(
+            /Add external tool/,
+        );
+        await expect(
+            page.getByTestId("config-external-tools-sync-all"),
+        ).toHaveText(/Sync all now/i);
     });
 
-    test("should show empty state when no external tools configured", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector(".form-horizontal");
-
-        // Check that empty state message is shown
-        await expect(page.locator("text=No external tools configured")).toBeVisible();
+    test("should show empty state when no external tools configured", async ({
+        page,
+    }) => {
+        await expect(
+            page.getByRole("heading", {name: "No external tools configured"}),
+        ).toBeVisible();
     });
 
-    test("should open external tool configuration modal with presets", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+    test("should open external tool configuration modal with presets", async ({
+        page,
+    }) => {
+        await page.getByTestId(`config-repeat-add-${LIST}`).click();
 
-        // Click the dropdown button
-        await page.click("button:has-text(\"Add external tool\")");
-
-        // Check that preset options are available in the dropdown menu
-        await expect(page.locator(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Sonarr\")")).toBeVisible();
-        await expect(page.locator(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Radarr\")")).toBeVisible();
-        await expect(page.locator(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Lidarr\")")).toBeVisible();
-        await expect(page.locator(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Readarr\")")).toBeVisible();
-        await expect(page.locator(".dropdown-menu a[ng-click=\"addEntry(model.externalTools)\"]:has-text(\"Custom\")")).toBeVisible();
+        for (const [preset, label] of [
+            ["SONARR", "Sonarr"],
+            ["RADARR", "Radarr"],
+            ["LIDARR", "Lidarr"],
+            ["READARR", "Readarr"],
+            ["CUSTOM", "Custom"],
+        ]) {
+            await expect(
+                page.getByTestId(`config-repeat-add-option-${LIST}-${preset}`),
+            ).toHaveText(label);
+        }
     });
 
     test("should open Sonarr preset configuration modal", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+        await openPreset(page, "SONARR");
 
-        // Click dropdown and select Sonarr
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Sonarr\")");
+        await expect(
+            page.getByRole("heading", {name: DIALOG_TITLE}),
+        ).toBeVisible();
+        await expect(draftField(page, "name")).toHaveValue("Sonarr");
+        await expect(draftField(page, "host")).toHaveValue(
+            "http://localhost:8989",
+        );
+        await expect(draftField(page, "categories")).toHaveValue("5030,5040");
+        await expect(draftField(page, "nzbhydraName")).toHaveValue("NZBHydra2");
+        await expect(draftSwitch(page, "Enabled")).toBeChecked();
+        await expect(draftSwitch(page, "Configure for Usenet")).toBeChecked();
+        await expect(draftSwitch(page, "Enable RSS")).toBeChecked();
+        await expect(
+            draftSwitch(page, "Enable automatic search"),
+        ).toBeChecked();
+        await expect(
+            draftSwitch(page, "Enable interactive search"),
+        ).toBeChecked();
+        // Sonarr's own advanced field, and none of the other types'.
+        await expect(draftField(page, "animeCategories")).toBeVisible();
+        await expect(
+            page.getByTestId(`${DRAFT}-removeYearFromSearchString`),
+        ).toBeHidden();
 
-        // Wait for modal to open
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-
-        // Check that the modal is opened with Sonarr preset values
-        await expect(page.locator(".modal-title")).toContainText("External Tool Configuration");
-        await expect(page.locator("input[id*=\"name\"]")).toHaveValue("Sonarr");
-        await expect(page.locator("input[id*=\"host\"]")).toHaveValue("http://localhost:8989");
-        await expect(page.locator("input[id*=\"categories\"]")).toHaveValue("5030,5040");
-
-        // Check that switches are in correct state
-        await expect(page.locator("input[id*=\"enabled\"]")).toBeChecked();
-        await expect(page.locator("input[id*=\"configureForUsenet\"]")).toBeChecked();
-        await expect(page.locator("input[id*=\"enableRss\"]")).toBeChecked();
-        await expect(page.locator("input[id*=\"enableAutomaticSearch\"]")).toBeChecked();
-        await expect(page.locator("input[id*=\"enableInteractiveSearch\"]")).toBeChecked();
-
-        // Close modal
-        await page.click("button:has-text(\"Cancel\")");
+        await closeModal(page);
     });
 
-    test("should validate required fields in external tool configuration", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+    test("should validate required fields in external tool configuration", async ({
+        page,
+    }) => {
+        await openPreset(page, "CUSTOM");
+        await draftField(page, "name").fill("");
+        await draftField(page, "host").fill("");
+        await page.getByTestId(`${DIALOG}-submit`).click();
 
-        // Open custom configuration
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click("a:has-text(\"Custom\")");
-
-        // Wait for modal
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-
-        // Clear required fields
-        await page.fill("input[id*=\"name\"]", "");
-        await page.fill("input[id*=\"host\"]", "");
-
-        // Try to submit
-        await page.click("button:has-text(\"OK\")");
-
-        // Check that validation errors are shown
-        await expect(page.locator(".has-error").first()).toBeVisible();
-
-        // Close modal
-        await page.click("button:has-text(\"Cancel\")");
+        await expect(
+            page.getByTestId(
+                "config-error-externalTools-externalToolDraft-name",
+            ),
+        ).toHaveText("This field is required");
+        await expect(
+            page.getByTestId(
+                "config-error-externalTools-externalToolDraft-host",
+            ),
+        ).toHaveText("This field is required");
+        await expect(
+            page.getByText("Config invalid. Please check your settings."),
+        ).toBeVisible();
+        await expect(page.getByTestId(DIALOG)).toBeVisible();
     });
 
-    test("should save external tool configuration", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+    test("should save external tool configuration", async ({hydra, page}) => {
+        await addRadarr(page, "UI System Test Radarr Save");
+        await saveConfiguration(page, hydra, "UI System Test Radarr Save");
 
-        // Open Radarr preset
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Radarr\")");
-
-        // Wait for modal
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-
-        // Fill in API key
-        await page.fill("input[id*=\"apiKey\"]", "766c3461d6fe44cf83cea3e3c16b5428");
-
-        // Submit form
-        await page.click("button:has-text(\"OK\")");
-
-        // Wait for modal to close and tool to appear in list
-        await page.waitForSelector(".btn:has-text(\"Radarr (RADARR)\")");
-
-        // Wait for the form to stabilize before saving
-        await page.waitForTimeout(1000);
-
-        // Save the configuration to persist the changes
-        await page.click("button:has-text(\"Save\")", {force: true});
-
-        // Check that the tool appears in the list
-        await expect(page.locator(".btn:has-text(\"Radarr (RADARR)\")")).toBeVisible();
-        await expect(page.locator("text=http://localhost:7878")).toBeVisible();
-
-        // Check that delete button is present
-        await expect(page.locator(".btn-danger .glyphicon-remove")).toBeVisible();
+        await expect(
+            page.getByTestId(`config-repeat-entry-${LIST}-0`),
+        ).toContainText("UI System Test Radarr Save");
+        await expect(
+            page.getByTestId("config-external-tool-value-0-host"),
+        ).toHaveText(testEnvironment.radarrInternalUrl);
+        await expect(
+            page.getByTestId("config-external-tool-value-0-type"),
+        ).toHaveText("RADARR");
+        await expect(
+            page.getByTestId(`config-repeat-remove-${LIST}-0`),
+        ).toBeVisible();
     });
 
     test("should test connection to external tool", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+        await openPreset(page, "SONARR");
+        await draftField(page, "host").fill(testEnvironment.sonarrInternalUrl);
+        await draftField(page, "apiKey").fill(testEnvironment.sonarrApiKey);
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        await page.getByTestId(`${DIALOG}-test`).click();
 
-        // Open Sonarr preset
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Sonarr\")");
-
-        // Wait for modal
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-
-        // Fill in API key
-        await page.fill("input[id*=\"apiKey\"]", "52a631c9cab346bca59c32bfffdd2669");
-
-        // Click test connection button
-        await page.click("button:has-text(\"Test connection\")");
-
-        // Wait for response (should show error since we're not actually running Sonarr)
-        await page.waitForSelector(".growl-message", {timeout: 10000});
-
-        // Close modal
-        await page.click("button:has-text(\"Cancel\")");
+        const response = await connectionResponse;
+        await expectConnectionSuccess(response);
+        expectCompleteAddRequest(response);
+        // A test must never write: legacy's add type for it is DELETE_ONLY.
+        expect(addRequestOf(response).addType).toBe("DELETE_ONLY");
+        await expect(
+            page.getByText("Connection test successful"),
+        ).toBeVisible();
+        await expect(page.getByTestId(DIALOG)).toBeVisible();
     });
 
-    test("should trigger manual sync all", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Sync All Now\")");
+    test("should report a failed connection test without closing the dialog", async ({
+        page,
+    }) => {
+        await openPreset(page, "SONARR");
+        await draftField(page, "host").fill(BROKEN_URL);
+        await draftField(page, "apiKey").fill(testEnvironment.sonarrApiKey);
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        await page.getByTestId(`${DIALOG}-test`).click();
 
-        // Click sync all button
-        await page.click("button:has-text(\"Sync All Now\")");
+        const result = (await (await connectionResponse).json()) as {
+            successful?: boolean;
+        };
+        expect(result.successful).toBe(false);
+        await expect(page.getByText(/^Connection test failed: /)).toBeVisible();
+        await expect(page.getByTestId(DIALOG)).toBeVisible();
+    });
 
-        // Wait for notification (should show some message about sync)
-        await page.waitForSelector(".growl-message", {timeout: 5000});
+    test("should refuse to submit an entry whose connection fails", async ({
+        hydra,
+        page,
+    }) => {
+        await openPreset(page, "SONARR");
+        await draftField(page, "name").fill("UI System Test Sonarr Refused");
+        await draftField(page, "nzbhydraName").fill(
+            "UI System Test Sonarr Refused",
+        );
+        await draftField(page, "host").fill(BROKEN_URL);
+        await draftField(page, "apiKey").fill(testEnvironment.sonarrApiKey);
+        await draftField(page, "nzbhydraHost").fill(
+            testEnvironment.hydraExternalUrl,
+        );
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        await page.getByTestId(`${DIALOG}-submit`).click();
 
-        // Should show a message about syncing (even if no tools configured)
-        await expect(page.locator(".growl-message").first()).toBeVisible();
+        expect((await connectionResponse).status()).toBe(200);
+        await expect(page.getByText(/^Connection test failed: /)).toBeVisible();
+        // The dialog stays open, the tool was never configured, and nothing
+        // reached the configuration form.
+        await expect(page.getByTestId(DIALOG)).toBeVisible();
+        await expect(
+            page.getByTestId(`config-repeat-entry-${LIST}-0`),
+        ).toBeHidden();
+        expect(
+            externalToolsOf((await hydra.getConfig()) as Json),
+            "a refused entry must not reach the configuration",
+        ).toEqual([]);
+    });
+
+    /**
+     * FM-070: a cleared "Minimum seeders" configures the tool with the
+     * documented default of 1. Only the torznab branch reads the value, and
+     * add type `Single` is the only way to reach it here - every mock indexer
+     * the fixture configures is newznab, so a per-indexer torrent sync would
+     * have no indexer to write at all.
+     *
+     * This case passes against the pre-fix jar too, and deliberately so: it
+     * pins the *result*, which two independent layers now guarantee. Over HTTP
+     * the empty string never even reaches `ExternalTools:266`, because
+     * `WebConfiguration`'s mapper deserializes "" to null
+     * (`EmptyStringToNullDeserializer`); `parseMinimumSeeders` is what keeps
+     * the answer 1 when the same value arrives from the stored configuration
+     * instead, which the automatic sync does in Java. The case below is the
+     * one that reproduced the defect through the browser.
+     */
+    test("should configure a torrent entry whose minimum seeders is cleared", async ({
+        page,
+    }) => {
+        const name = "UI System Test Radarr Torrent";
+        await openPreset(page, "RADARR");
+        await draftField(page, "name").fill(name);
+        await draftField(page, "nzbhydraName").fill(name);
+        await draftField(page, "host").fill(testEnvironment.radarrInternalUrl);
+        await draftField(page, "apiKey").fill(testEnvironment.radarrApiKey);
+        await draftField(page, "nzbhydraHost").fill(
+            testEnvironment.hydraExternalUrl,
+        );
+        await chooseDraftOption(
+            page,
+            "Sync Type",
+            "Single entry for all indexers",
+        );
+        await draftSwitch(page, "Configure for Usenet").setChecked(false);
+        await draftSwitch(page, "Configure for Torrents").setChecked(true);
+        const minimumSeeders = draftField(page, "minimumSeeders");
+        await minimumSeeders.fill("2");
+        await minimumSeeders.fill("");
+        await expect(minimumSeeders).toHaveValue("");
+
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        const configureResponse = waitForExternalResponse(page, "configure");
+        await page.getByTestId(`${DIALOG}-submit`).click();
+        await expectConnectionSuccess(await connectionResponse);
+        const configure = await configureResponse;
+
+        // The cleared field really does leave the browser as an empty string,
+        // and it is the torznab branch that received it.
+        expect(addRequestOf(configure).minimumSeeders).toBe("");
+        expect(addRequestOf(configure).addType).toBe("SINGLE");
+        expect(addRequestOf(configure).configureForTorrents).toBe(true);
+        expect(addRequestOf(configure).configureForUsenet).toBe(false);
+        expect(
+            await configure.json(),
+            `External-tool configuration failed: ${await externalToolsMessages(page)}`,
+        ).toBe(true);
+        await expect(
+            page.getByTestId(DIALOG),
+            await externalToolsMessages(page),
+        ).toBeHidden();
+        expect(await externalToolsMessages(page)).not.toContain(
+            "For input string",
+        );
+
+        // What Radarr actually holds now: a torznab entry whose blank
+        // "Minimum seeders" became the documented default of 1.
+        const created = await getArrIndexerByName(
+            page.request,
+            testEnvironment.radarrExternalUrl,
+            name,
+        );
+        expect(created.configContract).toBe("TorznabSettings");
+        expect(created.protocol).toBe("torrent");
+        expect(arrIndexerField(created, "minimumSeeders")).toBe(1);
+    });
+
+    /**
+     * FM-070, and the case that actually reproduced the defect against the
+     * pre-fix jar: `mapCategories` split on "," and parsed each token raw, so
+     * the space in "2000, 5000" - the way a list is written by hand, and the
+     * shape legacy accepted without comment - threw inside `Integer.parseInt`
+     * and made `configure` answer `false` with `Unexpected error: For input
+     * string: " 5000"`. A *cleared* "Minimum seeders" cannot reproduce it over
+     * HTTP: `WebConfiguration`'s mapper deserializes "" to null
+     * (`EmptyStringToNullDeserializer`), so the empty string never reaches
+     * `ExternalTools:266`. Only a value that survives deserialization does -
+     * this one, a blank one, or a non-numeric one, all of which the JVM tests
+     * drive through the sync service's shape.
+     */
+    test("should configure an entry whose categories carry spacing", async ({
+        page,
+    }) => {
+        const name = "UI System Test Radarr Categories";
+        await openPreset(page, "RADARR");
+        await draftField(page, "name").fill(name);
+        await draftField(page, "nzbhydraName").fill(name);
+        await draftField(page, "host").fill(testEnvironment.radarrInternalUrl);
+        await draftField(page, "apiKey").fill(testEnvironment.radarrApiKey);
+        await draftField(page, "nzbhydraHost").fill(
+            testEnvironment.hydraExternalUrl,
+        );
+        await chooseDraftOption(
+            page,
+            "Sync Type",
+            "Single entry for all indexers",
+        );
+        await draftField(page, "categories").fill("2000, 5000");
+
+        const connectionResponse = waitForExternalResponse(
+            page,
+            "testConnection",
+        );
+        const configureResponse = waitForExternalResponse(page, "configure");
+        await page.getByTestId(`${DIALOG}-submit`).click();
+        await expectConnectionSuccess(await connectionResponse);
+        const configure = await configureResponse;
+
+        expect(addRequestOf(configure).categories).toBe("2000, 5000");
+        expect(
+            await configure.json(),
+            `External-tool configuration failed: ${await externalToolsMessages(page)}`,
+        ).toBe(true);
+        expect(await externalToolsMessages(page)).not.toContain(
+            "For input string",
+        );
+
+        const created = await getArrIndexerByName(
+            page.request,
+            testEnvironment.radarrExternalUrl,
+            name,
+        );
+        expect(arrIndexerField(created, "categories")).toEqual([2000, 5000]);
+    });
+
+    test("should trigger manual sync all", async ({hydra, page}) => {
+        await syncOnConfigChange(page).setChecked(true);
+        await expect(syncOnConfigChange(page)).toBeChecked();
+        await addRadarr(page, "UI System Test Radarr Sync");
+        await saveConfiguration(page, hydra, "UI System Test Radarr Sync");
+        const syncResponse = waitForExternalResponse(page, "syncAll");
+        await page.getByTestId("config-external-tools-sync-all").click();
+
+        const syncResult = (await (await syncResponse).json()) as {
+            successCount?: number;
+            failureCount?: number;
+        };
+        expect(
+            syncResult.failureCount,
+            `External-tools sync failed: ${JSON.stringify(syncResult)}`,
+        ).toBe(0);
+        expect(
+            syncResult.successCount,
+            `External-tools sync did not configure a tool: ${JSON.stringify(syncResult)}`,
+        ).toBeGreaterThan(0);
+        await expect(
+            page.getByText(
+                `Successfully synced to ${syncResult.successCount} external tool(s)`,
+            ),
+        ).toBeVisible();
+        await expectTestOwnedIndexer(
+            page.request,
+            testEnvironment.radarrExternalUrl,
+        );
     });
 
     test("should toggle sync on config change setting", async ({page}) => {
-        await page.goto("/config/externalTools");
-        await page.waitForSelector(".bootstrap-switch-id-formly_1_horizontalSwitch_syncOnConfigChange_0");
+        const setting = syncOnConfigChange(page);
+        const wasChecked = await setting.isChecked();
+        await setting.setChecked(!wasChecked);
 
-        // Get current state from the hidden checkbox
-        const isChecked = await page.locator("input#formly_1_horizontalSwitch_syncOnConfigChange_0").isChecked();
-
-        // Toggle by clicking the bootstrap switch wrapper
-        await page.click(".bootstrap-switch-id-formly_1_horizontalSwitch_syncOnConfigChange_0");
-
-        // Verify state changed
-        const newState = await page.locator("input#formly_1_horizontalSwitch_syncOnConfigChange_0").isChecked();
-        expect(newState).toBe(!isChecked);
+        await expect(setting).toBeChecked({checked: !wasChecked});
     });
 
-    test("should edit existing external tool", async ({page}) => {
-        // First add a tool
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+    test("should edit existing external tool", async ({hydra, page}) => {
+        await addRadarr(page, "UI System Test Radarr Edit");
+        await saveConfiguration(page, hydra, "UI System Test Radarr Edit");
+        await page.getByTestId(`config-repeat-edit-${LIST}-0`).click();
+        await expect(page.getByTestId(DIALOG)).toBeVisible();
+        await expect(page.getByTestId(`${DIALOG}-delete`)).toBeVisible();
+        await draftField(page, "name").fill("UI System Test Radarr Edited");
+        // Nothing connection-relevant changed, so legacy configures without
+        // testing again.
+        await submitModal(page, false);
+        await saveConfiguration(page, hydra, "UI System Test Radarr Edited");
 
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Radarr\")");
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-        await page.fill("input[id*=\"apiKey\"]", "766c3461d6fe44cf83cea3e3c16b5428");
-        await page.click("button:has-text(\"OK\")");
-
-        // Wait for tool to appear
-        await page.waitForSelector(".btn:has-text(\"Radarr (RADARR)\")");
-
-        // Save the configuration first
-        await page.click("button:has-text(\"Save\")", {force: true});
-
-        // Click on the tool to edit it
-        await page.click(".btn:has-text(\"Radarr (RADARR)\")");
-
-        // Wait for modal to open in edit mode
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-
-        // Check that delete button is present (indicates edit mode)
-        await expect(page.locator("button:has-text(\"Delete\")")).toBeVisible();
-
-        // Modify the name
-        await page.fill("input[id*=\"name\"]", "My Radarr Instance");
-
-        // Save changes
-        await page.click("button:has-text(\"OK\")");
-
-        // Save the configuration again
-        await page.click("button:has-text(\"Save\")", {force: true});
-
-        // Verify the name changed
-        await page.waitForSelector(".btn:has-text(\"My Radarr Instance (RADARR)\")");
-        await expect(page.locator(".btn:has-text(\"My Radarr Instance (RADARR)\")")).toBeVisible();
+        await expect(
+            page.getByTestId(`config-repeat-entry-${LIST}-0`),
+        ).toContainText("UI System Test Radarr Edited");
     });
 
-    test("should delete external tool", async ({page}) => {
-        // First add a tool
-        await page.goto("/config/externalTools");
-        await page.waitForSelector("button:has-text(\"Add external tool\")");
+    test("should delete external tool", async ({hydra, page}) => {
+        await addRadarr(page, "UI System Test Radarr Delete");
+        await saveConfiguration(page, hydra, "UI System Test Radarr Delete");
+        await page.getByTestId(`config-repeat-remove-${LIST}-0`).click();
+        await saveConfiguration(page, hydra);
 
-        await page.click("button:has-text(\"Add external tool\")");
-        await page.click(".dropdown-menu a[ng-click=\"addEntry(model.externalTools, preset)\"]:has-text(\"Radarr\")");
-        await page.waitForSelector(".modal-title:has-text(\"External Tool Configuration\")");
-        await page.fill("input[id*=\"apiKey\"]", "766c3461d6fe44cf83cea3e3c16b5428");
-        await page.click("button:has-text(\"OK\")");
+        await expect(
+            page.getByTestId(`config-repeat-entry-${LIST}-0`),
+        ).toBeHidden();
+        await expect(
+            page.getByRole("heading", {name: "No external tools configured"}),
+        ).toBeVisible();
+        expect(externalToolsOf((await hydra.getConfig()) as Json)).toEqual([]);
+    });
 
-        // Wait for tool to appear
-        await page.waitForSelector(".btn:has-text(\"Radarr (RADARR)\")");
+    test("should persist the complete entry the dialog committed", async ({
+        hydra,
+        page,
+    }) => {
+        await addRadarr(page, "UI System Test Radarr Persist");
+        await saveConfiguration(page, hydra, "UI System Test Radarr Persist");
 
-        // Save the configuration first
-        await page.click("button:has-text(\"Save\")", {force: true});
+        const tools = externalToolsOf((await hydra.getConfig()) as Json);
+        expect(tools).toHaveLength(1);
+        expect(tools[0]).toMatchObject({
+            addDisabledIndexers: false,
+            apiKey: testEnvironment.radarrApiKey,
+            categories: "2000",
+            configureForTorrents: false,
+            configureForUsenet: true,
+            enableAutomaticSearch: true,
+            enableInteractiveSearch: true,
+            enableRss: true,
+            enabled: true,
+            host: testEnvironment.radarrInternalUrl,
+            name: "UI System Test Radarr Persist",
+            nzbhydraHost: testEnvironment.hydraExternalUrl,
+            nzbhydraName: "UI System Test Radarr Persist",
+            priority: 25,
+            removeYearFromSearchString: false,
+            syncType: "PER_INDEXER",
+            type: "RADARR",
+            useHydraPriorities: true,
+        });
 
-        // Wait for save to complete
-        await page.waitForTimeout(2000);
-
-        // Click delete button
-        await page.click(".btn-danger .glyphicon-remove", {force: true});
-
-        // Save the configuration after deletion
-        await page.click("button:has-text(\"Save\")", {force: true});
-
-        // Verify tool is removed from list
-        await expect(page.locator(".btn:has-text(\"Radarr (RADARR)\")")).not.toBeVisible();
-        await expect(page.locator("text=No external tools configured")).toBeVisible();
+        // A full document load proves the entry was persisted rather than only
+        // held in the form.
+        await page.reload();
+        await dismissWelcomeDialog(page);
+        await expect(page.getByTestId("config-external-tools")).toBeVisible();
+        await expect(
+            page.getByTestId(`config-repeat-entry-${LIST}-0`),
+        ).toContainText("UI System Test Radarr Persist");
     });
 });
+
+test.describe("External tools visual evidence", () => {
+    for (const viewport of ["desktop", "mobile"] as const) {
+        test(`should capture the External Tools tab states at ${viewport}`, async ({
+            hydra,
+            page,
+        }) => {
+            const before = (await hydra.getConfig()) as Json;
+            await hydra.saveConfig({
+                ...before,
+                externalTools: {syncOnConfigChange: false, externalTools: []},
+            });
+
+            await prepareVisualEvidence(page, viewport, async () => {
+                await openExternalTools(page);
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-empty-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            await hydra.saveConfig({
+                ...before,
+                externalTools: {
+                    syncOnConfigChange: true,
+                    externalTools: [
+                        configuredTool(
+                            "UI System Test Radarr",
+                            "RADARR",
+                            testEnvironment.radarrInternalUrl,
+                            testEnvironment.radarrApiKey,
+                        ),
+                        configuredTool(
+                            "UI System Test Sonarr",
+                            "SONARR",
+                            testEnvironment.sonarrInternalUrl,
+                            testEnvironment.sonarrApiKey,
+                        ),
+                    ],
+                },
+            });
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.reload();
+                await dismissWelcomeDialog(page);
+                await expect(
+                    page.getByTestId("config-external-tools"),
+                ).toBeVisible();
+                await showAdvanced(page);
+                await expect(
+                    page.getByTestId(`config-repeat-entry-${LIST}-1`),
+                ).toBeVisible();
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-two-tools-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            await page.getByTestId(`config-repeat-edit-${LIST}-0`).click();
+            await expect(page.getByTestId(DIALOG)).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-dialog-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            await draftField(page, "host").fill(BROKEN_URL);
+            const failedTest = waitForExternalResponse(page, "testConnection");
+            await page.getByTestId(`${DIALOG}-test`).click();
+            await failedTest;
+            await expect(
+                page.getByText(/^Connection test failed: /),
+            ).toBeVisible();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-connection-failed-${viewport}`,
+                ),
+            });
+
+            // FM-070: the rejected "Minimum seeders". Nothing is sent, so this
+            // state needs no reachable tool - the dialog's own validation stops
+            // the submit and names the field.
+            await draftSwitch(page, "Configure for Torrents").setChecked(true);
+            await draftField(page, "minimumSeeders").fill("abc");
+            await page.getByTestId(`${DIALOG}-submit`).click();
+            const seedersError = page.getByTestId(
+                "config-error-externalTools-externalToolDraft-minimumSeeders",
+            );
+            await expect(seedersError).toHaveText("abc is not a whole number");
+            await seedersError.scrollIntoViewIfNeeded();
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-CONFIG-EXTERNAL-TOOLS",
+                    `external-tools-invalid-seeders-${viewport}`,
+                ),
+            });
+        });
+    }
+});
+
+function externalToolsOf(config: Json): Json[] {
+    return ((config.externalTools as Json | undefined)?.externalTools ??
+        []) as Json[];
+}
+
+function configuredTool(
+    name: string,
+    type: string,
+    host: string,
+    apiKey: string,
+): Json {
+    return {
+        addDisabledIndexers: false,
+        apiKey,
+        categories: type === "RADARR" ? "2000" : "5030,5040",
+        configureForTorrents: false,
+        configureForUsenet: true,
+        enableAutomaticSearch: true,
+        enableInteractiveSearch: true,
+        enableRss: true,
+        enabled: true,
+        host,
+        name,
+        nzbhydraHost: testEnvironment.hydraExternalUrl,
+        nzbhydraName: name,
+        priority: 25,
+        removeYearFromSearchString: false,
+        syncType: "PER_INDEXER",
+        type,
+        useHydraPriorities: true,
+    };
+}
+
+async function openExternalTools(page: Page): Promise<void> {
+    await page.goto("/config/externalTools");
+    await dismissWelcomeDialog(page);
+    await expect(page.getByTestId("config-shell")).toBeVisible();
+    await expect(page.getByTestId("config-external-tools")).toBeVisible();
+    await showAdvanced(page);
+}
+
+/**
+ * Legacy gates several of this tab's fields (categories, the seeding options,
+ * the additional parameters) behind the advanced toggle, which is a
+ * per-browser `localStorage` preference the `page` fixture clears on every
+ * document load — so it has to be switched on again after a reload.
+ */
+async function showAdvanced(page: Page): Promise<void> {
+    // FM-097: below `md` the settings nav is a temporary `Drawer`, so the
+    // advanced toggle at its foot is only mounted while that drawer is open
+    // (`RefineSidebar.tsx:97-101`: exactly one copy, never a duplicated
+    // testid). `config-nav-open` is rendered only below `md`, so this branch
+    // is inert at desktop viewports, and the drawer is closed again below so
+    // the page is left in exactly the state this helper always left it in.
+    const navOpen = page.getByTestId("config-nav-open");
+    const inDrawer = await navOpen.isVisible();
+    if (inDrawer) {
+        await navOpen.click();
+        await expect(page.getByTestId("config-nav")).toBeVisible();
+    }
+    const toggle = page.getByRole("switch", {name: "Advanced settings"});
+    await toggle.setChecked(true);
+    await expect(toggle).toBeChecked();
+    if (inDrawer) {
+        await page.keyboard.press("Escape");
+        await expect(page.getByTestId("config-nav")).toBeHidden();
+    }
+}
+
+function syncOnConfigChange(page: Page): Locator {
+    return page
+        .getByTestId("config-setting-externalTools-syncOnConfigChange")
+        .getByRole("switch");
+}
+
+function addRequestOf(response: Response): Record<string, unknown> {
+    return response.request().postDataJSON() as Record<string, unknown>;
+}
+
+function draftField(page: Page, field: string): Locator {
+    return page.getByTestId(`${DRAFT}-${field}`);
+}
+
+function draftSwitch(page: Page, label: string): Locator {
+    return page.getByRole("dialog").getByRole("switch", {name: label});
+}
+
+/** Picks an option in one of the dialog's MUI selects. */
+async function chooseDraftOption(
+    page: Page,
+    label: string,
+    option: string,
+): Promise<void> {
+    await page.getByRole("dialog").getByRole("combobox", {name: label}).click();
+    await page.getByRole("option", {name: option}).click();
+}
+
+async function openPreset(page: Page, preset: string): Promise<void> {
+    await page.getByTestId(`config-repeat-add-${LIST}`).click();
+    await page
+        .getByTestId(`config-repeat-add-option-${LIST}-${preset}`)
+        .click();
+    await expect(page.getByRole("heading", {name: DIALOG_TITLE})).toBeVisible();
+}
+
+async function addRadarr(page: Page, name: string): Promise<void> {
+    await openPreset(page, "RADARR");
+    await draftField(page, "name").fill(name);
+    await draftField(page, "nzbhydraName").fill(name);
+    await draftField(page, "host").fill(testEnvironment.radarrInternalUrl);
+    await draftField(page, "apiKey").fill(testEnvironment.radarrApiKey);
+    await draftField(page, "nzbhydraHost").fill(
+        testEnvironment.hydraExternalUrl,
+    );
+    await submitModal(page, true);
+    await expect(
+        page.getByTestId(`config-repeat-entry-${LIST}-0`),
+    ).toContainText(name);
+}
+
+async function closeModal(page: Page): Promise<void> {
+    await page.getByTestId(`${DIALOG}-cancel`).click();
+    await expect(page.getByTestId(DIALOG)).toBeHidden();
+}
+
+/**
+ * Submits the edit dialog and asserts legacy's order: the connection is tested
+ * first when the entry is new or its connection settings changed, and the
+ * dialog only closes once `configure` answered `true`.
+ */
+async function submitModal(
+    page: Page,
+    expectConnection: boolean,
+): Promise<void> {
+    const connectionResponse = expectConnection
+        ? waitForExternalResponse(page, "testConnection")
+        : undefined;
+    const configureResponse = waitForExternalResponse(page, "configure");
+    await page.getByTestId(`${DIALOG}-submit`).click();
+    if (connectionResponse) {
+        await expectConnectionSuccess(await connectionResponse);
+    }
+    const configure = await configureResponse;
+    expect(
+        await configure.json(),
+        `External-tool configuration failed: ${await externalToolsMessages(page)}`,
+    ).toBe(true);
+    expectCompleteAddRequest(configure);
+    expect(addRequestOf(configure).addType).toBe("PER_INDEXER");
+    await expect(
+        page.getByTestId(DIALOG),
+        await externalToolsMessages(page),
+    ).toBeHidden();
+}
+
+async function saveConfiguration(
+    page: Page,
+    hydra: {
+        getConfig(): Promise<Record<string, unknown>>;
+    },
+    expectedName?: string,
+): Promise<void> {
+    const saved = page.waitForResponse(
+        (response) =>
+            response.request().method() === "PUT" &&
+            new URL(response.url()).pathname === "/internalapi/config",
+    );
+    await page.getByTestId("config-save").click();
+    const response = await saved;
+    expect(response.status()).toBe(200);
+    const result = (await response.json()) as {
+        ok?: boolean;
+        errorMessages?: string[];
+        newConfig?: Record<string, unknown>;
+    };
+    expect(
+        result.ok,
+        `Configuration validation errors: ${(result.errorMessages || []).join(", ")}`,
+    ).toBe(true);
+    expect(result.errorMessages || []).toEqual([]);
+    expect(
+        result.newConfig,
+        "Configuration save did not return the saved configuration",
+    ).toBeTruthy();
+    // `.last()`, as the other nine assertions of this toast in the suite do:
+    // toasts stack, so a save that follows a recent one leaves two in the DOM
+    // and an unscoped locator is a strict-mode violation rather than a failure
+    // of the thing being tested.
+    await expect(page.getByText("Configuration saved.").last()).toBeVisible();
+    if (expectedName) {
+        const persisted = await hydra.getConfig();
+        const tools = externalToolsOf(persisted as Json);
+        expect(tools.map((tool) => tool.name)).toContain(expectedName);
+    }
+}
+
+function waitForExternalResponse(
+    page: Page,
+    operation: string,
+): Promise<Response> {
+    return page.waitForResponse(
+        (response) =>
+            response.request().method() === "POST" &&
+            new URL(response.url()).pathname ===
+                `/internalapi/externalTools/${operation}`,
+    );
+}
+
+async function expectConnectionSuccess(response: Response): Promise<void> {
+    expect(
+        response.status(),
+        `Connection test failed: ${await response.text()}`,
+    ).toBe(200);
+    const result = (await response.json()) as {
+        successful?: boolean;
+        message?: string;
+    };
+    expect(result.successful, `Connection test failed: ${result.message}`).toBe(
+        true,
+    );
+    expect(result.message).toBe("Connection successful");
+}
+
+function expectCompleteAddRequest(response: Response): void {
+    const requestBody = addRequestOf(response);
+    for (const property of addRequestBooleans) {
+        expect(typeof requestBody[property], property).toBe("boolean");
+    }
+}
+
+async function externalToolsMessages(page: Page): Promise<string> {
+    const response = await page.request.get(
+        "/internalapi/externalTools/messages",
+        {
+            params: {internalApiKey: testEnvironment.hydraInternalApiKey},
+        },
+    );
+    return response.ok()
+        ? JSON.stringify(await response.json())
+        : await response.text();
+}
+
+type ArrIndexer = {id: number; name: string};
+
+/** The same entries, read with the parts `expectTestOwnedIndexer` ignores. */
+type ArrIndexerDetail = {
+    configContract?: string;
+    fields?: {name?: string; value?: unknown}[];
+    name: string;
+    protocol?: string;
+};
+
+async function getArrIndexerByName(
+    request: APIRequestContext,
+    url: string,
+    name: string,
+): Promise<ArrIndexerDetail> {
+    const response = await request.get(`${url}/api/v3/indexer`, {
+        headers: {"X-Api-Key": testEnvironment.radarrApiKey},
+    });
+    expect(
+        response.status(),
+        `Unable to query external-tool indexers: ${await response.text()}`,
+    ).toBe(200);
+    const indexers = (await response.json()) as ArrIndexerDetail[];
+    const match = indexers.find((indexer) => indexer.name === name);
+    expect(
+        match,
+        `No external-tool indexer named "${name}"; found: ${indexers
+            .map((indexer) => indexer.name)
+            .join(", ")}`,
+    ).toBeTruthy();
+    return match as ArrIndexerDetail;
+}
+
+function arrIndexerField(indexer: ArrIndexerDetail, field: string): unknown {
+    return indexer.fields?.find((candidate) => candidate.name === field)?.value;
+}
+
+async function getTestOwnedIndexers(
+    request: APIRequestContext,
+    url: string,
+): Promise<ArrIndexer[]> {
+    const response = await request.get(`${url}/api/v3/indexer`, {
+        headers: {"X-Api-Key": testEnvironment.radarrApiKey},
+    });
+    expect(
+        response.status(),
+        `Unable to query external-tool indexers: ${await response.text()}`,
+    ).toBe(200);
+    return ((await response.json()) as ArrIndexer[]).filter((indexer) =>
+        indexer.name.includes(TEST_TOOL_PREFIX),
+    );
+}
+
+async function expectTestOwnedIndexer(
+    request: APIRequestContext,
+    url: string,
+): Promise<void> {
+    expect(await getTestOwnedIndexers(request, url)).not.toEqual([]);
+}
+
+async function deleteTestOwnedIndexers(
+    request: APIRequestContext,
+    url: string,
+): Promise<void> {
+    for (const indexer of await getTestOwnedIndexers(request, url)) {
+        const response = await request.delete(
+            `${url}/api/v3/indexer/${indexer.id}`,
+            {
+                headers: {"X-Api-Key": testEnvironment.radarrApiKey},
+            },
+        );
+        expect(
+            response.status(),
+            `Unable to delete test-owned external indexer ${indexer.name}: ${await response.text()}`,
+        ).toBe(200);
+    }
+}

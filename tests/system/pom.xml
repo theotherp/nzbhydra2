@@ -16,10 +16,12 @@
     <artifactId>system</artifactId>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <okhttp.version>4.9.3</okhttp.version>
+        <!-- JUnit tags excluded by default; overridden to nothing when -Dgroups=migration selects the migration test. -->
+        <excludedGroups>migration</excludedGroups>
     </properties>
 
     <dependencies>
@@ -27,6 +29,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>3.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -43,36 +50,7 @@
             <artifactId>assertj-core</artifactId>
             <version>3.23.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-oxm</artifactId>
@@ -119,5 +97,46 @@
             <!--            <optional>true</optional>-->
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- The migration test (DatabaseMigrationSystemTest) needs an instance started with the fixture
+                         under instanceData/h2v2Migration and so never runs with the normal suite. Select it with
+                         -Dgroups=migration, which replaces this default exclusion. -->
+                    <excludedGroups>${excludedGroups}</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.2</version>
+                <configuration>
+                    <!-- MigrationFixtureTool: see misc/create_migration_fixture.sh -->
+                    <mainClass>org.nzbhydra.migration.MigrationFixtureTool</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <!-- `mvn test -Dgroups=migration` runs only the migration test: the tag selection alone would still be
+                 cancelled by the default exclusion above, so this profile lifts it. -->
+            <id>migration</id>
+            <activation>
+                <property>
+                    <name>groups</name>
+                    <value>migration</value>
+                </property>
+            </activation>
+            <properties>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

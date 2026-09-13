@@ -17,15 +17,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
-import org.springframework.boot.actuate.web.mappings.servlet.DispatcherServletMappingDescription;
-import org.springframework.boot.actuate.web.mappings.servlet.RequestMappingConditionsDescription;
+import org.springframework.boot.webmvc.actuate.web.mappings.DispatcherServletMappingDescription;
+import org.springframework.boot.webmvc.actuate.web.mappings.RequestMappingConditionsDescription;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,14 +63,14 @@ public class DebugInfosWeb {
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/currentlogfile", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/internalapi/debuginfos/currentlogfile", produces = MediaType.TEXT_PLAIN_VALUE)
     public FileSystemResource getCurrentLogFile() {
         return new FileSystemResource(logContentProvider.getCurrentLogfile(false));
     }
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/downloadlog", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/internalapi/debuginfos/downloadlog", produces = MediaType.TEXT_PLAIN_VALUE)
     public FileSystemResource downloadLogFile(@RequestParam String logfilename) throws IOException {
         if (!logContentProvider.getLogFileNames().contains(logfilename)) {
             throw new IOException("Invalid log file: " + logfilename);
@@ -77,14 +79,57 @@ public class DebugInfosWeb {
         return new FileSystemResource(file);
     }
 
+    /**
+     * Rolls the log files over: the current contents are archived under the
+     * rolling policy's own name pattern and logging continues into a new, empty
+     * file. No UI offers this; it exists for callers that need the current log
+     * to start from a known point without discarding what came before -- the
+     * system tests, whose log-view assertions otherwise read a file that has
+     * grown with everything the suite did before them.
+     */
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/logfilenames", method = RequestMethod.GET)
+    @PutMapping("/internalapi/debuginfos/rotatelog")
+    public GenericResponse rotateLog() {
+        try {
+            final List<String> rotated = logContentProvider.rotate();
+        //Logged after the rollover so the new file is never empty, and so the
+        //rollover itself is accounted for in the log it produced.
+            logger.info("NZBHydra2 rolled over {} log file(s) on request", rotated.size());
+            return GenericResponse.ok(String.join(", ", rotated));
+        } catch (IOException e) {
+            logger.error("Error while rolling the log files over", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
+    /**
+     * Truncates the log files, discarding their contents. Files archived by
+     * earlier rollovers are left alone. As with {@link #rotateLog()} there is
+     * deliberately no UI for this.
+     */
+    @Secured({"ROLE_ADMIN"})
+    @PutMapping("/internalapi/debuginfos/clearlog")
+    public GenericResponse clearLog() {
+        try {
+            final List<String> cleared = logContentProvider.clear();
+            //Logged after the truncation, for the same two reasons as above:
+            //an emptied log still says who emptied it and when.
+            logger.info("NZBHydra2 cleared {} log file(s) on request", cleared.size());
+            return GenericResponse.ok(String.join(", ", cleared));
+        } catch (IOException e) {
+            logger.error("Error while clearing the log files", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @GetMapping("/internalapi/debuginfos/logfilenames")
     public List<String> getLogFilenames() {
         return logContentProvider.getLogFileNames();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/jsonlogs", method = RequestMethod.GET)
+    @GetMapping("/internalapi/debuginfos/jsonlogs")
     public ResponseEntity<JsonLogResponse> logsAsJson(@RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit) {
         try {
             JsonLogResponse jsonObjects = logContentProvider.getLogsAsJsonLines(offset == null ? 0 : offset, limit == null ? 500 : limit);
@@ -96,7 +141,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/createAndProvideZipAsBytes", produces = "application/zip", method = RequestMethod.GET)
+    @GetMapping(value = "/internalapi/debuginfos/createAndProvideZipAsBytes", produces = "application/zip")
     public byte[] createAndProvideDebugInfos() throws IOException {
         try {
             return debugInfos.getDebugInfosAsZip();
@@ -107,7 +152,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/createAndUploadDebugInfos", produces = "text/plain", method = RequestMethod.GET)
+    @GetMapping(value = "/internalapi/debuginfos/createAndUploadDebugInfos", produces = "text/plain")
     public String createAndUploadDebugInfos() throws IOException {
         final File debugInfosZipFile;
         try {
@@ -127,7 +172,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/threadCpuUsage", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    @GetMapping(value = "/internalapi/debuginfos/threadCpuUsage", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ThreadCpuUsageChartData> getThreadCpuUsageChartData() throws IOException {
         Map<String, List<TimeAndValue>> map = new HashMap<>();
         List<ThreadCpuUsageChartData> list = new ArrayList<>();
@@ -150,13 +195,13 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/sensitiveDataLogging", method = RequestMethod.GET)
+    @GetMapping("/internalapi/debuginfos/sensitiveDataLogging")
     public boolean getSensitiveDataLoggingEnabled() {
         return SensitiveDataRemovingPatternLayoutEncoder.isDisabled();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/sensitiveDataLogging", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/debuginfos/sensitiveDataLogging")
     public boolean setSensitiveDataLoggingEnabled(@RequestParam boolean enabled) {
         SensitiveDataRemovingPatternLayoutEncoder.setDisabled(enabled);
         if (enabled) {
@@ -174,7 +219,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/executesqlquery", method = RequestMethod.POST)
+    @PostMapping("/internalapi/debuginfos/executesqlquery")
     public GenericResponse executeSqlQuery(@RequestBody String sql) throws IOException {
         try {
             return GenericResponse.ok(debugInfos.executeSqlQuery(sql));
@@ -185,7 +230,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/executesqlupdate", method = RequestMethod.POST)
+    @PostMapping("/internalapi/debuginfos/executesqlupdate")
     public GenericResponse executeSqlUpdate(@RequestBody String sql) throws IOException {
         try {
             return GenericResponse.ok(debugInfos.executeSqlUpdate(sql));
@@ -197,7 +242,7 @@ public class DebugInfosWeb {
 
     @SuppressWarnings({"unchecked", "Convert2MethodRef"})
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/endpoints", method = RequestMethod.GET)
+    @GetMapping("/internalapi/debuginfos/endpoints")
     public ResponseEntity<List<PrefixAndEndpoint>> getEndpoints() {
 
         final List<RequestMappingConditionsDescription> conditionsDescriptions = ((Map<String, List<DispatcherServletMappingDescription>>) mappingsEndpoint.mappings().getContexts().get("NZBHydra2").getMappings().get("dispatcherServlets")).get("dispatcherServlet")
@@ -226,7 +271,7 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/setLoggingConfig", method = RequestMethod.GET)
+    @GetMapping("/internalapi/debuginfos/setLoggingConfig")
     public ResponseEntity setLoggingConfig(@RequestParam(required = false) String markersToEnable) {
         configProvider.getBaseConfig().getMain().getLogging().setLogfilelevel("DEBUG");
         if (markersToEnable != null) {

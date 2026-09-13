@@ -24,9 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -67,7 +66,7 @@ public class SearchWeb {
 
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/search", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody SearchRequestParameters parameters, Principal principal) {
         if (DemoModeWeb.isDemoModeActive(principal)) {
             logger.info("Demo mode active, returning mock search results for query '{}'", parameters.getQuery());
@@ -86,18 +85,24 @@ public class SearchWeb {
         lock.lock();
         try {
             searchState = searchStates.get(searchRequest.getSearchRequestId());
-            searchState.setSearchFinished(true);
+            if (searchState != null) {
+                searchState.setSearchFinished(true);
+            }
         } finally {
             lock.unlock();
         }
-        sendSearchState(searchState);
+        if (searchState != null) {
+            sendSearchState(searchState);
+        } else {
+            logger.debug("Search state for search request ID {} is not known anymore, it was probably evicted. Not sending the final search state", searchRequest.getSearchRequestId());
+        }
 
         logger.info("Web search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/shortcutSearch/{searchRequestId}", method = RequestMethod.POST)
+    @PostMapping("/internalapi/shortcutSearch/{searchRequestId}")
     public void shortcutSearch(@PathVariable Long searchRequestId) {
         logger.info("Requested shortcut of search with ID {}", searchRequestId);
         searcher.shortcutSearch(searchRequestId);

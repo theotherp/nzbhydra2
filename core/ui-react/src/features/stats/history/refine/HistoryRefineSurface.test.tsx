@@ -1,0 +1,509 @@
+import {ThemeProvider} from "@mui/material/styles";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {LocalizationProvider} from "@mui/x-date-pickers/LocalizationProvider";
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from "@testing-library/react";
+import {describe, expect, it, vi} from "vitest";
+
+import type {
+    HistoryDimension,
+    HistoryFilterValue,
+    HistoryFilterValues,
+} from "../../../../api/history/filters";
+import {createHydraTheme} from "../../../../app/theme";
+import {
+    localStorageStore,
+    stubMissingLocalStorage,
+    stubNarrowViewport,
+    stubWorkingLocalStorage,
+} from "../../../../test/browserStubs";
+import {HistoryRefineLayout} from "./HistoryRefineSurface";
+
+const dimensions: HistoryDimension[] = [
+    {
+        kind: "time",
+        id: "time",
+        column: "time",
+        label: "Time",
+        afterLabel: "After",
+        beforeLabel: "Before",
+    },
+    {
+        kind: "checkboxes",
+        id: "indexer",
+        column: "name",
+        label: "Indexer",
+        options: [
+            {value: "Alpha", label: "Alpha"},
+            {value: "Beta", label: "Beta"},
+        ],
+    },
+    {kind: "freetext", id: "title", column: "title", label: "Title"},
+    {
+        kind: "boolean",
+        id: "source",
+        column: "access_source",
+        label: "Source",
+        allLabel: "All sources",
+        options: [
+            {value: "INTERNAL", label: "Internal"},
+            {value: "API", label: "API"},
+        ],
+    },
+    {
+        kind: "numberRange",
+        id: "age",
+        column: "age",
+        label: "Age",
+        minLabel: "Minimum age (days)",
+        maxLabel: "Maximum age (days)",
+    },
+];
+
+function renderSurface(
+    values: HistoryFilterValues = {},
+    overrides: {
+        dimensions?: HistoryDimension[];
+        onChange?: (id: string, value: HistoryFilterValue) => void;
+        onClearAll?: () => void;
+    } = {},
+) {
+    const onChange = overrides.onChange ?? vi.fn();
+    const onClearAll = overrides.onClearAll ?? vi.fn();
+    render(
+        <ThemeProvider theme={createHydraTheme()}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <HistoryRefineLayout
+                    dimensions={overrides.dimensions ?? dimensions}
+                    onChange={onChange}
+                    onClearAll={onClearAll}
+                    values={values}
+                >
+                    <div data-testid="page-body" />
+                </HistoryRefineLayout>
+            </LocalizationProvider>
+        </ThemeProvider>,
+    );
+    return {onChange, onClearAll};
+}
+
+/**
+ * Types a value into one of the MUI X pickers FM-185 put on the time
+ * dimension. The field is a list of contenteditable sections plus one
+ * `aria-hidden` `<input>`, and that input is the field's own keyboard/autofill
+ * entry point: what is written to it is parsed in the field's *display*
+ * format, which is why the value here is space-separated rather than the
+ * `T`-separated string the filter stores.
+ */
+function typeIntoPicker(testId: string, displayValue: string): void {
+    const input = screen.getByTestId(testId).querySelector("input");
+    if (!input) throw new Error(`No picker input inside ${testId}`);
+    fireEvent.change(input, {target: {value: displayValue}});
+}
+
+// ADR-0050: a `checkboxes` dimension renders as a `C-REFINE-MULTISELECT` that
+// starts collapsed, so its options are in the DOM but hidden from the
+// accessibility tree until its caption button is pressed. Every assertion about
+// the options themselves opens the section first.
+function expandMultiselect(id: string): void {
+    fireEvent.click(screen.getByTestId(`history-refine-${id}-toggle`));
+}
+
+describe("HistoryRefineSurface", () => {
+    it("should render one labelled surface with a visible label per declared control", () => {
+        renderSurface();
+        expect(
+            screen.getByRole("navigation", {name: "Refine history"}),
+        ).toBeVisible();
+        expect(screen.getByTestId("history-refine-bar")).toBeVisible();
+        for (const label of [
+            "Title",
+            "Minimum age (days)",
+            "Maximum age (days)",
+        ]) {
+            expect(screen.getByLabelText(label)).toBeVisible();
+        }
+        for (const label of ["After", "Before"]) {
+            // FM-185: the two time controls are MUI X pickers. Their visible
+            // label is associated with both the `role="group"` control the
+            // reader interacts with and the `aria-hidden` form input behind
+            // it, so `getByLabelText` alone is ambiguous by construction --
+            // the label is asserted against the control itself.
+            expect(
+                screen.getByLabelText(label, {selector: '[role="group"]'}),
+            ).toBeVisible();
+            expect(screen.getByRole("group", {name: label})).toBeVisible();
+        }
+        expect(
+            screen.getByRole("combobox", {name: "Source"}),
+        ).toHaveTextContent("All sources");
+        expandMultiselect("indexer");
+        expect(screen.getByRole("group", {name: "Indexer"})).toBeVisible();
+    });
+
+    // ADR-0050: collapsed on every mount, with no persistence of its own --
+    // the open state is component-local and nothing writes it anywhere.
+    it("should render every multi-select collapsed until its caption is pressed", () => {
+        const store = localStorageStore();
+        renderSurface();
+        const toggle = screen.getByTestId("history-refine-indexer-toggle");
+        expect(toggle).toHaveTextContent("Indexer");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByRole("group", {name: "Indexer"}),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByRole("group", {name: "Indexer"})).toBeVisible();
+        // Opening a section persists nothing: the only key this surface ever
+        // writes is the shell's own collapsed preference.
+        expect([...store.keys()]).not.toContain("hydra.history.refine");
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+        // A remount starts collapsed again, whatever was open before.
+        cleanup();
+        renderSurface();
+        expect(
+            screen.getByTestId("history-refine-indexer-toggle"),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect([...store.keys()]).toHaveLength(0);
+    });
+
+    // The results sidebar sorts its derived options; a history dimension's are
+    // declared, and the declared order is the rendered order.
+    it("should render multi-select options in the dimension's declared order", () => {
+        renderSurface(
+            {},
+            {
+                dimensions: [
+                    {
+                        kind: "checkboxes",
+                        id: "result",
+                        column: "status",
+                        label: "Result",
+                        options: [
+                            {value: "REQUESTED", label: "Requested"},
+                            {value: "NONE", label: "Unknown"},
+                            {value: "CONTENT_DOWNLOAD_ERROR", label: "Error"},
+                        ],
+                    },
+                ],
+            },
+        );
+        expandMultiselect("result");
+        expect(
+            screen
+                .getAllByTestId("history-refine-result-option")
+                .map((option) => option.getAttribute("data-filter-value")),
+        ).toEqual(["REQUESTED", "NONE", "CONTENT_DOWNLOAD_ERROR"]);
+    });
+
+    it("should dock the surface as a sibling of the page body, not an ancestor of it", () => {
+        renderSurface();
+        // ADR-0011: the table's header cells must never sit inside the refine
+        // surface, or the table's own sticky header would pin against it.
+        const surface = screen.getByTestId("history-refine-bar");
+        expect(surface).not.toContainElement(screen.getByTestId("page-body"));
+    });
+
+    it("should state the active count in the header summary for no, one, and several filters", () => {
+        renderSurface();
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "No active filters",
+        );
+        cleanup();
+
+        renderSurface({title: {kind: "freetext", text: "example"}});
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "1 active filter",
+        );
+        cleanup();
+
+        renderSurface({
+            title: {kind: "freetext", text: "example"},
+            indexer: {kind: "checkboxes", selected: ["Alpha"]},
+            source: {kind: "boolean", value: "API"},
+        });
+        expect(screen.getByTestId("history-refine-summary")).toHaveTextContent(
+            "3 active filters",
+        );
+    });
+
+    it("should collapse the docked column to its rail and keep the active count reachable there", () => {
+        renderSurface({title: {kind: "freetext", text: "example"}});
+        const toggle = screen.getByTestId("history-refine-toggle");
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(toggle).toHaveAccessibleName("Collapse history filters");
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        // The rail has no room for the sections or the header summary, so the
+        // control that reveals them announces the count instead.
+        expect(toggle).toHaveAccessibleName(
+            "Expand history filters, 1 active filter",
+        );
+        expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("history-refine-summary"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("history-refine-clear-all"),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByLabelText("Title")).toBeVisible();
+    });
+
+    it("should persist the collapsed column under the shared history key and restore it on a later mount", () => {
+        const store = localStorageStore();
+        renderSurface();
+        fireEvent.click(screen.getByTestId("history-refine-toggle"));
+        expect(store.get("hydra.history.refine")).toBe("collapsed");
+        cleanup();
+
+        renderSurface();
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        fireEvent.click(screen.getByTestId("history-refine-toggle"));
+        expect(store.get("hydra.history.refine")).toBe("expanded");
+        cleanup();
+
+        renderSurface();
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+    });
+
+    it("should start expanded when the stored preference is absent or garbage", () => {
+        // No storage at all: jsdom's opaque origin, a private window, blocked
+        // site data. `C-BROWSER-STORAGE` swallows it and the column opens.
+        // Stated explicitly because `vitest.setup.ts` installs a working store
+        // before every test.
+        stubMissingLocalStorage();
+        renderSurface();
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        cleanup();
+
+        const store = stubWorkingLocalStorage();
+        store.set("hydra.history.refine", '{"collapsed":true}');
+        renderSurface();
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+    });
+
+    it("should open the sections in a bottom sheet below 768px and never persist that it is open", () => {
+        const store = localStorageStore();
+        stubNarrowViewport();
+        renderSurface({title: {kind: "freetext", text: "example"}});
+
+        // Exactly one branch is in the DOM: the compact trigger, carrying the
+        // active count as its own visible text, and no docked column.
+        const toggle = screen.getByTestId("history-refine-toggle");
+        expect(toggle).toHaveTextContent("Refine · 1 active filter");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByTestId("history-refine-bar"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("history-refine-drawer"),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        // The surface keeps its own id inside the drawer, so a selector
+        // written against the docked column still resolves here.
+        const drawer = screen.getByTestId("history-refine-drawer");
+        expect(drawer).toContainElement(
+            screen.getByTestId("history-refine-bar"),
+        );
+        expect(screen.getByTestId("history-refine-bar")).toBeVisible();
+        expect(screen.getByLabelText("Title")).toBeVisible();
+        // FM-181: the sheet's footer. A history view has no client-side count
+        // to promise, so its done button is the plain verb; clear-all keeps
+        // its id and accessible name and gains the word on screen.
+        expect(screen.getByTestId("history-refine-done")).toHaveTextContent(
+            "Done",
+        );
+        const clearAll = screen.getByTestId("history-refine-clear-all");
+        expect(clearAll).toHaveAccessibleName("Clear all filters");
+        expect(clearAll).toHaveTextContent("Clear all");
+        expect(store.size).toBe(0);
+
+        fireEvent.click(screen.getByTestId("history-refine-done"));
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        fireEvent.click(toggle);
+
+        fireEvent.click(screen.getByTestId("history-refine-close"));
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(store.size).toBe(0);
+    });
+
+    it("should report freetext, boolean, number range, and time input", () => {
+        const {onChange} = renderSurface();
+        fireEvent.change(screen.getByLabelText("Title"), {
+            target: {value: "example"},
+        });
+        expect(onChange).toHaveBeenLastCalledWith("title", {
+            kind: "freetext",
+            text: "example",
+        });
+        fireEvent.change(screen.getByLabelText("Minimum age (days)"), {
+            target: {value: "3"},
+        });
+        expect(onChange).toHaveBeenLastCalledWith("age", {
+            kind: "numberRange",
+            min: "3",
+            max: "",
+        });
+        typeIntoPicker("history-refine-time-before", "2024-01-02 10:00");
+        expect(onChange).toHaveBeenLastCalledWith("time", {
+            kind: "time",
+            after: "",
+            before: "2024-01-02T10:00",
+        });
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Source"}));
+        fireEvent.click(screen.getByRole("option", {name: "Internal"}));
+        expect(onChange).toHaveBeenLastCalledWith("source", {
+            kind: "boolean",
+            value: "INTERNAL",
+        });
+    });
+
+    it("should empty a whole date-time with the field's own Clear button", () => {
+        // Owner request 2026-09-04: resetting a date-time meant deleting each
+        // section separately. The Clear button only exists while the field
+        // holds a value, so the surface is rendered with one.
+        const {onChange} = renderSurface({
+            time: {kind: "time", after: "", before: "2024-01-02T10:00"},
+        });
+        fireEvent.click(
+            within(screen.getByTestId("history-refine-time-before")).getByRole(
+                "button",
+                {name: "Clear"},
+            ),
+        );
+        expect(onChange).toHaveBeenLastCalledWith("time", {
+            kind: "time",
+            after: "",
+            before: "",
+        });
+    });
+
+    /*
+     * The picker's other entry point. Whichever way a value is chosen, what
+     * leaves this component is the same `YYYY-MM-DDTHH:mm` string the native
+     * `<input type="datetime-local">` reported, because that string -- not the
+     * `Dayjs` -- is what `HistoryFilterValues`, the URL and `toServerTime`
+     * consume.
+     */
+    it("should report a calendar-picked time in the stored string format", () => {
+        const {onChange} = renderSurface({
+            time: {kind: "time", after: "2024-03-10T08:45", before: ""},
+        });
+        fireEvent.click(
+            within(screen.getByTestId("history-refine-time-after")).getByRole(
+                "button",
+                {name: /^Choose date/},
+            ),
+        );
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("gridcell", {
+                name: "21",
+            }),
+        );
+        expect(onChange).toHaveBeenLastCalledWith("time", {
+            kind: "time",
+            after: "2024-03-21T08:45",
+            before: "",
+        });
+    });
+
+    it("should select and deselect multi-select values without a preselect-all or invert control", () => {
+        const {onChange} = renderSurface();
+        expandMultiselect("indexer");
+        const group = screen.getByRole("group", {name: "Indexer"});
+        const options = within(group).getAllByTestId(
+            "history-refine-indexer-option",
+        );
+        expect(options.map((option) => option.textContent)).toEqual([
+            "Alpha",
+            "Beta",
+        ]);
+        for (const option of options) {
+            expect(option).toHaveAttribute("aria-pressed", "false");
+        }
+        expect(
+            within(group).queryByRole("button", {name: /invert|select all/i}),
+        ).not.toBeInTheDocument();
+        fireEvent.click(options[1]);
+        expect(onChange).toHaveBeenLastCalledWith("indexer", {
+            kind: "checkboxes",
+            selected: ["Beta"],
+        });
+        cleanup();
+
+        const selected = renderSurface({
+            indexer: {kind: "checkboxes", selected: ["Alpha", "Beta"]},
+        });
+        expandMultiselect("indexer");
+        const pressed = screen.getAllByTestId("history-refine-indexer-option");
+        expect(pressed[0]).toHaveAttribute("aria-pressed", "true");
+        fireEvent.click(pressed[0]);
+        expect(selected.onChange).toHaveBeenLastCalledWith("indexer", {
+            kind: "checkboxes",
+            selected: ["Beta"],
+        });
+    });
+
+    it("should hide a multi-select that has no options at all", () => {
+        renderSurface(
+            {},
+            {
+                dimensions: [
+                    {
+                        kind: "checkboxes",
+                        id: "indexer",
+                        column: "name",
+                        label: "Indexer",
+                        options: [],
+                    },
+                ],
+            },
+        );
+        expect(
+            screen.queryByRole("group", {name: "Indexer"}),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should offer one clear-all control for every dimension, live only while something is active", () => {
+        renderSurface();
+        expect(screen.getByTestId("history-refine-clear-all")).toBeDisabled();
+        cleanup();
+
+        const {onClearAll} = renderSurface({
+            title: {kind: "freetext", text: "example"},
+        });
+        const clearAll = screen.getByTestId("history-refine-clear-all");
+        expect(clearAll).toBeEnabled();
+        fireEvent.click(clearAll);
+        expect(onClearAll).toHaveBeenCalledTimes(1);
+    });
+});

@@ -1,0 +1,460 @@
+import {describe, expect, it, vi} from "vitest";
+
+import {
+    executeSearch,
+    isAbsoluteCoverUrl,
+    MalformedSearchResponseError,
+    mergeSearchResponses,
+    parseSearchResponse,
+    shortcutSearch,
+} from "./search";
+import {ApiTransport} from "./transport";
+
+const responseEnvelope = {
+    searchResults: [],
+    indexerSearchMetaDatas: [],
+    indexerLimitWarnings: [],
+    rejectedReasonsMap: {},
+    notPickedIndexersWithReason: {},
+    numberOfAvailableResults: 0,
+    numberOfRejectedResults: 0,
+};
+
+describe("search API", () => {
+    it("should send the basic search contract through transport", async () => {
+        const fetchImplementation = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify(responseEnvelope), {
+                headers: {"Content-Type": "application/json"},
+            }),
+        );
+        const transport = new ApiTransport("/", fetchImplementation);
+        await executeSearch(transport, {
+            category: "All",
+            indexers: ["Mock"],
+            loadAll: false,
+            searchRequestId: 42,
+        });
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            expect.stringMatching(/internalapi\/search$/),
+            expect.objectContaining({
+                method: "POST",
+                body: JSON.stringify({
+                    category: "All",
+                    indexers: ["Mock"],
+                    loadAll: false,
+                    searchRequestId: 42,
+                }),
+            }),
+        );
+    });
+
+    it("should request the search shortcut through the base-aware transport", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 200}));
+        await shortcutSearch(
+            new ApiTransport("/hydra/", fetchImplementation),
+            42,
+        );
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            expect.stringMatching(/hydra\/internalapi\/shortcutSearch\/42$/),
+            expect.objectContaining({method: "POST"}),
+        );
+    });
+
+    it("should keep a result whose size the backend serialises as null", () => {
+        // `SearchResultWebTO.size` is a `Long`; an indexer that reports no size
+        // leaves it null and Jackson puts an explicit null on the wire.
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {searchResultId: "sizeless", title: "A result", size: null},
+            ],
+        });
+        expect(response.malformedResultCount).toBe(0);
+        expect(response.searchResults).toHaveLength(1);
+        expect(response.searchResults[0]?.size).toBeUndefined();
+    });
+
+    it("should discard titleless entries while preserving valid results", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {searchResultId: "valid", title: "A result"},
+                {searchResultId: "missing-title"},
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({title: "A result"}),
+        ]);
+        expect(response.malformedResultCount).toBe(1);
+    });
+
+    it("should preserve sortable fields while treating optional counts as unavailable", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "valid",
+                    title: "A result",
+                    age: "2 days",
+                    epoch: 1_700_000_000,
+                    grabs: null,
+                    seeders: 4,
+                },
+                {
+                    searchResultId: "missing-counts",
+                    title: "Another result",
+                    grabs: null,
+                    seeders: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                age: "2 days",
+                epoch: 1_700_000_000,
+                seeders: 4,
+            }),
+            expect.objectContaining({
+                searchResultId: "missing-counts",
+                grabs: undefined,
+                seeders: undefined,
+            }),
+        ]);
+    });
+
+    it("should preserve the detail-link fields the result row renders", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "detailed",
+                    title: "A result",
+                    grabs: 12,
+                    seeders: 4,
+                    peers: 9,
+                    comments: 5,
+                    comments_link: "https://indexer.test/details#comments",
+                    details_link: "https://indexer.test/details",
+                    source: "poster@example.invalid",
+                    hasNfo: "YES",
+                },
+                {
+                    searchResultId: "bare",
+                    title: "Another result",
+                    peers: null,
+                    comments: null,
+                    comments_link: null,
+                    details_link: null,
+                    source: null,
+                    hasNfo: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                peers: 9,
+                comments: 5,
+                comments_link: "https://indexer.test/details#comments",
+                details_link: "https://indexer.test/details",
+                source: "poster@example.invalid",
+                hasNfo: "YES",
+            }),
+            expect.objectContaining({
+                searchResultId: "bare",
+                peers: undefined,
+                comments: undefined,
+                comments_link: undefined,
+                details_link: undefined,
+                source: undefined,
+                hasNfo: undefined,
+            }),
+        ]);
+    });
+
+    it("should keep only the three real hasNfo states and drop anything else", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {searchResultId: "yes", title: "Yes", hasNfo: "YES"},
+                {searchResultId: "maybe", title: "Maybe", hasNfo: "MAYBE"},
+                {searchResultId: "no", title: "No", hasNfo: "NO"},
+                // Legacy also tested a `has_nfo === 0` field no response ever
+                // sent; neither it nor any other value is carried over, and
+                // the result itself still displays.
+                {
+                    searchResultId: "dead",
+                    title: "Dead",
+                    has_nfo: 0,
+                    hasNfo: "PERHAPS",
+                },
+            ],
+        });
+        expect(response.searchResults.map((result) => result.hasNfo)).toEqual([
+            "YES",
+            "MAYBE",
+            "NO",
+            undefined,
+        ]);
+        expect(response.malformedResultCount).toBe(0);
+    });
+
+    it("should preserve valid optional grouping fields without rejecting the result", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "grouped",
+                    title: "Example.Show.S01E02",
+                    hash: 123,
+                    downloadType: "TORRENT",
+                    showtitle: "Example Show",
+                    season: "1",
+                    episode: "2",
+                },
+                {
+                    searchResultId: "without-grouping-metadata",
+                    title: "Ordinary result",
+                    hash: null,
+                    downloadType: null,
+                    showtitle: null,
+                    season: null,
+                    episode: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                hash: 123,
+                downloadType: "TORRENT",
+                showtitle: "Example Show",
+                season: "1",
+                episode: "2",
+            }),
+            expect.objectContaining({
+                hash: undefined,
+                downloadType: undefined,
+                showtitle: undefined,
+                season: undefined,
+                episode: undefined,
+            }),
+        ]);
+    });
+
+    it("should preserve optional download action fields and treat absent or null values as unavailable", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "present",
+                    title: "Downloaded",
+                    downloadId: "12.3",
+                    originalCategory: "Movies",
+                    downloadedAt: "2026-08-12 12:00",
+                },
+                {
+                    searchResultId: "absent",
+                    title: "Not downloaded",
+                    downloadId: null,
+                    originalCategory: null,
+                    downloadedAt: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                downloadId: "12.3",
+                originalCategory: "Movies",
+                downloadedAt: "2026-08-12 12:00",
+            }),
+            expect.objectContaining({
+                downloadId: undefined,
+                originalCategory: undefined,
+                downloadedAt: undefined,
+            }),
+        ]);
+    });
+
+    it("should keep both backend cover shapes, drop any other cover, and keep the result either way", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "absolute",
+                    title: "Indexer cover",
+                    cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                },
+                {
+                    // `main.proxyImages` on: Hydra serves the image itself
+                    // from a base-relative path.
+                    searchResultId: "proxied",
+                    title: "Proxied cover",
+                    cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                },
+                {
+                    searchResultId: "absent",
+                    title: "No cover",
+                    cover: null,
+                },
+                {
+                    searchResultId: "missing",
+                    title: "Cover field absent",
+                },
+                {
+                    // The boundary case (ADR-0003): an indexer-supplied string
+                    // that would execute if it reached an `<img src>`. The
+                    // cover is dropped; the result itself still displays.
+                    searchResultId: "hostile",
+                    title: "Hostile cover",
+                    cover: "javascript:alert(1)",
+                },
+                {
+                    searchResultId: "data-url",
+                    title: "Data cover",
+                    cover: "data:image/svg+xml,<svg onload='alert(1)'/>",
+                },
+                {
+                    // Neither shape: a root-relative path the transport would
+                    // refuse anyway.
+                    searchResultId: "root-relative",
+                    title: "Root relative cover",
+                    cover: "/cache/aGk=",
+                },
+            ],
+        });
+        expect(response.malformedResultCount).toBe(0);
+        expect(
+            response.searchResults.map((result) => [
+                result.searchResultId,
+                result.cover,
+            ]),
+        ).toEqual([
+            ["absolute", "https://artworks.thetvdb.com/banners/poster.jpg"],
+            ["proxied", "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw=="],
+            ["absent", undefined],
+            ["missing", undefined],
+            ["hostile", undefined],
+            ["data-url", undefined],
+            ["root-relative", undefined],
+        ]);
+    });
+
+    it("should classify only the absolute cover shape as an absolute URL", () => {
+        expect(isAbsoluteCoverUrl("http://example.com/p.jpg")).toBe(true);
+        expect(isAbsoluteCoverUrl("https://example.com/p.jpg")).toBe(true);
+        expect(isAbsoluteCoverUrl("cache/aGk=")).toBe(false);
+        expect(isAbsoluteCoverUrl("javascript:alert(1)")).toBe(false);
+    });
+
+    it("should preserve paging metadata and replace duplicate result identities with newer data", () => {
+        const first = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [{searchResultId: "same", title: "Older"}],
+            offset: 0,
+            limit: 10,
+            numberOfProcessedResults: 10,
+            numberOfAcceptedResults: 10,
+            numberOfAvailableResults: 30,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    hasMoreResults: true,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+        const next = parseSearchResponse({
+            ...first,
+            searchResults: [
+                {searchResultId: "same", title: "Updated"},
+                {searchResultId: "new", title: "New result"},
+            ],
+            offset: 10,
+            limit: 10,
+            numberOfProcessedResults: 20,
+        });
+
+        expect(mergeSearchResponses(first, next)).toMatchObject({
+            pagingState: "ready",
+            offset: 10,
+            limit: 10,
+            numberOfProcessedResults: 20,
+            searchResults: [
+                {searchResultId: "same", title: "Updated"},
+                {searchResultId: "new", title: "New result"},
+            ],
+        });
+    });
+
+    it("should preserve unknown-total continuation state while reconciling merged metadata", () => {
+        const first = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [{searchResultId: "one", title: "First"}],
+            offset: 0,
+            limit: 1,
+            numberOfProcessedResults: 1,
+            numberOfAcceptedResults: 1,
+            numberOfAvailableResults: 0,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Unknown total",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+        const next = parseSearchResponse({
+            ...first,
+            searchResults: [{searchResultId: "two", title: "Second"}],
+            offset: 1,
+            limit: 1,
+            numberOfProcessedResults: 2,
+            numberOfAcceptedResults: 2,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Unknown total",
+                    wasSuccessful: true,
+                    hasMoreResults: false,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+
+        expect(mergeSearchResponses(first, next)).toMatchObject({
+            offset: 1,
+            limit: 1,
+            numberOfProcessedResults: 2,
+            numberOfAcceptedResults: 2,
+            indexerSearchMetaDatas: [
+                {
+                    hasMoreResults: false,
+                    totalResultsKnown: false,
+                },
+            ],
+            searchResults: [{searchResultId: "one"}, {searchResultId: "two"}],
+        });
+    });
+
+    it("should reject empty response envelopes", () => {
+        expect(() => parseSearchResponse({})).toThrow(
+            MalformedSearchResponseError,
+        );
+    });
+
+    it("should reject incomplete or wrongly typed response envelopes", () => {
+        expect(() => parseSearchResponse({searchResults: []})).toThrow(
+            MalformedSearchResponseError,
+        );
+        expect(() =>
+            parseSearchResponse({
+                ...responseEnvelope,
+                numberOfAvailableResults: "0",
+            }),
+        ).toThrow(MalformedSearchResponseError);
+        expect(() => parseSearchResponse("not a response")).toThrow(
+            MalformedSearchResponseError,
+        );
+    });
+});

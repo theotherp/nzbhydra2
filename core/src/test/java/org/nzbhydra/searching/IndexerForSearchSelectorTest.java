@@ -1,7 +1,11 @@
 package org.nzbhydra.searching;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,6 +24,7 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
@@ -27,7 +32,9 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.sql.Timestamp;
@@ -89,11 +96,20 @@ public class IndexerForSearchSelectorTest {
     private Map<Indexer, String> count;
     private final IndexerLimit indexerLimit = new IndexerLimit();
 
+    private ListAppender<ILoggingEvent> logAppender;
+    private ch.qos.logback.classic.Logger logbackLogger;
+
     @InjectMocks
     private IndexerForSearchSelector testee;
 
     @BeforeEach
     public void setUp() throws Exception {
+
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        logbackLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(IndexerForSearchSelector.class);
+        logbackLogger.setLevel(Level.DEBUG);
+        logbackLogger.addAppender(logAppender);
 
         count = new HashMap<>();
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
@@ -107,6 +123,21 @@ public class IndexerForSearchSelectorTest {
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
         when(indexerLimitRepositoryMock.findByIndexer(any())).thenReturn(indexerLimit);
         when(searchRequest.meets(any())).thenCallRealMethod();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        logbackLogger.detachAppender(logAppender);
+        logbackLogger.setLevel(null);
+        logAppender.stop();
+    }
+
+    private String getLastLoggedMessageContaining(String part) {
+        return logAppender.list.stream()
+            .map(ILoggingEvent::getFormattedMessage)
+            .filter(x -> x.contains(part))
+            .reduce((first, second) -> second)
+            .orElseThrow(() -> new AssertionError("No log message containing '" + part + "' was logged. Logged: " + logAppender.list));
     }
 
 
@@ -445,6 +476,98 @@ public class IndexerForSearchSelectorTest {
 
         assertThat(result).isTrue();
         verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
+    void shouldNotSelectIndexerSilentlyIfLimitIsReachedButNoAccessTimeIsKnown() {
+        //Indexer reports as many hits as are allowed but neither it nor the access history knows when the oldest of
+        //them was made, so the indexer is not used but no reason or message can be given
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setName("indexer");
+        indexerConfigMock.setHitLimit(1);
+        indexerLimit.setApiHits(1);
+        indexerLimit.setOldestApiHit(null);
+        when(queryMock.getResultList()).thenReturn(Collections.emptyList());
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertThat(result).isFalse();
+        assertThat(testee.notSelectedIndersWithReason).isEmpty();
+        verify(eventPublisher, never()).publishEvent(any(SearchMessageEvent.class));
+        assertThat(getLastLoggedMessageContaining("we have no results in list"))
+            .isEqualTo("Indexer indexer. Current hits 1 exceeds limit 1 but we have no results in list. We'll have to allow it");
+    }
+
+    @Test
+    void shouldReportReasonAndNextPossibleHitWhenApiHitLimitIsReachedAccordingToAccessHistory() {
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setName("indexer");
+        indexerConfigMock.setHitLimit(1);
+        indexerConfigMock.setHitLimitResetTime(null);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertThat(result).isFalse();
+        assertThat(testee.notSelectedIndersWithReason).containsEntry(indexer, "API hit limit reached");
+        verify(eventPublisher).publishEvent(any(SearchMessageEvent.class));
+        assertThat(getLastLoggedMessageContaining("allowed API hits"))
+            .isEqualTo("Not using indexer because all 1 allowed API hits were already made. The next API hit should be possible at 2021-01-13T16:00:00Z");
+    }
+
+    @Test
+    void shouldReportReasonAndNextPossibleDownloadWhenDownloadLimitIsReachedAccordingToIndexerStatus() {
+        Instant currentTime = Instant.parse("2026-04-20T04:00:00.000Z");
+        Instant oldestDownload = Instant.parse("2026-04-19T05:49:21.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setName("indexer");
+        indexerConfigMock.setDownloadLimit(2);
+        indexerLimit.setDownloads(2);
+        indexerLimit.setOldestDownload(oldestDownload);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertThat(result).isFalse();
+        assertThat(testee.notSelectedIndersWithReason).containsEntry(indexer, "download limit reached");
+        verify(eventPublisher).publishEvent(any(SearchMessageEvent.class));
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+        assertThat(getLastLoggedMessageContaining("allowed downloads"))
+            .isEqualTo("Not using indexer because all 2 allowed downloads were already made. The next download should be possible at 2026-04-20T05:49:21Z");
+    }
+
+    @Test
+    void shouldAllowAccessWhenOldestAccessIsBeforeComparisonTime() {
+        //Hit limit is reached but the oldest of the hits is older than the reset time, so a new hit is possible
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setName("indexer");
+        indexerConfigMock.setHitLimit(1);
+        indexerConfigMock.setHitLimitResetTime(6);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertTrue(result);
+        assertThat(testee.notSelectedIndersWithReason).isEmpty();
+        verify(eventPublisher, never()).publishEvent(any(SearchMessageEvent.class));
+        assertThat(getLastLoggedMessageContaining("Allowing access"))
+            .isEqualTo("Indexer indexer. oldest access from API 2021-01-12T16:00:00Z is before 2021-01-13T06:00:00Z. Allowing access");
+    }
+
+    @Test
+    void shouldNameTheIndexerAndTheSearchTypeInTheRightOrderWhenSearchTypeIsNotSupported() {
+        when(searchRequest.getSearchType()).thenReturn(SearchType.BOOK);
+        doReturn(false).when(searchRequest).meets(any());
+
+        assertThat(testee.checkSearchType(indexer)).isFalse();
+
+        assertThat(testee.notSelectedIndersWithReason).containsEntry(indexer, "Search type not supported");
+        assertThat(getLastLoggedMessageContaining("Not using"))
+            .isEqualTo("Not using indexer because the search uses type BOOK which the indexer can't handle and query generation is disabled");
     }
 
     @Test

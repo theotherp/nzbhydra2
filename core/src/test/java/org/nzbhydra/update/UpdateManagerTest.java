@@ -1,9 +1,5 @@
 package org.nzbhydra.update;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,16 +16,24 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
 import org.nzbhydra.webaccess.WebAccess;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+
 @SuppressWarnings("unchecked")
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class UpdateManagerTest {
@@ -51,8 +55,9 @@ public class UpdateManagerTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        objectMapper = YAMLMapper.builder()
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build();
 
         baseConfig = new BaseConfig();
         MainConfig main = new MainConfig();
@@ -78,9 +83,10 @@ public class UpdateManagerTest {
 
         Release previousRelease = new Release();
         previousRelease.setTagName("v1.0.0");
-        previousRelease.setBody("A list:\n" +
-                "* a\n" +
-                "* b");
+        previousRelease.setBody("""
+                A list:
+                * a
+                * b""");
         previousRelease.setPrerelease(false);
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(TypeReference.class))).thenReturn(
@@ -117,6 +123,28 @@ public class UpdateManagerTest {
         assertThat(testee.isUpdateAvailable()).isFalse();
     }
 
+
+    @Test
+    void shouldStillReturnUpdateInfoWhenBlockedVersionsCannotBeRetrieved() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenThrow(new IOException("Failed to connect to raw.githubusercontent.com"));
+
+        final UpdateManager.UpdateInfo updateInfo = testee.getUpdateInfo();
+
+        assertThat(updateInfo.getLatestVersion()).isEqualTo("2.0.0");
+        assertThat(updateInfo.isUpdateAvailable()).isTrue();
+    }
+
+    @Test
+    void shouldNotOfferBlockedVersionAsUpdate() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(new BlockedVersion("2.0.0", "comment")))
+        );
+
+        final UpdateManager.UpdateInfo updateInfo = testee.getUpdateInfo();
+
+        assertThat(updateInfo.getLatestVersion()).isEqualTo("2.0.0");
+        assertThat(updateInfo.isUpdateAvailable()).isFalse();
+    }
 
     @Test
     void shouldGetChangesForVersion() throws Exception {
@@ -178,5 +206,14 @@ public class UpdateManagerTest {
     }
 
 
+
+    @Test
+    void shouldThrowUpdateExceptionWhenNoReleaseIsFound() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(TypeReference.class))).thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> testee.getUpdateInfo())
+                .isInstanceOf(UpdateException.class)
+                .hasMessageContaining("No release found");
+    }
 
 }

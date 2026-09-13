@@ -33,5 +33,17 @@ public class IndexerConfigTest {
         assertThat(result.getErrorMessages()).isEmpty();
     }
 
+    @Test
+    void shouldDetectApiKeyChangesForExternalToolSynchronization() {
+        IndexerConfig original = new IndexerConfig();
+        original.setHost("https://indexer.example");
+        original.setApiKey("original-key");
+        IndexerConfig changed = new IndexerConfig();
+        changed.setHost("https://indexer.example");
+        changed.setApiKey("changed-key");
+
+        assertThat(IndexerConfig.isIndexerEquals(original, changed)).isFalse();
+    }
+
 
 }

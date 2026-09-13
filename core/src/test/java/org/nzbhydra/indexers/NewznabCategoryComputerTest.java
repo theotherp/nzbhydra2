@@ -54,4 +54,24 @@ class NewznabCategoryComputerTest {
         assertThat(item.getCategory()).isEqualTo(otherCategory);
     }
 
+    @Test
+    void shouldUseEachIndexersOwnMapping() {
+        animeCategory.setSubtype(Category.Subtype.ANIME);
+        when(categoryProviderMock.fromSubtype(Category.Subtype.ANIME)).thenReturn(Optional.of(animeCategory));
+        when(categoryProviderMock.fromResultNewznabCategories(any())).thenReturn(otherCategory);
+        IndexerConfig withAnime = new IndexerConfig();
+        withAnime.setName("withAnime");
+        withAnime.getCategoryMapping().setAnime(7040);
+        IndexerConfig withoutAnime = new IndexerConfig();
+        withoutAnime.setName("withoutAnime");
+
+        SearchResultItem item = new SearchResultItem();
+        testee.computeCategory(item, Arrays.asList(7000, 7040), withAnime);
+        assertThat(item.getCategory()).isEqualTo(animeCategory);
+
+        //Same id, other indexer: must not reuse the first indexer's result
+        testee.computeCategory(item, Arrays.asList(7000, 7040), withoutAnime);
+        assertThat(item.getCategory()).isEqualTo(otherCategory);
+    }
+
 }

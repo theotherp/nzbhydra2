@@ -28,6 +28,8 @@ public class NotificationConfig {
     private String appriseCliPath;
     private boolean displayNotifications;
     private int displayNotificationsMax;
+    private int indexerDownloadLimitWarningThreshold = 10;
+    private int indexerHitLimitWarningThreshold = 10;
     private List<NotificationConfigEntry> entries = new ArrayList<>();
     private List<String> filterOuts = new ArrayList<>();
 

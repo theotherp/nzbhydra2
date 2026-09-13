@@ -2,6 +2,7 @@
 
 package org.nzbhydra.searching.db;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchSource;
@@ -14,8 +15,9 @@ import java.util.Set;
 
 
 @Data
-@ReflectionMarker
+@AllArgsConstructor
 @NoArgsConstructor
+@ReflectionMarker
 public class SearchEntityTO {
 
     private int id;
@@ -29,6 +31,11 @@ public class SearchEntityTO {
     private String episode;
     private String title;
     private String author;
+    private Integer minAge;
+    private Integer maxAge;
+    private Integer minSize;
+    private Integer maxSize;
+    private Set<String> selectedIndexers;
     private String username;
     private String ip;
     private String userAgent;

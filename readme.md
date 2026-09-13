@@ -1,4 +1,4 @@
-<img src="https://github.com/theotherp/nzbhydra2/raw/master/core/ui-src/img/banner-bright.png" width="50%"/>
+<img src="https://github.com/theotherp/nzbhydra2/raw/master/core/src/main/resources/static/img/banner-bright.png" width="50%"/>
 
 NZBHydra 2 is a meta search for newznab indexers and torznab trackers. It provides easy access to newznab indexers and many torznab trackers via Jackett. You can search all your indexers and trackers from one place and use it as an indexer source for tools like Sonarr, Radarr, Lidarr or CouchPotato.
 
@@ -69,9 +69,9 @@ Project structure:
 * `shared`: is shared code between modules
 * `tests`: contains integration tests
 
-The frontend uses AngularJS 1.x, Bower for dependency management and gulp for build.
+The frontend is React 19 with TypeScript, Vite and MUI, in `core/ui-react`. It is built by the Maven build and is not checked in.
 
-If you plan on doing any frontend work (JS, CSS, HTML): Please contact me first and don't just create a PR for changes on the merged CSS / JS files.
+If you plan on doing any frontend work: Please contact me first.
 
 Please send merge requests to the develop branch!
 

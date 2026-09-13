@@ -11,7 +11,7 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @NoArgsConstructor
 public class UserAgentShare {
     private String userAgent = null;
-    private int count;
+    private Integer count;
     private float percentage;
 
     public UserAgentShare(String userAgent, int count) {

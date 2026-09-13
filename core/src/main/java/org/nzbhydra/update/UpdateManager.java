@@ -1,7 +1,6 @@
 package org.nzbhydra.update;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -36,6 +35,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.FileReader;
@@ -97,6 +98,7 @@ public class UpdateManager implements InitializingBean {
     private PackageInfo packageInfo;
 
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
+    protected Supplier<List<BlockedVersion>> blockedVersionsCache = Suppliers.memoizeWithExpiration(getBlockedVersionsSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
 
@@ -154,8 +156,6 @@ public class UpdateManager implements InitializingBean {
         if (!updateToPrereleases) {
             final SemanticVersion latestVersionWithBeta = new SemanticVersion(getLatestRelease(true).getTagName());
             if (latestVersionWithBeta.isUpdateFor(latestVersion)) {
-                updateInfo.setBetaVersion(latestVersion.getAsString());
-
                 final boolean latestWithBetaIsUpdateAndViable = !isVersionIgnored(latestVersionWithBeta) && isVersionNotBlocked(latestVersionWithBeta);
 
                 //Only true when update to beta is not enabled but there's a new beta version. The user can then choose to install it anyway.
@@ -191,11 +191,27 @@ public class UpdateManager implements InitializingBean {
     }
 
     private boolean isVersionNotBlocked(SemanticVersion version) throws UpdateException {
-        if (getBlockedVersions().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(version))) {
+        if (blockedVersionsCache.get().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(version))) {
             logger.debug("Version {} is in the list of blocked updates", version);
             return false;
         }
         return true;
+    }
+
+    /**
+     * The blocked versions list is a nice-to-have: when it can't be retrieved (e.g. no internet connection) we must not
+     * fail the whole update check but simply assume that no version is blocked. The negative result is cached like the
+     * releases so that an unreachable GitHub isn't contacted again on every single update info request.
+     */
+    protected Supplier<List<BlockedVersion>> getBlockedVersionsSupplier() {
+        return () -> {
+            try {
+                return getBlockedVersions();
+            } catch (UpdateException e) {
+                logger.warn("Unable to retrieve the list of blocked versions, will assume that no version is blocked. Error: {}", e.getMessage());
+                return Collections.emptyList();
+            }
+        };
     }
 
     protected Supplier<List<Release>> getReleasesSupplier() {
@@ -227,7 +243,7 @@ public class UpdateManager implements InitializingBean {
             allChanges = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
             normalizeChangelogText(allChanges);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
 
@@ -251,7 +267,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String changelogYamlString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
             changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogYamlString, changelogEntryListTypeReference);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
         normalizeChangelogText(changelogVersionEntries);
@@ -304,7 +320,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
             changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogJsonString, changelogEntryListTypeReference);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
         normalizeChangelogText(changelogVersionEntries);
@@ -418,7 +434,7 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-    private Release getLatestRelease(boolean includePrereleases) {
+    private Release getLatestRelease(boolean includePrereleases) throws UpdateException {
         return releasesCache.get().stream()
                 .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
                 .filter(release -> {
@@ -426,7 +442,7 @@ public class UpdateManager implements InitializingBean {
                         return true;
                     }
                     return release.getPrerelease() == null || !release.getPrerelease();
-                }).findFirst().orElse(null);
+                }).findFirst().orElseThrow(() -> new UpdateException("No release found"));
     }
 
 
@@ -437,7 +453,7 @@ public class UpdateManager implements InitializingBean {
             String response = webAccess.callUrl(blockedVersionsUrl);
             blockedVersions = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());
         }
         return blockedVersions;
@@ -446,6 +462,7 @@ public class UpdateManager implements InitializingBean {
 
     public void resetCache() {
         releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
+        blockedVersionsCache = Suppliers.memoizeWithExpiration(getBlockedVersionsSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     }
 
     @Override

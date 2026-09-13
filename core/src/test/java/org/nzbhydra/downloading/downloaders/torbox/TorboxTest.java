@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupTask;
@@ -16,8 +15,7 @@ import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
@@ -25,14 +23,13 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Disabled
 class TorboxTest {
 
     @Autowired
     private Torbox torbox;
-    @MockBean
+    @MockitoBean
     private BackupTask backupTask;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory hydraOkHttp3ClientHttpRequestFactory;

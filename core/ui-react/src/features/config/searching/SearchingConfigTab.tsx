@@ -1,0 +1,312 @@
+import {Box} from "@mui/material";
+import {useWatch} from "react-hook-form";
+
+import type {ConfigValues} from "../../../api/config/schema";
+import {
+    ChipsSetting,
+    ConfigFieldset,
+    MultiSelectSetting,
+    NumberSetting,
+    SelectSetting,
+    SwitchSetting,
+    TextSetting,
+} from "../components";
+import {indexedSetting} from "../settingsSearch/settingsIndex";
+import {languageOptions} from "./languages";
+import {
+    APPLY_RESTRICTIONS_OPTIONS,
+    percentValidator,
+    preselectQuickFilterOptions,
+    SEARCH_SOURCE_OPTIONS,
+} from "./searchingSettings";
+
+/**
+ * `F-CONFIG-SEARCHING`: the Searching configuration tab — every field of
+ * `config-fields-service.js:737-1603`, in legacy's order and grouping, bound to
+ * `C-CONFIG-FORM`'s whole-config form through the `C-CONFIG-FIELDS`
+ * vocabulary. Legacy's custom-mapping list sat between "Result processing"
+ * and "Result display" here; FM-195 moved it to its own tab
+ * (`customMappings/CustomMappingsConfigTab.tsx`), which is the only thing
+ * that left this tab — every field of legacy's nine groups is still here, and
+ * the mappings are still stored under `searching.customMappings`.
+ *
+ * Legacy's `hideExpression`s become plain conditional rendering driven by
+ * `useWatch`. A hidden field keeps its value: the shell's form is created with
+ * `shouldUnregister: false`, so unmounting a row neither clears the value nor
+ * lets its validation rules block a save. That matters more here than on any
+ * other tab — turning word filters off must not delete the forbidden and
+ * required words behind them, which is exactly what
+ * `SearchingConfigValidator` warns about instead of silently accepting.
+ */
+export function SearchingConfigTab() {
+    const applyRestrictions = useWatch<ConfigValues>({
+        name: "searching.applyRestrictions",
+    });
+    const restrictionsApply = applyRestrictions !== "NONE";
+    const showQuickFilterButtons =
+        useWatch<ConfigValues>({name: "searching.showQuickFilterButtons"}) ===
+        true;
+    const customQuickFilterButtons = useWatch<ConfigValues>({
+        name: "searching.customQuickFilterButtons",
+    });
+    const language = useWatch<ConfigValues>({name: "searching.language"});
+
+    return (
+        <Box data-testid="config-searching">
+            <ConfigFieldset
+                advanced
+                label="Indexer access"
+                tooltip="Settings that control how communication with indexers is done and how to handle errors while doing that."
+            >
+                <NumberSetting
+                    {...indexedSetting("searching.timeout")}
+                    minimum={1}
+                    unit="seconds"
+                />
+                <TextSetting
+                    {...indexedSetting("searching.userAgent")}
+                    required
+                    tooltip="Some indexers don't seem to like Hydra and disable access based on the user agent. You can change it here if you want. Please leave it as it is if you have no problems. This allows indexers to gather better statistics on how their API services are used."
+                />
+                <ChipsSetting {...indexedSetting("searching.userAgents")} />
+                <SwitchSetting
+                    {...indexedSetting(
+                        "searching.ignoreLoadLimitingForInternalSearches",
+                    )}
+                />
+                <SwitchSetting
+                    {...indexedSetting(
+                        "searching.ignoreLoadLimitingForConcreteApiSearches",
+                    )}
+                />
+                <SwitchSetting
+                    {...indexedSetting("searching.ignoreTemporarilyDisabled")}
+                    tooltip="By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers."
+                />
+            </ConfigFieldset>
+            <ConfigFieldset
+                advanced
+                label="Category handling"
+                tooltip="Settings that control the handling of newznab categories (e.g. 2000 for Movies)."
+            >
+                <SwitchSetting
+                    {...indexedSetting("searching.transformNewznabCategories")}
+                />
+                <SwitchSetting
+                    {...indexedSetting("searching.sendTorznabCategories")}
+                />
+            </ConfigFieldset>
+            <ConfigFieldset
+                label="Media IDs / Query generation / Query processing"
+                tooltip={
+                    "Raw search engines like Binsearch don't support searches based on IDs (e.g. for a movie using an IMDB id). You can enable query generation for these. Hydra will then try to retrieve the movie's or show's title and generate a query, for example \"showname s01e01\". In some cases an ID based search will not provide any results. You can enable a fallback so that in such a case the search will be repeated with a query using the title of the show or movie."
+                }
+            >
+                <SelectSetting
+                    {...indexedSetting("searching.alwaysConvertIds")}
+                    advanced
+                    options={SEARCH_SOURCE_OPTIONS}
+                />
+                <SelectSetting
+                    {...indexedSetting("searching.generateQueries")}
+                    options={SEARCH_SOURCE_OPTIONS}
+                />
+                <SelectSetting
+                    {...indexedSetting("searching.idFallbackToQueryGeneration")}
+                    options={SEARCH_SOURCE_OPTIONS}
+                />
+                <SelectSetting
+                    {...indexedSetting("searching.language")}
+                    // A stored code this build has no label for stays in the
+                    // list rather than being dropped, so the select never
+                    // silently rewrites the configured language.
+                    options={languageOptions(language)}
+                    required
+                />
+                <SwitchSetting
+                    {...indexedSetting("searching.replaceUmlauts")}
+                />
+            </ConfigFieldset>
+            <ConfigFieldset
+                label="Result filters"
+                tooltip={
+                    'This section allows you to define global filters which will be applied to all search results. You can define words and regexes which must or must not be matched for a search result to be matched. You can also exclude certain usenet posters and groups which are known for spamming. You can define forbidden and required words for categories in the next tab (Categories). Usually required or forbidden words are applied on a word base, so they must form a complete word in a title. Only if they contain a dash or a dot they may appear anywhere in the title. Example: "ea" matches "something.from.ea" but not "release.from.other". "web-dl" matches "title.web-dl" and "someweb-dl".'
+                }
+            >
+                <SelectSetting
+                    {...indexedSetting("searching.applyRestrictions")}
+                    options={APPLY_RESTRICTIONS_OPTIONS}
+                />
+                {restrictionsApply ? (
+                    <ChipsSetting
+                        {...indexedSetting("searching.forbiddenWords")}
+                        tooltip="One forbidden word in a result title dismisses the result."
+                    />
+                ) : null}
+                {restrictionsApply ? (
+                    <TextSetting
+                        {...indexedSetting("searching.forbiddenRegex")}
+                        advanced
+                    />
+                ) : null}
+                {restrictionsApply ? (
+                    <ChipsSetting
+                        {...indexedSetting("searching.requiredWords")}
+                        tooltip="If any of the required words is not found anywhere in a result title it's also dismissed."
+                    />
+                ) : null}
+                {restrictionsApply ? (
+                    <TextSetting
+                        {...indexedSetting("searching.requiredRegex")}
+                        advanced
+                    />
+                ) : null}
+                {restrictionsApply ? (
+                    <ChipsSetting
+                        {...indexedSetting("searching.forbiddenGroups")}
+                        advanced
+                    />
+                ) : null}
+                {/*
+                 * Legacy has no `hideExpression` on the posters list even
+                 * though it is the same kind of filter as the groups list
+                 * above it (`config-fields-service.js:1217-1225`), so it stays
+                 * visible when word filters are off.
+                 */}
+                <ChipsSetting
+                    {...indexedSetting("searching.forbiddenPosters")}
+                    advanced
+                />
+                {/*
+                 * Free text, as legacy has it: the backend compares the
+                 * configured entries against whatever language string an
+                 * indexer returned, and there is no curated list anywhere to
+                 * reproduce.
+                 */}
+                <ChipsSetting
+                    {...indexedSetting("searching.languagesToKeep")}
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.maxAge")}
+                    unit="days"
+                />
+                <NumberSetting {...indexedSetting("searching.minSeeders")} />
+                <SwitchSetting
+                    {...indexedSetting("searching.ignorePassworded")}
+                    tooltip="Some indexers provide information if a release is passworded. If you select to ignore these releases only those will be ignored of which I know for sure that they're actually passworded."
+                />
+            </ConfigFieldset>
+            <ConfigFieldset label="Result processing">
+                <SwitchSetting
+                    {...indexedSetting("searching.wrapApiErrors")}
+                    advanced
+                    tooltip="In (hopefully) rare cases Hydra may crash when processing an API search request. You can enable to return an empty search page in these cases (if Hydra hasn't crashed altogether ). This means that the calling tool (e.g. Sonarr) will think that the indexer (Hydra) is fine but just didn't return a result. That way Hydra won't be disabled as indexer but on the downside you may not be directly notified that an error occurred."
+                />
+                <ChipsSetting
+                    {...indexedSetting("searching.removeTrailing")}
+                    tooltip="Hydra contains a predefined list of words which will be removed if a search result title ends with them. This allows better duplicate detection and cleans up the titles. Trailing words will be removed until none of the defined strings are found at the end of the result title."
+                />
+                <SwitchSetting
+                    {...indexedSetting("searching.useOriginalCategories")}
+                    advanced
+                    tooltip="Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results."
+                />
+            </ConfigFieldset>
+            <ConfigFieldset label="Result display">
+                <SwitchSetting
+                    {...indexedSetting("searching.loadAllCachedOnInternal")}
+                    advanced
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.loadLimitInternal")}
+                    advanced
+                    maximum={500}
+                    required
+                    unit="results per page"
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.coverSize")}
+                    required
+                    unit="px"
+                />
+                <SwitchSetting
+                    {...indexedSetting("searching.showMovieQualityIndicator")}
+                />
+            </ConfigFieldset>
+            <ConfigFieldset label="Quick filters">
+                <SwitchSetting
+                    {...indexedSetting("searching.showQuickFilterButtons")}
+                />
+                {showQuickFilterButtons ? (
+                    <SwitchSetting
+                        {...indexedSetting(
+                            "searching.alwaysShowQuickFilterButtons",
+                        )}
+                        advanced
+                    />
+                ) : null}
+                {showQuickFilterButtons ? (
+                    <ChipsSetting
+                        {...indexedSetting(
+                            "searching.customQuickFilterButtons",
+                        )}
+                        advanced
+                        tooltip='E.g. use WEB=webdl,web-dl. for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
+                    />
+                ) : null}
+                {showQuickFilterButtons ? (
+                    <MultiSelectSetting
+                        {...indexedSetting(
+                            "searching.preselectQuickFilterButtons",
+                        )}
+                        advanced
+                        options={preselectQuickFilterOptions(
+                            customQuickFilterButtons,
+                        )}
+                        tooltip="To select custom quickfilters you just entered please save the config first."
+                    />
+                ) : null}
+            </ConfigFieldset>
+            <ConfigFieldset
+                advanced
+                label="Duplicate detection"
+                tooltip="Hydra tries to find duplicate results from different indexers using heuristics. You can control the parameters for that but usually the default values work quite well."
+            >
+                <NumberSetting
+                    {...indexedSetting(
+                        "searching.duplicateSizeThresholdInPercent",
+                    )}
+                    required
+                    step={0.01}
+                    unit="%"
+                    validate={percentValidator}
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.duplicateAgeThreshold")}
+                    required
+                    unit="hours"
+                />
+            </ConfigFieldset>
+            <ConfigFieldset advanced label="Other">
+                <NumberSetting
+                    {...indexedSetting("searching.keepSearchResultsForDays")}
+                    required
+                    tooltip="Found results are stored in the database for this long until they're deleted. After that any links to Hydra results still stored elsewhere become invalid. You can increase the limit if you want, the disc space needed is negligible (about 75 MB for 7 days on my server)."
+                    unit="days"
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.historyForSearching")}
+                    required
+                    // Legacy's tooltip names the affordance with an inline
+                    // glyphicon `<span>` (`config-fields-service.js:1585`);
+                    // `tooltip` is plain text, so the icon is named instead.
+                    tooltip="The number of recent searches shown in the search bar dropdown (the clock icon)."
+                />
+                <NumberSetting
+                    {...indexedSetting("searching.globalCacheTimeMinutes")}
+                    unit="minutes"
+                />
+            </ConfigFieldset>
+        </Box>
+    );
+}

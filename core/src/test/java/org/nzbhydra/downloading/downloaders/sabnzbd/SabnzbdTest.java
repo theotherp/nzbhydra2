@@ -2,6 +2,12 @@
 
 package org.nzbhydra.downloading.downloaders.sabnzbd;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -19,16 +25,30 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
+import org.nzbhydra.downloading.downloaders.DownloaderStatus;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
+import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SabnzbdTest {
@@ -103,6 +123,109 @@ class SabnzbdTest {
         Request capturedRequest = requestCaptor.getValue();
         String contentType = capturedRequest.body().contentType().toString();
         assertThat(contentType).startsWith("multipart/form-data");
+        assertThat(capturedRequest.header("User-Agent")).isEqualTo("NZBHydra2");
+    }
+
+    @Test
+    void shouldReportFreeDiskSpaceFromQueue() throws Exception {
+        String json = Resources.toString(Resources.getResource(QueueResponseTest.class, "queueResponse.json"), Charsets.UTF_8);
+        QueueResponse queueResponse = new JsonMapper().readValue(json, QueueResponse.class);
+        class StubbedSabnzbd extends Sabnzbd {
+            StubbedSabnzbd(HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+                super(null, null, null, null, null, null, requestFactory, null);
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            protected <T> T callSabnzb(java.net.URI uri, Class<T> responseType) {
+                return (T) queueResponse;
+            }
+        }
+        StubbedSabnzbd stubbed = new StubbedSabnzbd(requestFactory);
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        downloaderConfig.setName("sabnzbd");
+        stubbed.initialize(downloaderConfig);
+
+        DownloaderStatus status = stubbed.getStatus();
+
+        //diskspace1 is the temporary folder, diskspace2 the complete folder, both in GB
+        assertThat(status.getFreeIncompleteDiskSpaceBytes()).isEqualTo((long) (236.51D * 1024 * 1024 * 1024));
+        assertThat(status.getFreeDiskSpaceBytes()).isEqualTo((long) (122.17D * 1024 * 1024 * 1024));
+        assertThat(status.getFreeDiskSpaceFormatted()).isEqualTo("122 GB");
+        assertThat(status.getFreeIncompleteDiskSpaceFormatted()).isEqualTo("237 GB");
+        assertThat(status.isQueueExceedsFreeDiskSpace()).isFalse();
+    }
+
+    @Test
+    void shouldFallBackToOfflineStatusAndLogTheErrorOnlyOncePerThrottleWindow() throws Exception {
+        class FailingSabnzbd extends Sabnzbd {
+            FailingSabnzbd(HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+                super(null, null, null, null, null, null, requestFactory, null);
+            }
+
+            @Override
+            protected <T> T callSabnzb(java.net.URI uri, Class<T> responseType) throws DownloaderException {
+                throw new DownloaderException("downloader is offline");
+            }
+
+            List<Long> recordedRates() {
+                return getDownloadRates();
+            }
+        }
+        FailingSabnzbd failing = new FailingSabnzbd(requestFactory);
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        downloaderConfig.setName("sabnzbd");
+        failing.initialize(downloaderConfig);
+        ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+        logAppender.start();
+        Logger sabnzbdLogger = (Logger) LoggerFactory.getLogger(Sabnzbd.class);
+        sabnzbdLogger.addAppender(logAppender);
+        try {
+            DownloaderStatus first = failing.getStatus();
+            DownloaderStatus second = failing.getStatus();
+
+            assertThat(first.getState()).isEqualTo(DownloaderStatus.State.OFFLINE);
+            assertThat(second.getState()).isEqualTo(DownloaderStatus.State.OFFLINE);
+            assertThat(failing.recordedRates()).containsExactly(0L, 0L);
+            assertThat(logAppender.list.stream()
+                    .filter(x -> x.getLevel() == Level.ERROR)
+                    .filter(x -> "Error contacting sabnzbd".equals(x.getMessage()))
+                    .toList()).hasSize(1);
+        } finally {
+            sabnzbdLogger.detachAppender(logAppender);
+            logAppender.stop();
+        }
+    }
+
+    @Test
+    void shouldSendUserAgentHeaderOnRestTemplateCalls() throws Exception {
+        RestTemplate internalRestTemplate = (RestTemplate) ReflectionTestUtils.getField(sabnzbd, "restTemplate");
+
+        ClientHttpRequest clientHttpRequest = mock(ClientHttpRequest.class);
+        ClientHttpResponse clientHttpResponse = mock(ClientHttpResponse.class);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders requestHeaders = new HttpHeaders();
+
+        when(clientHttpRequest.getHeaders()).thenReturn(requestHeaders);
+        when(clientHttpRequest.execute()).thenReturn(clientHttpResponse);
+        when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(clientHttpResponse.getHeaders()).thenReturn(responseHeaders);
+        when(clientHttpResponse.getBody()).thenReturn(new ByteArrayInputStream("{\"categories\":[]}".getBytes()));
+
+        ClientHttpRequestFactory delegateFactory = mock(ClientHttpRequestFactory.class);
+        when(delegateFactory.createRequest(any(), any())).thenReturn(clientHttpRequest);
+        internalRestTemplate.setRequestFactory(delegateFactory);
+
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        sabnzbd.initialize(downloaderConfig);
+
+        sabnzbd.getCategories();
+
+        assertThat(requestHeaders.getFirst("User-Agent")).isEqualTo("NZBHydra2");
     }
 
 }

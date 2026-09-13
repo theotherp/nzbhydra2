@@ -44,12 +44,12 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownContentTypeException;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,19 +79,21 @@ public class Sabnzbd extends Downloader {
         SABNZBD_STATUS_TO_HYDRA_STATUS.put("Failed", FileDownloadStatus.CONTENT_DOWNLOAD_ERROR);
     }
 
-    private Instant lastErrorLogged;
-
     private final RestTemplate restTemplate;
     private final HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
     public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder) {
         super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
-        this.restTemplate = restTemplate;
+        this.restTemplate = new RestTemplate(requestFactory);
+        this.restTemplate.getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().add("User-Agent", "NZBHydra2");
+            return execution.execute(request, body);
+        });
         this.requestFactory = requestFactory;
     }
 
     private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl()).pathSegment("api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(downloaderConfig.getUrl()).pathSegment("api");
         if (!Strings.isNullOrEmpty(downloaderConfig.getApiKey())) {
             builder.queryParam("apikey", downloaderConfig.getApiKey());
         }
@@ -148,6 +150,7 @@ public class Sabnzbd extends Downloader {
         RequestBody formBody = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("name", title, RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_XML_VALUE), fileContent)).build();
         Request request = new Request.Builder()
                 .url(urlBuilder.toUriString())
+            .header("User-Agent", "NZBHydra2")
                 .post(formBody)
                 .build();
         OkHttpClient client = requestFactory.getOkHttpClient(urlBuilder.build().encode().toUri().getHost());
@@ -165,7 +168,7 @@ public class Sabnzbd extends Downloader {
             String nzoId = addNzbResponse.getNzoIds().get(0);
             logger.info("Successfully added NZB \"{}\" to sabnzbd queue with ID {}", title, nzoId);
             return nzoId;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new DownloaderException("Error while communicating with downloader: " + e.getMessage());
         }
 
@@ -184,16 +187,9 @@ public class Sabnzbd extends Downloader {
         QueueResponse queueResponse = null;
         try {
             queueResponse = callSabnzb(uriBuilder.build().toUri(), QueueResponse.class);
-            lastErrorLogged = null;
+            resetStatusErrorThrottle();
         } catch (DownloaderException e) {
-            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
-                logger.error("Error contacting sabnzbd", e);
-                lastErrorLogged = Instant.now();
-            }
-            DownloaderStatus status = new DownloaderStatus();
-            status.setState(DownloaderStatus.State.OFFLINE);
-            addDownloadRate(0);
-            return status;
+            return handleStatusRequestError(logger, "Error contacting sabnzbd", e);
         }
         DownloaderStatus status = new DownloaderStatus();
         if (queueResponse == null || queueResponse.getQueue() == null || queueResponse.getQueue().getSlots() == null) {
@@ -219,6 +215,8 @@ public class Sabnzbd extends Downloader {
             status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queue.getMbleft()));
         }
         status.setRemainingSeconds(parseRemainingTime(queue.getTimeleft()));
+        status.setFreeIncompleteDiskSpaceBytes(parseGigabytesToBytes(queue.getDiskspace1()));
+        status.setFreeDiskSpaceBytes(parseGigabytesToBytes(queue.getDiskspace2()));
 
         if (!queue.getSlots().isEmpty()) {
             QueueEntry currentEntry = queue.getSlots().get(0);
@@ -228,8 +226,20 @@ public class Sabnzbd extends Downloader {
             status.setDownloadingTitlePercentFinished(Integer.parseInt(currentEntry.getPercentage()));
         }
 
-        status.setDownloadingRatesInKilobytes(downloadRates);
+        status.setDownloadingRatesInKilobytes(getDownloadRates());
         return status;
+    }
+
+    private Long parseGigabytesToBytes(String gigabytes) {
+        if (Strings.isNullOrEmpty(gigabytes)) {
+            return null;
+        }
+        try {
+            return (long) (Double.parseDouble(gigabytes) * 1024D * 1024D * 1024D);
+        } catch (NumberFormatException e) {
+            logger.debug("Unable to parse disk space from value '{}'", gigabytes);
+            return null;
+        }
     }
 
     private long parseRemainingTime(String timeleft) {

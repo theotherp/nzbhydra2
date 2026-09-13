@@ -1,0 +1,445 @@
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
+import {afterEach, describe, expect, it, vi} from "vitest";
+
+import {App} from "./App";
+import {resetSessionExpiryForTests} from "./app/sessionExpiry";
+
+const bootstrap = {
+    username: null,
+    authType: null,
+    showLogout: false,
+    maySeeSearch: false,
+    adminRestricted: false,
+    statsRestricted: false,
+    maySeeStats: false,
+    searchRestricted: false,
+    maySeeDetailsDl: false,
+    maySeeAdmin: false,
+    authConfigured: false,
+    showIndexerSelection: false,
+    safeConfig: {},
+    baseUrl: "/hydra/",
+    serverTimeZone: null,
+};
+
+/** A session that may read the history and statistics area, history on. */
+const statsBootstrap = {
+    ...bootstrap,
+    username: "stats",
+    maySeeStats: true,
+    maySeeSearch: true,
+    safeConfig: {keepHistory: true},
+    serverTimeZone: "UTC",
+};
+
+/**
+ * An ambient `fetch` for the stats area that answers every request with a
+ * well-formed empty payload and counts the indexer-statuses reads, which is
+ * what the cache-default test measures. Payloads have to parse: a rejected
+ * query would be retried by react-query and inflate the count for a reason
+ * that has nothing to do with `staleTime`.
+ */
+function statsBackend() {
+    const calls: string[] = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : String(input);
+        calls.push(url);
+        // `true` for `welcomeshown` and empty news lists keep the shell's
+        // startup sequence from opening a modal, which would put the whole
+        // application behind `aria-hidden` and make every role below
+        // unreachable.
+        const body = url.includes("internalapi/welcomeshown")
+            ? "true"
+            : url.includes("internalapi/indexerstatuses") ||
+                url.includes("internalapi/news") ||
+                url.includes("internalapi/usernews")
+              ? "[]"
+              : url.includes("internalapi/history/notifications")
+                ? JSON.stringify({
+                      content: [],
+                      totalPages: 0,
+                      totalElements: 0,
+                  })
+                : "{}";
+        return new Response(body, {
+            status: 200,
+            headers: {"Content-Type": "application/json"},
+        });
+    });
+    return {
+        fetch: fetchMock as unknown as typeof fetch,
+        indexerStatusCalls: () =>
+            calls.filter((url) => url.includes("internalapi/indexerstatuses"))
+                .length,
+    };
+}
+
+const STATS_TABLIST = {name: "History and statistics"};
+
+async function switchTab(name: string) {
+    fireEvent.click(screen.getByRole("tab", {name}));
+    await waitFor(() =>
+        expect(screen.getByRole("tab", {name})).toHaveAttribute(
+            "aria-selected",
+            "true",
+        ),
+    );
+}
+
+/** Lets any refetch a navigation may have queued actually be issued. */
+async function settle() {
+    await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+}
+
+afterEach(() => {
+    // FM-171: the session-expiry latch is module-scoped and deliberately
+    // one-way, so the 401 case below would otherwise leave every later test in
+    // this file rendering an open dialog over the application.
+    resetSessionExpiryForTests();
+});
+
+describe("App", () => {
+    it("should render an unknown-route notice with no way out of React", async () => {
+        // FM-024 migrates `/stats/stats` (the aggregate dashboard); any other
+        // `/stats/<tab>` still falls through the stats shell's own fallback
+        // route to this notice, which is what this test exercises.
+        window.history.pushState({}, "", "/hydra/stats/other?period=day");
+        render(<App bootstrap={bootstrap} />);
+
+        expect(
+            await screen.findByRole("heading", {
+                name: "Page not found",
+            }),
+        ).toBeInTheDocument();
+        // FM-095: the legacy shell and its selector endpoints are gone, so the
+        // notice must offer no escape hatch onto them -- an `/ui/legacy` link
+        // here would now be a link to a 404.
+        expect(screen.queryByRole("link", {name: /legacy/i})).toBeNull();
+        expect(
+            Array.from(document.querySelectorAll("a[href]")).map((anchor) =>
+                anchor.getAttribute("href"),
+            ),
+        ).not.toContainEqual(expect.stringContaining("ui/legacy"));
+    });
+
+    // FM-121. Both tests below fail against the pre-FM-121 tree, and are
+    // written so that they can: an assertion that *a* stats shell is on screen
+    // after a tab switch passes either way, because the seven sibling routes
+    // each rendered their own. What separates the two topologies is whether it
+    // is the *same* shell -- so this compares the tablist node's identity, and
+    // the next test counts the requests the remount used to throw away.
+    it("should keep one stats shell mounted across a tab switch", async () => {
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const tablist = await screen.findByRole("tablist", STATS_TABLIST);
+        await switchTab("Notification history");
+
+        expect(screen.getByRole("tablist", STATS_TABLIST)).toBe(tablist);
+    });
+
+    it("should serve a stats tab revisited within staleTime from the cache", async () => {
+        const backend = statsBackend();
+        vi.stubGlobal("fetch", backend.fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        expect(backend.indexerStatusCalls()).toBe(1);
+
+        await switchTab("Notification history");
+        await switchTab("Indexer statuses");
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        await settle();
+
+        // The second visit rendered from the cache: no second request, and so
+        // no first-load spinner between the click and the content.
+        expect(backend.indexerStatusCalls()).toBe(1);
+    });
+
+    /*
+     * react-query's own `refetchOnWindowFocus` default is `true`, so every
+     * query that does not pin the option refetched the moment the tab was
+     * focused again with its data stale -- alt-tabbing back to a history page
+     * re-issued the page read and its COUNT and jumped the layout for an
+     * action the reader never took. Legacy never did this. Asserted from the
+     * application rather than from the client object because what matters is
+     * the default the mounted client actually carries.
+     */
+    it("should not refetch a stale query when the window regains focus", async () => {
+        const backend = statsBackend();
+        vi.stubGlobal("fetch", backend.fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        await screen.findByRole("heading", {name: "Indexer statuses"});
+        expect(backend.indexerStatusCalls()).toBe(1);
+
+        // Well past `DEFAULT_QUERY_STALE_TIME_MS`, so the entry is stale and
+        // a focus refetch is the only thing that could issue a second read.
+        const frozen = Date.now() + 5 * 60_000;
+        vi.spyOn(Date, "now").mockReturnValue(frozen);
+        // `focusManager` subscribes to `visibilitychange` on `window`, and
+        // jsdom reports `visibilityState: "visible"`, so this is exactly the
+        // event a tab regaining focus delivers.
+        await act(async () => {
+            window.dispatchEvent(new Event("visibilitychange"));
+        });
+        await settle();
+
+        expect(backend.indexerStatusCalls()).toBe(1);
+    });
+
+    it("should render the application loading convention", () => {
+        render(<App bootstrap={bootstrap} isLoading />);
+
+        const status = screen.getByRole("status");
+        expect(status).toHaveTextContent("Loading…");
+        expect(status).toContainElement(screen.getByRole("progressbar"));
+        expect(screen.getByText("Loading…")).toBeVisible();
+    });
+
+    /*
+     * FM-154 (ADR-0049): `App` no longer builds the theme itself; it renders
+     * `ThemePreferenceProvider`, which owns the preference and provides the
+     * theme built from it.
+     *
+     * Both halves are asserted from the *application*, not from the provider in
+     * isolation, because the failure this guards against is a wiring one: a
+     * provider mounted below the shell (so the selector cannot reach it), or
+     * mounted but not supplying the theme (so `CssBaseline` and every component
+     * fall back to MUI's stock light default). The loading branch is included
+     * for the same reason -- it renders outside `QueryClientProvider` and would
+     * be the easy one to leave outside the theme too.
+     */
+    it("should provide the default theme and the selector that changes it", async () => {
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const selector = await screen.findByTestId("app-shell-theme-selector");
+        expect(selector).toHaveTextContent("Theme: Grey");
+        // The grey theme's page ground, applied by `CssBaseline` under the
+        // provider's theme -- evidence that the theme is genuinely in force and
+        // not merely constructed.
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+
+        fireEvent.click(selector);
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-bright"));
+
+        expect(selector).toHaveTextContent("Theme: Bright");
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+    });
+
+    /*
+     * ADR-0049's `auto` has to follow the operating system *while the page is
+     * open*, which is the one behaviour in `ThemePreferenceProvider` that no
+     * amount of clicking the selector exercises: it lives in the media query's
+     * `change` event, not in the preference state.
+     *
+     * jsdom implements neither `matchMedia` nor `MediaQueryList`, so the stub
+     * below is the only way to reach it. It is a real (if minimal) store --
+     * `matches` is mutable and the captured listener is the provider's own --
+     * so flipping it and firing the event is exactly what the browser does.
+     * The assertion stays the one the cases above use, the rendered page
+     * ground, so a provider that re-subscribed but never re-created the theme
+     * would still fail here.
+     */
+    it("should follow the system scheme while Auto is selected", async () => {
+        vi.stubGlobal("fetch", statsBackend().fetch);
+        const listeners: (() => void)[] = [];
+        const darkScheme = {
+            matches: false,
+            media: "(prefers-color-scheme: dark)",
+            addEventListener: (_event: string, listener: () => void) => {
+                listeners.push(listener);
+            },
+            removeEventListener: (_event: string, listener: () => void) => {
+                listeners.splice(listeners.indexOf(listener), 1);
+            },
+        };
+        vi.stubGlobal(
+            "matchMedia",
+            vi.fn((query: string) =>
+                query === darkScheme.media
+                    ? darkScheme
+                    : {
+                          matches: false,
+                          media: query,
+                          addEventListener: () => undefined,
+                          removeEventListener: () => undefined,
+                      },
+            ),
+        );
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const selector = await screen.findByTestId("app-shell-theme-selector");
+        fireEvent.click(selector);
+        fireEvent.click(screen.getByTestId("app-shell-theme-option-auto"));
+
+        // A system in light mode resolves `auto` to bright.
+        expect(selector).toHaveTextContent("Theme: Auto");
+        expect(listeners).toHaveLength(1);
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+
+        // The system switches to dark with the page open: no reselection, no
+        // reload, and the resolved theme moves to grey.
+        act(() => {
+            darkScheme.matches = true;
+            for (const listener of listeners) {
+                listener();
+            }
+        });
+
+        expect(selector).toHaveTextContent("Theme: Auto");
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+
+        // ...and back, so the case cannot pass on a one-way latch.
+        act(() => {
+            darkScheme.matches = false;
+            for (const listener of listeners) {
+                listener();
+            }
+        });
+
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(242, 244, 243)",
+        );
+    });
+
+    /*
+     * FM-171 (`C-SESSION-EXPIRY`): the app-wide `QueryClient`'s `QueryCache`
+     * `onError` half, asserted from the application because what is being
+     * tested is the wiring -- a client built without the cache hook renders
+     * two ordinary error states and no dialog.
+     *
+     * `/stats/indexers` under an admin session is exactly two react-query
+     * queries on this client and no more: `IndexerStatusesPage`'s
+     * `indexer-statuses` and the shell's `update-footer-infos` (which
+     * `enabled: maySeeAdmin` gates, hence the admin bootstrap). Refusing both
+     * is the concurrent-failure case: two queries fail within the same tick,
+     * and the reader gets one dialog rather than one per failure. Every other
+     * request is answered normally, so the startup sequence still opens
+     * nothing and the 401s are the only thing under test.
+     */
+    it("should raise exactly one session-expired dialog for concurrent 401s", async () => {
+        const refused: string[] = [];
+        const backend = statsBackend();
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+                const url = typeof input === "string" ? input : String(input);
+                if (
+                    url.includes("internalapi/indexerstatuses") ||
+                    url.includes("internalapi/updates/infos")
+                ) {
+                    refused.push(new URL(url, "http://localhost").pathname);
+                    return new Response("Unauthorized", {status: 401});
+                }
+                return backend.fetch(input, init);
+            }),
+        );
+        window.history.pushState({}, "", "/hydra/stats/indexers");
+        render(<App bootstrap={{...statsBootstrap, maySeeAdmin: true}} />);
+
+        expect(
+            await screen.findByTestId("session-expired-dialog"),
+        ).toBeVisible();
+        await settle();
+
+        // Both queries really did fail -- otherwise "one dialog" would be
+        // trivially true because only one request was ever refused.
+        expect(new Set(refused)).toEqual(
+            new Set([
+                "/hydra/internalapi/indexerstatuses",
+                "/hydra/internalapi/updates/infos",
+            ]),
+        );
+        expect(screen.getAllByTestId("session-expired-dialog")).toHaveLength(1);
+        expect(screen.getByTestId("session-expired-reload")).toBeVisible();
+        // Neither 401 was retried: the predicate `queryDefaults.ts` supplies
+        // is in force on this client, so each endpoint was asked exactly once.
+        expect(refused).toHaveLength(2);
+    });
+
+    /*
+     * The `MutationCache` half of the same wiring, which the query case above
+     * cannot reach: every request that test refuses is a query. A saved-search
+     * deletion is the one mutation the app-wide client owns, so it is the one
+     * that can prove a 401 answered to a *write* raises the dialog too. The
+     * read of the list is answered normally, so the page renders and the
+     * refused request is the `DELETE` alone.
+     */
+    it("should raise the session-expired dialog for a 401 answered to a mutation", async () => {
+        const refused: string[] = [];
+        const backend = statsBackend();
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+                const url = typeof input === "string" ? input : String(input);
+                if (url.includes("internalapi/savedsearches")) {
+                    if (init?.method === "DELETE") {
+                        refused.push(new URL(url, "http://localhost").pathname);
+                        return new Response("Unauthorized", {status: 401});
+                    }
+                    return new Response(
+                        JSON.stringify([{categoryName: "All", query: "stale"}]),
+                        {
+                            status: 200,
+                            headers: {"Content-Type": "application/json"},
+                        },
+                    );
+                }
+                return backend.fetch(input, init);
+            }),
+        );
+        window.history.pushState({}, "", "/hydra/stats/saved-searches");
+        render(<App bootstrap={statsBootstrap} />);
+
+        const row = await screen.findByRole("row", {name: /stale/});
+        expect(screen.queryByTestId("session-expired-dialog")).toBeNull();
+        fireEvent.click(within(row).getByRole("button", {name: "Delete"}));
+        fireEvent.click(
+            within(screen.getByRole("dialog", {name: /delete/i})).getByRole(
+                "button",
+                {name: "Delete"},
+            ),
+        );
+
+        expect(
+            await screen.findByTestId("session-expired-dialog"),
+        ).toBeVisible();
+        await settle();
+        expect(screen.getAllByTestId("session-expired-dialog")).toHaveLength(1);
+        // The write was refused exactly once, and it was the write: the
+        // dialog is not a side effect of some query failing alongside it.
+        expect(refused).toEqual(["/hydra/internalapi/savedsearches/0"]);
+    });
+
+    it("should render the loading branch under the theme as well", () => {
+        render(<App bootstrap={bootstrap} isLoading />);
+
+        expect(window.getComputedStyle(document.body).backgroundColor).toBe(
+            "rgb(31, 36, 38)",
+        );
+    });
+});

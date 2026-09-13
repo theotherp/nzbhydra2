@@ -2,7 +2,6 @@
 
 package org.nzbhydra.downloading.nzbs;
 
-import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
@@ -12,6 +11,7 @@ import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.SaveOrSendResultsResponse;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,15 +55,15 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzb/{guid}")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
+    public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") String guid) throws InvalidSearchResultIdException {
         logger.debug("downloadNzbInternal: {}", guid);
         return fileHandler.getFileByGuid(guid, SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 
-    @RequestMapping(value = "/internalapi/saveNzbsToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/saveNzbsToBlackhole", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<Long> searchResultId) {
+    public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<String> searchResultId) {
         logger.debug("saveNzbToBlackhole searchResultId: {}", searchResultId);
         return fileHandler.saveNzbToBlackhole(searchResultId);
     }
@@ -72,19 +73,19 @@ public class NzbHandlingWeb {
      *
      * @return The ZIP content or a generic response with an error
      */
-    @RequestMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    @PostMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public FileZipResponse getNzbZipData(@RequestBody List<Long> guids) {
+    public FileZipResponse getNzbZipData(@RequestBody List<String> guids) {
         logger.debug("getNzbZipData: {}", guids);
         try {
             return fileHandler.getFilesAsZip(guids);
         } catch (Exception e) {
             logger.error("Error while creating ZIP with NZBs", e);
-            return new FileZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(), Collections.emptyList(), guids);
+            return new FileZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(), Collections.emptyList(), Collections.emptyList());
         }
     }
 
-    @RequestMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    @PostMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public FileSystemResource downloadNzbZip(@RequestBody String zipFilepath) {
         logger.debug("downloadNzbZip: {}", zipFilepath);
@@ -99,6 +100,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
+        // NFO retrieval does not create a download observation, so it intentionally keeps the legacy result ID format.
         return fileHandler.getNfo(guid);
     }
 
@@ -109,7 +111,7 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
+    public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") String guid) throws InvalidSearchResultIdException {
         logger.debug("downloadNzbForUsers guid: {}", guid);
         return fileHandler.getFileByGuid(guid, SearchSource.INTERNAL).getAsResponseEntity();
     }
@@ -120,13 +122,13 @@ public class NzbHandlingWeb {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) {
         logger.debug("downloadNzbWithApikey guid: {}", guid);
 
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
-            throw new WrongApiKeyException("Wrong api key");
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(new NewznabXmlError("100", "Wrong api key"));
         }
 
         try {

@@ -10,6 +10,7 @@ import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@DependsOnDatabaseInitialization
 public class HistoryCleanupTask {
 
     private enum ASC_DESC {

@@ -43,8 +43,8 @@ public final class Util {
     private static final NumberFormat FORMAT_DOUBLE = NumberFormat.getInstance(Locale.US);
 
     static {
-        if (FORMAT_DOUBLE instanceof DecimalFormat) {
-            ((DecimalFormat) FORMAT_DOUBLE).applyPattern("#,##0.00");
+        if (FORMAT_DOUBLE instanceof DecimalFormat format) {
+            format.applyPattern("#,##0.00");
         }
     }
 
