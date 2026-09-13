@@ -3712,3 +3712,12 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `eslint` on the history dir (0 errors), `prettier`, vitest `DownloadHistoryPage.test.tsx` (12 tests); real-backend `tests/downloads.spec.ts` strip (`visual-evidence/F-HISTORY-DOWNLOADS/`).
 - **Commit:** this commit
 - **Note:** owner screenshot: Time and Age broke onto two lines, Result took three ("Content download successful"), and a long title pushed the NZB button onto its own line so row heights varied. Time/Result/Age cells are `white-space: nowrap`; the Result cell shows a short label (`SHORT_STATUS_LABELS`: Downloaded, NZB fetched, Added, Rejected, …) with the full label as tooltip and the icon still carrying the outcome; the title cell no longer wraps its flex row, the title wraps inside its own box. Width floor 640 → 690.
+
+
+### 2026-09-13 — Downloads fetched through the API link on behalf of a logged-in user are recorded as internal
+
+- **Why not a packet:** backend only; one rule in `FileDownloadEntity`'s constructor plus a unit test.
+- **Paths:** `core/src/main/java/org/nzbhydra/downloading/FileDownloadEntity.java`, `core/src/test/java/org/nzbhydra/downloading/FileDownloadEntityTest.java` (three cases added), new `core/src/main/resources/migration/V9__DOWNLOADS_WITH_USERNAME_ARE_INTERNAL.sql`, `core/src/main/resources/changelog.yaml`
+- **Gates:** `mvn -o -pl core -DskipTests=false -Dtest=FileDownloadEntityTest,FileHandlerTest,DownloaderTest test` (4 + 12 + 6 skipped); full `mvn -o -pl core test -DskipTests=false` (see commit). Migration verified on the scratch database: three seeded rows (API+user, API+null, INTERNAL+user) → packaged app applied "version 9", rows read back as INTERNAL / API / INTERNAL.
+- **Commit:** this commit
+- **Note:** analysis for the owner: `DownloadUrlBuilder` appends `username=<session user>` to the API-style link `Downloader.sendToDownloader` hands to SABnzbd/NZBGet in link mode; when the client fetches it, `/getnzb/api` records source API while the Interceptor picks the username up from the parameter. Owner decision: "API" is only for results that came from an API call, so an API-sourced download with a known username is recorded as INTERNAL, and V9 rewrites the existing rows the same way (`ACCESS_SOURCE='API' AND USERNAME IS NOT NULL`). Caveat recorded: an API client authenticating with basic auth or a proxy header also sets a remote user and is now recorded as internal too.

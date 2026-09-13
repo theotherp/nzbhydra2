@@ -14,6 +14,8 @@
           text: "The downloader status bar at the bottom of the page now shows the free disk space reported by SABnzbd or NZBGet (e.g. 955 GB free). If the downloader reports different values for the folder of finished downloads and the folder of downloads in progress the smaller one is shown and the tooltip lists both. A warning icon appears when what is left to download in the queue is larger than the free space. See #1060."
       -   type: "feature"
           text: "Custom mappings moved out of the Searching settings into their own &quot;Custom Mappings&quot; config tab. A mapping can now be given a name, switched off without deleting it, and moved up or down. The order matters, because mappings are applied from top to bottom and a mapping that matches the whole string stops the rest. The example you test with is now several lines, is saved with the mapping, and testing shows for every line both what that one mapping does and what your whole list of mappings does to it. See #902."
+      -   type: "fix"
+          text: "Downloads that a logged-in user sent to the downloader were shown in the history with source &quot;API&quot; and that user's name, because the downloader fetched them through the API link. They are now recorded as internal, and existing history entries are corrected on the first start after the update; &quot;API&quot; is only used for downloads of results that came from an API call."
       -   type: "note"
           text: "Custom query and title mappings are now applied from top to bottom, and nothing is applied after the first mapping that matched the whole string was applied. Before, if two mappings that match the whole string matched, an error was logged and none of them was used."
       -   type: "fix"

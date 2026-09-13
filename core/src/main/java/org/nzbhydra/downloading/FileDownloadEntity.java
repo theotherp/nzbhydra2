@@ -62,10 +62,14 @@ public final class FileDownloadEntity {
     public FileDownloadEntity(SearchResultEntity searchResult, FileDownloadAccessType nzbAccessType, SearchSource accessSource, FileDownloadStatus status, String error) {
         this.searchResult = searchResult;
         this.nzbAccessType = nzbAccessType;
-        this.accessSource = accessSource;
+        this.username = SessionStorage.username.get();
+        // Owner decision (2026-09-13): "API" is reserved for downloads of results that an API call produced. Links
+        // Hydra hands to a download client on behalf of a logged-in user go through /getnzb/api (they carry the API
+        // key) but also carry that user's name as a query parameter, which the Interceptor stores; such a download
+        // is the user's, not an API client's, and is recorded as internal.
+        this.accessSource = accessSource == SearchSource.API && this.username != null ? SearchSource.INTERNAL : accessSource;
         this.status = status;
         this.time = Instant.now();
-        this.username = SessionStorage.username.get();
         this.userAgent = SessionStorage.userAgent.get();
         this.ip = SessionStorage.IP.get();
         this.age = (int) (Duration.between(searchResult.getPubDate(), searchResult.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));

@@ -2,6 +2,7 @@
 
 package org.nzbhydra.downloading;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.SearchSource;
@@ -10,6 +11,7 @@ import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.web.SessionStorage;
 import tools.jackson.databind.ObjectWriter;
 
 import java.time.Instant;
@@ -17,6 +19,47 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FileDownloadEntityTest {
+
+    @AfterEach
+    void tearDown() {
+        SessionStorage.username.remove();
+    }
+
+    @Test
+    void shouldRecordApiDownloadWithoutUsernameAsApi() {
+        FileDownloadEntity entity = new FileDownloadEntity(searchResult(), FileDownloadAccessType.PROXY, SearchSource.API, FileDownloadStatus.REQUESTED, null);
+
+        assertThat(entity.getAccessSource()).isEqualTo(SearchSource.API);
+        assertThat(entity.getUsername()).isNull();
+    }
+
+    @Test
+    void shouldRecordApiDownloadCarryingAUsernameAsInternal() {
+        //The link Hydra handed to the download client carried username=<user>, which the Interceptor stored
+        SessionStorage.username.set("someone");
+
+        FileDownloadEntity entity = new FileDownloadEntity(searchResult(), FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.REQUESTED, null);
+
+        assertThat(entity.getAccessSource()).isEqualTo(SearchSource.INTERNAL);
+        assertThat(entity.getUsername()).isEqualTo("someone");
+    }
+
+    @Test
+    void shouldKeepInternalDownloadsInternal() {
+        SessionStorage.username.set("someone");
+
+        FileDownloadEntity entity = new FileDownloadEntity(searchResult(), FileDownloadAccessType.PROXY, SearchSource.INTERNAL, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, null);
+
+        assertThat(entity.getAccessSource()).isEqualTo(SearchSource.INTERNAL);
+    }
+
+    private static SearchResultEntity searchResult() {
+        SearchResultEntity searchResult = new SearchResultEntity();
+        searchResult.setFirstFound(Instant.now());
+        searchResult.setPubDate(Instant.now());
+        searchResult.setIndexer(new IndexerEntity("indexerName"));
+        return searchResult;
+    }
 
     @Test
     public void shouldBeConvertibleToTest() throws Exception {
