@@ -5,15 +5,21 @@ export type ConfigTab = {
 };
 
 /**
- * The eight canonical configuration tabs, in legacy's order
+ * The canonical configuration tabs, in legacy's order
  * (`config-controller.js:195-259`). The segments are a URL contract: they are
  * what an existing bookmark, the legacy shell selector, and the `Config`
  * navigation item all point at.
+ *
+ * `customMappings` is the one entry legacy has no counterpart for: FM-195 gave
+ * the custom-mapping list its own tab rather than leaving it at the foot of
+ * Searching, where it sits directly after in this order. The settings it edits
+ * are still stored under `searching.customMappings`.
  */
 export const CONFIG_TABS: readonly ConfigTab[] = [
     {path: "main", label: "Main"},
     {path: "auth", label: "Authorization"},
     {path: "searching", label: "Searching"},
+    {path: "customMappings", label: "Custom Mappings"},
     {path: "categories", label: "Categories"},
     {path: "downloading", label: "Downloading"},
     {path: "externalTools", label: "External Tools"},

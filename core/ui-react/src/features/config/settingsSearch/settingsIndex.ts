@@ -23,7 +23,7 @@ import {
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
- * `C-CONFIG-SETTINGS-INDEX`: the label and help of every setting the eight
+ * `C-CONFIG-SETTINGS-INDEX`: the label and help of every setting the
  * configuration tabs render *directly*, declared once, here.
  *
  * The tabs define their fields as JSX, not as data (ADR-0002: "a small typed
@@ -668,7 +668,7 @@ const AUTH_ENTRIES = tabEntries("auth", ({fieldset, section}) => {
 // Searching -- `SearchingConfigTab.tsx`
 // ---------------------------------------------------------------------------
 
-const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
+const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset}) => {
     fieldset("Indexer access", {advanced: true}, [
         {
             help: "Any web call to an indexer taking longer than this is aborted.",
@@ -827,22 +827,6 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
             path: "searching.useOriginalCategories",
         },
     ]);
-    section({
-        // FM-131: the whole section is wrapped in an advanced `ConfigFieldset`
-        // (`SearchingConfigTab.tsx`) whose `label` is
-        // `CustomMappingsSection.tsx`'s `CUSTOM_MAPPINGS_HEADLINE` -- kept as a
-        // literal here, like every other path/label in this file, rather than
-        // imported, so it must be kept in sync by hand if that headline ever
-        // changes. With the global toggle off the section is hidden behind
-        // that fieldset's own expander, the same as any other wholly-advanced
-        // fieldset, and a search hit reveals it the same way.
-        advanced: true,
-        anchorTestId: repeatAnchor("searching.customMappings"),
-        fieldset: "Custom mappings of queries, search titles and result titles",
-        help: "Rewrite result titles before they are processed, matching on a regex and building a new title from its groups.",
-        label: "Custom mappings",
-        path: "searching.customMappings",
-    });
     fieldset("Result display", {}, [
         {
             advanced: true,
@@ -924,6 +908,28 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
             path: "searching.globalCacheTimeMinutes",
         },
     ]);
+});
+
+// ---------------------------------------------------------------------------
+// Custom Mappings -- `customMappings/CustomMappingsConfigTab.tsx`
+// ---------------------------------------------------------------------------
+
+const CUSTOM_MAPPINGS_ENTRIES = tabEntries("customMappings", ({section}) => {
+    // FM-195 moved this entry off the Searching tab with the section itself.
+    // Three things went with the move and one deliberately did not: the tab is
+    // now `customMappings`, the `advanced` flag is gone (the tab renders its
+    // one section directly -- a tab hidden by the global toggle could not be
+    // reached), and there is no enclosing `ConfigFieldset` to name, which is
+    // what makes `C-CONFIG-REVIEW` attribute a changed mapping to "Custom
+    // Mappings". The anchor did not change: it is derived from the *config*
+    // path, which is still `searching.customMappings`, and every selector in
+    // the suite names it.
+    section({
+        anchorTestId: repeatAnchor("searching.customMappings"),
+        help: "Rewrite queries, search titles and result titles before they are processed, matching on a regex and building a new value from its groups.",
+        label: "Custom mappings",
+        path: "searching.customMappings",
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -1149,6 +1155,7 @@ export const SETTINGS_INDEX: readonly SettingsIndexEntry[] = [
     ...MAIN_ENTRIES,
     ...AUTH_ENTRIES,
     ...SEARCHING_ENTRIES,
+    ...CUSTOM_MAPPINGS_ENTRIES,
     ...CATEGORIES_ENTRIES,
     ...DOWNLOADING_ENTRIES,
     ...EXTERNAL_TOOLS_ENTRIES,

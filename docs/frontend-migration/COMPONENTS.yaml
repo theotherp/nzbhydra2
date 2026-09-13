@@ -458,13 +458,13 @@ components:
     classification: feature_specific
     state: done
   - id: C-CONFIG-FORM
-    responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all eight tabs, and the
+    responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all its tabs, and the
       save pipeline that refuses to submit an invalid form and maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`. Since FM-097 it also derives the shell's
       unsaved-work summary from that one form state -- how many settings changed, and which top-level section each change or validation error belongs to -- so the sticky save bar and the settings nav's per-section badges cannot disagree.
       Since FM-191 the modal-transaction lifecycle every list editor writes into this form through is one hook, `useListEditorTransaction` (`features/config/useListEditorTransaction.ts`), owning the `{index, token, value}` state, the
       monotonic token bumped on every open, close and delete, `isCurrent`, `cancel`'s rollback hook, and the commit that drops a resolved transaction whose token is stale or whose row is gone. The array write stays at each call site, which is what
       keeps `IndexersConfigTab`'s deliberate replace-wholesale commit and everyone else's ADR-0003 spread-over-the-stored-entry merge apart, and what leaves `CategoriesTable`'s ADR-0034 placeholder add and its unmount rollback where they
-      belong. Its six consumers are `auth/AuthUsersSection`, `categories/CategoriesTable`, `downloading/DownloadersSection`, `external-tools/ExternalToolsSection`, `indexers/IndexersConfigTab` and `searching/CustomMappingsSection` -- the
+      belong. Its six consumers are `auth/AuthUsersSection`, `categories/CategoriesTable`, `downloading/DownloadersSection`, `external-tools/ExternalToolsSection`, `indexers/IndexersConfigTab` and `customMappings/CustomMappingsSection` -- the
       last of which had no token at all before FM-191. `notifications/NotificationEntriesSection` is deliberately not one, since it edits entries in place with no draft, dialog or async gap and so has no transaction to own
     legacy:
       - core/ui-src/js/config/config-controller.js
@@ -515,7 +515,8 @@ components:
       an unflagged row in a wholly-advanced fieldset would misread as not advanced, so toggle-on rendering stays pixel-identical with the pre-FM-098 baseline. The count is derived from live registrations on every render, never memoized,
       because `useWatch`-gated advanced rows mount and unmount while the tab is open. An advanced `HelpBlock`, and an advanced row outside any fieldset, are the documented boundary -- both stay hidden outright; no editable section
       does, since FM-131 wrapped the one section that used to (`F-CONFIG-SEARCHING`'s custom-mapping list, which self-gated on `useShowAdvanced` and returned `null`) in an advanced `ConfigFieldset` like every other advanced group,
-      rather than leave it as a silent third case FM-098 missed. FM-102 has every
+      rather than leave it as a silent third case FM-098 missed. FM-195 then moved that list onto its own tab and dropped the wrapper with it -- the gate was about the section's position at the foot of Searching, and a whole tab hidden
+      while the global toggle is off has no affordance left to reveal it -- so no editable section self-gates and none is advanced. FM-102 has every
       `ConfigFieldset` self-register its own `<fieldset>` element -- while that element is actually mounted, so a whole advanced fieldset collapsed behind its expander contributes no entry until revealed -- with `F-CONFIG-SHELL`'s
       registry (`core/ui-react/src/features/config/fieldsetNav.ts`), which `ConfigNav.tsx` renders as ADR-0028's "on this page" list; order is derived from live DOM position on every change rather than trusted from registration
       sequence, since a conditionally mounted fieldset's effect commits after ones already on screen while sitting earlier in the tab's JSX. FM-117 changed how every one of these controls is *painted*, and did it entirely in
@@ -549,7 +550,7 @@ components:
     classification: feature_specific
     state: done
   - id: C-CONFIG-SETTINGS-INDEX
-    responsibility: The declaration of every setting the eight config tabs render directly -- per row its config path, label, structured `HelpContent`, tab, fieldset, advanced flag, and a `conditional` marker for rows whose
+    responsibility: The declaration of every setting the config tabs render directly -- per row its config path, label, structured `HelpContent`, tab, fieldset, advanced flag, and a `conditional` marker for rows whose
       rendering depends on another field -- because the tabs define fields as JSX, not data, and search/labelling features need the metadata as values. Created by FM-099 (settings search) and consumed by FM-100 (review-changes labels) and
       FM-101 (invalid-field listing). Since FM-193 the label and the help are declared here and read back by each control through `indexedSetting(path)`, rather than copied out of the tab JSX, so a search hit quotes the row it navigates to
       by construction; `helpText`, the flat string matching runs over, is derived from the same `HelpContent` the control renders. Kept honest by FM-099's drift test rendering each tab and comparing `config-setting-*` testids against the
@@ -566,7 +567,9 @@ components:
       dependency: the 134 indexed rows spread `indexedSetting(path)` for their `name`, `label` and `help`, `SettingProps.label` stays required and nothing looks
       anything up on its own, and `main/mainSettings.ts` is unchanged -- `CSRF_HELP` and the wiki/H2/Apprise link URLs are now imported by the index instead of
       by the tabs. No string moved: base and after dumps of the ordered index (path, label, flattened help, tab, fieldset, advanced, conditional, anchorTestId,
-      kind) are byte-identical, as are all eight tabs' rendered `outerHTML` and emotion sheets with the advanced toggle on and off."
+      kind) are byte-identical, as are all eight tabs' rendered `outerHTML` and emotion sheets with the advanced toggle on and off. FM-195 moved the
+      `searching.customMappings` section entry to its own `customMappings` tab and dropped its `advanced` flag and its `fieldset`, keeping the
+      `config-repeat-searching-customMappings` anchor, which is derived from the config path rather than from the tab."
   - id: C-REFINE-MULTISELECT
     responsibility: Controlled, presentational collapsible multiselect for refine surfaces -- a caption toggle button (refineSectionLabel typography, aria-expanded)
       over a Collapse of full-width toggle rows (aria-pressed, data-filter-value, optional mono count). It renders entries in the order given and holds no state,

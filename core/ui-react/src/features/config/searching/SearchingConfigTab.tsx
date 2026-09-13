@@ -2,7 +2,6 @@ import {Box} from "@mui/material";
 import {useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
-import {ApiTransport} from "../../../api/transport";
 import {
     ChipsSetting,
     ConfigFieldset,
@@ -13,11 +12,6 @@ import {
     TextSetting,
 } from "../components";
 import {indexedSetting} from "../settingsSearch/settingsIndex";
-import {
-    CUSTOM_MAPPINGS_HEADLINE,
-    CUSTOM_MAPPINGS_TOOLTIP,
-    CustomMappingsSection,
-} from "./CustomMappingsSection";
 import {languageOptions} from "./languages";
 import {
     APPLY_RESTRICTIONS_OPTIONS,
@@ -30,13 +24,11 @@ import {
  * `F-CONFIG-SEARCHING`: the Searching configuration tab — every field of
  * `config-fields-service.js:737-1603`, in legacy's order and grouping, bound to
  * `C-CONFIG-FORM`'s whole-config form through the `C-CONFIG-FIELDS`
- * vocabulary. The custom-mapping list between "Result processing" and "Result
- * display" is legacy's position for it; it is the one section edited through a
- * modal transaction (`CustomMappingsSection`), wrapped here in an advanced
- * `ConfigFieldset` so the wholly-advanced section joins FM-098's disclosure
- * convention (FM-131) rather than vanishing outright while the global toggle
- * is off; `CustomMappingsSection` renders no heading of its own, so this is
- * the fieldset's `label`/`tooltip`, not a duplicate of one it already draws.
+ * vocabulary. Legacy's custom-mapping list sat between "Result processing"
+ * and "Result display" here; FM-195 moved it to its own tab
+ * (`customMappings/CustomMappingsConfigTab.tsx`), which is the only thing
+ * that left this tab — every field of legacy's nine groups is still here, and
+ * the mappings are still stored under `searching.customMappings`.
  *
  * Legacy's `hideExpression`s become plain conditional rendering driven by
  * `useWatch`. A hidden field keeps its value: the shell's form is created with
@@ -46,7 +38,7 @@ import {
  * required words behind them, which is exactly what
  * `SearchingConfigValidator` warns about instead of silently accepting.
  */
-export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
+export function SearchingConfigTab() {
     const applyRestrictions = useWatch<ConfigValues>({
         name: "searching.applyRestrictions",
     });
@@ -219,13 +211,6 @@ export function SearchingConfigTab({transport}: {transport: ApiTransport}) {
                     advanced
                     tooltip="Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results."
                 />
-            </ConfigFieldset>
-            <ConfigFieldset
-                advanced
-                label={CUSTOM_MAPPINGS_HEADLINE}
-                tooltip={CUSTOM_MAPPINGS_TOOLTIP}
-            >
-                <CustomMappingsSection transport={transport} />
             </ConfigFieldset>
             <ConfigFieldset label="Result display">
                 <SwitchSetting

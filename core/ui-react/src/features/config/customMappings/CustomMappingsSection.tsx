@@ -1,6 +1,16 @@
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import {Box, Button, Divider, Stack, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Chip,
+    Divider,
+    IconButton,
+    Stack,
+    Typography,
+} from "@mui/material";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {CustomMappingValues} from "../../../api/config/customMappingTest";
@@ -10,31 +20,18 @@ import {useListEditorTransaction} from "../useListEditorTransaction";
 import {CustomMappingDialog} from "./CustomMappingDialog";
 import {
     AFFECTED_VALUE_OPTIONS,
+    CUSTOM_MAPPINGS_ORDER_HELP,
     CUSTOM_MAPPINGS_PATH,
     CUSTOM_MAPPINGS_TEST_ID,
+    customMappingLegend,
     customMappingValues,
     MAPPING_SEARCH_TYPE_OPTIONS,
     newCustomMapping,
     optionLabel,
-} from "./searchingSettings";
+} from "./customMappingSettings";
 
-/**
- * `config-fields-service.js:1317`. FM-131 hands this to the wrapping
- * `ConfigFieldset` as its `label`, rather than rendering it here itself --
- * see that component's doc comment for why.
- */
-export const CUSTOM_MAPPINGS_HEADLINE =
-    "Custom mappings of queries, search titles and result titles";
-
-/**
- * `config-fields-service.js:1314`. FM-131 hands this to the wrapping
- * `ConfigFieldset` as its `tooltip`, for the same reason as the headline.
- */
-export const CUSTOM_MAPPINGS_TOOLTIP =
-    "Here you can define mappings to modify either queries or titles for search requests or to dynamically change the titles of found results. The former allows you, for example,  to change requests made by external tools, the latter to clean up results by indexers in a more advanced way.";
-
-/** `config-fields-service.js:1316`, the legend of an entry with no name. */
-const ENTRY_LEGEND = "Mapping";
+/** The chip a switched-off mapping carries. */
+const DISABLED_LABEL = "Disabled";
 
 /**
  * `F-CONFIG-SEARCHING`'s custom-mapping list — legacy's `repeatSection` at
@@ -50,21 +47,21 @@ const ENTRY_LEGEND = "Mapping";
  * drops the duplicate: the list shows each mapping's values, and every edit
  * goes through the dialog, so Cancel always discards and only Submit writes.
  *
- * Only this component talks to `C-CONFIG-FORM`. Adding, replacing, and
- * removing an entry all go through the shared form's `setValue` with
+ * Only this component talks to `C-CONFIG-FORM`. Adding, replacing, reordering
+ * and removing an entry all go through the shared form's `setValue` with
  * `shouldDirty`, so the array lives in the form (not in component state) and
  * survives switching config tabs; a replaced entry keeps any key this UI has no
  * vocabulary for, because `ConfigWeb.setConfig` writes the whole file back
  * (ADR-0003).
  *
- * FM-131: the whole section is advanced (legacy's
- * `templateOptions.advanced` on the group), so it no longer self-gates on
- * `useShowAdvanced` and no longer renders its own headline. Its caller,
- * `SearchingConfigTab`, wraps it in a `ConfigFieldset advanced` instead,
- * which owns both the toggle-off hidden-affordance/reveal behaviour
- * (`C-CONFIG-FIELDS`) and the headline itself (as that fieldset's `label`
- * and `tooltip`, `CUSTOM_MAPPINGS_HEADLINE`/`CUSTOM_MAPPINGS_TOOLTIP` above)
- * -- rendering it here too would double the heading.
+ * FM-195 moved it out of the foot of Searching onto its own tab
+ * (`CustomMappingsConfigTab`), which renders it directly rather than behind
+ * FM-131's advanced disclosure: that gate existed because the section sat
+ * among Searching's fieldsets, and a whole tab hidden while the advanced
+ * toggle is off could not be reached at all. The order of the list became
+ * meaningful in the same pair of tasks (FM-194 applies mappings top to bottom
+ * and stops after the first applied whole-string one), which is what the move
+ * buttons are for.
  */
 export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
     const {setValue} = useFormContext<ConfigValues>();
@@ -124,6 +121,26 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
         write(entries.filter((_entry, entryIndex) => entryIndex !== index));
     };
 
+    /**
+     * Moves one entry one position, which is a *save* of a different list
+     * order and therefore dirties the form exactly as an edit does. It
+     * invalidates for the same reason `remove` does: a swap renames two
+     * indices at once, so a dialog opened over either of them would commit its
+     * draft onto the wrong mapping.
+     */
+    const move = (index: number, offset: number) => {
+        const target = index + offset;
+        if (target < 0 || target >= entries.length) {
+            return;
+        }
+        transaction.invalidate();
+        const next = [...entries];
+        [next[index], next[target]] = [next[target], next[index]];
+        write(next);
+    };
+
+    const values = entries.map((entry) => customMappingValues(entry));
+
     return (
         <Box data-testid={`config-repeat-${CUSTOM_MAPPINGS_TEST_ID}`}>
             <Stack divider={<Divider />} spacing={2} sx={{mb: 2}}>
@@ -138,10 +155,20 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
                         onEdit={() =>
                             transaction.open(index, customMappingValues(entry))
                         }
+                        onMoveDown={() => move(index, 1)}
+                        onMoveUp={() => move(index, -1)}
                         onRemove={() => remove(index)}
+                        total={entries.length}
                     />
                 ))}
             </Stack>
+            <Typography
+                component="p"
+                sx={{color: "text.secondary", mb: 2}}
+                variant="body2"
+            >
+                {CUSTOM_MAPPINGS_ORDER_HELP}
+            </Typography>
             <Button
                 data-testid={`config-repeat-add-${CUSTOM_MAPPINGS_TEST_ID}`}
                 onClick={() => transaction.open(null, newCustomMapping())}
@@ -152,6 +179,8 @@ export function CustomMappingsSection({transport}: {transport: ApiTransport}) {
             </Button>
             {editing === null ? null : (
                 <CustomMappingDialog
+                    entries={values}
+                    index={editing.index}
                     initialValue={editing.value}
                     onCancel={transaction.close}
                     onSubmit={commit}
@@ -167,14 +196,21 @@ function MappingEntry({
     entry,
     index,
     onEdit,
+    onMoveDown,
+    onMoveUp,
     onRemove,
+    total,
 }: {
     entry: unknown;
     index: number;
     onEdit: () => void;
+    onMoveDown: () => void;
+    onMoveUp: () => void;
     onRemove: () => void;
+    total: number;
 }) {
     const values = customMappingValues(entry);
+    const legend = customMappingLegend(values.name, index);
     const rows: {field: string; label: string; value: string}[] = [
         {
             field: "affectedValue",
@@ -208,9 +244,22 @@ function MappingEntry({
         <Box
             data-testid={`config-repeat-entry-${CUSTOM_MAPPINGS_TEST_ID}-${index}`}
         >
-            <Typography component="h3" sx={{mb: 1}} variant="subtitle1">
-                {ENTRY_LEGEND}
-            </Typography>
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{alignItems: "center", mb: 1}}
+            >
+                <Typography component="h3" variant="subtitle1">
+                    {legend}
+                </Typography>
+                {values.enabled ? null : (
+                    <Chip
+                        data-testid={`config-custom-mapping-disabled-${index}`}
+                        label={DISABLED_LABEL}
+                        size="small"
+                    />
+                )}
+            </Stack>
             <Box component="dl" sx={{m: 0, mb: 1}}>
                 {rows.map((row) => (
                     <Stack
@@ -236,24 +285,50 @@ function MappingEntry({
                     </Stack>
                 ))}
             </Box>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} sx={{alignItems: "center"}}>
+                {/*
+                 * The entry's legend is the admin's own text and can be as
+                 * long as they like, so it names the control through
+                 * `aria-label` rather than by being typed into it -- the
+                 * visible word is still contained in the accessible name
+                 * (WCAG 2.5.3), and a phone-width row no longer wraps one
+                 * button's label over three lines.
+                 */}
                 <Button
+                    aria-label={`Edit ${legend}`}
                     data-testid={`config-repeat-edit-${CUSTOM_MAPPINGS_TEST_ID}-${index}`}
                     onClick={onEdit}
                     startIcon={<EditIcon />}
                     type="button"
                 >
-                    Edit {ENTRY_LEGEND}
+                    Edit
                 </Button>
                 <Button
+                    aria-label={`Remove ${legend}`}
                     color="error"
                     data-testid={`config-repeat-remove-${CUSTOM_MAPPINGS_TEST_ID}-${index}`}
                     onClick={onRemove}
                     startIcon={<DeleteIcon />}
                     type="button"
                 >
-                    Remove {ENTRY_LEGEND}
+                    Remove
                 </Button>
+                <IconButton
+                    aria-label={`Move ${legend} up`}
+                    data-testid={`config-repeat-up-${CUSTOM_MAPPINGS_TEST_ID}-${index}`}
+                    disabled={index === 0}
+                    onClick={onMoveUp}
+                >
+                    <ArrowUpwardIcon />
+                </IconButton>
+                <IconButton
+                    aria-label={`Move ${legend} down`}
+                    data-testid={`config-repeat-down-${CUSTOM_MAPPINGS_TEST_ID}-${index}`}
+                    disabled={index === total - 1}
+                    onClick={onMoveDown}
+                >
+                    <ArrowDownwardIcon />
+                </IconButton>
             </Stack>
         </Box>
     );

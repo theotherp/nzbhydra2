@@ -194,19 +194,39 @@ describe("configTabForSectionKey", () => {
     });
 
     it("should cover every canonical tab exactly once", () => {
-        const mapped = CONFIG_TABS.map((tab) => tab.path).filter((path) =>
-            [
-                "main",
-                "auth",
-                "searching",
-                "categoriesConfig",
-                "downloading",
-                "externalTools",
-                "indexers",
-                "notificationConfig",
-            ].some((key) => configTabForSectionKey(key) === path),
-        );
-        expect(mapped).toEqual(CONFIG_TABS.map((tab) => tab.path));
+        // Two halves, because since FM-195 the relationship is no longer a
+        // bijection. Every section key still has to reach a real tab -- a key
+        // pointing at a segment `CONFIG_TABS` does not hold would badge
+        // nothing -- but the reverse no longer holds: Custom Mappings is a
+        // *grouping* of the UI, editing `searching.customMappings`, so no
+        // top-level config section is its own. That is deliberate and is what
+        // keeps a mapping edit badging Searching as dirty or invalid.
+        const sectionKeys = [
+            "main",
+            "auth",
+            "searching",
+            "categoriesConfig",
+            "downloading",
+            "externalTools",
+            "indexers",
+            "notificationConfig",
+        ];
+        const tabPaths = CONFIG_TABS.map((tab) => tab.path);
+        expect(
+            sectionKeys.filter(
+                (key) => !tabPaths.includes(configTabForSectionKey(key) ?? ""),
+            ),
+        ).toEqual([]);
+        // Pinned by name rather than counted, so a *second* section-less tab
+        // -- which would silently badge nothing at all -- fails here.
+        expect(
+            tabPaths.filter(
+                (path) =>
+                    !sectionKeys.some(
+                        (key) => configTabForSectionKey(key) === path,
+                    ),
+            ),
+        ).toEqual(["customMappings"]);
     });
 
     it("should map no tab for a section the UI does not edit", () => {

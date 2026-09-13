@@ -29,6 +29,11 @@ const AuthConfigTab = lazy(() =>
         default: module.AuthConfigTab,
     })),
 );
+const CustomMappingsConfigTab = lazy(() =>
+    import("./customMappings/CustomMappingsConfigTab").then((module) => ({
+        default: module.CustomMappingsConfigTab,
+    })),
+);
 const CategoriesConfigTab = lazy(() =>
     import("./categories/CategoriesConfigTab").then((module) => ({
         default: module.CategoriesConfigTab,
@@ -68,7 +73,7 @@ const SearchingConfigTab = lazy(() =>
 const AREA_FALLBACK = <AreaFallback message="Loading the configuration…" />;
 
 /**
- * The configuration area's route subtree. The eight tabs are *children* of one
+ * The configuration area's route subtree. The tabs are *children* of one
  * `/config` route on purpose: the shell — and with it the single React Hook
  * Form holding the whole `BaseConfig` — stays mounted while the admin moves
  * between tabs, so edits made on one tab are still in the form (and in the
@@ -80,7 +85,8 @@ export function createConfigRoute<TParent extends AnyRoute>(
     /**
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
      * (`F-CONFIG-AUTH`), `searching` (`F-CONFIG-SEARCHING`), `categories`
-     * (`F-CONFIG-CATEGORIES`), `notifications` (`F-CONFIG-NOTIFICATIONS`),
+     * (`F-CONFIG-CATEGORIES`), `customMappings` (`F-CONFIG-SEARCHING`'s
+     * mapping list, FM-195), `notifications` (`F-CONFIG-NOTIFICATIONS`),
      * `downloading` (`F-CONFIG-DOWNLOADING`), `externalTools`
      * (`F-CONFIG-EXTERNAL-TOOLS`), and `indexers` (`F-CONFIG-INDEXERS`) are all
      * migrated, so no canonical tab shows the placeholder any more. FM-067 adds
@@ -95,7 +101,10 @@ export function createConfigRoute<TParent extends AnyRoute>(
             return <AuthConfigTab />;
         }
         if (tab.path === "searching") {
-            return <SearchingConfigTab transport={transport} />;
+            return <SearchingConfigTab />;
+        }
+        if (tab.path === "customMappings") {
+            return <CustomMappingsConfigTab transport={transport} />;
         }
         if (tab.path === "categories") {
             return <CategoriesConfigTab />;

@@ -238,6 +238,25 @@ describe("computeConfigChanges: list sections", () => {
         });
     });
 
+    it("attributes a mapping to the Custom Mappings tab it now lives on", () => {
+        // FM-195 moved the settings-index entry to its own tab and dropped its
+        // fieldset, and this row's origin is read straight off that entry --
+        // so this is what proves the move reached the review panel. The tab
+        // the *save* considers dirty is still Searching: `CONFIG_SECTION_TABS`
+        // is keyed by top-level config section, and mappings are still stored
+        // under `searching.customMappings`.
+        const changes = changesOf(
+            {searching: {customMappings: [{name: "Season", from: "a"}]}},
+            {searching: {customMappings: [{name: "Season", from: "b"}]}},
+            {searching: {customMappings: [{name: true, from: true}]}},
+        );
+        expect(changes[0]).toMatchObject({
+            label: "Custom mappings: Season",
+            origin: "Custom Mappings",
+            status: "edited",
+        });
+    });
+
     it("falls back to positions for a list whose entries carry no key", () => {
         const changes = changesOf(
             {searching: {customMappings: [{from: "a"}]}},

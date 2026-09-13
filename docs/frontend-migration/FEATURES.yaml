@@ -880,52 +880,69 @@ features:
     name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
     routes:
       - /config/searching
+      # FM-195: the custom-mapping list is the same feature on its own tab. The
+      # settings it edits are still stored under `searching.customMappings`.
+      - /config/customMappings
     legacy_sources:
       - core/ui-src/js/config/config-fields-service.js
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/custom-mapping-help.html
-    target: core/ui-react/src/features/config/searching
+    target:
+      - core/ui-react/src/features/config/searching
+      - core/ui-react/src/features/config/customMappings
     tests:
       - tests/system/tests/search.spec.ts
       - tests/system/tests/results.spec.ts
       - tests/system/tests/config-searching.spec.ts
+      - tests/system/tests/config-custom-mappings.spec.ts
       - core/ui-react/src/features/config/searching/SearchingConfigTab.test.tsx
+      - core/ui-react/src/features/config/customMappings/CustomMappingsConfigTab.test.tsx
     selectors:
       # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
       # (`config-setting-searching-timeout`,
       # `config-input-searching-loadLimitInternal`, etc), and the nine
       # fieldsets follow `config-fieldset-<lowercased label>`.
-      # The custom-mapping list is the one section edited through a modal
-      # transaction, so it is not `RepeatSection`; it reuses that component's
-      # naming with an `edit` verb added -- new in FM-063:
-      # `config-repeat-searching-customMappings` (the list),
+      # FM-195 moved the custom-mapping list off this tab onto its own,
+      # `/config/customMappings`, whose body is `config-custom-mappings` and
+      # whose nav entry is `config-tab-customMappings`. The list itself is the
+      # one section edited through a modal transaction, so it is not
+      # `RepeatSection`; it reuses that component's naming with `edit`, `up`
+      # and `down` verbs added. The selector stem is derived from the *config*
+      # path, which did not move, so every id below still reads
+      # `searching-customMappings`:
+      # `config-repeat-searching-customMappings` (the list, and the anchor
+      # `settingsIndex.ts` navigates a search hit to),
       # `config-repeat-entry-searching-customMappings-<index>` (one mapping's
       # summary), `config-repeat-add-searching-customMappings`,
       # `config-repeat-edit-searching-customMappings-<index>`,
-      # `config-repeat-remove-searching-customMappings-<index>`, and
+      # `config-repeat-remove-searching-customMappings-<index>`,
+      # `config-repeat-up-searching-customMappings-<index>` and
+      # `config-repeat-down-searching-customMappings-<index>` (FM-195's
+      # reorder, disabled at the first and last entry), and
       # `config-custom-mapping-value-<index>-<field>` for one summarized value
       # (`affectedValue`, `searchType`, `matchAll`, `from`, `to`).
+      # `config-custom-mapping-disabled-<index>` is the chip a switched-off
+      # mapping carries (FM-195, FM-194's `enabled` field).
       # The dialog's own controls are `config-custom-mapping-dialog`,
-      # `-help`, `-affectedValue`, `-searchType`, `-matchAll`, `-from`, `-to`,
-      # `-exampleInput`, `-test`, `-result`, `-cancel`, and `-submit`.
-      # FM-131: the list is a wholly-advanced section, so it no longer renders
-      # its own heading (dropping `config-repeat-tooltip-
-      # searching-customMappings`, its old headline tooltip) and is instead
-      # wrapped in an advanced `ConfigFieldset` (`SearchingConfigTab.tsx`)
-      # whose `label` is the section's headline, "Custom mappings of queries,
-      # search titles and result titles". That fieldset's own ids follow
-      # C-CONFIG-FIELDS's label-derived convention: `config-advanced-expander-
-      # custom mappings of queries, search titles and result titles` is the
-      # toggle-off affordance ("<label> — advanced, hidden", revealing the
-      # section in place); once revealed (or with the toggle on), the section
-      # sits inside `config-fieldset-custom mappings of queries, search titles
-      # and result titles`, alongside a `config-fieldset-tooltip-custom
-      # mappings of queries, search titles and result titles` icon carrying
-      # the headline's old tooltip text. While the global toggle is off and
-      # the section is not individually revealed, none of the ids above this
-      # paragraph (`config-repeat-*`, `config-custom-mapping-value-*`) are on
-      # the page.
+      # `-help`, `-name`, `-affectedValue`, `-searchType`, `-matchAll`,
+      # `-enabled`, `-from`, `-to`, `-examples`, `-test`, `-cancel`, and
+      # `-submit`. FM-195 retired two of FM-063's ids with the contract they
+      # belonged to: `-exampleInput` (one line, not saved) became `-examples`
+      # (a `multiline` field saved with the mapping), and the single-valued
+      # `-result` field became `config-custom-mapping-results`, a table with
+      # one `config-custom-mapping-result-<line index>` row per example line
+      # holding the input, this mapping's output, the whole list's output and
+      # which mappings applied. `config-custom-mapping-error` carries a
+      # whole-request refusal (no example lines, no input pattern, more than
+      # the endpoint's 200-line limit, or a failed request) in its place.
+      # FM-131's advanced wrapper is gone with the move, and with it
+      # `config-advanced-expander-custom mappings of queries, search titles and
+      # result titles` and `config-fieldset-custom mappings of queries, search
+      # titles and result titles`: the tab renders the section directly,
+      # because a whole tab hidden while the global advanced toggle is off
+      # could not be reached at all.
       - config-searching
+      - config-custom-mappings
     parity: done
     gaps: []
   - id: F-CONFIG-CATEGORIES

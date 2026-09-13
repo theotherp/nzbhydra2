@@ -400,6 +400,7 @@ describe("ConfigShell", () => {
             ["config-tab-main", "Main"],
             ["config-tab-auth", "Authorization"],
             ["config-tab-searching", "Searching"],
+            ["config-tab-customMappings", "Custom Mappings"],
             ["config-tab-categories", "Categories"],
             ["config-tab-downloading", "Downloading"],
             ["config-tab-externalTools", "External Tools"],
@@ -413,6 +414,25 @@ describe("ConfigShell", () => {
                 `/hydra/config/${testId.replace("config-tab-", "")}`,
             );
         }
+    });
+
+    it("should mount the custom mappings tab body at its own route, not the placeholder", async () => {
+        // FM-195 added the ninth segment to `CONFIG_TABS`. A tab registered in
+        // that array but not wired in `routes.tsx` still renders -- as
+        // `ConfigTabPlaceholder`, which says the settings are unmigrated -- so
+        // the registration is only proved by naming both.
+        renderConfigArea({backend: createBackend(), realTabBodies: true});
+        await waitForShell();
+
+        fireEvent.click(screen.getByTestId("config-tab-customMappings"));
+
+        expect(
+            await screen.findByTestId("config-custom-mappings"),
+        ).toBeVisible();
+        expect(
+            screen.getByTestId("config-repeat-searching-customMappings"),
+        ).toBeVisible();
+        expect(screen.queryByTestId("config-tab-placeholder")).toBeNull();
     });
 
     it("should keep an edit made on one tab when another tab is opened and send it", async () => {

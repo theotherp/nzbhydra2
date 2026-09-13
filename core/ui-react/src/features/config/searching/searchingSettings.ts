@@ -1,15 +1,14 @@
-import type {CustomMappingValues} from "../../../api/config/customMappingTest";
 import {
     patternValidator,
-    type ConfigFieldPath,
     type SettingOption,
     type SettingValidator,
 } from "../components";
 
 /**
- * `F-CONFIG-SEARCHING`'s option lists, long help and tooltip texts, and the
- * custom-mapping path helpers, transcribed from
- * `config-fields-service.js:737-1603`. Beside the tab rather than in
+ * `F-CONFIG-SEARCHING`'s option lists and long help texts, transcribed from
+ * `config-fields-service.js:737-1603`. FM-195 took the custom-mapping
+ * vocabulary out of here with the section and dialog it belongs to
+ * (`customMappings/customMappingSettings.ts`). Beside the tab rather than in
  * `C-CONFIG-FIELDS` because they are this tab's vocabulary, not the shared
  * one; the language list is large enough to live in `languages.ts`.
  *
@@ -84,22 +83,6 @@ export function preselectQuickFilterOptions(
     return [...PRESELECT_QUICK_FILTER_OPTIONS, ...custom];
 }
 
-/** `AffectedValue` (`config-fields-service.js:1325-1329`). */
-export const AFFECTED_VALUE_OPTIONS: readonly SettingOption[] = [
-    {label: "Query", value: "QUERY"},
-    {label: "Search title", value: "TITLE"},
-    {label: "Result title", value: "RESULT_TITLE"},
-];
-
-/** `SearchType` as the mapping editor offers it (`config-fields-service.js:1340-1346`). */
-export const MAPPING_SEARCH_TYPE_OPTIONS: readonly SettingOption[] = [
-    {label: "General", value: "SEARCH"},
-    {label: "Audio", value: "MUSIC"},
-    {label: "EBook", value: "BOOK"},
-    {label: "Movie", value: "MOVIE"},
-    {label: "TV", value: "TVSEARCH"},
-];
-
 export const CACHED_QUERIES_WIKI =
     "https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries";
 
@@ -113,89 +96,3 @@ export const percentValidator: SettingValidator = patternValidator(
     /^[0-9]+(\.[0-9]{1,2})?$/,
     () => "Enter a percentage with at most two decimal places",
 );
-
-/** The config path of the custom-mapping array. */
-export const CUSTOM_MAPPINGS_PATH =
-    "searching.customMappings" as ConfigFieldPath;
-
-/** The `data-testid` stem every custom-mapping selector is built from. */
-export const CUSTOM_MAPPINGS_TEST_ID = "searching-customMappings";
-
-/**
- * A new mapping's starting value — legacy's `defaultModel`
- * (`config-fields-service.js:1383-1389`), including `matchAll: true`, which is
- * *not* the Java default (`CustomQueryAndTitleMapping.matchAll` is a plain
- * `boolean`); legacy deliberately starts a new mapping as a whole-string match.
- */
-export function newCustomMapping(): CustomMappingValues {
-    return {
-        affectedValue: null,
-        from: null,
-        matchAll: true,
-        searchType: null,
-        to: null,
-    };
-}
-
-/**
- * Reads one stored entry into the dialog's editable shape. Entries come from a
- * loose config object (ADR-0003), so nothing about them is guaranteed; an
- * unusable field becomes the empty value the editor shows rather than throwing.
- */
-export function customMappingValues(entry: unknown): CustomMappingValues {
-    const record = (
-        typeof entry === "object" && entry !== null ? entry : {}
-    ) as Record<string, unknown>;
-    return {
-        affectedValue: optionalText(record.affectedValue),
-        from: optionalText(record.from),
-        matchAll: record.matchAll === true,
-        searchType: optionalText(record.searchType),
-        to: optionalText(record.to),
-    };
-}
-
-function optionalText(value: unknown): string | null {
-    return typeof value === "string" && value !== "" ? value : null;
-}
-
-/** The label an option list gives a stored value, or the raw value. */
-export function optionLabel(
-    options: readonly SettingOption[],
-    value: unknown,
-): string {
-    const text = typeof value === "string" ? value : "";
-    return options.find((option) => option.value === text)?.label ?? text;
-}
-
-/**
- * Legacy's modal help (`custom-mapping-help.html`), as prose. "The input must
- * completely match ..." describes `matchAll`; the class name that leaks into
- * the first and last bullet is legacy's own wording and is kept verbatim so the
- * two UIs read identically during the parity comparison (see the handoff's
- * follow-up work).
- */
-export const CUSTOM_MAPPING_HELP: readonly string[] = [
-    "The input must completely match the title or query for the customQueryAndTitleMapping to be effective. The matching is case insensitive.",
-    'You may use regular expressions anywhere (e.g. [a-z] or .*). You may use named groups to reference them in the output pattern (e.g. {title:.*} can be referenced using {title}) but they must not start with digits. Brackets ("{}") may not be used in regexes.',
-    "The following meta groups are available: {season:0}, {season:00}, {episode:0}, {episode:00} (with and without leading zeroes, respectively). The data will be taken from the search request's or title's metadata. If it's not available the customQueryAndTitleMapping will not be used.",
-];
-
-/** `formly-config.js:363`, shown when Test is used with no example input. */
-export const EMPTY_EXAMPLE_INPUT_RESULT = "Empty example data";
-
-/**
- * Shown when Test is used with no input pattern. Legacy has no such branch and
- * sends the request anyway, which answers HTTP 500 —
- * `CustomQueryAndTitleMappingHandler.testMapping` calls `getFromPattern()`
- * outside its `try`, so a null `from` is a `NullPointerException` rather than
- * the `error` field the modal knows how to show. Refusing to send it keeps the
- * affordance honest instead of reporting a server crash as a mapping problem.
- */
-export const EMPTY_INPUT_PATTERN_RESULT = "Empty input pattern";
-
-/** `formly-config.js:376`, shown when the mapping does not apply. */
-export const NO_MATCH_RESULT = "Input does not match example";
-
-/** Shown when the request itself failed (legacy's error callback). */
-export const REQUEST_FAILED_RESULT = "Unable to test the mapping";

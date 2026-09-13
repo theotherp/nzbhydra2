@@ -81,6 +81,7 @@ Currently available:
   round-tripped in clear text; a colour field with a native picker and a clear button alongside the free-text value;
   bulk capability rechecking for incomplete or all indexers with per-indexer progress; and
   importing a whole Jackett or Prowlarr indexer set, replacing the list and reporting added/updated/removed counts.
-  All eight canonical config tabs are now fully editable.
+  All nine canonical config tabs are now fully editable; custom query and title mappings have their own
+  Custom Mappings tab (name, enabled switch, saved multi-line examples with a per-line test table, reorder).
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

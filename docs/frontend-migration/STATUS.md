@@ -1792,6 +1792,14 @@ Passed with minor findings, not corrected: `appliedIndices` counts a mapping who
 `mappingIndex` beyond the list silently degrades to chain-only; pre-existing unguarded `getFrom()` in the validator.
 The React caller speaks the old contract until FM-195 lands, so the dialog's test button is knowingly broken in between.
 
+FM-195 (Custom Mappings Configuration Tab) is done — issue #902's React half. Custom mappings moved out of Searching into
+a ninth canonical tab at `/config/customMappings` (no advanced gate; data stays at `searching.customMappings`, so the
+dirty badge still lands on Searching); the dialog gained a name, an enabled switch, multi-line examples saved with the
+mapping and a per-line result table over FM-194's batch endpoint; the list gained a "Disabled" chip and move up/down.
+Passed with minor findings, not corrected: two handoff deviations (settings-search help prose, Edit/Remove labels) are
+not recorded in the registries; the result table's Applied column scrolls at 390px; the legacy "output puttern" typo
+survives; the help alert's long identifier overflows at 390px; the section-keyed dirty badge can never light the new tab.
+
 ## Review
 
 None.
@@ -1802,10 +1810,8 @@ None.
 
 ## Upcoming
 
-- FM-195: the React Custom Mappings configuration tab — the second half of issue #902, dependency-ready now that FM-194
-  is done: new tab at `/config/customMappings`, section and dialog moved out of Searching, name/enabled/multi-line saved
-  examples, per-line result table for own-mapping and chain answers, move up/down reorder, disabled chip. `changelog.yaml`
-  stays out of its allowlist (uncommitted owner edit); the handoff records the entry for the coordinator.
+- Issue #902 is complete: FM-194 (backend) and FM-195 (Custom Mappings tab) are done (entries above). No task packets
+  are queued.
 
 - The 2026-09-08 code-quality batch is complete: FM-190, FM-191, FM-192 and FM-193 are done (entries above). No task
   packets are queued.

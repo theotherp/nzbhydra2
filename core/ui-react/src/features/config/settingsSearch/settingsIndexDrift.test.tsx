@@ -14,6 +14,7 @@ import {ShowAdvancedContext} from "../advancedFields";
 import {AuthConfigTab} from "../auth/AuthConfigTab";
 import {CategoriesConfigTab} from "../categories/CategoriesConfigTab";
 import {settingHelpId} from "../components/settings";
+import {CustomMappingsConfigTab} from "../customMappings/CustomMappingsConfigTab";
 import {DownloadingConfigTab} from "../downloading/DownloadingConfigTab";
 import {ExternalToolsConfigTab} from "../external-tools/ExternalToolsConfigTab";
 import {IndexersConfigTab} from "../indexers/IndexersConfigTab";
@@ -148,6 +149,21 @@ const SEARCHING_VALUES: ConfigValues = {
     },
 };
 
+const CUSTOM_MAPPINGS_VALUES: ConfigValues = {
+    searching: {
+        customMappings: [
+            {
+                affectedValue: "QUERY",
+                from: "{show:.*} s{s:[0-9]+}",
+                matchAll: true,
+                name: "Season pattern",
+                searchType: "TVSEARCH",
+                to: "{show} S{s}",
+            },
+        ],
+    },
+};
+
 const CATEGORIES_VALUES: ConfigValues = {
     categoriesConfig: {
         categories: [
@@ -209,10 +225,20 @@ const TAB_CASES: readonly TabCase[] = [
         values: AUTH_VALUES,
     },
     {
-        body: (transport) => <SearchingConfigTab transport={transport} />,
+        body: () => <SearchingConfigTab />,
         label: "Searching",
         tab: "searching",
         values: SEARCHING_VALUES,
+    },
+    {
+        // FM-195: the one tab whose whole body is a single list section, so
+        // it contributes no `config-setting-*` row at all -- which is exactly
+        // what direction (c) is for, and why the section's anchor surviving
+        // the move off Searching is asserted here rather than nowhere.
+        body: (transport) => <CustomMappingsConfigTab transport={transport} />,
+        label: "Custom Mappings",
+        tab: "customMappings",
+        values: CUSTOM_MAPPINGS_VALUES,
     },
     {
         body: () => <CategoriesConfigTab />,

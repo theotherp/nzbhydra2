@@ -6,6 +6,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
 import StorageIcon from "@mui/icons-material/Storage";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import TuneIcon from "@mui/icons-material/Tune";
 import {
     Box,
@@ -38,6 +39,7 @@ const NAV_WIDTH = 232;
 const CONFIG_TAB_ICONS: Readonly<Record<string, ReactElement>> = {
     auth: <LockIcon fontSize="small" />,
     categories: <CategoryIcon fontSize="small" />,
+    customMappings: <SwapHorizIcon fontSize="small" />,
     downloading: <DownloadIcon fontSize="small" />,
     externalTools: <ExtensionIcon fontSize="small" />,
     indexers: <StorageIcon fontSize="small" />,
@@ -47,7 +49,7 @@ const CONFIG_TAB_ICONS: Readonly<Record<string, ReactElement>> = {
 };
 
 /**
- * `F-CONFIG-SHELL`'s settings navigation: the eight canonical configuration
+ * `F-CONFIG-SHELL`'s settings navigation: the canonical configuration
  * sections as a left column, plus the two shell-level controls (the advanced
  * toggle and the API help button) at its foot.
  *
@@ -155,7 +157,7 @@ export function ConfigNav({
 
     // FM-102 / ADR-0028: a sibling below `entries`, never a `Tabs` child --
     // headed with the active tab's name so its scope reads unambiguously
-    // sitting under all eight entries. Absent (no heading either) for a tab
+    // sitting under every entry. Absent (no heading either) for a tab
     // whose body mounted no `ConfigFieldset`.
     const anchorList =
         fieldsets.length === 0 ? null : (
@@ -322,7 +324,7 @@ export function ConfigNav({
                 // Pinned *below* the save bar, which is itself `top: 0`
                 // sticky at `zIndex.appBar`, so the offset is that bar's
                 // measured height rather than a layout constant. The
-                // `maxHeight` and internal scroll are not optional: eight tab
+                // `maxHeight` and internal scroll are not optional: the tab
                 // entries plus up to ten anchors plus the foot can exceed a
                 // short viewport, and a sticky box taller than the viewport
                 // silently clips whatever hangs off its bottom.
