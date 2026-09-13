@@ -345,7 +345,12 @@ describe("DownloadHistoryPage", () => {
                 "1 malformed download history entries were not displayed.",
             ),
         ).toBeVisible();
-        expect(row).toHaveTextContent("Content download successful");
+        // The cell shows the short form; the full label is its tooltip.
+        expect(row).toHaveTextContent("Downloaded");
+        expect(row).not.toHaveTextContent("Content download successful");
+        expect(
+            within(row).getByLabelText("Content download successful"),
+        ).toBeVisible();
         const link = screen.getByRole("link", {name: "A title"});
         expect(link).toHaveAttribute(
             "href",

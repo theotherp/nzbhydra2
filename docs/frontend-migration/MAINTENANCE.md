@@ -3704,3 +3704,11 @@ their text and relative order are unchanged.
 - **Gates:** packaged core started on a scratch data folder: 0 `CaffeineCacheMetrics`, 0 `SpringDocAppInitializer`, 0 `BeanPostProcessorChecker` lines; `/v3/api-docs` and `/swagger-ui/index.html` answer 200; actuator shutdown 200; `mvn -o -pl core test -DskipTests=false` (see commit).
 - **Commit:** this commit
 - **Note:** `CacheMetricsAutoConfiguration` bound the four Caffeine caches to Micrometer and warned per cache built without `recordStats()`; nothing reads cache metrics, so it is excluded. SpringDoc's `ApiDocs.enabled`/`SwaggerUi.enabled` are primitive booleans that stay `false` unless set, while the endpoints are enabled by `matchIfMissing`; the initializer warns whenever the flag is not explicitly true, so both are set to `true` in the properties.
+
+### 2026-09-13 — Download history: one-line Time/Result/Age cells, NZB button stays beside the title
+
+- **Why not a packet:** styling and label text inside one existing page; no contract, testid or data change (the filter keeps the full status labels).
+- **Paths:** `core/ui-react/src/features/stats/history/DownloadHistoryPage.tsx`, its test
+- **Gates:** `core/ui-react` `typecheck`, `eslint` on the history dir (0 errors), `prettier`, vitest `DownloadHistoryPage.test.tsx` (12 tests); real-backend `tests/downloads.spec.ts` strip (`visual-evidence/F-HISTORY-DOWNLOADS/`).
+- **Commit:** this commit
+- **Note:** owner screenshot: Time and Age broke onto two lines, Result took three ("Content download successful"), and a long title pushed the NZB button onto its own line so row heights varied. Time/Result/Age cells are `white-space: nowrap`; the Result cell shows a short label (`SHORT_STATUS_LABELS`: Downloaded, NZB fetched, Added, Rejected, …) with the full label as tooltip and the icon still carrying the outcome; the title cell no longer wraps its flex row, the title wraps inside its own box. Width floor 640 → 690.

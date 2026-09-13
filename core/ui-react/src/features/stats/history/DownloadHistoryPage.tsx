@@ -10,6 +10,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import {useCallback, type ReactNode} from "react";
@@ -99,12 +100,13 @@ export function DownloadHistoryPage({
             }}
             // ADR-0038's width floor, measured at 390x844 against the six
             // always-on columns: laid out so no cell has to break a word, this
-            // table needs 625px (Time 90, Indexer 108, Title 108, Result 134,
-            // Source 102, Age 83). Below that the browser starts squeezing
-            // columns past their own content; 640 keeps them at their
-            // intrinsic width and lets the container scroll instead (ADR-0029:
-            // the page never does).
-            minWidth={640}
+            // table needed 625px (Time 90, Indexer 108, Title 108, Result 134,
+            // Source 102, Age 83). Since 2026-09-13 Time, Result and Age no
+            // longer wrap, so Time is one line (~150) and Result is its short
+            // label (~130); 690 keeps every column at its intrinsic width and
+            // lets the container scroll instead (ADR-0029: the page never
+            // does).
+            minWidth={690}
             onClearFilters={clearFilters}
             onFilterChange={updateFilter}
             onPageChange={goToPage}
@@ -186,7 +188,7 @@ export function DownloadHistoryPage({
                                 key={entry.id}
                                 sx={rowRevealsCopyButtonsOnHover}
                             >
-                                <TableCell>
+                                <TableCell sx={NOWRAP}>
                                     {formatServerDateTime(
                                         entry.time,
                                         bootstrap.serverTimeZone,
@@ -201,13 +203,16 @@ export function DownloadHistoryPage({
                                         dereferer={safeConfig?.dereferer}
                                     />
                                 </TableCell>
-                                <TableCell data-testid="download-history-status">
+                                <TableCell
+                                    data-testid="download-history-status"
+                                    sx={NOWRAP}
+                                >
                                     <StatusCell status={entry.status} />
                                 </TableCell>
                                 <TableCell>
                                     {sourceLabel(entry.accessSource)}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell sx={NOWRAP}>
                                     {entry.age !== undefined
                                         ? `${entry.age} days`
                                         : ""}
@@ -257,12 +262,15 @@ function TitleCell({
         ? externalLink(searchResult.details, dereferer)
         : undefined;
     return (
+        // Owner report (2026-09-13): with `flexWrap: "wrap"` a long title
+        // pushed the NZB button onto a line of its own above the text and
+        // every row took a different height. The row no longer wraps; the
+        // title itself wraps *inside* its own box instead, beside the button.
         <Stack
             direction="row"
             sx={{
                 alignItems: "center",
                 gap: 1,
-                flexWrap: "wrap",
             }}
         >
             {repeatEligible(searchResult) ? (
@@ -280,13 +288,15 @@ function TitleCell({
                     Repeat unavailable
                 </Typography>
             )}
-            {href ? (
-                <Link href={href} rel="noreferrer" target="_blank">
-                    {searchResult.title}
-                </Link>
-            ) : (
-                searchResult.title
-            )}
+            <Box sx={{minWidth: 0, overflowWrap: "anywhere"}}>
+                {href ? (
+                    <Link href={href} rel="noreferrer" target="_blank">
+                        {searchResult.title}
+                    </Link>
+                ) : (
+                    searchResult.title
+                )}
+            </Box>
             <CopyValueButton
                 label="title"
                 testId="download-history-copy-title"
@@ -303,6 +313,31 @@ function repeatEligible(searchResult: DownloadHistorySearchResult): boolean {
 const STATUS_LABELS: Record<DownloadStatus, string> = Object.fromEntries(
     DOWNLOAD_STATUSES.map((status) => [status.value, status.label]),
 ) as Record<DownloadStatus, string>;
+
+/**
+ * Owner request (2026-09-13): the full labels ("Content download successful")
+ * wrapped the Result column onto three lines. The cell shows a short form and
+ * carries the full label as its tooltip; the filter keeps the full labels, so
+ * both vocabularies stay in `DOWNLOAD_STATUSES` and only the cell shortens.
+ * The icon beside it already says how the step ended.
+ */
+const SHORT_STATUS_LABELS: Record<DownloadStatus, string> = {
+    NONE: "None",
+    REQUESTED: "Requested",
+    INTERNAL_ERROR: "Internal error",
+    NZB_DOWNLOAD_SUCCESSFUL: "NZB fetched",
+    NZB_DOWNLOAD_ERROR: "NZB failed",
+    NZB_ADDED: "Added",
+    NZB_NOT_ADDED: "Not added",
+    NZB_ADD_ERROR: "Add failed",
+    NZB_ADD_REJECTED: "Rejected",
+    CONTENT_DOWNLOAD_SUCCESSFUL: "Downloaded",
+    CONTENT_DOWNLOAD_WARNING: "Download warning",
+    CONTENT_DOWNLOAD_ERROR: "Download failed",
+};
+
+/** Cells whose values are short and must stay on one line. */
+const NOWRAP = {whiteSpace: "nowrap"} as const;
 
 function statusIcon(status: DownloadStatus): ReactNode {
     switch (status) {
@@ -347,9 +382,11 @@ function StatusCell({status}: {status: DownloadStatus}) {
             <Box aria-hidden="true" sx={{display: "flex"}}>
                 {statusIcon(status)}
             </Box>
-            <Typography component="span" variant="body2">
-                {STATUS_LABELS[status]}
-            </Typography>
+            <Tooltip title={STATUS_LABELS[status]}>
+                <Typography component="span" variant="body2">
+                    {SHORT_STATUS_LABELS[status]}
+                </Typography>
+            </Tooltip>
         </Stack>
     );
 }
