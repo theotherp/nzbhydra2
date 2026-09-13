@@ -2,6 +2,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {Box, Link, Stack, Tooltip, Typography} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {
@@ -24,8 +25,10 @@ import {
     advancedRateWindow,
     appendBufferedRates,
     bufferRate,
+    diskSpaceWarning,
     downloaderStateKind,
     downloaderStateLabel,
+    freeDiskSpaceSummary,
     isRateWindowUniform,
     nextRateWindow,
     showsDownloaderStatus,
@@ -269,6 +272,10 @@ export function DownloaderStatusFooter({
             ? undefined
             : DOWNLOADER_LOGOS[status.downloaderType];
     const downloaderName = status.downloaderName ?? status.downloaderType ?? "";
+    const freeSpace =
+        kind === "offline" ? undefined : freeDiskSpaceSummary(status);
+    const spaceWarning =
+        kind === "offline" ? undefined : diskSpaceWarning(status);
 
     return (
         <Box
@@ -341,7 +348,36 @@ export function DownloaderStatusFooter({
                             {status.elementsInQueue} in queue
                         </Box>
                     )}
+                    {freeSpace === undefined ? null : (
+                        <>
+                            {" • "}
+                            <Tooltip title={freeSpace.detail}>
+                                <Box
+                                    component="span"
+                                    data-testid="downloader-status-free-space"
+                                >
+                                    {freeSpace.label}
+                                </Box>
+                            </Tooltip>
+                        </>
+                    )}
                 </Typography>
+                {spaceWarning === undefined ? null : (
+                    <Tooltip title={spaceWarning}>
+                        <Box
+                            aria-label={spaceWarning}
+                            component="span"
+                            data-testid="downloader-status-space-warning"
+                            role="img"
+                            sx={{
+                                color: "warning.main",
+                                display: "inline-flex",
+                            }}
+                        >
+                            <WarningAmberIcon fontSize="small" />
+                        </Box>
+                    </Tooltip>
+                )}
                 {status.downloadingTitle !== null &&
                 status.downloadingTitle !== "" ? (
                     <Typography

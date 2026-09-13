@@ -32,6 +32,8 @@
       -   type: "fix"
           text: "Book searches from API tools like Readarr found nothing with the default setting &quot;Generate queries&quot; set to INTERNAL, because no usenet indexer supports book searches natively and only searches from the web interface got a generated query. The API capabilities now only advertise book search when it can actually be served, and the help of the setting explains what it depends on. See #1083."
       -   type: "feature"
+          text: "The downloader status bar at the bottom of the page now shows the free disk space reported by SABnzbd or NZBGet (e.g. 955 GB free). If the downloader reports different values for the folder of finished downloads and the folder of downloads in progress the smaller one is shown and the tooltip lists both. A warning icon appears when what is left to download in the queue is larger than the free space. See #1060."
+      -   type: "feature"
           text: "Send user agent NZBHydra2 when sending results to the downloader."
       -   type: "fix"
           text: "Searches with excluded words (e.g. \"--word\") were executed again for every page instead of using the cached results."

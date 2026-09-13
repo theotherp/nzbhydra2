@@ -95,6 +95,38 @@ class NzbGetTest {
     }
 
     @Test
+    void shouldReportFreeDiskSpaceFromStatus() throws Throwable {
+        NzbGet nzbGet = new NzbGet(null, null, null, null, null, null, null);
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setName("nzbget");
+        ReflectionTestUtils.setField(nzbGet, "downloaderConfig", downloaderConfig);
+        JsonRpcHttpClient client = mock(JsonRpcHttpClient.class);
+        LinkedHashMap<String, Object> statusMap = new LinkedHashMap<>();
+        statusMap.put("RemainingSizeMB", 4096);
+        statusMap.put("PausedSizeMB", 0);
+        statusMap.put("DownloadRate", 0);
+        statusMap.put("DownloadPaused", false);
+        statusMap.put("FreeDiskSpaceMB", 2048);
+        statusMap.put("FreeInterDiskSpaceMB", 1_258_291); //~1.2 TB
+        when(client.invoke(eq("status"), any(), eq(LinkedHashMap.class))).thenReturn(statusMap);
+        when(client.invoke(eq("listgroups"), any(), eq(ArrayList.class))).thenReturn(new ArrayList<>());
+        ReflectionTestUtils.setField(nzbGet, "client", client);
+
+        DownloaderStatus status = nzbGet.getStatus();
+
+        assertThat(status.getFreeDiskSpaceBytes()).isEqualTo(2048L * 1024 * 1024);
+        assertThat(status.getFreeDiskSpaceFormatted()).isEqualTo("2 GB");
+        assertThat(status.getFreeIncompleteDiskSpaceFormatted()).isEqualTo("1.2 TB");
+        //4 GB left to download but only 2 GB free on DestDir
+        assertThat(status.isQueueExceedsFreeDiskSpace()).isTrue();
+
+        statusMap.remove("FreeInterDiskSpaceMB");
+        status = nzbGet.getStatus();
+        assertThat(status.getFreeIncompleteDiskSpaceBytes()).isNull();
+        assertThat(status.getFreeIncompleteDiskSpaceFormatted()).isEmpty();
+    }
+
+    @Test
     void shouldFallBackToOfflineStatusAndLogTheErrorOnlyOncePerThrottleWindow() throws Throwable {
         class FailingNzbGet extends NzbGet {
             FailingNzbGet() {

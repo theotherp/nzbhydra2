@@ -4073,6 +4073,10 @@ export interface components {
             remainingSeconds?: number;
             /** Format: int64 */
             remainingSizeInMegaBytes?: number;
+            /** Format: int64 */
+            freeDiskSpaceBytes?: number;
+            /** Format: int64 */
+            freeIncompleteDiskSpaceBytes?: number;
             /** @enum {string} */
             state?:
                 | "IDLE"
@@ -4086,6 +4090,9 @@ export interface components {
             downloadRateFormatted?: string;
             remainingSizeFormatted?: string;
             downloadingTitleRemainingTimeFormatted?: string;
+            freeDiskSpaceFormatted?: string;
+            freeIncompleteDiskSpaceFormatted?: string;
+            queueExceedsFreeDiskSpace?: boolean;
         };
         ThreadCpuUsageChartData: {
             key?: string;

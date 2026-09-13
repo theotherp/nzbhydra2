@@ -4,8 +4,10 @@ import {
     advancedRateWindow,
     appendBufferedRates,
     bufferRate,
+    diskSpaceWarning,
     downloaderStateKind,
     downloaderStateLabel,
+    freeDiskSpaceSummary,
     isRateWindowUniform,
     nextRateWindow,
     RATE_WINDOW_SIZE,
@@ -143,3 +145,75 @@ describe("downloader state", () => {
 function seed(downloadingRatesInKilobytes: number[]) {
     return {downloadingRatesInKilobytes, lastDownloadRate: null};
 }
+
+describe("free disk space", () => {
+    const none = {
+        freeDiskSpaceBytes: null,
+        freeDiskSpaceFormatted: null,
+        freeIncompleteDiskSpaceBytes: null,
+        freeIncompleteDiskSpaceFormatted: null,
+    };
+
+    it("should be absent when the downloader reports nothing", () => {
+        expect(freeDiskSpaceSummary(none)).toBeUndefined();
+    });
+
+    it("should show the single reported volume", () => {
+        expect(
+            freeDiskSpaceSummary({
+                ...none,
+                freeDiskSpaceBytes: 5,
+                freeDiskSpaceFormatted: "955 GB",
+            }),
+        ).toEqual({
+            detail: "955 GB free on the downloader's disk",
+            label: "955 GB free",
+        });
+    });
+
+    it("should collapse two volumes with the same free space into one", () => {
+        expect(
+            freeDiskSpaceSummary({
+                freeDiskSpaceBytes: 5,
+                freeDiskSpaceFormatted: "1.2 TB",
+                freeIncompleteDiskSpaceBytes: 5,
+                freeIncompleteDiskSpaceFormatted: "1.2 TB",
+            })?.label,
+        ).toBe("1.2 TB free");
+    });
+
+    it("should show the tighter volume and name both in the detail", () => {
+        expect(
+            freeDiskSpaceSummary({
+                freeDiskSpaceBytes: 9,
+                freeDiskSpaceFormatted: "955 GB",
+                freeIncompleteDiskSpaceBytes: 2,
+                freeIncompleteDiskSpaceFormatted: "199 MB",
+            }),
+        ).toEqual({
+            detail: "Free space on the downloader's disks: 955 GB for completed downloads, 199 MB for downloads in progress",
+            label: "199 MB free",
+        });
+    });
+
+    it("should only warn when the backend says the queue does not fit", () => {
+        expect(
+            diskSpaceWarning({
+                queueExceedsFreeDiskSpace: false,
+                remainingSizeFormatted: "4 GB",
+            }),
+        ).toBeUndefined();
+        expect(
+            diskSpaceWarning({
+                queueExceedsFreeDiskSpace: true,
+                remainingSizeFormatted: "4 GB",
+            }),
+        ).toContain("the 4 GB left to download");
+        expect(
+            diskSpaceWarning({
+                queueExceedsFreeDiskSpace: true,
+                remainingSizeFormatted: "",
+            }),
+        ).toContain("what is left to download");
+    });
+});

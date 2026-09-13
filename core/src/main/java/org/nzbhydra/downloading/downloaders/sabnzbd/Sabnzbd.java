@@ -215,6 +215,8 @@ public class Sabnzbd extends Downloader {
             status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queue.getMbleft()));
         }
         status.setRemainingSeconds(parseRemainingTime(queue.getTimeleft()));
+        status.setFreeIncompleteDiskSpaceBytes(parseGigabytesToBytes(queue.getDiskspace1()));
+        status.setFreeDiskSpaceBytes(parseGigabytesToBytes(queue.getDiskspace2()));
 
         if (!queue.getSlots().isEmpty()) {
             QueueEntry currentEntry = queue.getSlots().get(0);
@@ -226,6 +228,18 @@ public class Sabnzbd extends Downloader {
 
         status.setDownloadingRatesInKilobytes(getDownloadRates());
         return status;
+    }
+
+    private Long parseGigabytesToBytes(String gigabytes) {
+        if (Strings.isNullOrEmpty(gigabytes)) {
+            return null;
+        }
+        try {
+            return (long) (Double.parseDouble(gigabytes) * 1024D * 1024D * 1024D);
+        } catch (NumberFormatException e) {
+            logger.debug("Unable to parse disk space from value '{}'", gigabytes);
+            return null;
+        }
     }
 
     private long parseRemainingTime(String timeleft) {

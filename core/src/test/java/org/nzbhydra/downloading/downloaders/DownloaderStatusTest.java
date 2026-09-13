@@ -32,4 +32,40 @@ public class DownloaderStatusTest {
         assertThat(testee.getDownloadingRatesInKilobytes()).containsExactlyElementsOf(list);
 
     }
+
+    @Test
+    void shouldFormatFreeDiskSpace() {
+        testee.setFreeDiskSpaceBytes(1_319_413_953_331L); //1.2 TB
+        testee.setFreeIncompleteDiskSpaceBytes(955L * 1024 * 1024 * 1024);
+        assertThat(testee.getFreeDiskSpaceFormatted()).isEqualTo("1.2 TB");
+        assertThat(testee.getFreeIncompleteDiskSpaceFormatted()).isEqualTo("955 GB");
+
+        testee.setFreeDiskSpaceBytes(199L * 1024 * 1024);
+        testee.setFreeIncompleteDiskSpaceBytes(null);
+        assertThat(testee.getFreeDiskSpaceFormatted()).isEqualTo("199 MB");
+        assertThat(testee.getFreeIncompleteDiskSpaceFormatted()).isEmpty();
+    }
+
+    @Test
+    void shouldDetectQueueExceedingFreeDiskSpace() {
+        testee.setRemainingSizeInMegaBytes(2048);
+        testee.setFreeDiskSpaceBytes(3L * 1024 * 1024 * 1024);
+        testee.setFreeIncompleteDiskSpaceBytes(3L * 1024 * 1024 * 1024);
+        assertThat(testee.isQueueExceedsFreeDiskSpace()).isFalse();
+
+        testee.setFreeDiskSpaceBytes(1024L * 1024 * 1024);
+        assertThat(testee.isQueueExceedsFreeDiskSpace()).isTrue();
+
+        testee.setFreeDiskSpaceBytes(3L * 1024 * 1024 * 1024);
+        testee.setFreeIncompleteDiskSpaceBytes(1024L * 1024 * 1024);
+        assertThat(testee.isQueueExceedsFreeDiskSpace()).isTrue();
+
+        testee.setFreeDiskSpaceBytes(null);
+        testee.setFreeIncompleteDiskSpaceBytes(null);
+        assertThat(testee.isQueueExceedsFreeDiskSpace()).isFalse();
+
+        testee.setRemainingSizeInMegaBytes(0);
+        testee.setFreeDiskSpaceBytes(1L);
+        assertThat(testee.isQueueExceedsFreeDiskSpace()).isFalse();
+    }
 }

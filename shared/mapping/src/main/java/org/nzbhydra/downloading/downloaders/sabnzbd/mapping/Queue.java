@@ -23,6 +23,10 @@ public class Queue {
     private String kbpersec;
     private String mbleft;
     private String timeleft;
+    /** Free space in GB on the volume holding the temporary (incomplete) download folder. */
+    private String diskspace1;
+    /** Free space in GB on the volume holding the complete download folder. */
+    private String diskspace2;
     private List<QueueEntry> slots = new ArrayList<>();
 
 }

@@ -225,6 +225,9 @@ public class NzbGet extends Downloader {
         int remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB") - (Integer) statusMap.getOrDefault("PausedSizeMB", 0);
 //        status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
         status.setRemainingSizeInMegaBytes(remainingSizeMB);
+        status.setFreeDiskSpaceBytes(megabytesToBytes(statusMap.get("FreeDiskSpaceMB")));
+        //Only reported by NZBGet 24.3 and later
+        status.setFreeIncompleteDiskSpaceBytes(megabytesToBytes(statusMap.get("FreeInterDiskSpaceMB")));
 
         Integer downloadRateInBytes = (Integer) statusMap.get("DownloadRate");
 //        status.setDownloadRateFormatted(downloadRateInBytes > 0 ? (Converters.formatBytesPerSecond(downloadRateInBytes, true)) : "");
@@ -252,6 +255,13 @@ public class NzbGet extends Downloader {
 //            status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
         }
         return status;
+    }
+
+    private static Long megabytesToBytes(Object megabytes) {
+        if (!(megabytes instanceof Number number)) {
+            return null;
+        }
+        return number.longValue() * 1024L * 1024L;
     }
 
     @Override

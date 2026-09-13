@@ -56,8 +56,14 @@ function status(overrides: Partial<DownloaderStatus> = {}): DownloaderStatus {
         downloadingTitlePercentFinished: 42,
         downloadingTitleRemainingTimeFormatted: "1m",
         elementsInQueue: 3,
+        freeDiskSpaceBytes: null,
+        freeDiskSpaceFormatted: null,
+        freeIncompleteDiskSpaceBytes: null,
+        freeIncompleteDiskSpaceFormatted: null,
         lastDownloadRate: 9,
         lastUpdateForNow: false,
+        queueExceedsFreeDiskSpace: false,
+        remainingSizeFormatted: "4 GB",
         remainingTimeFormatted: "2m",
         state: "DOWNLOADING",
         url: "http://localhost:6789",
@@ -244,6 +250,90 @@ describe("DownloaderStatusFooter", () => {
         );
         expect(screen.getByTestId("downloader-status-queue")).toBeVisible();
         expect(screen.queryByText(/1\.2 MB\/s/)).not.toBeInTheDocument();
+    });
+
+    it("should show the free disk space of the tighter volume next to the queue", async () => {
+        const fake = fakeLiveTransport();
+        renderFooter(fake);
+        await vi.waitFor(() =>
+            expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
+        );
+        fake.deliver(
+            status({
+                freeDiskSpaceBytes: 955 * 1024 ** 3,
+                freeDiskSpaceFormatted: "955 GB",
+                freeIncompleteDiskSpaceBytes: 199 * 1024 ** 2,
+                freeIncompleteDiskSpaceFormatted: "199 MB",
+            }),
+        );
+
+        expect(
+            screen.getByTestId("downloader-status-free-space"),
+        ).toHaveTextContent("199 MB free");
+        expect(
+            screen.queryByTestId("downloader-status-space-warning"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should show nothing about disk space when the downloader reports none", async () => {
+        const fake = fakeLiveTransport();
+        renderFooter(fake);
+        await vi.waitFor(() =>
+            expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
+        );
+        fake.deliver(status());
+
+        expect(
+            screen.queryByTestId("downloader-status-free-space"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should warn when the queue is larger than the free disk space", async () => {
+        const fake = fakeLiveTransport();
+        renderFooter(fake);
+        await vi.waitFor(() =>
+            expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
+        );
+        fake.deliver(
+            status({
+                freeDiskSpaceBytes: 2 * 1024 ** 3,
+                freeDiskSpaceFormatted: "2 GB",
+                queueExceedsFreeDiskSpace: true,
+            }),
+        );
+
+        expect(
+            screen.getByTestId("downloader-status-free-space"),
+        ).toHaveTextContent("2 GB free");
+        expect(
+            screen.getByTestId("downloader-status-space-warning"),
+        ).toHaveAttribute(
+            "aria-label",
+            expect.stringContaining("the 4 GB left to download"),
+        );
+    });
+
+    it("should hide the disk space and warning while the downloader is offline", async () => {
+        const fake = fakeLiveTransport();
+        renderFooter(fake);
+        await vi.waitFor(() =>
+            expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
+        );
+        fake.deliver(
+            status({
+                freeDiskSpaceBytes: 2 * 1024 ** 3,
+                freeDiskSpaceFormatted: "2 GB",
+                queueExceedsFreeDiskSpace: true,
+                state: "OFFLINE",
+            }),
+        );
+
+        expect(
+            screen.queryByTestId("downloader-status-free-space"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("downloader-status-space-warning"),
+        ).not.toBeInTheDocument();
     });
 
     it("should ignore a message without a downloader type", async () => {

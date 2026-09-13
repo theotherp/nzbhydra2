@@ -6,6 +6,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -24,6 +26,7 @@ import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -38,6 +41,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -120,6 +124,37 @@ class SabnzbdTest {
         String contentType = capturedRequest.body().contentType().toString();
         assertThat(contentType).startsWith("multipart/form-data");
         assertThat(capturedRequest.header("User-Agent")).isEqualTo("NZBHydra2");
+    }
+
+    @Test
+    void shouldReportFreeDiskSpaceFromQueue() throws Exception {
+        String json = Resources.toString(Resources.getResource(QueueResponseTest.class, "queueResponse.json"), Charsets.UTF_8);
+        QueueResponse queueResponse = new JsonMapper().readValue(json, QueueResponse.class);
+        class StubbedSabnzbd extends Sabnzbd {
+            StubbedSabnzbd(HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+                super(null, null, null, null, null, null, requestFactory, null);
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            protected <T> T callSabnzb(java.net.URI uri, Class<T> responseType) {
+                return (T) queueResponse;
+            }
+        }
+        StubbedSabnzbd stubbed = new StubbedSabnzbd(requestFactory);
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        downloaderConfig.setName("sabnzbd");
+        stubbed.initialize(downloaderConfig);
+
+        DownloaderStatus status = stubbed.getStatus();
+
+        //diskspace1 is the temporary folder, diskspace2 the complete folder, both in GB
+        assertThat(status.getFreeIncompleteDiskSpaceBytes()).isEqualTo((long) (236.51D * 1024 * 1024 * 1024));
+        assertThat(status.getFreeDiskSpaceBytes()).isEqualTo((long) (122.17D * 1024 * 1024 * 1024));
+        assertThat(status.getFreeDiskSpaceFormatted()).isEqualTo("122 GB");
+        assertThat(status.getFreeIncompleteDiskSpaceFormatted()).isEqualTo("237 GB");
+        assertThat(status.isQueueExceedsFreeDiskSpace()).isFalse();
     }
 
     @Test

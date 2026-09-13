@@ -23,6 +23,12 @@ export type DownloaderStatus = {
     remainingTimeFormatted: string | null;
     downloadingRatesInKilobytes: number[];
     lastDownloadRate: number | null;
+    remainingSizeFormatted: string | null;
+    freeDiskSpaceBytes: number | null;
+    freeDiskSpaceFormatted: string | null;
+    freeIncompleteDiskSpaceBytes: number | null;
+    freeIncompleteDiskSpaceFormatted: string | null;
+    queueExceedsFreeDiskSpace: boolean;
     state: string | null;
     url: string | null;
     lastUpdateForNow: boolean;
@@ -57,6 +63,21 @@ const downloaderStatusSchema: z.ZodType<DownloaderStatus> = z.object({
         .number()
         .nullish()
         .transform((value) => value ?? null),
+    remainingSizeFormatted: nullableString,
+    freeDiskSpaceBytes: z
+        .number()
+        .nullish()
+        .transform((value) => value ?? null),
+    freeDiskSpaceFormatted: nullableString,
+    freeIncompleteDiskSpaceBytes: z
+        .number()
+        .nullish()
+        .transform((value) => value ?? null),
+    freeIncompleteDiskSpaceFormatted: nullableString,
+    queueExceedsFreeDiskSpace: z
+        .boolean()
+        .nullish()
+        .transform((value) => value === true),
     state: nullableString,
     url: nullableString,
     lastUpdateForNow: z

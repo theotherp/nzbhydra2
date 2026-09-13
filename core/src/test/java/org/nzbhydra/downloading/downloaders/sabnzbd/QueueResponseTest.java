@@ -11,6 +11,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class QueueResponseTest {
 
     @Test
@@ -18,6 +20,9 @@ public class QueueResponseTest {
         String json = Resources.toString(Resources.getResource(QueueResponseTest.class, "queueResponse.json"), Charsets.UTF_8);
         ObjectMapper objectMapper = new JsonMapper();
         QueueResponse response = objectMapper.readValue(json, QueueResponse.class);
+
+        assertThat(response.getQueue().getDiskspace1()).isEqualTo("236.51");
+        assertThat(response.getQueue().getDiskspace2()).isEqualTo("122.17");
     }
 
 }
