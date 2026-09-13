@@ -6,6 +6,8 @@
       -   type: "feature"
           text: "Complete rewrite of the UI."
       -   type: "fix"
+          text: "Search results could end up in the wrong category when two indexers use the same newznab category number for different things (e.g. 4050 for ebooks on one and PC software on another). Which category won depended on which indexer answered first. Changes to the categories config were also not applied to results until a restart."
+      -   type: "fix"
           text: "The database file no longer grows to many times the size of the data it contains. Some users reported files of dozens of gigabytes; the cause was found and fixed. See #1002 and #976."
       -   type: "note"
           text: "The database library H2 was updated from 2.1 to 2.4. On the first start after the update the existing database is migrated once. This happens automatically, needs nothing installed and may take a few minutes for large databases. The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days."
