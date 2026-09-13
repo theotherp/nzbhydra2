@@ -1,3 +1,5 @@
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -5,6 +7,7 @@ import {
     Box,
     Button,
     Chip,
+    IconButton,
     MenuItem,
     Stack,
     Table,
@@ -18,7 +21,15 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import {memo, useMemo, useState, type ReactElement} from "react";
+import {
+    memo,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type ReactElement,
+} from "react";
 import {useWatch} from "react-hook-form";
 
 import type {IndexerValues} from "../../../api/config/indexers";
@@ -36,6 +47,7 @@ import {
     indexerSortFromValue,
     indexerSortValue,
     indexerTypeLabel,
+    movedIndexerScore,
     nextIndexerSort,
     SEARCH_SOURCE_OPTIONS,
     sortIndexers,
@@ -127,6 +139,7 @@ const COLUMNS: readonly {
 export function IndexerTable({
     entries,
     onEdit,
+    onSetScore,
     onSetStates,
 }: {
     /**
@@ -141,6 +154,11 @@ export function IndexerTable({
      * stable: it is a prop of the memoized rows.
      */
     onEdit: (index: number) => void;
+    /**
+     * One form write setting `score` on one config index. Must be
+     * referentially stable, for the same reason as `onEdit`.
+     */
+    onSetScore: (index: number, score: number) => void;
     /** One form write setting `state` on exactly the named config indices. */
     onSetStates: (indices: readonly number[], enabled: boolean) => void;
 }) {
@@ -210,6 +228,31 @@ export function IndexerTable({
 
     const shown = useMemo(() => filterIndexers(rows, query), [rows, query]);
     const shownIndices = shown.map((row) => row.index);
+    /**
+     * The up/down buttons move an entry past the row *shown* next to it by
+     * rewriting its priority (`movedIndexerScore`), so they need the painted
+     * order at the moment of the click. It is read through a ref so that the
+     * callback handed to every memoized row stays the same function across
+     * renders — a fresh closure over `shown` would re-render every row on each
+     * keystroke in a priority cell, undoing FM-168's isolation. The click also
+     * ends any focus freeze: the whole point of the button is that the row
+     * moves now, not when focus leaves the table.
+     */
+    const shownRef = useRef(shown);
+    useEffect(() => {
+        shownRef.current = shown;
+    }, [shown]);
+    const move = useCallback(
+        (index: number, direction: "up" | "down") => {
+            const score = movedIndexerScore(shownRef.current, index, direction);
+            if (score === undefined) {
+                return;
+            }
+            onSetScore(index, score);
+            setFrozenOrder(null);
+        },
+        [onSetScore],
+    );
 
     const sortBy = (key: IndexerSortKey) => {
         // A header click is a deliberate re-order, so it also ends any freeze:
@@ -407,12 +450,15 @@ export function IndexerTable({
                             be a new prop on every render of this table and
                             would defeat the memo silently.
                         */}
-                        {shown.map((row) => (
+                        {shown.map((row, position) => (
                             <IndexerTableRow
+                                canMoveDown={position < shown.length - 1}
+                                canMoveUp={position > 0}
                                 compact={compact}
                                 index={row.index}
                                 key={row.index}
                                 onEdit={onEdit}
+                                onMove={move}
                             />
                         ))}
                     </TableBody>
@@ -457,14 +503,21 @@ function indexerWord(count: number): string {
  * whenever the table above it did.
  */
 const IndexerTableRow = memo(function IndexerTableRow({
+    canMoveDown,
+    canMoveUp,
     compact,
     index,
     onEdit,
+    onMove,
 }: {
+    /** Whether a row is shown below / above this one to move past. */
+    canMoveDown: boolean;
+    canMoveUp: boolean;
     /** Below `sm`: Type and Used for are folded into the name cell. */
     compact: boolean;
     index: number;
     onEdit: (index: number) => void;
+    onMove: (index: number, direction: "up" | "down") => void;
 }) {
     const entry = useRowDisplayValues(index);
     const legend = indexerLegend(entry);
@@ -589,12 +642,38 @@ const IndexerTableRow = memo(function IndexerTableRow({
             name={indexerFieldPath(index, "state")}
         />
     );
+    // The priority field plus the two buttons that move the row past its
+    // shown neighbours by rewriting that priority. The field is capped at the
+    // width of its largest sensible value ("1000") so the buttons sit beside
+    // it instead of pushing the column wider.
     const priority = (
-        <NumberSetting
-            label="Priority"
-            name={indexerFieldPath(index, "score")}
-            required
-        />
+        <Stack direction="row" spacing={0.5} sx={{alignItems: "center"}}>
+            <Box sx={{width: 96}}>
+                <NumberSetting
+                    label="Priority"
+                    name={indexerFieldPath(index, "score")}
+                    required
+                />
+            </Box>
+            <IconButton
+                aria-label={`Move ${legend} up`}
+                data-testid={`config-indexer-up-${index}`}
+                disabled={!canMoveUp}
+                onClick={() => onMove(index, "up")}
+                size="small"
+            >
+                <ArrowUpwardIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+                aria-label={`Move ${legend} down`}
+                data-testid={`config-indexer-down-${index}`}
+                disabled={!canMoveDown}
+                onClick={() => onMove(index, "down")}
+                size="small"
+            >
+                <ArrowDownwardIcon fontSize="small" />
+            </IconButton>
+        </Stack>
     );
     if (compact) {
         // The same five pieces, stacked in one cell instead of spread across
@@ -623,7 +702,7 @@ const IndexerTableRow = memo(function IndexerTableRow({
                             <Box sx={{width: "100%"}}>{searchSource}</Box>
                         )}
                         <Box sx={{width: "100%"}}>{state}</Box>
-                        <Box sx={{width: "100%"}}>{priority}</Box>
+                        {priority}
                     </Stack>
                 </TableCell>
             </TableRow>

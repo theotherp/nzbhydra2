@@ -114,6 +114,30 @@ function scoreOf(entry: IndexerValues): number {
     return typeof entry.score === "number" ? entry.score : 0;
 }
 
+/**
+ * The priority an entry needs to move one row up or down in the list *as it is
+ * shown*: one more than the row above it, or one less than the row below it.
+ * Two entries at 0 become 1 and 0; 9 under a 10 becomes 11; 7 under 8 under 9
+ * becomes 9. Undefined at either end of the list, where there is no neighbour
+ * to move past. The list is read in display order, so this is "above" as the
+ * admin sees it, whatever sort or filter is active.
+ */
+export function movedIndexerScore(
+    shown: readonly OrderedIndexer[],
+    index: number,
+    direction: "up" | "down",
+): number | undefined {
+    const position = shown.findIndex((row) => row.index === index);
+    if (position === -1) {
+        return undefined;
+    }
+    const neighbour = shown[direction === "up" ? position - 1 : position + 1];
+    if (neighbour === undefined) {
+        return undefined;
+    }
+    return scoreOf(neighbour.entry) + (direction === "up" ? 1 : -1);
+}
+
 // ---- FM-103: the list surface's display order and filter -------------------
 
 /**

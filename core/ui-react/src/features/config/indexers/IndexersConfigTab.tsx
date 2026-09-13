@@ -35,8 +35,9 @@ import {
     applyIndexerStates,
     asIndexer,
     indexerCategoryOptions,
-    indexersOf,
+    indexerFieldPath,
     INDEXERS_PATH,
+    indexersOf,
     mergeCapsCheckResults,
 } from "./indexerSettings";
 
@@ -380,6 +381,19 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
         write(applyIndexerStates(currentEntries(), indices, enabled));
     };
 
+    /**
+     * The table's up/down buttons: one priority write, marking the form dirty
+     * like a keystroke in the cell would. Stable, because it reaches the rows
+     * through a memoized callback.
+     */
+    const setScore = useCallback(
+        (index: number, score: number) =>
+            setValue(indexerFieldPath(index, "score"), score as never, {
+                shouldDirty: true,
+            }),
+        [setValue],
+    );
+
     return (
         <Box data-testid="config-indexers">
             <ConfigFieldset label="Indexers">
@@ -409,6 +423,7 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
                     <IndexerTable
                         entries={listEntries}
                         onEdit={editEntry}
+                        onSetScore={setScore}
                         onSetStates={setStates}
                     />
                 )}

@@ -3655,3 +3655,19 @@ their text and relative order are unchanged.
 - **Gates:** `mvn -pl shared/mapping install -DskipTests` then `mvn -pl core -DskipTests=false -Dtest=DownloaderStatusTest,QueueResponseTest,SabnzbdTest,NzbGetTest test` (15 tests, 0 failures); `core/ui-react` `typecheck`, `eslint src/app/status src/api/live` (0 errors), `prettier --check` on the touched files, vitest for `app/status` footer files and `api/live` (6 files / 61 tests) green; `generate:api` re-run after hand-adding the fields to `core/openapi.json`; `git diff --check` clean.
 - **Commit:** this commit
 - **Note:** SABnzbd reports `diskspace1` (temporary folder) and `diskspace2` (complete folder) in GB; NZBGet reports `FreeDiskSpaceMB` (DestDir) and, from 24.3, `FreeInterDiskSpaceMB` (InterDir), the latter left null when absent. Formatting follows the owner's spec: one decimal for TB, whole numbers below. The warning compares the remaining queue size (`mbleft` / `RemainingSizeMB`, i.e. what still has to be written) against the free space of either volume, not the total size of the queue, since already downloaded parts are already subtracted from the free space. Not verified against a live downloader in this session (no SABnzbd/NZBGet reachable); no screenshot strip.
+
+### 2026-09-13 — Custom mapping dialog: "Enabled" switch directly below the name
+
+- **Why not a packet:** markup order inside one dialog; no contract, testid or behaviour change (the switch keeps `config-custom-mapping-enabled`).
+- **Paths:** `core/ui-react/src/features/config/customMappings/CustomMappingDialog.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `eslint` on the two feature dirs (0 errors), `prettier --check`, vitest `features/config/customMappings` + `features/config/indexers` (7 files / 185 tests) and full `npm run test -- --run` green.
+- **Commit:** this commit
+- **Note:** owner request after FM-195; the help sentence about disabled mappings moved with the switch.
+
+### 2026-09-13 — Indexers table: move up/down buttons that rewrite the priority
+
+- **Why not a packet:** owner-specified single-module change inside the existing table; two new per-row testids (`config-indexer-up|down-<index>`, recorded in `FEATURES.yaml`), no API or persisted-data change (the priority field already existed).
+- **Paths:** `core/ui-react/src/features/config/indexers/{indexerSettings.ts,IndexerTable.tsx,IndexersConfigTab.tsx,indexerSettings.test.ts,IndexersConfigTab.test.tsx}`, `tests/system/tests/config-indexers.spec.ts`, `docs/frontend-migration/FEATURES.yaml`, `core/src/main/resources/changelog.yaml`
+- **Gates:** as above; `tests/system` `tsc --noEmit` clean. **Not run:** the real-backend `config-indexers.spec.ts` (new round-trip case) and its screenshot strip — the owner's IDE-launched Hydra and mockserver held :5076/:5080 during the session and `run_gui_systemtest.py` has no port option. To be run once those are free.
+- **Commit:** this commit
+- **Note:** `movedIndexerScore` reads the list *as shown* (sort and filter included): up = priority of the row above + 1, down = row below − 1 (0/0 → 1, 9 under 10 → 11, 7 under 8 → 9). The click also releases the focus freeze so the row moves immediately. The callback reaches memoized rows through a ref updated in an effect, keeping FM-168's render isolation (its tests still pass). The priority field is capped at 96px so "1000" fits with the two buttons beside it.

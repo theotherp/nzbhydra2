@@ -295,6 +295,37 @@ test.describe("Config indexers round trip", () => {
         expect(persisted[0].name).toBe("Mock2");
     });
 
+    test("should move an indexer past the row shown above it by raising its priority, and persist it", async ({
+        page,
+        hydra,
+    }) => {
+        const before = (await hydra.getConfig()) as Json;
+        await hydra.saveConfig(
+            withIndexers(before, [
+                mockIndexer({name: "Low", score: 7}),
+                mockIndexer({name: "Mid", apiKey: "2", score: 8}),
+                mockIndexer({name: "Top", apiKey: "3", score: 9}),
+            ]),
+        );
+
+        await openIndexersConfig(page);
+        const names = page.getByTestId(/^config-indexer-edit-/);
+        await expect(names).toHaveText(["Top", "Mid", "Low"]);
+        await expect(page.getByTestId("config-indexer-up-2")).toBeDisabled();
+        await expect(page.getByTestId("config-indexer-down-0")).toBeDisabled();
+
+        // Moving Low (7) up puts it above Mid (8): one more than Mid.
+        await page.getByTestId("config-indexer-up-0").click();
+        await expect(
+            page.getByTestId("config-input-indexers-0-score"),
+        ).toHaveValue("9");
+        await expect(names).toHaveText(["Low", "Top", "Mid"]);
+        await save(page);
+
+        const persisted = indexersOf((await hydra.getConfig()) as Json);
+        expect(persisted.map((entry) => entry.score)).toEqual([9, 8, 9]);
+    });
+
     test("should filter, sort, edit the right entry from that view, and bulk-disable only what is shown", async ({
         page,
         hydra,

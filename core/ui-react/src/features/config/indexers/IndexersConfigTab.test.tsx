@@ -238,6 +238,12 @@ function renderIndexers({
     return harness;
 }
 
+function rowNames(): (string | null)[] {
+    return screen
+        .getAllByTestId(/^config-indexer-edit-/)
+        .map((button) => button.textContent);
+}
+
 function indexersOf(harness: Harness): IndexerValues[] {
     return (harness.form.getValues().indexers ?? []) as IndexerValues[];
 }
@@ -338,6 +344,48 @@ describe("Indexer list", () => {
         });
         await waitFor(() => expect(indexersOf(harness)[0].score).toBe(42));
         expect(screen.getByTestId("form-dirty")).toHaveTextContent("true");
+    });
+
+    it("moves an indexer above the row shown above it by raising its priority", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "Low", score: 7}),
+                newznab({name: "Mid", score: 8}),
+                newznab({name: "Top", score: 9}),
+            ]),
+        });
+        expect(rowNames()).toEqual(["Top", "Mid", "Low"]);
+        expect(screen.getByTestId("config-indexer-up-2")).toBeDisabled();
+        expect(screen.getByTestId("config-indexer-down-0")).toBeDisabled();
+
+        fireEvent.click(screen.getByTestId("config-indexer-up-0"));
+
+        await waitFor(() => expect(indexersOf(harness)[0].score).toBe(9));
+        expect(indexersOf(harness).map((entry) => entry.score)).toEqual([
+            9, 8, 9,
+        ]);
+        expect(rowNames()).toEqual(["Low", "Top", "Mid"]);
+        expect(screen.getByTestId("form-dirty")).toHaveTextContent("true");
+
+        fireEvent.click(screen.getByTestId("config-indexer-down-2"));
+        await waitFor(() => expect(indexersOf(harness)[2].score).toBe(7));
+        expect(rowNames()).toEqual(["Low", "Mid", "Top"]);
+    });
+
+    it("separates two indexers with the same priority when one is moved up", async () => {
+        const harness = renderIndexers({
+            values: configWith([
+                newznab({name: "A", score: 0}),
+                newznab({name: "B", score: 0}),
+            ]),
+        });
+        expect(rowNames()).toEqual(["A", "B"]);
+
+        fireEvent.click(screen.getByTestId("config-indexer-up-1"));
+
+        await waitFor(() => expect(indexersOf(harness)[1].score).toBe(1));
+        expect(indexersOf(harness)[0].score).toBe(0);
+        expect(rowNames()).toEqual(["B", "A"]);
     });
 
     it("refuses to enable an indexer whose configuration is incomplete", () => {

@@ -22,14 +22,15 @@ import {
     greaterThanZeroValidator,
     groupNameSuggestions,
     hourOfDayValidator,
-    indexerCategoryOptions,
     INDEXER_SORT_OPTIONS,
+    indexerCategoryOptions,
     indexerSortFromValue,
     indexerSortValue,
     indexerStateHelp,
     indexerStateLabel,
     indexerTypeLabel,
     mergeCapsCheckResults,
+    movedIndexerScore,
     needsCapsCheck,
     nextIndexerSort,
     noCommaValidator,
@@ -786,5 +787,45 @@ describe("add presets", () => {
         expect(ALREADY_CONFIGURED_MESSAGE).toBe(
             "That predefined indexer is already configured.",
         );
+    });
+});
+
+describe("movedIndexerScore", () => {
+    const shown = (scores: number[]) =>
+        orderedIndexers(scores.map((score) => ({name: `I${score}`, score})));
+
+    it("raises two equal priorities apart: the moved one becomes one more", () => {
+        // Both 0: shown as I0 (index 0) then I0 (index 1) by name; moving the
+        // lower row up gives it 1.
+        const rows = orderedIndexers([
+            {name: "A", score: 0},
+            {name: "B", score: 0},
+        ]);
+        expect(movedIndexerScore(rows, 1, "up")).toBe(1);
+    });
+
+    it("moves past the row above by one more than its priority", () => {
+        // Shown high first: 10 above 9. Moving 9 up gives 11.
+        expect(movedIndexerScore(shown([9, 10]), 0, "up")).toBe(11);
+        // 9, 8, 7 shown top to bottom. Moving 7 up gives 9.
+        expect(movedIndexerScore(shown([7, 8, 9]), 0, "up")).toBe(9);
+    });
+
+    it("moves past the row below by one less than its priority", () => {
+        // 9, 8, 7 shown top to bottom. Moving 9 down gives 7.
+        expect(movedIndexerScore(shown([7, 8, 9]), 2, "down")).toBe(7);
+    });
+
+    it("has nothing to move past at either end or for an unshown row", () => {
+        const rows = shown([7, 8, 9]);
+        expect(movedIndexerScore(rows, 2, "up")).toBeUndefined();
+        expect(movedIndexerScore(rows, 0, "down")).toBeUndefined();
+        expect(movedIndexerScore(rows, 5, "up")).toBeUndefined();
+    });
+
+    it("reads the list as shown, not the configuration order", () => {
+        // A filtered view of two rows: the neighbour is whatever is shown.
+        const rows = shown([1, 5, 20]).filter((row) => row.index !== 1);
+        expect(movedIndexerScore(rows, 0, "up")).toBe(21);
     });
 });

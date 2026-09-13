@@ -1292,6 +1292,11 @@ features:
       - config-indexers-scroller
       - table-scroll-affordance-start
       - table-scroll-affordance-end
+      # 2026-09-13 (MAINTENANCE.md): each row carries `config-indexer-up-<index>`
+      # and `config-indexer-down-<index>` beside its priority field. They move
+      # the row past the neighbour *shown* above or below it by rewriting the
+      # priority (one more than the row above, one less than the row below),
+      # disabled at the ends of the shown list; present in both layouts.
     parity: done
     gaps:
       - deliberate - the colour field's swatch shows the committed colour but not legacy's field-background tint at 0.5 alpha (color-control.html); ADR-0014 does not reproduce a mock's per-field styling literal

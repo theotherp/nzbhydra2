@@ -231,6 +231,24 @@ export function CustomMappingDialog({
                         }}
                         value={draft.name ?? ""}
                     />
+                    <Box>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={draft.enabled}
+                                    data-testid="config-custom-mapping-enabled"
+                                    onChange={(event) =>
+                                        update("enabled", event.target.checked)
+                                    }
+                                />
+                            }
+                            label="Enabled"
+                        />
+                        <Typography component="p" variant="body2">
+                            A disabled mapping is kept but never applied to a
+                            search.
+                        </Typography>
+                    </Box>
                     <TextField
                         data-testid="config-custom-mapping-affectedValue"
                         error={submitted && missing.affectedValue}
@@ -282,47 +300,23 @@ export function CustomMappingDialog({
                         </TextField>
                     )}
                     <Box>
-                        <Stack
-                            direction={{xs: "column", sm: "row"}}
-                            spacing={{sm: 3}}
-                        >
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={draft.matchAll}
-                                        data-testid="config-custom-mapping-matchAll"
-                                        onChange={(event) =>
-                                            update(
-                                                "matchAll",
-                                                event.target.checked,
-                                            )
-                                        }
-                                    />
-                                }
-                                label="Match whole string"
-                            />
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={draft.enabled}
-                                        data-testid="config-custom-mapping-enabled"
-                                        onChange={(event) =>
-                                            update(
-                                                "enabled",
-                                                event.target.checked,
-                                            )
-                                        }
-                                    />
-                                }
-                                label="Enabled"
-                            />
-                        </Stack>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={draft.matchAll}
+                                    data-testid="config-custom-mapping-matchAll"
+                                    onChange={(event) =>
+                                        update("matchAll", event.target.checked)
+                                    }
+                                />
+                            }
+                            label="Match whole string"
+                        />
                         <Typography component="p" variant="body2">
                             If true then the input pattern must match the whole
                             affected value. If false then any match will be
                             replaced, even if it&apos;s only part of the
-                            affected value. A disabled mapping is kept but never
-                            applied to a search.
+                            affected value.
                         </Typography>
                     </Box>
                     <TextField
