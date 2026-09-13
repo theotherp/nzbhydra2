@@ -3696,3 +3696,11 @@ their text and relative order are unchanged.
 - **Gates:** `mvn -o -pl core compile`; packaged core started on a scratch data folder: 0 `BeanPostProcessorChecker` lines (18 before), "Started NzbHydra", tasks scheduled, actuator shutdown 200; `mvn -o -pl core test -DskipTests=false` (see commit).
 - **Commit:** this commit
 - **Note:** two causes. `HydraTaskScheduler` is a `BeanPostProcessor` that field-injected the `ThreadPoolTaskScheduler`, creating that bean and its configuration class before the AOP post-processors existed; it now looks the pool up by name in `afterSingletonsInstantiated` (by name, because the WebSocket configuration adds three more schedulers of the type). The remaining 16 came from `HydraGlobalMethodSecurityConfiguration`, whose `@Secured` advisor the auto-proxy creator collects while processing the first beans: its constructor-injected `ConfigProvider` pulled in the config handler, all validators and `BaseConfig`. It now resolves the config through an `ObjectProvider` on each authorization and is marked `ROLE_INFRASTRUCTURE` like the advisor it declares. Those beans were never proxied before, so no behaviour changes; they can be now.
+
+### 2026-09-13 — Drop the Caffeine cache-metrics and SpringDoc "enabled by default" startup warnings
+
+- **Why not a packet:** backend configuration only.
+- **Paths:** `core/src/main/java/org/nzbhydra/NzbHydra.java` (auto-configuration exclusion), `core/src/main/resources/config/application.properties`
+- **Gates:** packaged core started on a scratch data folder: 0 `CaffeineCacheMetrics`, 0 `SpringDocAppInitializer`, 0 `BeanPostProcessorChecker` lines; `/v3/api-docs` and `/swagger-ui/index.html` answer 200; actuator shutdown 200; `mvn -o -pl core test -DskipTests=false` (see commit).
+- **Commit:** this commit
+- **Note:** `CacheMetricsAutoConfiguration` bound the four Caffeine caches to Micrometer and warned per cache built without `recordStats()`; nothing reads cache metrics, so it is excluded. SpringDoc's `ApiDocs.enabled`/`SwaggerUi.enabled` are primitive booleans that stay `false` unless set, while the endpoints are enabled by `matchIfMissing`; the initializer warns whenever the flag is not explicitly true, so both are set to `true` in the properties.

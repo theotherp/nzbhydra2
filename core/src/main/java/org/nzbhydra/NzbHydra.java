@@ -56,7 +56,10 @@ import java.util.Map;
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
         AopAutoConfiguration.class,
-        org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration.class},
+        org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration.class,
+        // Binds every cache to Micrometer at startup and warns per Caffeine cache that was built without
+        // recordStats(). Nothing reads cache metrics, so the caches are not bound at all.
+        org.springframework.boot.cache.autoconfigure.metrics.CacheMetricsAutoConfiguration.class},
         excludeName = "org.springframework.boot.actuate.autoconfigure.endpoint.jackson.Jackson2EndpointAutoConfiguration")
 @ComponentScan
 @RestController
