@@ -3737,3 +3737,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `eslint` (0 errors), `prettier`, vitest `features/search/history` (3 files / 13 tests).
 - **Commit:** this commit
 - **Note:** owner request. Order is now Title (else Query), Category, Season, Episode, Author; the Source part and every identifier part are dropped from the description and from the accessible names ("Repeat: …"/"Refill: …"). `describeSource` removed as unused.
+
+### 2026-09-13 — Recent searches hint: drop "Left Arrow" from the return instruction
+
+- **Why not a packet:** one line of hint text plus its literal in the unit and system specs.
+- **Paths:** `core/ui-react/src/features/search/history/RecentSearches.tsx`, its test, `tests/system/tests/search.spec.ts`
+- **Gates:** `core/ui-react` `prettier --check`, vitest `features/search/history` (13 tests); `tests/system` prettier check.
+- **Commit:** this commit
+- **Note:** owner reported that on Firefox only Escape returns focus from the Refill button to its row; Left Arrow does nothing there. Owner chose to remove the claim rather than chase it. The `ArrowLeft` handler stays (it works in Chromium, per `search.spec.ts`); the hint now names Escape only. Recorded, not fixed: the Firefox behaviour itself.

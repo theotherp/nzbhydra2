@@ -315,7 +315,7 @@ export function RecentSearches({
                         }}
                     >
                         Press Right Arrow on an entry to refill the search form;
-                        Left Arrow or Escape returns.
+                        Escape returns.
                     </Typography>
                 )}
             </Menu>

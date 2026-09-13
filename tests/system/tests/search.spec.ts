@@ -535,7 +535,7 @@ test.describe("Search", () => {
         // with no horizontal overflow of itself, the menu, or the page, at
         // both of this record's contract viewports.
         const keyboardHint = page.getByText(
-            "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+            "Press Right Arrow on an entry to refill the search form; Escape returns.",
         );
         await expect(keyboardHint).toHaveCount(1);
         // "Below the last entry" is a DOM-order fact here (a simple
@@ -558,7 +558,7 @@ test.describe("Search", () => {
                 lastEntry.compareDocumentPosition(hint) &
                     Node.DOCUMENT_POSITION_FOLLOWING,
             );
-        }, "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.");
+        }, "Press Right Arrow on an entry to refill the search form; Escape returns.");
         expect(hintFollowsLastEntryInDomOrder).toBe(true);
         // The Acceptance criterion is explicit: assert computed-style
         // equality of the hint's horizontal padding against the rendered
@@ -584,7 +584,7 @@ test.describe("Search", () => {
                 hintPaddingLeft: hintStyle.paddingLeft,
                 hintPaddingRight: hintStyle.paddingRight,
             };
-        }, "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.");
+        }, "Press Right Arrow on an entry to refill the search form; Escape returns.");
         expect(hintPadding).not.toBeNull();
         expect(hintPadding?.hintPaddingLeft).toBe(hintPadding?.rowPaddingLeft);
         expect(hintPadding?.hintPaddingRight).toBe(

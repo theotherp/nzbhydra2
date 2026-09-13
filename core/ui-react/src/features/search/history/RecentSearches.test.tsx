@@ -155,7 +155,7 @@ describe("RecentSearches", () => {
             await screen.findByRole("menuitem", {name: /^Repeat:/});
             expect(
                 screen.getAllByText(
-                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                    "Press Right Arrow on an entry to refill the search form; Escape returns.",
                 ),
             ).toHaveLength(1);
         });
@@ -185,7 +185,7 @@ describe("RecentSearches", () => {
             await screen.findByRole("status");
             expect(
                 screen.queryByText(
-                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                    "Press Right Arrow on an entry to refill the search form; Escape returns.",
                 ),
             ).not.toBeInTheDocument();
         });
@@ -219,7 +219,7 @@ describe("RecentSearches", () => {
             await screen.findByText("No recent searches.");
             expect(
                 screen.queryByText(
-                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                    "Press Right Arrow on an entry to refill the search form; Escape returns.",
                 ),
             ).not.toBeInTheDocument();
         });
@@ -249,7 +249,7 @@ describe("RecentSearches", () => {
             await screen.findByText("Unable to load recent searches.");
             expect(
                 screen.queryByText(
-                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                    "Press Right Arrow on an entry to refill the search form; Escape returns.",
                 ),
             ).not.toBeInTheDocument();
         });
