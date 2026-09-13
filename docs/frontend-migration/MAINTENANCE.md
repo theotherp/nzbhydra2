@@ -3745,3 +3745,11 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `prettier --check`, vitest `features/search/history` (13 tests); `tests/system` prettier check.
 - **Commit:** this commit
 - **Note:** owner reported that on Firefox only Escape returns focus from the Refill button to its row; Left Arrow does nothing there. Owner chose to remove the claim rather than chase it. The `ArrowLeft` handler stays (it works in Chromium, per `search.spec.ts`); the hint now names Escape only. Recorded, not fixed: the Firefox behaviour itself.
+
+### 2026-09-13 — Split combined newznab language attributes into one attribute per language (#888)
+
+- **Why not a packet:** backend only; API output shape stays newznab-conformant (repeated `language` attributes), no UI change.
+- **Paths:** new `core/src/main/java/org/nzbhydra/searching/LanguageAttribute.java`, `core/src/main/java/org/nzbhydra/api/{NewznabXmlTransformer,NewznabJsonTransformer}.java`, `core/src/main/java/org/nzbhydra/searching/SearchResultAcceptor.java`, tests (`LanguageAttributeTest` new, `NewznabJsonTransformerTest` was empty and now has a harness, cases in `NewznabXmlTransformerTest` and `SearchResultAcceptorTest`), `core/src/main/resources/changelog.yaml`
+- **Gates:** `mvn -o -pl core -DskipTests=false -Dtest=LanguageAttributeTest,NewznabXmlTransformerTest,NewznabJsonTransformerTest,SearchResultAcceptorTest test`; full `mvn -o -pl core test -DskipTests=false` (see commit).
+- **Commit:** this commit
+- **Note:** separators are " - " (dash with whitespace on both sides, so "Chinese-Mandarin" stays whole), ",", "/" and "|". Only the `language` attribute is split; `subs` and others are forwarded untouched (the attribute whitelist has its own multi-value matching). `NewznabJsonTransformer.buildRssItem` became package-private for the test, mirroring the XML transformer.

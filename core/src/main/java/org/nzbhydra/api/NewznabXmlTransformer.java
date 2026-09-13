@@ -9,6 +9,7 @@ import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.searching.LanguageAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class NewznabXmlTransformer {
@@ -79,7 +81,12 @@ public class NewznabXmlTransformer {
             rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
         }
         searchResultItem.getAttributes().put("guid", downloadIdentifier);
-        List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
+        //A combined language value ("English - Japanese") becomes one attribute per language (#888)
+        List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream()
+            .flatMap(attribute -> LanguageAttribute.isLanguage(attribute.getKey())
+                ? LanguageAttribute.split(attribute.getValue()).stream().map(language -> new NewznabAttribute(attribute.getKey(), language))
+                : Stream.of(new NewznabAttribute(attribute.getKey(), attribute.getValue())))
+            .sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         if (searchResultItem.getIndexer() != null) {
             newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));
             newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));

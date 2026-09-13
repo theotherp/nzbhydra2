@@ -364,7 +364,8 @@ public class SearchResultAcceptor {
             return true;
         }
         final String language = item.getAttributes().get("language");
-        if (!languagesToKeep.contains(language)) {
+        //"English - Japanese" is kept if any of its languages is wanted (#888)
+        if (LanguageAttribute.split(language).stream().noneMatch(languagesToKeep::contains)) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found language {} which is to be filtered", language);
             reasonsForRejection.add("Wrong language");
             return false;

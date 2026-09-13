@@ -21,6 +21,7 @@ import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.SearchResult;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
@@ -98,6 +99,24 @@ public class NewznabXmlTransformerTest {
 
         verify(downloadUrlBuilder).getDownloadLinkForResults(42L, 7, false, DownloadType.NZB);
         assertThat(searchResultItem.getAttributes().get("guid")).isEqualTo("42.7");
+    }
+
+
+    @Test
+    void shouldEmitOneLanguageAttributePerLanguage() {
+        SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setSearchResultId(42L);
+        searchResultItem.setGuid(42L);
+        searchResultItem.setIndexer(indexerMock);
+        searchResultItem.setCategory(new Category());
+        searchResultItem.getAttributes().put("language", "English - Japanese");
+        searchResultItem.getAttributes().put("subs", "English - Japanese");
+
+        var item = testee.buildRssItem(searchResultItem, true);
+
+        assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("language")).map(NewznabAttribute::getValue)).containsExactly("English", "Japanese");
+        //Other attributes are forwarded untouched
+        assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("subs")).map(NewznabAttribute::getValue)).containsExactly("English - Japanese");
     }
 
 }

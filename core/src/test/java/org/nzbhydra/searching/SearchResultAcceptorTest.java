@@ -451,6 +451,20 @@ public class SearchResultAcceptorTest {
     }
 
     @Test
+    void shouldKeepCombinedLanguageValueIfAnyLanguageIsWanted() {
+        when(searchingConfig.getLanguagesToKeep()).thenReturn(Arrays.asList("Japanese"));
+        item.setTitle("Some result");
+        item.getAttributes().put("language", "English - Japanese");
+        assertIsAccepted(testee.checkForLanguage(HashMultiset.create(), item));
+
+        item.getAttributes().put("language", "English - French");
+        assertIsRejected(testee.checkForLanguage(HashMultiset.create(), item));
+
+        item.getAttributes().put("language", "Japanese");
+        assertIsAccepted(testee.checkForLanguage(HashMultiset.create(), item));
+    }
+
+    @Test
     void shouldRejectItemWithWrongAttribute() {
         when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
         item.setTitle("Some result");

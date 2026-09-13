@@ -3,6 +3,7 @@
 package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.searching.LanguageAttribute;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileHandler;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class NewznabJsonTransformer {
@@ -62,7 +64,7 @@ public class NewznabJsonTransformer {
         return rssRoot;
     }
 
-    private NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
+    NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
         String downloadIdentifier = new DownloadIdentifier(searchResultItem.getSearchResultId(), searchResultItem.getSearchId()).toString();
         String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), searchResultItem.getSearchId(), false, DownloadType.NZB);
@@ -76,7 +78,12 @@ public class NewznabJsonTransformer {
             rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
         }
         searchResultItem.getAttributes().put("guid", downloadIdentifier);
-        List<NewznabJsonItemAttributes> attributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabJsonItemAttributes(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabJsonItemAttributes::getName)).collect(Collectors.toList());
+        //A combined language value ("English - Japanese") becomes one attribute per language (#888)
+        List<NewznabJsonItemAttributes> attributes = searchResultItem.getAttributes().entrySet().stream()
+            .flatMap(attribute -> LanguageAttribute.isLanguage(attribute.getKey())
+                ? LanguageAttribute.split(attribute.getValue()).stream().map(language -> new NewznabJsonItemAttributes(attribute.getKey(), language))
+                : Stream.of(new NewznabJsonItemAttributes(attribute.getKey(), attribute.getValue())))
+            .sorted(Comparator.comparing(NewznabJsonItemAttributes::getName)).collect(Collectors.toList());
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
