@@ -31,13 +31,11 @@ public class UserNewsProvider {
     static final String DOCKER_STOP_GRACE_PERIOD_NEWS_ID = "docker-stop-grace-period-h2-2.4";
     static final String DOCKER_STOP_GRACE_PERIOD_NEWS_TITLE = "Give the container time to shut down";
     static final String DOCKER_STOP_GRACE_PERIOD_NEWS_BODY = """
-            Hydra compacts its database on shutdown. Since the upgrade to H2 2.4 that compaction is what returns a grown database file to its real size.
+        Hydra compacts its database on shutdown. Since the upgrade to H2 2.4 (the database Hydra uses) that compaction is what returns a grown database file to its real size.
 
-            Docker's default stop grace period of 10 seconds is too short for large database files. Set `stop_grace_period: 120s` in your compose file (or use `docker stop -t 120`) and make sure the entrypoint forwards `SIGTERM` to the Hydra process instead of killing it.
+        Docker's default stop grace period of 10 seconds is too short for large database files. Set `stop_grace_period: 120s` in your compose file (or use `docker stop -t 120`).
 
-            Killing the process does not corrupt the database but skips the cleanup of the database file on shutdown, so the file stays larger than necessary.
-
-            Details are in `docs/database-upgrade-h2-2.4.md` in the repository.""";
+        Killing the process does not corrupt the database but skips the cleanup of the database file on shutdown, so the file stays larger than necessary.""";
 
     @Autowired
     private GenericStorage genericStorage;
