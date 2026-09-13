@@ -1,6 +1,7 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.0"
+    date: "2026-09-13"
     final: false
     changes:
       -   type: "feature"
@@ -13,8 +14,6 @@
           text: "The downloader status bar at the bottom of the page now shows the free disk space reported by SABnzbd or NZBGet (e.g. 955 GB free). If the downloader reports different values for the folder of finished downloads and the folder of downloads in progress the smaller one is shown and the tooltip lists both. A warning icon appears when what is left to download in the queue is larger than the free space. See #1060."
       -   type: "feature"
           text: "Custom mappings moved out of the Searching settings into their own &quot;Custom Mappings&quot; config tab. A mapping can now be given a name, switched off without deleting it, and moved up or down. The order matters, because mappings are applied from top to bottom and a mapping that matches the whole string stops the rest. The example you test with is now several lines, is saved with the mapping, and testing shows for every line both what that one mapping does and what your whole list of mappings does to it. See #902."
-      -   type: "feature"
-          text: "The indexers list has up and down buttons next to the priority. Moving an indexer up sets its priority to one more than the indexer shown above it, moving it down to one less than the one below, so you can order indexers without working out the numbers yourself."
       -   type: "note"
           text: "Custom query and title mappings are now applied from top to bottom, and nothing is applied after the first mapping that matched the whole string was applied. Before, if two mappings that match the whole string matched, an error was logged and none of them was used."
       -   type: "fix"
@@ -40,7 +39,7 @@
       -   type: "note"
           text: "CSRF protection is now actually enforced. It was silently switched off in every release so far because the check depended on a value that was never set. The setting &quot;Use CSRF protection&quot; has been on by default the whole time, so for most installations this changes on the next restart. The web interface handles it on its own, so nothing changes when you use Hydra in a browser."
       -   type: "note"
-          text: "If you have scripts or tools that call /internalapi with POST, PUT or DELETE using basic auth or a session, they now need to send the header X-XSRF-TOKEN with the value of the HYDRA-XSRF-TOKEN cookie. The API that Sonarr, Radarr and NZB clients use (/api, /torznab/api, /rss and the apikey download links) is not affected and needs no change. If that is not an option you can turn off &quot;Use CSRF protection&quot; in the main config."
+          text: "If you have scripts or tools that call /internalapi (which you shouldn't) with POST, PUT or DELETE using basic auth or a session, they now need to send the header X-XSRF-TOKEN with the value of the HYDRA-XSRF-TOKEN cookie. The API that Sonarr, Radarr and NZB clients use (/api, /torznab/api, /rss and the apikey download links) is not affected and needs no change. If that is not an option you can turn off &quot;Use CSRF protection&quot; in the main config."
       -   type: "fix"
           text: "Configuring Sonarr, Radarr, Lidarr or Readarr no longer deletes and recreates the NZBHydra indexer entries. Entries with the same name are updated in place, so what you set on them in the tool itself, like tags or the download client, is kept. Only entries that no longer correspond to anything in Hydra are removed. See #1078."
       -   type: "fix"
