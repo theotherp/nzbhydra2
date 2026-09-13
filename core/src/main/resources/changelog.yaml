@@ -5,6 +5,8 @@
     changes:
       -   type: "feature"
           text: "Complete rewrite of the UI."
+      -   type: "fix"
+          text: "Old backups were never deleted on systems where the filesystem does not report a file creation time (e.g. Synology/Btrfs, some NFS or SMB setups), regardless of the configured retention. See #1070"
       -   type: "feature"
           text: "Results from indexers that use language variants of the standard newznab categories (e.g. 2140 for German HD movies on treasure-maps or SceneNZBs) are now mapped to the matching category (Movies HD instead of just Movies) without adding those numbers to the categories config. For Hydra to include those categories when querying the indexer you still need to add the numbers to the categories config."
       -   type: "fix"
