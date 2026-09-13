@@ -23,6 +23,8 @@
           text: "New external API under /externalapi/v1 for scripts and dashboards: statistics, search, download and notification history, the current log file and creating or downloading backups. It only needs your API key (header X-Api-Key or the apikey parameter), no session and no CSRF token, so it is the replacement if the CSRF change broke a tool of yours. Browse it in the built-in API documentation at &lt;your Hydra URL&gt;/swagger-ui/index.html and pick the &quot;externalapi&quot; entry; see docs/external-api.md in the repository."
       -   type: "fix"
           text: "Configuring Sonarr, Radarr, Lidarr or Readarr no longer deletes and recreates the NZBHydra indexer entries. Entries with the same name are updated in place, so what you set on them in the tool itself, like tags or the download client, is kept. Only entries that no longer correspond to anything in Hydra are removed. See #1078."
+      -   type: "fix"
+          text: "Book searches from API tools like Readarr found nothing with the default setting &quot;Generate queries&quot; set to INTERNAL, because no usenet indexer supports book searches natively and only searches from the web interface got a generated query. The API capabilities now only advertise book search when it can actually be served, and the help of the setting explains what it depends on. See #1083."
       -   type: "feature"
           text: "Send user agent NZBHydra2 when sending results to the downloader."
       -   type: "fix"

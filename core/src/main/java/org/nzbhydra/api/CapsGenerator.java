@@ -140,12 +140,39 @@ public class CapsGenerator {
         supportedMovieParams = addIdIfSupported(supportedMovieParams, MediaIdType.TMDB, "tmdbid", torznabCall);
         capsSearching.setMovieSearch(new CapsXmlSearch("yes", supportedMovieParams));
 
-        capsSearching.setBookSearch(new CapsXmlSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        if (isBookSearchAvailableForApi()) {
+            capsSearching.setBookSearch(new CapsXmlSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        } else {
+            capsSearching.setBookSearch(new CapsXmlSearch("no", ""));
+        }
         capsSearching.setAudioSearch(new CapsXmlSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
         capsRoot.setCategories(getCapsXmlCategories());
         return capsRoot;
+    }
+
+    /**
+     * Book searches from the API can only be served if either queries are generated for API searches (no usenet indexer
+     * supports book searches natively) or at least one usable indexer actually supports book searches.
+     */
+    private boolean isBookSearchAvailableForApi() {
+        final SearchSourceRestriction generateQueries = configProvider.getBaseConfig().getSearching().getGenerateQueries();
+        //ALL_BUT_RSS counts because a book search with author/title is a concrete search, ONLY_RSS does not
+        final boolean queriesGeneratedForApiSearches = generateQueries == SearchSourceRestriction.API
+            || generateQueries == SearchSourceRestriction.BOTH
+            || generateQueries == SearchSourceRestriction.ALL_BUT_RSS;
+        if (queriesGeneratedForApiSearches) {
+            return true;
+        }
+        return configProvider.getBaseConfig().getIndexers().stream()
+            .filter(CapsGenerator::isIndexerStateUsable)
+            .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
+            .anyMatch(x -> x.getSupportedSearchTypes().contains(ActionAttribute.BOOK));
+    }
+
+    private static boolean isIndexerStateUsable(IndexerConfig indexerConfig) {
+        return indexerConfig.getState() == IndexerConfig.State.ENABLED || indexerConfig.getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY;
     }
 
     private String addIdIfSupported(String tvSupportedParams, MediaIdType idType, String id, boolean torznabCall) {
@@ -156,7 +183,7 @@ public class CapsGenerator {
         }
 
         boolean supportedByAnyIndexer = configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> {
-            if (x.getState() != IndexerConfig.State.ENABLED && x.getState() != IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
+            if (!isIndexerStateUsable(x)) {
                 return false;
             }
             if (!SearchSource.API.meets(x.getEnabledForSearchSource())) {

@@ -720,7 +720,7 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset, section}) => {
             path: "searching.alwaysConvertIds",
         },
         {
-            help: "Generate queries for indexers which do not support ID based searches.",
+            help: "Generate queries for indexers that support neither the provided IDs nor the requested search type, for example book searches, which no usenet indexer supports natively. With INTERNAL only searches started from the web interface get generated queries, so API tools like Readarr find nothing when they search for books. Choose BOTH (or API) to enable generated queries for API searches as well.",
             label: "Generate queries",
             path: "searching.generateQueries",
         },
