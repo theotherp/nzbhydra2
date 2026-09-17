@@ -59,6 +59,8 @@ public class DebugInfosWeb {
     private ConfigProvider configProvider;
     @Autowired
     private BaseConfigHandler baseConfigHandler;
+    @Autowired
+    private TmpFilesUploader tmpFilesUploader;
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
@@ -162,7 +164,7 @@ public class DebugInfosWeb {
             throw e;
         }
         try {
-            return FileIoUploader.upload(debugInfosZipFile);
+            return tmpFilesUploader.upload(debugInfosZipFile);
         } catch (Exception e) {
             logger.error("Error while creating or uploading debug infos", e);
             throw e;

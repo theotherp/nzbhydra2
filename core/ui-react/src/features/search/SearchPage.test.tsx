@@ -1,13 +1,12 @@
-import {
-    act,
-    cleanup,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    within,
-} from "@testing-library/react";
+import {act, cleanup, fireEvent, render, screen, waitFor, within,} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import type {LiveSubscription} from "../../api/live/transport";
+import {ApiTransport} from "../../api/transport";
+import {isSessionExpired, resetSessionExpiryForTests, subscribeToSessionExpiry,} from "../../app/sessionExpiry";
+import {SafeConfigContext} from "../../bootstrap";
+import {ToastProvider} from "../../components/toasts/ToastProvider";
+import {SearchPage} from "./SearchPage";
 
 const router = vi.hoisted(() => ({
     navigate: vi.fn(),
@@ -18,21 +17,6 @@ vi.mock("@tanstack/react-router", () => ({
     useNavigate: () => router.navigate,
     useSearch: () => router.search,
 }));
-
-import {ApiTransport} from "../../api/transport";
-import {
-    isSessionExpired,
-    resetSessionExpiryForTests,
-    subscribeToSessionExpiry,
-} from "../../app/sessionExpiry";
-import {SafeConfigContext} from "../../bootstrap";
-import type {
-    SearchLiveTransport,
-    SearchProgress,
-} from "../../api/live/searchState";
-import type {LiveSubscription} from "../../api/live/transport";
-import {ToastProvider} from "../../components/toasts/ToastProvider";
-import {SearchPage} from "./SearchPage";
 
 const responseEnvelope = {
     searchResults: [],
@@ -494,8 +478,8 @@ describe("SearchPage", () => {
         await screen.findByTestId("recent-searches-trigger");
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         await screen.findByRole("menuitem", {name: /^Repeat:/});
-        expect(screen.getAllByText("Source:").at(0)).toBeVisible();
-        expect(screen.getAllByText(/Internal/).at(0)).toBeVisible();
+        expect(screen.getAllByText("Query:").at(0)).toBeVisible();
+        expect(screen.getAllByText(/recent query/).at(0)).toBeVisible();
         fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
         expect(screen.getByLabelText("Search")).toHaveValue("recent query");
         expect(screen.getByLabelText("Min age")).toHaveValue("1");

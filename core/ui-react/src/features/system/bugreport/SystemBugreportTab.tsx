@@ -1,15 +1,4 @@
-import {
-    Alert,
-    Button,
-    Card,
-    CardContent,
-    CircularProgress,
-    Link,
-    Stack,
-    TextField,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import {Alert, Button, Card, CardContent, CircularProgress, Link, Stack, TextField, Tooltip, Typography,} from "@mui/material";
 import {useEffect, useState} from "react";
 
 import {
@@ -22,8 +11,8 @@ import {
     heapDumpUrl,
     logThreadDump,
     setSensitiveDataLogging,
-    uploadDebugInfos,
     type SqlResult,
+    uploadDebugInfos,
 } from "../../../api/system/debug";
 import {ApiTransport} from "../../../api/transport";
 import type {BootstrapData} from "../../../bootstrap";
@@ -58,7 +47,7 @@ const HEAP_DUMP_TOOLTIP =
     "Will not work on J9 based JREs (and possibly others as well).";
 
 export const UPLOAD_RESULT_PREFIX =
-    "URL with debug infos (will auto-delete on first download):";
+    "URL with debug infos (the file share deletes it after 48 hours):";
 
 /**
  * `F-SYSTEM-BUGREPORT`: legacy's Bugreport / Debug tab (`bugreport.html`,

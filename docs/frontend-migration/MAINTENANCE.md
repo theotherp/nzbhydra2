@@ -3753,3 +3753,16 @@ their text and relative order are unchanged.
 - **Gates:** `mvn -o -pl core -DskipTests=false -Dtest=LanguageAttributeTest,NewznabXmlTransformerTest,NewznabJsonTransformerTest,SearchResultAcceptorTest test`; full `mvn -o -pl core test -DskipTests=false` (see commit).
 - **Commit:** this commit
 - **Note:** separators are " - " (dash with whitespace on both sides, so "Chinese-Mandarin" stays whole), ",", "/" and "|". Only the `language` attribute is split; `subs` and others are forwarded untouched (the attribute whitelist has its own multi-value matching). `NewznabJsonTransformer.buildRssItem` became package-private for the test, mirroring the XML transformer.
+
+### 2026-09-17 — Upload debug infos to tmpfiles.org instead of the shut-down file.io API
+
+- **Why not a packet:** single-module backend repair of a broken external dependency, with a unit test; the endpoint, its response (the share URL as `text/plain`) and the UI's handling of it are unchanged.
+- **Paths:** `core/src/main/java/org/nzbhydra/debuginfos/FileIoUploader.java` (deleted), new `core/src/main/java/org/nzbhydra/debuginfos/TmpFilesUploader.java` and `core/src/test/java/org/nzbhydra/debuginfos/TmpFilesUploaderTest.java`,
+  `core/src/main/java/org/nzbhydra/debuginfos/DebugInfosWeb.java`, `core/src/main/resources/changelog.yaml`, `core/ui-react/src/features/system/bugreport/SystemBugreportTab.tsx`
+- **Gates:** `mvn -o -pl core -DskipTests=false -Dtest=TmpFilesUploaderTest test` (4 tests); `core/ui-react` `typecheck`, `eslint` (0 errors), `prettier --check`, vitest `features/system/bugreport` + `api/system/debug.test.ts` (36 tests);
+  live check of the exact OkHttp request against tmpfiles.org.
+- **Commit:** this commit
+- **Note:** file.io was taken over by LimeWire and every request to its documented API host `https://file.io` now answers `301` to its marketing site, so the button could only ever fail. Checked alternatives: `0x0.st` has disabled uploads,
+  `litterbox.catbox.moe` answered `502` on every attempt, `transfer.sh`, `oshi.at` and `bashupload.com` did not respond, `pixeldrain` requires an API key. tmpfiles.org needs no key to upload and no account to download; `expire=172800` (48
+  hours) is the longest it accepts. The uploader is now a Spring bean and takes its client from `HydraOkHttp3ClientHttpRequestFactory`, so proxy and SSL settings apply to the upload — the old static `new OkHttpClient()` ignored them. The
+  result line no longer claims the file auto-deletes on first download (file.io's behaviour); tmpfiles.org allows repeat downloads and deletes after 48 hours.
