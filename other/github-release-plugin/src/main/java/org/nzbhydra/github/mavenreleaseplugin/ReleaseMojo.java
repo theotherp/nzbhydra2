@@ -602,8 +602,10 @@ public class ReleaseMojo extends AbstractMojo {
             getLog().warn("Unable to read " + remoteUploadEnvFile + ": " + e.getMessage());
             return remoteUploadEnv;
         }
-        if (remoteUploadEnv.containsKey("REMOTE_KEY")) {
-            remoteUploadEnv.put("REMOTE_KEY", remoteUploadEnv.get("REMOTE_KEY").replaceFirst("^~", System.getProperty("user.home")));
+        String key = remoteUploadEnv.get("REMOTE_KEY");
+        if (key != null && key.startsWith("~")) {
+            //Not replaceFirst(), which would interpret the backslashes of a Windows home directory as escapes
+            remoteUploadEnv.put("REMOTE_KEY", System.getProperty("user.home") + key.substring(1));
         }
         remoteUploadEnv.putIfAbsent("REMOTE_USER", "build");
         return remoteUploadEnv;
