@@ -8,6 +8,7 @@ import com.google.common.base.Strings;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -26,10 +27,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
@@ -109,6 +116,9 @@ public class ReleaseMojo extends AbstractMojo {
             .connectTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.MINUTES)
             .readTimeout(10, TimeUnit.MINUTES)
+            //Over HTTP/2 this okhttp version waits for a window update after every frame, which limits the upload to a
+            //few hundred KB/s no matter how much bandwidth is available
+            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
             .build();
         if (githubReleasesUrl == null) {
             if (System.getenv("githubReleasesUrl") != null) {
@@ -294,10 +304,88 @@ public class ReleaseMojo extends AbstractMojo {
         String uploadUrl = release.getUploadUrl().replace("{?name,label}", "");
         Map<String, Asset> existingAssets = getExistingAssets(release);
 
-        uploadAsset(release, uploadUrl, existingAssets, "windows", windowsAsset, "application/zip");
-        uploadAsset(release, uploadUrl, existingAssets, "linux amd64", linuxAmd64Asset, "application/gzip");
-        uploadAsset(release, uploadUrl, existingAssets, "linux arm64", linuxArm64Asset, "application/gzip");
-        uploadAsset(release, uploadUrl, existingAssets, "generic", genericAsset, "application/gzip");
+        //All four assets are zip files, whatever their name says
+        List<Callable<Void>> uploads = new ArrayList<>();
+        addUpload(uploads, release, uploadUrl, existingAssets, "windows", windowsAsset, "application/zip");
+        addUpload(uploads, release, uploadUrl, existingAssets, "linux amd64", linuxAmd64Asset, "application/zip");
+        addUpload(uploads, release, uploadUrl, existingAssets, "linux arm64", linuxArm64Asset, "application/zip");
+        addUpload(uploads, release, uploadUrl, existingAssets, "generic", genericAsset, "application/zip");
+        runUploads(uploads);
+    }
+
+    /**
+     * Adds an upload of the asset unless it is already attached to the release completely. An incompletely uploaded
+     * asset of a previous run is deleted first.
+     */
+    private void addUpload(List<Callable<Void>> uploads, org.nzbhydra.github.mavenreleaseplugin.Release release, String uploadUrl, Map<String, Asset> existingAssets, String description, File asset, String mediaType) throws MojoExecutionException {
+        if (dryRun) {
+            getLog().info("Skipping upload of " + description + " asset because of dry run");
+            return;
+        }
+        Asset existingAsset = existingAssets.remove(asset.getName());
+        if (existingAsset != null) {
+            if ("uploaded".equals(existingAsset.getState()) && Long.valueOf(asset.length()).equals(existingAsset.getSize())) {
+                getLog().info("Skipping upload of " + description + " asset because it was already uploaded completely");
+                return;
+            }
+            getLog().info("Deleting incompletely uploaded " + description + " asset of a previous run");
+            deleteAsset(existingAsset);
+        }
+        uploads.add(() -> {
+            uploadAsset(release, uploadUrl, description, asset, mediaType);
+            return null;
+        });
+    }
+
+    /**
+     * GitHub only ever advertises a receive window of about 76 KB, which limits a single upload to a couple of MB/s
+     * however much bandwidth is available. The assets are therefore uploaded over separate connections at the same
+     * time, which takes about as long as the slowest one instead of as long as all of them together.
+     */
+    private void runUploads(List<Callable<Void>> uploads) throws MojoExecutionException {
+        if (uploads.isEmpty()) {
+            return;
+        }
+        if (uploads.size() == 1) {
+            try {
+                uploads.get(0).call();
+            } catch (Exception e) {
+                throw asMojoExecutionException(e);
+            }
+            return;
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(uploads.size());
+        try {
+            List<Future<Void>> futures = new ArrayList<>();
+            for (Callable<Void> upload : uploads) {
+                futures.add(executor.submit(upload));
+            }
+            MojoExecutionException firstError = null;
+            for (Future<Void> future : futures) {
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    if (firstError == null) {
+                        firstError = asMojoExecutionException(e.getCause());
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new MojoExecutionException("Interrupted while uploading the assets");
+                }
+            }
+            if (firstError != null) {
+                throw firstError;
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private MojoExecutionException asMojoExecutionException(Throwable t) {
+        if (t instanceof MojoExecutionException) {
+            return (MojoExecutionException) t;
+        }
+        return new MojoExecutionException("Error while uploading the assets: " + t.getMessage());
     }
 
     /**
@@ -324,22 +412,8 @@ public class ReleaseMojo extends AbstractMojo {
         return assetsByName;
     }
 
-    private void uploadAsset(org.nzbhydra.github.mavenreleaseplugin.Release release, String uploadUrl, Map<String, Asset> existingAssets, String description, File asset, String mediaType) throws MojoExecutionException {
-        if (dryRun) {
-            getLog().info("Skipping upload of " + description + " asset because of dry run");
-            return;
-        }
+    private void uploadAsset(org.nzbhydra.github.mavenreleaseplugin.Release release, String uploadUrl, String description, File asset, String mediaType) throws MojoExecutionException {
         String name = asset.getName();
-        Asset existingAsset = existingAssets.remove(name);
-        if (existingAsset != null) {
-            if ("uploaded".equals(existingAsset.getState()) && Long.valueOf(asset.length()).equals(existingAsset.getSize())) {
-                getLog().info("Skipping upload of " + description + " asset because it was already uploaded completely");
-                return;
-            }
-            getLog().info("Deleting incompletely uploaded " + description + " asset of a previous run");
-            deleteAsset(existingAsset);
-        }
-
         for (int attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
             getLog().info("Uploading " + description + " asset to " + uploadUrl + (attempt > 1 ? " (attempt " + attempt + " of " + MAX_UPLOAD_ATTEMPTS + ")" : ""));
             Builder callBuilder = new Builder().url(uploadUrl + "?name=" + name);
@@ -351,7 +425,7 @@ public class ReleaseMojo extends AbstractMojo {
                     getLog().info("Successfully uploaded " + description + " asset");
                     return;
                 }
-                error = "Github returned code " + response.code() + " and message: " + response.message();
+                error = "Github returned code " + response.code() + " and message: " + response.message() + readBodyForLogging(response);
                 if (response.code() < 500) {
                     throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
                 }
@@ -362,7 +436,7 @@ public class ReleaseMojo extends AbstractMojo {
             if (attempt == MAX_UPLOAD_ATTEMPTS) {
                 throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
             }
-            getLog().warn("Upload of " + description + " asset failed, retrying in " + (retryDelayMs / 1000) + " seconds");
+            getLog().warn("Upload of " + description + " asset failed, " + error + ". Retrying in " + (retryDelayMs / 1000) + " seconds");
             //GitHub may have stored a partial asset under that name, which would make the next attempt fail with 422
             deleteAssetByName(release, name);
             try {
@@ -371,6 +445,24 @@ public class ReleaseMojo extends AbstractMojo {
                 Thread.currentThread().interrupt();
                 throw new MojoExecutionException("Interrupted while waiting to retry the upload of the " + description + " asset");
             }
+        }
+    }
+
+    /**
+     * GitHub explains in the response body why it rejected an upload, so that belongs in the log.
+     */
+    private String readBodyForLogging(Response response) {
+        if (response.body() == null) {
+            return "";
+        }
+        try {
+            String body = response.body().string().trim();
+            if (body.isEmpty()) {
+                return "";
+            }
+            return " and body: " + (body.length() > 1000 ? body.substring(0, 1000) + "..." : body);
+        } catch (IOException e) {
+            return "";
         }
     }
 
@@ -417,7 +509,7 @@ public class ReleaseMojo extends AbstractMojo {
     private class ProgressLoggingRequestBody extends RequestBody {
 
         private static final int CHUNK_SIZE = 64 * 1024;
-        private static final long LOG_INTERVAL_MS = 10_000;
+        private static final long LOG_INTERVAL_MS = 2_000;
 
         private final File file;
         private final MediaType mediaType;
@@ -444,6 +536,7 @@ public class ReleaseMojo extends AbstractMojo {
             long length = contentLength();
             long startedAt = System.currentTimeMillis();
             long lastLoggedAt = startedAt;
+            long lastLoggedBytes = 0;
             long written = 0;
             Buffer buffer = new Buffer();
             try (Source source = Okio.source(file)) {
@@ -453,27 +546,36 @@ public class ReleaseMojo extends AbstractMojo {
                     written += read;
                     long now = System.currentTimeMillis();
                     if (now - lastLoggedAt >= LOG_INTERVAL_MS && written < length) {
+                        logProgress(written, length, now - startedAt, written - lastLoggedBytes, now - lastLoggedAt);
                         lastLoggedAt = now;
-                        logProgress(written, length, now - startedAt);
+                        lastLoggedBytes = written;
                     }
                 }
             }
             sink.flush();
-            logProgress(written, length, System.currentTimeMillis() - startedAt);
+            long now = System.currentTimeMillis();
+            logProgress(written, length, now - startedAt, written - lastLoggedBytes, now - lastLoggedAt);
             //GitHub only answers once it has processed the whole asset, which takes a while and looks like a stalled upload
             getLog().info("Sent the " + description + " asset completely, waiting for GitHub to process it");
         }
 
-        private void logProgress(long written, long length, long elapsedMs) {
+        private void logProgress(long written, long length, long elapsedMs, long bytesSinceLastLog, long msSinceLastLog) {
             long percentage = length == 0 ? 100 : written * 100 / length;
-            double megaBytesPerSecond = elapsedMs == 0 ? 0 : (written / 1024d / 1024d) / (elapsedMs / 1000d);
+            //The current speed is what the line actually does right now, the average is dominated by the fast start
+            //while the local socket buffers were being filled
+            double currentMegaBytesPerSecond = megaBytesPerSecond(bytesSinceLastLog, msSinceLastLog);
+            double averageMegaBytesPerSecond = megaBytesPerSecond(written, elapsedMs);
             String remaining = "";
-            if (megaBytesPerSecond > 0 && written < length) {
-                long secondsLeft = (long) ((length - written) / 1024d / 1024d / megaBytesPerSecond);
+            if (currentMegaBytesPerSecond > 0 && written < length) {
+                long secondsLeft = (long) ((length - written) / 1024d / 1024d / currentMegaBytesPerSecond);
                 remaining = ", " + secondsLeft / 60 + "m " + secondsLeft % 60 + "s left";
             }
-            getLog().info(String.format("Sent %d of %d MB of the %s asset (%d%%) at %.2f MB/s%s",
-                written / 1024 / 1024, length / 1024 / 1024, description, percentage, megaBytesPerSecond, remaining));
+            getLog().info(String.format("Sent %d of %d MB of the %s asset (%d%%) at %.2f MB/s, %.2f MB/s on average%s",
+                written / 1024 / 1024, length / 1024 / 1024, description, percentage, currentMegaBytesPerSecond, averageMegaBytesPerSecond, remaining));
+        }
+
+        private double megaBytesPerSecond(long bytes, long milliseconds) {
+            return milliseconds == 0 ? 0 : (bytes / 1024d / 1024d) / (milliseconds / 1000d);
         }
     }
 

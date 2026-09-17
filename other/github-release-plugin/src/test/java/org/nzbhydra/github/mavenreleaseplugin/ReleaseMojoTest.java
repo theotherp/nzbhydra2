@@ -3,6 +3,7 @@ package org.nzbhydra.github.mavenreleaseplugin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -16,6 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -166,8 +171,11 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         server.takeRequest(2, TimeUnit.SECONDS); //Listing the releases
         server.takeRequest(2, TimeUnit.SECONDS); //Listing the assets
         //No request for the windows asset, it was already uploaded completely
-        RecordedRequest firstUpload = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(firstUpload.getPath(), firstUpload.getPath().contains("assets?name=linuxAmd64Asset.txt"));
+        Set<String> uploadedAssetNames = new HashSet<>();
+        for (int i = 0; i < 3; i++) {
+            uploadedAssetNames.add(server.takeRequest(2, TimeUnit.SECONDS).getPath().replaceAll(".*assets\\?name=", ""));
+        }
+        assertThat(uploadedAssetNames).containsOnly("linuxAmd64Asset.txt", "linuxArm64Asset.txt", "genericAsset.txt");
     }
 
     public void testRetriesFailedUpload() throws Exception {
@@ -202,12 +210,21 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         draftReleaseResponse.setUploadUrl(server.url("/repos/theotherp/nzbhydra2/releases/1/assets").toString());
         draftReleaseResponse.setUrl(server.url("/repos/theotherp/nzbhydra2/releases/1").toString());
         draftReleaseResponse.setDraft(true);
+        String draftReleaseJson = objectMapper.writeValueAsString(draftReleaseResponse);
 
-        server.enqueue(new MockResponse().setResponseCode(200).setBody("[]")); //Listing the existing releases
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(draftReleaseResponse)));
-        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails
-        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails again
-        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails for the last time
+        //Every upload fails, however often it is attempted
+        server.setDispatcher(new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) {
+                if (request.getPath().contains("assets?name=")) {
+                    return new MockResponse().setResponseCode(502);
+                }
+                if ("GET".equals(request.getMethod())) {
+                    return new MockResponse().setResponseCode(200).setBody("[]");
+                }
+                return new MockResponse().setResponseCode(200).setBody(draftReleaseJson);
+            }
+        });
 
         ReleaseMojo releaseMojo = getConfiguredMojo(server, "/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
         releaseMojo.retryDelayMs = 0;
@@ -216,7 +233,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
             releaseMojo.execute();
             fail("Expected mojo exception");
         } catch (MojoExecutionException e) {
-            assertThat(e.getMessage()).contains("When trying to upload windows asset Github returned code 502");
+            assertThat(e.getMessage()).contains("Github returned code 502");
         }
     }
 
@@ -237,26 +254,20 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         //Creating the release
         verifyDraftReleaseIsCreated(server);
 
-        //Uploading the assets
-        RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
-        assertThat("token token").isEqualTo(windowsAssetUploadRequest.getHeader("Authorization"));
-        //The asset is sent through a request body that logs the progress, so make sure it sends the file completely
+        //Uploading the assets, which happens in parallel, so the order in which they arrive is not defined
+        Map<String, RecordedRequest> uploadsByAssetName = new HashMap<>();
+        for (int i = 0; i < 4; i++) {
+            RecordedRequest uploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
+            assertThat("token token").isEqualTo(uploadRequest.getHeader("Authorization"));
+            uploadsByAssetName.put(uploadRequest.getPath().replaceAll(".*assets\\?name=", ""), uploadRequest);
+        }
+        assertThat(uploadsByAssetName.keySet()).containsOnly("windowsAsset.txt", "linuxAmd64Asset.txt", "linuxArm64Asset.txt", "genericAsset.txt");
+
+        //The assets are sent through a request body that logs the progress, so make sure it sends the file completely
         File windowsAssetFile = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+        RecordedRequest windowsAssetUploadRequest = uploadsByAssetName.get("windowsAsset.txt");
         assertThat(windowsAssetUploadRequest.getHeader("Content-Length")).isEqualTo(String.valueOf(windowsAssetFile.length()));
         assertThat(windowsAssetUploadRequest.getBody().readByteArray()).isEqualTo(Files.readAllBytes(windowsAssetFile.toPath()));
-
-        RecordedRequest linuxAmd64AssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(linuxAmd64AssetUploadRequest.getPath(), linuxAmd64AssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAmd64Asset.txt"));
-        assertThat("token token").isEqualTo(linuxAmd64AssetUploadRequest.getHeader("Authorization"));
-
-        RecordedRequest linuxArm64AssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(linuxArm64AssetUploadRequest.getPath(), linuxArm64AssetUploadRequest.getPath().contains("releases/1/assets?name=linuxArm64Asset.txt"));
-        assertThat("token token").isEqualTo(linuxArm64AssetUploadRequest.getHeader("Authorization"));
-
-        RecordedRequest genericAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(genericAssetUploadRequest.getPath(), genericAssetUploadRequest.getPath().contains("releases/1/assets?name=genericAsset.txt"));
-        assertThat("token token").isEqualTo(genericAssetUploadRequest.getHeader("Authorization"));
 
         //Setting it effective
         RecordedRequest setEffectiveRequest = server.takeRequest(2, TimeUnit.SECONDS);
