@@ -23,7 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -34,6 +36,11 @@ import java.util.concurrent.TimeUnit;
         aggregator = true //Only call for parent POM
 )
 public class ReleaseMojo extends AbstractMojo {
+
+    private static final int MAX_UPLOAD_ATTEMPTS = 3;
+
+    //Not final so that tests don't have to wait
+    protected long retryDelayMs = 10_000;
 
     private OkHttpClient client;
 
@@ -92,7 +99,13 @@ public class ReleaseMojo extends AbstractMojo {
         if (dryRun) {
             getLog().info("Dry run");
         }
-        client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
+        //The assets are about 100 MB each. Uploading one takes minutes and GitHub only sends the response headers
+        //once it has processed the whole upload, so the read timeout has to cover that as well.
+        client = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.MINUTES)
+            .readTimeout(10, TimeUnit.MINUTES)
+            .build();
         if (githubReleasesUrl == null) {
             if (System.getenv("githubReleasesUrl") != null) {
                 githubReleasesUrl = System.getenv("githubReleasesUrl");
@@ -145,7 +158,7 @@ public class ReleaseMojo extends AbstractMojo {
             releaseRequest.setTargetCommitish(commitish);
             setChangelogBody(releaseRequest);
 
-            org.nzbhydra.github.mavenreleaseplugin.Release releaseResponseObject = createRelease(releaseRequest);
+            org.nzbhydra.github.mavenreleaseplugin.Release releaseResponseObject = createOrReuseDraftRelease(releaseRequest);
             uploadAssets(releaseResponseObject);
 
             setReleaseEffective(releaseRequest, releaseResponseObject);
@@ -215,6 +228,35 @@ public class ReleaseMojo extends AbstractMojo {
         return latestEntry;
     }
 
+    private org.nzbhydra.github.mavenreleaseplugin.Release createOrReuseDraftRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
+        if (!dryRun) {
+            org.nzbhydra.github.mavenreleaseplugin.Release existingDraft = findExistingDraftRelease();
+            if (existingDraft != null) {
+                getLog().info("Reusing draft release " + existingDraft.getUrl() + " left over from a previous run");
+                return existingDraft;
+            }
+        }
+        return createRelease(releaseRequest);
+    }
+
+    private org.nzbhydra.github.mavenreleaseplugin.Release findExistingDraftRelease() throws IOException, MojoExecutionException {
+        Builder callBuilder = new Builder().url(githubReleasesUrl).get();
+        callBuilder.header("Authorization", "token " + githubToken);
+        try (Response response = client.newCall(callBuilder.build()).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new MojoExecutionException("When trying to list the existing releases Github returned code " + response.code() + " and message: " + response.message());
+            }
+            List<org.nzbhydra.github.mavenreleaseplugin.Release> releases = objectMapper.readValue(response.body().string(), new TypeReference<List<org.nzbhydra.github.mavenreleaseplugin.Release>>() {
+            });
+            for (org.nzbhydra.github.mavenreleaseplugin.Release release : releases) {
+                if (Boolean.TRUE.equals(release.isDraft()) && tagName.equals(release.getTagName())) {
+                    return release;
+                }
+            }
+        }
+        return null;
+    }
+
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
         getLog().info("Creating release in draft mode using base URL " + githubReleasesUrl);
         String requestBody = objectMapper.writeValueAsString(releaseRequest);
@@ -245,100 +287,121 @@ public class ReleaseMojo extends AbstractMojo {
     }
 
     private void uploadAssets(org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
-        String uploadUrl = release.getUploadUrl();
-        uploadUrl = uploadUrl.replace("{?name,label}", "");
+        String uploadUrl = release.getUploadUrl().replace("{?name,label}", "");
+        Map<String, Asset> existingAssets = getExistingAssets(release);
 
-        String name = windowsAsset.getName();
-        getLog().info("Uploading windows asset to " + uploadUrl);
+        uploadAsset(release, uploadUrl, existingAssets, "windows", windowsAsset, "application/zip");
+        uploadAsset(release, uploadUrl, existingAssets, "linux amd64", linuxAmd64Asset, "application/gzip");
+        uploadAsset(release, uploadUrl, existingAssets, "linux arm64", linuxArm64Asset, "application/gzip");
+        uploadAsset(release, uploadUrl, existingAssets, "generic", genericAsset, "application/gzip");
+    }
 
-        Response response ;
-        if (!dryRun) {
-            try {
-                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name);
-                callBuilder.header("Authorization", "token " + githubToken);
-                response = client.newCall(callBuilder
-                    .post(
-                        RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
-                    .build()).execute();
-                getLog().info("Successfully uploaded windows asset");
-                if (!response.isSuccessful()) {
-                    throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
-                }
-            } catch (IOException e) {
-                getLog().error("Error while uploading windows asset", e);
-                throw new MojoExecutionException("When trying to upload windows asset the following error occurred: " + e.getMessage());
+    /**
+     * The assets already attached to the release, by name. Only ever contains anything when a draft release of a
+     * previous, failed run is reused.
+     */
+    private Map<String, Asset> getExistingAssets(org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
+        Map<String, Asset> assetsByName = new HashMap<>();
+        if (dryRun || release.getAssetsUrl() == null) {
+            return assetsByName;
+        }
+        Builder callBuilder = new Builder().url(release.getAssetsUrl()).get();
+        callBuilder.header("Authorization", "token " + githubToken);
+        try (Response response = client.newCall(callBuilder.build()).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new MojoExecutionException("When trying to list the assets of the release Github returned code " + response.code() + " and message: " + response.message());
             }
-        } else {
-            getLog().info("Skipping upload of windows asset because of dry run");
+            List<Asset> assets = objectMapper.readValue(response.body().string(), new TypeReference<List<Asset>>() {
+            });
+            for (Asset asset : assets) {
+                assetsByName.put(asset.getName(), asset);
+            }
+        }
+        return assetsByName;
+    }
+
+    private void uploadAsset(org.nzbhydra.github.mavenreleaseplugin.Release release, String uploadUrl, Map<String, Asset> existingAssets, String description, File asset, String mediaType) throws MojoExecutionException {
+        if (dryRun) {
+            getLog().info("Skipping upload of " + description + " asset because of dry run");
+            return;
+        }
+        String name = asset.getName();
+        Asset existingAsset = existingAssets.remove(name);
+        if (existingAsset != null) {
+            if ("uploaded".equals(existingAsset.getState()) && Long.valueOf(asset.length()).equals(existingAsset.getSize())) {
+                getLog().info("Skipping upload of " + description + " asset because it was already uploaded completely");
+                return;
+            }
+            getLog().info("Deleting incompletely uploaded " + description + " asset of a previous run");
+            deleteAsset(existingAsset);
         }
 
-
-        getLog().info("Uploading linux amd64 asset to " + uploadUrl);
-        name = linuxAmd64Asset.getName();
-        if (!dryRun) {
-
-            try {
-                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAmd64Asset.length())).url(uploadUrl + "?name=" + name);
-                callBuilder.header("Authorization", "token " + githubToken);
-                response = client.newCall(callBuilder
-                        .post(
-                                RequestBody.create(MediaType.parse("application/gzip"), linuxAmd64Asset))
-                        .build()).execute();
-                if (!response.isSuccessful()) {
-                    throw new MojoExecutionException("When trying to upload linux amd64 asset Github returned code " + response.code() + " and message: " + response.message());
+        for (int attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
+            getLog().info("Uploading " + description + " asset to " + uploadUrl + (attempt > 1 ? " (attempt " + attempt + " of " + MAX_UPLOAD_ATTEMPTS + ")" : ""));
+            Builder callBuilder = new Builder().url(uploadUrl + "?name=" + name);
+            callBuilder.header("Authorization", "token " + githubToken);
+            callBuilder.post(RequestBody.create(MediaType.parse(mediaType), asset));
+            String error;
+            try (Response response = client.newCall(callBuilder.build()).execute()) {
+                if (response.isSuccessful()) {
+                    getLog().info("Successfully uploaded " + description + " asset");
+                    return;
                 }
-                getLog().info("Successfully uploaded linux amd64 asset");
+                error = "Github returned code " + response.code() + " and message: " + response.message();
+                if (response.code() < 500) {
+                    throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
+                }
             } catch (IOException e) {
-                getLog().error("Error while uploading linux amd64 asset", e);
-                throw new MojoExecutionException("When trying to upload linux amd64 asset the following error occurred: " + e.getMessage());
+                error = "the following error occurred: " + e.getMessage();
+                getLog().error("Error while uploading " + description + " asset", e);
             }
-        } else {
-            getLog().info("Skipping upload of linux amd64 asset because of dry run");
+            if (attempt == MAX_UPLOAD_ATTEMPTS) {
+                throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
+            }
+            getLog().warn("Upload of " + description + " asset failed, retrying in " + (retryDelayMs / 1000) + " seconds");
+            //GitHub may have stored a partial asset under that name, which would make the next attempt fail with 422
+            deleteAssetByName(release, name);
+            try {
+                Thread.sleep(retryDelayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new MojoExecutionException("Interrupted while waiting to retry the upload of the " + description + " asset");
+            }
         }
+    }
 
-        getLog().info("Uploading linux arm64 asset to " + uploadUrl);
-        name = linuxArm64Asset.getName();
-        if (!dryRun) {
-
-            try {
-                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxArm64Asset.length())).url(uploadUrl + "?name=" + name);
-                callBuilder.header("Authorization", "token " + githubToken);
-                response = client.newCall(callBuilder
-                    .post(
-                        RequestBody.create(MediaType.parse("application/gzip"), linuxArm64Asset))
-                    .build()).execute();
-                if (!response.isSuccessful()) {
-                    throw new MojoExecutionException("When trying to upload linux arm64 asset Github returned code " + response.code() + " and message: " + response.message());
-                }
-                getLog().info("Successfully uploaded linux asset");
-            } catch (IOException e) {
-                getLog().error("Error while uploading linux asset", e);
-                throw new MojoExecutionException("When trying to upload linux arm64 asset the following error occurred: " + e.getMessage());
-            }
-        } else {
-            getLog().info("Skipping upload of linux arm64 asset because of dry run");
+    private void deleteAssetByName(org.nzbhydra.github.mavenreleaseplugin.Release release, String name) throws MojoExecutionException {
+        if (release.getAssetsUrl() == null) {
+            return;
         }
-
-        getLog().info("Uploading generic asset to " + uploadUrl);
-        if (!dryRun) {
-            name = genericAsset.getName();
-            try {
-                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
-                callBuilder.header("Authorization", "token " + githubToken);
-                response = client.newCall(callBuilder
-                    .post(
-                        RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
-                    .build()).execute();
-                if (!response.isSuccessful()) {
-                    throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
-                }
-                getLog().info("Successfully uploaded generic asset");
-            } catch (IOException e) {
-                getLog().error("Error while uploading generic asset", e);
-                throw new MojoExecutionException("When trying to upload generic asset the following error occurred: " + e.getMessage());
+        Builder callBuilder = new Builder().url(release.getAssetsUrl()).get();
+        callBuilder.header("Authorization", "token " + githubToken);
+        try (Response response = client.newCall(callBuilder.build()).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                getLog().warn("Unable to list the assets of the release before retrying, Github returned code " + response.code());
+                return;
             }
-        } else {
-            getLog().info("Skipping upload of generic asset because of dry run");
+            List<Asset> assets = objectMapper.readValue(response.body().string(), new TypeReference<List<Asset>>() {
+            });
+            for (Asset asset : assets) {
+                if (name.equals(asset.getName())) {
+                    deleteAsset(asset);
+                }
+            }
+        } catch (IOException e) {
+            getLog().warn("Unable to delete the partially uploaded asset " + name + ": " + e.getMessage());
+        }
+    }
+
+    private void deleteAsset(Asset asset) throws MojoExecutionException {
+        Builder callBuilder = new Builder().url(asset.getUrl()).delete();
+        callBuilder.header("Authorization", "token " + githubToken);
+        try (Response response = client.newCall(callBuilder.build()).execute()) {
+            if (!response.isSuccessful()) {
+                throw new MojoExecutionException("When trying to delete the asset " + asset.getName() + " Github returned code " + response.code() + " and message: " + response.message());
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("When trying to delete the asset " + asset.getName() + " the following error occurred: " + e.getMessage());
         }
     }
 

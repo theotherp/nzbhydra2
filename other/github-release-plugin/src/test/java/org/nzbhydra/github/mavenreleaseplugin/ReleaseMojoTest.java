@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -131,6 +132,107 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         assertThat(server.getRequestCount()).isEqualTo(0);
     }
 
+    public void testReusesDraftReleaseOfPreviousRunAndSkipsCompletelyUploadedAssets() throws Exception {
+        File windowsAssetFile = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+
+        MockWebServer server = new MockWebServer();
+        Release draftOfPreviousRun = new Release();
+        draftOfPreviousRun.setTagName("v1.0.0");
+        draftOfPreviousRun.setDraft(true);
+        draftOfPreviousRun.setUploadUrl(server.url("/repos/theotherp/nzbhydra2/releases/1/assets").toString());
+        draftOfPreviousRun.setAssetsUrl(server.url("/repos/theotherp/nzbhydra2/releases/1/assets").toString());
+        draftOfPreviousRun.setUrl(server.url("/repos/theotherp/nzbhydra2/releases/1").toString());
+
+        Asset completeWindowsAsset = new Asset();
+        completeWindowsAsset.setName(windowsAssetFile.getName());
+        completeWindowsAsset.setState("uploaded");
+        completeWindowsAsset.setSize(windowsAssetFile.length());
+        completeWindowsAsset.setUrl(server.url("/repos/theotherp/nzbhydra2/releases/assets/1").toString());
+
+        Release effectiveReleaseResponse = new Release();
+        effectiveReleaseResponse.setDraft(false);
+
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(Collections.singletonList(draftOfPreviousRun)))); //Listing the existing releases
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(Collections.singletonList(completeWindowsAsset)))); //Listing the assets of the reused release
+        server.enqueue(new MockResponse().setResponseCode(200)); //linux amd64 asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //linux arm64 asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //generic asset upload
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(effectiveReleaseResponse))); //Setting the release effective
+
+        ReleaseMojo releaseMojo = getConfiguredMojo(server, "/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
+        releaseMojo.execute();
+
+        assertThat(server.getRequestCount()).isEqualTo(6);
+        server.takeRequest(2, TimeUnit.SECONDS); //Listing the releases
+        server.takeRequest(2, TimeUnit.SECONDS); //Listing the assets
+        //No request for the windows asset, it was already uploaded completely
+        RecordedRequest firstUpload = server.takeRequest(2, TimeUnit.SECONDS);
+        assertTrue(firstUpload.getPath(), firstUpload.getPath().contains("assets?name=linuxAmd64Asset.txt"));
+    }
+
+    public void testRetriesFailedUpload() throws Exception {
+        MockWebServer server = new MockWebServer();
+        Release draftReleaseResponse = new Release();
+        draftReleaseResponse.setUploadUrl(server.url("/repos/theotherp/nzbhydra2/releases/1/assets").toString());
+        draftReleaseResponse.setUrl(server.url("/repos/theotherp/nzbhydra2/releases/1").toString());
+        draftReleaseResponse.setDraft(true);
+        Release effectiveReleaseResponse = new Release();
+        effectiveReleaseResponse.setDraft(false);
+
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("[]")); //Listing the existing releases
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(draftReleaseResponse)));
+        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails
+        server.enqueue(new MockResponse().setResponseCode(200)); //Windows asset upload, retried
+        server.enqueue(new MockResponse().setResponseCode(200)); //linux amd64 asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //linux arm64 asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //generic asset upload
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(effectiveReleaseResponse))); //Setting the release effective
+
+        ReleaseMojo releaseMojo = getConfiguredMojo(server, "/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
+        releaseMojo.retryDelayMs = 0;
+
+        releaseMojo.execute();
+
+        assertThat(server.getRequestCount()).isEqualTo(8);
+    }
+
+    public void testFailsAfterTheLastUploadAttempt() throws Exception {
+        MockWebServer server = new MockWebServer();
+        Release draftReleaseResponse = new Release();
+        draftReleaseResponse.setUploadUrl(server.url("/repos/theotherp/nzbhydra2/releases/1/assets").toString());
+        draftReleaseResponse.setUrl(server.url("/repos/theotherp/nzbhydra2/releases/1").toString());
+        draftReleaseResponse.setDraft(true);
+
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("[]")); //Listing the existing releases
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(draftReleaseResponse)));
+        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails
+        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails again
+        server.enqueue(new MockResponse().setResponseCode(502)); //Windows asset upload, fails for the last time
+
+        ReleaseMojo releaseMojo = getConfiguredMojo(server, "/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
+        releaseMojo.retryDelayMs = 0;
+
+        try {
+            releaseMojo.execute();
+            fail("Expected mojo exception");
+        } catch (MojoExecutionException e) {
+            assertThat(e.getMessage()).contains("When trying to upload windows asset Github returned code 502");
+        }
+    }
+
+    private ReleaseMojo getConfiguredMojo(MockWebServer server, String pomPath) throws Exception {
+        File pom = getTestFile(pomPath);
+        assertTrue(pom.exists());
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo = (ReleaseMojo) configureMojo(releaseMojo, extractPluginConfiguration("github-release-plugin", pom));
+        releaseMojo.githubReleasesUrl = server.url("/repos/theotherp/nzbhydra2/releases").toString();
+        releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+        releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
+        return releaseMojo;
+    }
+
     protected void verifyExecution(MockWebServer server) throws InterruptedException, IOException {
         //Creating the release
         verifyDraftReleaseIsCreated(server);
@@ -176,6 +278,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         Release effectiveReleaseResponse = new Release();
 
         effectiveReleaseResponse.setDraft(false);
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("[]")); //Listing the existing releases
         MockResponse releaseMockResponse = new MockResponse()
             .setResponseCode(200)
             .setBody(objectMapper.writeValueAsString(draftReleaseResponse));
@@ -190,6 +293,9 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
 
     protected void verifyDraftReleaseIsCreated(MockWebServer server) throws InterruptedException, IOException {
+        RecordedRequest listRequest = server.takeRequest(2, TimeUnit.SECONDS);
+        assertEquals("GET", listRequest.getMethod());
+
         RecordedRequest releaseRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertFalse(releaseRequest.getRequestLine(), releaseRequest.getPath().contains("access_token"));
         assertEquals(releaseRequest.getHeader("Authorization"), "token token");
