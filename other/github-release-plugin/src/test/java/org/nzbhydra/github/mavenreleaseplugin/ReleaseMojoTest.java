@@ -252,7 +252,25 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         assertThat(releaseMojo.isTooSlow(tooSlow, elapsed)).isTrue();
     }
 
-    public void testReadsTheRemoteUploadSettingsFromTheEnvFile() throws Exception {
+    public void testTheRemoteUploadIsOffUnlessItIsRequestedAndConfigured() throws Exception {
+        File envFile = writeRemoteEnvFile();
+
+        ReleaseMojo withoutFlag = new ReleaseMojo();
+        withoutFlag.remoteUploadEnvFile = envFile;
+        assertThat(withoutFlag.remoteUploadEnabled()).isFalse();
+
+        ReleaseMojo withoutEnvFile = new ReleaseMojo();
+        withoutEnvFile.useRemoteUpload = true;
+        withoutEnvFile.remoteUploadEnvFile = new File("does/not/exist.env");
+        assertThat(withoutEnvFile.remoteUploadEnabled()).isFalse();
+
+        ReleaseMojo enabled = new ReleaseMojo();
+        enabled.useRemoteUpload = true;
+        enabled.remoteUploadEnvFile = envFile;
+        assertThat(enabled.remoteUploadEnabled()).isTrue();
+    }
+
+    private File writeRemoteEnvFile() throws IOException {
         File envFile = File.createTempFile("remote", ".env");
         envFile.deleteOnExit();
         Files.write(envFile.toPath(), ("# Connection details\n"
@@ -260,6 +278,11 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
                                        + "REMOTE_USER=build\n"
                                        + "REMOTE_KEY=~/.ssh/somekey\n"
                                        + "REMOTE_ADMIN_USER=ubuntu\n").getBytes(StandardCharsets.UTF_8));
+        return envFile;
+    }
+
+    public void testReadsTheRemoteUploadSettingsFromTheEnvFile() throws Exception {
+        File envFile = writeRemoteEnvFile();
 
         ReleaseMojo releaseMojo = new ReleaseMojo();
         releaseMojo.remoteUploadEnvFile = envFile;

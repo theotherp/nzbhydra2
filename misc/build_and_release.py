@@ -128,6 +128,7 @@ class BuildContext:
     github_token: str | None = None
     discord_token: str | None = None
     completed_steps: list[str] = field(default_factory=list)
+    use_remote_upload: bool = False
 
     def save_state(self) -> None:
         """Save current state to file for resuming later."""
@@ -925,6 +926,8 @@ def github_release(ctx: BuildContext) -> None:
     cmd = ["mvn", "-B", "org.nzbhydra:github-release-plugin:3.0.0:release"]
     if ctx.dry_run == DryRunMode.LOCAL:
         cmd.append("-DdryRun")
+    if ctx.use_remote_upload:
+        cmd.append("-DuseRemoteUpload=true")
 
     run_command(
         ctx,
@@ -1191,6 +1194,12 @@ def run_build(
     help="Dry run mode: off=execute all, local=skip remote ops, print=only print commands",
 )
 @click.option("--resume", "-r", is_flag=True, help="Resume from last saved state")
+@click.option(
+    "--remote-upload",
+    "use_remote_upload",
+    is_flag=True,
+    help="Upload release assets that GitHub accepts too slowly from the remote upload host configured in remote.env",
+)
 @click.option("--start-from", "-s", "start_from", help="Start from a specific step (use --list-steps to see options)")
 @click.option("--list-steps", "-l", "show_steps", is_flag=True, help="List all available steps")
 @click.option("--clear-state", is_flag=True, help="Clear saved state and exit")
@@ -1202,6 +1211,7 @@ def main(
     dry_run: str,
     resume: bool,
     start_from: str | None,
+    use_remote_upload: bool,
     show_steps: bool,
     clear_state: bool,
     reset_changes: bool,
@@ -1256,6 +1266,7 @@ def main(
         dry_run=dry_run_mode,
         log_file=_create_log_file_path(),
         skip_preconditions=skip_preconditions,
+        use_remote_upload=use_remote_upload,
     )
 
     # Clean up old build logs

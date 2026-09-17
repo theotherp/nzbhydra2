@@ -103,7 +103,14 @@ public class ReleaseMojo extends AbstractMojo {
     protected boolean dryRun;
 
     /**
-     * An upload running slower than this is aborted and, if a remote upload host is configured, retried from there.
+     * Whether a slow upload is aborted and sent from the remote upload host instead. Off unless -DuseRemoteUpload is
+     * given, because GitHub's upload endpoint is not reliably slow: at times it is just as slow from the remote host.
+     */
+    @Parameter(property = "useRemoteUpload", defaultValue = "false")
+    protected boolean useRemoteUpload;
+
+    /**
+     * An upload running slower than this is aborted and, if the remote upload is enabled, retried from there.
      * GitHub's proxy answers a request that takes more than a couple of minutes with 504, so a 100 MB asset has to be
      * sent at a few MB/s to arrive at all.
      */
@@ -184,11 +191,14 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Will use linux arm64 asset " + linuxArm64Asset.getAbsolutePath());
         getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
         getLog().info("Will use changelog entry from " + changelogYamlFile.getAbsolutePath());
-        if (remoteUploadHost() != null) {
+        if (remoteUploadEnabled()) {
             getLog().info(String.format("Uploads running slower than %.1f MB/s will be aborted and sent from the remote upload host instead", slowUploadThresholdMbPerSecond));
             getLog().debug("Remote upload host is " + remoteUploadHost());
+        } else if (useRemoteUpload) {
+            getLog().warn("Remote upload requested but no remote upload host is configured, uploading directly");
         } else {
-            getLog().info("No remote upload host configured, a slow upload will just be retried");
+            getLog().info("Uploading directly. Use -DuseRemoteUpload to send uploads that run slower than "
+                          + String.format("%.1f", slowUploadThresholdMbPerSecond) + " MB/s from the remote upload host instead");
         }
 
         try {
@@ -458,15 +468,10 @@ public class ReleaseMojo extends AbstractMojo {
                     throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
                 }
             } catch (SlowUploadException e) {
-                if (remoteUploadHost() == null) {
-                    error = e.getMessage() + " and no remote upload host is configured";
-                    getLog().warn("Upload of " + description + " asset " + error);
-                } else {
-                    getLog().info("Upload of " + description + " asset " + e.getMessage()
-                                  + ", uploading it from the remote upload host instead, which has a faster connection to GitHub");
-                    uploadAssetFromRemoteHost(release, uploadUrl, description, asset, mediaType);
-                    return;
-                }
+                getLog().info("Upload of " + description + " asset " + e.getMessage()
+                              + ", uploading it from the remote upload host instead");
+                uploadAssetFromRemoteHost(release, uploadUrl, description, asset, mediaType);
+                return;
             } catch (IOException e) {
                 error = "the following error occurred: " + e.getMessage();
                 getLog().error("Error while uploading " + description + " asset", e);
@@ -562,6 +567,10 @@ public class ReleaseMojo extends AbstractMojo {
             return false;
         }
         return (written / 1024d / 1024d) / (elapsedMs / 1000d) < slowUploadThresholdMbPerSecond;
+    }
+
+    protected boolean remoteUploadEnabled() {
+        return useRemoteUpload && remoteUploadHost() != null;
     }
 
     private String remoteUploadHost() {
@@ -732,7 +741,7 @@ public class ReleaseMojo extends AbstractMojo {
                         logProgress(written, length, now - startedAt, written - lastLoggedBytes, now - lastLoggedAt);
                         lastLoggedAt = now;
                         lastLoggedBytes = written;
-                        if (isTooSlow(written, now - startedAt)) {
+                        if (remoteUploadEnabled() && isTooSlow(written, now - startedAt)) {
                             throw new SlowUploadException(megaBytesPerSecond(written, now - startedAt));
                         }
                     }
