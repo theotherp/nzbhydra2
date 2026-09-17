@@ -72,10 +72,10 @@ Use these **only** when IntelliJ MCP tools are unavailable. Run from the project
 
 ### System and GUI Tests
 
-- Run Playwright from WSL with `python3 misc/run_gui_systemtest.py`. It reuses healthy IntelliJ Hydra and mockserver processes; if neither is running, it builds and starts the current JVM code in WSL. It also manages Sonarr and Radarr as
+- Run Playwright with `python3 misc/run_gui_systemtest.py`. It reuses healthy IntelliJ Hydra and mockserver processes; if neither is running, it builds and starts the current JVM code locally. It also manages Sonarr and Radarr as
   needed.
 - Require already-running IntelliJ services with `python3 misc/run_gui_systemtest.py --runtime existing`.
-- Force current JVM code in WSL with `python3 misc/run_gui_systemtest.py --runtime local`. This shuts down Hydra or mockserver already using the test ports through their actuator shutdown endpoints.
+- Force current JVM code with `python3 misc/run_gui_systemtest.py --runtime local`. This shuts down Hydra or mockserver already using the test ports through their actuator shutdown endpoints.
 - Pass Playwright arguments after `--`, for example `python3 misc/run_gui_systemtest.py -- tests/search.spec.ts --grep "should search"`. The complete Playwright command times out after five minutes by default; override it with
   `--test-timeout <seconds>` when needed.
 - Reproduce CI's `runSystemTestsLinux` ordering with `python3 misc/run_gui_systemtest.py --runtime local --java-phase`. This is the supported way to run both phases the way CI does: the Maven JVM system tests first, then Playwright, both
@@ -85,7 +85,7 @@ Use these **only** when IntelliJ MCP tools are unavailable. Run from the project
   `-Dtest=<pattern>`.
 - `--java-phase` needs `--runtime local`. Against an already-running instance (`--runtime existing`) the runner cannot relaunch what it did not start, so it warns and runs the phase unsupervised; a restarting test will still end that
   instance.
-- Run native Java system tests from WSL with `python3 misc/run_systemtest.py`. It rebuilds the Linux native executable when core or shared code changes; `native-image` must be on `PATH`.
+- Run native Java system tests with `python3 misc/run_systemtest.py`. It rebuilds the Linux native executable when core or shared code changes; `native-image` must be on `PATH`.
 - Add `--gui-tests` to also run Playwright against the managed native processes, or add both `--gui-tests --skip-system-tests` for GUI tests only. Put optional Playwright arguments last using `--playwright-args`; override its
   five-minute default with `--gui-test-timeout <seconds>`.
 

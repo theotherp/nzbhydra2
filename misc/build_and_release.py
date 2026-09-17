@@ -15,7 +15,6 @@ Usage:
 import atexit
 import json
 import os
-import platform
 import signal
 import subprocess
 import sys
@@ -128,7 +127,6 @@ class BuildContext:
     github_token: str | None = None
     discord_token: str | None = None
     completed_steps: list[str] = field(default_factory=list)
-    is_windows: bool = field(default_factory=lambda: platform.system() == "Windows")
 
     def save_state(self) -> None:
         """Save current state to file for resuming later."""
@@ -294,13 +292,6 @@ def run_command(
         full_env.update(env)
 
     # Execute with real-time streaming to log file
-    # On Windows, use shell=True to resolve .cmd/.bat extensions (like mvn.cmd)
-    use_shell = ctx.is_windows
-    shell_cmd: str | None = None
-    if use_shell:
-        # Use subprocess.list2cmdline for proper Windows command line quoting
-        shell_cmd = subprocess.list2cmdline([str(c) for c in cmd])
-
     start_time = time.time()
     output_lines: list[str] = []
     output_queue: queue.Queue[str | None] = queue.Queue()
@@ -316,19 +307,15 @@ def run_command(
             q.put(None)  # Signal end of output
 
     process: subprocess.Popen | None = None
-    cmd_to_run = shell_cmd if use_shell else cmd
-    if cmd_to_run is None:
-        raise ValueError("Command is not set")
     try:
         # Use Popen for real-time output streaming
         process = subprocess.Popen(
-            cmd_to_run,
+            cmd,
             cwd=cwd or PROJECT_ROOT,
             env=full_env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,  # Merge stderr into stdout
             text=True,
-            shell=use_shell,
         )
         _register_process(process)  # Track for cleanup on interrupt
 
@@ -436,7 +423,7 @@ def run_command(
         raise
 
 
-def run_wsl_command(
+def run_shell_command(
     ctx: BuildContext,
     cmd: str,
     description: str,
@@ -444,24 +431,14 @@ def run_wsl_command(
     check: bool = True,
     timeout_seconds: int | None = None,
 ) -> subprocess.CompletedProcess | None:
-    """Run a command in WSL (only on Windows)."""
-    if ctx.is_windows:
-        return run_command(
-            ctx,
-            ["wsl", "-d", "Ubuntu", "--", "sh", "-c", cmd],
-            description,
-            check=check,
-            timeout_seconds=timeout_seconds,
-        )
-    else:
-        # On Linux, run directly
-        return run_command(
-            ctx,
-            ["sh", "-c", cmd],
-            description,
-            check=check,
-            timeout_seconds=timeout_seconds,
-        )
+    """Run a command line through the shell."""
+    return run_command(
+        ctx,
+        ["sh", "-c", cmd],
+        description,
+        check=check,
+        timeout_seconds=timeout_seconds,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -515,14 +492,13 @@ def load_tokens(ctx: BuildContext) -> None:
 
         # Validate GitHub token (only if not in print mode)
         if ctx.dry_run.should_execute_local():
-            null_device = "NUL" if ctx.is_windows else "/dev/null"
             result = run_command(
                 ctx,
                 [
                     "curl",
                     "-s",
                     "-o",
-                    null_device,
+                    "/dev/null",
                     "-w",
                     "%{http_code}",
                     "-H",
@@ -564,16 +540,16 @@ def check_preconditions(ctx: BuildContext) -> None:
         console.print("  [green]✓[/green] Git working directory is clean")
 
     # Check Docker is running (for Linux builds)
-    if ctx.is_windows and ctx.dry_run.should_execute_local():
-        result = run_wsl_command(
+    if ctx.dry_run.should_execute_local():
+        result = run_shell_command(
             ctx,
             "docker info 2>/dev/null | grep -q 'Docker Root Dir'",
-            "Checking Docker is running in WSL",
+            "Checking Docker is running",
             check=False,
         )
         if result and result.returncode != 0:
-            raise RuntimeError("Docker is not running in WSL")
-        console.print("  [green]✓[/green] Docker is running in WSL")
+            raise RuntimeError("Docker is not running")
+        console.print("  [green]✓[/green] Docker is running")
 
 
 @step("set_release_version", "Set release version in Maven")
@@ -739,7 +715,7 @@ def _build_linux_amd64(ctx: BuildContext, log_file: Path) -> str | None:
 
     try:
         # Build with 20 minute timeout
-        run_wsl_command(
+        run_shell_command(
             build_ctx,
             "./misc/buildLinuxCore/amd64/buildLinuxCore.sh",
             "Building Linux amd64 executable",
@@ -748,7 +724,7 @@ def _build_linux_amd64(ctx: BuildContext, log_file: Path) -> str | None:
 
         # Verify version
         if ctx.dry_run.should_execute_local():
-            result = run_wsl_command(
+            result = run_shell_command(
                 build_ctx,
                 "releases/linux-amd64-release/include/executables/core -version",
                 "Verifying Linux amd64 version",
@@ -773,7 +749,7 @@ def _build_linux_arm64(ctx: BuildContext, log_file: Path) -> str | None:
 
     try:
         # Build with 20 minute timeout
-        run_wsl_command(
+        run_shell_command(
             build_ctx,
             "./misc/buildLinuxCore/arm64/buildLinuxCore.sh",
             "Building Linux arm64 executable",
@@ -782,7 +758,7 @@ def _build_linux_arm64(ctx: BuildContext, log_file: Path) -> str | None:
 
         # Verify version on remote machine
         if ctx.dry_run.should_execute_local():
-            result = run_wsl_command(
+            result = run_shell_command(
                 build_ctx,
                 "./misc/buildLinuxCore/arm64/getVersion.sh",
                 "Verifying Linux arm64 version",
