@@ -1,7 +1,7 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.0"
-    date: "2026-09-13"
+    date: "2026-09-17"
     final: false
     changes:
       -   type: "feature"
