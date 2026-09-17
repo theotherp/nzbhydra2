@@ -15,6 +15,7 @@ Usage:
 import atexit
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -200,6 +201,14 @@ def _increment_patch_version(version: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _echo_matching_line(line: str, pattern: "re.Pattern | None") -> None:
+    """Print a line of command output to the console, e.g. the upload progress of a long running step."""
+    if pattern is None or not pattern.search(line):
+        return
+    #Maven prefixes every line with its log level
+    console.print(f"    [dim]{line.strip().replace('[INFO] ', '')}[/dim]")
+
+
 def _redact_sensitive(text: str, ctx: BuildContext) -> str:
     """Redact sensitive tokens from text for logging."""
     result = text
@@ -238,6 +247,7 @@ def run_command(
     check: bool = True,
     is_remote: bool = False,
     timeout_seconds: int | None = None,
+    echo_lines_matching: str | None = None,
 ) -> subprocess.CompletedProcess | None:
     """
     Run a command with proper logging and dry-run handling.
@@ -251,12 +261,15 @@ def run_command(
         check: Whether to raise on non-zero exit
         is_remote: Whether this is a remote operation (git push, github, discord)
         timeout_seconds: Maximum time to wait for command (None = no timeout)
+        echo_lines_matching: Regex; output lines matching it are also printed to the console
 
     Returns:
         CompletedProcess if executed, None if skipped
     """
     import threading
     import queue
+
+    echo_pattern = re.compile(echo_lines_matching) if echo_lines_matching else None
 
     cmd_str = " ".join(str(c) for c in cmd)
     cmd_str_redacted = _redact_sensitive(cmd_str, ctx)
@@ -342,6 +355,7 @@ def run_command(
                     f.write(redacted_line)
                     f.flush()
                     output_lines.append(line)
+                    _echo_matching_line(redacted_line, echo_pattern)
                 except queue.Empty:
                     # No output yet, continue checking
                     if process.poll() is not None:
@@ -355,6 +369,7 @@ def run_command(
                                 f.write(redacted_line)
                                 f.flush()
                                 output_lines.append(line)
+                                _echo_matching_line(redacted_line, echo_pattern)
                             except queue.Empty:
                                 break
                         break
@@ -914,6 +929,8 @@ def github_release(ctx: BuildContext) -> None:
         "Creating GitHub release",
         env=env,
         is_remote=True,
+        #Uploading the four ~100 MB assets takes a while, so show what the plugin reports about it
+        echo_lines_matching=r"(Sent \d+ of|Sent the .* asset completely|Uploading .* asset|Successfully uploaded|Skipping upload|Reusing draft|Deleting incompletely|retrying in)",
     )
 
 

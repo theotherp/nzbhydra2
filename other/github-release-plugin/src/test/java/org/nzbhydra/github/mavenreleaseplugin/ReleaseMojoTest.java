@@ -241,6 +241,10 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
         assertThat("token token").isEqualTo(windowsAssetUploadRequest.getHeader("Authorization"));
+        //The asset is sent through a request body that logs the progress, so make sure it sends the file completely
+        File windowsAssetFile = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+        assertThat(windowsAssetUploadRequest.getHeader("Content-Length")).isEqualTo(String.valueOf(windowsAssetFile.length()));
+        assertThat(windowsAssetUploadRequest.getBody().readByteArray()).isEqualTo(Files.readAllBytes(windowsAssetFile.toPath()));
 
         RecordedRequest linuxAmd64AssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(linuxAmd64AssetUploadRequest.getPath(), linuxAmd64AssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAmd64Asset.txt"));

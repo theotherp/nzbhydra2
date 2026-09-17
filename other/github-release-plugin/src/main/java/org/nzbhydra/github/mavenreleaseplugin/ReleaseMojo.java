@@ -11,6 +11,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -340,7 +344,7 @@ public class ReleaseMojo extends AbstractMojo {
             getLog().info("Uploading " + description + " asset to " + uploadUrl + (attempt > 1 ? " (attempt " + attempt + " of " + MAX_UPLOAD_ATTEMPTS + ")" : ""));
             Builder callBuilder = new Builder().url(uploadUrl + "?name=" + name);
             callBuilder.header("Authorization", "token " + githubToken);
-            callBuilder.post(RequestBody.create(MediaType.parse(mediaType), asset));
+            callBuilder.post(new ProgressLoggingRequestBody(asset, MediaType.parse(mediaType), description));
             String error;
             try (Response response = client.newCall(callBuilder.build()).execute()) {
                 if (response.isSuccessful()) {
@@ -405,6 +409,73 @@ public class ReleaseMojo extends AbstractMojo {
         }
     }
 
+
+    /**
+     * Writes the asset to the request and logs how much of it has been sent, so that a slow or stalled upload can be
+     * told apart from one that is simply taking its time.
+     */
+    private class ProgressLoggingRequestBody extends RequestBody {
+
+        private static final int CHUNK_SIZE = 64 * 1024;
+        private static final long LOG_INTERVAL_MS = 10_000;
+
+        private final File file;
+        private final MediaType mediaType;
+        private final String description;
+
+        private ProgressLoggingRequestBody(File file, MediaType mediaType, String description) {
+            this.file = file;
+            this.mediaType = mediaType;
+            this.description = description;
+        }
+
+        @Override
+        public MediaType contentType() {
+            return mediaType;
+        }
+
+        @Override
+        public long contentLength() {
+            return file.length();
+        }
+
+        @Override
+        public void writeTo(BufferedSink sink) throws IOException {
+            long length = contentLength();
+            long startedAt = System.currentTimeMillis();
+            long lastLoggedAt = startedAt;
+            long written = 0;
+            Buffer buffer = new Buffer();
+            try (Source source = Okio.source(file)) {
+                long read;
+                while ((read = source.read(buffer, CHUNK_SIZE)) != -1) {
+                    sink.write(buffer, read);
+                    written += read;
+                    long now = System.currentTimeMillis();
+                    if (now - lastLoggedAt >= LOG_INTERVAL_MS && written < length) {
+                        lastLoggedAt = now;
+                        logProgress(written, length, now - startedAt);
+                    }
+                }
+            }
+            sink.flush();
+            logProgress(written, length, System.currentTimeMillis() - startedAt);
+            //GitHub only answers once it has processed the whole asset, which takes a while and looks like a stalled upload
+            getLog().info("Sent the " + description + " asset completely, waiting for GitHub to process it");
+        }
+
+        private void logProgress(long written, long length, long elapsedMs) {
+            long percentage = length == 0 ? 100 : written * 100 / length;
+            double megaBytesPerSecond = elapsedMs == 0 ? 0 : (written / 1024d / 1024d) / (elapsedMs / 1000d);
+            String remaining = "";
+            if (megaBytesPerSecond > 0 && written < length) {
+                long secondsLeft = (long) ((length - written) / 1024d / 1024d / megaBytesPerSecond);
+                remaining = ", " + secondsLeft / 60 + "m " + secondsLeft % 60 + "s left";
+            }
+            getLog().info(String.format("Sent %d of %d MB of the %s asset (%d%%) at %.2f MB/s%s",
+                written / 1024 / 1024, length / 1024 / 1024, description, percentage, megaBytesPerSecond, remaining));
+        }
+    }
 
     private void setReleaseEffective(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest, org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
         getLog().info("Setting release effective");
