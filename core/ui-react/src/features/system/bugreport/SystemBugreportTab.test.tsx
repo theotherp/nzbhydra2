@@ -356,7 +356,7 @@ describe("SystemBugreportTab", () => {
         const heapDump = screen.getByTestId("system-heap-dump");
         expect(heapDump).toHaveAttribute(
             "href",
-            expect.stringContaining("/hydra/actuator/heapdump"),
+            expect.stringContaining("/hydra/internalapi/debuginfos/heapdump"),
         );
         expect(heapDump).toHaveAttribute("target", "_blank");
     });

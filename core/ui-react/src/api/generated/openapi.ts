@@ -1158,6 +1158,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internalapi/debuginfos/heapdump": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["heapDump"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internalapi/debuginfos/endpoints": {
         parameters: {
             query?: never;
@@ -7043,6 +7059,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JsonLogResponse"];
+                };
+            };
+        };
+    };
+    heapDump: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
                 };
             };
         };

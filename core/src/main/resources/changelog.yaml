@@ -17,6 +17,8 @@
       -   type: "feature"
           text: "Some indexers (e.g. NZBGeek) put several languages into one language attribute like &quot;English - Japanese&quot;, which Sonarr and Radarr read as a single unknown language. Hydra now returns one language attribute per language in API results, and the &quot;Languages to keep&quot; filter keeps a result if any of its languages is wanted. See #888."
       -   type: "fix"
+          text: "The &quot;Create heap dump&quot; button in the bug report section did nothing on the regular (native) builds, which is what nearly all installations run. Hydra now creates the heap dump itself and offers it as a download."
+      -   type: "fix"
           text: "Downloads that a logged-in user sent to the downloader were shown in the history with source &quot;API&quot; and that user's name, because the downloader fetched them through the API link. They are now recorded as internal, and existing history entries are corrected on the first start after the update; &quot;API&quot; is only used for downloads of results that came from an API call."
       -   type: "note"
           text: "Custom query and title mappings are now applied from top to bottom, and nothing is applied after the first mapping that matched the whole string was applied. Before, if two mappings that match the whole string matched, an error was logged and none of them was used."

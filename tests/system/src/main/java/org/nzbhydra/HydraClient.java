@@ -186,6 +186,39 @@ public class HydraClient {
         return call("GET", endpoint, Collections.emptyMap(), null, true, RequestOptions.withInternalApiKey(internalApiKey), parameters);
     }
 
+    /**
+     * Makes a GET and reads at most {@code maxBytes} of the response body before closing the connection, so the rest
+     * of the body is never transferred.
+     *
+     * <p>For endpoints whose body is far bigger than a test wants in memory -- the heap dump, which is as large as the
+     * instance's live heap -- and whose first bytes already say whether the endpoint did its job. The returned
+     * response therefore holds a truncated body; its headers and status are the real ones.
+     */
+    public HydraResponse getFirstBytes(String endpoint, int maxBytes, String... parameters) {
+        final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
+                .host(nzbhydraHost)
+                .port(nzbhydraPort)
+                .addPathSegments(StringUtils.removeStart(endpoint, "/"));
+        for (String parameter : parameters) {
+            final String[] split = parameter.split("=", 2);
+            urlBuilder.addQueryParameter(split[0], split[1]);
+        }
+        if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
+            urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
+        }
+        final Request request = new Request.Builder().get().url(urlBuilder.build()).build();
+        //Generous because the server may have to produce the whole body -- a heap dump takes seconds -- before it
+        //sends the first byte.
+        final OkHttpClient client = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
+        try (Response response = client.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+            final byte[] buffer = new byte[maxBytes];
+            final int read = Math.max(0, responseBody.byteStream().readNBytes(buffer, 0, maxBytes));
+            return new HydraResponse(Arrays.copyOf(buffer, read), response.code(), response.headers().toMultimap());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public HydraResponse getWithBasicAuth(String endpoint, String username, String password, String... parameters) {
         return call("GET", endpoint, Collections.emptyMap(), null, true, RequestOptions.withBasicAuth(username, password), parameters);
     }

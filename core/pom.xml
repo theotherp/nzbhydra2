@@ -16,6 +16,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <version.roaster>2.28.0.Final</version.roaster>
         <native-maven-plugin.xmx>8</native-maven-plugin.xmx>
+        <graalvm.sdk.version>25.0.0</graalvm.sdk.version>
     </properties>
 
 
@@ -175,6 +176,16 @@
             <groupId>org.nzbhydra</groupId>
             <artifactId>release-parser</artifactId>
             <version>8.9.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- GraalVM's own API, used for the heap dump the JVM's HotSpotDiagnosticMXBean cannot create in a native
+             image. Provided because the native image and the GraalVM JDK both bring the classes themselves; on a
+             non-GraalVM JVM they are simply absent and the code never reaches them. -->
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>nativeimage</artifactId>
+            <version>${graalvm.sdk.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- spring (boot) -->
@@ -618,7 +629,7 @@
                                     <builder>paketobuildpacks/builder:tiny</builder>
                                     <env>
                                         <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
-                                        <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>-march=compatibility</BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                                        <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>-march=compatibility --enable-monitoring=heapdump</BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
                                     </env>
                                 </image>
                             </configuration>
@@ -646,6 +657,9 @@
                                     <buildArg>-H:IncludeLocales=en</buildArg>
                                     <buildArg>-H:+AddAllCharsets</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
+                                    <!--Without this VMRuntime.dumpHeap() refuses to run and the heap dump endpoint
+                                        has nothing to offer in a native image-->
+                                    <buildArg>--enable-monitoring=heapdump</buildArg>
                                     <buildArg>-J-Xmx${native-maven-plugin.xmx}g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
                                     <buildArg>-H:BuildOutputJSONFile=target/native-build-output.json</buildArg>

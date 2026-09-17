@@ -4,7 +4,6 @@ import {ApiTransport} from "../transport";
 import {
     debugInfosFileName,
     downloadDebugInfos,
-    endpointsUrl,
     executeSqlQuery,
     executeSqlUpdate,
     getSensitiveDataLogging,
@@ -232,12 +231,11 @@ describe("debug API", () => {
         );
     });
 
-    it("should build base-URL-aware addresses for the browser-followed links", () => {
+    it("should build a base-URL-aware address for the browser-followed link", () => {
         const transport = new ApiTransport("/hydra/", vi.fn());
 
-        expect(heapDumpUrl(transport)).toContain("/hydra/actuator/heapdump");
-        expect(endpointsUrl(transport)).toContain(
-            "/hydra/internalapi/debuginfos/endpoints",
+        expect(heapDumpUrl(transport)).toContain(
+            "/hydra/internalapi/debuginfos/heapdump",
         );
     });
 });

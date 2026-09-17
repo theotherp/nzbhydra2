@@ -9,14 +9,14 @@ const SENSITIVE_LOGGING_PATH = "internalapi/debuginfos/sensitiveDataLogging";
 const SQL_QUERY_PATH = "internalapi/debuginfos/executesqlquery";
 const SQL_UPDATE_PATH = "internalapi/debuginfos/executesqlupdate";
 const THREAD_CPU_PATH = "internalapi/debuginfos/threadCpuUsage";
-const ENDPOINTS_PATH = "internalapi/debuginfos/endpoints";
 
 /**
- * `actuator/heapdump` is Spring Boot's own endpoint, not an NZBHydra one, so
- * it never appears in the generated OpenAPI document. Legacy linked it
- * relative to the document base (`bugreport.html:65`) and so does this.
+ * NZBHydra's own heap dump endpoint. Legacy linked Spring Boot's
+ * `actuator/heapdump` (`bugreport.html:65`), which only knows the HotSpot way
+ * of dumping a heap and answers 503 in a native image -- which is what the
+ * released binaries are, so for most installations the button did nothing.
  */
-const HEAP_DUMP_PATH = "actuator/heapdump";
+const HEAP_DUMP_PATH = "internalapi/debuginfos/heapdump";
 
 export class MalformedDebugResponseError extends Error {
     constructor() {
@@ -238,8 +238,7 @@ export async function getThreadCpuUsage(
         .filter((series) => series.points.length > 0);
 }
 
-
-/** `API-SYSTEM-HEAP-DUMP`: the JVM heap dump the browser downloads itself. */
+/** `API-SYSTEM-HEAP-DUMP`: the heap dump the browser downloads itself. */
 export function heapDumpUrl(transport: ApiTransport): string {
     return transport.browserTransferUrl(HEAP_DUMP_PATH);
 }

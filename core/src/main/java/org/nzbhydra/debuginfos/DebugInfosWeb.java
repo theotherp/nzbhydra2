@@ -1,6 +1,9 @@
 package org.nzbhydra.debuginfos;
 
 import com.google.common.base.Joiner;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.boot.webmvc.actuate.web.mappings.DispatcherServletMappingDescription;
 import org.springframework.boot.webmvc.actuate.web.mappings.RequestMappingConditionsDescription;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -30,10 +34,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -212,6 +221,51 @@ public class DebugInfosWeb {
             logger.info("Sensitive data logging disabled. API keys, passwords and usernames will be masked in the log again.");
         }
         return SensitiveDataRemovingPatternLayoutEncoder.isDisabled();
+    }
+
+    /**
+     * Streams a heap dump of the running instance, which the browser downloads.
+     *
+     * <p>Replaces the link to Spring Boot's {@code actuator/heapdump} the bug report page used to offer. That endpoint
+     * knows only the HotSpot way of dumping a heap and answers 503 in a native image -- and the released binaries are
+     * native images, so for most installations the button did nothing useful. {@link DebugInfosProvider#createHeapDump()}
+     * picks the API that fits the runtime it is actually running on.
+     *
+     * <p>The dump is written to a temp file first because its size has to be known before the response starts, and it
+     * is deleted once the response body has been written -- including when the client goes away mid-download, which
+     * makes the copy throw.
+     */
+    @Secured({"ROLE_ADMIN"})
+    @GetMapping(value = "/internalapi/debuginfos/heapdump", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    //Without this the generated OpenAPI document describes the response as the empty StreamingResponseBody schema
+    //instead of a downloaded file.
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE, schema = @Schema(type = "string", format = "binary")))
+    public ResponseEntity<StreamingResponseBody> heapDump() throws IOException {
+        final File heapDump;
+        try {
+            heapDump = debugInfos.createHeapDump();
+        } catch (IOException e) {
+            logger.error("Error while creating heap dump", e);
+            throw e;
+        }
+        final StreamingResponseBody body = outputStream -> {
+            try (InputStream inputStream = new FileInputStream(heapDump)) {
+                inputStream.transferTo(outputStream);
+            } finally {
+                if (!heapDump.delete()) {
+                    logger.warn("Unable to delete heap dump file {}", heapDump);
+                }
+            }
+        };
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + heapDumpFileName() + "\"")
+            .contentLength(heapDump.length())
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(body);
+    }
+
+    private static String heapDumpFileName() {
+        return "nzbhydra-heapdump-" + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm").withZone(ZoneId.systemDefault()).format(Instant.now()) + ".hprof";
     }
 
     @Secured({"ROLE_ADMIN"})

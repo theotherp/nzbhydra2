@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.core.type.TypeReference;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +44,21 @@ public class DebugInfosTest {
         body = response.body();
         assertThat(body)
             .contains("Started NzbHydra in");
+    }
+
+    /**
+     * The heap dump must work on the native image this suite usually runs against, where Spring Boot's own
+     * {@code actuator/heapdump} answers 503 because there is no {@code HotSpotDiagnosticMXBean}. Only the first bytes
+     * are read -- enough for the HPROF magic, which is only there if a dump was actually written -- because the whole
+     * body is as large as the instance's live heap.
+     */
+    @Test
+    public void shouldCreateHeapDump() throws Exception {
+        final HydraResponse response = hydraClient.getFirstBytes("/internalapi/debuginfos/heapdump", 18);
+
+        assertThat(response.status()).isEqualTo(200);
+        assertThat(response.header("Content-Disposition")).contains(".hprof");
+        assertThat(new String(response.bodyBytes(), StandardCharsets.US_ASCII)).startsWith("JAVA PROFILE 1.0");
     }
 
     @Test

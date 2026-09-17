@@ -707,13 +707,15 @@ test.describe("System shell", () => {
         expect((await query).ok()).toBe(true);
         await expect(page.getByTestId("system-sql-output")).not.toHaveValue("");
 
-        // Both browser-followed links, base-URL-aware and in a new tab. Only
-        // the endpoint listing is actually fetched; a heap dump would be a
-        // multi-hundred-megabyte download of the running JVM.
+        // The browser-followed heap dump link, base-URL-aware and in a new
+        // tab. It is not followed here: that the endpoint really produces a
+        // dump is asserted by the Java suite
+        // (`DebugInfosTest.shouldCreateHeapDump`), which reads only its first
+        // bytes instead of downloading the whole heap.
         const heapDumpHref = await page
             .getByTestId("system-heap-dump")
             .getAttribute("href");
-        expect(heapDumpHref).toContain("actuator/heapdump");
+        expect(heapDumpHref).toContain("internalapi/debuginfos/heapdump");
         expect(
             await page.getByTestId("system-heap-dump").getAttribute("target"),
         ).toBe("_blank");

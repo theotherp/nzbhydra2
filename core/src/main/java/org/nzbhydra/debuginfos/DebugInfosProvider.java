@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.core.JaversBuilder;
@@ -28,6 +29,7 @@ import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
 import org.slf4j.Logger;
+import org.graalvm.nativeimage.VMRuntime;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,8 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
+
+import com.sun.management.HotSpotDiagnosticMXBean;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -318,6 +322,56 @@ public class DebugInfosProvider {
         } catch (Exception e) {
             logger.error("Error building config diff", e);
         }
+    }
+
+    /**
+     * Writes a heap dump and returns the file holding it. The caller owns that file and must delete it.
+     *
+     * <p>Spring Boot's own {@code actuator/heapdump} can only dump a HotSpot heap: in a native image it finds no
+     * {@code HotSpotDiagnosticMXBean} and answers 503, which is what most installations would have got because the
+     * released binaries are native images. GraalVM's equivalent is {@link VMRuntime#dumpHeap(String, boolean)}, which
+     * only works when the image was built with {@code --enable-monitoring=heapdump} (see core/pom.xml).
+     *
+     * <p>Which of the two is used is decided by the image code property rather than by
+     * {@link NzbHydra#isNativeBuild()}: that one reports what the build/run *environment* claims, while here only the
+     * actual runtime matters -- calling either API on the wrong runtime fails.
+     */
+    public File createHeapDump() throws IOException {
+        final File tempFile = tempFileProvider.getTempFile("heapdump", ".hprof");
+        //Both dump APIs refuse to write to an existing file, and getTempFile has already created an empty one.
+        Files.deleteIfExists(tempFile.toPath());
+        final long start = System.currentTimeMillis();
+        try {
+            if (isRunningInNativeImage()) {
+                //Live objects only, like the JVM branch below: a dump of the garbage as well is bigger without
+                //telling us anything we ask for a heap dump to find out.
+                VMRuntime.dumpHeap(tempFile.getAbsolutePath(), true);
+            } else {
+                final HotSpotDiagnosticMXBean diagnosticMXBean = ManagementFactory.getPlatformMXBean(HotSpotDiagnosticMXBean.class);
+                if (diagnosticMXBean == null) {
+                    throw new IOException("This JVM does not provide a HotSpotDiagnosticMXBean and cannot create a heap dump");
+                }
+                diagnosticMXBean.dumpHeap(tempFile.getAbsolutePath(), true);
+            }
+        } catch (UnsupportedOperationException e) {
+            //What the native image throws when it was built without --enable-monitoring=heapdump.
+            Files.deleteIfExists(tempFile.toPath());
+            throw new IOException("This build does not support creating heap dumps: " + e.getMessage(), e);
+        } catch (IOException | RuntimeException e) {
+            Files.deleteIfExists(tempFile.toPath());
+            throw e;
+        }
+        logger.info("Created heap dump of {} in {}ms", FileUtils.byteCountToDisplaySize(tempFile.length()), System.currentTimeMillis() - start);
+        return tempFile;
+    }
+
+    /**
+     * Whether this is a GraalVM native image executing, as opposed to a JVM. The property is the one
+     * {@code org.graalvm.nativeimage.ImageInfo} itself reads; it is read directly so that the class, which only
+     * exists in a native image, is not needed on a JVM.
+     */
+    private static boolean isRunningInNativeImage() {
+        return "runtime".equals(System.getProperty("org.graalvm.nativeimage.imagecode"));
     }
 
     public String logThreadDump() {
