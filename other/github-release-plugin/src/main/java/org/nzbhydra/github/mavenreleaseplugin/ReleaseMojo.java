@@ -464,8 +464,7 @@ public class ReleaseMojo extends AbstractMojo {
                 } else {
                     getLog().info("Upload of " + description + " asset " + e.getMessage()
                                   + ", uploading it from the remote upload host instead, which has a faster connection to GitHub");
-                    deleteAssetByName(release, name);
-                    uploadAssetFromRemoteHost(uploadUrl, description, asset, mediaType);
+                    uploadAssetFromRemoteHost(release, uploadUrl, description, asset, mediaType);
                     return;
                 }
             } catch (IOException e) {
@@ -605,7 +604,7 @@ public class ReleaseMojo extends AbstractMojo {
      * Copies the asset to the remote host and uploads it to GitHub from there. The token is passed through stdin so
      * that it neither reaches the remote disk nor its process list.
      */
-    private void uploadAssetFromRemoteHost(String uploadUrl, String description, File asset, String mediaType) throws MojoExecutionException {
+    private void uploadAssetFromRemoteHost(org.nzbhydra.github.mavenreleaseplugin.Release release, String uploadUrl, String description, File asset, String mediaType) throws MojoExecutionException {
         Map<String, String> settings = remoteUploadSettings();
         String target = settings.get("REMOTE_USER") + "@" + settings.get("REMOTE_HOST");
         String key = settings.get("REMOTE_KEY");
@@ -615,20 +614,42 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().debug("Copying to " + target + ":" + remoteFile);
         runRemoteCommand(null, "scp", "-q", "-o", "LogLevel=ERROR", "-i", key, asset.getAbsolutePath(), target + ":" + remoteFile);
 
-        getLog().info("Uploading " + description + " asset to GitHub from the remote upload host");
-        String curl = "read -r TOKEN; "
-                      + "curl -sS -o /dev/null -w '%{http_code}' -X POST"
-                      + " -H \"Authorization: token $TOKEN\""
+        //--config - takes the authorization header from stdin. Passing it as an argument instead would show the
+        //token in the remote host's process list.
+        String curl = "curl --config - -sS -o /dev/null -w '%{http_code}' -X POST"
                       + " -H \"Content-Type: " + mediaType + "\""
                       + " --data-binary @" + remoteFile
-                      + " '" + uploadUrl + "?name=" + asset.getName() + "'"
-                      + "; code=$?; rm -f " + remoteFile + "; exit $code";
-        String output = runRemoteCommand(githubToken, "ssh", "-o", "LogLevel=ERROR", "-i", key, target, curl);
-        String statusCode = output.trim();
-        if (!statusCode.endsWith("201")) {
+                      + " '" + uploadUrl + "?name=" + asset.getName() + "'";
+        String curlConfig = "header = \"Authorization: token " + githubToken.trim() + "\"";
+
+        try {
+            String statusCode = null;
+            for (int attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
+                //GitHub records an asset as soon as an upload starts, so the aborted one left one in state "starter"
+                //behind. That record only appears once the aborted request has ended, which can be after the copying,
+                //and uploading a second asset of the same name fails with a 500, so delete it before every attempt.
+                deleteAssetByName(release, asset.getName());
+
+                getLog().info("Uploading " + description + " asset to GitHub from the remote upload host"
+                              + (attempt > 1 ? " (attempt " + attempt + " of " + MAX_UPLOAD_ATTEMPTS + ")" : ""));
+                statusCode = runRemoteCommand(curlConfig, "ssh", "-o", "LogLevel=ERROR", "-i", key, target, curl).trim();
+                if (statusCode.endsWith("201")) {
+                    getLog().info("Successfully uploaded " + description + " asset from the remote upload host");
+                    return;
+                }
+                if (attempt < MAX_UPLOAD_ATTEMPTS) {
+                    getLog().warn("Upload of " + description + " asset from the remote upload host failed, GitHub returned code "
+                                  + statusCode + ". Retrying in " + (retryDelayMs / 1000) + " seconds");
+                    Thread.sleep(retryDelayMs);
+                }
+            }
             throw new MojoExecutionException("When trying to upload " + description + " asset from the remote upload host GitHub returned code " + statusCode);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MojoExecutionException("Interrupted while uploading the " + description + " asset from the remote upload host");
+        } finally {
+            runRemoteCommand(null, "ssh", "-o", "LogLevel=ERROR", "-i", key, target, "rm -f " + remoteFile);
         }
-        getLog().info("Successfully uploaded " + description + " asset from the remote upload host");
     }
 
     private String runRemoteCommand(String stdin, String... command) throws MojoExecutionException {

@@ -202,7 +202,10 @@ def _increment_patch_version(version: str) -> str:
 
 
 def _echo_matching_line(line: str, pattern: "re.Pattern | None") -> None:
-    """Print a line of command output to the console, e.g. the upload progress of a long running step."""
+    """Print a line of command output to the console, e.g. the upload progress of a long running step.
+
+    The line is already redacted by the caller.
+    """
     if pattern is None or not pattern.search(line):
         return
     #Maven prefixes every line with its log level
@@ -294,7 +297,7 @@ def run_command(
     elif ctx.dry_run == DryRunMode.LOCAL and is_remote:
         mode_indicator = "[yellow][SKIP-REMOTE][/yellow] "
 
-    console.print(f"  {mode_indicator}[dim]$ {cmd_str}[/dim]")
+    console.print(f"  {mode_indicator}[dim]$ {cmd_str_redacted}[/dim]")
 
     if not should_execute:
         return None
