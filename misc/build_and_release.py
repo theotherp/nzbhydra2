@@ -930,7 +930,7 @@ def github_release(ctx: BuildContext) -> None:
         env=env,
         is_remote=True,
         #Uploading the four ~100 MB assets takes a while, so show what the plugin reports about it
-        echo_lines_matching=r"(Sent \d+ of|Sent the .* asset completely|Uploading .* asset|Successfully uploaded|Skipping upload|Reusing draft|Deleting incompletely|retrying in)",
+        echo_lines_matching=r"(Sent \d+ of|Sent the .* asset completely|Uploading .* asset|Successfully uploaded|Skipping upload|Reusing draft|Deleting incompletely|[Uu]pload of .* failed|[Uu]pload of .* is only running at|Copying .* asset to|Uploads running slower)",
     )
 
 

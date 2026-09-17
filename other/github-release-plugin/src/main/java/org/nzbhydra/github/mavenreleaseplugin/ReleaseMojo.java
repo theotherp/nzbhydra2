@@ -22,8 +22,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
@@ -49,6 +52,8 @@ import java.util.concurrent.TimeUnit;
 public class ReleaseMojo extends AbstractMojo {
 
     private static final int MAX_UPLOAD_ATTEMPTS = 3;
+    //Not final so that tests don't have to wait
+    protected static long GRACE_PERIOD_MS = 20_000;
 
     //Not final so that tests don't have to wait
     protected long retryDelayMs = 10_000;
@@ -97,9 +102,26 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "dryRun")
     protected boolean dryRun;
 
+    /**
+     * An upload running slower than this is aborted and, if a remote upload host is configured, retried from there.
+     * GitHub's proxy answers a request that takes more than a couple of minutes with 504, so a 100 MB asset has to be
+     * sent at a few MB/s to arrive at all.
+     */
+    @Parameter(property = "slowUploadThresholdMbPerSecond", defaultValue = "3.0")
+    protected double slowUploadThresholdMbPerSecond;
+
+    /**
+     * Env file with the connection details of the host the assets are uploaded from when the direct upload is too
+     * slow, in the format of misc/buildLinuxCore/arm64/remote.env (REMOTE_HOST, REMOTE_USER, REMOTE_KEY). Without it
+     * a slow upload is simply retried.
+     */
+    @Parameter(property = "remoteUploadEnvFile", required = false)
+    protected File remoteUploadEnvFile;
+
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession mavenSession;
 
+    private Map<String, String> remoteUploadEnv;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     protected String githubReleasesUrl;
@@ -162,6 +184,12 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Will use linux arm64 asset " + linuxArm64Asset.getAbsolutePath());
         getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
         getLog().info("Will use changelog entry from " + changelogYamlFile.getAbsolutePath());
+        if (remoteUploadHost() != null) {
+            getLog().info(String.format("Uploads running slower than %.1f MB/s will be aborted and sent from the remote upload host instead", slowUploadThresholdMbPerSecond));
+            getLog().debug("Remote upload host is " + remoteUploadHost());
+        } else {
+            getLog().info("No remote upload host configured, a slow upload will just be retried");
+        }
 
         try {
             org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest = new org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest();
@@ -429,6 +457,17 @@ public class ReleaseMojo extends AbstractMojo {
                 if (response.code() < 500) {
                     throw new MojoExecutionException("When trying to upload " + description + " asset " + error);
                 }
+            } catch (SlowUploadException e) {
+                if (remoteUploadHost() == null) {
+                    error = e.getMessage() + " and no remote upload host is configured";
+                    getLog().warn("Upload of " + description + " asset " + error);
+                } else {
+                    getLog().info("Upload of " + description + " asset " + e.getMessage()
+                                  + ", uploading it from the remote upload host instead, which has a faster connection to GitHub");
+                    deleteAssetByName(release, name);
+                    uploadAssetFromRemoteHost(uploadUrl, description, asset, mediaType);
+                    return;
+                }
             } catch (IOException e) {
                 error = "the following error occurred: " + e.getMessage();
                 getLog().error("Error while uploading " + description + " asset", e);
@@ -459,6 +498,10 @@ public class ReleaseMojo extends AbstractMojo {
             String body = response.body().string().trim();
             if (body.isEmpty()) {
                 return "";
+            }
+            if (body.startsWith("<")) {
+                //An HTML error page from GitHub's proxy, e.g. when it timed out. Its content says nothing worth logging
+                return " (GitHub answered with an HTML error page, so the request did not reach the API)";
             }
             return " and body: " + (body.length() > 1000 ? body.substring(0, 1000) + "..." : body);
         } catch (IOException e) {
@@ -501,6 +544,125 @@ public class ReleaseMojo extends AbstractMojo {
         }
     }
 
+
+    /**
+     * Thrown to abort an upload that is too slow to finish before GitHub's proxy times out.
+     */
+    private static class SlowUploadException extends IOException {
+        private SlowUploadException(double megaBytesPerSecond) {
+            super(String.format("is only running at %.2f MB/s, which is too slow to finish before GitHub times out", megaBytesPerSecond));
+        }
+    }
+
+    /**
+     * The first seconds of an upload are always fast because the local buffers are filled, so only judge the speed
+     * once the grace period has passed.
+     */
+    protected boolean isTooSlow(long written, long elapsedMs) {
+        if (elapsedMs <= GRACE_PERIOD_MS) {
+            return false;
+        }
+        return (written / 1024d / 1024d) / (elapsedMs / 1000d) < slowUploadThresholdMbPerSecond;
+    }
+
+    private String remoteUploadHost() {
+        return remoteUploadSettings().get("REMOTE_HOST");
+    }
+
+    /**
+     * The connection details of the upload host, read from the env file of the arm64 build VM.
+     */
+    protected Map<String, String> remoteUploadSettings() {
+        if (remoteUploadEnv != null) {
+            return remoteUploadEnv;
+        }
+        remoteUploadEnv = new HashMap<>();
+        if (remoteUploadEnvFile == null || !remoteUploadEnvFile.exists()) {
+            return remoteUploadEnv;
+        }
+        try {
+            for (String line : Files.readAllLines(remoteUploadEnvFile.toPath())) {
+                String trimmed = line.trim();
+                if (trimmed.isEmpty() || trimmed.startsWith("#") || !trimmed.contains("=")) {
+                    continue;
+                }
+                String key = trimmed.substring(0, trimmed.indexOf('=')).trim();
+                String value = trimmed.substring(trimmed.indexOf('=') + 1).trim().replaceAll("^[\"']|[\"']$", "");
+                remoteUploadEnv.put(key, value);
+            }
+        } catch (IOException e) {
+            getLog().warn("Unable to read " + remoteUploadEnvFile + ": " + e.getMessage());
+            return remoteUploadEnv;
+        }
+        if (remoteUploadEnv.containsKey("REMOTE_KEY")) {
+            remoteUploadEnv.put("REMOTE_KEY", remoteUploadEnv.get("REMOTE_KEY").replaceFirst("^~", System.getProperty("user.home")));
+        }
+        remoteUploadEnv.putIfAbsent("REMOTE_USER", "build");
+        return remoteUploadEnv;
+    }
+
+    /**
+     * Copies the asset to the remote host and uploads it to GitHub from there. The token is passed through stdin so
+     * that it neither reaches the remote disk nor its process list.
+     */
+    private void uploadAssetFromRemoteHost(String uploadUrl, String description, File asset, String mediaType) throws MojoExecutionException {
+        Map<String, String> settings = remoteUploadSettings();
+        String target = settings.get("REMOTE_USER") + "@" + settings.get("REMOTE_HOST");
+        String key = settings.get("REMOTE_KEY");
+        String remoteFile = "/tmp/" + asset.getName();
+
+        getLog().info("Copying " + description + " asset to the remote upload host");
+        getLog().debug("Copying to " + target + ":" + remoteFile);
+        runRemoteCommand(null, "scp", "-q", "-o", "LogLevel=ERROR", "-i", key, asset.getAbsolutePath(), target + ":" + remoteFile);
+
+        getLog().info("Uploading " + description + " asset to GitHub from the remote upload host");
+        String curl = "read -r TOKEN; "
+                      + "curl -sS -o /dev/null -w '%{http_code}' -X POST"
+                      + " -H \"Authorization: token $TOKEN\""
+                      + " -H \"Content-Type: " + mediaType + "\""
+                      + " --data-binary @" + remoteFile
+                      + " '" + uploadUrl + "?name=" + asset.getName() + "'"
+                      + "; code=$?; rm -f " + remoteFile + "; exit $code";
+        String output = runRemoteCommand(githubToken, "ssh", "-o", "LogLevel=ERROR", "-i", key, target, curl);
+        String statusCode = output.trim();
+        if (!statusCode.endsWith("201")) {
+            throw new MojoExecutionException("When trying to upload " + description + " asset from the remote upload host GitHub returned code " + statusCode);
+        }
+        getLog().info("Successfully uploaded " + description + " asset from the remote upload host");
+    }
+
+    private String runRemoteCommand(String stdin, String... command) throws MojoExecutionException {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            if (stdin != null) {
+                process.getOutputStream().write((stdin.trim() + "\n").getBytes(StandardCharsets.UTF_8));
+            }
+            process.getOutputStream().close();
+            String output = new String(readAll(process.getInputStream()), StandardCharsets.UTF_8);
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new MojoExecutionException(command[0] + " failed with exit code " + exitCode + ": " + output.trim());
+            }
+            return output;
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to run " + command[0] + ": " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MojoExecutionException("Interrupted while running " + command[0]);
+        }
+    }
+
+    private byte[] readAll(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, read);
+        }
+        return outputStream.toByteArray();
+    }
 
     /**
      * Writes the asset to the request and logs how much of it has been sent, so that a slow or stalled upload can be
@@ -549,6 +711,9 @@ public class ReleaseMojo extends AbstractMojo {
                         logProgress(written, length, now - startedAt, written - lastLoggedBytes, now - lastLoggedAt);
                         lastLoggedAt = now;
                         lastLoggedBytes = written;
+                        if (isTooSlow(written, now - startedAt)) {
+                            throw new SlowUploadException(megaBytesPerSecond(written, now - startedAt));
+                        }
                     }
                 }
             }

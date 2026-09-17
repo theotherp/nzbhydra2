@@ -69,6 +69,12 @@
                     <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 
                     <tagName>v${project.version}</tagName>
+
+                    <!-- Uploads to GitHub from this machine run into GitHub's small receive window and are killed by
+                         its proxy with a 504. An upload slower than the threshold is therefore aborted and sent from
+                         the arm64 build VM instead, which has a fast connection to GitHub. -->
+                    <remoteUploadEnvFile>${basedir}/misc/buildLinuxCore/arm64/remote.env</remoteUploadEnvFile>
+                    <slowUploadThresholdMbPerSecond>3.0</slowUploadThresholdMbPerSecond>
                 </configuration>
             </plugin>
             <plugin>

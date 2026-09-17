@@ -13,6 +13,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -235,6 +236,45 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         } catch (MojoExecutionException e) {
             assertThat(e.getMessage()).contains("Github returned code 502");
         }
+    }
+
+    public void testConsidersAnUploadTooSlowOnlyAfterTheGracePeriod() throws Exception {
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo.slowUploadThresholdMbPerSecond = 3.0;
+
+        //Within the grace period nothing is too slow, however little was sent
+        assertThat(releaseMojo.isTooSlow(1024, ReleaseMojo.GRACE_PERIOD_MS)).isFalse();
+
+        long elapsed = ReleaseMojo.GRACE_PERIOD_MS + 1000;
+        long fastEnough = (long) (4 * 1024 * 1024 * (elapsed / 1000d));
+        long tooSlow = (long) (0.5 * 1024 * 1024 * (elapsed / 1000d));
+        assertThat(releaseMojo.isTooSlow(fastEnough, elapsed)).isFalse();
+        assertThat(releaseMojo.isTooSlow(tooSlow, elapsed)).isTrue();
+    }
+
+    public void testReadsTheRemoteUploadSettingsFromTheEnvFile() throws Exception {
+        File envFile = File.createTempFile("remote", ".env");
+        envFile.deleteOnExit();
+        Files.write(envFile.toPath(), ("# Connection details\n"
+                                       + "REMOTE_HOST=1.2.3.4\n"
+                                       + "REMOTE_USER=build\n"
+                                       + "REMOTE_KEY=~/.ssh/somekey\n"
+                                       + "REMOTE_ADMIN_USER=ubuntu\n").getBytes(StandardCharsets.UTF_8));
+
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo.remoteUploadEnvFile = envFile;
+
+        assertThat(releaseMojo.remoteUploadSettings()).containsEntry("REMOTE_HOST", "1.2.3.4");
+        assertThat(releaseMojo.remoteUploadSettings()).containsEntry("REMOTE_USER", "build");
+        //The tilde is expanded because ssh gets the path as an argument, not through a shell
+        assertThat(releaseMojo.remoteUploadSettings()).containsEntry("REMOTE_KEY", System.getProperty("user.home") + "/.ssh/somekey");
+    }
+
+    public void testWithoutAnEnvFileThereIsNoRemoteUploadHost() throws Exception {
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo.remoteUploadEnvFile = new File("does/not/exist.env");
+
+        assertThat(releaseMojo.remoteUploadSettings()).isEmpty();
     }
 
     private ReleaseMojo getConfiguredMojo(MockWebServer server, String pomPath) throws Exception {
