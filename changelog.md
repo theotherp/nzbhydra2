@@ -1,3 +1,75 @@
+### v9.0.0 BETA (2026-09-17)
+
+**Feature** Complete rewrite of the UI.
+
+**Feature** Results from indexers that use language variants of the standard newznab categories (e.g. 2140 for German HD movies on treasure-maps) are now mapped to the matching category (Movies HD instead of just Movies) without adding those numbers to the categories config. For Hydra to include those categories when querying the indexer you still need to add the numbers to the categories config.
+
+**Feature** New external API under /externalapi/v1 for scripts and dashboards: statistics, search, download and notification history, the current log file and creating or downloading backups. It only needs your API key (header X-Api-Key or the apikey parameter), no session and no CSRF token, so it is the replacement if the CSRF change broke a tool of yours. Browse it in the built-in API documentation at &lt;your Hydra URL&gt;/swagger-ui/index.html and pick the &quot;externalapi&quot; entry; see docs/external-api.md in the repository.
+
+**Feature** The downloader status bar at the bottom of the page now shows the free disk space reported by SABnzbd or NZBGet (e.g. 955 GB free). If the downloader reports different values for the folder of finished downloads and the folder of downloads in progress the smaller one is shown and the tooltip lists both. A warning icon appears when what is left to download in the queue is larger than the free space. See <a href="https://github.com/theotherp/nzbhydra2/issues/1060">#1060</a>.
+
+**Feature** Custom mappings moved out of the Searching settings into their own &quot;Custom Mappings&quot; config tab. A mapping can now be given a name, switched off without deleting it, and moved up or down. The order matters, because mappings are applied from top to bottom and a mapping that matches the whole string stops the rest. The example you test with is now several lines, is saved with the mapping, and testing shows for every line both what that one mapping does and what your whole list of mappings does to it. See <a href="https://github.com/theotherp/nzbhydra2/issues/902">#902</a>.
+
+**Feature** Some indexers (e.g. NZBGeek) put several languages into one language attribute like &quot;English - Japanese&quot;, which Sonarr and Radarr read as a single unknown language. Hydra now returns one language attribute per language in API results, and the &quot;Languages to keep&quot; filter keeps a result if any of its languages is wanted. See <a href="https://github.com/theotherp/nzbhydra2/issues/888">#888</a>.
+
+**Fix** The &quot;Create heap dump&quot; button in the bug report section did nothing on the regular (native) builds, which is what nearly all installations run. Hydra now creates the heap dump itself and offers it as a download.
+
+**Fix** Downloads that a logged-in user sent to the downloader were shown in the history with source &quot;API&quot; and that user's name, because the downloader fetched them through the API link. They are now recorded as internal, and existing history entries are corrected on the first start after the update; &quot;API&quot; is only used for downloads of results that came from an API call.
+
+**Note** Custom query and title mappings are now applied from top to bottom, and nothing is applied after the first mapping that matched the whole string was applied. Before, if two mappings that match the whole string matched, an error was logged and none of them was used.
+
+**Fix** A custom mapping for search titles was also applied to result titles (and one for result titles to searches) whenever another mapping of the other kind existed. Each kind is now only applied where it belongs.
+
+**Feature** Send user agent NZBHydra2 when sending results to the downloader.
+
+**Feature** Duplicates are now detected when results arrive from an indexer instead of for all results every time more are loaded. This should speed up searches with many results.
+
+**Fix** Old backups were never deleted on systems where the filesystem does not report a file creation time (e.g. Synology/Btrfs, some NFS or SMB setups), regardless of the configured retention. See <a href="https://github.com/theotherp/nzbhydra2/issues/1070">#1070</a>
+
+**Fix** Search results could end up in the wrong category when two indexers use the same newznab category number for different things (e.g. 4050 for ebooks on one and PC software on another). Which category won depended on which indexer answered first. Changes to the categories config were also not applied to results until a restart.
+
+**Fix** The database file no longer grows to many times the size of the data it contains. Some users reported files of dozens of gigabytes; the cause was found and fixed. See <a href="https://github.com/theotherp/nzbhydra2/issues/1002">#1002</a> and <a href="https://github.com/theotherp/nzbhydra2/issues/976">#976</a>.
+
+**Note** The database library H2 was updated from 2.1 to 2.4. On the first start after the update the existing database is migrated once. This happens automatically, needs nothing installed and may take a few minutes for large databases. The old file is kept as nzbhydra.mv.db.old.bak.&lt;timestamp&gt; for 14 days.
+
+**Note** During the migration the cached search results are discarded (downloads, history and stats are kept). If Sonarr, Radarr etc. made a search shortly before the update they may need to search again before they can download.
+
+**Note** If you run Hydra in docker make sure the container is stopped gracefully (e.g. stop_grace_period: 120s). Killing the process does not corrupt the database but skips the cleanup of the database file on shutdown, so the file stays larger than necessary.
+
+**Feature** Admins running Hydra in docker get a one-time notice after startup about giving the container time to shut down, so the database file is compacted.
+
+**Note** CSRF protection is now actually enforced. It was silently switched off in every release so far because the check depended on a value that was never set. The setting &quot;Use CSRF protection&quot; has been on by default the whole time, so for most installations this changes on the next restart. The web interface handles it on its own, so nothing changes when you use Hydra in a browser.
+
+**Note** If you have scripts or tools that call /internalapi (which you shouldn't) with POST, PUT or DELETE using basic auth or a session, they now need to send the header X-XSRF-TOKEN with the value of the HYDRA-XSRF-TOKEN cookie. The API that Sonarr, Radarr and NZB clients use (/api, /torznab/api, /rss and the apikey download links) is not affected and needs no change. If that is not an option you can turn off &quot;Use CSRF protection&quot; in the main config.
+
+**Fix** Configuring Sonarr, Radarr, Lidarr or Readarr no longer deletes and recreates the NZBHydra indexer entries. Entries with the same name are updated in place, so what you set on them in the tool itself, like tags or the download client, is kept. Only entries that no longer correspond to anything in Hydra are removed. See <a href="https://github.com/theotherp/nzbhydra2/issues/1078">#1078</a>.
+
+**Fix** Book searches from API tools like Readarr found nothing with the default setting &quot;Generate queries&quot; set to INTERNAL, because no usenet indexer supports book searches natively and only searches from the web interface got a generated query. The API capabilities now only advertise book search when it can actually be served, and the help of the setting explains what it depends on. See <a href="https://github.com/theotherp/nzbhydra2/issues/1083">#1083</a>.
+
+**Fix** Searches with excluded words (e.g. "--word") were executed again for every page instead of using the cached results.
+
+**Fix** An unexpected error in an indexer could cause a search to run forever.
+
+**Fix** Search results without any date could cause a search to fail.
+
+**Fix** Shortcutting a search was ignored when it happened between two indexer requests.
+
+**Fix** Indexer search results were written to the database again every time more results were loaded.
+
+**Fix** Upload debug infos to tmpfiles.org if upload is selected.
+
+**Note** For API searches a result that was already returned is no longer replaced by a duplicate found later. Pages stay consistent when loading more results.
+
+**Note** I've used AI (Claude) to help me with a lot of this stuff. Without it there wouldn't be a new UI because, let's face it, I'm no designer. The database thing has been troubling me for years and I never found a solution before.
+
+**Note** Thanks to Treasure Maps for their donation which made all this possible.
+
+**Note** With this many changes there always will be bugs - please report them on Github and provide debug infos.
+
+**Note** If you've made it this far - thanks for reading :-)
+
+
+
 ### v8.9.0 (2026-07-09)
 
 **Feature** Added support for authentication via OIDC (e.g. authentik, keycloak).
