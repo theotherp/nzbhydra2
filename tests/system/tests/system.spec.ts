@@ -1,11 +1,7 @@
 import type {Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
-import {
-    prepareVisualEvidence,
-    visualEvidencePath,
-    visualViewports,
-} from "./visualEvidence";
+import {prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 const newsPayload = [
     {
@@ -721,21 +717,6 @@ test.describe("System shell", () => {
         expect(
             await page.getByTestId("system-heap-dump").getAttribute("target"),
         ).toBe("_blank");
-        const endpointsHref = await page
-            .getByTestId("system-endpoints")
-            .getAttribute("href");
-        expect(endpointsHref).toContain("internalapi/debuginfos/endpoints");
-        // The address resolves and the admin session is allowed through. The
-        // endpoint itself currently answers 500: `DebugInfosWeb.getEndpoints`
-        // dereferences a mapping description whose `getDetails()` is null
-        // under this Spring Boot version. That is a pre-existing backend
-        // defect -- legacy's identical link hits it too -- and it is out of
-        // this task's scope, so only reaching the endpoint is asserted here.
-        const endpoints = await page.request.get(endpointsHref as string);
-        expect(
-            [200, 500],
-            "the endpoint listing must be reachable for the admin session",
-        ).toContain(endpoints.status());
 
         // The CPU chart polled the real endpoint; a healthy instance without
         // the `Performance` marker answers with no series at all, which is

@@ -4,7 +4,6 @@ import {useEffect, useState} from "react";
 import {
     debugInfosFileName,
     downloadDebugInfos,
-    endpointsUrl,
     executeSqlQuery,
     executeSqlUpdate,
     getSensitiveDataLogging,
@@ -466,31 +465,6 @@ export function SystemBugreportTab({
                             }}
                             value={sqlOutput}
                         />
-                    </Stack>
-                </CardContent>
-            </Card>
-
-            <Card variant="outlined">
-                <CardContent>
-                    <Stack
-                        spacing={2}
-                        sx={{
-                            alignItems: "flex-start",
-                        }}
-                    >
-                        <Typography component="h2" variant="h6">
-                            Misc
-                        </Typography>
-                        <Button
-                            component="a"
-                            data-testid="system-endpoints"
-                            href={endpointsUrl(transport)}
-                            rel="noreferrer"
-                            target="_blank"
-                            variant="outlined"
-                        >
-                            List HTTP endpoints
-                        </Button>
                     </Stack>
                 </CardContent>
             </Card>

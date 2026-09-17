@@ -238,14 +238,6 @@ export async function getThreadCpuUsage(
         .filter((series) => series.points.length > 0);
 }
 
-/**
- * `API-SYSTEM-ENDPOINTS`: the running instance's request mappings, rendered by
- * the browser itself from the JSON the endpoint answers with — legacy opened
- * the address in a new tab rather than displaying it (`bugreport.html:107`).
- */
-export function endpointsUrl(transport: ApiTransport): string {
-    return transport.browserTransferUrl(ENDPOINTS_PATH);
-}
 
 /** `API-SYSTEM-HEAP-DUMP`: the JVM heap dump the browser downloads itself. */
 export function heapDumpUrl(transport: ApiTransport): string {

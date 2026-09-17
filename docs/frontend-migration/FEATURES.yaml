@@ -2048,7 +2048,6 @@ features:
       - system-thread-dump
       - system-sensitive-toggle
       - system-heap-dump
-      - system-endpoints
       - system-sql-input
       - system-sql-query
       - system-sql-execute
