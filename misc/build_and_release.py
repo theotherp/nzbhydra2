@@ -1100,6 +1100,11 @@ def run_build(
     steps_to_run = STEPS[start_index:]
     total_steps = len(steps_to_run)
 
+    # The tokens are only kept in memory, so a run that starts at a later step has to load them first
+    if not any(s.function is load_tokens for s in steps_to_run):
+        console.print("\n[bold]Loading GitHub and Discord tokens[/bold]")
+        load_tokens(ctx)
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
