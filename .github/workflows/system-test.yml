@@ -19,18 +19,18 @@ jobs:
   buildMockserver:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         name: "Check out source"
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'maven'
 
       - name: "Login to GitHub Container Registry"
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -81,21 +81,21 @@ jobs:
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - run: echo Running test core with port 5076
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         name: "Check out source"
 
       - name: Set artifact timestamp
         run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'maven'
 
       - name: Set up Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: 'npm'
@@ -194,7 +194,7 @@ jobs:
 
       - name: "Upload Playwright artifacts"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: system-test--linux-native--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
@@ -263,14 +263,14 @@ jobs:
           echo "No unwanted strings found in logs"
 
       - name: "Upload data folder artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test--linux-native--core--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test--linux-native--core--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -279,7 +279,7 @@ jobs:
             tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test--linux-native--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -329,7 +329,7 @@ jobs:
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         name: "Check out source"
         with:
           fetch-depth: 15
@@ -377,14 +377,14 @@ jobs:
           fi
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'maven'
 
       - name: Set up Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: 'npm'
@@ -482,7 +482,7 @@ jobs:
 
       - name: "Upload Playwright artifacts"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: system-test--linux-jvm-coverage--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
@@ -508,7 +508,7 @@ jobs:
 
       - name: "Upload JVM system test coverage"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: system-test--linux-jvm-coverage--core--coverage-report--${{ env.ARTIFACT_TIMESTAMP }}
           path: core/target/site/jacoco/**
@@ -520,7 +520,7 @@ jobs:
 
       - name: "Upload JVM coverage logs"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: system-test--linux-jvm-coverage--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: jvm-system-coverage-docker.log
@@ -556,21 +556,21 @@ jobs:
           MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
           COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration.yaml
       steps:
-          -   uses: actions/checkout@v4
+          -   uses: actions/checkout@v7
               name: "Check out source"
 
           -   name: Set artifact timestamp
               run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
           -   name: Set up JDK 17
-              uses: actions/setup-java@v4
+              uses: actions/setup-java@v6
               with:
                   java-version: '17'
-                  distribution: 'adopt'
+                  distribution: 'temurin'
                   cache: 'maven'
 
           -   name: Set up Node 20
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v7
               with:
                   node-version: '20'
 
@@ -650,14 +650,14 @@ jobs:
               run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
 
           -   name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--jvm--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
                   path: /tmp/hydraMigration
 
           -   name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--jvm--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -666,7 +666,7 @@ jobs:
                       tests/**/target/surefire-reports/**
 
           -   name: "Upload docker logs artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--jvm--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -707,21 +707,21 @@ jobs:
           MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
           COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration-native.yaml
       steps:
-          -   uses: actions/checkout@v4
+          -   uses: actions/checkout@v7
               name: "Check out source"
 
           -   name: Set artifact timestamp
               run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
           -   name: Set up JDK 17
-              uses: actions/setup-java@v4
+              uses: actions/setup-java@v6
               with:
                   java-version: '17'
-                  distribution: 'adopt'
+                  distribution: 'temurin'
                   cache: 'maven'
 
           -   name: Set up Node 20
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v7
               with:
                   node-version: '20'
 
@@ -801,14 +801,14 @@ jobs:
               run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
 
           -   name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--native--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
                   path: /tmp/hydraMigration
 
           -   name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--native--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -817,7 +817,7 @@ jobs:
                       tests/**/target/surefire-reports/**
 
           -   name: "Upload docker logs artifact"
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: system-test--migration--native--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -840,7 +840,7 @@ jobs:
       nzbhydra.name: windows
     steps:
       - name: "Check out source"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set artifact timestamp
         shell: pwsh
@@ -873,10 +873,10 @@ jobs:
           path: .
 
       - name: "Set up JDK 17"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'maven'
 
       - name: "Install maven"
@@ -961,7 +961,7 @@ jobs:
           Write-Host "No unwanted strings found in logs"
 
       - name: "Upload data folder artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         continue-on-error: true
         with:
@@ -969,7 +969,7 @@ jobs:
           path: misc/.windows-systemtest-runs
 
       - name: "Upload test logs artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test--windows-native--restore-supervision--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -978,7 +978,7 @@ jobs:
             tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: system-test--windows-native--restore-supervision--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
