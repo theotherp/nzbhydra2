@@ -124,13 +124,42 @@ def copy_artifacts(ssh_target: str, project_root: Path) -> None:
             artifacts.extractall(include_directory)
 
 
-def wait_for_shutdown(vm_name: str) -> None:
-    deadline = time.monotonic() + 120
+def wait_for_shutdown(vm_name: str, seconds: int = 180) -> bool:
+    deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         if not vm_is_running(vm_name):
-            return
+            return True
         time.sleep(2)
-    raise RuntimeError(f"Timed out waiting for {vm_name} to shut down")
+    return False
+
+
+def shut_down_vm(vm_name: str, ssh_target: str) -> None:
+    """Shut the VM down again, without ever failing the build over it.
+
+    The guest is asked from the inside first. `virsh shutdown` only presses the ACPI power button, which this guest
+    ignores: a release build on 2026-09-18 waited the full two minutes and found the VM still running eight minutes
+    later, while the same guest shuts down in under twenty seconds when asked over SSH. The ACPI request stays as a
+    fallback for the case where SSH is gone.
+
+    Everything the caller wanted -- the executable and its DLLs -- has been copied back before this runs, so a VM that
+    refuses to stop is worth a warning and nothing more. It used to raise from the `finally` block, which turned a
+    finished build into a failed release step.
+    """
+    subprocess.run(
+        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", ssh_target, "shutdown /s /f /t 0"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if wait_for_shutdown(vm_name):
+        return
+    print(f"{vm_name} did not shut down when asked over SSH, pressing the ACPI power button", file=sys.stderr)
+    try:
+        run(["virsh", "shutdown", vm_name])
+    except subprocess.CalledProcessError as error:
+        print(f"Warning: could not request shutdown of {vm_name}: {error}", file=sys.stderr)
+        return
+    if not wait_for_shutdown(vm_name):
+        print(f"Warning: {vm_name} is still running; shut it down yourself once you are done", file=sys.stderr)
 
 
 def main() -> None:
@@ -153,8 +182,7 @@ def main() -> None:
         copy_artifacts(args.ssh_target, project_root)
     finally:
         if started_vm:
-            run(["virsh", "shutdown", args.vm_name])
-            wait_for_shutdown(args.vm_name)
+            shut_down_vm(args.vm_name, args.ssh_target)
 
 
 if __name__ == "__main__":
