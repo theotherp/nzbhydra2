@@ -146,12 +146,26 @@ public class DiscordPublisher {
         lines.add(versionLine);
 
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
-            final String text = normalizeLineBreaks(changeEntry.getText())
+            final String text = unescapeHtmlEntities(normalizeLineBreaks(changeEntry.getText()))
                 .replaceAll("#(\\d{3,})", "https://github.com/theotherp/nzbhydra2/issues/$1");
             lines.add("**" + StringUtils.capitalize(changeEntry.getType()) + "** " + text);
         }
         lines.add("");
         return lines;
+    }
+
+    /**
+     * The changelog is also rendered as HTML, so its texts contain escaped entities which Discord would show as-is.
+     */
+    static String unescapeHtmlEntities(String text) {
+        return text
+            .replace("&quot;", "\"")
+            .replace("&apos;", "'")
+            .replace("&#39;", "'")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            //must be last so that e.g. &amp;quot; doesn't turn into a quote
+            .replace("&amp;", "&");
     }
 
     private static String normalizeLineBreaks(String text) {
