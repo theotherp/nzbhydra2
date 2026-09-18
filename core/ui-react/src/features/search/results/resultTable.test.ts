@@ -452,6 +452,7 @@ describe("result table transformations", () => {
             {
                 groupTorrentAndUsenet: false,
                 groupEpisodes: false,
+                groupTitles: true,
                 episodeRequested: false,
             },
         );
@@ -468,6 +469,7 @@ describe("result table transformations", () => {
                 {
                     groupTorrentAndUsenet: true,
                     groupEpisodes: false,
+                    groupTitles: true,
                     episodeRequested: false,
                 },
             ),
@@ -494,6 +496,7 @@ describe("result table transformations", () => {
             {
                 groupTorrentAndUsenet: true,
                 groupEpisodes: false,
+                groupTitles: true,
                 episodeRequested: false,
             },
         );
@@ -508,6 +511,88 @@ describe("result table transformations", () => {
             ["title:alpha", [["a1", "a2", "a3", "a5"], ["a4"]]],
             ["title:beta", [["b1", "b2"]]],
         ]);
+    });
+
+    // Owner (2026-09-18): "Group same titles" gates what was unconditional
+    // title grouping. Off, results that merely share a title stay separate,
+    // the same release reported twice (equal hash) still collapses into one
+    // duplicate group, and episode grouping -- its own option -- is
+    // untouched.
+    it("should keep same-titled results apart when title grouping is off", () => {
+        const grouped = groupResults(
+            [
+                {
+                    ...results[0],
+                    searchResultId: "a",
+                    title: "Example.Show",
+                    hash: 1,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "b",
+                    title: "Example Show",
+                    hash: 2,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "c",
+                    title: "Example_Show",
+                    hash: 1,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "d",
+                    title: "Example Show",
+                    hash: undefined,
+                },
+            ],
+            {
+                groupTorrentAndUsenet: true,
+                groupEpisodes: false,
+                groupTitles: false,
+                episodeRequested: false,
+            },
+        );
+        expect(
+            grouped.map((group) =>
+                group.duplicateGroups.map((duplicates) =>
+                    duplicates.map((result) => result.searchResultId),
+                ),
+            ),
+        ).toEqual([[["a", "c"]], [["b"]], [["d"]]]);
+    });
+
+    it("should still group TV episodes while title grouping is off", () => {
+        const tvResults = [
+            {
+                ...results[0],
+                searchResultId: "one",
+                title: "Show S01E01 WEB",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                hash: 1,
+            },
+            {
+                ...results[0],
+                searchResultId: "two",
+                title: "Different release",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                hash: 2,
+            },
+        ];
+        expect(
+            groupResults(tvResults, {
+                groupTorrentAndUsenet: false,
+                groupEpisodes: true,
+                groupTitles: false,
+                episodeRequested: false,
+            }),
+        ).toHaveLength(1);
     });
 
     it("should group eligible TV episodes only when no episode was requested", () => {
@@ -541,6 +626,7 @@ describe("result table transformations", () => {
             groupResults(tvResults, {
                 groupTorrentAndUsenet: false,
                 groupEpisodes: true,
+                groupTitles: true,
                 episodeRequested: false,
             }),
         ).toHaveLength(2);
@@ -548,6 +634,7 @@ describe("result table transformations", () => {
             groupResults(tvResults, {
                 groupTorrentAndUsenet: false,
                 groupEpisodes: true,
+                groupTitles: true,
                 episodeRequested: true,
             }),
         ).toHaveLength(3);
@@ -568,6 +655,7 @@ describe("result table transformations", () => {
             {
                 groupTorrentAndUsenet: false,
                 groupEpisodes: false,
+                groupTitles: true,
                 episodeRequested: false,
             },
         );

@@ -214,12 +214,14 @@ export function SearchResults({
         categoryOpen,
         compactRows,
         groupEpisodes,
+        groupTitles,
         groupTorrentAndUsenet,
         highlightRecent,
         indexerOpen,
         setCategoryOpen,
         setCompactRows,
         setGroupEpisodes,
+        setGroupTitles,
         setGroupTorrentAndUsenet,
         setHighlightRecent,
         setIndexerOpen,
@@ -356,9 +358,16 @@ export function SearchResults({
             groupResults(sortedResults, {
                 groupTorrentAndUsenet,
                 groupEpisodes,
+                groupTitles,
                 episodeRequested,
             }),
-        [episodeRequested, groupEpisodes, groupTorrentAndUsenet, sortedResults],
+        [
+            episodeRequested,
+            groupEpisodes,
+            groupTitles,
+            groupTorrentAndUsenet,
+            sortedResults,
+        ],
     );
     // FM-176: with the option off there is no control that could collapse an
     // expanded duplicate group again, so no group may stay expanded. The
@@ -945,6 +954,7 @@ export function SearchResults({
                     filteredOutCount={filteredOutCount}
                     filteredResults={filteredResults}
                     groupEpisodes={groupEpisodes}
+                    groupTitles={groupTitles}
                     groupTorrentAndUsenet={groupTorrentAndUsenet}
                     hasRejectedResults={hasRejectedResults}
                     hasResults={hasResults}
@@ -966,6 +976,7 @@ export function SearchResults({
                     setCompactRows={setCompactRows}
                     setDownloadedIds={setDownloadedIds}
                     setGroupEpisodes={setGroupEpisodes}
+                    setGroupTitles={setGroupTitles}
                     setGroupTorrentAndUsenet={setGroupTorrentAndUsenet}
                     setHighlightRecent={setHighlightRecent}
                     setSelected={setSelected}

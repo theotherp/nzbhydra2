@@ -23,6 +23,10 @@ export type QuickFilter = {
 export type GroupingOptions = {
     groupTorrentAndUsenet: boolean;
     groupEpisodes: boolean;
+    // Owner (2026-09-18): "Group same titles", the display option that gates
+    // the title grouping below. It was unconditional until then; `true` is
+    // the unchanged behavior.
+    groupTitles: boolean;
     episodeRequested: boolean;
 };
 
@@ -53,10 +57,7 @@ export function groupResults(
     return [...titleGroups.entries()].map(([key, groupedResults]) => {
         const duplicates = new Map<string, SearchResult[]>();
         for (const result of groupedResults) {
-            const duplicateKey =
-                result.hash === undefined
-                    ? `result:${result.searchResultId}`
-                    : `hash:${result.hash}`;
+            const duplicateKey = duplicateIdentity(result);
             const duplicateGroup = duplicates.get(duplicateKey);
             if (duplicateGroup === undefined) {
                 duplicates.set(duplicateKey, [result]);
@@ -93,7 +94,18 @@ export function duplicateGroupKey(
     groupKey: string,
     result: SearchResult,
 ): string {
-    return `${groupKey}|${result.hash === undefined ? `result:${result.searchResultId}` : `hash:${result.hash}`}`;
+    return `${groupKey}|${duplicateIdentity(result)}`;
+}
+
+// What makes two results the same release rather than merely the same title:
+// the indexer-reported hash when there is one, and otherwise the result's own
+// id, which groups it with nothing. Used both for the duplicate buckets
+// inside a title group and, with title grouping switched off, as the grouping
+// key itself.
+function duplicateIdentity(result: SearchResult): string {
+    return result.hash === undefined
+        ? `result:${result.searchResultId}`
+        : `hash:${result.hash}`;
 }
 
 export function selectVisibleResults(
@@ -181,6 +193,16 @@ function groupingKey(result: SearchResult, options: GroupingOptions): string {
         result.episode !== undefined
     ) {
         return `episode:${normalizeGroupingValue(episodeKey)}`;
+    }
+    if (!options.groupTitles) {
+        // With the option off, two results that merely share a title stay
+        // separate rows. The key falls back to the duplicate identity rather
+        // than to a per-result one, so the same release reported by several
+        // indexers still collapses under the duplicate expand control --
+        // that control is its own display option and is not what this one
+        // switches off. `groupTorrentAndUsenet` has nothing left to separate
+        // here and is not part of the key.
+        return `duplicate:${duplicateIdentity(result)}`;
     }
     const downloadType = options.groupTorrentAndUsenet
         ? ""

@@ -17,6 +17,10 @@ export type StoredChoices = {
     // FM-189 (ADR-0054): "Group torrent and Usenet results", legacy's
     // `groupTorrentAndNewznabResults`, which defaulted *off* there and here.
     groupTorrentAndUsenet?: boolean;
+    // Owner (2026-09-18): "Group same titles", which gates the title grouping
+    // that was unconditional before. Defaults *on*, so an existing stored
+    // payload without the key keeps the grouping it had.
+    groupTitles?: boolean;
     highlightRecent?: boolean;
     refineCategoryOpen?: boolean;
     refineIndexerOpen?: boolean;

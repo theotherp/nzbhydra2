@@ -87,6 +87,12 @@ export function useResultDisplayChoices() {
     const [groupEpisodes, setGroupEpisodes] = useState(
         () => choices.groupEpisodes ?? true,
     );
+    // Owner (2026-09-18): title grouping used to be unconditional, so `true`
+    // is the behavior every existing payload was written under; `??` keeps a
+    // stored `false` alive across searches like the two above.
+    const [groupTitles, setGroupTitles] = useState(
+        () => choices.groupTitles ?? true,
+    );
 
     useEffect(() => {
         writeItem(
@@ -94,6 +100,7 @@ export function useResultDisplayChoices() {
             JSON.stringify({
                 compactRows,
                 groupEpisodes,
+                groupTitles,
                 groupTorrentAndUsenet,
                 highlightRecent,
                 refineCategoryOpen: categoryOpen,
@@ -108,6 +115,7 @@ export function useResultDisplayChoices() {
         categoryOpen,
         compactRows,
         groupEpisodes,
+        groupTitles,
         groupTorrentAndUsenet,
         highlightRecent,
         indexerOpen,
@@ -121,12 +129,14 @@ export function useResultDisplayChoices() {
         categoryOpen,
         compactRows,
         groupEpisodes,
+        groupTitles,
         groupTorrentAndUsenet,
         highlightRecent,
         indexerOpen,
         setCategoryOpen,
         setCompactRows,
         setGroupEpisodes,
+        setGroupTitles,
         setGroupTorrentAndUsenet,
         setHighlightRecent,
         setIndexerOpen,

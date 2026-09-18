@@ -60,6 +60,7 @@ export function ResultsToolbar({
     filteredOutCount,
     filteredResults,
     groupEpisodes,
+    groupTitles,
     groupTorrentAndUsenet,
     hasRejectedResults,
     hasResults,
@@ -81,6 +82,7 @@ export function ResultsToolbar({
     setCompactRows,
     setDownloadedIds,
     setGroupEpisodes,
+    setGroupTitles,
     setGroupTorrentAndUsenet,
     setHighlightRecent,
     setSelected,
@@ -106,6 +108,7 @@ export function ResultsToolbar({
     filteredOutCount: number;
     filteredResults: SearchResult[];
     groupEpisodes: boolean;
+    groupTitles: boolean;
     groupTorrentAndUsenet: boolean;
     hasRejectedResults: boolean;
     hasResults: boolean;
@@ -127,6 +130,7 @@ export function ResultsToolbar({
     setCompactRows: Dispatch<SetStateAction<boolean>>;
     setDownloadedIds: Dispatch<SetStateAction<Set<string>>>;
     setGroupEpisodes: Dispatch<SetStateAction<boolean>>;
+    setGroupTitles: Dispatch<SetStateAction<boolean>>;
     setGroupTorrentAndUsenet: Dispatch<SetStateAction<boolean>>;
     setHighlightRecent: Dispatch<SetStateAction<boolean>>;
     setSelected: Dispatch<SetStateAction<Set<string>>>;
@@ -338,6 +342,7 @@ export function ResultsToolbar({
                                 compact={refineSurfaceCompact}
                                 compactRows={compactRows}
                                 groupEpisodes={groupEpisodes}
+                                groupTitles={groupTitles}
                                 groupTorrentAndUsenet={groupTorrentAndUsenet}
                                 highlightRecent={highlightRecent}
                                 onToggleCompactRows={() =>
@@ -345,6 +350,9 @@ export function ResultsToolbar({
                                 }
                                 onToggleGroupEpisodes={() =>
                                     setGroupEpisodes((current) => !current)
+                                }
+                                onToggleGroupTitles={() =>
+                                    setGroupTitles((current) => !current)
                                 }
                                 onToggleGroupTorrentAndUsenet={() =>
                                     setGroupTorrentAndUsenet(

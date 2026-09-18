@@ -3437,6 +3437,7 @@ describe("SearchResults", () => {
         ).toEqual([
             ["Group torrent and Usenet results", false],
             ["Group TV episodes", true],
+            ["Group same titles", true],
             ["Compact rows", false],
             ["Highlight recent", false],
             ["Show duplicate expand controls", false],
@@ -3467,6 +3468,45 @@ describe("SearchResults", () => {
         // member reachable through the existing expansion control.
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
         fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    // Owner (2026-09-18): title grouping used to be unconditional, so results
+    // that merely shared a title always collapsed into one row. "Group same
+    // titles" is that grouping's own switch, defaulting on so nothing changes
+    // until it is used.
+    it("should stop collapsing same-titled results once group same titles is off", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Shared Release",
+                            indexer: "One",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Shared.Release",
+                            indexer: "Two",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(displayOption("Group same titles")).toBeChecked();
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+
+        fireEvent.click(displayOption("Group same titles"));
+        expect(displayOption("Group same titles")).not.toBeChecked();
+        closeDisplayOptions();
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
 
@@ -4002,12 +4042,14 @@ describe("SearchResults", () => {
         // FM-189: both grouping options join the same payload, each flipped
         // away from its own default so a stored `false` is exercised too.
         fireEvent.click(displayOption("Group TV episodes"));
+        fireEvent.click(displayOption("Group same titles"));
         fireEvent.click(displayOption("Group torrent and Usenet results"));
         closeDisplayOptions();
         const stored = storedChoices();
         expect(stored).toMatchObject({
             compactRows: true,
             groupEpisodes: false,
+            groupTitles: false,
             groupTorrentAndUsenet: true,
             highlightRecent: true,
             showCovers: true,
@@ -4018,6 +4060,7 @@ describe("SearchResults", () => {
         expect(Object.keys(stored).sort()).toEqual([
             "compactRows",
             "groupEpisodes",
+            "groupTitles",
             "groupTorrentAndUsenet",
             "highlightRecent",
             "refineCategoryOpen",
@@ -4043,6 +4086,7 @@ describe("SearchResults", () => {
         expect(displayOption("Show duplicate expand controls")).toBeChecked();
         expect(displayOption("Show covers")).toBeChecked();
         expect(displayOption("Group TV episodes")).not.toBeChecked();
+        expect(displayOption("Group same titles")).not.toBeChecked();
         expect(displayOption("Group torrent and Usenet results")).toBeChecked();
     });
 

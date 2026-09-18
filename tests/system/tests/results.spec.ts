@@ -2119,6 +2119,7 @@ test.describe("Search results", () => {
         for (const [name, checked] of [
             ["Group torrent and Usenet results", false],
             ["Group TV episodes", true],
+            ["Group same titles", true],
             ["Compact rows", false],
             ["Highlight recent", false],
             ["Show duplicate expand controls", false],
@@ -4642,6 +4643,7 @@ test.describe("Search results", () => {
         ).toEqual([
             "Group torrent and Usenet results",
             "Group TV episodes",
+            "Group same titles",
             "Compact rows",
             "Highlight recent",
             "Show duplicate expand controls",
@@ -4917,6 +4919,7 @@ test.describe("Search results", () => {
         ).toEqual([
             "Group torrent and Usenet results",
             "Group TV episodes",
+            "Group same titles",
             "Compact rows",
             "Highlight recent",
             "Show duplicate expand controls",

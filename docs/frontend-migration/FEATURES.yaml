@@ -387,6 +387,10 @@ features:
       # 2026-09-08 (FM-189): the two grouping options joined that payload so
       # a new search (which remounts `SearchResults`) no longer resets them;
       # they default to legacy's own `true`/`false` respectively.
+      # 2026-09-18 (quickfix): `groupTitles` joined them as the third grouping
+      # option, "Group same titles". Title grouping was unconditional in both
+      # UIs until then, so it defaults to `true` and an existing payload
+      # without the key keeps the grouping it had.
       # `filters` left this payload entirely with FM-178: every refine
       # filter resets on a new search (see the gap line below), so none of
       # them can usefully outlive one.

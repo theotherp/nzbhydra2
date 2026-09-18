@@ -193,10 +193,12 @@ export function DisplayOptionsMenu({
     compact = false,
     compactRows,
     groupEpisodes,
+    groupTitles,
     groupTorrentAndUsenet,
     highlightRecent,
     onToggleCompactRows,
     onToggleGroupEpisodes,
+    onToggleGroupTitles,
     onToggleGroupTorrentAndUsenet,
     onToggleHighlightRecent,
     onToggleRefineSurface,
@@ -217,10 +219,14 @@ export function DisplayOptionsMenu({
     compact?: boolean;
     compactRows: boolean;
     groupEpisodes: boolean;
+    // Owner (2026-09-18): "Group same titles". Title grouping was
+    // unconditional before; on is the unchanged behavior.
+    groupTitles: boolean;
     groupTorrentAndUsenet: boolean;
     highlightRecent: boolean;
     onToggleCompactRows: () => void;
     onToggleGroupEpisodes: () => void;
+    onToggleGroupTitles: () => void;
     onToggleGroupTorrentAndUsenet: () => void;
     onToggleHighlightRecent: () => void;
     onToggleRefineSurface: () => void;
@@ -251,6 +257,11 @@ export function DisplayOptionsMenu({
             checked: groupEpisodes,
             label: "Group TV episodes",
             onToggle: onToggleGroupEpisodes,
+        },
+        {
+            checked: groupTitles,
+            label: "Group same titles",
+            onToggle: onToggleGroupTitles,
         },
         {
             checked: compactRows,
