@@ -90,6 +90,7 @@ public class ScenarioRegistry {
      *     <li>deterministic-downloader-nzb</li>
      *     <li>deterministic-nzbget-nzb</li>
      *     <li>deterministic-movie-tmdb (before every generic TMDB scenario)</li>
+     *     <li>grouping-newznab</li>
      *     <li>metadata-rid-without-query</li>
      *     <li>metadata-imdb-empty</li>
      *     <li>metadata-tmdb-many-results</li>
@@ -132,6 +133,7 @@ public class ScenarioRegistry {
         scenarios.add(DeterministicFixtures.downloaderNzb());
         scenarios.add(DeterministicFixtures.nzbGetNzb());
         scenarios.add(DeterministicFixtures.movie());
+        scenarios.add(GroupingScenarios.newznab());
         scenarios.add(MetadataScenarios.ridWithoutQuery());
         scenarios.add(MetadataScenarios.emptyImdbId());
         scenarios.add(MetadataScenarios.manyResultsTmdbId());

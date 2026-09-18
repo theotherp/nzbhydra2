@@ -13,7 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The scenarios of the torznab endpoint. Caps requests are answered by the controller.
+ * The scenarios of the torznab endpoint. Caps requests are answered by the controller. The grouping scenario answers
+ * the same query as its newznab half, so one search covers both download types.
  */
 public final class TorznabScenarios {
 
@@ -21,7 +22,7 @@ public final class TorznabScenarios {
     }
 
     public static List<Scenario> scenarios() {
-        return List.of(deterministicTorrentFile(), deterministicMagnet(), torznabDefault());
+        return List.of(deterministicTorrentFile(), deterministicMagnet(), GroupingScenarios.torznab(), torznabDefault());
     }
 
     public static Scenario deterministicTorrentFile() {
