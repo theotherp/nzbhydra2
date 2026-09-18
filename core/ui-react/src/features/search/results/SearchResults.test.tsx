@@ -3577,23 +3577,27 @@ describe("SearchResults", () => {
                 }}
             />,
         );
-        const entry = () =>
-            within(openDisplayOptions()).queryByRole("checkbox", {
-                name: "Expand groups by default",
-            });
-        expect(entry()).not.toBeNull();
+        const entries = () =>
+            [
+                "Group torrent and Usenet results",
+                "Expand groups by default",
+            ].map((name) =>
+                within(openDisplayOptions()).queryByRole("checkbox", {name}),
+            );
+        expect(entries().every((entry) => entry !== null)).toBe(true);
 
-        // Episode grouping alone still forms groups, so the entry stays.
+        // Episode grouping alone still forms groups, so both entries stay.
         fireEvent.click(displayOption("Group same titles"));
-        expect(entry()).not.toBeNull();
+        expect(entries().every((entry) => entry !== null)).toBe(true);
 
-        // With both off the only groups left are the duplicate ones, which
-        // this option does not seed, so it would be a no-op.
+        // With both off the only groups left are the duplicate ones: they
+        // have their own control, never start expanded, and never hold a
+        // torrent, so neither entry could change anything.
         fireEvent.click(displayOption("Group TV episodes"));
-        expect(entry()).toBeNull();
+        expect(entries().every((entry) => entry === null)).toBe(true);
 
         fireEvent.click(displayOption("Group TV episodes"));
-        expect(entry()).not.toBeNull();
+        expect(entries().every((entry) => entry !== null)).toBe(true);
     });
 
     // Owner defect (2026-09-18, user screenshot): a torrent and an NZB shared
@@ -4216,14 +4220,14 @@ describe("SearchResults", () => {
         fireEvent.click(displayOption("Highlight recent"));
         fireEvent.click(displayOption("Show duplicate expand controls"));
         fireEvent.click(displayOption("Show covers"));
-        // Flipped before the grouping options below, which hide this entry
-        // once neither kind of group can form.
+        // Both flipped before the two grouping options below, which hide
+        // these entries once neither kind of group can form.
         fireEvent.click(displayOption("Expand groups by default"));
+        fireEvent.click(displayOption("Group torrent and Usenet results"));
         // FM-189: both grouping options join the same payload, each flipped
         // away from its own default so a stored `false` is exercised too.
         fireEvent.click(displayOption("Group TV episodes"));
         fireEvent.click(displayOption("Group same titles"));
-        fireEvent.click(displayOption("Group torrent and Usenet results"));
         closeDisplayOptions();
         const stored = storedChoices();
         expect(stored).toMatchObject({
@@ -4269,17 +4273,16 @@ describe("SearchResults", () => {
         expect(displayOption("Show covers")).toBeChecked();
         expect(displayOption("Group TV episodes")).not.toBeChecked();
         expect(displayOption("Group same titles")).not.toBeChecked();
-        expect(displayOption("Group torrent and Usenet results")).toBeChecked();
-        // Hidden while it is stored, because the reload above restored both
-        // grouping options as off; switching one back on brings the entry
-        // back carrying its stored value.
-        expect(
-            within(openDisplayOptions()).queryByRole("checkbox", {
-                name: "Expand groups by default",
-            }),
-        ).toBeNull();
+        // Both hidden while stored, because the reload above restored both
+        // grouping options as off; switching one back on brings them back
+        // carrying their stored values.
+        const hidden = (name: string) =>
+            within(openDisplayOptions()).queryByRole("checkbox", {name});
+        expect(hidden("Expand groups by default")).toBeNull();
+        expect(hidden("Group torrent and Usenet results")).toBeNull();
         fireEvent.click(displayOption("Group same titles"));
         expect(displayOption("Expand groups by default")).toBeChecked();
+        expect(displayOption("Group torrent and Usenet results")).toBeChecked();
     });
 
     // FM-189: the owner's defect was that a new search remounts

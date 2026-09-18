@@ -254,12 +254,26 @@ export function DisplayOptionsMenu({
 }) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
+    // Owner (2026-09-18): the two entries that only qualify a grouping --
+    // whether torrent and Usenet results may share one, and whether groups
+    // start expanded -- are shown only while a grouping can form at all. With
+    // both "Group TV episodes" and "Group same titles" off, the only groups
+    // left are the duplicate ones: those have their own control, never start
+    // expanded, and can never hold a torrent
+    // (`DuplicateDetector.testForSameness` refuses any pair involving one),
+    // so neither entry could change what is rendered. Both keep their stored
+    // values while hidden.
+    const groupingPossible = groupEpisodes || groupTitles;
     const entries: {checked: boolean; label: string; onToggle: () => void}[] = [
-        {
-            checked: groupTorrentAndUsenet,
-            label: "Group torrent and Usenet results",
-            onToggle: onToggleGroupTorrentAndUsenet,
-        },
+        ...(groupingPossible
+            ? [
+                  {
+                      checked: groupTorrentAndUsenet,
+                      label: "Group torrent and Usenet results",
+                      onToggle: onToggleGroupTorrentAndUsenet,
+                  },
+              ]
+            : []),
         {
             checked: groupEpisodes,
             label: "Group TV episodes",
@@ -270,13 +284,7 @@ export function DisplayOptionsMenu({
             label: "Group same titles",
             onToggle: onToggleGroupTitles,
         },
-        // Owner (2026-09-18): with neither grouping kind on, the only groups
-        // left are the duplicate ones, which have their own control and are
-        // not what this option seeds -- so it could only be a no-op, and an
-        // entry that cannot do anything is better not shown. It keeps its
-        // stored value while hidden and applies again as soon as one of the
-        // two is switched back on.
-        ...(groupEpisodes || groupTitles
+        ...(groupingPossible
             ? [
                   {
                       checked: expandGroupsByDefault,
