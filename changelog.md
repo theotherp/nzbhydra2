@@ -1,3 +1,13 @@
+### v9.0.1 (2026-09-18)
+
+**Feature** New display option &quot;Group same titles&quot; in the search results. Results with the same title were always put into one group; you can now switch that off and see every result in its own row. Duplicates of the same release are still grouped, they have their own option.
+
+**Fix** &quot;Group torrent and Usenet results&quot; was ignored for results grouped by season/episode, so with the option off a torrent and a Usenet result could still end up in the same group. It now applies to every kind of grouping.
+
+**Feature** The option &quot;Expand groups by default&quot; is back. With it on, groups start expanded, also those of results loaded later; expanding or collapsing a single group still overrules it.
+
+
+
 ### v9.0.0 BETA (2026-09-17)
 
 **Feature** Complete rewrite of the UI.
