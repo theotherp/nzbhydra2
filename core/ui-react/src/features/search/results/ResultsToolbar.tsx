@@ -57,6 +57,7 @@ export function ResultsToolbar({
     deselectAllVisible,
     dialogs,
     effectiveSafeConfig,
+    expandGroupsByDefault,
     filteredOutCount,
     filteredResults,
     groupEpisodes,
@@ -69,6 +70,7 @@ export function ResultsToolbar({
     moreResultsAvailable,
     onLoadMore,
     onSaveSearch,
+    onToggleExpandGroupsByDefault,
     pagingAvailable,
     pagingLoading,
     refineSurfaceCompact,
@@ -105,6 +107,7 @@ export function ResultsToolbar({
     deselectAllVisible: () => void;
     dialogs: ContextType<typeof DialogContext>;
     effectiveSafeConfig: unknown;
+    expandGroupsByDefault: boolean;
     filteredOutCount: number;
     filteredResults: SearchResult[];
     groupEpisodes: boolean;
@@ -117,6 +120,9 @@ export function ResultsToolbar({
     moreResultsAvailable: boolean;
     onLoadMore?: (loadAll: boolean) => Promise<void>;
     onSaveSearch?: () => Promise<void>;
+    // Not a `Dispatch` like its neighbours: flipping this option also drops
+    // the per-group expansion overrides, which only `SearchResults` holds.
+    onToggleExpandGroupsByDefault: () => void;
     pagingAvailable: boolean;
     pagingLoading: boolean;
     refineSurfaceCompact: boolean;
@@ -341,12 +347,16 @@ export function ResultsToolbar({
                             <DisplayOptionsMenu
                                 compact={refineSurfaceCompact}
                                 compactRows={compactRows}
+                                expandGroupsByDefault={expandGroupsByDefault}
                                 groupEpisodes={groupEpisodes}
                                 groupTitles={groupTitles}
                                 groupTorrentAndUsenet={groupTorrentAndUsenet}
                                 highlightRecent={highlightRecent}
                                 onToggleCompactRows={() =>
                                     setCompactRows((current) => !current)
+                                }
+                                onToggleExpandGroupsByDefault={
+                                    onToggleExpandGroupsByDefault
                                 }
                                 onToggleGroupEpisodes={() =>
                                     setGroupEpisodes((current) => !current)

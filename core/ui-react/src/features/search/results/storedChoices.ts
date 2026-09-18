@@ -11,6 +11,12 @@ export const STORAGE_KEY = "hydra.search-results.table";
 
 export type StoredChoices = {
     compactRows?: boolean;
+    // Owner (2026-09-18): "Expand groups by default", legacy's
+    // `expandGroupsByDefault` (`search-results-controller.js:199,289`), which
+    // defaulted *off* there and here. It seeds title-group expansion only;
+    // duplicates keep their own control and start collapsed either way, as
+    // they did in legacy (`directives/search-result.js:23`).
+    expandGroupsByDefault?: boolean;
     // FM-189 (ADR-0054): "Group TV episodes", legacy's `groupEpisodes`
     // (`search-results-controller.js`), which defaulted *on* there and here.
     groupEpisodes?: boolean;

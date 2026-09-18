@@ -93,12 +93,19 @@ export function useResultDisplayChoices() {
     const [groupTitles, setGroupTitles] = useState(
         () => choices.groupTitles ?? true,
     );
+    // Owner (2026-09-18): legacy's `expandGroupsByDefault`, off there and
+    // here, so the default rendering is unchanged. `SearchResults` derives
+    // each group's expansion from it (see `titleExpansionOverrides`).
+    const [expandGroupsByDefault, setExpandGroupsByDefault] = useState(
+        () => choices.expandGroupsByDefault ?? false,
+    );
 
     useEffect(() => {
         writeItem(
             STORAGE_KEY,
             JSON.stringify({
                 compactRows,
+                expandGroupsByDefault,
                 groupEpisodes,
                 groupTitles,
                 groupTorrentAndUsenet,
@@ -114,6 +121,7 @@ export function useResultDisplayChoices() {
     }, [
         categoryOpen,
         compactRows,
+        expandGroupsByDefault,
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
@@ -128,6 +136,7 @@ export function useResultDisplayChoices() {
     return {
         categoryOpen,
         compactRows,
+        expandGroupsByDefault,
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
@@ -135,6 +144,7 @@ export function useResultDisplayChoices() {
         indexerOpen,
         setCategoryOpen,
         setCompactRows,
+        setExpandGroupsByDefault,
         setGroupEpisodes,
         setGroupTitles,
         setGroupTorrentAndUsenet,

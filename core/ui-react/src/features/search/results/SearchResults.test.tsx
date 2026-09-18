@@ -3438,6 +3438,7 @@ describe("SearchResults", () => {
             ["Group torrent and Usenet results", false],
             ["Group TV episodes", true],
             ["Group same titles", true],
+            ["Expand groups by default", false],
             ["Compact rows", false],
             ["Highlight recent", false],
             ["Show duplicate expand controls", false],
@@ -3469,6 +3470,130 @@ describe("SearchResults", () => {
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
         fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    // Owner (2026-09-18): legacy's "Expand groups by default"
+    // (`search-results-controller.js:199`), never migrated. It seeds the title
+    // groups only -- duplicates keep their own control and start collapsed,
+    // as they did in legacy (`directives/search-result.js:23`).
+    it("should start title groups expanded while expand groups by default is on, and keep per-group overrides until the option itself flips", () => {
+        const sameTitle = [
+            {
+                searchResultId: "1",
+                title: "Shared Release",
+                indexer: "One",
+                category: "Movies",
+                downloadType: "NZB",
+            },
+            {
+                searchResultId: "2",
+                title: "Shared.Release",
+                indexer: "Two",
+                category: "Movies",
+                downloadType: "NZB",
+            },
+        ];
+        const {rerender} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: sameTitle,
+                }}
+            />,
+        );
+        // Off by default, so the group renders collapsed as before.
+        expect(displayOption("Expand groups by default")).not.toBeChecked();
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+
+        fireEvent.click(displayOption("Expand groups by default"));
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // A group the user collapses by hand stays collapsed while the option
+        // is on -- the override outranks the default.
+        fireEvent.click(screen.getByRole("button", {name: "Collapse group"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+
+        // Flipping the option drops that override rather than inverting its
+        // meaning, so every group follows the new default.
+        fireEvent.click(displayOption("Expand groups by default"));
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        fireEvent.click(displayOption("Expand groups by default"));
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // A group that arrives later (load-more, a further page) follows the
+        // option too: the state holds the exceptions, so nothing has to be
+        // re-seeded when the result set grows.
+        rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SearchResults
+                        data={{
+                            ...response,
+                            numberOfAvailableResults: 4,
+                            searchResults: [
+                                ...sameTitle,
+                                {
+                                    searchResultId: "3",
+                                    title: "Later Release",
+                                    indexer: "One",
+                                    category: "Movies",
+                                    downloadType: "NZB",
+                                },
+                                {
+                                    searchResultId: "4",
+                                    title: "Later.Release",
+                                    indexer: "Two",
+                                    category: "Movies",
+                                    downloadType: "NZB",
+                                },
+                            ],
+                        }}
+                    />
+                </ToastProvider>
+            </DialogProvider>,
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(4);
+    });
+
+    it("should hide the expand-by-default entry only while neither grouping kind can form a group", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const entry = () =>
+            within(openDisplayOptions()).queryByRole("checkbox", {
+                name: "Expand groups by default",
+            });
+        expect(entry()).not.toBeNull();
+
+        // Episode grouping alone still forms groups, so the entry stays.
+        fireEvent.click(displayOption("Group same titles"));
+        expect(entry()).not.toBeNull();
+
+        // With both off the only groups left are the duplicate ones, which
+        // this option does not seed, so it would be a no-op.
+        fireEvent.click(displayOption("Group TV episodes"));
+        expect(entry()).toBeNull();
+
+        fireEvent.click(displayOption("Group TV episodes"));
+        expect(entry()).not.toBeNull();
     });
 
     // Owner defect (2026-09-18, user screenshot): a torrent and an NZB shared
@@ -4091,6 +4216,9 @@ describe("SearchResults", () => {
         fireEvent.click(displayOption("Highlight recent"));
         fireEvent.click(displayOption("Show duplicate expand controls"));
         fireEvent.click(displayOption("Show covers"));
+        // Flipped before the grouping options below, which hide this entry
+        // once neither kind of group can form.
+        fireEvent.click(displayOption("Expand groups by default"));
         // FM-189: both grouping options join the same payload, each flipped
         // away from its own default so a stored `false` is exercised too.
         fireEvent.click(displayOption("Group TV episodes"));
@@ -4100,6 +4228,7 @@ describe("SearchResults", () => {
         const stored = storedChoices();
         expect(stored).toMatchObject({
             compactRows: true,
+            expandGroupsByDefault: true,
             groupEpisodes: false,
             groupTitles: false,
             groupTorrentAndUsenet: true,
@@ -4111,6 +4240,7 @@ describe("SearchResults", () => {
         // drawer's transient open state is deliberately not persisted.
         expect(Object.keys(stored).sort()).toEqual([
             "compactRows",
+            "expandGroupsByDefault",
             "groupEpisodes",
             "groupTitles",
             "groupTorrentAndUsenet",
@@ -4140,6 +4270,16 @@ describe("SearchResults", () => {
         expect(displayOption("Group TV episodes")).not.toBeChecked();
         expect(displayOption("Group same titles")).not.toBeChecked();
         expect(displayOption("Group torrent and Usenet results")).toBeChecked();
+        // Hidden while it is stored, because the reload above restored both
+        // grouping options as off; switching one back on brings the entry
+        // back carrying its stored value.
+        expect(
+            within(openDisplayOptions()).queryByRole("checkbox", {
+                name: "Expand groups by default",
+            }),
+        ).toBeNull();
+        fireEvent.click(displayOption("Group same titles"));
+        expect(displayOption("Expand groups by default")).toBeChecked();
     });
 
     // FM-189: the owner's defect was that a new search remounts

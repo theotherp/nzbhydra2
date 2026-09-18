@@ -213,6 +213,7 @@ export function SearchResults({
     const {
         categoryOpen,
         compactRows,
+        expandGroupsByDefault,
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
@@ -220,6 +221,7 @@ export function SearchResults({
         indexerOpen,
         setCategoryOpen,
         setCompactRows,
+        setExpandGroupsByDefault,
         setGroupEpisodes,
         setGroupTitles,
         setGroupTorrentAndUsenet,
@@ -298,9 +300,15 @@ export function SearchResults({
         // referentially stable setter, so this callback's identity still
         // changes only with `refineSurfaceCompact`.
     }, [refineSurfaceCompact, setSidebarCollapsed]);
-    const [expandedTitles, setExpandedTitles] = useState<Set<string>>(
-        new Set(),
-    );
+    // Owner (2026-09-18): the groups whose expansion the user has flipped away
+    // from what "Expand groups by default" says -- expanded groups while that
+    // option is off, collapsed ones while it is on. Holding the exceptions
+    // rather than the expanded keys is what lets the option survive paging and
+    // load-more: a group nobody has touched follows the option, however many
+    // results arrive later, and no re-seeding on every fetch is needed.
+    const [titleExpansionOverrides, setTitleExpansionOverrides] = useState<
+        Set<string>
+    >(new Set());
     const [expandedDuplicates, setExpandedDuplicates] = useState<Set<string>>(
         new Set(),
     );
@@ -369,6 +377,21 @@ export function SearchResults({
             sortedResults,
         ],
     );
+    // The expanded title groups themselves, resolved from the option and the
+    // overrides above. `groups` is already memoized, so this walks the groups
+    // of one render only when one of the three actually changes.
+    const expandedTitles = useMemo(() => {
+        if (!expandGroupsByDefault) {
+            return titleExpansionOverrides;
+        }
+        const expanded = new Set<string>();
+        for (const group of groups) {
+            if (!titleExpansionOverrides.has(group.key)) {
+                expanded.add(group.key);
+            }
+        }
+        return expanded;
+    }, [expandGroupsByDefault, groups, titleExpansionOverrides]);
     // FM-176: with the option off there is no control that could collapse an
     // expanded duplicate group again, so no group may stay expanded. The
     // effect below clears the state itself; this keeps the very render in
@@ -483,8 +506,19 @@ export function SearchResults({
         setDownloadedIds((current) => new Set([...current, resultId]));
     }, []);
     const handleToggleTitleExpansion = useCallback((key: string) => {
-        setExpandedTitles((current) => toggleSet(current, key));
+        setTitleExpansionOverrides((current) => toggleSet(current, key));
     }, []);
+    // Flipping the default drops every override: the set's members mean the
+    // opposite once the option flips, so a group the user expanded by hand
+    // would otherwise come back as the one collapsed group. Legacy did the
+    // same, pushing the new value onto every row
+    // (`directives/search-result.js:45`).
+    const handleToggleExpandGroupsByDefault = useCallback(() => {
+        setTitleExpansionOverrides((current) =>
+            current.size === 0 ? current : new Set(),
+        );
+        setExpandGroupsByDefault((current) => !current);
+    }, [setExpandGroupsByDefault]);
     const handleToggleDuplicateExpansion = useCallback((key: string) => {
         setExpandedDuplicates((current) => toggleSet(current, key));
     }, []);
@@ -951,6 +985,7 @@ export function SearchResults({
                     deselectAllVisible={deselectAllVisible}
                     dialogs={dialogs}
                     effectiveSafeConfig={effectiveSafeConfig}
+                    expandGroupsByDefault={expandGroupsByDefault}
                     filteredOutCount={filteredOutCount}
                     filteredResults={filteredResults}
                     groupEpisodes={groupEpisodes}
@@ -963,6 +998,9 @@ export function SearchResults({
                     moreResultsAvailable={moreResultsAvailable}
                     onLoadMore={onLoadMore}
                     onSaveSearch={onSaveSearch}
+                    onToggleExpandGroupsByDefault={
+                        handleToggleExpandGroupsByDefault
+                    }
                     pagingAvailable={pagingAvailable}
                     pagingLoading={pagingLoading}
                     refineSurfaceCompact={refineSurfaceCompact}

@@ -192,11 +192,13 @@ export function RejectedResultsTrigger({
 export function DisplayOptionsMenu({
     compact = false,
     compactRows,
+    expandGroupsByDefault,
     groupEpisodes,
     groupTitles,
     groupTorrentAndUsenet,
     highlightRecent,
     onToggleCompactRows,
+    onToggleExpandGroupsByDefault,
     onToggleGroupEpisodes,
     onToggleGroupTitles,
     onToggleGroupTorrentAndUsenet,
@@ -218,6 +220,10 @@ export function DisplayOptionsMenu({
      */
     compact?: boolean;
     compactRows: boolean;
+    // Owner (2026-09-18): "Expand groups by default", legacy's option of the
+    // same name. Its entry is rendered only while something can form a group
+    // to expand (see `entries` below).
+    expandGroupsByDefault: boolean;
     groupEpisodes: boolean;
     // Owner (2026-09-18): "Group same titles". Title grouping was
     // unconditional before; on is the unchanged behavior.
@@ -225,6 +231,7 @@ export function DisplayOptionsMenu({
     groupTorrentAndUsenet: boolean;
     highlightRecent: boolean;
     onToggleCompactRows: () => void;
+    onToggleExpandGroupsByDefault: () => void;
     onToggleGroupEpisodes: () => void;
     onToggleGroupTitles: () => void;
     onToggleGroupTorrentAndUsenet: () => void;
@@ -263,6 +270,21 @@ export function DisplayOptionsMenu({
             label: "Group same titles",
             onToggle: onToggleGroupTitles,
         },
+        // Owner (2026-09-18): with neither grouping kind on, the only groups
+        // left are the duplicate ones, which have their own control and are
+        // not what this option seeds -- so it could only be a no-op, and an
+        // entry that cannot do anything is better not shown. It keeps its
+        // stored value while hidden and applies again as soon as one of the
+        // two is switched back on.
+        ...(groupEpisodes || groupTitles
+            ? [
+                  {
+                      checked: expandGroupsByDefault,
+                      label: "Expand groups by default",
+                      onToggle: onToggleExpandGroupsByDefault,
+                  },
+              ]
+            : []),
         {
             checked: compactRows,
             label: "Compact rows",

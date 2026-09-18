@@ -391,6 +391,11 @@ features:
       # option, "Group same titles". Title grouping was unconditional in both
       # UIs until then, so it defaults to `true` and an existing payload
       # without the key keeps the grouping it had.
+      # 2026-09-18 (quickfix): `expandGroupsByDefault` joined them as well --
+      # legacy's option of the same name (`search-results-controller.js:199`),
+      # which had never been migrated. Off by default, as in legacy, and its
+      # entry is hidden while neither grouping kind is on, since it seeds
+      # title groups only and duplicates keep their own control.
       # `filters` left this payload entirely with FM-178: every refine
       # filter resets on a new search (see the gap line below), so none of
       # them can usefully outlive one.
