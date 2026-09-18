@@ -182,7 +182,26 @@ export function selectionAfterClick(
     return next;
 }
 
+/**
+ * What makes two results one row, in one rule: an identity -- the episode a
+ * result belongs to, else its title, else the result's own duplicate identity
+ * -- qualified by the download type unless torrent and Usenet results may
+ * share a group.
+ *
+ * Owner defect (2026-09-18): the qualifier used to be appended on the title
+ * branch alone, so a TV search -- which takes the episode branch by default
+ * -- grouped a torrent with an NZB however "Group torrent and Usenet results"
+ * was set. Legacy had the same defect, its suffix living in the `else` of
+ * `search-results-controller.js:getGroupingString`; appending it to every
+ * branch is a deliberate divergence from that, on the owner's decision.
+ *
+ * A result without a `downloadType` groups with neither side rather than with
+ * both, which is the behavior the title branch always had.
+ */
 function groupingKey(result: SearchResult, options: GroupingOptions): string {
+    const downloadType = options.groupTorrentAndUsenet
+        ? ""
+        : `|${result.downloadType ?? "unknown"}`;
     const episodeKey = `${result.showtitle ?? ""}|${result.season ?? ""}|${result.episode ?? ""}`;
     if (
         options.groupEpisodes &&
@@ -192,7 +211,7 @@ function groupingKey(result: SearchResult, options: GroupingOptions): string {
         result.season !== undefined &&
         result.episode !== undefined
     ) {
-        return `episode:${normalizeGroupingValue(episodeKey)}`;
+        return `episode:${normalizeGroupingValue(episodeKey)}${downloadType}`;
     }
     if (!options.groupTitles) {
         // With the option off, two results that merely share a title stay
@@ -200,13 +219,13 @@ function groupingKey(result: SearchResult, options: GroupingOptions): string {
         // than to a per-result one, so the same release reported by several
         // indexers still collapses under the duplicate expand control --
         // that control is its own display option and is not what this one
-        // switches off. `groupTorrentAndUsenet` has nothing left to separate
-        // here and is not part of the key.
-        return `duplicate:${duplicateIdentity(result)}`;
+        // switches off. The qualifier cannot change what this branch groups
+        // (`DuplicateDetector.testForSameness` refuses any pair involving a
+        // torrent, so a duplicate group is Usenet-only by construction), but
+        // it keeps the guarantee a property of this function rather than of
+        // that one.
+        return `duplicate:${duplicateIdentity(result)}${downloadType}`;
     }
-    const downloadType = options.groupTorrentAndUsenet
-        ? ""
-        : `|${result.downloadType ?? "unknown"}`;
     return `title:${normalizeGroupingValue(result.title)}${downloadType}`;
 }
 

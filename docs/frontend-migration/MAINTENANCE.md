@@ -3788,3 +3788,17 @@ their text and relative order are unchanged.
 - **Commit:** 130353718db54d2f5afe3f9adb78dea66e8ecefe
 - **Note:** title grouping was unconditional in both UIs, so `groupTitles` defaults to `true` and a stored payload without the key keeps the grouping it had. Off, the grouping key falls back to the duplicate identity (hash, else result
   id) rather than to a per-result key, so duplicates of one release still collapse under the duplicate expand control — that control is its own option. The episode branch is evaluated first and is unaffected.
+
+### 2026-09-18 — "Group torrent and Usenet results" now applies to episode and duplicate grouping too
+
+- **Why not a packet:** single-module bugfix confined to `resultTable.ts:groupingKey`, shipping regression tests at both levels that were observed failing against the previous key and passing after. Reported by a user's screenshot
+  (a torrent and an NZB in one group with the option off) and confirmed in the code: the download-type qualifier was appended on the title branch alone, so the episode branch — which any TV search takes, the option being on by
+  default — and the `groupTitles`-off fallback from the entry above both ignored the setting.
+- **Paths:** `core/ui-react/src/features/search/results/{resultTable.ts,resultTable.test.ts,SearchResults.test.tsx}`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check`, `test -- --run` (145 files, 2102 tests), `build`, `check:api`, `validate:migration`; `tests/system` `results.spec.ts` +
+  `downloads.spec.ts` (46 passed) against a locally started instance (`misc/run_gui_systemtest.py --runtime local`); `git diff --check`.
+- **Commit:** 51412f65ef5a03e19727c29311680dc08f68b471
+- **Note:** the grouping rule is now one sentence — an identity (episode, else title, else the result's own duplicate identity), qualified by download type unless the two may share a group — which is the matrix the owner specified.
+  Legacy carries the same defect (`search-results-controller.js:getGroupingString` keeps its `+ element.downloadType` inside the `else`), so this is a deliberate divergence from parity on the owner's decision. Nothing changes for the
+  duplicate buckets: `DuplicateDetector.testForSameness` refuses any pair involving a torrent, so a duplicate group is Usenet-only by construction and the qualifier there only makes that guarantee local to `groupingKey`. Recorded, not
+  changed: "group episodes" plus "group same titles" is not identical to "group episodes" alone — results that are not episode-eligible (no `showtitle`/`season`/`episode`, or a non-TV category) still fall through to the title branch.

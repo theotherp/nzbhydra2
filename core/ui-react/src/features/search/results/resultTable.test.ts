@@ -23,7 +23,7 @@ import {
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
-import type {QuickFilter} from "./resultTable";
+import type {GroupingOptions, QuickFilter} from "./resultTable";
 
 const results = [
     {
@@ -638,6 +638,73 @@ describe("result table transformations", () => {
                 episodeRequested: true,
             }),
         ).toHaveLength(3);
+    });
+
+    // Owner defect (2026-09-18, user screenshot): a torrent and an NZB were
+    // grouped although "Group torrent and Usenet results" was off. The
+    // download-type qualifier was appended on the title branch only, so the
+    // episode branch -- which a TV search takes by default -- ignored the
+    // option entirely. Legacy had the same defect
+    // (`search-results-controller.js:getGroupingString`, where the suffix
+    // sits in the `else`); this is a deliberate divergence from it.
+    it("should split every grouping kind by download type while torrent and Usenet grouping is off", () => {
+        const episodePair = [
+            {
+                ...results[0],
+                searchResultId: "nzb",
+                title: "Show S01E01 WEB",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                downloadType: "NZB",
+            },
+            {
+                ...results[0],
+                searchResultId: "torrent",
+                title: "Show.S01E01.WEB",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                downloadType: "TORRENT",
+            },
+        ];
+        const keys = (options: Omit<GroupingOptions, "episodeRequested">) =>
+            groupResults(episodePair, {
+                ...options,
+                episodeRequested: false,
+            }).map((group) => group.key);
+
+        // Episode grouping, the branch the defect was in: one group per
+        // download type off, one group across both on.
+        expect(
+            keys({
+                groupTorrentAndUsenet: false,
+                groupEpisodes: true,
+                groupTitles: true,
+            }),
+        ).toEqual(["episode:show|1|1|NZB", "episode:show|1|1|TORRENT"]);
+        expect(
+            keys({
+                groupTorrentAndUsenet: true,
+                groupEpisodes: true,
+                groupTitles: true,
+            }),
+        ).toEqual(["episode:show|1|1"]);
+        // Title grouping off: the fallback key carries the qualifier too, so
+        // the guarantee holds for every branch rather than only for the two
+        // that group by something.
+        expect(
+            keys({
+                groupTorrentAndUsenet: false,
+                groupEpisodes: false,
+                groupTitles: false,
+            }),
+        ).toEqual([
+            "duplicate:result:nzb|NZB",
+            "duplicate:result:torrent|TORRENT",
+        ]);
     });
 
     it("should expose expanded group rows and select only current visible ordering", () => {

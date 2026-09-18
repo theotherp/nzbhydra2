@@ -3471,6 +3471,58 @@ describe("SearchResults", () => {
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });
 
+    // Owner defect (2026-09-18, user screenshot): a torrent and an NZB shared
+    // one group although "Group torrent and Usenet results" was off, because
+    // the episode branch -- which a TV search takes by default -- never
+    // applied that option. See `resultTable.ts:groupingKey`.
+    it("should keep a torrent and a Usenet result in separate episode groups until torrent and Usenet grouping is on", () => {
+        const episodePair = [
+            {
+                searchResultId: "1",
+                title: "Show S01E01 WEB",
+                indexer: "One",
+                category: "TV HD",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                downloadType: "NZB",
+            },
+            {
+                searchResultId: "2",
+                title: "Show.S01E01.WEB",
+                indexer: "Two",
+                category: "TV HD",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+                downloadType: "TORRENT",
+            },
+        ];
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: episodePair,
+                }}
+            />,
+        );
+        expect(displayOption("Group TV episodes")).toBeChecked();
+        expect(
+            displayOption("Group torrent and Usenet results"),
+        ).not.toBeChecked();
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        fireEvent.click(displayOption("Group torrent and Usenet results"));
+        closeDisplayOptions();
+        // One episode group now, with the second member behind the existing
+        // expansion control.
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
     // Owner (2026-09-18): title grouping used to be unconditional, so results
     // that merely shared a title always collapsed into one row. "Group same
     // titles" is that grouping's own switch, defaulting on so nothing changes
