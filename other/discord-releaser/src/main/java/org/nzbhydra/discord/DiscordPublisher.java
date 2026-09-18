@@ -27,6 +27,9 @@ public class DiscordPublisher {
             Link: https://github.com/theotherp/nzbhydra2/releases/tag/v%s
             """;
 
+    //Discord rejects any message longer than this
+    private static final int MAX_MESSAGE_LENGTH = 2000;
+
 
     public static void main(String[] args) throws Exception {
 
@@ -56,23 +59,80 @@ public class DiscordPublisher {
         final String message = String.format(TEMPLATE, joined, tagName)
                 .replaceAll("### (.*)\n", "**$1**\n");
 
-        System.out.println("Sending message to release channel(s):\n" + message);
+        final List<String> messageParts = splitMessage(message);
+
+        System.out.println("Sending message to release channel(s) in " + messageParts.size() + " part(s):\n" + message);
         if (dryRun) {
             System.out.println("Not sending message because of dry run");
             return;
         }
         JDA jda = JDABuilder.createDefault(discordToken).build().awaitReady();
-        final List<TextChannel> channels = jda.getTextChannels().stream().filter(x -> x.getName().equals("releases")).toList();
-        for (TextChannel channel : channels) {
-            try {
-                channel.sendMessage(message).queue();
-            } catch (Exception e) {
-                throw new RuntimeException("If permissions are missing even though the bot should have them set the permissions in the channel manually for the bot", e);
+        try {
+            final List<TextChannel> channels = jda.getTextChannels().stream().filter(x -> x.getName().equals("releases")).toList();
+            if (channels.isEmpty()) {
+                throw new RuntimeException("Found no channel named 'releases'");
             }
+            for (TextChannel channel : channels) {
+                try {
+                    for (String part : messageParts) {
+                        channel.sendMessage(part).complete();
+                    }
+                    System.out.println("Sent message to channel " + channel.getName() + " in guild " + channel.getGuild().getName());
+                } catch (Exception e) {
+                    throw new RuntimeException("If permissions are missing even though the bot should have them set the permissions in the channel manually for the bot", e);
+                }
+            }
+        } finally {
+            //shutdown() only closes gracefully once all queued requests are done, which may never happen
+            jda.shutdownNow();
         }
-        jda.shutdown();
+        //JDA keeps non-daemon threads alive even after shutdown, which would keep the JVM running forever
+        System.exit(0);
     }
 
+
+    /**
+     * Splits the message into parts that Discord accepts, breaking at line boundaries where possible.
+     */
+    static List<String> splitMessage(String message) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder currentPart = new StringBuilder();
+        for (String line : message.split("\n", -1)) {
+            for (String chunk : splitLongLine(line)) {
+                //+1 for the line break that would be added
+                if (!currentPart.isEmpty() && currentPart.length() + 1 + chunk.length() > MAX_MESSAGE_LENGTH) {
+                    parts.add(currentPart.toString().strip());
+                    currentPart.setLength(0);
+                }
+                if (!currentPart.isEmpty()) {
+                    currentPart.append("\n");
+                }
+                currentPart.append(chunk);
+            }
+        }
+        if (!currentPart.toString().isBlank()) {
+            parts.add(currentPart.toString().strip());
+        }
+        return parts;
+    }
+
+    /**
+     * Hard-splits a single line that doesn't fit into one message, preferring word boundaries.
+     */
+    private static List<String> splitLongLine(String line) {
+        List<String> chunks = new ArrayList<>();
+        String rest = line;
+        while (rest.length() > MAX_MESSAGE_LENGTH) {
+            int splitAt = rest.lastIndexOf(' ', MAX_MESSAGE_LENGTH);
+            if (splitAt <= 0) {
+                splitAt = MAX_MESSAGE_LENGTH;
+            }
+            chunks.add(rest.substring(0, splitAt));
+            rest = rest.substring(splitAt).stripLeading();
+        }
+        chunks.add(rest);
+        return chunks;
+    }
 
     static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) {
         List<String> lines = new ArrayList<>();
