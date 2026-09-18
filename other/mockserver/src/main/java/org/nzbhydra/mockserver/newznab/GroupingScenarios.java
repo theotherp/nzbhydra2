@@ -12,7 +12,8 @@ import java.util.List;
 /**
  * One query that shows every kind of grouping the results table can do, in as few results as possible.
  *
- * <p>Search for {@value #GROUPING_QUERY} with every mock indexer enabled. Each newznab indexer answers with five
+ * <p>Search for {@value #GROUPING_QUERY} -- or anything starting with it, including the two scenario ids -- with
+ * every mock indexer enabled. Each newznab indexer answers with five
  * results and each torznab indexer with two, so two newznab indexers plus one torznab indexer give twelve results
  * holding:</p>
  *
@@ -55,7 +56,10 @@ public final class GroupingScenarios {
     public static Scenario newznab() {
         return new Scenario("grouping-newznab",
                 "Five results per indexer showing a duplicate group, a title group and two episode groups at once",
-                Match.queryEqualsIgnoreCase(GROUPING_QUERY),
+                //Any query starting with "grouping" so that searching for the scenario id, which is what
+                ///mock/scenarios lists, hits the scenario instead of falling through to the hundreds of generated
+                //results of the default one
+                Match.queryStartsWithIgnoreCase(GROUPING_QUERY),
                 Respond.items(context -> {
                     String apikey = context.apikey() == null ? "" : context.apikey();
                     //Stable per indexer, and only used for the cosmetic differences between the group's members
@@ -73,7 +77,10 @@ public final class GroupingScenarios {
     public static Scenario torznab() {
         return new Scenario("grouping-torznab",
                 "The torrent halves of the title group and of the S02E03 episode group",
-                Match.queryEqualsIgnoreCase(GROUPING_QUERY),
+                //Any query starting with "grouping" so that searching for the scenario id, which is what
+                ///mock/scenarios lists, hits the scenario instead of falling through to the hundreds of generated
+                //results of the default one
+                Match.queryStartsWithIgnoreCase(GROUPING_QUERY),
                 Respond.items(context -> {
                     List<NewznabXmlItem> items = new ArrayList<>();
                     //Same normalised title as the newznab members, so it joins their title group once torrent and

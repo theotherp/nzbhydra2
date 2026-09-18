@@ -20,6 +20,10 @@ public final class Match {
         return parameters -> parameters.getQ() != null && parameters.getQ().startsWith(prefix);
     }
 
+    public static RequestMatcher queryStartsWithIgnoreCase(String prefix) {
+        return parameters -> parameters.getQ() != null && parameters.getQ().toLowerCase().startsWith(prefix.toLowerCase());
+    }
+
     public static RequestMatcher queryContains(String part) {
         return parameters -> parameters.getQ() != null && parameters.getQ().contains(part);
     }

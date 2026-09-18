@@ -264,16 +264,15 @@ export function DisplayOptionsMenu({
     // so neither entry could change what is rendered. Both keep their stored
     // values while hidden.
     const groupingPossible = groupEpisodes || groupTitles;
+    // Owner (2026-09-18): the two conditional entries come *after* the two
+    // that decide whether they are shown. Order is what keeps the pointer on
+    // the entry it clicked: a row that appears or disappears above the
+    // pointer slides every later row under it, so clicking "Group same
+    // titles" used to leave the pointer on a different option than the one
+    // it just toggled. Below, the entries that move are all below the click.
+    // This also reads as what it is: first what forms a group, then the two
+    // qualifications that only mean something once one can.
     const entries: {checked: boolean; label: string; onToggle: () => void}[] = [
-        ...(groupingPossible
-            ? [
-                  {
-                      checked: groupTorrentAndUsenet,
-                      label: "Group torrent and Usenet results",
-                      onToggle: onToggleGroupTorrentAndUsenet,
-                  },
-              ]
-            : []),
         {
             checked: groupEpisodes,
             label: "Group TV episodes",
@@ -286,6 +285,11 @@ export function DisplayOptionsMenu({
         },
         ...(groupingPossible
             ? [
+                  {
+                      checked: groupTorrentAndUsenet,
+                      label: "Group torrent and Usenet results",
+                      onToggle: onToggleGroupTorrentAndUsenet,
+                  },
                   {
                       checked: expandGroupsByDefault,
                       label: "Expand groups by default",

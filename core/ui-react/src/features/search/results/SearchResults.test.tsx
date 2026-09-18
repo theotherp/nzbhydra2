@@ -3435,9 +3435,9 @@ describe("SearchResults", () => {
                     (entry as HTMLInputElement).checked,
                 ]),
         ).toEqual([
-            ["Group torrent and Usenet results", false],
             ["Group TV episodes", true],
             ["Group same titles", true],
+            ["Group torrent and Usenet results", false],
             ["Expand groups by default", false],
             ["Compact rows", false],
             ["Highlight recent", false],
@@ -3558,6 +3558,61 @@ describe("SearchResults", () => {
             </DialogProvider>,
         );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(4);
+    });
+
+    // Owner (2026-09-18): clicking a grouping option must leave the pointer on
+    // the entry it just clicked. The two conditional entries therefore come
+    // after both options that hide them -- a row appearing or disappearing
+    // above the pointer slides every later row under it.
+    it("should never move a grouping entry by toggling it", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const labels = () =>
+            within(openDisplayOptions())
+                .getAllByRole("checkbox")
+                .map(
+                    (entry) =>
+                        entry.getAttribute("aria-label") ??
+                        entry.closest("label")?.textContent ??
+                        "",
+                );
+        expect(labels().slice(0, 4)).toEqual([
+            "Group TV episodes",
+            "Group same titles",
+            "Group torrent and Usenet results",
+            "Expand groups by default",
+        ]);
+
+        // Each toggle leaves itself, and everything above it, exactly where it
+        // was; only entries below it may come and go.
+        for (const [index, label] of [
+            [0, "Group TV episodes"],
+            [1, "Group same titles"],
+        ] as Array<[number, string]>) {
+            const before = labels();
+            fireEvent.click(displayOption(label));
+            const after = labels();
+            expect(after[index]).toBe(label);
+            expect(after.slice(0, index + 1)).toEqual(
+                before.slice(0, index + 1),
+            );
+            fireEvent.click(displayOption(label));
+        }
+        closeDisplayOptions();
     });
 
     it("should hide the expand-by-default entry only while neither grouping kind can form a group", () => {

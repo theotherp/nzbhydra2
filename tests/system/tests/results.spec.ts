@@ -2117,9 +2117,9 @@ test.describe("Search results", () => {
         // Every entry exposes an accessible name and a checked state, and both
         // new preferences default off, so the default rendering is unchanged.
         for (const [name, checked] of [
-            ["Group torrent and Usenet results", false],
             ["Group TV episodes", true],
             ["Group same titles", true],
+            ["Group torrent and Usenet results", false],
             ["Expand groups by default", false],
             ["Compact rows", false],
             ["Highlight recent", false],
@@ -4642,9 +4642,9 @@ test.describe("Search results", () => {
                     ),
                 ),
         ).toEqual([
-            "Group torrent and Usenet results",
             "Group TV episodes",
             "Group same titles",
+            "Group torrent and Usenet results",
             "Expand groups by default",
             "Compact rows",
             "Highlight recent",
@@ -4919,9 +4919,9 @@ test.describe("Search results", () => {
                     ),
                 ),
         ).toEqual([
-            "Group torrent and Usenet results",
             "Group TV episodes",
             "Group same titles",
+            "Group torrent and Usenet results",
             "Expand groups by default",
             "Compact rows",
             "Highlight recent",

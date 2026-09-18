@@ -97,6 +97,19 @@ class GroupingScenariosTest {
                 assertThat(item.getEnclosure().getType()).isEqualTo("application/x-bittorrent"));
     }
 
+    @Test
+    void shouldAnswerTheScenarioIdsAndCasingVariantsToo() throws Exception {
+        //The scenario ids are what /mock/scenarios lists, so searching for one of those has to land here rather than
+        //in the default scenario's hundreds of generated results
+        for (String query : List.of("grouping", "Grouping", "grouping-newznab", "grouping-torznab")) {
+            assertThat(answer("1", query).scenarioId())
+                    .describedAs("query %s", query)
+                    .isEqualTo("grouping-newznab");
+        }
+        assertThat(answer(ScenarioTestSupport.TORZNAB, params("1", "grouping-torznab")).scenarioId())
+                .isEqualTo("grouping-torznab");
+    }
+
     private static NewznabXmlItem duplicate(ScenarioTestSupport.Answer answer) {
         return byTitleStart(answer, "Grouping.Duplicate.");
     }
