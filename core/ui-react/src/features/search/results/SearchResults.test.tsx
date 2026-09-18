@@ -6002,6 +6002,10 @@ describe("SearchResults per-row send to downloader", () => {
     }
 
     const sab = {name: "SAB", enabled: true, downloaderType: "SABNZBD"};
+    // A configured default category is what keeps a row send at one click
+    // (`SendToDownloaderButtons`), so every case whose subject is the send
+    // itself rather than the category uses this one.
+    const sabWithCategory = {...sab, defaultCategory: "Movies HD"};
     const nzbget = {name: "NZBGet", enabled: true, downloaderType: "NZBGET"};
     const torbox = {name: "Torbox", enabled: true, downloaderType: "TORBOX"};
 
@@ -6104,7 +6108,7 @@ describe("SearchResults per-row send to downloader", () => {
     });
 
     it("should send one row through the shared flow and raise its Downloaded chip", async () => {
-        bootstrapWith([{...sab, defaultCategory: "Movies HD"}]);
+        bootstrapWith([sabWithCategory]);
         const fetchImplementation = routedFetch(
             '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
         );
@@ -6123,9 +6127,10 @@ describe("SearchResults per-row send to downloader", () => {
         ) as [string, RequestInit];
         expect(JSON.parse(String(addInit.body))).toEqual({
             downloaderName: "SAB",
-            // No per-row picker, so the configured default is what the
-            // client resolves and sends -- the same resolution the bulk bar
-            // makes for an unset category choice.
+            // This downloader has a configured default, so nothing is asked
+            // and the client resolves that default -- the same resolution the
+            // bulk bar makes for an unset category choice. The picker's own
+            // cases below cover the downloader that has none.
             category: "Movies HD",
             reason: null,
             searchResults: [
@@ -6148,8 +6153,200 @@ describe("SearchResults per-row send to downloader", () => {
         expect(await screen.findByText("Sent to SAB.")).toBeVisible();
     });
 
-    it("should send nothing when the duplicate confirmation is cancelled", async () => {
+    // Owner request (2026-09-18): a downloader without a configured default
+    // category asks which one to use, the way legacy's
+    // `NzbDownloadService.download` did -- it opened
+    // `addable-nzb-modal.html` whenever `downloader.defaultCategory` was
+    // empty, and the results table never passed `alwaysAsk`. Before this, a
+    // row send resolved the (missing) default and sent without a category,
+    // with no way to choose.
+    it("should ask for the category when the downloader has no configured default, and send the picked one", async () => {
         bootstrapWith([sab]);
+        const fetchImplementation = vi.fn<
+            (url: string, init?: RequestInit) => Promise<Response>
+        >((url) => {
+            if (url.endsWith("/categories")) {
+                return Promise.resolve(jsonResponse(["movies", "tv"]));
+            }
+            if (url.includes("checkDuplicateMovieDownload")) {
+                return Promise.resolve(jsonResponse({reasonRequired: false}));
+            }
+            if (url.includes("addNzbs")) {
+                return Promise.resolve(
+                    jsonResponse({
+                        successful: true,
+                        addedIds: [1],
+                        missedIds: [],
+                        invalidIds: [],
+                    }),
+                );
+            }
+            return Promise.resolve(new Response("", {status: 404}));
+        });
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+
+        const dialog = await screen.findByTestId("send-category-dialog");
+        // The title names the downloader, because a row offers one button per
+        // configured downloader and they are three 16px icons apart.
+        expect(screen.getByRole("dialog", {name: "Send to SAB"})).toBeVisible();
+        // Legacy's own offer: "No category" first, then the downloader's
+        // categories. Nothing is sent while the dialog stands.
+        expect(
+            within(dialog)
+                .getAllByTestId("send-category-option")
+                .map((option) => option.textContent),
+        ).toEqual(["No category", "movies", "tv"]);
+        expect(
+            fetchImplementation.mock.calls.some(([url]) =>
+                String(url).includes("addNzbs"),
+            ),
+        ).toBe(false);
+
+        fireEvent.click(within(dialog).getByRole("button", {name: "movies"}));
+        await vi.waitFor(() =>
+            expect(
+                fetchImplementation.mock.calls.some(([url]) =>
+                    String(url).includes("addNzbs"),
+                ),
+            ).toBe(true),
+        );
+        const [, addInit] = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).includes("addNzbs"),
+        ) as [string, RequestInit];
+        expect(requestCategory(addInit)).toBe("movies");
+        await vi.waitFor(() =>
+            expect(screen.queryByTestId("send-category-dialog")).toBeNull(),
+        );
+        expect(await screen.findByText("Sent to SAB.")).toBeVisible();
+    });
+
+    it("should offer No category alone when the downloader reports none", async () => {
+        bootstrapWith([sab]);
+        // `routedFetch` answers every category request with an empty list.
+        const fetchImplementation = routedFetch(
+            '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+
+        const dialog = await screen.findByTestId("send-category-dialog");
+        expect(
+            within(dialog)
+                .getAllByTestId("send-category-option")
+                .map((option) => option.textContent),
+        ).toEqual(["No category"]);
+    });
+
+    // The reason the dialog names a downloader at all: a row offers one button
+    // per compatible downloader, and only the ones without a configured
+    // default ask.
+    it("should ask only for the downloader that has no default, and name it", async () => {
+        bootstrapWith([sabWithCategory, nzbget]);
+        const fetchImplementation = routedFetch(
+            '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+
+        // The one with a default sends straight away.
+        fireEvent.click(sendButtons()[0]);
+        await vi.waitFor(() =>
+            expect(
+                fetchImplementation.mock.calls.some(([url]) =>
+                    String(url).includes("addNzbs"),
+                ),
+            ).toBe(true),
+        );
+        expect(screen.queryByTestId("send-category-dialog")).toBeNull();
+
+        // The one without asks, and says which downloader is asking.
+        fireEvent.click(sendButtons()[1]);
+        await screen.findByTestId("send-category-dialog");
+        expect(
+            screen.getByRole("dialog", {name: "Send to NZBGet"}),
+        ).toBeVisible();
+    });
+
+    it("should send without a category when No category is picked", async () => {
+        bootstrapWith([sab]);
+        const fetchImplementation = routedFetch(
+            '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+
+        const dialog = await screen.findByTestId("send-category-dialog");
+        fireEvent.click(
+            within(dialog).getByRole("button", {name: "No category"}),
+        );
+        await vi.waitFor(() =>
+            expect(
+                fetchImplementation.mock.calls.some(([url]) =>
+                    String(url).includes("addNzbs"),
+                ),
+            ).toBe(true),
+        );
+        const [, addInit] = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).includes("addNzbs"),
+        ) as [string, RequestInit];
+        expect(requestCategory(addInit)).toBeNull();
+    });
+
+    it("should send nothing when the category dialog is cancelled", async () => {
+        bootstrapWith([sab]);
+        const fetchImplementation = routedFetch("{}");
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+
+        const dialog = await screen.findByTestId("send-category-dialog");
+        fireEvent.click(within(dialog).getByRole("button", {name: "Cancel"}));
+        await vi.waitFor(() =>
+            expect(screen.queryByTestId("send-category-dialog")).toBeNull(),
+        );
+        expect(
+            fetchImplementation.mock.calls.some(([url]) =>
+                String(url).includes("addNzbs"),
+            ),
+        ).toBe(false);
+        expect(
+            within(screen.getByTestId("search-result-row")).queryByText(
+                "Downloaded",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should refuse the send when the downloader's categories cannot be loaded", async () => {
+        bootstrapWith([sab]);
+        const fetchImplementation = vi.fn<
+            (url: string, init?: RequestInit) => Promise<Response>
+        >((url) => {
+            if (url.endsWith("/categories")) {
+                return Promise.resolve(new Response("", {status: 500}));
+            }
+            return Promise.resolve(new Response("", {status: 404}));
+        });
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        fireEvent.click(sendButtons()[0]);
+
+        expect(
+            await screen.findByText("Unable to load the categories of SAB."),
+        ).toBeVisible();
+        expect(screen.queryByTestId("send-category-dialog")).toBeNull();
+        expect(
+            fetchImplementation.mock.calls.some(([url]) =>
+                String(url).includes("addNzbs"),
+            ),
+        ).toBe(false);
+    });
+
+    it("should send nothing when the duplicate confirmation is cancelled", async () => {
+        bootstrapWith([sabWithCategory]);
         const fetchImplementation = routedFetch("{}", true);
         vi.stubGlobal("fetch", fetchImplementation);
         renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
@@ -6176,7 +6373,7 @@ describe("SearchResults per-row send to downloader", () => {
     });
 
     it("should report a rejected send and leave the row unmarked", async () => {
-        bootstrapWith([sab]);
+        bootstrapWith([sabWithCategory]);
         vi.stubGlobal(
             "fetch",
             routedFetch(
@@ -6199,7 +6396,7 @@ describe("SearchResults per-row send to downloader", () => {
     // `-error` case (`addable-nzb.js` tested `addedIds.indexOf(...)`, not just
     // `successful`), and it must not raise the chip.
     it("should not mark a row whose id is missing from a successful response", async () => {
-        bootstrapWith([sab]);
+        bootstrapWith([sabWithCategory]);
         vi.stubGlobal(
             "fetch",
             routedFetch(

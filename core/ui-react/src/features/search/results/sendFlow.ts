@@ -58,7 +58,18 @@ export async function runSendFlow({
     toasts,
     transport,
 }: {
-    /** The user's explicit category choice, or `null` for "unset". */
+    /**
+     * The user's explicit category choice, or `null` for "unset".
+     *
+     * The two meanings share one value, which line 96 resolves as "unset":
+     * `null` falls back to the downloader's configured default. That is safe
+     * only because the one caller that can mean "explicitly no category" --
+     * `SendToDownloaderButtons`' picker -- opens exclusively for a downloader
+     * that *has* no configured default, so the fallback resolves to `null`
+     * again. A caller that asks for a category when a default exists (legacy's
+     * `alwaysAsk`, were it ever migrated) would need a third value here to
+     * tell "no category" from "use the default".
+     */
     category: string | null;
     dialogs: DialogContextValue;
     downloader: Downloader;

@@ -95,7 +95,10 @@ type HydraApi = {
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
     assertUniqueIndexerCredentials(): Promise<void>;
     rotateLogs(): Promise<void>;
-    configureSabnzbdMock(options?: {withNzbGet?: boolean}): Promise<void>;
+    configureSabnzbdMock(options?: {
+        withNzbGet?: boolean;
+        withoutDefaultCategory?: boolean;
+    }): Promise<void>;
     configureBlackHole(options: {
         nzbs?: boolean;
         torrents?: boolean;
@@ -688,6 +691,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
          */
         async configureSabnzbdMock(options?: {
             withNzbGet?: boolean;
+            withoutDefaultCategory?: boolean;
         }): Promise<void> {
             const config = await getConfig();
             const downloading = config.downloading as HydraConfig;
@@ -702,7 +706,12 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                     downloadType: "NZB",
                     nzbAddingType: "UPLOAD",
                     addPaused: true,
-                    defaultCategory: testEnvironment.sabnzbdMockCategory,
+                    //Owner request (2026-09-18): a downloader without a
+                    //configured default is what makes a row send ask for the
+                    //category, so the picker's own case turns this off
+                    defaultCategory: options?.withoutDefaultCategory
+                        ? null
+                        : testEnvironment.sabnzbdMockCategory,
                     enabled: true,
                 },
                 ...(options?.withNzbGet

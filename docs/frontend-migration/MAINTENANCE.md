@@ -3861,3 +3861,24 @@ their text and relative order are unchanged.
   backend-only, and worth its own fix.
 - Under FORM auth with `restrictSearch` on, `session.ts:logout()` follows Spring's redirect to `/` with `Accept: application/json`, is refused, and `LoginOutButton` shows "Logout failed!" without navigating. Broken the same way before
   this fix, which only changes which error arrives.
+
+### 2026-09-18 — Per-row send asks for the category again
+
+- **Why not a packet:** owner-directed, and it closes a recorded gap rather than opening new ground: legacy's rule, restored in one component plus a new feature-owned dialog. It is a new user-visible capability with two new selectors,
+  which the gate puts in packet territory; recorded here as a deviation on the owner's routing, with an independent agent reviewing before the commit.
+- **Paths:** `core/ui-react/src/features/search/results/{SendCategoryDialog.tsx (new),SendToDownloaderButtons.tsx,sendFlow.ts,SearchResults.test.tsx}`, `docs/frontend-migration/FEATURES.yaml`,
+  `tests/system/tests/{downloads.spec.ts,fixtures.ts}`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check`, `test -- --run` (145 files, 2112 tests), `build`, `check:api`, `validate:migration`; `tests/system` `npx tsc --noEmit`,
+  `prettier --check`, and `downloads.spec.ts` (10 passed) against a locally started instance; `git diff --check`.
+- **Visual gate:** `tests/system/visual-evidence/F-SEARCH-DOWNLOADS/row-send-category-dialog-desktop.png`.
+- **Commit:** 209a885db
+- **Note:** the condition is legacy's exactly — ask iff `defaultCategory` is undefined/null/"" (the review established that legacy's three sentinel comparisons are unreachable, since `_.isNullOrEmpty` can never equal them). The bulk
+  bar's category `Select` is deliberately not consulted: it governs the selection, and below `sm` it is not rendered until something is selected. `FEATURES.yaml`'s gap line was replaced by a comment recording the closure, which is
+  unusual for this file — closed items are normally deleted — but it keeps the reasoning where the next reader of that feature will look.
+
+#### Open candidates (found by the review of the above, not fixed)
+
+- `runSendFlow`'s `category: null` means both "no choice made" and "explicitly no category"; it is unambiguous today only because the picker opens exclusively for a downloader without a default. Migrating legacy's `alwaysAsk` would
+  need a third value. The invariant is now written into `sendFlow.ts` rather than fixed.
+- ~~No case exercises the picker in the compact/phone layout.~~ Closed by `ca91ce039`: `downloads.spec.ts` now opens the picker at 390px and asserts the dialog stays inside the viewport, its buttons wrap rather than pushing the page
+  sideways, and the picked category still reaches `addNzbs`. Evidence: `visual-evidence/F-SEARCH-DOWNLOADS/row-send-category-dialog-mobile.png`.

@@ -10,7 +10,11 @@ import {
     test,
     testEnvironment,
 } from "./fixtures";
-import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
+import {
+    prepareVisualEvidence,
+    visualEvidencePath,
+    visualViewports,
+} from "./visualEvidence";
 
 /**
  * FM-160: the direct-download anchor carries `target="_blank"` (legacy
@@ -289,9 +293,9 @@ test.describe("Downloads", () => {
         // One row, one entry -- not the whole selection, and not the whole
         // result set.
         expect(addNzbRequest.searchResults).toHaveLength(1);
-        // The row control has no category picker (legacy's `alwaysAsk` modal
-        // is a recorded gap), so it resolves the downloader's configured
-        // default exactly as the bulk bar does for an unset choice.
+        // This downloader has a configured default, so the row send never
+        // asks: it resolves that default exactly as the bulk bar does for an
+        // unset choice. The case below covers the downloader that has none.
         expect(addNzbRequest.category).toBe(
             testEnvironment.sabnzbdMockCategory,
         );
@@ -340,6 +344,155 @@ test.describe("Downloads", () => {
                 nzbname: `${testEnvironment.downloaderIntegrationNzbTitle}.nzb`,
             }),
         );
+    });
+
+    /**
+     * Owner request (2026-09-18): a downloader without a configured default
+     * category asks which one to use, the way legacy's
+     * `NzbDownloadService.download` did when `downloader.defaultCategory` was
+     * empty. A browser is where this case is worth making: the offered list
+     * comes from `API-DOWNLOAD-CATEGORIES`, which reaches SABnzbd's own
+     * `get_cats` through the real backend, and a unit test can only assert
+     * against a list it invented itself.
+     */
+    test("should ask a categoryless downloader which category to send to, and send the picked one", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock({withoutDefaultCategory: true});
+        await hydra.resetSabnzbdRecording();
+        //The shell reads the safe configuration at bootstrap (ADR-0017), so
+        //the downloader edited above needs a reload to reach the rows.
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        await resultRow
+            .getByRole("button", {name: "Send to Deterministic SABnzbd"})
+            .click();
+
+        const dialog = page.getByTestId("send-category-dialog");
+        await expect(dialog).toBeVisible();
+        // The mock's own `get_cats` list, which is what the backend hands the
+        // UI, behind legacy's "No category" entry.
+        await expect(dialog.getByTestId("send-category-option")).toHaveText([
+            "No category",
+            "*",
+            "movies",
+            "series",
+            "tv",
+        ]);
+        // Visual Gate: the open picker. Through `prepareVisualEvidence`, like
+        // every other region here -- a bare `page.screenshot` catches the
+        // dialog mid-fade (Playwright counts an element at opacity 0 as
+        // visible) and writes a frame with no dialog in it.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(dialog).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-category-dialog-desktop",
+            ),
+        });
+
+        const add = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/downloader/addNzbs",
+        );
+        await dialog.getByRole("button", {name: "movies"}).click();
+        const addRequest = (await add).request().postDataJSON() as {
+            category?: unknown;
+        };
+        expect(addRequest.category).toBe("movies");
+        await expect(dialog).toBeHidden();
+        // The end of the chain: SABnzbd really received the picked category
+        // as `cat`, which is the only proof that the choice survives the
+        // client, the backend and `Sabnzbd.addContent`.
+        await expect
+            .poll(async () => {
+                const recording = (await hydra.getSabnzbdRecording()) as {
+                    queryParameters?: {cat?: string};
+                };
+                return recording.queryParameters?.cat;
+            })
+            .toBe("movies");
+    });
+
+    /**
+     * The picker at phone width, which is the viewport that motivated it: the
+     * bulk bar's category `Select` does not exist below `sm` until something
+     * is selected (`ResultsToolbar`), so a row send is the only way to choose
+     * a category there. The dialog also has to fit a 390px viewport without
+     * pushing the page sideways -- its category buttons wrap, and MUI's
+     * default dialog margins are what keep it off the edges.
+     */
+    test("should offer the category picker at phone width without overflowing it", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock({withoutDefaultCategory: true});
+        await hydra.resetSabnzbdRecording();
+        await page.setViewportSize(visualViewports.mobile);
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        await page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle})
+            .getByRole("button", {name: "Send to Deterministic SABnzbd"})
+            .click();
+
+        const dialog = page.getByTestId("send-category-dialog");
+        await expect(dialog).toBeVisible();
+        const box = await dialog.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box?.x).toBeGreaterThanOrEqual(0);
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+            visualViewports.mobile.width,
+        );
+        expect(
+            await page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth -
+                    document.documentElement.clientWidth,
+            ),
+        ).toBeLessThanOrEqual(1);
+        // Visual Gate: the picker on a phone, where every category button has
+        // to stay reachable within 390px.
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await expect(dialog).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-DOWNLOADS",
+                "row-send-category-dialog-mobile",
+            ),
+        });
+
+        const add = page.waitForResponse(
+            (response) =>
+                response.request().method() === "PUT" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/downloader/addNzbs",
+        );
+        await dialog.getByRole("button", {name: "series"}).click();
+        expect(
+            ((await add).request().postDataJSON() as {category?: unknown})
+                .category,
+        ).toBe("series");
     });
 
     // FM-186: the Actions track grows by one 24px button plus its 4px gap per

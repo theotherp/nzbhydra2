@@ -6,10 +6,13 @@ import type {ApiTransport} from "../../../api/transport";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {
+    categories,
+    configuredDefaultCategory,
     downloadId,
     isCompatibleWithDownloader,
     type Downloader,
 } from "../../../domain/downloads/actions";
+import {SendCategoryDialog} from "./SendCategoryDialog";
 import {runSendFlow} from "./sendFlow";
 
 /**
@@ -63,10 +66,19 @@ const DOWNLOADER_ICON_SIZE = 16;
  * same test raises the row's `Downloaded` chip (ADR-0006's React equivalent of
  * the `-success` icon variant) or an error toast.
  *
- * Deliberately not migrated with it, and recorded as gap lines under
- * `F-SEARCH-DOWNLOADS`: legacy's per-row category picker (`alwaysAsk`, an
- * `addable-nzb-modal.html` prompt) and its per-downloader `iconCssClass`
- * override (a Font Awesome class; React ships no Font Awesome).
+ * Owner request (2026-09-18): the category is asked for again, exactly when
+ * legacy asked. `NzbDownloadService.download` sent silently with
+ * `downloader.defaultCategory` when one was configured and opened
+ * `addable-nzb-modal.html` when it was not, and the results table passed no
+ * `alwaysAsk`, so in practice every row send without a configured default
+ * prompted. Before this, a row send resolved the default and sent whatever
+ * that was, with no way to choose and without consulting the bulk bar's
+ * category `Select` -- which belongs to the selection, and below `sm` is not
+ * even on screen until something is selected.
+ *
+ * Still not migrated, and still a gap line under `F-SEARCH-DOWNLOADS`:
+ * legacy's per-downloader `iconCssClass` override (a Font Awesome class;
+ * React ships no Font Awesome).
  */
 export function SendToDownloaderButtons({
     downloaders,
@@ -91,19 +103,59 @@ export function SendToDownloaderButtons({
     const dialogs = useContext(DialogContext);
     const toasts = useContext(ToastContext);
     const [sendingTo, setSendingTo] = useState<string>();
+    // The open picker, with the categories it offers: fetched before the
+    // dialog opens, so it never renders an empty list that fills in later.
+    const [picking, setPicking] = useState<{
+        categories: string[];
+        downloader: Downloader;
+    }>();
     const compatible = downloaders.filter((downloader) =>
         isCompatibleWithDownloader(result, downloader),
     );
     if (compatible.length === 0 || dialogs === null || toasts === null) {
         return null;
     }
-    const send = async (downloader: Downloader) => {
+    /**
+     * Legacy's rule (`nzb-download-service.js:23-33`): a downloader with a
+     * configured default category -- the three sentinels included -- sends on
+     * one click, and only a downloader without one asks. So configuring a
+     * default is what buys back the single click, exactly as it did before.
+     */
+    const start = async (downloader: Downloader) => {
+        if (configuredDefaultCategory(downloader) !== null) {
+            await send(downloader, null);
+            return;
+        }
+        setSendingTo(downloader.name);
+        try {
+            // The buttons are enabled again in the same render that opens the
+            // dialog, so what keeps a second send from starting behind it is
+            // the dialog's modality, not this flag. The flag covers the fetch
+            // above, which has no overlay of its own.
+            setPicking({
+                categories: await categories(transport, downloader),
+                downloader,
+            });
+        } catch {
+            // The bulk bar refuses to send at all when this list cannot be
+            // loaded (its send button is disabled behind `categoryError`);
+            // sending a guessed category from here instead would be the very
+            // thing this picker exists to stop.
+            toasts.showToast({
+                severity: "error",
+                message: `Unable to load the categories of ${downloader.name}.`,
+            });
+        } finally {
+            setSendingTo(undefined);
+        }
+    };
+    const send = async (downloader: Downloader, category: string | null) => {
         setSendingTo(downloader.name);
         try {
             const outcome = await runSendFlow({
-                // No per-row category choice (legacy's picker is a gap line),
-                // so the flow resolves the downloader's configured default.
-                category: null,
+                // The picked category, or `null` for a downloader that has a
+                // configured default -- which the flow then resolves.
+                category,
                 dialogs,
                 downloader,
                 results: [result],
@@ -167,7 +219,7 @@ export function SendToDownloaderButtons({
                                 data-downloader={downloader.name}
                                 data-testid="result-send-to-downloader"
                                 disabled={busy}
-                                onClick={() => void send(downloader)}
+                                onClick={() => void start(downloader)}
                                 size="small"
                                 sx={{flexShrink: 0}}
                             >
@@ -190,6 +242,19 @@ export function SendToDownloaderButtons({
                     </Tooltip>
                 );
             })}
+            {picking !== undefined && (
+                <SendCategoryDialog
+                    categories={picking.categories}
+                    downloaderName={picking.downloader.name}
+                    onCancel={() => setPicking(undefined)}
+                    onPick={(category) => {
+                        const {downloader} = picking;
+                        setPicking(undefined);
+                        void send(downloader, category);
+                    }}
+                    open
+                />
+            )}
         </>
     );
 }

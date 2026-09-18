@@ -586,6 +586,12 @@ features:
       # because `sendMagnetLinks` defaults to true.
       - result-send-to-black-hole
       - result-send-to-downloader
+      # 2026-09-18 (owner request): the per-row category picker, opened by
+      # `result-send-to-downloader` when that downloader has no configured
+      # default category. One `send-category-option` per offered category,
+      # behind legacy's own "No category" entry; a click picks and sends.
+      - send-category-dialog
+      - send-category-option
       - send-to-downloader
       - send-to-downloader-options
       - send-to-downloader-menu
@@ -596,7 +602,11 @@ features:
       - results-bulk-actions
     parity: partial
     gaps:
-      - deliberate - no per-row category picker; legacy's `addable-nzb` could be configured to ask for a category per send (`alwaysAsk`, `addable-nzb-modal.html` through `DownloaderCategoriesService.openCategorySelection`). React's row control always resolves the downloader's configured default, which is what the bulk bar's unset category choice does too; the bulk bar's category `Select` remains the only place a category is chosen (FM-186).
+      # 2026-09-18 (owner request): the per-row category picker gap is closed. Legacy asked whenever the downloader had no
+      # configured `defaultCategory` (`nzb-download-service.js:23-33`; the results table passed no `alwaysAsk`, so in
+      # practice every row send without a default prompted), and the React row control now does the same through
+      # `SendCategoryDialog`. A downloader *with* a configured default still sends on one click, and the bulk bar's
+      # category `Select` is untouched -- it governs the selection, and below `sm` it is not on screen until one exists.
       - deliberate - no per-downloader icon override; legacy let a downloader configure an `iconCssClass` that replaced the row icon with that Font Awesome glyph (`addable-nzb.js`). React ships no Font Awesome, so the row icon is always the downloader type's own mark (FM-186).
     # 2026-08-23: `download-history route migration` removed -- that route is
     # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
