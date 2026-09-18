@@ -38,8 +38,29 @@ export function StartupChecks({
     const latest = useRef({safeConfig, showToast});
     latest.current = {safeConfig, showToast};
 
+    // Owner defect (2026-09-18): on a FORM login screen every check below ran
+    // against a server that refuses it, and the refusal arrived as a redirect
+    // to `/login` whose HTML body the transport handed back as the answer --
+    // so the welcome flag read as "not shown yet" and the dialog opened over
+    // the login form on every visit.
+    //
+    // What actually fixes that is the server, which now answers a background
+    // request with a 401 (`BackgroundRequestAuthenticationEntryPoint`). This
+    // flag is the cheaper half: don't send requests that cannot be answered.
+    // It is deliberately a *sufficient* condition, not an exact one --
+    // `maySeeSearch` is `false` only when `restrictSearch` is on and this
+    // session matched no configured user (`UserInfosProvider`), which is the
+    // login screen and implies no `ROLE_USER`
+    // (`HydraAnonymousAuthenticationFilter`). The reverse does not hold: with
+    // an empty users list `maySeeSearch` is `true` while `ROLE_USER` is still
+    // withheld, and those checks run and are refused -- harmlessly, because
+    // each one is wrapped in `contained()`. Every session that can use the
+    // application runs them exactly as before, a logged-in one under
+    // `restrictSearch` included.
+    const mayRunChecks = bootstrap.maySeeSearch !== false;
+
     useEffect(() => {
-        if (started.current) {
+        if (started.current || !mayRunChecks) {
             return;
         }
         started.current = true;
@@ -57,7 +78,7 @@ export function StartupChecks({
             toast: (toast) => latest.current.showToast(toast),
             transport,
         });
-    }, [bootstrap.maySeeAdmin, transport]);
+    }, [bootstrap.maySeeAdmin, mayRunChecks, transport]);
 
     if (announcement === null) {
         return null;

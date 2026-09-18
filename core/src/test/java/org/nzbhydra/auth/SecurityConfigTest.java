@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -49,6 +50,7 @@ class SecurityConfigTest {
     private static final String INTERNAL_API_KEY_PROPERTY = "internalApiKey";
     private static final String NATIVE_BUILD_PROPERTY = "HYDRA_NATIVE_BUILD";
     private static final String INTERNAL_API_KEY = "the-internal-api-key";
+    private static final String NAVIGATION_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
     private static final String API_KEY = "the-api-key";
 
     private String previousUseCsrfProperty;
@@ -278,17 +280,52 @@ class SecurityConfigTest {
             .build();
     }
 
+    /**
+     * With FORM authentication an unauthenticated background request used to be redirected to /login, which answers
+     * 200 with the web UI's own document: a fetch follows that redirect and cannot tell the refusal from an answer.
+     * The UI read the HTML of the login page as the value of /internalapi/welcomeshown and greeted the user on every
+     * login screen. Browser navigations keep the redirect; only background requests change.
+     */
+    @Test
+    void shouldRefuseUnauthenticatedBackgroundRequestsUnderFormAuthInsteadOfRedirectingToTheLoginPage() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
+            MockMvc mockMvc = mockMvc(context);
+
+            //An admin-only URL rule, because the /internalapi/** endpoints are protected by @Secured on their
+            //controllers and this context registers a stand-in controller without those annotations. What is under
+            //test is which entry point answers a request the chain refuses, not which paths it refuses.
+            mockMvc.perform(get("/actuator/info").header("Accept", "application/json, text/plain, */*"))
+                .andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/actuator/info").header("X-Requested-With", "XMLHttpRequest"))
+                .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Test
+    void shouldStillSendBrowserNavigationsToTheFormLoginPage() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
+            mockMvc(context).perform(get("/actuator/info").header("Accept", NAVIGATION_ACCEPT))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", "/login"));
+        }
+    }
+
     private GenericWebApplicationContext buildContext(boolean useCsrf) {
         return buildContext(useCsrf, new MockServletContext());
     }
 
     private GenericWebApplicationContext buildContext(boolean useCsrf, MockServletContext servletContext) {
+        return buildContext(useCsrf, servletContext, AuthType.NONE);
+    }
+
+    private GenericWebApplicationContext buildContext(boolean useCsrf, MockServletContext servletContext, AuthType authType) {
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.getMain().setUseCsrf(useCsrf);
         //Without an auth type SecurityConfig treats auth as configured and adds its role rules on top, and a 403 could
         //then mean either a CSRF rejection or a missing role. With NONE every request is permitted and a 403 can only
-        //come from the CSRF filter, which is what these tests are about.
-        baseConfig.getAuth().setAuthType(AuthType.NONE);
+        //come from the CSRF filter, which is what most of these tests are about; the two entry-point tests above pass
+        //FORM, because which entry point answers an unauthenticated request is exactly what they cover.
+        baseConfig.getAuth().setAuthType(authType);
         baseConfig.getMain().setApiKey(API_KEY);
 
         ConfigProvider configProvider = Mockito.mock(ConfigProvider.class);

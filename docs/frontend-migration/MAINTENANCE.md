@@ -3840,3 +3840,24 @@ their text and relative order are unchanged.
 - **Commit:** 3b4b45f2a
 - **Note:** the two conditional entries ("Group torrent and Usenet results", "Expand groups by default") now come after both options that hide them, so a row that appears or disappears is always below the click. The test asserts the
   invariant per option — toggling an entry leaves itself and everything above it in place — rather than the resulting list, so a later entry cannot reintroduce the jump.
+
+### 2026-09-18 — Welcome dialog no longer opens on every form login screen
+
+- **Why not a packet:** owner-reported user defect, fixed at its cause in one Spring entry point plus one guard in `StartupChecks`, with a red-before test on each side. It does span backend and frontend, which the gate puts in packet
+  territory; recorded here as a deviation on the owner's routing, and reviewed by an independent agent before the commit instead.
+- **Paths:** `core/src/main/java/org/nzbhydra/auth/{BackgroundRequestAuthenticationEntryPoint.java (renamed from OidcAuthenticationEntryPoint.java),SecurityConfig.java}`,
+  `core/src/test/java/org/nzbhydra/auth/{BackgroundRequestAuthenticationEntryPointTest.java,SecurityConfigTest.java}`, `core/ui-react/src/app/status/{StartupChecks.tsx,StartupChecks.test.tsx}`, `core/src/main/resources/changelog.yaml`
+- **Gates:** `mvn -o -pl org.nzbhydra:core -DskipTests=false -Dtest='*Auth*,SecurityConfigTest,BackgroundRequestAuthenticationEntryPointTest,OidcLoginComponentTest,HeaderAuthenticationFilterTest,HydraGlobalMethodSecurityConfigurationTest' test`
+  (29 tests); `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check`, `test -- --run` (145 files, 2106 tests), `build`, `check:api`, `validate:migration`; `git diff --check`. No system-test run: the
+  case needs an instance with FORM auth and a configured user, which the shared system-test instance does not run.
+- **Commit:** 2291d7da7
+- **Note:** `fetch` follows the 302 to `/login`, which answers 200 with the UI's own document, so `ApiTransport` returned that HTML as the value of `API-WELCOME-GET` and `welcomeShown !== true` held on every login screen. Legacy tested
+  `!response.data`, where an HTML string read as "already shown".
+
+#### Open candidates (found by the review of the above, not fixed)
+
+- `UserInfosProvider.getUserInfos` matches an OIDC principal on a hardcoded `preferred_username` claim, while `SecurityConfig.getOidcUserService` resolves the username from the configurable `auth.oidcUsernameClaim`. With a different claim
+  configured, a fully authenticated user resolves to no configured user: `maySeeSearch` is then false and the search route guard already sends them to the login page. It also dereferences the claim without a null check. Pre-existing,
+  backend-only, and worth its own fix.
+- Under FORM auth with `restrictSearch` on, `session.ts:logout()` follows Spring's redirect to `/` with `Accept: application/json`, is refused, and `LoginOutButton` shows "Logout failed!" without navigating. Broken the same way before
+  this fix, which only changes which error arrives.

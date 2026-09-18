@@ -235,6 +235,9 @@ public class SecurityConfig {
                                     return new HydraWebAuthenticationDetails(context);
                                 }
                             }));
+            //Background requests (XHR / fetch) get a 401 rather than a redirect to /login, which answers 200 with the
+            //UI's own document: a fetch follows that redirect and cannot tell the refusal from an answer
+            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new BackgroundRequestAuthenticationEntryPoint("/login")));
         } else if (baseConfig.getAuth().getAuthType() == AuthType.OIDC) {
             ClientRegistrationRepository clientRegistrationRepository = getOidcClientRegistrationRepository(baseConfig.getAuth());
             String oidcAuthorizationUrl = "/oauth2/authorization/" + OIDC_REGISTRATION_ID;
@@ -255,7 +258,7 @@ public class SecurityConfig {
                                 .oidcUserService(getOidcUserService(baseConfig.getAuth())))
                         .successHandler(getOidcSuccessHandler(baseConfig.getAuth())));
             //Background requests (XHR / fetch) must get a 401 instead of a redirect into the cross-origin OIDC flow, which the browser cannot complete for them (#1080)
-            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new OidcAuthenticationEntryPoint(oidcAuthorizationUrl)));
+            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new BackgroundRequestAuthenticationEntryPoint(oidcAuthorizationUrl)));
         }
         if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http

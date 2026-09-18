@@ -106,6 +106,24 @@ function storage(key: string, body: unknown, forUser = false) {
 }
 
 describe("StartupChecks", () => {
+    // The owner's defect: on a FORM login screen every check ran against a
+    // server that refuses it. The refusal arrived as a redirect to `/login`,
+    // whose HTML the transport returned as the answer, so the welcome flag
+    // read as "not shown yet" and the dialog opened over the login form on
+    // every visit. A session that may not search cannot call a single
+    // `ROLE_USER` endpoint, so this component now sends nothing -- the shell
+    // around it still has its own requests (the theme preference, the
+    // websocket), which are not this component's to withhold.
+    it("should send no startup-check request for a session that may not even search", async () => {
+        route("internalapi/welcomeshown", false);
+        route("internalapi/welcomeshown", undefined, "PUT");
+
+        renderChecks({maySeeSearch: false, maySeeAdmin: false});
+
+        await waitFor(() => expect(fetchImplementation).not.toHaveBeenCalled());
+        expect(screen.queryByTestId("welcome-dialog")).toBeNull();
+    });
+
     it("should show the welcome dialog with its config and help links on a first start", async () => {
         route("internalapi/welcomeshown", false);
         route("internalapi/welcomeshown", undefined, "PUT");
