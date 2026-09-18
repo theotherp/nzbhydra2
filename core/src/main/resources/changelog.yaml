@@ -1,5 +1,17 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
+-   version: "v9.0.1"
+    date: "2026-09-18"
+    final: false
+    changes:
+      -   type: "feature"
+          text: "New display option &quot;Group same titles&quot; in the search results. Results with the same title were always put into one group; you can now switch that off and see every result in its own row. Duplicates of the same release are still grouped, they have their own option."
+      -   type: "fix"
+          text: "&quot;Group torrent and Usenet results&quot; was ignored for results grouped by season/episode, so with the option off a torrent and a Usenet result could still end up in the same group. It now applies to every kind of grouping."
+      -   type: "feature"
+          text: "The option &quot;Expand groups by default&quot; is back. With it on, groups start expanded, also those of results loaded later; expanding or collapsing a single group still overrules it."
+      -   type: "note"
+          text: "The options that only affect how results are grouped (&quot;Group torrent and Usenet results&quot; and &quot;Expand groups by default&quot;) are hidden while neither &quot;Group TV episodes&quot; nor &quot;Group same titles&quot; is on, because they cannot change anything then. They keep their setting."
 -   version: "v9.0.0"
     date: "2026-09-17"
     final: false
