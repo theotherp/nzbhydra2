@@ -145,7 +145,7 @@ public class InternalSearchResultProcessor {
         List<SearchResultWebTO> transformedSearchResults = new ArrayList<>();
 
         final List<Long> guids = searchResultItems.stream().map(SearchResultItem::getGuid).collect(Collectors.toList());
-        final Collection<FileDownloadEntity> alreadyDownloaded = fileDownloadRepository.findBySearchResultIdIn(guids);
+        final Collection<FileDownloadEntity> alreadyDownloaded = fileDownloadRepository.findBySearchResult_HashIn(guids);
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(0);

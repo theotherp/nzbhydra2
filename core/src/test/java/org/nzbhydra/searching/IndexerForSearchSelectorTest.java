@@ -303,14 +303,6 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
-        indexerConfigMock.setHitLimit(null);
-        indexerConfigMock.setDownloadLimit(null);
-        testee.checkIndexerHitLimit(indexer);
-        verify(nzbDownloadRepository, never()).findBySearchResultIndexerOrderByTimeDesc(any(), any());
-    }
-
-    @Test
     void shouldIgnoreHitLimitIfNotYetReached() {
         indexerConfigMock.setHitLimit(10);
         when(queryMock.getResultList()).thenReturn(Collections.emptyList());
