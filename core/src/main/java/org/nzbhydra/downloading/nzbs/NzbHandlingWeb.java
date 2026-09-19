@@ -5,6 +5,7 @@ package org.nzbhydra.downloading.nzbs;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
@@ -99,9 +100,8 @@ public class NzbHandlingWeb {
 
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
-        // NFO retrieval does not create a download observation, so it intentionally keeps the legacy result ID format.
-        return fileHandler.getNfo(guid);
+    public NfoResult getNfo(@PathVariable("guid") String guid) throws IndexerAccessException, InvalidSearchResultIdException {
+        return fileHandler.getNfo(DownloadIdentifier.parse(guid, true).searchResultId());
     }
 
     /**
