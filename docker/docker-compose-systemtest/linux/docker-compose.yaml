@@ -4,7 +4,7 @@ networks:
 services:
     mockserver:
         image: ghcr.io/theotherp/mockserver:3.1.0
-        container_name: mockserver
+        container_name: mockserver_test
         ports:
             - "5080:5080"
         environment:
@@ -13,7 +13,7 @@ services:
         restart: unless-stopped
     sonarr:
         image: ghcr.io/linuxserver/sonarr:latest
-        container_name: sonarr
+        container_name: sonarr_test
         environment:
             - PUID=1000
             - PGID=1000
@@ -29,7 +29,7 @@ services:
         restart: unless-stopped
     radarr:
         image: ghcr.io/linuxserver/radarr:latest
-        container_name: radarr
+        container_name: radarr_test
         environment:
             - PUID=1000
             - PGID=1000
@@ -47,7 +47,7 @@ services:
         depends_on:
             - mockserver
         image: ${HYDRA_IMAGE:-ghcr.io/theotherp/hydradocker:latest}
-        container_name: core
+        container_name: core_test
         ports:
             - "5076:5076"
         environment:

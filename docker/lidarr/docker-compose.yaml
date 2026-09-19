@@ -2,7 +2,7 @@
 services:
     lidarr:
         image: ghcr.io/linuxserver/lidarr:latest
-        container_name: lidarr
+        container_name: lidarr_test
         environment:
             - PUID=1000
             - PGID=1000

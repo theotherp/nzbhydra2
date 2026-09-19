@@ -12,7 +12,7 @@ services:
     build:
       context: ../..
       dockerfile: docker/uiDev/Dockerfile
-    container_name: nzbhydra-ui-dev
+    container_name: nzbhydra-ui-dev_test
     volumes:
       - ./data:/app/data
       - ../../core/ui-src:/app/ui-src

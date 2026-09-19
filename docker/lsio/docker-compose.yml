@@ -2,7 +2,7 @@
 services:
     nzbhydra2:
         image: ghcr.io/linuxserver/nzbhydra2:latest
-        container_name: nzbhydra2
+        container_name: nzbhydra2_test
         environment:
             - PUID=1000
             - PGID=1000
@@ -14,7 +14,7 @@ services:
         restart: unless-stopped
     mynzbhydra2:
         image: hydradocker:latest
-        container_name: mynzbhydra2
+        container_name: mynzbhydra2_test
         environment:
             - PUID=1000
             - PGID=1000
@@ -26,7 +26,7 @@ services:
         restart: unless-stopped
     jackett:
         image: ghcr.io/linuxserver/jackett:latest
-        container_name: jackett
+        container_name: jackett_test
         environment:
             - PUID=1000
             - PGID=1000

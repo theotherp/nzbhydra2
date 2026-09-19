@@ -2,7 +2,7 @@
 services:
   prowlarr:
     image: ghcr.io/linuxserver/prowlarr:latest
-    container_name: prowlarr
+    container_name: prowlarr_test
     environment:
       - PUID=1000
       - PGID=1000

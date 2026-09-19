@@ -2,7 +2,7 @@
 services:
     apprise-api:
         image: ghcr.io/linuxserver/apprise-api:latest
-        container_name: apprise-api
+        container_name: apprise-api_test
         environment:
             - PUID=1000
             - PGID=1000

@@ -11,7 +11,7 @@
 services:
     core:
         image: eclipse-temurin:17-jre
-        container_name: core
+        container_name: core_test
         # A failed migration must not be retried in a loop; the wait step reads the logs instead.
         restart: "no"
         # The graceful shutdown compacts the database; give it time before docker kills the process.
