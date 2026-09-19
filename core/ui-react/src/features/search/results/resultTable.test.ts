@@ -250,6 +250,39 @@ describe("selectedQuickFilterGroups", () => {
         ]);
         expect(matching({})).toHaveLength(titles.length);
     });
+
+    // FM-198: legacy's `filterReasons.alreadyDownloaded` predicate
+    // (`search-results-controller.js:719-722` at `3ce28441e^`) -- a
+    // non-empty `downloadedAt` string, nothing else.
+    it("should hide only results carrying a non-empty downloadedAt when hideDownloaded is true", () => {
+        const loaded = [
+            {...results[0], downloadedAt: "2026-09-19T00:00:00Z"},
+            {...results[1], downloadedAt: undefined},
+        ];
+        const base = defaultFilters(loaded, quickFilters);
+        expect(
+            filterResults(loaded, base, quickFilters, true).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["2"]);
+        // Off (the default) keeps both, whatever downloadedAt holds.
+        expect(
+            filterResults(loaded, base, quickFilters).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["1", "2"]);
+        // `null` and `""` are not downloaded either -- only a non-empty
+        // string is.
+        const nullAndEmpty = [
+            {...results[0], downloadedAt: null as unknown as undefined},
+            {...results[1], downloadedAt: ""},
+        ];
+        expect(
+            filterResults(nullAndEmpty, base, quickFilters, true).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["1", "2"]);
+    });
 });
 
 describe("result table transformations", () => {

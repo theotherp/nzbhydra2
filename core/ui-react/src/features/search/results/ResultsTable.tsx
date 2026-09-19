@@ -946,9 +946,17 @@ export function ResultsTable({
                             <ResultRow
                                 coverWidth={showCovers ? coverWidth : undefined}
                                 dereferer={dereferer}
-                                downloaded={downloadedIds.has(
-                                    row.result.searchResultId,
-                                )}
+                                // FM-198: legacy's single signal restored
+                                // (`downloadedAt`, `search-result.html:31` at
+                                // `3ce28441e^`) OR'd over React's session-only
+                                // `downloadedIds`, so a row downloaded in an
+                                // earlier session shows the chip too. Owner
+                                // (2026-09-19).
+                                downloaded={
+                                    downloadedIds.has(
+                                        row.result.searchResultId,
+                                    ) || Boolean(row.result.downloadedAt)
+                                }
                                 downloadSettings={settings}
                                 downloaders={downloaders}
                                 duplicateExpanded={row.duplicateExpanded}

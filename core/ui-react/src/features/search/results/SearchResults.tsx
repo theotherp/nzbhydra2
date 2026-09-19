@@ -217,6 +217,7 @@ export function SearchResults({
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
+        hideDownloaded,
         highlightRecent,
         indexerOpen,
         setCategoryOpen,
@@ -225,6 +226,7 @@ export function SearchResults({
         setGroupEpisodes,
         setGroupTitles,
         setGroupTorrentAndUsenet,
+        setHideDownloaded,
         setHighlightRecent,
         setIndexerOpen,
         setShowCovers,
@@ -322,8 +324,24 @@ export function SearchResults({
     const toasts = useContext(ToastContext);
     const groupEpisodesHelpChecked = useRef(false);
     const filteredResults = useMemo(
-        () => filterResults(data.searchResults, filters, quickFilters),
-        [data.searchResults, filters, quickFilters],
+        () =>
+            filterResults(
+                data.searchResults,
+                filters,
+                quickFilters,
+                hideDownloaded,
+            ),
+        [data.searchResults, filters, quickFilters, hideDownloaded],
+    );
+    // FM-198: the entry's count -- every *loaded* result carrying a
+    // `downloadedAt`, before any filtering, so it reads the same whether the
+    // option is on or off and rises as `data.searchResults` grows on
+    // "load more".
+    const downloadedCount = useMemo(
+        () =>
+            data.searchResults.filter((result) => Boolean(result.downloadedAt))
+                .length,
+        [data.searchResults],
     );
     const columns = useMemo<ColumnDef<SearchResult>[]>(
         () => [
@@ -986,6 +1004,7 @@ export function SearchResults({
                     data={data}
                     deselectAllVisible={deselectAllVisible}
                     dialogs={dialogs}
+                    downloadedCount={downloadedCount}
                     effectiveSafeConfig={effectiveSafeConfig}
                     expandGroupsByDefault={expandGroupsByDefault}
                     filteredOutCount={filteredOutCount}
@@ -995,6 +1014,7 @@ export function SearchResults({
                     groupTorrentAndUsenet={groupTorrentAndUsenet}
                     hasRejectedResults={hasRejectedResults}
                     hasResults={hasResults}
+                    hideDownloaded={hideDownloaded}
                     highlightRecent={highlightRecent}
                     invertVisibleSelection={invertVisibleSelection}
                     moreResultsAvailable={moreResultsAvailable}
@@ -1018,6 +1038,7 @@ export function SearchResults({
                     setGroupEpisodes={setGroupEpisodes}
                     setGroupTitles={setGroupTitles}
                     setGroupTorrentAndUsenet={setGroupTorrentAndUsenet}
+                    setHideDownloaded={setHideDownloaded}
                     setHighlightRecent={setHighlightRecent}
                     setSelected={setSelected}
                     setShowCovers={setShowCovers}

@@ -437,6 +437,12 @@ export function filterResults(
     results: SearchResult[],
     filters: ResultFilters,
     quickFilters: QuickFilter[],
+    // FM-198: legacy's `filterReasons.alreadyDownloaded` predicate
+    // (`search-results-controller.js:719-722` at `3ce28441e^`) -- `true`
+    // drops every result whose `downloadedAt` is a non-empty string.
+    // Defaults `false` so this filter dimension is opt-in and every other
+    // caller (and its tests) is unaffected.
+    hideDownloaded = false,
 ): SearchResult[] {
     const titleMatcher = makeTitleMatcher(filters.title);
     // Both matchers are built once for the whole scan rather than per result:
@@ -449,6 +455,7 @@ export function filterResults(
     );
     return results.filter(
         (result) =>
+            (!hideDownloaded || !result.downloadedAt) &&
             titleMatcher(result.title) &&
             filters.indexers.includes(result.indexer) &&
             filters.categories.includes(result.category) &&

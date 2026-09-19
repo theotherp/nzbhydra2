@@ -240,6 +240,7 @@ features:
       - nfo-dialog-content
       - display-options-toggle
       - display-options
+      - display-option-hide-downloaded
       - search-result-indexer-swatch
       - search-result-cover
       - search-result-cover-tile
@@ -318,6 +319,19 @@ features:
       # (`downloading.fileDownloadAccessType === "PROXY"`) holds; hidden,
       # the stored preference is kept, not reset. No new selector -- it is
       # one more `display-options` checkbox entry.
+      # 2026-09-19 (FM-198): `display-options` gains "Hide downloaded results
+      # (N)", legacy's "Hide already downloaded results"
+      # (`search-results-controller.js:170,210,311` at `3ce28441e^`), off by
+      # default here (legacy defaulted it on; owner, 2026-09-19), browser-local
+      # in the same `hydra.search-results.table` payload (ADR-0054). `N` is
+      # every *loaded* result carrying a `downloadedAt`, identical whichever
+      # way the option itself is checked, and recomputed as more load. Because
+      # its label carries that count rather than a fixed string, it is the one
+      # entry with its own `data-testid` (`display-option-hide-downloaded`),
+      # and it carries an accessible tooltip (owner, 2026-09-19) stating that
+      # the count and the hide both read only that persisted field, never a
+      # session's own send (see F-SEARCH-DOWNLOADS below). The filter
+      # dimension itself is F-SEARCH-SORT-FILTER's.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
@@ -412,6 +426,15 @@ features:
       # `groupEpisodes`, and `groupTorrentAndUsenet`
       # -- browser-local, per ADR-0054, not server-side per-user preferences
       # (`storedChoices.ts`).
+      # 2026-09-19 (FM-198): `hideDownloaded` joined that payload, off by
+      # default (legacy's own preference defaulted on;
+      # `search-results-controller.js:170,210,311` at `3ce28441e^`). It is
+      # `filterResults`'s fourth, opt-in parameter: `true` drops every result
+      # whose `downloadedAt` is a non-empty string (legacy's
+      # `filterReasons.alreadyDownloaded` predicate, `:719-722`), so a hidden
+      # result is also absent from grouping, the selection-pruning effect, and
+      # the summary's filtered count. Every other `filterResults` caller
+      # keeps the default `false` and is unaffected.
       # 2026-09-08 (FM-189): the two grouping options joined that payload so
       # a new search (which remounts `SearchResults`) no longer resets them;
       # they default to legacy's own `true`/`false` respectively.
@@ -661,6 +684,15 @@ features:
     # options. No selector or `parity` changes -- the desktop button and the
     # `results-more-actions-menu` entry were already listed selectors,
     # newly reachable rather than newly added.
+    # 2026-09-19 (FM-198): the row's `Downloaded` chip widens to
+    # `downloadedIds.has(result.searchResultId) || Boolean(result.downloadedAt)`
+    # (owner request), so a result downloaded in an earlier session also
+    # raises it, not only one sent this session. Deliberate divergence: a row
+    # sent *this* session still shows the chip but is never hidden by
+    # F-SEARCH-RESULTS' "Hide downloaded results" option, because that option
+    # filters on `downloadedAt` alone, never on the session-only
+    # `downloadedIds` this chip also reads. No new selector -- the chip has
+    # none and every test addresses it by its text.
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:

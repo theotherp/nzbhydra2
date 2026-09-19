@@ -27,6 +27,11 @@ export type StoredChoices = {
     // that was unconditional before. Defaults *on*, so an existing stored
     // payload without the key keeps the grouping it had.
     groupTitles?: boolean;
+    // FM-198 (ADR-0054): "Hide downloaded results", legacy's preference
+    // (`search-results-controller.js:170,210,311` at `3ce28441e^`), which
+    // defaulted *on* there; the owner asked for off (2026-09-19), as with
+    // `showCovers`.
+    hideDownloaded?: boolean;
     highlightRecent?: boolean;
     refineCategoryOpen?: boolean;
     refineIndexerOpen?: boolean;

@@ -396,6 +396,113 @@ test.describe("Search results", () => {
         await assertGroupExpansionAndBulkSelection(page);
     });
 
+    // FM-198: the mocked-route leg -- `mockGroupedResults`'s shape, one
+    // fixture given a `downloadedAt` -- for the label's count, the chip
+    // raised with no send having happened, and the entry (addressed by its
+    // testid, since its label carries a count) hiding that row and only
+    // that row.
+    test("should count, chip, and filter a result carrying a persisted downloadedAt", async ({
+        page,
+    }) => {
+        await mockResultsWithDownloadedAt(page);
+        await page.goto("/");
+        await searchForGroupedResults(page);
+
+        const rows = page.getByTestId("search-result-row");
+        await expect(rows).toHaveCount(2);
+
+        const hideDownloadedEntry = page.getByTestId(
+            "display-option-hide-downloaded",
+        );
+        await openDisplayOptions(page);
+        const label = await page
+            .locator(
+                'label:has([data-testid="display-option-hide-downloaded"])',
+            )
+            .textContent();
+        expect(label?.trim()).toBe("Hide downloaded results (1)");
+        await expect(hideDownloadedEntry).not.toBeChecked();
+        await closeDisplayOptions(page);
+
+        const downloadedRow = rows.filter({hasText: "Downloaded Release"});
+        await expect(
+            downloadedRow.getByText("Downloaded", {exact: true}),
+        ).toBeVisible();
+
+        await openDisplayOptions(page);
+        await hideDownloadedEntry.click();
+        await closeDisplayOptions(page);
+
+        await expect(rows).toHaveCount(1);
+        await expect(page.getByText("Downloaded Release")).toHaveCount(0);
+        await expect(page.getByText("Fresh Release")).toBeVisible();
+    });
+
+    // FM-198's own Visual Gate strip: the popover at a non-zero count, the
+    // table with the option off (one visible row carrying a persisted
+    // chip) and on (that row gone), and the popover reopened from the
+    // compact toolbar at the mobile viewport.
+    test("should provide deterministic hide-downloaded-results visual evidence across desktop and mobile", async ({
+        page,
+    }) => {
+        await mockResultsWithDownloadedAt(page);
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("/");
+            await searchForGroupedResults(page);
+        });
+
+        const table = page.getByTestId("search-results-table");
+        const hideDownloadedEntry = page.getByTestId(
+            "display-option-hide-downloaded",
+        );
+
+        // Popover at a non-zero count.
+        await openDisplayOptions(page);
+        await expectDisplayMenuSurface(page);
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-RESULTS",
+            "hide-downloaded-popover-desktop",
+        );
+        await closeDisplayOptions(page);
+
+        // The table with the option off: both rows are visible, and the
+        // persisted-download row carries its chip.
+        await expect(page.getByTestId("search-result-row")).toHaveCount(2);
+        await captureVisualRegion(
+            table,
+            "F-SEARCH-RESULTS",
+            "hide-downloaded-off-desktop",
+        );
+
+        // The table with the option on: the persisted-download row is gone.
+        await openDisplayOptions(page);
+        await hideDownloadedEntry.click();
+        await closeDisplayOptions(page);
+        await expect(page.getByTestId("search-result-row")).toHaveCount(1);
+        await captureVisualRegion(
+            table,
+            "F-SEARCH-RESULTS",
+            "hide-downloaded-on-desktop",
+        );
+
+        // The popover reopened from the compact toolbar at the mobile
+        // viewport.
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("/");
+            await searchForGroupedResults(page);
+        });
+        await openDisplayOptions(page);
+        await expectDisplayMenuSurface(page);
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-RESULTS",
+            "hide-downloaded-popover-mobile",
+        );
+        await closeDisplayOptions(page);
+    });
+
     // FM-094: the legacy "should expand grouped legacy results and select
     // visible rows" test and its `assertLegacyGroupExpansionAndBulkSelection`
     // helper are gone with the legacy shell. Both drove legacy-only DOM
@@ -1164,7 +1271,9 @@ test.describe("Search results", () => {
             const listBox = await list.boundingBox();
             expect(listBox).not.toBeNull();
             if (!listBox) {
-                throw new Error(`${prefix}-list requires deterministic geometry`);
+                throw new Error(
+                    `${prefix}-list requires deterministic geometry`,
+                );
             }
             const last = actionBoxes[actionBoxes.length - 1];
             expect(last.x + last.width).toBeLessThanOrEqual(
@@ -1175,7 +1284,9 @@ test.describe("Search results", () => {
             const firstOptionBox = await firstOption.boundingBox();
             expect(firstOptionBox).not.toBeNull();
             if (!firstOptionBox) {
-                throw new Error(`${prefix}-option requires deterministic geometry`);
+                throw new Error(
+                    `${prefix}-option requires deterministic geometry`,
+                );
             }
             expect(actionBoxes[0].y).toBeLessThan(firstOptionBox.y);
         }
@@ -3912,6 +4023,27 @@ test.describe("Search results", () => {
         await page.goto("/");
         await searchForUiTestResults(page);
 
+        // FM-198: on the real-backend instance the restored entry is
+        // present, unchecked (the owner's off-by-default), and its label
+        // ends in a parenthesised count -- it renders unconditionally,
+        // regardless of whether anything loaded actually carries a
+        // `downloadedAt`.
+        await openDisplayOptions(page);
+        const hideDownloadedEntry = page.getByTestId(
+            "display-option-hide-downloaded",
+        );
+        await expect(hideDownloadedEntry).toBeVisible();
+        await expect(hideDownloadedEntry).not.toBeChecked();
+        const hideDownloadedLabel = await page
+            .locator(
+                'label:has([data-testid="display-option-hide-downloaded"])',
+            )
+            .textContent();
+        expect(hideDownloadedLabel?.trim()).toMatch(
+            /^Hide downloaded results \(\d+\)$/,
+        );
+        await closeDisplayOptions(page);
+
         // `hasNfo` comes straight from the mock indexer's `nfo` attribute:
         // result1 sends `0` (NO), result2 sends `1` (YES), and every other
         // result sends none at all, which the backend defaults to MAYBE.
@@ -4673,6 +4805,7 @@ test.describe("Search results", () => {
             "Highlight recent",
             "Show duplicate expand controls",
             "Show covers",
+            "Hide downloaded results (0)",
             "Show button to download results as ZIP",
             "Show refine sidebar",
         ]);
@@ -5018,6 +5151,7 @@ test.describe("Search results", () => {
             "Highlight recent",
             "Show duplicate expand controls",
             "Show covers",
+            "Hide downloaded results (0)",
             "Show button to download results as ZIP",
             "Show refine sidebar",
         ]);
@@ -5944,6 +6078,48 @@ async function mockGroupedResults(
                 rejectedReasonsMap: {},
                 notPickedIndexersWithReason: {},
                 numberOfAvailableResults: 3,
+                numberOfRejectedResults: 0,
+            },
+        }),
+    );
+}
+
+// FM-198: `mockGroupedResults`'s own shape, with two ungrouped results
+// (distinct `hash`es, so each renders its own row) and one carrying a
+// `downloadedAt`.
+async function mockResultsWithDownloadedAt(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    await page.route("**/internalapi/search", (route) =>
+        route.fulfill({
+            json: {
+                searchResults: [
+                    {
+                        searchResultId: "one",
+                        title: "Downloaded Release",
+                        indexer: "One",
+                        category: "TV",
+                        hash: 1,
+                        downloadType: "NZB",
+                        downloadedAt: "2026-09-18T00:00:00Z",
+                    },
+                    {
+                        searchResultId: "two",
+                        title: "Fresh Release",
+                        indexer: "Two",
+                        category: "TV",
+                        hash: 2,
+                        downloadType: "NZB",
+                        downloadedAt: null,
+                    },
+                ],
+                indexerSearchMetaDatas: [
+                    {indexerName: "One", wasSuccessful: true},
+                ],
+                indexerLimitWarnings: [],
+                rejectedReasonsMap: {},
+                notPickedIndexersWithReason: {},
+                numberOfAvailableResults: 2,
                 numberOfRejectedResults: 0,
             },
         }),

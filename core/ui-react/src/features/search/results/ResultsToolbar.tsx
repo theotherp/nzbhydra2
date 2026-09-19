@@ -57,6 +57,7 @@ export function ResultsToolbar({
     data,
     deselectAllVisible,
     dialogs,
+    downloadedCount,
     effectiveSafeConfig,
     expandGroupsByDefault,
     filteredOutCount,
@@ -66,6 +67,7 @@ export function ResultsToolbar({
     groupTorrentAndUsenet,
     hasRejectedResults,
     hasResults,
+    hideDownloaded,
     highlightRecent,
     invertVisibleSelection,
     moreResultsAvailable,
@@ -87,6 +89,7 @@ export function ResultsToolbar({
     setGroupEpisodes,
     setGroupTitles,
     setGroupTorrentAndUsenet,
+    setHideDownloaded,
     setHighlightRecent,
     setSelected,
     setShowCovers,
@@ -109,6 +112,10 @@ export function ResultsToolbar({
     data: SearchResponse;
     deselectAllVisible: () => void;
     dialogs: ContextType<typeof DialogContext>;
+    // FM-198: the entry's count -- every loaded result carrying a
+    // `downloadedAt`, computed once in `SearchResults` regardless of this
+    // option's own state.
+    downloadedCount: number;
     effectiveSafeConfig: unknown;
     expandGroupsByDefault: boolean;
     filteredOutCount: number;
@@ -118,6 +125,10 @@ export function ResultsToolbar({
     groupTorrentAndUsenet: boolean;
     hasRejectedResults: boolean;
     hasResults: boolean;
+    // FM-198: legacy's "Hide already downloaded results"
+    // (`search-results-controller.js:170,210` at `3ce28441e^`), off by
+    // default here; see `useResultDisplayChoices`.
+    hideDownloaded: boolean;
     highlightRecent: boolean;
     invertVisibleSelection: () => void;
     moreResultsAvailable: boolean;
@@ -141,6 +152,7 @@ export function ResultsToolbar({
     setGroupEpisodes: Dispatch<SetStateAction<boolean>>;
     setGroupTitles: Dispatch<SetStateAction<boolean>>;
     setGroupTorrentAndUsenet: Dispatch<SetStateAction<boolean>>;
+    setHideDownloaded: Dispatch<SetStateAction<boolean>>;
     setHighlightRecent: Dispatch<SetStateAction<boolean>>;
     setSelected: Dispatch<SetStateAction<Set<string>>>;
     setShowCovers: Dispatch<SetStateAction<boolean>>;
@@ -359,10 +371,12 @@ export function ResultsToolbar({
                             <DisplayOptionsMenu
                                 compact={refineSurfaceCompact}
                                 compactRows={compactRows}
+                                downloadedCount={downloadedCount}
                                 expandGroupsByDefault={expandGroupsByDefault}
                                 groupEpisodes={groupEpisodes}
                                 groupTitles={groupTitles}
                                 groupTorrentAndUsenet={groupTorrentAndUsenet}
+                                hideDownloaded={hideDownloaded}
                                 highlightRecent={highlightRecent}
                                 onToggleCompactRows={() =>
                                     setCompactRows((current) => !current)
@@ -380,6 +394,9 @@ export function ResultsToolbar({
                                     setGroupTorrentAndUsenet(
                                         (current) => !current,
                                     )
+                                }
+                                onToggleHideDownloaded={() =>
+                                    setHideDownloaded((current) => !current)
                                 }
                                 onToggleHighlightRecent={() =>
                                     setHighlightRecent((current) => !current)

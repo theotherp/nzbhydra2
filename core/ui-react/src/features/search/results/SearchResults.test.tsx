@@ -3523,8 +3523,331 @@ describe("SearchResults", () => {
             ["Highlight recent", false],
             ["Show duplicate expand controls", false],
             ["Show covers", false],
+            ["Hide downloaded results (0)", false],
             ["Show refine sidebar", false],
         ]);
+    });
+
+    // FM-198: legacy's "Hide already downloaded results"
+    // (`search-results-controller.js:170,210,311,719` at `3ce28441e^`),
+    // restored as a fourth ADR-0054 display option. Off by default (owner,
+    // 2026-09-19), and its count is every *loaded* result carrying a
+    // `downloadedAt`, independent of the option's own checked state.
+    describe("hide downloaded results", () => {
+        it("should leave the option off, with its count in the label, and every result visible when nothing is stored", () => {
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 2,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Downloaded release",
+                                indexer: "One",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "2",
+                                title: "Fresh release",
+                                indexer: "Two",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            expect(
+                displayOption("Hide downloaded results (1)"),
+            ).not.toBeChecked();
+            closeDisplayOptions();
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        });
+
+        // Owner (2026-09-19): the entry's own tooltip, distinguishing what
+        // it reads (a persisted `downloadedAt`, from an earlier session or
+        // an earlier search) from the row's unconditional `Downloaded` chip,
+        // which also lights up for a send from *this* session.
+        it("should carry an accessible tooltip clarifying it reads only a persisted downloadedAt, not this session's own sends", async () => {
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 1,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "One",
+                                indexer: "One",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            const entry = displayOption("Hide downloaded results (0)");
+            fireEvent.mouseOver(entry);
+            const tooltip = await screen.findByRole("tooltip");
+            expect(tooltip).toHaveTextContent(
+                "not one you just downloaded in this search",
+            );
+            closeDisplayOptions();
+        });
+
+        it("should hide exactly the downloadedAt rows, drop them from selection, lower the summary's filtered count, and persist the choice when toggled on", () => {
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 2,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Downloaded release",
+                                indexer: "One",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "2",
+                                title: "Fresh release",
+                                indexer: "Two",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            closeDisplayOptions();
+            fireEvent.click(
+                screen.getByRole("checkbox", {
+                    name: "Select Downloaded release",
+                }),
+            );
+            fireEvent.click(displayOption("Hide downloaded results (1)"));
+            expect(displayOption("Hide downloaded results (1)")).toBeChecked();
+            closeDisplayOptions();
+            const rows = screen.getAllByTestId("search-result-row");
+            expect(rows).toHaveLength(1);
+            expect(rows[0]).toHaveTextContent("Fresh release");
+            expect(
+                screen.getByTestId("search-results-summary"),
+            ).toHaveTextContent("1 of 2 loaded · 1 filtered");
+            expect(
+                screen.queryByRole("checkbox", {
+                    name: "Select Downloaded release",
+                }),
+            ).not.toBeInTheDocument();
+            expect(storedChoices()).toMatchObject({hideDownloaded: true});
+        });
+
+        it("should hide the downloadedAt rows on mount when the preference is stored", () => {
+            window.localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({hideDownloaded: true}),
+            );
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 2,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Downloaded release",
+                                indexer: "One",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "2",
+                                title: "Fresh release",
+                                indexer: "Two",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            expect(displayOption("Hide downloaded results (1)")).toBeChecked();
+            closeDisplayOptions();
+            const rows = screen.getAllByTestId("search-result-row");
+            expect(rows).toHaveLength(1);
+            expect(rows[0]).toHaveTextContent("Fresh release");
+        });
+
+        it("should read the same count in both checked states and grow it as more results load", () => {
+            const base = {
+                ...response,
+                numberOfAvailableResults: 3,
+                searchResults: [
+                    {
+                        searchResultId: "1",
+                        title: "One",
+                        indexer: "One",
+                        category: "All",
+                        downloadedAt: "2026-09-18T00:00:00Z",
+                    },
+                    {
+                        searchResultId: "2",
+                        title: "Two",
+                        indexer: "Two",
+                        category: "All",
+                        downloadedAt: "2026-09-18T00:00:00Z",
+                    },
+                    {
+                        searchResultId: "3",
+                        title: "Three",
+                        indexer: "Three",
+                        category: "All",
+                    },
+                ],
+            };
+            const {rerender} = renderResults(<SearchResults data={base} />);
+            expect(
+                displayOption("Hide downloaded results (2)"),
+            ).not.toBeChecked();
+            fireEvent.click(displayOption("Hide downloaded results (2)"));
+            expect(displayOption("Hide downloaded results (2)")).toBeChecked();
+            closeDisplayOptions();
+
+            rerender(
+                <DialogProvider>
+                    <ToastProvider>
+                        <SearchResults
+                            data={{
+                                ...base,
+                                numberOfAvailableResults: 4,
+                                searchResults: [
+                                    ...base.searchResults,
+                                    {
+                                        searchResultId: "4",
+                                        title: "Four",
+                                        indexer: "Four",
+                                        category: "All",
+                                        downloadedAt: "2026-09-18T00:00:00Z",
+                                    },
+                                ],
+                            }}
+                        />
+                    </ToastProvider>
+                </DialogProvider>,
+            );
+            expect(displayOption("Hide downloaded results (3)")).toBeChecked();
+        });
+
+        it("should show the chip for a persisted download without a session send, keep the unchanged session-send chip, show exactly one chip when both hold, and none when neither does", () => {
+            window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 4,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Persisted only",
+                                indexer: "One",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "2",
+                                title: "Session send only",
+                                indexer: "Two",
+                                category: "All",
+                            },
+                            {
+                                searchResultId: "3",
+                                title: "Both",
+                                indexer: "Three",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "4",
+                                title: "Neither",
+                                indexer: "Four",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            closeDisplayOptions();
+            const rowFor = (title: string) =>
+                screen.getByText(title).closest("tr") as HTMLElement;
+
+            // Persisted only: the chip renders on mount, with no send.
+            expect(
+                within(rowFor("Persisted only")).getByText("Downloaded"),
+            ).toBeVisible();
+            // Neither: no chip until something happens.
+            expect(
+                within(rowFor("Neither")).queryByText("Downloaded"),
+            ).not.toBeInTheDocument();
+
+            // Session send only: unchanged FM-186 behaviour -- the chip
+            // appears once this session sends it.
+            fireEvent.click(
+                within(rowFor("Session send only")).getByTestId("download-nzb"),
+            );
+            expect(
+                within(rowFor("Session send only")).getByText("Downloaded"),
+            ).toBeVisible();
+
+            // Both: a session send on a row that already carries
+            // `downloadedAt` still renders exactly one chip.
+            fireEvent.click(within(rowFor("Both")).getByTestId("download-nzb"));
+            expect(
+                within(rowFor("Both")).getAllByText("Downloaded"),
+            ).toHaveLength(1);
+        });
+
+        it("should hide the persisted-download row while keeping a row sent this session, its chip, and its visibility, once the option is on", () => {
+            window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...response,
+                        numberOfAvailableResults: 2,
+                        searchResults: [
+                            {
+                                searchResultId: "1",
+                                title: "Persisted download",
+                                indexer: "One",
+                                category: "All",
+                                downloadedAt: "2026-09-18T00:00:00Z",
+                            },
+                            {
+                                searchResultId: "2",
+                                title: "Sent this session",
+                                indexer: "Two",
+                                category: "All",
+                            },
+                        ],
+                    }}
+                />,
+            );
+            closeDisplayOptions();
+            fireEvent.click(
+                within(
+                    screen
+                        .getByText("Sent this session")
+                        .closest("tr") as HTMLElement,
+                ).getByTestId("download-nzb"),
+            );
+            fireEvent.click(displayOption("Hide downloaded results (1)"));
+            closeDisplayOptions();
+
+            expect(
+                screen.queryByText("Persisted download"),
+            ).not.toBeInTheDocument();
+            const remaining = screen.getByTestId("search-result-row");
+            expect(remaining).toHaveTextContent("Sent this session");
+            expect(within(remaining).getByText("Downloaded")).toBeVisible();
+        });
     });
 
     it("should keep the relocated grouping toggles driving the same grouping behavior", () => {
@@ -4538,6 +4861,7 @@ describe("SearchResults", () => {
             "groupEpisodes",
             "groupTitles",
             "groupTorrentAndUsenet",
+            "hideDownloaded",
             "highlightRecent",
             "refineCategoryOpen",
             "refineIndexerOpen",

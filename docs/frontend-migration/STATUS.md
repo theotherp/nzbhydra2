@@ -1823,6 +1823,19 @@ enumeration of extended pre-existing system-test assertions missed one (`results
 lead-in comment there now reads as contradicting the entry it precedes, which defaults on. Candidates for a future
 quickfix.
 
+FM-198 (Restore "Hide Downloaded Results" As A Counted Display Option) is done. `hideDownloaded` joins
+`StoredChoices`/`useResultDisplayChoices` (default off, per owner ruling); `filterResults` gains a fourth, opt-in
+`hideDownloaded` parameter restoring legacy's `filterReasons.alreadyDownloaded` predicate; the popover's new "Hide
+downloaded results (N)" entry (its own `data-testid` since its label carries a count, plus an owner-requested
+accessible tooltip distinguishing it from the session-only `Downloaded` chip) sits after "Show covers"; and the row's
+`Downloaded` chip widens to `downloadedIds.has(...) || Boolean(result.downloadedAt)` (owner request) so a persisted
+download shows it too, without being hidden by the option itself. Passed with minor findings, not corrected
+(optional): the tooltip's `describeChild` wiring lands `aria-describedby`/`title` on the `FormControlLabel`'s `label`
+rather than the checkbox `input`, so a screen-reader user focusing the checkbox gets its name but not the tooltip's
+description (pointer/hover access works, and the packet's literal wording is met); two pre-existing `results.spec.ts`
+`throw new Error(...)` lines were reflowed by Prettier as incidental noise in an allowed file. Candidates for a
+future quickfix.
+
 ## Review
 
 None.
@@ -1832,12 +1845,6 @@ None.
 None.
 
 ## Upcoming
-
-- FM-198: restore "Hide downloaded results" as a counted display option — planned and dependency-ready. React parses
-  `downloadedAt` but nothing reads it, so legacy's filter (`search-results-controller.js:719`) is gone. Restores the
-  browser-local preference (ADR-0054), the `filterResults` dimension, and an entry labelled
-  `Hide downloaded results (N)` whose count is the loaded results carrying `downloadedAt` in either state. Owner
-  ruling 2026-09-19: default off, where legacy defaulted it on.
 
 - Issue #902 is complete: FM-194 (backend) and FM-195 (Custom Mappings tab) are done (entries above). No task packets
   are queued.

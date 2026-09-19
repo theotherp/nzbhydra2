@@ -16,6 +16,7 @@ import {
     MenuItem,
     Popover,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import type {MenuListProps} from "@mui/material";
@@ -192,16 +193,19 @@ export function RejectedResultsTrigger({
 export function DisplayOptionsMenu({
     compact = false,
     compactRows,
+    downloadedCount,
     expandGroupsByDefault,
     groupEpisodes,
     groupTitles,
     groupTorrentAndUsenet,
+    hideDownloaded,
     highlightRecent,
     onToggleCompactRows,
     onToggleExpandGroupsByDefault,
     onToggleGroupEpisodes,
     onToggleGroupTitles,
     onToggleGroupTorrentAndUsenet,
+    onToggleHideDownloaded,
     onToggleHighlightRecent,
     onToggleRefineSurface,
     onToggleShowCovers,
@@ -223,6 +227,10 @@ export function DisplayOptionsMenu({
      */
     compact?: boolean;
     compactRows: boolean;
+    // FM-198: the entry's count -- every loaded result carrying a
+    // `downloadedAt`, computed once in `SearchResults` regardless of
+    // `hideDownloaded`'s own state.
+    downloadedCount: number;
     // Owner (2026-09-18): "Expand groups by default", legacy's option of the
     // same name. Its entry is rendered only while something can form a group
     // to expand (see `entries` below).
@@ -232,12 +240,17 @@ export function DisplayOptionsMenu({
     // unconditional before; on is the unchanged behavior.
     groupTitles: boolean;
     groupTorrentAndUsenet: boolean;
+    // FM-198: legacy's "Hide already downloaded results"
+    // (`search-results-controller.js:170,210` at `3ce28441e^`), off by
+    // default here (owner asked for off, as with `showCovers`).
+    hideDownloaded: boolean;
     highlightRecent: boolean;
     onToggleCompactRows: () => void;
     onToggleExpandGroupsByDefault: () => void;
     onToggleGroupEpisodes: () => void;
     onToggleGroupTitles: () => void;
     onToggleGroupTorrentAndUsenet: () => void;
+    onToggleHideDownloaded: () => void;
     onToggleHighlightRecent: () => void;
     onToggleRefineSurface: () => void;
     onToggleShowCovers: () => void;
@@ -284,7 +297,13 @@ export function DisplayOptionsMenu({
     // it just toggled. Below, the entries that move are all below the click.
     // This also reads as what it is: first what forms a group, then the two
     // qualifications that only mean something once one can.
-    const entries: {checked: boolean; label: string; onToggle: () => void}[] = [
+    const entries: {
+        checked: boolean;
+        label: string;
+        onToggle: () => void;
+        testId?: string;
+        tooltip?: string;
+    }[] = [
         {
             checked: groupEpisodes,
             label: "Group TV episodes",
@@ -328,6 +347,19 @@ export function DisplayOptionsMenu({
             checked: showCovers,
             label: "Show covers",
             onToggle: onToggleShowCovers,
+        },
+        {
+            checked: hideDownloaded,
+            label: `Hide downloaded results (${downloadedCount})`,
+            onToggle: onToggleHideDownloaded,
+            testId: "display-option-hide-downloaded",
+            // Owner (2026-09-19): the count and the hide both read only
+            // `downloadedAt` -- a persisted download, from an earlier
+            // session or an earlier query -- never `downloadedIds`, this
+            // session's own sends. The "Downloaded" chip a just-sent row
+            // shows is unaffected either way.
+            tooltip:
+                "Counts and hides only results already known as downloaded from an earlier session or search, not one you just downloaded in this search",
         },
         ...(zipButtonAllowed
             ? [
@@ -414,6 +446,8 @@ export function DisplayOptionsMenu({
                                 key={entry.label}
                                 label={entry.label}
                                 onToggle={entry.onToggle}
+                                testId={entry.testId}
+                                tooltip={entry.tooltip}
                             />
                         ))}
                         {/* The mock's own hairline before the refine-surface
@@ -584,15 +618,32 @@ function DisplayOption({
     checked,
     label,
     onToggle,
+    testId,
+    tooltip,
 }: {
     checked: boolean;
     label: string;
     onToggle: () => void;
+    // FM-198: `Hide downloaded results (N)`'s only stable handle, since its
+    // label carries a count and so is not a fixed string like every other
+    // entry's. No other entry needs one.
+    testId?: string;
+    // FM-198 (owner, 2026-09-19): "Hide downloaded results"' clarification
+    // that the count and the hide read only a persisted `downloadedAt`, not
+    // this session's own sends -- the one entry whose scope is otherwise
+    // easy to conflate with the row's unconditional `Downloaded` chip. No
+    // other entry needs one.
+    tooltip?: string;
 }) {
-    return (
+    const option = (
         <FormControlLabel
             control={
-                <Checkbox checked={checked} onChange={onToggle} size="small" />
+                <Checkbox
+                    checked={checked}
+                    data-testid={testId}
+                    onChange={onToggle}
+                    size="small"
+                />
             }
             label={label}
             sx={{
@@ -614,5 +665,17 @@ function DisplayOption({
                 "& .MuiSvgIcon-root": {fontSize: DISPLAY_MENU_ITEM_ICON_SIZE},
             }}
         />
+    );
+    // `describeChild`: this entry's accessible *name* stays its label text
+    // (every other query in this feature addresses entries by that name,
+    // exact-matched), and the tooltip adds an `aria-describedby` /native
+    // `title` rather than replacing the name the way Tooltip's default
+    // `aria-label` fallback would.
+    return tooltip ? (
+        <Tooltip describeChild title={tooltip}>
+            {option}
+        </Tooltip>
+    ) : (
+        option
     );
 }

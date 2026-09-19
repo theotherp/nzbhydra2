@@ -48,6 +48,12 @@ export function useResultDisplayChoices() {
     const [highlightRecent, setHighlightRecent] = useState(
         () => choices.highlightRecent ?? false,
     );
+    // FM-198: legacy's "Hide already downloaded results"
+    // (`search-results-controller.js:170,210` at `3ce28441e^`), which
+    // defaulted *on* there; the owner asked for off, as with `showCovers`.
+    const [hideDownloaded, setHideDownloaded] = useState(
+        () => choices.hideDownloaded ?? false,
+    );
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there and here.
     // With it off the duplicate expand control does not render, reserves no
@@ -115,6 +121,7 @@ export function useResultDisplayChoices() {
                 groupEpisodes,
                 groupTitles,
                 groupTorrentAndUsenet,
+                hideDownloaded,
                 highlightRecent,
                 refineCategoryOpen: categoryOpen,
                 refineIndexerOpen: indexerOpen,
@@ -132,6 +139,7 @@ export function useResultDisplayChoices() {
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
+        hideDownloaded,
         highlightRecent,
         indexerOpen,
         showCovers,
@@ -148,6 +156,7 @@ export function useResultDisplayChoices() {
         groupEpisodes,
         groupTitles,
         groupTorrentAndUsenet,
+        hideDownloaded,
         highlightRecent,
         indexerOpen,
         setCategoryOpen,
@@ -156,6 +165,7 @@ export function useResultDisplayChoices() {
         setGroupEpisodes,
         setGroupTitles,
         setGroupTorrentAndUsenet,
+        setHideDownloaded,
         setHighlightRecent,
         setIndexerOpen,
         setShowCovers,
