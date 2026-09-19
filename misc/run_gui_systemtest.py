@@ -746,14 +746,19 @@ def start_supporting_services(timeout: float) -> list[str]:
         ) != 0:
             raise RuntimeError("Unable to start Sonarr and Radarr with Docker Compose")
         for name in names:
-            if run_command([
-                find_command("docker"),
-                "exec",
-                name,
-                "sh",
-                "-c",
-                f"sed -i -E 's#<ApiKey>[^<]*</ApiKey>#<ApiKey>{ARR_API_KEY}</ApiKey>#' /config/config.xml",
-            ]) != 0 or run_command([find_command("docker"), "restart", name]) != 0:
+            # Addressed by compose service name rather than container name: c7a4e5f82 renamed the containers to
+            # sonarr_test/radarr_test, and `docker exec sonarr` then failed with "No such container", which took the
+            # whole run down before the first test.
+            if run_command(
+                    compose_command(
+                        "exec",
+                        "-T",
+                        name,
+                        "sh",
+                        "-c",
+                        f"sed -i -E 's#<ApiKey>[^<]*</ApiKey>#<ApiKey>{ARR_API_KEY}</ApiKey>#' /config/config.xml",
+                    )
+            ) != 0 or run_command(compose_command("restart", name)) != 0:
                 raise RuntimeError(f"Unable to configure the API key for runner-owned {name}")
         for name, url in services:
             wait_for_url(name, url, timeout, headers=headers, accept_client_errors=True)
