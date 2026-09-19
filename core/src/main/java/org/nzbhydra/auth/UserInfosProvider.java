@@ -20,8 +20,6 @@ public class UserInfosProvider {
 
     @Autowired
     private ConfigProvider configProvider;
-    @Autowired
-    private HydraUserDetailsManager hydraUserDetailsManager;
 
     public BootstrappedDataTO getUserInfos(Principal principal) {
         BootstrappedDataTO bootstrappedData = new BootstrappedDataTO();
@@ -41,7 +39,18 @@ public class UserInfosProvider {
         boolean showLogout = true;
         Optional<UserAuthConfig> user;
         if (principal instanceof OAuth2AuthenticationToken token) {
-            user = auth.getUsers().stream().filter(x -> token.getPrincipal().getAttribute("preferred_username").toString().equalsIgnoreCase(x.getUsername())).findFirst();
+            //The principal's own name, which is the username the login already resolved and loaded the Hydra user
+            //with: SecurityConfig.getOidcUserService() builds the principal with auth.oidcUsernameClaim as its name
+            //attribute, and the client registration uses the same claim as its userNameAttributeName. Reading
+            //"preferred_username" here instead meant that an installation configuring another claim (e.g. email)
+            //authenticated fine and then matched no configured user here, so maySeeSearch was false and the search
+            //route guard sent that user to the login form. It also could not throw: an arbitrary claim may be absent
+            //from a token, which made the old .toString() a NullPointerException, while a principal's name always
+            //exists - Spring refuses to build one whose name attribute is missing.
+            String principalName = token.getPrincipal().getName();
+            //equalsIgnoreCase mirrors the login: HydraUserDetailsManager keeps its users in a
+            //TreeMap(String.CASE_INSENSITIVE_ORDER), so this recognizes exactly the spellings that authenticate
+            user = auth.getUsers().stream().filter(x -> principalName.equalsIgnoreCase(x.getUsername())).findFirst();
             showLogout = false;
         } else {
             user = principal == null ? Optional.empty() : auth.getUsers().stream().filter(x -> Objects.equals(x.getUsername(), principal.getName())).findFirst();
