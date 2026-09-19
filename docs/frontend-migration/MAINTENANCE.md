@@ -3927,3 +3927,12 @@ their text and relative order are unchanged.
   `RADARR__APIKEY`, so the `sed` may be redundant entirely.
 - A changelog entry whose type is none of feature/fix/note renders no badge, and its text then starts where the badge column is. Legacy behaved the same; the data has carried only those three types so far.
 - The indexer picker is untested at ~25 indexers (the installation size the code's own comment names) and in the checkbox presentation at phone width.
+
+### 2026-09-19 — Disable black-hole and copy-links actions with no selection
+
+- **Why not a packet:** one genuinely contained bugfix, confined to `DownloadActions.tsx`'s `disabled` conditions, shipped with a regression test that failed before the fix and passed after. No new `data-testid`, no contract or
+  capability change — both controls already toast-refused an empty selection at click time; this only makes them actually disabled, matching the existing `ZIP`/`send-to-downloader` pattern.
+- **Paths:** `core/ui-react/src/features/search/results/DownloadActions.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (145 files, 2118 tests), `build`, `check:api`, `validate:migration` — all clean. `git diff --check` clean. No
+  `tests/system` change, so no real-backend run.
+- **Commit:** `5c5f7fa48`

@@ -508,7 +508,7 @@ export function DownloadActions({
                         settings.saveTorrents ||
                         settings.sendMagnets) && (
                         <MenuItem
-                            disabled={busy}
+                            disabled={busy || results.length === 0}
                             onClick={() => {
                                 closeMoreMenu();
                                 void saveToBlackHole();
@@ -518,6 +518,7 @@ export function DownloadActions({
                         </MenuItem>
                     )}
                     <MenuItem
+                        disabled={results.length === 0}
                         onClick={() => {
                             closeMoreMenu();
                             void copy();
@@ -635,7 +636,7 @@ export function DownloadActions({
                 settings.saveTorrents ||
                 settings.sendMagnets) && (
                 <Button
-                    disabled={busy}
+                    disabled={busy || results.length === 0}
                     onClick={saveToBlackHole}
                     size="small"
                     variant="control"
@@ -643,7 +644,12 @@ export function DownloadActions({
                     Send selected to black hole
                 </Button>
             )}
-            <Button onClick={copy} size="small" variant="control">
+            <Button
+                disabled={results.length === 0}
+                onClick={copy}
+                size="small"
+                variant="control"
+            >
                 Copy selected links
             </Button>
             {onSaveSearch && (

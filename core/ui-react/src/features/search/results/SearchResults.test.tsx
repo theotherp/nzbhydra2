@@ -935,6 +935,7 @@ describe("SearchResults", () => {
                 downloading: {
                     downloaders: [{name: "SAB", enabled: true}],
                     fileDownloadAccessType: "PROXY",
+                    saveNzbsTo: "/blackhole",
                 },
             },
         };
@@ -953,9 +954,19 @@ describe("SearchResults", () => {
         const zip = within(bar).getByRole("button", {
             name: "Download selected NZBs as ZIP",
         });
-        // Disabled (not toast-blocked) with no selection.
+        const blackHole = within(bar).getByRole("button", {
+            name: "Send selected to black hole",
+        });
+        const copy = within(bar).getByRole("button", {
+            name: "Copy selected links",
+        });
+        // Disabled (not toast-blocked) with no selection -- black hole and
+        // copy used to stay clickable here and only refuse via a toast at
+        // click time, unlike ZIP and send-to-downloader.
         expect(send).toBeDisabled();
         expect(zip).toBeDisabled();
+        expect(blackHole).toBeDisabled();
+        expect(copy).toBeDisabled();
         const summary = screen.getByTestId("search-results-summary");
         // The one count phrase: no filtered, rejected, or selected clause is
         // present while each of those counts is zero.
@@ -971,6 +982,8 @@ describe("SearchResults", () => {
         );
         expect(send).toBeEnabled();
         expect(zip).toBeEnabled();
+        expect(blackHole).toBeEnabled();
+        expect(copy).toBeEnabled();
         expect(summary).toHaveTextContent("· 1 selected");
     });
 
