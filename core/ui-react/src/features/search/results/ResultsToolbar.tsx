@@ -7,6 +7,7 @@ import type {ContextType, Dispatch, RefObject, SetStateAction} from "react";
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import type {DialogContext} from "../../../components/dialogs/dialogs";
 import type {ToastContext} from "../../../components/toasts/toasts";
+import {downloadSettings} from "../../../domain/downloads/actions";
 import {DownloadActions} from "./DownloadActions";
 import {REFINE_LABELS} from "./RefineSidebar";
 import {
@@ -90,9 +91,11 @@ export function ResultsToolbar({
     setSelected,
     setShowCovers,
     setShowDuplicateControls,
+    setShowZipButton,
     setSorting,
     showCovers,
     showDuplicateControls,
+    showZipButton,
     sorting,
     table,
     toasts,
@@ -142,9 +145,12 @@ export function ResultsToolbar({
     setSelected: Dispatch<SetStateAction<Set<string>>>;
     setShowCovers: Dispatch<SetStateAction<boolean>>;
     setShowDuplicateControls: Dispatch<SetStateAction<boolean>>;
+    setShowZipButton: Dispatch<SetStateAction<boolean>>;
     setSorting: (next: SortingState) => void;
     showCovers: boolean;
     showDuplicateControls: boolean;
+    // FM-197: the browser-local preference; see `useResultDisplayChoices`.
+    showZipButton: boolean;
     sorting: SortingState;
     table: Table<SearchResult>;
     toasts: ContextType<typeof ToastContext>;
@@ -162,6 +168,12 @@ export function ResultsToolbar({
     // was already hidden from 767px down, so between 600 and 767px the page
     // had no select-all at all. FM-181 also moves it to the start of row 1,
     // where it is reachable without a selection.
+    // FM-197: derived once, from the live config
+    // (`downloadSettings(effectiveSafeConfig).zip`), and passed to both the
+    // Display popover's entry and `DownloadActions`'s button/menu-item so
+    // neither can disagree about whether a server-built ZIP is even
+    // possible.
+    const zipButtonAllowed = downloadSettings(effectiveSafeConfig).zip;
     const mobileSelectionMenu = (
         <SelectionMenu
             idPrefix="toolbar"
@@ -381,9 +393,14 @@ export function ResultsToolbar({
                                         (current) => !current,
                                     )
                                 }
+                                onToggleShowZipButton={() =>
+                                    setShowZipButton((current) => !current)
+                                }
                                 refineSurfaceShown={refineSurfaceShown}
                                 showCovers={showCovers}
                                 showDuplicateControls={showDuplicateControls}
+                                showZipButton={showZipButton}
+                                zipButtonAllowed={zipButtonAllowed}
                             />
                             {/* FM-181: below 768px the refine
                                 surface's trigger lives here rather
@@ -484,6 +501,8 @@ export function ResultsToolbar({
                             // seed with no provider above.
                             safeConfig={effectiveSafeConfig}
                             savingSearch={savingSearch}
+                            showZipButton={showZipButton}
+                            zipButtonAllowed={zipButtonAllowed}
                         />
                     ) : (
                         // Defensive fallback for the (never exercised

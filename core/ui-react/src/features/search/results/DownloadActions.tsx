@@ -89,6 +89,8 @@ export function DownloadActions({
     onDownloaded,
     onSaveSearch,
     savingSearch = false,
+    showZipButton,
+    zipButtonAllowed,
 }: {
     /**
      * FM-181: the below-768px rendering of the same state. A phone cannot
@@ -105,12 +107,24 @@ export function DownloadActions({
     onDownloaded: (ids: number[]) => void;
     onSaveSearch?: () => Promise<void>;
     savingSearch?: boolean;
+    // FM-197: the browser-local "Show button to download results as ZIP"
+    // preference (`useResultDisplayChoices`'s `showZipButton`); the button
+    // and its overflow-menu entry render only while this *and*
+    // `zipButtonAllowed` both hold.
+    showZipButton: boolean;
+    // FM-197: `downloadSettings(effectiveSafeConfig).zip`, derived once by
+    // `ResultsToolbar` and passed here rather than re-derived from
+    // `safeConfig` -- the same value also reaches `DisplayOptionsMenu`, so
+    // the two renderings can never disagree about whether a server-built
+    // ZIP is even possible.
+    zipButtonAllowed: boolean;
 }) {
     const dialogs = useDialogs();
     const toasts = useToasts();
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
     const downloaders = configuredDownloaders(safeConfig);
     const settings = downloadSettings(safeConfig);
+    const showZip = zipButtonAllowed && showZipButton;
     // FM-159 (ADR-0017): only the user's *explicit* choice is state, and it is
     // held by name rather than by object identity. The active downloader is
     // then derived from the current list on every render, so a downloader
@@ -479,7 +493,7 @@ export function DownloadActions({
                         } as MenuListProps,
                     }}
                 >
-                    {settings.zip && (
+                    {showZip && (
                         <MenuItem
                             disabled={busy || selectedNzbs.length === 0}
                             onClick={() => {
@@ -607,7 +621,7 @@ export function DownloadActions({
                 </Alert>
             )}
             {categoryError && <Alert severity="error">{categoryError}</Alert>}
-            {settings.zip && (
+            {showZip && (
                 <Button
                     disabled={busy || selectedNzbs.length === 0}
                     onClick={zip}

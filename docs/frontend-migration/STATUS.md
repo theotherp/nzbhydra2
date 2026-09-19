@@ -1814,6 +1814,15 @@ leg; no test leg clicks a trigger whose hover preview starts closed (the branchl
 but it is a literal gap against the packet's "opens from any starting state" wording). Candidates for a future
 quickfix.
 
+FM-197 (Restore The Results ZIP Button As A Browser-Local Display Option) is done. `downloadSettings().zip` now reads
+`downloading.fileDownloadAccessType === "PROXY"` instead of the never-populated `searching.showResultsAsZipButton`; a
+new `showZipButton` preference (default on, ADR-0054) joins the display-options popover, rendered only while the
+capability holds and retained when hidden, and gates the desktop button and the phone overflow entry alongside it —
+both were previously unreachable dead code. Passed with minor findings, not corrected (optional): the handoff's own
+enumeration of extended pre-existing system-test assertions missed one (`results.spec.ts:2139-2148`); a pre-existing
+lead-in comment there now reads as contradicting the entry it precedes, which defaults on. Candidates for a future
+quickfix.
+
 ## Review
 
 None.
@@ -1823,12 +1832,6 @@ None.
 None.
 
 ## Upcoming
-
-- FM-197: restore the results ZIP button as a browser-local display option — planned and dependency-ready. The bulk
-  "Download selected NZBs as ZIP" action is unreachable because `downloadSettings().zip` reads a
-  `searching.showResultsAsZipButton` field no backend config ever had. Owner ruling 2026-09-19: restore legacy's
-  two-part gate — the `downloading.fileDownloadAccessType === "PROXY"` capability plus a browser-local display option
-  defaulting on (ADR-0054) — with the button and its phone overflow entry left where they already sit.
 
 - FM-198: restore "Hide downloaded results" as a counted display option — planned and dependency-ready. React parses
   `downloadedAt` but nothing reads it, so legacy's filter (`search-results-controller.js:719`) is gone. Restores the

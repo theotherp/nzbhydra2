@@ -932,8 +932,10 @@ describe("SearchResults", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",
             safeConfig: {
-                downloading: {downloaders: [{name: "SAB", enabled: true}]},
-                searching: {showResultsAsZipButton: true},
+                downloading: {
+                    downloaders: [{name: "SAB", enabled: true}],
+                    fileDownloadAccessType: "PROXY",
+                },
             },
         };
         renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
@@ -970,6 +972,69 @@ describe("SearchResults", () => {
         expect(send).toBeEnabled();
         expect(zip).toBeEnabled();
         expect(summary).toHaveTextContent("· 1 selected");
+    });
+
+    // FM-197: legacy's two-part gate restored -- a capability
+    // (`downloading.fileDownloadAccessType === "PROXY"`) and a browser-local
+    // preference (`showZipButton`, on by default). `REDIRECT` (the backend
+    // default) hides both renderings regardless of the preference; `PROXY`
+    // with nothing stored shows both; switching the preference off clears
+    // both and persists the choice; and a stored `false` keeps the button
+    // hidden on the next mount even though the capability holds.
+    it("should gate the ZIP button and its display-options entry on both the proxied-download capability and the browser-local preference", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {fileDownloadAccessType: "REDIRECT"}},
+        };
+        const {unmount} = renderResults(
+            <SearchResults data={downloadActionResponse("NZB")} />,
+        );
+        expect(
+            screen.queryByRole("button", {
+                name: "Download selected NZBs as ZIP",
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(openDisplayOptions()).queryByRole("checkbox", {
+                name: "Show button to download results as ZIP",
+            }),
+        ).toBeNull();
+        closeDisplayOptions();
+        unmount();
+
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {downloading: {fileDownloadAccessType: "PROXY"}},
+        };
+        const second = renderResults(
+            <SearchResults data={downloadActionResponse("NZB")} />,
+        );
+        expect(
+            screen.getByRole("button", {name: "Download selected NZBs as ZIP"}),
+        ).toBeInTheDocument();
+        const entry = displayOption("Show button to download results as ZIP");
+        expect(entry).toBeChecked();
+        fireEvent.click(entry);
+        closeDisplayOptions();
+        expect(
+            screen.queryByRole("button", {
+                name: "Download selected NZBs as ZIP",
+            }),
+        ).not.toBeInTheDocument();
+        expect(storedChoices()).toMatchObject({showZipButton: false});
+        second.unmount();
+
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(
+            screen.queryByRole("button", {
+                name: "Download selected NZBs as ZIP",
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(openDisplayOptions()).getByRole("checkbox", {
+                name: "Show button to download results as ZIP",
+            }),
+        ).not.toBeChecked();
     });
 
     it("should hide the downloader select when only one downloader is configured, and order the downloader/category selects before the send button", () => {
@@ -2318,8 +2383,10 @@ describe("SearchResults", () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",
             safeConfig: {
-                downloading: {saveNzbsTo: "/blackhole"},
-                searching: {showResultsAsZipButton: true},
+                downloading: {
+                    fileDownloadAccessType: "PROXY",
+                    saveNzbsTo: "/blackhole",
+                },
             },
         };
         const fetchImplementation = vi.fn();
@@ -2402,7 +2469,7 @@ describe("SearchResults", () => {
     it("should prepare and transfer a ZIP, then copy selected links", async () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/hydra/",
-            safeConfig: {searching: {showResultsAsZipButton: true}},
+            safeConfig: {downloading: {fileDownloadAccessType: "PROXY"}},
         };
         const clipboard = {writeText: vi.fn().mockResolvedValue(undefined)};
         vi.stubGlobal("navigator", {clipboard});
@@ -2459,7 +2526,7 @@ describe("SearchResults", () => {
     it("should reject a successful ZIP preparation response without a file path", async () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",
-            safeConfig: {searching: {showResultsAsZipButton: true}},
+            safeConfig: {downloading: {fileDownloadAccessType: "PROXY"}},
         };
         const fetchImplementation = vi
             .fn()
@@ -4463,6 +4530,7 @@ describe("SearchResults", () => {
             "refineIndexerOpen",
             "showCovers",
             "showDuplicateControls",
+            "showZipButton",
             "sidebarCollapsed",
             "sorting",
         ]);
@@ -5687,9 +5755,9 @@ describe("SearchResults phone chrome", () => {
                         {name: "SAB", enabled: true},
                         {name: "NZBGet", enabled: true},
                     ],
+                    fileDownloadAccessType: "PROXY",
                     saveTorrentsTo: "/tmp",
                 },
-                searching: {showResultsAsZipButton: true},
             },
         };
         renderPhone();

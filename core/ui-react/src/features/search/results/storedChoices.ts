@@ -41,6 +41,12 @@ export type StoredChoices = {
     // (`search-results-controller.js:153`); here it joins the other display
     // options in this one payload.
     showCovers?: boolean;
+    // FM-197 (ADR-0054): "Show button to download results as ZIP", legacy's
+    // preference (`search-results-controller.js:171,317-320` at
+    // `3ce28441e^`), which defaulted *on* there and here. Offered only while
+    // `downloadSettings().zip` (proxied downloads) holds; the stored value
+    // survives while the option is hidden.
+    showZipButton?: boolean;
     sidebarCollapsed?: boolean;
     sorting?: SortingState;
 };

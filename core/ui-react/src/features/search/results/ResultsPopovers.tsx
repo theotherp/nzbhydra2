@@ -206,9 +206,12 @@ export function DisplayOptionsMenu({
     onToggleRefineSurface,
     onToggleShowCovers,
     onToggleShowDuplicateControls,
+    onToggleShowZipButton,
     refineSurfaceShown,
     showCovers,
     showDuplicateControls,
+    showZipButton,
+    zipButtonAllowed,
 }: {
     /**
      * FM-181: below 768px the whole results chrome is one sticky row, which
@@ -239,6 +242,7 @@ export function DisplayOptionsMenu({
     onToggleRefineSurface: () => void;
     onToggleShowCovers: () => void;
     onToggleShowDuplicateControls: () => void;
+    onToggleShowZipButton: () => void;
     // "Is the refine surface currently shown", resolved by the parent from
     // whichever per-viewport mechanism is live, so this entry's checked state
     // can never disagree with the live `refine-sidebar-toggle`'s
@@ -251,6 +255,14 @@ export function DisplayOptionsMenu({
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there too.
     showDuplicateControls: boolean;
+    // FM-197: legacy's "Show button to download results as ZIP"
+    // (`search-results-controller.js:171`), on by default there and here.
+    showZipButton: boolean;
+    // Whether a server-built ZIP is even possible (`downloadSettings().zip`,
+    // proxied downloads). Legacy pushed this entry only when allowed
+    // (`:212-213`); the entry is omitted rather than disabled while it does
+    // not hold, and the stored preference survives being hidden.
+    zipButtonAllowed: boolean;
 }) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
@@ -317,6 +329,15 @@ export function DisplayOptionsMenu({
             label: "Show covers",
             onToggle: onToggleShowCovers,
         },
+        ...(zipButtonAllowed
+            ? [
+                  {
+                      checked: showZipButton,
+                      label: "Show button to download results as ZIP",
+                      onToggle: onToggleShowZipButton,
+                  },
+              ]
+            : []),
     ];
     const toggleProps = {
         "aria-expanded": open ? ("true" as const) : ("false" as const),

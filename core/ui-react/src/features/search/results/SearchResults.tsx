@@ -229,10 +229,12 @@ export function SearchResults({
         setIndexerOpen,
         setShowCovers,
         setShowDuplicateControls,
+        setShowZipButton,
         setSidebarCollapsed,
         setSorting,
         showCovers,
         showDuplicateControls,
+        showZipButton,
         sidebarCollapsed,
         sorting,
     } = useResultDisplayChoices();
@@ -1020,9 +1022,11 @@ export function SearchResults({
                     setSelected={setSelected}
                     setShowCovers={setShowCovers}
                     setShowDuplicateControls={setShowDuplicateControls}
+                    setShowZipButton={setShowZipButton}
                     setSorting={setSorting}
                     showCovers={showCovers}
                     showDuplicateControls={showDuplicateControls}
+                    showZipButton={showZipButton}
                     sorting={sorting}
                     table={table}
                     toasts={toasts}

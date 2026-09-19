@@ -62,6 +62,12 @@ export function useResultDisplayChoices() {
     const [showCovers, setShowCovers] = useState(
         () => choices.showCovers ?? false,
     );
+    // FM-197: legacy's "Show button to download results as ZIP"
+    // (`search-results-controller.js:171` at `3ce28441e^`), which defaulted
+    // *on* there and here.
+    const [showZipButton, setShowZipButton] = useState(
+        () => choices.showZipButton ?? true,
+    );
     // Lifted from `RefineSidebar.tsx` by this task (FM-089), matching the
     // `sidebarCollapsed`/`drawerOpen` precedent above: `RefineSidebar` stays
     // presentational and these two persist through the same
@@ -114,6 +120,7 @@ export function useResultDisplayChoices() {
                 refineIndexerOpen: indexerOpen,
                 showCovers,
                 showDuplicateControls,
+                showZipButton,
                 sidebarCollapsed,
                 sorting,
             } satisfies StoredChoices),
@@ -129,6 +136,7 @@ export function useResultDisplayChoices() {
         indexerOpen,
         showCovers,
         showDuplicateControls,
+        showZipButton,
         sidebarCollapsed,
         sorting,
     ]);
@@ -152,10 +160,12 @@ export function useResultDisplayChoices() {
         setIndexerOpen,
         setShowCovers,
         setShowDuplicateControls,
+        setShowZipButton,
         setSidebarCollapsed,
         setSorting,
         showCovers,
         showDuplicateControls,
+        showZipButton,
         sidebarCollapsed,
         sorting,
     };

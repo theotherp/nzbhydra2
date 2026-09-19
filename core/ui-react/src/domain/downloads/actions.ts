@@ -199,10 +199,12 @@ export function downloadSettings(safeConfig: unknown): {
             typeof downloading.saveTorrentsTo === "string" &&
             downloading.saveTorrentsTo.length > 0,
         sendMagnets: downloading.sendMagnetLinks === true,
-        zip:
-            record(safeConfig) &&
-            record(safeConfig.searching) &&
-            safeConfig.searching.showResultsAsZipButton === true,
+        // FM-197: a server-built ZIP needs proxied downloads, matching
+        // legacy's `allowZipDownload` (`search-results-controller.js:19`
+        // at `3ce28441e^`). The browser-local "show the button" preference
+        // is a separate gate; see `useResultDisplayChoices`'s
+        // `showZipButton`.
+        zip: downloading.fileDownloadAccessType === "PROXY",
     };
 }
 

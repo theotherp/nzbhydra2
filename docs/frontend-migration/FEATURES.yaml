@@ -309,6 +309,15 @@ features:
       # the two surfaces are never on screen together: the click closes the
       # preview, and the preview only returns once the dialog has handed focus
       # back to the trigger and left the DOM.
+      # 2026-09-19 (FM-197): `display-options` gains "Show button to
+      # download results as ZIP", legacy's own preference
+      # (`search-results-controller.js:171,212-213` at `3ce28441e^`),
+      # default on, browser-local in the same `hydra.search-results.table`
+      # payload as every other option here (ADR-0054). It renders only
+      # while F-SEARCH-DOWNLOADS' capability
+      # (`downloading.fileDownloadAccessType === "PROXY"`) holds; hidden,
+      # the stored preference is kept, not reset. No new selector -- it is
+      # one more `display-options` checkbox entry.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
@@ -642,6 +651,16 @@ features:
     # every legacy row action in `search-result.html:100-131` now has a React
     # equivalent. The two gaps above are unchanged and still hold this record
     # at `partial`.
+    # 2026-09-19 (FM-197): the bulk-bar ZIP action ships. It was previously
+    # dead code -- gated on a `safeConfig.searching.showResultsAsZipButton`
+    # read that no `SearchingConfig.java` field ever backed. The gate is now
+    # legacy's own two-part one: the capability
+    # `downloading.fileDownloadAccessType === "PROXY"` (a server-built ZIP
+    # needs proxied downloads) and a browser-local "Show button to download
+    # results as ZIP" preference, default on, in F-SEARCH-RESULTS' display
+    # options. No selector or `parity` changes -- the desktop button and the
+    # `results-more-actions-menu` entry were already listed selectors,
+    # newly reachable rather than newly added.
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
     routes:

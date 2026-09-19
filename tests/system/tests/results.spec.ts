@@ -1459,21 +1459,13 @@ test.describe("Search results", () => {
         page,
     }) => {
         await hydra.configureSabnzbdMock();
-        // The NZB ZIP primary action's `disabled` gate is not exercised
-        // against a real backend by this test: `downloadSettings().zip`
-        // (core/ui-react/src/domain/downloads/actions.ts, unchanged and out
-        // of this task's scope) reads `safeConfig.searching.
-        // showResultsAsZipButton`, but that flag is a pre-existing, legacy
-        // localStorage-only preference (core/ui-src/js/search-results-
-        // controller.js) that was never part of `SearchingConfig.java` and
-        // so can never be persisted through `PUT /internalapi/config` or
-        // observed truthy in a real `safeConfig` -- confirmed by grepping
-        // the Java config sources. "Send to downloader" is the one of the
-        // bar's two primary actions genuinely reachable end-to-end here
-        // (its downloader is real, via `configureSabnzbdMock()`); the ZIP
-        // action's identical disabled-until-selected gating is instead
-        // exhaustively covered by this task's own component tests in
-        // SearchResults.test.tsx, which construct `safeConfig` directly.
+        // FM-197: `configureSabnzbdMock()` sets `downloading.nzbAccessType`
+        // to `"PROXY"`, which `SafeDownloadingConfig.java` derives into
+        // `fileDownloadAccessType`, so `downloadSettings().zip`
+        // (core/ui-react/src/domain/downloads/actions.ts) is true against
+        // this real backend and the ZIP action's disabled-until-selected
+        // gate is exercised end-to-end below, alongside "Send to
+        // downloader".
         const now = Math.floor(Date.now() / 1_000);
         await page.route("**/internalapi/search", (route) =>
             route.fulfill({
@@ -1533,12 +1525,19 @@ test.describe("Search results", () => {
 
         const bar = page.getByTestId("results-bulk-actions");
         const send = page.getByTestId("send-to-downloader");
+        // FM-197: joins `send` as a second primary action this real,
+        // PROXY-configured backend renders (see the note above `configure
+        // SabnzbdMock()`).
+        const zip = bar.getByRole("button", {
+            name: "Download selected NZBs as ZIP",
+        });
         const headerMenu = page.getByTestId("header-selection-menu");
         const headerCheckbox = headerMenu.getByRole("checkbox", {
             name: "Select all visible results",
         });
 
         await expect(send).toBeDisabled();
+        await expect(zip).toBeDisabled();
         await expect(headerCheckbox).not.toBeChecked();
         await expect(headerCheckbox).toHaveAttribute(
             "data-indeterminate",
@@ -1590,6 +1589,7 @@ test.describe("Search results", () => {
             "true",
         );
         await expect(send).toBeEnabled();
+        await expect(zip).toBeEnabled();
         // FM-055: the selected count is rendered once, inside
         // `search-results-summary` (the former `results-selected-count`
         // duplicate in this row is gone).
@@ -1733,6 +1733,21 @@ test.describe("Search results", () => {
             "F-SEARCH-GROUP-SELECTION",
             "bulk-actions-mobile",
         );
+        // FM-197: the compact overflow menu's ZIP entry, first above "Send
+        // selected to black hole".
+        await mobileBar.getByTestId("results-more-actions").click();
+        const mobileMoreMenu = page.getByTestId("results-more-actions-menu");
+        await expect(
+            mobileMoreMenu.getByRole("menuitem", {
+                name: "Download selected NZBs as ZIP",
+            }),
+        ).toBeVisible();
+        await captureVisualRegion(
+            mobileMoreMenu,
+            "F-SEARCH-DOWNLOADS",
+            "results-more-actions-menu-zip-entry",
+        );
+        await page.keyboard.press("Escape");
         await expect(
             toolbarMenu.getByRole("checkbox", {
                 name: "Select all visible results (mobile)",
@@ -2124,6 +2139,11 @@ test.describe("Search results", () => {
             ["Compact rows", false],
             ["Highlight recent", false],
             ["Show duplicate expand controls", false],
+            // FM-197: this instance's baseline config
+            // (`tests/system/data/nzbhydra.yml:320`) sets
+            // `nzbAccessType: "PROXY"`, so the capability holds and the
+            // entry renders, checked by its own default.
+            ["Show button to download results as ZIP", true],
             ["Show refine sidebar", true],
         ] as Array<[string, boolean]>) {
             const entry = page.getByRole("checkbox", {name, exact: true});
@@ -3304,7 +3324,10 @@ test.describe("Search results", () => {
                 await page.keyboard.press("Escape");
                 await mobileActions.getByTestId("results-more-actions").click();
                 const moreMenu = page.getByTestId("results-more-actions-menu");
+                // FM-197: the compact overflow entry stays first, above
+                // "Send selected to black hole".
                 for (const name of [
+                    "Download selected NZBs as ZIP",
                     "Send selected to black hole",
                     "Copy selected links",
                 ]) {
@@ -3352,11 +3375,11 @@ test.describe("Search results", () => {
                 // way).
                 const selects = actions.locator(".MuiInputBase-root");
                 await expect(selects).toHaveCount(1);
-                // The ZIP button is config-gated (`showResultsAsZipButton`, off in
-                // this instance) and covered by the component test instead; every
-                // capability this instance's configuration does render is asserted
-                // present in the merged row.
+                // FM-197: `configureSabnzbdMock()` makes this a
+                // PROXY-configured instance, so the ZIP button joins the
+                // rest of the merged row.
                 for (const name of [
+                    "Download selected NZBs as ZIP",
                     "Send selected to black hole",
                     "Copy selected links",
                     "Save search",
@@ -4650,6 +4673,7 @@ test.describe("Search results", () => {
             "Highlight recent",
             "Show duplicate expand controls",
             "Show covers",
+            "Show button to download results as ZIP",
             "Show refine sidebar",
         ]);
         await expect(
@@ -4994,6 +5018,7 @@ test.describe("Search results", () => {
             "Highlight recent",
             "Show duplicate expand controls",
             "Show covers",
+            "Show button to download results as ZIP",
             "Show refine sidebar",
         ]);
         await captureVisualRegion(
