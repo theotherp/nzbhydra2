@@ -27,6 +27,7 @@ import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {readItem, writeItem} from "../../../domain/storage/browserStorage";
 import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
 import {IndexerSelectionButton} from "./IndexerSelectionButton";
+import {SelectedIndexersValue} from "./SelectedIndexersValue";
 import type {SearchFormValues} from "./searchFormModel";
 import {identifierFields, mediaTypeForCategoryName} from "./searchFormModel";
 import {
@@ -991,6 +992,16 @@ export function SearchWorkspace({
                                     sx={{
                                         ...advancedSectionSx,
                                         flex: "1 1 100%",
+                                        // A flex item's `min-width: auto` lets
+                                        // it grow to whatever its content
+                                        // measures, which is how ten selected
+                                        // indexer names pushed this section --
+                                        // and with it the select's dropdown
+                                        // arrow -- past the right edge of a
+                                        // phone. Clamped to the row, the
+                                        // field's own value is what has to
+                                        // give (`SelectedIndexersValue`).
+                                        minWidth: 0,
                                     }}
                                 >
                                     <Typography
@@ -1008,6 +1019,18 @@ export function SearchWorkspace({
                                                 slotProps={{
                                                     select: {
                                                         multiple: true,
+                                                        renderValue: (
+                                                            value,
+                                                        ) => (
+                                                            <SelectedIndexersValue
+                                                                names={
+                                                                    value as string[]
+                                                                }
+                                                                total={
+                                                                    eligibleIndexers.length
+                                                                }
+                                                            />
+                                                        ),
                                                         value: selectedIndexers,
                                                         onChange: (event) =>
                                                             selectIndexers(

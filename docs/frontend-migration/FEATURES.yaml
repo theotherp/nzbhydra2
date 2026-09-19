@@ -154,8 +154,13 @@ features:
       - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
     selectors:
       # FM-087's indexer-count chip (warning-coloured while nothing is
-      # selected); the selection itself carries no test id of its own.
+      # selected).
       - search-chip-indexers
+      # 2026-09-19 (owner defect): what the indexer select shows for its
+      # selection -- the names while they fit on one line, "x/y selected" when
+      # they do not. Addressable because the choice is a laid-out fact that
+      # only a browser can establish.
+      - workspace-indexers-value
     parity: partial
     gaps:
       - deliberate - the search form's indexer-selection checkboxes are not tinted with the indexer's configured colour (legacy's `indexer-input.js:41-42`); the owner named result rows for FM-096, and the setting's help text promises only search results

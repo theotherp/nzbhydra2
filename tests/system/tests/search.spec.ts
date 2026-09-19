@@ -9,6 +9,7 @@ import {
     captureVisualRegion,
     expectVisualGeometry,
     prepareVisualEvidence,
+    visualEvidencePath,
     visualViewports,
 } from "./visualEvidence";
 
@@ -20,6 +21,22 @@ const movieQuery = "Hydra Browser Movie";
  * `localStorage`, so a case that needs those controls opens the disclosure
  * only when it is actually closed.
  */
+/**
+ * The value's *visible* text alone: `SelectedIndexersValue` keeps a hidden
+ * copy of the names inside the same element to measure against, so
+ * `textContent` always holds them and could not tell the two states apart.
+ */
+async function visibleValueText(
+    page: import("@playwright/test").Page,
+): Promise<string> {
+    return page.getByTestId("workspace-indexers-value").evaluate((element) =>
+        Array.from(element.childNodes)
+            .filter((node) => node.nodeType === Node.TEXT_NODE)
+            .map((node) => node.textContent)
+            .join(""),
+    );
+}
+
 async function openAdvanced(
     page: import("@playwright/test").Page,
 ): Promise<void> {
@@ -903,6 +920,88 @@ test.describe("Search", () => {
         await expect(modal).toBeHidden();
         await expect(page.getByTestId("search-results")).toHaveCount(0);
         await expect(page.getByRole("alert")).toHaveCount(0);
+    });
+
+    /**
+     * Owner defect (2026-09-19): with ten indexers the select joined every
+     * selected name, so on a phone the field ran far past the viewport and
+     * the dropdown arrow -- the only thing that opened it -- sat off screen,
+     * out of reach without scrolling sideways. The names now give way to
+     * "x/y selected" when they do not fit, which is a fact about laid-out
+     * text that only a browser can establish.
+     */
+    test("should summarize a wide indexer selection on a phone and stay tappable", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureMockIndexers([
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+        ]);
+        await page.setViewportSize(visualViewports.mobile);
+        await page.goto("/");
+        await openAdvanced(page);
+
+        const select = page.getByRole("combobox", {name: "Indexers"});
+        const value = page.getByTestId("workspace-indexers-value");
+        await expect(value).toBeVisible();
+        // Ten preselected indexers: far more name than a 390px phone can show
+        await expect.poll(() => visibleValueText(page)).toBe("10/10 selected");
+
+        const box = await select.boundingBox();
+        expect(box).not.toBeNull();
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+            visualViewports.mobile.width,
+        );
+        expect(
+            await page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth -
+                    document.documentElement.clientWidth,
+            ),
+        ).toBeLessThanOrEqual(1);
+
+        // A tap near the field's left edge opens the menu. `.MuiSelect-select`
+        // always covered the whole field, so this passed before the fix too --
+        // what the owner could not reach was the field itself, which the
+        // viewport assertion above is the real check for.
+        await select.click({position: {x: 16, y: 8}});
+        await expect(
+            page.getByRole("option", {exact: true, name: "Mock1"}),
+        ).toBeVisible();
+        await page.keyboard.press("Escape");
+
+        // Visual Gate: the summarized selection on a phone.
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await expect(value).toBeVisible();
+        });
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-INDEXERS",
+                "indexer-selection-summary-mobile",
+            ),
+        });
+
+        // Widening the same page must bring the names back without a remount:
+        // that is the `ResizeObserver` path, which a fresh navigation would
+        // never exercise. A phone is ~390px and the panel is ~1100px wide
+        // here, so ten names fit again.
+        await page.setViewportSize(visualViewports.desktop);
+        await expect
+            .poll(() => visibleValueText(page))
+            .toMatch(/^Mock1, Mock10, /);
+
+        // And back the other way, on the same page.
+        await page.setViewportSize(visualViewports.mobile);
+        await expect.poll(() => visibleValueText(page)).toBe("10/10 selected");
     });
 
     test("should submit the explicit React indexer selection in both presentations", async ({

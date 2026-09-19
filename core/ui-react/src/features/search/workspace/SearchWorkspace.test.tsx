@@ -1379,6 +1379,71 @@ describe("SearchWorkspace", () => {
             ).toHaveFocus();
         });
 
+        // Owner defect (2026-09-19): the select joined every selected name,
+        // which on a phone with ten indexers ran the field past the viewport
+        // and pushed its dropdown arrow -- the only thing that opened it --
+        // off screen. The names stay while they fit; the summary takes over
+        // when they do not.
+        it("should name the selected indexers while they fit and count them when they do not", () => {
+            const observers: (() => void)[] = [];
+            vi.stubGlobal(
+                "ResizeObserver",
+                class {
+                    constructor(callback: () => void) {
+                        observers.push(callback);
+                    }
+                    disconnect() {}
+                    observe() {}
+                    unobserve() {}
+                },
+            );
+            renderWorkspace(
+                {category: "All", indexers: "First,Second"},
+                {catalog: selectionCatalog, showIndexerSelection: true},
+            );
+
+            const value = screen.getByTestId("workspace-indexers-value");
+            // Only the text nodes: the hidden copy that gets measured holds
+            // the names at every width, and is what makes the decision stable
+            const shown = () =>
+                Array.from(value.childNodes)
+                    .filter((node) => node.nodeType === Node.TEXT_NODE)
+                    .map((node) => node.textContent)
+                    .join("");
+            // jsdom lays nothing out, so every width is 0 and the names stay
+            expect(shown()).toBe("First, Second");
+
+            // What a phone produces: the laid-out names are wider than the
+            // field. The hidden copy is what is measured, so the decision
+            // cannot oscillate once the summary has replaced them.
+            const measured = value.querySelector(
+                "[aria-hidden='true']",
+            ) as HTMLElement;
+            Object.defineProperty(value, "clientWidth", {
+                configurable: true,
+                value: 120,
+            });
+            Object.defineProperty(measured, "scrollWidth", {
+                configurable: true,
+                value: 400,
+            });
+            act(() => {
+                for (const notify of observers) {
+                    notify();
+                }
+            });
+            expect(shown()).toBe("2/2 selected");
+
+            // The decision is taken on the hidden copy, which still holds the
+            // names at every width, so re-checking cannot swap back and forth.
+            act(() => {
+                for (const notify of observers) {
+                    notify();
+                }
+            });
+            expect(shown()).toBe("2/2 selected");
+        });
+
         it("should not count a full selection, and warn about an empty one", () => {
             renderWorkspace(
                 {category: "All", indexers: "First,Second"},
