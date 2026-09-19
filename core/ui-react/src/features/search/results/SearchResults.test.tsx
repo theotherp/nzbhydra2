@@ -4091,7 +4091,7 @@ describe("SearchResults", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("should preview the full-size cover on hover, on focus, and on tap, without ever taking focus off the trigger", async () => {
+    it("should preview the full-size cover on hover and on focus, without ever taking focus off the trigger", async () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
             baseUrl: "/",
             safeConfig: {searching: {coverSize: 140}},
@@ -4120,7 +4120,9 @@ describe("SearchResults", () => {
         // The trigger's own anatomy: a real button whose accessible name is
         // this action, advertising the surface it opens and its state. The
         // thumbnail inside keeps `alt=""`, so the name is the button's only
-        // text and the row's title stays the row's accessible content.
+        // text and the row's title stays the row's accessible content. FM-196
+        // moved the click to a second surface and left all of this alone --
+        // `aria-expanded` still describes the hover preview.
         expect(tile.tagName).toBe("BUTTON");
         expect(tile).toHaveAttribute("type", "button");
         expect(tile).toHaveAttribute(
@@ -4158,13 +4160,19 @@ describe("SearchResults", () => {
         // so every close below is awaited rather than asserted synchronously.
         await popoverClosed();
 
+        // FM-196: the four gestures that used to toggle this preview -- a tap,
+        // a mouse click after a keyboard focus, Enter and Space -- now open
+        // the lightbox instead. Each leg below is the FM-179 leg it replaces,
+        // re-based: what it asserts is that the preview is *not* what the
+        // click decides. The lightbox's own contract is the case after this
+        // one.
+        //
         // A touch tap, in the order a browser really emits: the synthesized
         // hover arrives *and leaves* again, and the button takes focus, all
         // before the click. Measured in Chromium touch emulation:
         // `pointerenter:touch -> pointerleave:touch -> mouseenter -> focus ->
-        // click`. The first tap has to open the preview -- legacy's
-        // tap-to-enlarge -- which it only does if neither the synthesized
-        // leave closes it nor the trailing click undoes what focus opened.
+        // click`. The synthesized hover must still not open the preview, the
+        // focus must, and the trailing click must enlarge.
         fireEvent.pointerEnter(tile, {pointerType: "touch"});
         expect(
             screen.queryByTestId("search-result-cover-popover"),
@@ -4172,39 +4180,37 @@ describe("SearchResults", () => {
         fireEvent.pointerLeave(tile, {pointerType: "touch"});
         fireEvent.pointerDown(tile, {pointerType: "touch"});
         act(() => tile.focus());
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
         // A pointer's click carries its click count; only a keyboard
         // synthesized click reports `detail: 0`.
         fireEvent.click(tile, {detail: 1});
         expect(
-            screen.getByTestId("search-result-cover-popover"),
+            screen.getByTestId("search-result-cover-lightbox"),
         ).toBeInTheDocument();
-        expect(tile).toHaveAttribute("aria-expanded", "true");
-        // A second tap -- the same sequence, minus the focus the trigger
-        // already holds -- closes it again.
-        fireEvent.pointerEnter(tile, {pointerType: "touch"});
-        fireEvent.pointerLeave(tile, {pointerType: "touch"});
-        fireEvent.pointerDown(tile, {pointerType: "touch"});
-        fireEvent.click(tile, {detail: 1});
         await popoverClosed();
-        act(() => tile.blur());
+        await dismissLightbox(tile);
 
-        // Keyboard focus, then a *mouse* click: the focus opened the preview,
-        // but the click is a new gesture (there was no pointer press before
-        // the focus), so it closes -- the same as clicking a hover-opened
-        // thumbnail (FM-179 review finding: the first mouse click used to be
-        // swallowed after a Tab).
+        // Keyboard focus, then a *mouse* click: the focus opened the preview
+        // and the click is a new gesture. Under FM-179 that combination was
+        // the one that closed the preview; now it enlarges like every other
+        // click.
         act(() => tile.focus());
         expect(
             screen.getByTestId("search-result-cover-popover"),
         ).toBeInTheDocument();
         fireEvent.pointerDown(tile, {pointerType: "mouse"});
         fireEvent.click(tile, {detail: 1});
+        expect(
+            screen.getByTestId("search-result-cover-lightbox"),
+        ).toBeInTheDocument();
         await popoverClosed();
-        act(() => tile.blur());
+        await dismissLightbox(tile);
 
         // Keyboard: Enter and Space on the focused trigger both reach it as a
         // click, arriving after the focus that already opened the preview.
-        // Neither may close it.
+        // Both enlarge.
         act(() => tile.focus());
         expect(
             screen.getByTestId("search-result-cover-popover"),
@@ -4212,19 +4218,20 @@ describe("SearchResults", () => {
         fireEvent.keyDown(tile, {key: "Enter"});
         fireEvent.click(tile);
         expect(
-            screen.getByTestId("search-result-cover-popover"),
+            screen.getByTestId("search-result-cover-lightbox"),
         ).toBeInTheDocument();
-        expect(tile).toHaveAttribute("aria-expanded", "true");
-        act(() => tile.blur());
         await popoverClosed();
+        await dismissLightbox(tile);
 
         act(() => tile.focus());
         fireEvent.keyDown(tile, {key: " "});
         fireEvent.keyUp(tile, {key: " "});
         fireEvent.click(tile);
         expect(
-            screen.getByTestId("search-result-cover-popover"),
+            screen.getByTestId("search-result-cover-lightbox"),
         ).toBeInTheDocument();
+        await popoverClosed();
+        await dismissLightbox(tile);
         act(() => tile.blur());
         await popoverClosed();
 
@@ -4251,6 +4258,154 @@ describe("SearchResults", () => {
         await popoverClosed();
         expect(document.activeElement).toBe(tile);
         expect(tile).toHaveAttribute("aria-expanded", "false");
+    });
+
+    // FM-196: the enlarge legacy had (`search-result.js:275-292`), restored as
+    // a feature-owned dialog. The preview above is a glance beside the row;
+    // this is the cover itself, centred over a backdrop, and it is what every
+    // click now opens.
+    it("should enlarge the cover in a lightbox that closes on the image, on the backdrop and on Escape", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {searching: {coverSize: 140}},
+        };
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Absolute cover",
+                            indexer: "Mock",
+                            category: "Movies",
+                            cover: "https://artworks.thetvdb.com/banners/poster.jpg",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(displayOption("Show covers"));
+        closeDisplayOptions();
+
+        const tile = screen.getByTestId("search-result-cover-tile");
+        const thumbnailSrc = within(tile)
+            .getByTestId("search-result-cover")
+            .getAttribute("src");
+        // Nothing is mounted until a click asks for it.
+        expect(
+            screen.queryByTestId("search-result-cover-lightbox"),
+        ).not.toBeInTheDocument();
+
+        // A mouse click on a thumbnail whose preview is already open: the
+        // starting state the two surfaces could most easily overlap in.
+        fireEvent.pointerEnter(tile, {pointerType: "mouse"});
+        act(() => tile.focus());
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        fireEvent.click(tile, {detail: 1});
+
+        const lightbox = screen.getByTestId("search-result-cover-lightbox");
+        expect(lightbox).toHaveAttribute("role", "dialog");
+        expect(lightbox).toHaveAttribute("aria-modal", "true");
+        expect(lightbox).toHaveAttribute(
+            "aria-label",
+            "Cover for Absolute cover",
+        );
+        // One surface at a time, direction one: the dialog took focus, so the
+        // trigger blurred and the preview closed itself.
+        await popoverClosed();
+
+        const image = screen.getByTestId("search-result-cover-lightbox-image");
+        expect(image).toHaveAttribute("src", thumbnailSrc);
+        expect(image).toHaveAttribute("alt", "");
+        const imageStyle = getComputedStyle(image);
+        expect(imageStyle.display).toBe("block");
+        // Intrinsic on both axes and bounded by the viewport, which is what
+        // keeps it from ever being upscaled past its natural size, and what
+        // makes it an *enlarge* rather than a second thumbnail: nothing here
+        // is the 140px `searching.coverSize` the preview above is capped at.
+        expect(imageStyle.width).toBe("auto");
+        expect(imageStyle.height).toBe("auto");
+        expect(imageStyle.maxWidth).toBe("90vw");
+        expect(imageStyle.maxHeight).toBe("90vh");
+        expect(imageStyle.objectFit).toBe("contain");
+        // The paper is not a surface: the image is. Centring is MUI's own
+        // `.MuiDialog-container` flex centring, measured in the browser by
+        // `results.spec.ts` rather than asserted against jsdom's zero layout.
+        const paperStyle = getComputedStyle(lightbox);
+        // jsdom resolves the `transparent` keyword to its rgba equivalent.
+        expect(paperStyle.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+        expect(paperStyle.boxShadow).toBe("none");
+        expect(paperStyle.borderRadius).toBe("0");
+        expect(paperStyle.margin).toBe("0px");
+        expect(paperStyle.padding).toBe("0px");
+        expect(paperStyle.maxWidth).toBe("none");
+        // And unlike the hover preview this one is modal, so MUI's scroll
+        // lock is left on: the page behind the backdrop must not scroll away.
+        expect(document.body.style.overflow).toBe("hidden");
+
+        // A click on the image closes it -- legacy's `ng-click="$close()"`.
+        // Focus returns to the trigger, and one surface at a time, direction
+        // two: the preview the trigger's `onFocus` opens is the resting state
+        // a keyboard user is handed back.
+        fireEvent.click(image);
+        await lightboxClosed();
+        expect(document.activeElement).toBe(tile);
+        expect(document.body.style.overflow).toBe("");
+        expect(
+            screen.getByTestId("search-result-cover-popover"),
+        ).toBeInTheDocument();
+        act(() => tile.blur());
+        await popoverClosed();
+
+        // A click on the backdrop closes it too: the press and the release
+        // both land outside the paper, which is how MUI tells a backdrop
+        // click from a click that started on the content.
+        act(() => tile.focus());
+        fireEvent.click(tile, {detail: 1});
+        expect(
+            screen.getByTestId("search-result-cover-lightbox"),
+        ).toBeInTheDocument();
+        await popoverClosed();
+        const container = document.querySelector(".MuiDialog-container")!;
+        fireEvent.mouseDown(container);
+        fireEvent.click(container);
+        await lightboxClosed();
+        expect(document.activeElement).toBe(tile);
+        act(() => tile.blur());
+        await popoverClosed();
+
+        // And Escape, which legacy's modal had as `keyboard: true`. Handled
+        // by MUI here rather than on the trigger -- the dialog holds focus,
+        // so the trigger's own Escape (which closes the preview) never sees
+        // this key.
+        act(() => tile.focus());
+        fireEvent.click(tile, {detail: 1});
+        await popoverClosed();
+        fireEvent.keyDown(screen.getByTestId("search-result-cover-lightbox"), {
+            key: "Escape",
+        });
+        await lightboxClosed();
+        expect(document.activeElement).toBe(tile);
+        expect(tile).toHaveAttribute("aria-haspopup", "dialog");
+
+        // A cover that failed to load is not a button, so neither surface has
+        // a way in.
+        act(() => tile.blur());
+        await popoverClosed();
+        fireEvent.error(screen.getByTestId("search-result-cover"));
+        const failedTile = screen.getByTestId("search-result-cover-tile");
+        expect(failedTile.tagName).toBe("DIV");
+        fireEvent.click(failedTile);
+        expect(
+            screen.queryByTestId("search-result-cover-lightbox"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("search-result-cover-popover"),
+        ).not.toBeInTheDocument();
     });
 
     it("should persist compact rows, highlight recent, the duplicate-controls option, and both grouping options in the existing search-results-table payload without persisting the mobile drawer", () => {
@@ -7011,6 +7166,26 @@ async function popoverClosed(): Promise<void> {
             screen.queryByTestId("search-result-cover-popover"),
         ).not.toBeInTheDocument(),
     );
+}
+
+// FM-196: the lightbox leaves the DOM at the end of MUI's exit transition,
+// like the popover above.
+async function lightboxClosed(): Promise<void> {
+    await waitFor(() =>
+        expect(
+            screen.queryByTestId("search-result-cover-lightbox"),
+        ).not.toBeInTheDocument(),
+    );
+}
+
+// FM-196: close an open lightbox the way a user does -- a click on the image
+// -- and settle the preview the returning focus reopens on the trigger, so the
+// next gesture in a case starts from the same state as the first.
+async function dismissLightbox(tile: HTMLElement): Promise<void> {
+    fireEvent.click(screen.getByTestId("search-result-cover-lightbox-image"));
+    await lightboxClosed();
+    act(() => tile.blur());
+    await popoverClosed();
 }
 
 function storedChoices(): Record<string, unknown> {

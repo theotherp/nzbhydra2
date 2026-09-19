@@ -244,6 +244,8 @@ features:
       - search-result-cover
       - search-result-cover-tile
       - search-result-cover-popover
+      - search-result-cover-lightbox
+      - search-result-cover-lightbox-image
       # 2026-09-03 (FM-181, owner request): below the 768px stacking
       # breakpoint the toolbar is one sticky row and paging moves under the
       # last card into this footer, which also names the available count.
@@ -271,8 +273,8 @@ features:
       # 2026-09-03 (FM-179, owner request): the cover is a 56px-tall framed
       # tile (`search-result-cover-tile`) with a footprint reserved before the
       # image loads, so a covered row no longer reflows; the full-size image
-      # opens in `search-result-cover-popover` on hover, focus and tap, which
-      # is what closes FM-177's enlarge gap. Rows that render a tile carry
+      # opens in `search-result-cover-popover` on hover and on focus. Rows
+      # that render a tile carry
       # `data-has-cover` and middle-align; every other row keeps FM-175's top
       # alignment.
       # 2026-09-05 (FM-186, owner request): the Actions track is no longer a
@@ -295,6 +297,18 @@ features:
       # defaults to true (`baseConfig.yml:281-283`) and a config-only rule
       # would cost every NZB-only install 28px of Title for a button no row
       # shows. FM-176's expand slots reserve from the rendered rows likewise.
+      # 2026-09-19 (FM-196, owner request): the tile's two gestures are split.
+      # Hover and focus keep FM-179's `search-result-cover-popover` beside the
+      # row, unchanged and still capped at `searching.coverSize`; a click, a
+      # tap, Enter or Space now open `search-result-cover-lightbox` instead --
+      # a modal dialog holding `search-result-cover-lightbox-image` centred
+      # over MUI's backdrop at the cover's natural size, bounded by 90vw/90vh
+      # and closing on a click anywhere or on Escape. That is legacy's
+      # `$uibModal` enlarge (`search-result.js:275-292`) and it is what closes
+      # FM-177's enlarge gap. No click path toggles the preview any more, and
+      # the two surfaces are never on screen together: the click closes the
+      # preview, and the preview only returns once the dialog has handed focus
+      # back to the trigger and left the DOM.
     parity: partial
     gaps:
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option

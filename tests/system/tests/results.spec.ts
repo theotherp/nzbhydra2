@@ -4882,6 +4882,73 @@ test.describe("Search results", () => {
         await page.mouse.move(0, 0);
         await expect(popover).toBeHidden();
 
+        // FM-196: and a click enlarges. The preview is a glance beside the
+        // row; this is the cover itself, centred over a backdrop, which is
+        // what legacy's `$uibModal` showed.
+        const lightbox = page.getByTestId("search-result-cover-lightbox");
+        const lightboxImage = page.getByTestId(
+            "search-result-cover-lightbox-image",
+        );
+        await firstTile.click();
+        await expect(lightbox).toBeVisible();
+        await expect(lightbox).toHaveAttribute("role", "dialog");
+        await expect(lightbox).toHaveAttribute("aria-modal", "true");
+        await expect(lightbox).toHaveAttribute(
+            "aria-label",
+            `Cover for ${await rows.first().getAttribute("data-result-title")}`,
+        );
+        // One surface at a time: the click that opened the dialog took the
+        // preview with it, hover or no hover.
+        await expect(popover).toBeHidden();
+        // The centring is MUI's own flex container, so it is measured here
+        // rather than asserted against a component test's zero layout.
+        const enlarged = await lightboxImage.evaluate((image) => {
+            const box = image.getBoundingClientRect();
+            return {
+                centreX: box.x + box.width / 2,
+                centreY: box.y + box.height / 2,
+                height: box.height,
+                naturalWidth: (image as HTMLImageElement).naturalWidth,
+                viewportHeight: window.innerHeight,
+                viewportWidth: window.innerWidth,
+                width: box.width,
+            };
+        });
+        expect(
+            Math.abs(enlarged.centreX - enlarged.viewportWidth / 2),
+        ).toBeLessThanOrEqual(1);
+        expect(
+            Math.abs(enlarged.centreY - enlarged.viewportHeight / 2),
+        ).toBeLessThanOrEqual(1);
+        expect(enlarged.width).toBeLessThanOrEqual(
+            enlarged.viewportWidth * 0.9,
+        );
+        expect(enlarged.height).toBeLessThanOrEqual(
+            enlarged.viewportHeight * 0.9,
+        );
+        // Its own natural size, neither upscaled nor capped at
+        // `searching.coverSize` -- the checked-in fixture is 160px wide and
+        // the configured cover size is smaller, so a thumbnail's cap would
+        // show here as a narrower image.
+        expect(enlarged.naturalWidth).toBeGreaterThan(coverSize);
+        expect(Math.round(enlarged.width)).toBe(enlarged.naturalWidth);
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-RESULTS",
+                "covers-lightbox-desktop",
+            ),
+        });
+
+        // A click on the image closes it -- legacy's `ng-click="$close()"` --
+        // and focus returns to the trigger, where the hover preview is
+        // waiting again.
+        await lightboxImage.click();
+        await expect(lightbox).toBeHidden();
+        await expect(firstTile).toBeFocused();
+        await expect(popover).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(popover).toBeHidden();
+
         // The keyboard path: tabbing to the tile opens the preview, Escape
         // closes it, and focus never leaves the trigger.
         await rows.first().getByRole("checkbox").focus();
@@ -4960,20 +5027,59 @@ test.describe("Search results", () => {
         await expect(tiles.first()).toBeVisible();
         await captureResultsViewport(page, "covers-on-mobile");
 
+        // FM-196: the same enlarge on a phone, where the backdrop covers the
+        // whole results table and the image still fits inside 90vw/90vh.
+        await tiles.first().click();
+        await expect(lightbox).toBeVisible();
+        const enlargedMobile = await lightboxImage.evaluate((image) => {
+            const box = image.getBoundingClientRect();
+            return {
+                centreX: box.x + box.width / 2,
+                centreY: box.y + box.height / 2,
+                height: box.height,
+                viewportHeight: window.innerHeight,
+                viewportWidth: window.innerWidth,
+                width: box.width,
+            };
+        });
+        expect(
+            Math.abs(enlargedMobile.centreX - enlargedMobile.viewportWidth / 2),
+        ).toBeLessThanOrEqual(1);
+        expect(
+            Math.abs(
+                enlargedMobile.centreY - enlargedMobile.viewportHeight / 2,
+            ),
+        ).toBeLessThanOrEqual(1);
+        expect(enlargedMobile.width).toBeLessThanOrEqual(
+            enlargedMobile.viewportWidth * 0.9,
+        );
+        expect(enlargedMobile.height).toBeLessThanOrEqual(
+            enlargedMobile.viewportHeight * 0.9,
+        );
+        await page.screenshot({
+            path: visualEvidencePath(
+                "F-SEARCH-RESULTS",
+                "covers-lightbox-mobile",
+            ),
+        });
+        await page.keyboard.press("Escape");
+        await expect(lightbox).toBeHidden();
+
         await page.unrouteAll({behavior: "ignoreErrors"});
     });
 
-    // FM-179: the tap path, in a context that really has touch. A tap is not a
-    // click by another name -- Chromium emits `pointerenter:touch ->
+    // FM-179/FM-196: the tap path, in a context that really has touch. A tap
+    // is not a click by another name -- Chromium emits `pointerenter:touch ->
     // pointerleave:touch -> mouseenter -> focus -> click`, so the browser has
-    // focused the trigger (and the preview has opened) before the click
-    // arrives. A trigger that toggled on its current state therefore closed on
-    // the first tap what focus had opened a moment earlier, and only the
-    // second tap showed anything; a synthetic pointer-enter plus a click, the
-    // sequence the component test used to replay, never reproduces it.
-    // `hasTouch` is a context option, so this runs in its own context rather
-    // than as another leg of the covers test above.
-    test("should open the cover preview on the first tap in a touch context", async ({
+    // focused the trigger (and the hover preview has opened) before the click
+    // arrives. FM-196 made that click open the lightbox instead of toggling
+    // the preview, so what this now proves is that one tap leaves exactly the
+    // enlarged cover on screen and no preview behind it; a synthetic
+    // pointer-enter plus a click, the sequence the component test replays,
+    // never reproduces the real ordering. `hasTouch` is a context option, so
+    // this runs in its own context rather than as another leg of the covers
+    // test above.
+    test("should enlarge the cover on the first tap in a touch context", async ({
         browser,
         hydra,
     }) => {
@@ -5005,20 +5111,26 @@ test.describe("Search results", () => {
 
             const tile = page.getByTestId("search-result-cover-tile").first();
             const popover = page.getByTestId("search-result-cover-popover");
+            const lightbox = page.getByTestId("search-result-cover-lightbox");
+            const lightboxImage = page.getByTestId(
+                "search-result-cover-lightbox-image",
+            );
             await expect(tile).toBeVisible();
             await expect(tile).toHaveAttribute("aria-expanded", "false");
 
-            // The first tap opens it -- legacy's tap-to-enlarge.
+            // The first tap enlarges -- legacy's tap-to-enlarge -- and the
+            // preview the focus in the middle of that gesture opened is gone
+            // again, so a phone shows one surface, not two.
             await tile.tap();
-            await expect(popover).toBeVisible();
-            await expect(tile).toHaveAttribute("aria-expanded", "true");
-            await expect(popover.locator("img")).toBeVisible();
-
-            // And the second one closes it: that tap brings no new focus, so
-            // the click it ends with is an ordinary toggle.
-            await tile.tap();
+            await expect(lightbox).toBeVisible();
+            await expect(lightboxImage).toBeVisible();
             await expect(popover).toBeHidden();
             await expect(tile).toHaveAttribute("aria-expanded", "false");
+
+            // And the next tap closes it, wherever it lands: on the image
+            // here, as legacy's `<img ng-click="$close()">` did.
+            await lightboxImage.tap();
+            await expect(lightbox).toBeHidden();
         } finally {
             await context.close();
         }

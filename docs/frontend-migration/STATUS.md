@@ -1800,6 +1800,20 @@ Passed with minor findings, not corrected: two handoff deviations (settings-sear
 not recorded in the registries; the result table's Applied column scrolls at 390px; the legacy "output puttern" typo
 survives; the help alert's long identifier overflows at 390px; the section-keyed dirty badge can never light the new tab.
 
+FM-196 (Cover Lightbox — Click Enlarges, Hover Still Previews) is done. A click, tap, Enter or Space on a cover tile now
+opens `search-result-cover-lightbox`, a feature-owned MUI `Dialog` holding the cover at natural size over MUI's backdrop,
+closing on the image, the backdrop or Escape and returning focus to the trigger, which reopens FM-179's hover/focus
+popover as the resting state. The popover itself is unchanged but no longer toggled by a click, so its three gesture
+refs (`openedByFocus`, `openedByPointerFocus`, `pointerDownPending`) are gone; both cover specs were re-based, not
+extended. Two deviations from the packet's literal mechanism — closing the popover synchronously on click rather than
+via its `onBlur`, and suppressing it until the dialog's exit transition finishes — were reviewed and judged to serve the
+packet's own "scroll lock stays on" and "resting state is the reopened preview" criteria more reliably than the
+mechanism as written; both are recorded in FEATURES.yaml. Passed with minor findings, not corrected (optional): an
+orphaned short comment line in the rewritten FM-179 FEATURES.yaml note; a redundant blur/close repeat in the Space test
+leg; no test leg clicks a trigger whose hover preview starts closed (the branchless click handler makes this low-risk,
+but it is a literal gap against the packet's "opens from any starting state" wording). Candidates for a future
+quickfix.
+
 ## Review
 
 None.
@@ -1809,6 +1823,18 @@ None.
 None.
 
 ## Upcoming
+
+- FM-197: restore the results ZIP button as a browser-local display option — planned and dependency-ready. The bulk
+  "Download selected NZBs as ZIP" action is unreachable because `downloadSettings().zip` reads a
+  `searching.showResultsAsZipButton` field no backend config ever had. Owner ruling 2026-09-19: restore legacy's
+  two-part gate — the `downloading.fileDownloadAccessType === "PROXY"` capability plus a browser-local display option
+  defaulting on (ADR-0054) — with the button and its phone overflow entry left where they already sit.
+
+- FM-198: restore "Hide downloaded results" as a counted display option — planned and dependency-ready. React parses
+  `downloadedAt` but nothing reads it, so legacy's filter (`search-results-controller.js:719`) is gone. Restores the
+  browser-local preference (ADR-0054), the `filterResults` dimension, and an entry labelled
+  `Hide downloaded results (N)` whose count is the loaded results carrying `downloadedAt` in either state. Owner
+  ruling 2026-09-19: default off, where legacy defaulted it on.
 
 - Issue #902 is complete: FM-194 (backend) and FM-195 (Custom Mappings tab) are done (entries above). No task packets
   are queued.

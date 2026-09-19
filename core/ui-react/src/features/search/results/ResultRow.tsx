@@ -17,11 +17,10 @@ import type {SxProps, Theme} from "@mui/material";
 import type {
     FocusEvent as ReactFocusEvent,
     KeyboardEvent as ReactKeyboardEvent,
-    MouseEvent as ReactMouseEvent,
     PointerEvent as ReactPointerEvent,
     ReactNode,
 } from "react";
-import {memo, useRef, useState} from "react";
+import {memo, useState} from "react";
 
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
@@ -29,6 +28,7 @@ import type {
     Downloader,
     downloadSettings,
 } from "../../../domain/downloads/actions";
+import {CoverLightbox} from "./CoverLightbox";
 import {DirectDownloadActions} from "./DownloadActions";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {SendToBlackHoleButton} from "./SendToBlackHoleButton";
@@ -609,7 +609,17 @@ export const ResultRow = memo(function ResultRow({
 
 /**
  * FM-179: one row's cover, as a fixed-height framed thumbnail that shows the
- * full-size image in a `Popover` on hover, focus and tap.
+ * full-size image in a `Popover` on hover and on focus.
+ *
+ * **The two surfaces (FM-196).** Hover and focus open the popover beside the
+ * row -- a glance, which the pointer or the Tab key takes away again. A click,
+ * a tap, Enter or Space open `CoverLightbox` instead, the full image centred
+ * over a backdrop, which is the enlarge legacy had. They never overlap: the
+ * click that opens the dialog closes the popover in the same commit, and the
+ * popover stays suppressed until the dialog has finished leaving -- at which
+ * point the focus MUI hands back to the trigger has it open again, which is
+ * the state a keyboard user was in before. See the click handler for why that
+ * ordering is not merely cosmetic.
  *
  * **Why a tile at all.** FM-177 rendered the raw poster at `searching.
  * coverSize` px wide: at 2:3 that is a ~190px row, and it only became that
@@ -636,7 +646,9 @@ export const ResultRow = memo(function ResultRow({
  * component internals. The popover is non-interactive by construction
  * (`pointerEvents: none`, and the three `disable*Focus` props), so it can
  * never take focus off the row -- which is what keeps `Escape` handled on the
- * trigger and the trigger still focused afterwards.
+ * trigger and the trigger still focused afterwards. The lightbox is the
+ * opposite on every count, and deliberately so: it is modal, it takes focus,
+ * and its own `Escape` is MUI's.
  */
 function CoverThumbnail({
     coverWidth,
@@ -651,20 +663,20 @@ function CoverThumbnail({
         "loading",
     );
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    // Set when a `focus` opened the preview, and consumed by the click that
-    // same interaction produces. A tap and an Enter/Space press both reach the
-    // trigger as `focus` *then* `click`, so a click that toggles on the
-    // current state would close what the focus a few milliseconds earlier had
-    // just opened. See the comment on the click handler.
-    const openedByFocus = useRef(false);
-    // Whether the focus that armed `openedByFocus` came from a pointer press
-    // (a tap or a mouse-down) rather than from the keyboard. A pointer's
-    // own click is the tail of that gesture and is consumed; a mouse click
-    // arriving *after* a keyboard focus is a new gesture and toggles.
-    const openedByPointerFocus = useRef(false);
-    const pointerDownPending = useRef(false);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    // Distinct from `lightboxOpen`: it stays true through the dialog's exit
+    // transition, until MUI has really taken it out of the DOM. See
+    // `previewOpen` below.
+    const [lightboxMounted, setLightboxMounted] = useState(false);
     const failed = state === "failed";
-    const open = anchorEl !== null;
+    // The preview is suppressed for as long as the lightbox is on screen, so
+    // the two surfaces cannot overlap even though the trigger holds an anchor
+    // again the moment the closing dialog hands focus back. Without it the
+    // preview would mount *behind* a fading-out lightbox, and -- because MUI's
+    // `ModalManager` hands a container's scroll lock to whichever modal
+    // claimed it first -- would then keep the page locked until the pointer
+    // left the thumbnail.
+    const previewOpen = anchorEl !== null && !lightboxMounted;
     // The frame. Identical in all three states -- that is what makes a broken
     // cover a quiet empty tile rather than a hole in the row.
     const tileSx = {
@@ -700,16 +712,11 @@ function CoverThumbnail({
             />
         );
     }
-    const close = () => {
-        openedByFocus.current = false;
-        openedByPointerFocus.current = false;
-        pointerDownPending.current = false;
-        setAnchorEl(null);
-    };
+    const close = () => setAnchorEl(null);
     return (
         <>
             <Box
-                aria-expanded={open}
+                aria-expanded={previewOpen}
                 aria-haspopup="dialog"
                 // The trigger's only text. The row's title is already the
                 // row's accessible content and the thumbnail keeps `alt=""`,
@@ -720,43 +727,40 @@ function CoverThumbnail({
                 data-cover-state={state}
                 data-testid="search-result-cover-tile"
                 onBlur={close}
-                // The toggle is decided by the interaction that produced the
-                // click, not by whether the preview happens to be open when it
-                // arrives. A real tap reaches this element as
-                // `pointerenter:touch -> pointerleave:touch -> mouseenter ->
-                // focus -> click` (measured in Chromium touch emulation), and
-                // Enter/Space on a focused trigger fire a click too: in both
-                // cases `focus` has already opened the preview a moment
-                // earlier, so a state toggle here would shut it again and the
-                // first tap would appear to do nothing. That click is the tail
-                // of the opening interaction, so it is consumed. Any later
-                // click -- a second tap, a second Enter, a mouse click on a
-                // thumbnail hover already opened -- toggles as usual, which is
-                // what closes the preview.
-                onClick={(event: ReactMouseEvent<HTMLElement>) => {
-                    const armed = openedByFocus.current;
-                    const byPointer = openedByPointerFocus.current;
-                    openedByFocus.current = false;
-                    openedByPointerFocus.current = false;
-                    pointerDownPending.current = false;
-                    // A keyboard-synthesized click reports `detail === 0`
-                    // (Enter/Space); a pointer click reports its click count.
-                    // Consume the click only when it ends the gesture whose
-                    // focus opened the preview: a tap (pointer focus) or a
-                    // key press (keyboard click). A mouse click after a
-                    // keyboard focus-open is a new gesture and toggles
-                    // (FM-179 review finding).
-                    if (armed && (event.detail === 0 || byPointer)) {
-                        setAnchorEl(event.currentTarget);
-                        return;
-                    }
-                    setAnchorEl(open ? null : event.currentTarget);
-                }}
-                onPointerDown={() => {
-                    pointerDownPending.current = true;
+                // FM-196: a click enlarges, it no longer toggles the preview.
+                // Every gesture that reaches a button as a click -- a mouse
+                // click, a tap, Enter, Space -- opens the lightbox, from any
+                // starting state, so there is nothing here to decide and none
+                // of FM-179's three gesture refs survive. Those refs existed
+                // only because a real tap arrives as `pointerenter:touch ->
+                // pointerleave:touch -> mouseenter -> focus -> click`
+                // (measured in Chromium touch emulation) and an Enter/Space
+                // press as `focus -> click`: with the click toggling, the
+                // focus a few milliseconds earlier had already opened the
+                // preview and the click shut it again. A click that only ever
+                // opens a second surface cannot have that bug.
+                //
+                // The preview is closed in the same commit rather than left
+                // to the `onBlur` the dialog's focus trap triggers a moment
+                // later, and that ordering is load-bearing: MUI's
+                // `ModalManager` handles the *container*, and the first modal
+                // to claim `document.body` decides its scroll lock for every
+                // modal that joins it (`ModalManager.mount` only calls
+                // `handleContainer` when `containerInfo.restore` is unset). A
+                // lightbox opened while the preview still holds the body
+                // would inherit the preview's `disableScrollLock` and leave
+                // the page scrolling behind its backdrop. Closing here
+                // releases the container first -- the popover sets no
+                // `closeAfterTransition`, so its `ModalManager.remove` runs
+                // on this commit, before the dialog's `add` -- and the
+                // `onBlur` that follows is then a no-op backstop.
+                onClick={() => {
+                    close();
+                    setLightboxMounted(true);
+                    setLightboxOpen(true);
                 }}
                 onKeyDown={(event: ReactKeyboardEvent) => {
-                    if (event.key === "Escape" && open) {
+                    if (event.key === "Escape" && previewOpen) {
                         // Handled here, not by the popover's `onClose`: the
                         // popover is `pointerEvents: none` and never holds
                         // focus, so nothing else would see the key -- and
@@ -789,13 +793,6 @@ function CoverThumbnail({
                     }
                 }}
                 onFocus={(event: ReactFocusEvent<HTMLElement>) => {
-                    // Only a focus that *opens* the preview arms the click
-                    // guard; focus landing on an already-open preview (the
-                    // mouse-down of a click on a hovered thumbnail) leaves the
-                    // following click free to close it.
-                    openedByFocus.current = !open;
-                    openedByPointerFocus.current = pointerDownPending.current;
-                    pointerDownPending.current = false;
                     setAnchorEl(event.currentTarget);
                 }}
                 sx={{...tileSx, cursor: "pointer"}}
@@ -840,7 +837,7 @@ function CoverThumbnail({
                 // page it floats over exactly as it was.
                 disableScrollLock
                 onClose={close}
-                open={open}
+                open={previewOpen}
                 // The paper's surface, border and radius are the `MuiPopover`
                 // theme default (`app/theme.ts`); only its padding is stated,
                 // to zero, so the image reaches the frame's edge.
@@ -855,6 +852,18 @@ function CoverThumbnail({
                     sx={{display: "block", height: "auto", width: coverWidth}}
                 />
             </Popover>
+            {/* FM-196. `keepMounted` is left off, so a closed lightbox is not
+                in the DOM at all -- with a hundred covered rows on screen
+                that is a hundred dialogs' worth of nothing -- while the
+                `open` prop (rather than a conditional render here) keeps
+                MUI's exit transition and its focus restoration intact. */}
+            <CoverLightbox
+                onClose={() => setLightboxOpen(false)}
+                onExited={() => setLightboxMounted(false)}
+                open={lightboxOpen}
+                src={src}
+                title={title}
+            />
         </>
     );
 }
