@@ -199,9 +199,19 @@ describe("SystemUpdatesTab", () => {
                 name: "9.1.0 Beta (2026-07-09)",
             }),
         ).toBeVisible();
+        // Owner request (2026-09-19): one width for all three, so the change
+        // texts share a left edge. jsdom has no layout, but it does apply the
+        // rule, which is the part that can regress in code; the alignment it
+        // produces is asserted in `system.spec.ts`.
+        const badgeWidths = new Set<string>();
         for (const badge of ["Fix", "Feature", "Note"]) {
-            expect(screen.getByText(badge)).toBeVisible();
+            const label = screen.getByText(badge);
+            expect(label).toBeVisible();
+            const chip = label.closest(".MuiChip-root") as HTMLElement;
+            badgeWidths.add(getComputedStyle(chip).width);
         }
+        expect(badgeWidths.size).toBe(1);
+        expect([...badgeWidths][0]).not.toBe("");
         expect(screen.getByRole("link", {name: "#1"})).toHaveAttribute(
             "href",
             "https://example.test/1",

@@ -3903,3 +3903,27 @@ their text and relative order are unchanged.
   gratuitous.
 - `OidcLoginComponentTest` only exercises `preferred_username`. A second case with `oidcUsernameClaim = email` would cover the registration, the user service and `UserInfosProvider` together — the seam this defect lived in.
 - The Java system test `AuthorizationSystemTest.shouldInvalidateSessionOnLogout` sends no `Accept` header, so it still takes the redirect branch; the 204 path has no live coverage.
+
+### 2026-09-19 — Indexer selection fits a phone; changelog badges share one width
+
+- **Why not a packet:** two owner-reported UI defects, each fixed at its cause in one component with a browser-level regression test. No contract change beyond one new selector (`workspace-indexers-value`, registered under
+  `F-SEARCH-INDEXERS`), which exists because the choice being made is a laid-out fact that only a browser can check. Reviewed by an independent agent before the first commit.
+- **Paths:** `core/ui-react/src/features/search/workspace/{SelectedIndexersValue.tsx (new),SearchWorkspace.tsx,SearchWorkspace.test.tsx}`, `core/ui-react/src/services/updates/ChangelogEntries.tsx`,
+  `core/ui-react/src/features/system/updates/SystemUpdatesTab.test.tsx`, `docs/frontend-migration/FEATURES.yaml`, `tests/system/tests/{search.spec.ts,system.spec.ts}`, `misc/run_gui_systemtest.py`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check`, `test -- --run` (145 files, 2116 tests), `build`, `validate:migration`; `tests/system` `npx tsc --noEmit` and
+  `search.spec.ts` (19), `focus-indication.spec.ts` (11) and `system.spec.ts` (14) against a locally started instance.
+- **Visual gate:** `visual-evidence/F-SEARCH-INDEXERS/indexer-selection-summary-mobile.png`, `visual-evidence/F-SYSTEM-UPDATES/changelog-badges.png`.
+- **Commits:** `dd07a1206` (test-runner repair), `1f06cdc60` (indexer selection), `fe59b8540` (changelog badges)
+- **Note:** three of the four real defects here were only visible in a browser, and two of them made a *passing* test lie. The indexer field grew because its section was a flex item at `min-width: auto`, so the measurement that
+  chooses between names and a count never fired; once it did fire, the value container had to be given `width: 100%` or it shrank to the summary's own width and the names could never return. The changelog badge was first written as
+  `width: 9`, which `sx` reads as nine pixels — three equal slivers that satisfied every alignment assertion — and then shrank below its fixed width because it is a flex item. Each of those was found by opening the captured
+  screenshot, not by reading a green result.
+- **Deviation:** `SelectedIndexersValue`'s clip means overflow inside the value can no longer widen the combobox's `scrollWidth`, so `search.spec.ts`'s `expectVisualGeometry` check can never fail for that field again. Written at the
+  site so the next reader does not trust it.
+
+#### Open candidates (found here, not fixed)
+
+- `misc/run_gui_systemtest.py` writes the Arr API key with a `sed` immediately after `up -d`, before the health wait, so a fresh `sonarr/data` can abort the run; the compose file now sets the same key through `SONARR__APIKEY`/
+  `RADARR__APIKEY`, so the `sed` may be redundant entirely.
+- A changelog entry whose type is none of feature/fix/note renders no badge, and its text then starts where the badge column is. Legacy behaved the same; the data has carried only those three types so far.
+- The indexer picker is untested at ~25 indexers (the installation size the code's own comment names) and in the checkbox presentation at phone width.

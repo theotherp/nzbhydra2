@@ -1,7 +1,11 @@
 import type {Page} from "@playwright/test";
 
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
-import {prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
+import {
+    prepareVisualEvidence,
+    visualEvidencePath,
+    visualViewports,
+} from "./visualEvidence";
 
 const newsPayload = [
     {
@@ -328,6 +332,61 @@ test.describe("System shell", () => {
         await expect(
             history.getByRole("heading", {name: /^v?\d+\.\d+\.\d+/}).first(),
         ).toBeVisible();
+
+        // Owner request (2026-09-19): every type badge is the same width, so
+        // the change texts all start at the same x. The real changelog the
+        // instance ships carries all three types, and only a browser can say
+        // where the text actually starts.
+        const badges = history.locator(".MuiChip-root");
+        const widths = await badges.evaluateAll((chips) =>
+            chips.map((chip) => Math.round(chip.getBoundingClientRect().width)),
+        );
+        expect(widths.length).toBeGreaterThan(1);
+        expect(new Set(widths).size).toBe(1);
+        // Equal widths alone are satisfied by three equally *tiny* badges --
+        // which is exactly what a `width: 9` in `sx` produces, nine pixels
+        // rather than nine spacing units. So: every label is fully drawn.
+        const clipped = await badges
+            .locator(".MuiChip-label")
+            .evaluateAll(
+                (labels) =>
+                    labels.filter(
+                        (label) => label.scrollWidth > label.clientWidth,
+                    ).length,
+            );
+        expect(clipped).toBe(0);
+        const labels = await badges.evaluateAll((chips) =>
+            chips.map((chip) => chip.textContent),
+        );
+        // Not one type repeated: the alignment claim is only worth something
+        // across labels of different lengths.
+        expect(new Set(labels).size).toBeGreaterThan(1);
+        const textLefts = await history
+            .locator(".MuiChip-root + *")
+            .evaluateAll((texts) =>
+                texts.map((text) =>
+                    Math.round(text.getBoundingClientRect().left),
+                ),
+            );
+        expect(new Set(textLefts).size).toBe(1);
+        // Visual Gate: the badge column and the text edge it produces. Clipped
+        // to the first screenful -- the history holds every version this
+        // project ever released, so a screenshot of the whole region is tens
+        // of thousands of pixels tall and shows nothing at all.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await expect(badges.first()).toBeVisible();
+        });
+        const historyBox = await history.boundingBox();
+        expect(historyBox).not.toBeNull();
+        await page.screenshot({
+            clip: {
+                height: Math.min(historyBox?.height ?? 0, 420),
+                width: historyBox?.width ?? 0,
+                x: historyBox?.x ?? 0,
+                y: historyBox?.y ?? 0,
+            },
+            path: visualEvidencePath("F-SYSTEM-UPDATES", "changelog-badges"),
+        });
 
         expect(
             attemptedInstalls,
