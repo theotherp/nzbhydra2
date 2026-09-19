@@ -1,4 +1,8 @@
-import {ApiTransport} from "../../api/transport";
+import {
+    ApiTransport,
+    ForbiddenError,
+    UnauthorizedError,
+} from "../../api/transport";
 import {type BootstrapData, getBootstrapData} from "../../bootstrap";
 
 export type FormCredentials = {
@@ -17,9 +21,33 @@ export async function loginWithForm(
     return currentSession(transport);
 }
 
-export async function logout(transport: ApiTransport): Promise<BootstrapData> {
+/**
+ * `null` means the logout succeeded but what is left may read nothing at all,
+ * which is what a fully restricted instance produces: with `restrictSearch`,
+ * `restrictStats` and `restrictAdmin` all on,
+ * `HydraAnonymousAuthenticationFilter` grants the anonymous session no
+ * authority, so `SecurityConfig` never registers it -- the session that
+ * remains after the logout has no `Authentication` at all and
+ * `internalapi/userinfos` answers 401. Reading that refusal as a failed logout
+ * is what left the user on the page with "Logout failed!" although they had in
+ * fact been logged out. A caller treats `null` like a session that may not
+ * search: send it to the login form.
+ */
+export async function logout(
+    transport: ApiTransport,
+): Promise<BootstrapData | null> {
     await transport.request<void>("logout", {method: "POST"});
-    return currentSession(transport);
+    try {
+        return await currentSession(transport);
+    } catch (error) {
+        if (
+            error instanceof UnauthorizedError ||
+            error instanceof ForbiddenError
+        ) {
+            return null;
+        }
+        throw error;
+    }
 }
 
 /**

@@ -3856,11 +3856,8 @@ their text and relative order are unchanged.
 
 #### Open candidates (found by the review of the above, not fixed)
 
-- `UserInfosProvider.getUserInfos` matches an OIDC principal on a hardcoded `preferred_username` claim, while `SecurityConfig.getOidcUserService` resolves the username from the configurable `auth.oidcUsernameClaim`. With a different claim
-  configured, a fully authenticated user resolves to no configured user: `maySeeSearch` is then false and the search route guard already sends them to the login page. It also dereferences the claim without a null check. Pre-existing,
-  backend-only, and worth its own fix.
-- Under FORM auth with `restrictSearch` on, `session.ts:logout()` follows Spring's redirect to `/` with `Accept: application/json`, is refused, and `LoginOutButton` shows "Logout failed!" without navigating. Broken the same way before
-  this fix, which only changes which error arrives.
+- ~~`UserInfosProvider.getUserInfos` matches an OIDC principal on a hardcoded `preferred_username` claim.~~ Fixed by `875a9502f`; see the entry below.
+- ~~Under FORM auth with `restrictSearch` on, `session.ts:logout()` follows Spring's redirect to `/`, is refused, and `LoginOutButton` shows "Logout failed!" without navigating.~~ Fixed by `155e59706`; see the entry below.
 
 ### 2026-09-18 — Per-row send asks for the category again
 
@@ -3882,3 +3879,27 @@ their text and relative order are unchanged.
   need a third value. The invariant is now written into `sendFlow.ts` rather than fixed.
 - ~~No case exercises the picker in the compact/phone layout.~~ Closed by `ca91ce039`: `downloads.spec.ts` now opens the picker at 390px and asserts the dialog stays inside the viewport, its buttons wrap rather than pushing the page
   sideways, and the picked category still reaches `addNzbs`. Evidence: `visual-evidence/F-SEARCH-DOWNLOADS/row-send-category-dialog-mobile.png`.
+
+### 2026-09-19 — OIDC user recognition and the false "Logout failed!"
+
+- **Why not a packet:** the two open candidates from the welcome-dialog review, fixed on the owner's instruction. Each is one defect at its cause with a red-before test; the logout one needed a client half as well, which is the only
+  reason it touches `core/ui-react`. Both are backend-led bugfixes rather than migration work, recorded here because the second one changes `features/auth`.
+- **Paths:** `core/src/main/java/org/nzbhydra/auth/{UserInfosProvider,SecurityConfig}.java`, `core/src/test/java/org/nzbhydra/auth/{UserInfosProviderTest (new),SecurityConfigTest}.java`,
+  `core/ui-react/src/features/auth/{session.ts,session.test.ts,LoginOutButton.tsx}`, `core/src/main/resources/changelog.yaml`
+- **Gates:** `mvn -o -pl org.nzbhydra:core -DskipTests=false -Dtest='org.nzbhydra.auth.*Test,org.nzbhydra.web.*Test' test` (66 tests); `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check`,
+  `test -- --run` (145 files, 2115 tests), `build`. No system-test run: both cases need an instance with OIDC, or with every area restricted, which the shared system-test instance does not run.
+- **Commits:** `875a9502f` (OIDC), `155e59706` (logout)
+- **Note:** both were reviewed by an independent agent before the commit. The logout review found the server fix alone insufficient — with search, stats *and* admin restricted there is no anonymous authentication at all, so the
+  confirming `internalapi/userinfos` still answered 401 and the toast still appeared; `logout()` now resolves `null` for that and the caller sends the user to the login form. The OIDC review confirmed the principal's name is the
+  username the login resolved on every successful path.
+- **Deviation:** `logoutSuccessHandler` drops the implicit exact-match `permitAll("/")` that `logoutSuccessUrl("/")` installed, so `/` now falls through to `anyRequest().hasAnyRole(...)`. Behaviour is unchanged — `MainWeb.index` is
+  `@Secured("ROLE_USER")`, so an anonymous request was already refused one layer in — but it is a change to the chain's rule set that nothing tests.
+
+#### Open candidates (found by these two reviews, not fixed)
+
+- `SecurityConfig.getOidcUserService`: when `oidcUsernameClaim` names a claim the token does not carry, Spring's delegate throws a raw `IllegalArgumentException` (a 500 with no guidance) before the friendly `unauthorized_user` branch can
+  run, and the `!oidcUser.hasClaim(...)` fallback below it is unreachable. A misconfigured claim name is exactly the error that deserves a readable message.
+- `UserInfosProvider`'s non-OIDC branch matches case-sensitively (`Objects.equals`) where the login is case-insensitive. It cannot bite today, because every authenticated principal carries the configured spelling, but the asymmetry is
+  gratuitous.
+- `OidcLoginComponentTest` only exercises `preferred_username`. A second case with `oidcUsernameClaim = email` would cover the registration, the user service and `UserInfosProvider` together — the seam this defect lived in.
+- The Java system test `AuthorizationSystemTest.shouldInvalidateSessionOnLogout` sends no `Accept` header, so it still takes the redirect branch; the 204 path has no live coverage.

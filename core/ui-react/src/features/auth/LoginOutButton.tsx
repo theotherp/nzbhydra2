@@ -99,10 +99,12 @@ export function LoginOutButton({
                 const session = await logout(transport);
                 rememberPreviousUsername(bootstrap.username);
                 // Legacy's post-logout branch: back to the search area, or to
-                // the login form when the anonymous session may not search.
+                // the login form when the anonymous session may not search --
+                // `null` being the instance that restricts everything, where
+                // what remains may not even read its own user infos.
                 navigate(
                     bootstrap.baseUrl,
-                    session.maySeeSearch === true ? "" : "login",
+                    session?.maySeeSearch === true ? "" : "login",
                 );
                 return;
             }

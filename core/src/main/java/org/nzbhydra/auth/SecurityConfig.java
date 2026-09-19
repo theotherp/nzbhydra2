@@ -48,6 +48,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -284,7 +286,11 @@ public class SecurityConfig {
                     .logout(logout -> logout
                             .permitAll()
                             .logoutUrl("/logout")
-                            .logoutSuccessUrl("/")
+                            //A browser navigation lands on "/" as before; a background request (the web UI logs out
+                            //with a fetch) gets 204. Following that redirect asked "/" as an anonymous user, which
+                            //with restrictSearch on is refused - so a logout that had in fact succeeded was reported
+                            //to the user as "Logout failed!" and left them on the page.
+                            .logoutSuccessHandler(backgroundAwareLogoutSuccessHandler())
                             .deleteCookies("remember-me")
                             .invalidateHttpSession(true)
                             .clearAuthentication(true))
@@ -413,6 +419,23 @@ public class SecurityConfig {
         }
     }
 
+
+    /**
+     * Answers a logout the way the client that sent it can read: 204 for a background request (XHR / fetch, recognized
+     * by {@link BackgroundRequestAuthenticationEntryPoint#isBackgroundRequest}), and Spring's usual redirect to "/"
+     * for a browser navigation.
+     */
+    private LogoutSuccessHandler backgroundAwareLogoutSuccessHandler() {
+        SimpleUrlLogoutSuccessHandler redirecting = new SimpleUrlLogoutSuccessHandler();
+        redirecting.setDefaultTargetUrl("/");
+        return (request, response, authentication) -> {
+            if (BackgroundRequestAuthenticationEntryPoint.isBackgroundRequest(request)) {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                return;
+            }
+            redirecting.onLogoutSuccess(request, response, authentication);
+        };
+    }
 
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
         //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role

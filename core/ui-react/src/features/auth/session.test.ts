@@ -56,7 +56,10 @@ describe("auth session", () => {
         const loggedOut = {...bootstrap, maySeeAdmin: false, username: null};
         const fetchImplementation = vi
             .fn()
-            .mockResolvedValueOnce(new Response(null, {status: 200}))
+            // What the server answers a background logout with since the
+            // success handler distinguishes them (`SecurityConfig`): no body,
+            // and nothing for the client to follow.
+            .mockResolvedValueOnce(new Response(null, {status: 204}))
             .mockResolvedValueOnce(jsonResponse(loggedOut));
         const transport = new ApiTransport("/hydra/", fetchImplementation);
 
@@ -70,6 +73,45 @@ describe("auth session", () => {
         expect(fetchImplementation.mock.calls[1][0]).toBe(
             "http://localhost:3000/hydra/internalapi/userinfos",
         );
+    });
+
+    // An instance that restricts search, stats and admin grants the anonymous
+    // session no authority at all, so `SecurityConfig` registers no anonymous
+    // authentication and the confirming `userinfos` call is refused. The
+    // logout itself succeeded, and reading that refusal as a failure is what
+    // left the user on the page with "Logout failed!".
+    it("should report a logged-out session that may read nothing as null", async () => {
+        for (const status of [401, 403]) {
+            const fetchImplementation = vi
+                .fn()
+                .mockResolvedValueOnce(new Response(null, {status: 204}))
+                .mockResolvedValueOnce(new Response("", {status}));
+            const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+            await expect(logout(transport)).resolves.toBeNull();
+            expect(fetchImplementation.mock.calls[0][0]).toBe(
+                "http://localhost:3000/hydra/logout",
+            );
+        }
+    });
+
+    it("should still report a logout that genuinely failed", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValueOnce(new Response("", {status: 500}));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(logout(transport)).rejects.toThrow();
+    });
+
+    it("should still report a broken session read after a successful logout", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, {status: 204}))
+            .mockResolvedValueOnce(new Response("", {status: 500}));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(logout(transport)).rejects.toThrow();
     });
 
     it("should accept the askpassword challenge response the backend really sends", async () => {

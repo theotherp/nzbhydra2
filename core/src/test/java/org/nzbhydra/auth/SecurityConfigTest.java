@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -307,6 +308,29 @@ class SecurityConfigTest {
             mockMvc(context).perform(get("/actuator/info").header("Accept", NAVIGATION_ACCEPT))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "/login"));
+        }
+    }
+
+    /**
+     * The web UI logs out with a fetch. Spring's default answer is a redirect to "/", which that fetch follows and,
+     * with restrictSearch on, is refused as anonymous -- so a logout that had succeeded was reported to the user as
+     * "Logout failed!" while they stayed on the page. A background request now gets 204.
+     */
+    @Test
+    void shouldAnswerABackgroundLogoutWith204() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
+            mockMvc(context).perform(post("/logout").header("Accept", "application/json"))
+                .andExpect(status().isNoContent())
+                .andExpect(redirectedUrl(null));
+        }
+    }
+
+    @Test
+    void shouldStillRedirectABrowserLogoutToTheRoot() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
+            mockMvc(context).perform(post("/logout").header("Accept", NAVIGATION_ACCEPT))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/"));
         }
     }
 
