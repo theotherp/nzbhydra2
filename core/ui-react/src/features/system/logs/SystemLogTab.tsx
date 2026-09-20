@@ -34,6 +34,11 @@ export function SystemLogTab({
     return (
         <Stack data-testid="system-log" spacing={3}>
             <Tabs
+                // MUI hides a scrollable strip's scroll buttons below
+                // `sm` unless this is set (`scrollButtonsHideMobile`), and the
+                // scroller's own scrollbar is hidden too -- so on a phone the
+                // tabs past the fold had no affordance pointing at them at all.
+                allowScrollButtonsMobile
                 aria-label="Log views"
                 onChange={(_, next: LogView) => setView(next)}
                 value={view}

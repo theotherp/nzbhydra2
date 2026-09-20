@@ -19,7 +19,16 @@ export function SystemShell() {
     const active = activeSystemTab(pathname);
     return (
         <Box component="section" data-testid="system-shell" sx={{py: 3}}>
-            <Tabs aria-label="System" value={active.path} variant="scrollable">
+            <Tabs
+                // MUI hides a scrollable strip's scroll buttons below
+                // `sm` unless this is set (`scrollButtonsHideMobile`), and the
+                // scroller's own scrollbar is hidden too -- so on a phone the
+                // tabs past the fold had no affordance pointing at them at all.
+                allowScrollButtonsMobile
+                aria-label="System"
+                value={active.path}
+                variant="scrollable"
+            >
                 {SYSTEM_TABS.map((tab) => (
                     <Tab
                         component={Link}

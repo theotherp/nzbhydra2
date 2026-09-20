@@ -27,6 +27,11 @@ export function StatsShell({bootstrap}: StatsShellProps) {
     return (
         <Box component="section" sx={{py: 3}}>
             <Tabs
+                // MUI hides a scrollable strip's scroll buttons below
+                // `sm` unless this is set (`scrollButtonsHideMobile`), and the
+                // scroller's own scrollbar is hidden too -- so on a phone the
+                // tabs past the fold had no affordance pointing at them at all.
+                allowScrollButtonsMobile
                 aria-label="History and statistics"
                 value={active}
                 variant="scrollable"
