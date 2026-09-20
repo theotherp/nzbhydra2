@@ -4,9 +4,6 @@ import jakarta.annotation.PostConstruct;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mockserver.newznab.DeterministicFixtures;
 import org.nzbhydra.mockserver.newznab.MockContext;
 import org.nzbhydra.mockserver.newznab.Scenario;
@@ -27,8 +24,8 @@ import java.util.List;
 
 /**
  * Mock newznab and torznab indexer. The actual search behaviour lives in the two scenario registries in
- * {@link org.nzbhydra.mockserver.newznab}; this controller only maps the endpoints, answers the two protocol requests
- * that are not search behaviour (caps and getnfo) and runs the resolved scenario.
+ * {@link org.nzbhydra.mockserver.newznab}; this controller only maps the endpoints, answers the one protocol request
+ * that is not search behaviour (caps) and runs the resolved scenario.
  */
 @RestController
 public class MockNewznab {
@@ -107,26 +104,14 @@ public class MockNewznab {
         MockContext context = MockContext.of(params, host, port);
         ScenarioRegistry.Resolution resolution = newznabScenarios.resolveWithDelays(context);
 
-        //Caps and getnfo are answered here, but the original chain checked the 429 API key before caps and the 403
-        //query before getnfo, so those two scenarios are given their chance first
+        //Caps is answered here, but the original chain checked the 429 API key before caps, so that scenario is given
+        //its chance first
         if (resolution.isResolvedTo("protocol-too-many-requests")) {
             return respond(newznabScenarios, resolution, context);
         }
         if (params.getT() == ActionAttribute.CAPS) {
             logger.info("Returning caps");
             return new ResponseEntity<>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
-        }
-        if (resolution.isResolvedTo("protocol-forbidden")) {
-            return respond(newznabScenarios, resolution, context);
-        }
-        if (params.getT() == ActionAttribute.GETNFO) {
-            logger.info("Returning NFO for NZB with ID {}", params.getId());
-            NewznabXmlRoot rssRoot = new NewznabXmlRoot();
-            rssRoot.getRssChannel().setNewznabResponse(new NewznabXmlResponse(0, 1));
-            NewznabXmlItem item = new NewznabXmlItem();
-            item.setDescription("NFO for NZB with ID " + params.getId());
-            rssRoot.getRssChannel().getItems().add(item);
-            return ResponseEntity.ok(rssRoot);
         }
 
         return respond(newznabScenarios, resolution, context);

@@ -7,8 +7,8 @@ import java.util.List;
 /**
  * Protocol level answers that come before any search handling.
  *
- * <p>The caps and getnfo requests are answered by the controller itself; they are not scenarios because they are not
- * search behaviour. The controller keeps the original precedence between them and these two scenarios.</p>
+ * <p>The caps request is answered by the controller itself; it is not a scenario because it is not search behaviour.
+ * The controller keeps the original precedence between it and these two scenarios.</p>
  */
 public final class ProtocolScenarios {
 

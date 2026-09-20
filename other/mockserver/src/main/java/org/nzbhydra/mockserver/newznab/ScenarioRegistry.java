@@ -84,7 +84,8 @@ public class ScenarioRegistry {
      *     <li>protocol-too-many-requests</li>
      *     <li><em>caps (answered by the controller)</em></li>
      *     <li>protocol-forbidden</li>
-     *     <li><em>getnfo (answered by the controller)</em></li>
+     *     <li>nfo-ascii-art</li>
+     *     <li>nfo-default</li>
      *     <li>resilience-timeout (delay only)</li>
      *     <li>resilience-malformed-xml</li>
      *     <li>deterministic-downloader-nzb</li>
@@ -128,6 +129,8 @@ public class ScenarioRegistry {
         List<Scenario> scenarios = new ArrayList<>();
         scenarios.add(ProtocolScenarios.tooManyRequests());
         scenarios.add(ProtocolScenarios.forbidden());
+        scenarios.add(NfoScenarios.asciiArt());
+        scenarios.add(NfoScenarios.legacyDefault());
         scenarios.add(ResilienceScenarios.timeout());
         scenarios.add(ResilienceScenarios.malformedXml());
         scenarios.add(DeterministicFixtures.downloaderNzb());
