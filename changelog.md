@@ -1,3 +1,27 @@
+### v9.0.2 (2026-09-20)
+
+**Fix** Restore downloader category selection popup when sending results to the downloader by clicking the row action button. See <a href="https://github.com/theotherp/nzbhydra2/issues/1085">#1085</a>
+
+**Fix** With form based login the welcome screen was shown on every login page. The UI asks the server whether the welcome was already shown, and that request was answered with the login page itself instead of with the setting, which the UI read as a no.
+
+**Fix** Requests the UI makes in the background are now answered with a proper error when your session is gone or you are not logged in, instead of with the login page. This affects form based login; OIDC already worked that way.
+
+**Fix** With OIDC logins Hydra only recognized the logged in user when the username was taken from the claim &quot;preferred_username&quot;. If you configured another claim (e.g. &quot;email&quot;) you were logged in but treated as an unknown user, which with restricted search sent you back to the login page.
+
+**Fix** Logging out reported &quot;Logout failed!&quot; and kept you on the page although you had been logged out. It happened whenever the login page was the only thing you were allowed to see afterwards.
+
+**Feature** Clicking a search result's cover now opens it in a bigger view.
+
+**Fix** The button to download selected results as ZIP was never shown because it checked a setting that never existed on the server. It is back, available when your downloads are set to go through Hydra (not direct links), and can be hidden again through the display options.
+
+**Feature** The display option &quot;Hide downloaded results&quot; is back and now shows how many results it currently affects, e.g. &quot;Hide downloaded results (3)&quot;. Enabling it also hides results you already downloaded in an earlier session, not just ones downloaded during the current search. The &quot;Downloaded&quot; label on a result now shows for those earlier downloads too.
+
+**Fix** &quot;Send selected to black hole&quot; and &quot;Copy selected links&quot; could be clicked with nothing selected and only complained afterwards. They are now disabled until you select at least one result, like the other bulk actions.
+
+**Fix** Fix newznab API endpoint being unable to parse search result GUID. See <a href="https://github.com/theotherp/nzbhydra2/issues/1087">#1087</a>
+
+
+
 ### v9.0.1 (2026-09-18)
 
 **Feature** New display option &quot;Group same titles&quot; in the search results. Results with the same title were always put into one group; you can now switch that off and see every result in its own row. Duplicates of the same release are still grouped, they have their own option.
