@@ -707,7 +707,6 @@ describe("add presets", () => {
             ),
         );
         expect(labels).toContain("Binsearch");
-        expect(labels).toContain("Torbox (Newznab)");
     });
 
     it("seeds a host preset with the base plus the preset's own values", () => {

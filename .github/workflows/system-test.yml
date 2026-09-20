@@ -152,7 +152,7 @@ jobs:
           wait_for_arr radarr 7878
           docker ps
           echo "Core container mounts:"
-          docker container inspect -f '{{ .Mounts}}' core
+          docker container inspect -f '{{ .Mounts}}' core_test
       - name: "Curl core"
         run: "curl --verbose http://127.0.0.1:5076"
 
@@ -603,7 +603,7 @@ jobs:
                       echo "Core is up after $attempt attempts"
                       exit 0
                     fi
-                    if [ "$(docker inspect -f '{{.State.Running}}' core 2>/dev/null)" != "true" ]; then
+                    if [ "$(docker inspect -f '{{.State.Running}}' core_test 2>/dev/null)" != "true" ]; then
                       echo "::error::The core container stopped before becoming healthy"
                       docker compose $COMPOSE_FILES logs --no-color core
                       exit 1
@@ -754,7 +754,7 @@ jobs:
                       echo "Core is up after $attempt attempts"
                       exit 0
                     fi
-                    if [ "$(docker inspect -f '{{.State.Running}}' core 2>/dev/null)" != "true" ]; then
+                    if [ "$(docker inspect -f '{{.State.Running}}' core_test 2>/dev/null)" != "true" ]; then
                       echo "::error::The core container stopped before becoming healthy"
                       docker compose $COMPOSE_FILES logs --no-color core
                       exit 1
