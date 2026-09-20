@@ -1,7 +1,7 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.2"
-    date: "2026-09-19"
+    date: "2026-09-20"
     final: false
     changes:
       -   type: "fix"
@@ -15,7 +15,7 @@
       -   type: "fix"
           text: "Logging out reported &quot;Logout failed!&quot; and kept you on the page although you had been logged out. It happened whenever the login page was the only thing you were allowed to see afterwards."
       -   type: "feature"
-          text: "Clicking a search result's cover now opens it enlarged in the middle of the page over a dimmed background; click anywhere to close it. Hovering or focusing the cover still shows the quick preview beside it, as before."
+          text: "Clicking a search result's cover now opens it in a bigger view."
       -   type: "fix"
           text: "The button to download selected results as ZIP was never shown because it checked a setting that never existed on the server. It is back, available when your downloads are set to go through Hydra (not direct links), and can be hidden again through the display options."
       -   type: "feature"
