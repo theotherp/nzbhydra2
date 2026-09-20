@@ -7329,6 +7329,75 @@ describe("SearchResults per-row send to black hole", () => {
     });
 });
 
+// Movie quality indicator badge (`search-result.html:33-38`, restored).
+// `qualityRating`/`qualityWarnings` are only ever populated together by the
+// backend, so presence of the badge is tested directly against the field
+// rather than any config.
+describe("SearchResults quality badge", () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    function resultWithQuality(
+        qualityRating?: number,
+        qualityWarnings?: string[],
+    ) {
+        return {
+            ...response,
+            numberOfAvailableResults: 1,
+            searchResults: [
+                {
+                    searchResultId: "1",
+                    title: "Quality result",
+                    indexer: "Mock",
+                    category: "Movies",
+                    qualityRating,
+                    qualityWarnings,
+                },
+            ],
+        };
+    }
+
+    it("should not render a badge when qualityRating is absent", () => {
+        renderResults(<SearchResults data={resultWithQuality(undefined)} />);
+        expect(
+            screen.queryByTestId("search-result-quality-badge"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should not render a badge for a rating of 0 (legacy's truthiness ng-if)", () => {
+        renderResults(<SearchResults data={resultWithQuality(0)} />);
+        expect(
+            screen.queryByTestId("search-result-quality-badge"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should render the rating as the badge label", () => {
+        renderResults(<SearchResults data={resultWithQuality(8)} />);
+        expect(
+            screen.getByTestId("search-result-quality-badge"),
+        ).toHaveTextContent("8");
+    });
+
+    it.each([
+        [8, "success"],
+        [5, "warning"],
+        [2, "error"],
+    ] as const)(
+        "should map rating %i onto the %s chip colour",
+        (rating, colorClassFragment) => {
+            renderResults(<SearchResults data={resultWithQuality(rating)} />);
+            const badge = screen.getByTestId("search-result-quality-badge");
+            expect(badge.className).toContain(
+                `MuiChip-color${
+                    colorClassFragment.charAt(0).toUpperCase() +
+                    colorClassFragment.slice(1)
+                }`,
+            );
+        },
+    );
+});
+
 /**
  * The two Actions `<col>` widths the table currently rendered declares -- the
  * pixel one (used at and above 1280px) and the percentage one below it. Both

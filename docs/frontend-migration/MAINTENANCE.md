@@ -3936,3 +3936,20 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (145 files, 2118 tests), `build`, `check:api`, `validate:migration` — all clean. `git diff --check` clean. No
   `tests/system` change, so no real-backend run.
 - **Commit:** `5c5f7fa48`
+
+### 2026-09-20 — Restore the movie quality indicator badge in the search results
+
+- **Why not a packet — it did not qualify, and was run here anyway:** this is a *restored user-observable capability*, which the ledger's own gate sends to a task packet. The owner asked for the cheap route explicitly ("use sonnet
+  when possible, I need to save tokens"), so it ran as one implementation pass (sonnet subagent) with the coordinator reviewing the complete diff, instead of designer → implementer → reviewer. What that buys is the whole legacy
+  contract being recoverable from one deleted file pair, so there was nothing to design; what it costs is recorded under *Deviation*.
+- **What was broken:** the backend never stopped computing `qualityRating`/`qualityWarnings` (`InternalSearchResultProcessor`, gated on `searching.showMovieQualityIndicator` plus a MOVIE category), and the config switch was migrated
+  with the Searching tab, but the rendering went away with the legacy UI in FM-095 (`3ce28441e`). React's `SearchResult` type and zod schema did not carry the two fields at all, so they were stripped off the wire before any component
+  could have shown them.
+- **Paths:** `core/ui-react/src/api/search.ts`, `core/ui-react/src/features/search/results/ResultRow.tsx`, `core/ui-react/src/features/search/results/qualityBadge.ts` (new), `core/ui-react/src/features/search/results/qualityBadge.test.ts`
+  (new), `core/ui-react/src/features/search/results/SearchResults.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check` on the five touched paths, `vitest` (the two affected files, 180 tests; the subagent additionally ran the full 146-file suite),
+  `build`, `check:api`, `validate:migration` — all clean. `git diff --check` clean. No `tests/system` change, so no real-backend run. Three `format:check` failures elsewhere (`SearchPage.test.tsx`, `SystemBugreportTab.test.tsx`,
+  `SystemBugreportTab.tsx`) are pre-existing on unmodified HEAD content.
+- **Deviation:** no independent review, and **no screenshot strip** — the badge's rendering is asserted only through DOM/class assertions in jsdom, never looked at in a browser. A new `data-testid`
+  (`search-result-quality-badge`) was added, which the gate also reserves for packets. Legacy's tooltip placement (`right`) is matched; its 350px tooltip max-width is not (MUI's stock 300px stands).
+- **Commit:** `795dd7d3a`

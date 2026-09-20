@@ -1,7 +1,10 @@
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
 import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
     Box,
     Checkbox,
@@ -30,6 +33,10 @@ import type {
 } from "../../../domain/downloads/actions";
 import {CoverLightbox} from "./CoverLightbox";
 import {DirectDownloadActions} from "./DownloadActions";
+import {
+    buildQualityTooltipSections,
+    qualityBadgeSeverity,
+} from "./qualityBadge";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {SendToBlackHoleButton} from "./SendToBlackHoleButton";
 import {SendToDownloaderButtons} from "./SendToDownloaderButtons";
@@ -472,6 +479,19 @@ export const ResultRow = memo(function ResultRow({
                                             title={result.title}
                                         />
                                     )}
+                                {/* Movie quality indicator (`search-result.html:33-38`).
+                                    `qualityRating` is only ever populated
+                                    alongside `qualityWarnings` for a movie
+                                    result with the config flag on, so
+                                    presence is the whole gate -- and, like
+                                    legacy's `ng-if`, a rating of 0 renders
+                                    nothing. */}
+                                {result.qualityRating ? (
+                                    <QualityBadge
+                                        rating={result.qualityRating}
+                                        warnings={result.qualityWarnings}
+                                    />
+                                ) : null}
                                 <Box>{column.value(result)}</Box>
                             </Stack>
                         ) : isIndexer ? (
@@ -606,6 +626,83 @@ export const ResultRow = memo(function ResultRow({
         </TableRow>
     );
 });
+
+/**
+ * Movie quality indicator badge (`search-result.html:33-38`). A `Chip` is
+ * the stock component for a coloured, labelled pill -- no bespoke `Box`
+ * needed here, unlike `CoverThumbnail` below. Colour is chosen by severity
+ * (`qualityBadgeSeverity`), never a literal: high/medium/low map onto
+ * `success`/`warning`/`error`, the same palette roles the "Downloaded" chip
+ * above already draws from.
+ */
+function QualityBadge({
+    rating,
+    warnings,
+}: {
+    rating: number;
+    warnings?: string[];
+}) {
+    return (
+        <Tooltip
+            placement="right"
+            title={<QualityTooltipContent warnings={warnings} />}
+        >
+            <Chip
+                color={qualityBadgeSeverity(rating)}
+                data-testid="search-result-quality-badge"
+                label={rating}
+                size="small"
+            />
+        </Tooltip>
+    );
+}
+
+const QUALITY_SECTION_ICONS = {
+    quality: (
+        <MovieOutlinedIcon fontSize="inherit" sx={{color: "text.secondary"}} />
+    ),
+    critical: (
+        <ErrorOutlineIcon fontSize="inherit" sx={{color: "error.main"}} />
+    ),
+    warning: (
+        <WarningAmberIcon fontSize="inherit" sx={{color: "warning.main"}} />
+    ),
+} as const;
+
+/** `formatQualityWarnings` (`search-result.js`), as a structured node rather
+ * than the legacy HTML string -- the messages come from parsed release
+ * titles and must never be interpreted as markup. */
+function QualityTooltipContent({warnings}: {warnings?: string[]}) {
+    const sections = buildQualityTooltipSections(warnings);
+    if (sections.length === 0) {
+        return <>No quality information available</>;
+    }
+    return (
+        <Stack spacing={1}>
+            {sections.map((section) => (
+                <Box key={section.key}>
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{alignItems: "center"}}
+                    >
+                        {QUALITY_SECTION_ICONS[section.key]}
+                        <Box component="span" sx={{fontWeight: "bold"}}>
+                            {section.heading}
+                        </Box>
+                    </Stack>
+                    <Box component="ul" sx={{margin: 0, paddingLeft: 2.5}}>
+                        {section.messages.map((message, index) => (
+                            <Box component="li" key={index}>
+                                {message}
+                            </Box>
+                        ))}
+                    </Box>
+                </Box>
+            ))}
+        </Stack>
+    );
+}
 
 /**
  * FM-179: one row's cover, as a fixed-height framed thumbnail that shows the

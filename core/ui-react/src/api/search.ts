@@ -60,6 +60,14 @@ export type SearchResult = {
     downloadId?: string;
     originalCategory?: string;
     downloadedAt?: string;
+    /**
+     * Movie quality indicator (`InternalSearchResultProcessor`, ~line 222):
+     * both fields are populated together, only for movie-category results,
+     * and only when `searching.showMovieQualityIndicator` is on -- so the
+     * badge needs no config lookup of its own, just presence of `qualityRating`.
+     */
+    qualityRating?: number;
+    qualityWarnings?: string[];
 };
 
 export type SearchResponse = {
@@ -277,6 +285,15 @@ const resultSchema = z.object({
     downloadedAt: z
         .string()
         .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    qualityRating: z
+        .number()
+        .finite()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    qualityWarnings: z
+        .array(z.string())
         .nullish()
         .transform((value) => value ?? undefined),
 });
