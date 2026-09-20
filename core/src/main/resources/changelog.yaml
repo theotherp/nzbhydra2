@@ -1,5 +1,15 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
+-   version: "v9.0.3"
+    date: "2026-09-20"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Restore quality indicators."
+      -   type: "fix"
+          text: "Show NFOs properly."
+      -   type: "fix"
+          text: "Show search and download history in cards on mobile."
 -   version: "v9.0.2"
     date: "2026-09-20"
     final: true

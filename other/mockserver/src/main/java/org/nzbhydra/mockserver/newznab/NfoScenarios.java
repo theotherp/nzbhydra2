@@ -39,11 +39,11 @@ public final class NfoScenarios {
      */
     public static Scenario asciiArt() {
         return new Scenario("nfo-ascii-art",
-                "Getnfo response whose description contains the double escaped character references that a real "
-                        + "ASCII art NFO produces once an indexer's HTML escaping is escaped again for XML",
-                Match.all(Match.action(ActionAttribute.GETNFO), Match.apikeyContains(ASCII_ART_APIKEY_MARKER)),
-                context -> nfo("&#9608;&#9608;&#9608;&#9618;&#9618;&#9618;&#9617;&#9617;&#9617;\n"
-                        + "&#9608;&#9617;&#9617;&#9618;&#9608;&#9618;&#9617;&#9617;&#9608;"));
+            "Getnfo response whose description contains the double escaped character references that a real "
+            + "ASCII art NFO produces once an indexer's HTML escaping is escaped again for XML",
+            Match.all(Match.action(ActionAttribute.GETNFO), Match.apikeyContains(ASCII_ART_APIKEY_MARKER)),
+            context -> nfo("&#9608;&#9608;&#9608;&#9618;&#9618;&#9618;&#9617;&#9617;&#9617;\n"
+                           + "&#9608;&#9617;&#9617;&#9618;&#9608;&#9618;&#9617;&#9617;&#9608;"));
     }
 
     /**
@@ -51,9 +51,23 @@ public final class NfoScenarios {
      */
     public static Scenario legacyDefault() {
         return new Scenario("nfo-default",
-                "Getnfo response with a description naming the requested NZB id, like the old inline controller code",
-                Match.action(ActionAttribute.GETNFO),
-                context -> nfo("NFO for NZB with ID " + context.params().getId()));
+            "Getnfo response with a description naming the requested NZB id, like the old inline controller code",
+            Match.action(ActionAttribute.GETNFO),
+            context -> nfo("NFO for NZB with ID " + context.params().getId() + "\n" + """
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣾⣿⣷⣦⣌⠙⢿⣿⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⣿⣿⣿⣿⣿⣷⡈⢻⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⠟⠋⣉⠙⢻⣿⣿⣿⣷⠀⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⠟⢁⣴⣿⣿⡷⢀⣿⣿⣿⡿⠀⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⠟⢁⣴⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣼⣿⣿
+                ⣿⣿⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⠟⢁⣴⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣴⣿⣿⣿⣿
+                ⣿⣿⣿⣿⣿⠟⢁⣴⣿⣿⠟⢁⣴⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣴⣿⣿⣿⣿⣿⣿
+                ⣿⣿⣿⠟⢁⣴⣿⣿⣿⣿⣶⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿
+                ⣿⣿⠁⣴⣿⣿⣿⣿⣿⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+                ⣿⣿⠀⢿⣿⣿⣿⣿⣿⡿⠋⣠⣾⣿⣿⠟⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+                ⣿⣿⣧⡈⠻⢿⣿⡿⠋⣠⣾⣿⣿⡟⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+                ⣿⣿⣿⣿⣷⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+                """));
     }
 
     /**
