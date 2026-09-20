@@ -37,6 +37,7 @@ import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -261,6 +262,19 @@ public class IndexerTest {
         exception = new IndexerErrorCodeException(new NewznabXmlError("101", "errorMessage"));
         testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
         verify(testee).handleFailure("Indexer returned with error code 101 and description errorMessage", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.API_ERROR);
+    }
+
+    @Test
+    void shouldLogRateLimitWithoutResponseBodyOrStackTrace() {
+        WebAccessException cause = new WebAccessException("Too Many Requests", "<html>rate limit</html>", 429);
+        IndexerUnreachableException exception = new IndexerUnreachableException(
+            "Error while communicating with indexer testIndexer. Server returned: Too Many Requests. Code: 429", cause);
+
+        testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+
+        verify(testee).warn("Error while communicating with indexer testIndexer. Server returned: Too Many Requests. Code: 429");
+        verify(testee, never()).error(anyString(), any(Throwable.class));
+        verify(testee).handleFailure(exception.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR);
     }
 
     @Test

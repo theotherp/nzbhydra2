@@ -32,6 +32,7 @@ import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -374,8 +375,12 @@ public abstract class Indexer<T> {
             error(message, e);
             apiAccessResult = IndexerAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
-            message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            error(message, e);
+            if (e.getCause() instanceof WebAccessException webAccessException && webAccessException.getCode() == 429) {
+                warn(e.getMessage());
+            } else {
+                message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                error(message, e);
+            }
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
             //Anything else is probably a coding error, don't disable indexer
