@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>9.0.2</version>
+        <version>9.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>core</artifactId>
@@ -170,12 +170,12 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>9.0.2</version>
+            <version>9.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>release-parser</artifactId>
-            <version>9.0.2</version>
+            <version>9.0.3-SNAPSHOT</version>
         </dependency>
 
         <!-- GraalVM's own API, used for the heap dump the JVM's HotSpotDiagnosticMXBean cannot create in a native
