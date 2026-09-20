@@ -3967,3 +3967,18 @@ their text and relative order are unchanged.
 - **Deviation:** decoding is deliberately one pass and deliberately partial — six named references plus numeric ones. An unresolvable reference is left verbatim rather than guessed at, so an NFO using some other named entity will
   still show it raw; that was judged better than shipping a full HTML entity table for a case no indexer has been seen to produce. Not confirmed against a real indexer NFO, only against the reported shape.
 - **Commit:** `19cf522a0`
+
+### 2026-09-20 — Stack the three history tables into cards below 768px
+
+- **Why not a packet:** styling/markup polish inside existing features — no behaviour, contract, API or `data-testid` change. `data-label` is a new presentational attribute only. It spans three routes, but only because they share one
+  frame (`HistoryPageFrame`) and the change is the same CSS in all three; the owner asked for it directly ("on mobile the search history, download history, notification history should be displayed in cards instead of a table").
+- **What was broken:** all three routes render through `HistoryPageFrame`, whose `<Table>` carries the route's measured width floor (760/690/800, ADR-0038). Below ~768px that floor is exactly what forces the horizontal scroll, so
+  the three history views were read sideways on a phone while the search results table has stacked into cards since FM-150.
+- **Paths:** `core/ui-react/src/components/table/stackedCardTableSx.ts` (new), `core/ui-react/src/features/stats/history/{HistoryPageFrame,SearchHistoryPage,DownloadHistoryPage,NotificationHistoryPage}.tsx` and the latter three's
+  `*.test.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check` on the touched paths, `test -- --run` (146 files, 2149 tests), `build`, `check:api`, `validate:migration` — all clean.
+  `git diff --check` clean. No `tests/system` change, so no real-backend run.
+- **Deviation:** **no screenshot strip** — the Visual Gate is unmet. jsdom does not evaluate the media query, so nothing here proves the cards actually stack; the tests cover only the label/column-index contract (verified to fail
+  when a label is wrong). The `minWidth` override depends on emotion serialising the breakpoint block after the base key, which is likewise unverified outside a browser. The base pattern is duplicated from `resultsTableSx` rather
+  than shared out of it, deliberately (reason at the helper); the two can now drift.
+- **Commit:** `a3bc5ab43`
