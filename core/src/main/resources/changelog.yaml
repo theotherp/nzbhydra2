@@ -2,7 +2,7 @@
 # These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.2"
     date: "2026-09-20"
-    final: false
+    final: true
     changes:
       -   type: "fix"
           text: "Restore downloader category selection popup when sending results to the downloader by clicking the row action button. See #1085"
