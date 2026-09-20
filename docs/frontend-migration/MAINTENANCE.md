@@ -3982,3 +3982,17 @@ their text and relative order are unchanged.
   when a label is wrong). The `minWidth` override depends on emotion serialising the breakpoint block after the base key, which is likewise unverified outside a browser. The base pattern is duplicated from `resultsTableSx` rather
   than shared out of it, deliberately (reason at the helper); the two can now drift.
 - **Commit:** `a3bc5ab43`
+
+### 2026-09-20 — Show the tab strips' scroll buttons on mobile
+
+- **Why not a packet:** UX polish inside existing features — one prop per strip, no behaviour, contract, API or `data-testid` change. Reported directly by a user ("no way to go to the download history on mobile").
+- **What was broken:** MUI gives a `variant="scrollable"` `Tabs` the class `scrollButtonsHideMobile` unless `allowScrollButtonsMobile` is set, and that class is `display: none` on the scroll buttons below `sm`
+  (`node_modules/@mui/material/Tabs/Tabs.js`); the scroller hides its own scrollbar as well. The strip stayed scrollable by touch, but nothing on screen said so, so every tab past the fold was effectively unreachable.
+- **Paths:** `core/ui-react/src/features/stats/StatsShell.tsx`, `core/ui-react/src/features/system/SystemShell.tsx`, `core/ui-react/src/features/system/logs/SystemLogTab.tsx`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check` on the touched paths, `test -- --run` (146 files, 2149 tests), `build`, `check:api`, `validate:migration` — all clean.
+  `git diff --check` clean.
+- **Visual gate: met.** Chromium at 390x844 against the vite dev server on the working tree. Before: both scroll buttons in the DOM, **0 visible**. After: **2 visible**, and Download history reachable. The same pass also
+  retroactively confirmed the 2026-09-20 history card layout (`a3bc5ab43`) renders as stacked labelled cards on all three routes, which that entry had recorded as unverified.
+- **Deviation:** not unit-tested — the buttons' visibility is decided by a media query jsdom does not evaluate, so a jsdom test would pass with or without the prop. `ConfigNav.tsx`'s vertical strip has the same missing prop and was
+  deliberately left alone (it lives in a drawer below `md` whose own scrolling reaches every entry, and it was not reported) — a candidate if it ever surfaces.
+- **Commit:** `63b1004df`
