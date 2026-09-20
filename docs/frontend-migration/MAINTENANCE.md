@@ -3996,3 +3996,18 @@ their text and relative order are unchanged.
 - **Deviation:** not unit-tested — the buttons' visibility is decided by a media query jsdom does not evaluate, so a jsdom test would pass with or without the prop. `ConfigNav.tsx`'s vertical strip has the same missing prop and was
   deliberately left alone (it lives in a drawer below `md` whose own scrolling reaches every entry, and it was not reported) — a candidate if it ever surfaces.
 - **Commit:** `63b1004df`
+
+### 2026-09-20 — Stack indexer statuses and saved searches into cards below 768px
+
+- **Why not a packet:** styling/markup polish inside existing features, same shape as the history-table entry above and asked for the same way ("Also show saved searches and indexer statuses as cards"). No behaviour, contract,
+  API or `data-testid` change.
+- **What was broken:** the two remaining stats tables read sideways on a phone, same as the three history tables before the earlier entry. Indexer statuses already wrapped its 8-column table in `TableScrollAffordance` with a
+  measured 1580px floor (same shape as `HistoryPageFrame`); Saved searches had no scroll wrapper at all, since its 5 columns never needed one on desktop, but still rendered as an unstacked table below 768px.
+  **Paths:** `core/ui-react/src/features/stats/indexers/IndexerStatusesPage.tsx` (+ test), `core/ui-react/src/features/stats/history/SavedSearchesPage.tsx` (+ test) — both reuse `stackedCardTableSx` from the earlier entry, Indexer
+  statuses merged after its width floor, Saved searches taking it directly since it has no floor to override.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check` on the touched paths, `test -- --run` (146 files, 2151 tests), `build`, `check:api`, `validate:migration` — all clean.
+  `git diff --check` clean.
+- **Visual gate: met.** Chromium at 390x844 against the vite dev server on the working tree — both pages render as stacked labelled cards. Noted but not fixed: Indexer statuses' long `<caption>` wraps to single-word lines at
+  that width, a pre-existing artifact of the caption having no mobile treatment of its own, unrelated to this change.
+- **Deviation:** none — same label/column-index drift test as the three history pages, verified to fail when a label is wrong.
+- **Commit:** `b3aebe685`
