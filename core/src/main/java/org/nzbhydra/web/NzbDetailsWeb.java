@@ -4,9 +4,11 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Strings;
 import com.google.common.net.UrlEscapers;
+import org.apache.commons.lang3.ObjectUtils;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,15 @@ public class NzbDetailsWeb {
     public RedirectView details(@PathVariable("guid") String guid) throws InvalidSearchResultIdException {
         long searchResultId = DownloadIdentifier.parse(guid, true).searchResultId();
         RedirectView redirectView = new RedirectView();
-        String url = searchResultRepository.findByHash(searchResultId).get().getDetails();
+        Optional<SearchResultEntity> resultEntity = searchResultRepository.findByHash(searchResultId);
+        if (resultEntity.isEmpty()) {
+            throw new InvalidSearchResultIdException(searchResultId, true);
+        }
+        SearchResultEntity searchResultEntity = resultEntity.get();
+        String url = ObjectUtils.firstNonNull(searchResultEntity.getDetails(), searchResultEntity.getLink());
+        if (url == null) {
+            throw new InvalidSearchResultIdException(searchResultId, true);
+        }
         Optional<String> derefererOptional = configProvider.getBaseConfig().getMain().getDereferer();
         if (derefererOptional.isPresent() && !Strings.isNullOrEmpty(derefererOptional.get())) {
             url = derefererOptional.get()
