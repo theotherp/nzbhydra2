@@ -3953,3 +3953,17 @@ their text and relative order are unchanged.
 - **Deviation:** no independent review, and **no screenshot strip** — the badge's rendering is asserted only through DOM/class assertions in jsdom, never looked at in a browser. A new `data-testid`
   (`search-result-quality-badge`) was added, which the gate also reserves for packets. Legacy's tooltip placement (`right`) is matched; its 350px tooltip max-width is not (MUI's stock 300px stands).
 - **Commit:** `795dd7d3a`
+
+### 2026-09-20 — Decode the character references an ASCII-art NFO arrives with
+
+- **Why not a packet:** one genuinely contained bugfix, confined to `parseNfoResult`'s content transform in `api/nfo.ts`, shipped with regression tests that failed before the fix (rendering the reported `&#9608;` verbatim) and pass
+  after. No contract, capability or `data-testid` change — the NFO dialog itself is untouched and still renders a text node.
+- **What was broken:** a user reported the NFO dialog showing `&#9608;&#9618;…` instead of block glyphs. An ASCII-art NFO is drawn with CP437 block characters; indexers HTML-escape those into the newznab `<description>` that
+  `Newznab.getNfo` reads the NFO from, and escaping that description for XML escapes the ampersands in turn, so unmarshalling peels off one level and leaves the references as literal text. Legacy resolved that last level by handing
+  the string to `ng-bind-html`; React renders a text node by design (`NfoDialog`'s own comment explains why), so nothing resolved it.
+- **Paths:** `core/ui-react/src/api/nfo.ts`, `core/ui-react/src/api/nfo.test.ts`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `prettier --check` on both touched paths, `test -- --run` (146 files, 2146 tests), `build`, `check:api`, `validate:migration` — all clean.
+  `git diff --check` clean. No `tests/system` change, so no real-backend run.
+- **Deviation:** decoding is deliberately one pass and deliberately partial — six named references plus numeric ones. An unresolvable reference is left verbatim rather than guessed at, so an NFO using some other named entity will
+  still show it raw; that was judged better than shipping a full HTML entity table for a case no indexer has been seen to produce. Not confirmed against a real indexer NFO, only against the reported shape.
+- **Commit:** `19cf522a0`

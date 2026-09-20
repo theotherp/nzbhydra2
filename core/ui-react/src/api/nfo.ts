@@ -31,6 +31,55 @@ export class MalformedNfoResponseError extends Error {
     }
 }
 
+const NAMED_CHARACTER_REFERENCES: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: '"',
+};
+
+const CHARACTER_REFERENCE = /&(#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/gi;
+
+/**
+ * Resolves the HTML character references an NFO arrives with.
+ *
+ * An ASCII-art NFO is drawn with CP437 block glyphs, and indexers HTML-escape
+ * those into the newznab `<description>` the NFO is read from
+ * (`Newznab.getNfo`). Escaping that description for XML in turn escapes the
+ * ampersands, so unmarshalling the response peels off one level and leaves
+ * text like `&#9608;` behind -- which is what the user sees instead of `█`.
+ * Legacy resolved it by handing the string to `ng-bind-html`; this path
+ * renders text nodes (see `getNfo` below), so it has to be resolved here.
+ *
+ * One pass, so `&amp;#9608;` yields the literal `&#9608;` rather than a block:
+ * an ampersand that was genuinely escaped stays text, exactly as legacy's
+ * single sanitiser pass left it. A reference this cannot resolve -- an unknown
+ * name, a lone surrogate, a code point out of range -- is left verbatim rather
+ * than guessed at or dropped.
+ *
+ * Decoding does not make the result markup: `<` may now appear, but callers
+ * render it into a text node, where it is a visible character and nothing else.
+ */
+export function decodeCharacterReferences(text: string): string {
+    return text.replace(CHARACTER_REFERENCE, (reference, body: string) => {
+        if (!body.startsWith("#")) {
+            return NAMED_CHARACTER_REFERENCES[body.toLowerCase()] ?? reference;
+        }
+        const hex = body[1] === "x" || body[1] === "X";
+        const codePoint = Number.parseInt(
+            hex ? body.slice(2) : body.slice(1),
+            hex ? 16 : 10,
+        );
+        const isSurrogate = codePoint >= 0xd800 && codePoint <= 0xdfff;
+        if (codePoint <= 0 || codePoint > 0x10ffff || isSurrogate) {
+            return reference;
+        }
+        return String.fromCodePoint(codePoint);
+    });
+}
+
 const nfoSchema = z.object({
     successful: z.boolean().default(false),
     hasNfo: z.boolean().default(false),
@@ -40,7 +89,7 @@ const nfoSchema = z.object({
     content: z
         .string()
         .nullish()
-        .transform((value) => value ?? ""),
+        .transform((value) => decodeCharacterReferences(value ?? "")),
 });
 
 /**
@@ -51,7 +100,9 @@ const nfoSchema = z.object({
  *
  * The returned `content` is indexer-supplied text and is never markup: callers
  * render it as text. Legacy piped it through `ng-bind-html`
- * (`search-result.js:170-175`), which is exactly the hazard not carried over.
+ * (`search-result.js:170-175`), which is exactly the hazard not carried over —
+ * only its character-reference decoding is, via
+ * `decodeCharacterReferences` above.
  */
 export async function getNfo(
     transport: ApiTransport,

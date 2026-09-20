@@ -93,6 +93,42 @@ describe("parseNfoResult", () => {
         });
     });
 
+    // The block-drawing glyphs an ASCII-art NFO is built from reach us as
+    // character references: the indexer HTML-escapes the NFO into the
+    // newznab `<description>`, and the XML escaping of that leaves one
+    // undecoded level behind once the response is unmarshalled. Legacy
+    // decoded it by handing the string to `ng-bind-html`; nothing does here,
+    // so the references have to be resolved before the text is rendered.
+    it("should decode the character references an ASCII-art NFO arrives with", () => {
+        expect(
+            parseNfoResult({
+                successful: true,
+                hasNfo: true,
+                content: "&#9608;&#9618;&#9617; &#x2588; &amp; &lt;b&gt;",
+            }).content,
+        ).toBe("\u2588\u2592\u2591 \u2588 & <b>");
+    });
+
+    it("should decode exactly one level, so an escaped ampersand stays text", () => {
+        expect(
+            parseNfoResult({
+                successful: true,
+                hasNfo: true,
+                content: "&amp;#9608;",
+            }).content,
+        ).toBe("&#9608;");
+    });
+
+    it("should leave anything that is not a resolvable reference alone", () => {
+        expect(
+            parseNfoResult({
+                successful: true,
+                hasNfo: true,
+                content: "Tom & Jerry 100% &notareference; &#xD800; &#0;",
+            }).content,
+        ).toBe("Tom & Jerry 100% &notareference; &#xD800; &#0;");
+    });
+
     it("should reject a response that is not an NFO result at all", () => {
         expect(() => parseNfoResult("nope")).toThrow(MalformedNfoResponseError);
         expect(() => parseNfoResult({successful: "yes"})).toThrow(
