@@ -16,6 +16,7 @@ import {
 } from "../../../api/stats/indexerStatuses";
 import {ApiTransport} from "../../../api/transport";
 import type {BootstrapData} from "../../../bootstrap";
+import {stackedCardTableSx} from "../../../components/table/stackedCardTableSx";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {Loading} from "../shared/Loading";
@@ -91,8 +92,13 @@ function StatusTable({
                 // expiry): the eight columns -- Indexer, State, Disabled
                 // until, Last error, API hits, Downloads, Next hit allowed,
                 // VIP expiry -- need 1571px so no header or value wraps
-                // mid-word. 1580 keeps them at that intrinsic width.
-                sx={{minWidth: 1580}}
+                // mid-word. 1580 keeps them at that intrinsic width above the
+                // 768px breakpoint, where `stackedCardTableSx` turns the
+                // table into stacked cards instead (see that helper).
+                sx={(theme) => ({
+                    minWidth: 1580,
+                    ...stackedCardTableSx(theme),
+                })}
             >
                 <caption>
                     Indexer statuses sorted by state, then name. Configure an
@@ -113,9 +119,13 @@ function StatusTable({
                 <TableBody>
                     {statuses.map((status) => (
                         <TableRow key={`${status.state}-${status.indexer}`}>
-                            <TableCell>{status.indexer}</TableCell>
-                            <TableCell>{stateLabel(status.state)}</TableCell>
-                            <TableCell>
+                            <TableCell data-label="Indexer">
+                                {status.indexer}
+                            </TableCell>
+                            <TableCell data-label="State">
+                                {stateLabel(status.state)}
+                            </TableCell>
+                            <TableCell data-label="Disabled until">
                                 {status.state === "DISABLED_SYSTEM_TEMPORARY"
                                     ? formatServerDateTime(
                                           status.disabledUntil,
@@ -123,18 +133,22 @@ function StatusTable({
                                       )
                                     : ""}
                             </TableCell>
-                            <TableCell>{status.lastError ?? ""}</TableCell>
-                            <TableCell>
+                            <TableCell data-label="Last error">
+                                {status.lastError ?? ""}
+                            </TableCell>
+                            <TableCell data-label="API hits">
                                 {limit(status.apiHits, status.apiHitLimit)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell data-label="Downloads">
                                 {limit(
                                     status.downloadHits,
                                     status.downloadHitLimit,
                                 )}
                             </TableCell>
-                            <TableCell>{reset(status, timeZone)}</TableCell>
-                            <TableCell>
+                            <TableCell data-label="Next hit allowed">
+                                {reset(status, timeZone)}
+                            </TableCell>
+                            <TableCell data-label="VIP expiry">
                                 {vip(status.vipExpirationDate, timeZone)}
                             </TableCell>
                         </TableRow>

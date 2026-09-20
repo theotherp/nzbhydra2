@@ -25,6 +25,7 @@ import {
     type SavedSearch,
 } from "../../../api/savedSearches";
 import {ApiTransport} from "../../../api/transport";
+import {stackedCardTableSx} from "../../../components/table/stackedCardTableSx";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
@@ -80,7 +81,7 @@ export function SavedSearchesPage({
                     will show up here.
                 </Alert>
             ) : (
-                <Table>
+                <Table sx={stackedCardTableSx}>
                     <TableHead>
                         <TableRow>
                             <TableCell>Query</TableCell>
@@ -93,16 +94,20 @@ export function SavedSearchesPage({
                     <TableBody>
                         {searches.map(({search, serverIndex}) => (
                             <TableRow key={savedKey(search, serverIndex)}>
-                                <TableCell>{queryLabel(search)}</TableCell>
-                                <TableCell>{search.categoryName}</TableCell>
-                                <TableCell>
+                                <TableCell data-label="Query">
+                                    {queryLabel(search)}
+                                </TableCell>
+                                <TableCell data-label="Category">
+                                    {search.categoryName}
+                                </TableCell>
+                                <TableCell data-label="Additional parameters">
                                     <Criteria
                                         search={search}
                                         transport={transport}
                                         dereferer={safeConfig?.dereferer}
                                     />
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Search">
                                     <Button
                                         onClick={() =>
                                             void navigate({
@@ -117,7 +122,7 @@ export function SavedSearchesPage({
                                         Search
                                     </Button>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Delete">
                                     <Button
                                         color="error"
                                         disabled={deletion.isPending}

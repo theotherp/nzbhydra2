@@ -318,4 +318,37 @@ describe("IndexerStatusesPage", () => {
 
         await waitFor(() => expect(signal?.aborted).toBe(true));
     });
+
+    // The regression guard the stacked-card layout introduces: a `data-label`
+    // on a body cell has to name the header at the same column index, or a
+    // later edit that adds/reorders a column silently mislabels the cards
+    // below 768px. jsdom does not evaluate the media query the cards live
+    // behind, so this checks the labelling contract only, not that the
+    // layout actually stacks.
+    it("should label every body cell with its own column's header text", async () => {
+        renderPage(async () => ({
+            malformedCount: 0,
+            statuses: [{indexer: "Alpha", state: "ENABLED", apiHits: 3}],
+        }));
+        const table = await screen.findByRole("table", {
+            name: "Indexer statuses",
+        });
+        assertCellLabelsMatchHeaders(table);
+    });
 });
+
+function assertCellLabelsMatchHeaders(table: HTMLElement) {
+    const rows = within(table).getAllByRole("row");
+    const [headerRow, ...bodyRows] = rows;
+    const headers = within(headerRow)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent?.trim());
+    expect(bodyRows.length).toBeGreaterThan(0);
+    for (const row of bodyRows) {
+        const cells = within(row).getAllByRole("cell");
+        expect(cells).toHaveLength(headers.length);
+        cells.forEach((cell, index) => {
+            expect(cell).toHaveAttribute("data-label", headers[index]);
+        });
+    }
+}
