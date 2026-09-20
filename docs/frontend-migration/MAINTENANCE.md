@@ -4011,3 +4011,14 @@ their text and relative order are unchanged.
   that width, a pre-existing artifact of the caption having no mobile treatment of its own, unrelated to this change.
 - **Deviation:** none — same label/column-index drift test as the three history pages, verified to fail when a label is wrong.
 - **Commit:** `b3aebe685`
+
+### 2026-09-20 — Keep Page Up and Page Down aligned with visible result rows
+
+- **Why not a packet:** single-feature keyboard scrolling bugfix with no API, route, persistence or selector contract change.
+- **What was broken:** the browser's native page distance included the area covered by the sticky results toolbar and desktop column header. Page Down therefore hid roughly three rows past the previous viewport edge, and Page Up had the
+  inverse offset.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`, `tests/system/tests/results.spec.ts`
+- **Gates:** `core/ui-react` `typecheck`, `lint -- --quiet`, and focused `SearchResults.test.tsx` (170/170) pass; `tests/system` `npx tsc --noEmit` and `prettier --check tests/results.spec.ts` pass; the focused sticky-results Playwright
+  case passes against a freshly packaged local backend (1/1), whose Maven build also completed successfully; `git diff --check` clean.
+- **Deviation:** none. Chromium verifies that Page Down retains the previous bottom-edge row and that Page Up moves no farther than the result viewport below the sticky chrome. The Page Up assertion uses the scroll-distance invariant
+  because its former edge row may be unmounted when the virtualized window changes.

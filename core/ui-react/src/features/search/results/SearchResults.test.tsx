@@ -1,12 +1,4 @@
-import {
-    act,
-    cleanup,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    within,
-} from "@testing-library/react";
+import {act, cleanup, fireEvent, render, screen, waitFor, within,} from "@testing-library/react";
 import {createElement} from "react";
 import type {MockedFunction} from "vitest";
 import {afterEach, describe, expect, it, vi} from "vitest";
@@ -14,10 +6,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
-import {
-    stubMissingLocalStorage,
-    stubNarrowViewport,
-} from "../../../test/browserStubs";
+import {stubMissingLocalStorage, stubNarrowViewport,} from "../../../test/browserStubs";
 import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {SearchResults} from "./SearchResults";
 
@@ -5341,6 +5330,71 @@ describe("SearchResults", () => {
             expect(
                 screen.getByTestId("results-virtual-spacer-bottom"),
             ).toBeInTheDocument();
+        });
+
+        it("pages by the viewport height left below the sticky results chrome", () => {
+            renderResults(<SearchResults data={manyResultsData(2000)} />);
+            const root = screen.getByTestId("search-results");
+            const toolbar = screen.getByTestId("results-toolbar");
+            const table = screen.getByTestId(
+                "search-results-table",
+            ) as HTMLTableElement;
+            vi.spyOn(root, "getBoundingClientRect").mockReturnValue({
+                ...root.getBoundingClientRect(),
+                bottom: 10_000,
+                top: -500,
+            });
+            vi.spyOn(toolbar, "getBoundingClientRect").mockReturnValue({
+                ...toolbar.getBoundingClientRect(),
+                bottom: 100,
+                top: 0,
+            });
+            vi.spyOn(
+                table.tHead as HTMLTableSectionElement,
+                "getBoundingClientRect",
+            ).mockReturnValue({
+                ...(
+                    table.tHead as HTMLTableSectionElement
+                ).getBoundingClientRect(),
+                bottom: 140,
+                top: 100,
+            });
+            const rows = screen.getAllByTestId("search-result-row");
+            vi.spyOn(rows[0], "getBoundingClientRect").mockReturnValue({
+                ...rows[0].getBoundingClientRect(),
+                bottom: 180,
+                top: 140,
+            });
+            vi.spyOn(
+                rows[rows.length - 1],
+                "getBoundingClientRect",
+            ).mockReturnValue({
+                ...rows[rows.length - 1].getBoundingClientRect(),
+                bottom: 740,
+                top: 700,
+            });
+            const scrollBy = vi
+                .spyOn(window, "scrollBy")
+                .mockImplementation(() => undefined);
+
+            fireEvent.keyDown(document, {key: "PageDown"});
+            expect(scrollBy).toHaveBeenLastCalledWith({
+                behavior: "auto",
+                left: 0,
+                top: 700 - 140,
+            });
+
+            fireEvent.keyDown(document, {key: "PageUp"});
+            expect(scrollBy).toHaveBeenLastCalledWith({
+                behavior: "auto",
+                left: 0,
+                top: 180 - JSDOM_WINDOW_HEIGHT,
+            });
+
+            const input = document.createElement("input");
+            root.append(input);
+            fireEvent.keyDown(input, {key: "PageDown"});
+            expect(scrollBy).toHaveBeenCalledTimes(2);
         });
 
         it("keeps a shift-range selection anchored on a row that has since been unmounted", () => {

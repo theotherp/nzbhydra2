@@ -11,6 +11,8 @@
       -   type: "fix"
           text: "Show search and download history in cards on mobile."
       -   type: "fix"
+          text: "Page Up and Page Down in the search results now keep the row visible instead of skipping roughly three rows. See #1088"
+      -   type: "fix"
           text: "Opening a search result's details page crashed with an internal error when the indexer didn't provide a details URL for it. It now falls back to the download link, or shows a proper error if neither is available. See #1087"
 -   version: "v9.0.2"
     date: "2026-09-20"

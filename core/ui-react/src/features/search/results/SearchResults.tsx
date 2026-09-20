@@ -1,20 +1,8 @@
 import {Stack} from "@mui/material";
 import type {ColumnDef} from "@tanstack/react-table";
-import {
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
-} from "@tanstack/react-table";
+import {getCoreRowModel, getSortedRowModel, useReactTable,} from "@tanstack/react-table";
 import {useWindowVirtualizer} from "@tanstack/react-virtual";
-import {
-    useCallback,
-    useContext,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,} from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {ApiTransport} from "../../../api/transport";
@@ -22,20 +10,9 @@ import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
 import {ToastContext} from "../../../components/toasts/toasts";
-import {
-    configuredDownloaders,
-    downloadSettings,
-    type Downloader,
-} from "../../../domain/downloads/actions";
+import {configuredDownloaders, type Downloader, downloadSettings,} from "../../../domain/downloads/actions";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase} from "./DownloadActions";
-import {RefineSidebar} from "./RefineSidebar";
-import type {ExpandSlots} from "./ResultRow";
-import {ResultsAlerts} from "./ResultsAlerts";
-import {ResultsPagingFooter} from "./ResultsPagingFooter";
-import type {VisibleRowDescriptor} from "./ResultsTable";
-import {ResultsTable} from "./ResultsTable";
-import {ResultsToolbar} from "./ResultsToolbar";
 import type {SearchedCategory} from "./groupEpisodesHelp";
 import {
     GROUP_EPISODES_HELP_MESSAGE,
@@ -43,12 +20,14 @@ import {
     isGroupEpisodesHelpEligible,
     showGroupEpisodesHelpIfNeeded,
 } from "./groupEpisodesHelp";
-import type {
-    NumericRange,
-    QuickFilter,
-    ResultFilters,
-    ResultGroup,
-} from "./resultTable";
+import {RefineSidebar} from "./RefineSidebar";
+import type {ExpandSlots} from "./ResultRow";
+import {ResultsAlerts} from "./ResultsAlerts";
+import {ResultsPagingFooter} from "./ResultsPagingFooter";
+import type {VisibleRowDescriptor} from "./ResultsTable";
+import {ResultsTable} from "./ResultsTable";
+import {ResultsToolbar} from "./ResultsToolbar";
+import type {NumericRange, QuickFilter, ResultFilters, ResultGroup,} from "./resultTable";
 import {
     activeFilterCount,
     blackHoleSlot,
@@ -946,6 +925,118 @@ export function SearchResults({
         // Re-runs when the table first mounts (or unmounts), which is when
         // `tableBodyRef` becomes observable at all.
     }, [hasResults]);
+    useEffect(() => {
+        let alignmentFrame = 0;
+        const handlePageKey = (event: KeyboardEvent) => {
+            if (
+                (event.key !== "PageDown" && event.key !== "PageUp") ||
+                event.defaultPrevented ||
+                event.altKey ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey
+            ) {
+                return;
+            }
+            const target = event.target;
+            if (
+                target instanceof Element &&
+                target.closest(
+                    "input, textarea, select, [contenteditable=\"true\"]",
+                )
+            ) {
+                return;
+            }
+            const root = resultsRootRef.current;
+            const toolbar = toolbarRef.current;
+            const body = tableBodyRef.current;
+            if (!root || !toolbar || !body) {
+                return;
+            }
+            const rootBox = root.getBoundingClientRect();
+            const toolbarBox = toolbar.getBoundingClientRect();
+            if (
+                toolbarBox.top > 1 ||
+                rootBox.top >= window.innerHeight ||
+                rootBox.bottom <= toolbarBox.bottom
+            ) {
+                return;
+            }
+            const headerBottom =
+                body.closest("table")?.tHead?.getBoundingClientRect().bottom ??
+                0;
+            const stickyBottom = Math.max(toolbarBox.bottom, headerBottom, 0);
+            const visibleHeight = window.innerHeight - stickyBottom;
+            if (visibleHeight <= 0) {
+                return;
+            }
+            const visibleRows = Array.from(
+                body.querySelectorAll<HTMLTableRowElement>(
+                    "tr[data-testid=\"search-result-row\"]",
+                ),
+                (row) => ({box: row.getBoundingClientRect(), row}),
+            ).filter(
+                ({box}) =>
+                    box.top >= stickyBottom && box.bottom <= window.innerHeight,
+            );
+            const anchor =
+                event.key === "PageDown" ? visibleRows.at(-1) : visibleRows[0];
+            const distance =
+                event.key === "PageDown"
+                    ? (anchor?.box.top ?? stickyBottom + visibleHeight) -
+                    stickyBottom
+                    : (anchor?.box.bottom ?? stickyBottom) - window.innerHeight;
+            if (distance === 0) {
+                return;
+            }
+
+            // Native paging counts the area hidden under the sticky toolbar
+            // and column header. Move by the part of the viewport where rows
+            // are actually visible, keeping the previous edge row as the first
+            // or last fully visible row after the move.
+            event.preventDefault();
+            window.scrollBy({
+                behavior: "auto",
+                left: 0,
+                top: distance,
+            });
+            if (anchor && typeof requestAnimationFrame !== "undefined") {
+                cancelAnimationFrame(alignmentFrame);
+                let remainingCorrections = 3;
+                const keepAnchorAtEdge = () => {
+                    if (!anchor.row.isConnected) {
+                        return;
+                    }
+                    const box = anchor.row.getBoundingClientRect();
+                    const correction =
+                        event.key === "PageDown"
+                            ? box.top - stickyBottom
+                            : box.bottom - window.innerHeight;
+                    if (Math.abs(correction) > 0.5) {
+                        window.scrollBy({
+                            behavior: "auto",
+                            left: 0,
+                            top: correction,
+                        });
+                    }
+                    remainingCorrections -= 1;
+                    if (remainingCorrections > 0) {
+                        alignmentFrame =
+                            requestAnimationFrame(keepAnchorAtEdge);
+                    }
+                };
+                alignmentFrame = requestAnimationFrame(keepAnchorAtEdge);
+            }
+        };
+
+        document.addEventListener("keydown", handlePageKey);
+        return () => {
+            document.removeEventListener("keydown", handlePageKey);
+            if (typeof cancelAnimationFrame !== "undefined") {
+                cancelAnimationFrame(alignmentFrame);
+            }
+        };
+    }, []);
     // FM-162: hands every mounted row to the virtualizer for measurement.
     //
     // The usual shape -- `ref={virtualizer.measureElement}` on each rendered

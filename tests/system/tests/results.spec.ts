@@ -1,20 +1,7 @@
 import * as path from "node:path";
 
-import {
-    csrfHeaders,
-    dismissWelcomeDialog,
-    expect,
-    searchForResult,
-    test,
-    testEnvironment,
-} from "./fixtures";
-import {
-    captureVisualRegion,
-    expectVisualGeometry,
-    prepareVisualEvidence,
-    visualEvidencePath,
-    visualViewports,
-} from "./visualEvidence";
+import {csrfHeaders, dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
+import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
     test.beforeEach(async ({hydra, page}) => {
@@ -2755,6 +2742,106 @@ test.describe("Search results", () => {
                 );
 
                 if (viewport === "desktop") {
+                    const viewportHeight = page.viewportSize()?.height ?? 0;
+                    await page.evaluate(() => {
+                        const body = document.querySelector(
+                            "[data-testid=\"search-results-table\"] tbody",
+                        );
+                        if (body) {
+                            window.scrollTo(
+                                0,
+                                body.getBoundingClientRect().top +
+                                window.scrollY +
+                                200,
+                            );
+                        }
+                    });
+                    await page.evaluate(
+                        () =>
+                            new Promise<void>((resolve) =>
+                                requestAnimationFrame(() =>
+                                    requestAnimationFrame(() => resolve()),
+                                ),
+                            ),
+                    );
+                    await page.getByTestId("display-options-toggle").focus();
+                    const edgeRowTitle = await page.evaluate(
+                        ({stickyBottom, viewportBottom}) => {
+                            const rows = Array.from(
+                                document.querySelectorAll<HTMLElement>(
+                                    "[data-testid=\"search-result-row\"]",
+                                ),
+                            );
+                            return rows
+                                .filter((row) => {
+                                    const box = row.getBoundingClientRect();
+                                    return (
+                                        box.top >= stickyBottom &&
+                                        box.bottom <= viewportBottom
+                                    );
+                                })
+                                .at(-1)?.dataset.resultTitle;
+                        },
+                        {
+                            stickyBottom: stickyRegionBottomDesktop,
+                            viewportBottom: viewportHeight,
+                        },
+                    );
+                    expect(edgeRowTitle).toBeTruthy();
+                    const edgeRow = page.locator(
+                        `[data-result-title=${JSON.stringify(edgeRowTitle)}]`,
+                    );
+
+                    await page.keyboard.press("PageDown");
+                    await expect
+                        .poll(async () => {
+                            const box = await edgeRow.boundingBox();
+                            return Boolean(
+                                box &&
+                                box.y >= stickyRegionBottomDesktop - 1 &&
+                                box.y + box.height <= viewportHeight + 1,
+                            );
+                        })
+                        .toBe(true);
+
+                    await page.evaluate(() => {
+                        const body = document.querySelector(
+                            "[data-testid=\"search-results-table\"] tbody",
+                        );
+                        if (body) {
+                            window.scrollTo(
+                                0,
+                                body.getBoundingClientRect().top +
+                                window.scrollY +
+                                900,
+                            );
+                        }
+                    });
+                    await page.evaluate(
+                        () =>
+                            new Promise<void>((resolve) =>
+                                requestAnimationFrame(() =>
+                                    requestAnimationFrame(() => resolve()),
+                                ),
+                            ),
+                    );
+                    await page.getByTestId("display-options-toggle").focus();
+                    const scrollBeforePageUp = await page.evaluate(
+                        () => window.scrollY,
+                    );
+
+                    await page.keyboard.press("PageUp");
+                    await expect
+                        .poll(() => page.evaluate(() => window.scrollY))
+                        .toBeLessThan(scrollBeforePageUp);
+                    const pageUpDistance =
+                        scrollBeforePageUp -
+                        (await page.evaluate(() => window.scrollY));
+                    expect(pageUpDistance).toBeGreaterThan(0);
+                    expect(pageUpDistance).toBeLessThanOrEqual(
+                        viewportHeight - stickyRegionBottomDesktop + 1,
+                    );
+
                     // ADR-0011's `box-shadow`-on-`<th>` remedy for a sticky
                     // header's bottom edge under `border-collapse: collapse`
                     // (rather than switching to `separate`, which would
