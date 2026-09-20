@@ -138,20 +138,23 @@ export function NotificationHistoryPage({
                                 key={entry.id}
                                 sx={rowRevealsCopyButtonsOnHover}
                             >
-                                <TableCell>
+                                <TableCell data-label="Time">
                                     {formatServerDateTime(
                                         entry.time,
                                         bootstrap.serverTimeZone,
                                     )}
                                 </TableCell>
-                                <TableCell data-testid="notification-history-type">
+                                <TableCell
+                                    data-label="Type"
+                                    data-testid="notification-history-type"
+                                >
                                     {
                                         NOTIFICATION_EVENT_LABELS[
                                             entry.notificationEventType
                                         ]
                                     }
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Title">
                                     <Stack
                                         direction="row"
                                         spacing={1}
@@ -184,7 +187,7 @@ export function NotificationHistoryPage({
                                         />
                                     </Stack>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Body">
                                     <Stack
                                         direction="row"
                                         spacing={1}
@@ -206,7 +209,7 @@ export function NotificationHistoryPage({
                                         />
                                     </Stack>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="URLs">
                                     <Stack
                                         direction="row"
                                         spacing={1}

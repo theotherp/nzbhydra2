@@ -188,42 +188,46 @@ export function DownloadHistoryPage({
                                 key={entry.id}
                                 sx={rowRevealsCopyButtonsOnHover}
                             >
-                                <TableCell sx={NOWRAP}>
+                                <TableCell data-label="Time" sx={NOWRAP}>
                                     {formatServerDateTime(
                                         entry.time,
                                         bootstrap.serverTimeZone,
                                     )}
                                 </TableCell>
-                                <TableCell data-testid="download-history-indexer">
+                                <TableCell
+                                    data-label="Indexer"
+                                    data-testid="download-history-indexer"
+                                >
                                     {entry.searchResult.indexer ?? ""}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Title">
                                     <TitleCell
                                         entry={entry}
                                         dereferer={safeConfig?.dereferer}
                                     />
                                 </TableCell>
                                 <TableCell
+                                    data-label="Result"
                                     data-testid="download-history-status"
                                     sx={NOWRAP}
                                 >
                                     <StatusCell status={entry.status} />
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Source">
                                     {sourceLabel(entry.accessSource)}
                                 </TableCell>
-                                <TableCell sx={NOWRAP}>
+                                <TableCell data-label="Age" sx={NOWRAP}>
                                     {entry.age !== undefined
                                         ? `${entry.age} days`
                                         : ""}
                                 </TableCell>
                                 {showsUsername(userInfoType) && (
-                                    <TableCell>
+                                    <TableCell data-label="Username">
                                         {entry.username ?? ""}
                                     </TableCell>
                                 )}
                                 {showsIp(userInfoType) && (
-                                    <TableCell>
+                                    <TableCell data-label="IP address">
                                         <Stack
                                             direction="row"
                                             spacing={1}

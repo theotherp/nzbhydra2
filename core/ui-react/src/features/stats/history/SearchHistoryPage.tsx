@@ -326,7 +326,10 @@ export function SearchHistoryPage({
                                  * to fit; left to wrap it broke after the
                                  * year in the narrow layout.
                                  */}
-                                <TableCell sx={{whiteSpace: "nowrap"}}>
+                                <TableCell
+                                    data-label="Time"
+                                    sx={{whiteSpace: "nowrap"}}
+                                >
                                     {formatServerDateTime(
                                         entry.time,
                                         bootstrap.serverTimeZone,
@@ -340,7 +343,7 @@ export function SearchHistoryPage({
                                  * column a reader scans; it is an icon
                                  * beside "Details" now.
                                  */}
-                                <TableCell>
+                                <TableCell data-label="Query">
                                     <Stack
                                         direction="row"
                                         spacing={1}
@@ -358,7 +361,7 @@ export function SearchHistoryPage({
                                     </Stack>
                                 </TableCell>
                                 {showUserAgent && (
-                                    <TableCell>
+                                    <TableCell data-label="User agent">
                                         <Stack
                                             direction="row"
                                             spacing={1}
@@ -376,10 +379,13 @@ export function SearchHistoryPage({
                                         </Stack>
                                     </TableCell>
                                 )}
-                                <TableCell data-testid="search-history-category">
+                                <TableCell
+                                    data-label="Category"
+                                    data-testid="search-history-category"
+                                >
                                     {entry.categoryName}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-label="Additional parameters">
                                     <Stack
                                         direction="row"
                                         spacing={1}
@@ -404,18 +410,21 @@ export function SearchHistoryPage({
                                         />
                                     </Stack>
                                 </TableCell>
-                                <TableCell data-testid="search-history-source">
+                                <TableCell
+                                    data-label="Source"
+                                    data-testid="search-history-source"
+                                >
                                     {entry.source === "API"
                                         ? "API"
                                         : "Internal"}
                                 </TableCell>
                                 {showsUsername(userInfoType) && (
-                                    <TableCell>
+                                    <TableCell data-label="Username">
                                         {entry.username ?? ""}
                                     </TableCell>
                                 )}
                                 {showsIp(userInfoType) && (
-                                    <TableCell>
+                                    <TableCell data-label="IP address">
                                         <Stack
                                             direction="row"
                                             spacing={1}
@@ -433,7 +442,7 @@ export function SearchHistoryPage({
                                         </Stack>
                                     </TableCell>
                                 )}
-                                <TableCell>
+                                <TableCell data-label="Details">
                                     <Stack
                                         direction="row"
                                         spacing={0.5}

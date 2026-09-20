@@ -15,6 +15,7 @@ import type {
     HistoryFilterValues,
 } from "../../../api/history/filters";
 import type {HistoryPage} from "../../../api/history/request";
+import {stackedCardTableSx} from "../../../components/table/stackedCardTableSx";
 import {TableScrollAffordance} from "../../../components/table/TableScrollAffordance";
 import {Loading} from "../shared/Loading";
 import {type HistoryPageSize} from "../shared/pageSize";
@@ -214,7 +215,16 @@ export function HistoryPageFrame<Entry>({
                     <Table
                         aria-label={tableLabel}
                         data-testid={testIds.table}
-                        sx={{minWidth}}
+                        // `minWidth` first, `stackedCardTableSx`'s own
+                        // breakpoint-scoped `minWidth: 0` after it in the same
+                        // object: key order is CSS rule order, so the card
+                        // layout's override wins below 768px instead of the
+                        // floor forcing the horizontal scroll it exists to
+                        // remove (see that helper's doc comment).
+                        sx={(theme) => ({
+                            minWidth,
+                            ...stackedCardTableSx(theme),
+                        })}
                     >
                         {children(entries)}
                     </Table>

@@ -1263,7 +1263,52 @@ describe("SearchHistoryPage", () => {
         ).toHaveTextContent("Page 2 of 2");
         expect(screen.getByLabelText("Query")).toHaveValue("avengers");
     });
+
+    it("should label every body cell with its own column's header text, including the conditional columns", async () => {
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+        );
+        await screen.findByTestId("search-history-row");
+        // The default `bootstrap` sets `historyUserInfoType: "BOTH"`, so
+        // Username and IP address are already conditional columns; "Show
+        // user agents" brings in the third.
+        fireEvent.click(screen.getByLabelText("Show user agents"));
+        assertCellLabelsMatchHeaders(
+            screen.getByTestId("search-history-table"),
+        );
+    });
 });
+
+/**
+ * The regression guard the stacked-card layout introduces: a `data-label`
+ * on a body cell has to name the header at the *same column index*, or a later
+ * edit that adds/reorders a column silently mislabels the cards below 768px.
+ * jsdom does not evaluate the media query the cards live behind (ADR-0004), so
+ * this checks the labelling contract only, not that the layout actually
+ * stacks.
+ */
+function assertCellLabelsMatchHeaders(table: HTMLElement) {
+    const rows = within(table).getAllByRole("row");
+    const [headerRow, ...bodyRows] = rows;
+    const headers = within(headerRow)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent?.trim());
+    expect(bodyRows.length).toBeGreaterThan(0);
+    for (const row of bodyRows) {
+        const cells = within(row).getAllByRole("cell");
+        expect(cells).toHaveLength(headers.length);
+        cells.forEach((cell, index) => {
+            expect(cell).toHaveAttribute("data-label", headers[index]);
+        });
+    }
+}
 
 function notificationEntry() {
     return {
