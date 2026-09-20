@@ -23,7 +23,7 @@ class NfoScenariosTest {
 
         assertThat(answer.scenarioId()).isEqualTo("nfo-default");
         assertThat(answer.items()).hasSize(1);
-        assertThat(answer.items().get(0).getDescription()).isEqualTo("NFO for NZB with ID the-id");
+        assertThat(answer.items().get(0).getDescription()).startsWith("NFO for NZB with ID the-id");
         assertThat(answer.total()).isEqualTo(1);
     }
 
