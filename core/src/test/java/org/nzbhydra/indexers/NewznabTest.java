@@ -661,6 +661,31 @@ public class NewznabTest {
 
     }
 
+    @Test
+    void shouldCollectEveryLanguageAndSubsValueRegardlessOfHowTheIndexerSentThem() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("language", "English"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("language", "Dutch"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("language", "French"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("language", "Japanese"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "Dutch / English / English / French"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "nl"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "Dutch"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "dut"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "en"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "English"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "eng"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "fr"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "French"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("subs", "fra"));
+        SearchResultItem searchResultItem = new SearchResultItem();
+
+        testee.parseAttributes(rssItem, searchResultItem);
+
+        assertThat(searchResultItem.getLanguages()).containsExactly("English", "Dutch", "French", "Japanese");
+        assertThat(searchResultItem.getSubs()).containsExactly("Dutch", "English", "French", "nl", "dut", "en", "eng", "fr", "fra");
+    }
+
     private NewznabXmlItem buildBasicRssItem() {
         NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setLink("http://indexer.com/nzb/123");

@@ -43,9 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -454,13 +452,13 @@ public class SearchResultAcceptorTest {
     void shouldKeepCombinedLanguageValueIfAnyLanguageIsWanted() {
         when(searchingConfig.getLanguagesToKeep()).thenReturn(Arrays.asList("Japanese"));
         item.setTitle("Some result");
-        item.getAttributes().put("language", "English - Japanese");
+        item.setLanguages(Arrays.asList("English", "Japanese"));
         assertIsAccepted(testee.checkForLanguage(HashMultiset.create(), item));
 
-        item.getAttributes().put("language", "English - French");
+        item.setLanguages(Arrays.asList("English", "French"));
         assertIsRejected(testee.checkForLanguage(HashMultiset.create(), item));
 
-        item.getAttributes().put("language", "Japanese");
+        item.setLanguages(Arrays.asList("Japanese"));
         assertIsAccepted(testee.checkForLanguage(HashMultiset.create(), item));
     }
 

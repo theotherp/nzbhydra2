@@ -35,6 +35,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.searching.MultiValueAttribute;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.UnknownResponseException;
@@ -603,6 +604,14 @@ public class Newznab extends Indexer<Xml> {
         return List.of("application/x-nzb");
     }
 
+    private static List<String> splitMultiValueAttribute(NewznabXmlItem item, MultiValueAttribute attribute) {
+        return item.getNewznabAttributes().stream()
+            .filter(x -> attribute.matches(x.getName()))
+            .flatMap(x -> attribute.split(x.getValue()).stream())
+            .distinct()
+            .toList();
+    }
+
     protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream()
                 .filter(x -> !Strings.isNullOrEmpty(x.getValue()))
@@ -613,6 +622,10 @@ public class Newznab extends Indexer<Xml> {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
+        //Indexers may send several separate "language"/"subs" newznab:attr elements, or a single combined value
+        //("English - Japanese"); either way collect every individual, deduplicated value (#888)
+        searchResultItem.setLanguages(splitMultiValueAttribute(item, MultiValueAttribute.LANGUAGE));
+        searchResultItem.setSubs(splitMultiValueAttribute(item, MultiValueAttribute.SUBS));
 
         if (attributes.containsKey("usenetdate")) {
             tryParseDate(attributes.get("usenetdate")).ifPresent(searchResultItem::setUsenetDate);

@@ -14,8 +14,10 @@ import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -58,6 +60,12 @@ public class SearchResultItem  {
     private String indexerGuid;
     @NotNull
     private Integer indexerScore;
+    /**
+     * The individual languages found in the indexer's "language" attribute(s), already split ({@link
+     * org.nzbhydra.searching.MultiValueAttribute#split}) and deduplicated, regardless of whether the indexer sent
+     * them as one combined value or as several separate newznab:attr elements (#888).
+     */
+    private List<String> languages = new ArrayList<>();
     @NotNull
     private String link;
     private String originalCategory;
@@ -70,6 +78,11 @@ public class SearchResultItem  {
     private Integer seeders;
     private Long size;
     private String source;
+    /**
+     * The individual subtitle languages found in the indexer's "subs" attribute(s), split and deduplicated the same
+     * way as {@link #languages} (#888).
+     */
+    private List<String> subs = new ArrayList<>();
     @NotNull
     @NotEmpty
     private String title;

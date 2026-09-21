@@ -20,6 +20,8 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +51,7 @@ public class NewznabJsonTransformerTest {
     }
 
     @Test
-    void shouldEmitOneLanguageAttributePerLanguage() {
+    void shouldEmitOneLanguageAndSubsAttributePerValue() {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setSearchResultId(42L);
         searchResultItem.setGuid(42L);
@@ -57,10 +59,12 @@ public class NewznabJsonTransformerTest {
         searchResultItem.setCategory(new Category());
         searchResultItem.setSize(1L);
         searchResultItem.setPubDate(java.time.Instant.now());
-        searchResultItem.getAttributes().put("language", "English - Japanese");
+        searchResultItem.setLanguages(List.of("English", "Japanese"));
+        searchResultItem.setSubs(List.of("Dutch", "English", "French"));
 
         NewznabJsonItem item = testee.buildRssItem(searchResultItem, true);
 
         assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("language")).map(x -> x.getAttributes().getValue())).containsExactly("English", "Japanese");
+        assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("subs")).map(x -> x.getAttributes().getValue())).containsExactly("Dutch", "English", "French");
     }
 }

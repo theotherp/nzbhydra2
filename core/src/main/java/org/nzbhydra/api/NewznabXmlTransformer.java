@@ -9,13 +9,13 @@ import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.searching.LanguageAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.searching.MultiValueAttribute;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -81,11 +81,15 @@ public class NewznabXmlTransformer {
             rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
         }
         searchResultItem.getAttributes().put("guid", downloadIdentifier);
-        //A combined language value ("English - Japanese") becomes one attribute per language (#888)
-        List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream()
-            .flatMap(attribute -> LanguageAttribute.isLanguage(attribute.getKey())
-                ? LanguageAttribute.split(attribute.getValue()).stream().map(language -> new NewznabAttribute(attribute.getKey(), language))
-                : Stream.of(new NewznabAttribute(attribute.getKey(), attribute.getValue())))
+        //Every language/subs value the indexer sent becomes its own attribute, however it was originally sent (as
+        //several newznab:attr elements or as one combined value like "English - Japanese") (#888)
+        List<NewznabAttribute> newznabAttributes = Stream.of(
+                searchResultItem.getAttributes().entrySet().stream()
+                    .filter(attribute -> !MultiValueAttribute.isMultiValue(attribute.getKey()))
+                    .map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())),
+                searchResultItem.getLanguages().stream().map(language -> new NewznabAttribute(MultiValueAttribute.LANGUAGE.getName(), language)),
+                searchResultItem.getSubs().stream().map(subs -> new NewznabAttribute(MultiValueAttribute.SUBS.getName(), subs)))
+            .flatMap(s -> s)
             .sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         if (searchResultItem.getIndexer() != null) {
             newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));

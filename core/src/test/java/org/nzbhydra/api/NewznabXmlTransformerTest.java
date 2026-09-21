@@ -19,11 +19,13 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -103,20 +105,22 @@ public class NewznabXmlTransformerTest {
 
 
     @Test
-    void shouldEmitOneLanguageAttributePerLanguage() {
+    void shouldEmitOneLanguageAndSubsAttributePerValue() {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setSearchResultId(42L);
         searchResultItem.setGuid(42L);
         searchResultItem.setIndexer(indexerMock);
         searchResultItem.setCategory(new Category());
-        searchResultItem.getAttributes().put("language", "English - Japanese");
-        searchResultItem.getAttributes().put("subs", "English - Japanese");
+        searchResultItem.setLanguages(List.of("English", "Japanese"));
+        searchResultItem.setSubs(List.of("Dutch", "English", "French"));
+        searchResultItem.getAttributes().put("group", "alt.binaries.test");
 
         var item = testee.buildRssItem(searchResultItem, true);
 
         assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("language")).map(NewznabAttribute::getValue)).containsExactly("English", "Japanese");
+        assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("subs")).map(NewznabAttribute::getValue)).containsExactly("Dutch", "English", "French");
         //Other attributes are forwarded untouched
-        assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("subs")).map(NewznabAttribute::getValue)).containsExactly("English - Japanese");
+        assertThat(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("group")).map(NewznabAttribute::getValue)).containsExactly("alt.binaries.test");
     }
 
 }
