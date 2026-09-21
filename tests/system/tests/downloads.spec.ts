@@ -1,20 +1,8 @@
+import type {Locator, Page} from "@playwright/test";
 import {readdir, readFile} from "node:fs/promises";
 import {join} from "node:path";
-
-import type {Locator, Page} from "@playwright/test";
-import {
-    dismissWelcomeDialog,
-    expect,
-    openRefineMultiselect,
-    searchForResult,
-    test,
-    testEnvironment,
-} from "./fixtures";
-import {
-    prepareVisualEvidence,
-    visualEvidencePath,
-    visualViewports,
-} from "./visualEvidence";
+import {dismissWelcomeDialog, expect, openRefineMultiselect, searchForResult, test, testEnvironment,} from "./fixtures";
+import {prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 /**
  * FM-160: the direct-download anchor carries `target="_blank"` (legacy
@@ -930,13 +918,14 @@ test.describe("Downloads", () => {
     });
 
     /**
-     * FM-126 (ADR-0038): the table scrolls inside its own container at 390px
-     * and marks the edge it is clipping, so nothing continues off-canvas
-     * silently. The affordance's full semantics are pinned on
-     * `search-history.spec.ts`; this is the same shared component on this
-     * route's own table, at its own measured width floor.
+     * FM-126/ADR-0038's scroll-edge affordance no longer applies at 390px:
+     * `stackedCardTableSx` ("stack the three history tables into cards below
+     * 768px") turns the table into a stacked-card layout there instead,
+     * which -- having no width floor of its own inside that breakpoint --
+     * cannot overflow its container. The affordance's desktop half is
+     * unchanged and still pinned by `search-history.spec.ts`.
      */
-    test("should scroll the table inside its container with a scroll-edge affordance at 390px", async ({
+    test("should stack the table into cards at 390px and scroll it with an edge affordance at desktop width", async ({
         page,
     }) => {
         await prepareVisualEvidence(page, "mobile", async () => {
@@ -955,18 +944,13 @@ test.describe("Downloads", () => {
                 ),
         ).toBe(true);
 
-        const scroller = page.getByTestId("download-history-scroller");
-        const geometry = await scroller.evaluate((element) => ({
-            client: element.clientWidth,
-            scrollable: element.scrollWidth,
-            table: (element.firstElementChild as HTMLElement).clientWidth,
-        }));
-        expect(geometry.table).toBeGreaterThanOrEqual(640);
-        expect(geometry.scrollable).toBeGreaterThan(geometry.client);
-
+        const thead = page.locator(
+            "[data-testid=\"download-history-table\"] thead",
+        );
+        expect(await thead.isVisible()).toBe(false);
         await expect(
             page.getByTestId("table-scroll-affordance-end"),
-        ).toBeVisible();
+        ).toHaveCount(0);
         await expect(
             page.getByTestId("table-scroll-affordance-start"),
         ).toHaveCount(0);
@@ -978,28 +962,7 @@ test.describe("Downloads", () => {
         await page.screenshot({
             path: visualEvidencePath(
                 "F-HISTORY-DOWNLOADS",
-                "table-scroll-affordance-mobile",
-            ),
-        });
-
-        await scroller.evaluate((element) => {
-            element.scrollLeft = element.scrollWidth;
-        });
-        await expect(
-            page.getByTestId("table-scroll-affordance-end"),
-        ).toHaveCount(0);
-        await expect(
-            page.getByTestId("table-scroll-affordance-start"),
-        ).toBeVisible();
-        // The table sits below the page heading row, so bring it into the
-        // frame: a strip of the page header is not evidence of a table.
-        await page
-            .getByTestId("download-history-table")
-            .scrollIntoViewIfNeeded();
-        await page.screenshot({
-            path: visualEvidencePath(
-                "F-HISTORY-DOWNLOADS",
-                "table-scroll-affordance-scrolled-mobile",
+                "table-stacked-cards-mobile",
             ),
         });
 

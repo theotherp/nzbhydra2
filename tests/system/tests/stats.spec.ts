@@ -112,14 +112,14 @@ test("should render React indexer statuses and canonical history tabs responsive
 });
 
 /**
- * FM-169 (ADR-0038). Before this task the table had no scrolling ancestor of
- * its own with a measured floor -- it either wrapped its headings or, absent
- * a floor, table-layout:auto's own min-content sizing pushed rows to several
- * lines each. It now scrolls inside its own container, and says so at
- * whichever edge it is clipping, the same pattern `search-history.spec.ts`
- * proves for the search history table.
+ * FM-169/ADR-0038's scroll-edge affordance no longer applies at 390px:
+ * `stackedCardTableSx` ("stack indexer statuses and saved searches into
+ * cards below 768px") turns the table into a stacked-card layout there
+ * instead, which -- having no width floor of its own inside that breakpoint
+ * -- cannot overflow its container. Desktop rendering (below) is unchanged
+ * by that chore.
  */
-test("should scroll the indexer statuses table inside its container with a scroll-edge affordance at 390px", async ({
+test("should stack the indexer statuses table into cards at 390px", async ({
     page,
 }, testInfo) => {
     const applicationBaseUrl = new URL(`${testInfo.project.use.baseURL}/`);
@@ -163,48 +163,20 @@ test("should scroll the indexer statuses table inside its container with a scrol
             .evaluate((element) => element.scrollWidth <= element.clientWidth),
     ).toBe(true);
 
-    // The table keeps its measured floor and the container scrolls.
-    const scroller = page.getByTestId("indexer-statuses-scroller");
-    const geometry = await scroller.evaluate((element) => ({
-        client: element.clientWidth,
-        scrollable: element.scrollWidth,
-        table: (element.firstElementChild as HTMLElement).clientWidth,
-    }));
-    expect(geometry.table).toBeGreaterThanOrEqual(1580);
-    expect(geometry.scrollable).toBeGreaterThan(geometry.client);
-
-    // Clipped on the right only, so only that edge is marked.
-    await expect(page.getByTestId("table-scroll-affordance-end")).toBeVisible();
+    const thead = page
+        .getByRole("table", {name: "Indexer statuses"})
+        .locator("thead");
+    expect(await thead.isVisible()).toBe(false);
+    await expect(page.getByTestId("table-scroll-affordance-end")).toHaveCount(
+        0,
+    );
     await expect(page.getByTestId("table-scroll-affordance-start")).toHaveCount(
         0,
     );
     await page.screenshot({
         path: visualEvidencePath(
             "F-STATS-INDEXERS",
-            "table-scroll-affordance-mobile",
-        ),
-    });
-
-    // Scrolled to the end: that edge clips nothing any more, so its
-    // affordance clears and the opposite edge takes it over.
-    await scroller.evaluate((element) => {
-        element.scrollLeft = element.scrollWidth;
-    });
-    await expect(page.getByTestId("table-scroll-affordance-end")).toHaveCount(
-        0,
-    );
-    await expect(
-        page.getByTestId("table-scroll-affordance-start"),
-    ).toBeVisible();
-    expect(
-        await page
-            .locator("html")
-            .evaluate((element) => element.scrollWidth <= element.clientWidth),
-    ).toBe(true);
-    await page.screenshot({
-        path: visualEvidencePath(
-            "F-STATS-INDEXERS",
-            "table-scroll-affordance-scrolled-mobile",
+            "table-stacked-cards-mobile",
         ),
     });
 
