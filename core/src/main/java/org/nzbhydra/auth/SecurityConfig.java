@@ -48,12 +48,12 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -229,7 +229,17 @@ public class SecurityConfig {
                     .formLogin(login -> login
                             .loginPage("/login")
                             .loginProcessingUrl("/login")
-                            .defaultSuccessUrl("/")
+                        //alwaysUse=true: without it, SavedRequestAwareAuthenticationSuccessHandler redirects to
+                        //whatever request HttpSessionRequestCache last saved for this session, which is not
+                        //necessarily the browser navigation that first hit /login - it is just as likely one of
+                        //the login page's own unauthenticated /internalapi/* background calls (401'd by
+                        //BackgroundRequestAuthenticationEntryPoint below, but still cached beforehand by
+                        //ExceptionTranslationFilter, which runs first). The POST /login fetch then follows that
+                        //stale redirect and can surface it as a login failure even though authentication and the
+                        //session already succeeded. React always does its own full-document navigation to
+                        //the application base URL after a successful login (navigation.ts), so the saved request
+                        //buys nothing here and only introduces that race.
+                        .defaultSuccessUrl("/", true)
                             .permitAll()
                             .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                                 @Override

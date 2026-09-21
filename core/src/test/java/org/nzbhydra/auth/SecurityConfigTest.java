@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.externalapi.ExternalApiKeyFilter;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -27,10 +28,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Covers {@link SecurityConfig}'s CSRF configuration against the real filter chain: whether protection is on at all,
@@ -334,6 +332,35 @@ class SecurityConfigTest {
         }
     }
 
+    /**
+     * The default {@code HttpSessionRequestCache} saves whatever unauthenticated request it last saw, not just real
+     * page navigations - so an unauthenticated background call the login page itself makes (like the React app's own
+     * bootstrap requests) overwrites the saved request from the original navigation to a protected page. Without
+     * {@code alwaysUse=true}, {@link org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler}
+     * would then redirect a successful login to that stale background request instead of "/", and the fetch behind
+     * the login form follows it - which the frontend cannot tell apart from an actual login failure. This reproduces
+     * that poisoned cache and asserts the login still lands on "/".
+     */
+    @Test
+    void shouldRedirectASuccessfulLoginToRootEvenWhenTheRequestCacheHoldsAStaleBackgroundRequest() throws Exception {
+        UserAuthConfig user = new UserAuthConfig();
+        user.setUsername("testuser");
+        user.setPassword("{noop}testpass");
+        try (GenericWebApplicationContext context = buildContextWithUser(false, AuthType.FORM, user)) {
+            MockMvc mockMvc = mockMvc(context);
+
+            //Poisons the request cache the way the login page's own unauthenticated background calls do
+            mockMvc.perform(get("/actuator/info").header("Accept", "application/json"))
+                .andExpect(status().isUnauthorized());
+
+            mockMvc.perform(post("/login")
+                    .param("username", "testuser")
+                    .param("password", "testpass"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/"));
+        }
+    }
+
     private GenericWebApplicationContext buildContext(boolean useCsrf) {
         return buildContext(useCsrf, new MockServletContext());
     }
@@ -343,6 +370,22 @@ class SecurityConfigTest {
     }
 
     private GenericWebApplicationContext buildContext(boolean useCsrf, MockServletContext servletContext, AuthType authType) {
+        return buildContext(useCsrf, servletContext, authType, Mockito.mock(HydraUserDetailsManager.class));
+    }
+
+    /**
+     * Builds a FORM-auth context backed by a real {@link HydraUserDetailsManager} (instead of the bare mock the other
+     * tests use) so that a login attempt with the given user's credentials actually succeeds through the real
+     * {@code AuthenticationManager}.
+     */
+    private GenericWebApplicationContext buildContextWithUser(boolean useCsrf, AuthType authType, UserAuthConfig user) {
+        BaseConfig baseConfig = new BaseConfig();
+        baseConfig.getAuth().getUsers().add(user);
+        HydraUserDetailsManager userDetailsManager = new HydraUserDetailsManager(baseConfig);
+        return buildContext(useCsrf, new MockServletContext(), authType, userDetailsManager);
+    }
+
+    private GenericWebApplicationContext buildContext(boolean useCsrf, MockServletContext servletContext, AuthType authType, HydraUserDetailsManager userDetailsManager) {
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.getMain().setUseCsrf(useCsrf);
         //Without an auth type SecurityConfig treats auth as configured and adds its role rules on top, and a 403 could
@@ -360,7 +403,7 @@ class SecurityConfigTest {
 
         GenericWebApplicationContext context = new GenericWebApplicationContext(servletContext);
         context.getBeanFactory().registerSingleton("configProvider", configProvider);
-        context.getBeanFactory().registerSingleton("hydraUserDetailsManager", Mockito.mock(HydraUserDetailsManager.class));
+        context.getBeanFactory().registerSingleton("hydraUserDetailsManager", userDetailsManager);
         context.getBeanFactory().registerSingleton("hydraAnonymousAuthenticationFilter", anonymousFilter);
         context.getBeanFactory().registerSingleton("authAndAccessEventHandler", accessDeniedHandler());
         context.getBeanFactory().registerSingleton("asyncSupportFilter", new AsyncSupportFilter());

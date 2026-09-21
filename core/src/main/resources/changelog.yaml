@@ -16,6 +16,8 @@
           text: "Opening a search result's details page crashed with an internal error when the indexer didn't provide a details URL for it. It now falls back to the download link, or shows a proper error if neither is available. See #1087"
       -   type: "fix"
           text: "Indexer rate-limit responses no longer fill the log with HTML error pages and stack traces."
+      -   type: "fix"
+          text: "Form based login would show a failure message even though the login actually succeeded. See #1090"
 -   version: "v9.0.2"
     date: "2026-09-20"
     final: true
