@@ -18,6 +18,8 @@
           text: "Indexer rate-limit responses no longer fill the log with HTML error pages and stack traces."
       -   type: "fix"
           text: "Form based login would show a failure message even though the login actually succeeded. See #1090"
+      -   type: "fix"
+          text: "Repeating a search would return stale results. See #1089"
 -   version: "v9.0.2"
     date: "2026-09-20"
     final: true

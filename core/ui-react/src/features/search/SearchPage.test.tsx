@@ -2076,6 +2076,54 @@ describe("SearchPage", () => {
         await waitFor(() => expect(close).toHaveBeenCalledOnce());
     });
 
+    // The top nav's Search link navigates to a bare "/" the same way this
+    // test simulates: the route drops its criteria, but nothing else used to
+    // clear `state`, so the previous results, counts and filter sidebar kept
+    // showing until a full page reload.
+    it("should clear the results when navigating back to a bare route with no search criteria", async () => {
+        router.search = {
+            query: "1",
+            category: "All",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                String(url).includes("forsearching")
+                    ? new Response(JSON.stringify([]), {
+                        headers: {"Content-Type": "application/json"},
+                    })
+                    : searchResponse(),
+            ),
+        );
+        const rendered = render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        await screen.findByTestId("search-results");
+
+        // What a real navigate() to "/" (e.g. the top nav's Search link) does
+        // to the route: it carries no criteria at all.
+        router.search = {};
+        rendered.rerender(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        expect(screen.queryByTestId("search-results")).not.toBeInTheDocument();
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("search-status-modal"),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
     it("should not be dismissible by backdrop click or Escape, only by Cancel", async () => {
         const fetchImplementation = vi
             .fn()

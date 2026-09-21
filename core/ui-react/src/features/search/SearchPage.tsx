@@ -11,25 +11,10 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {
-    MutationCache,
-    QueryCache,
-    QueryClient,
-    QueryClientProvider,
-} from "@tanstack/react-query";
+import {MutationCache, QueryCache, QueryClient, QueryClientProvider,} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
-import {
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import type {
-    SearchLiveTransport,
-    SearchProgress,
-} from "../../api/live/searchState";
+import {useCallback, useContext, useEffect, useMemo, useRef, useState,} from "react";
+import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {SockJsStompLiveTransport} from "../../api/live/transport";
@@ -38,17 +23,9 @@ import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
 import type {SearchRequest, SearchResponse} from "../../api/search";
-import {
-    continuationRequest,
-    executeSearch,
-    mergeSearchResponses,
-    shortcutSearch,
-} from "../../api/search";
+import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
-import {
-    DEFAULT_QUERY_STALE_TIME_MS,
-    retryUnlessUnauthorized,
-} from "../../app/queryDefaults";
+import {DEFAULT_QUERY_STALE_TIME_MS, retryUnlessUnauthorized,} from "../../app/queryDefaults";
 import {reportSessionError} from "../../app/sessionExpiry";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
@@ -58,12 +35,7 @@ import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/searchFormModel";
-import {
-    canonicalSearch,
-    hasIdentifier,
-    nonIdentifierQueryText,
-    valuesFromSearch,
-} from "./workspace/searchFormModel";
+import {canonicalSearch, hasIdentifier, nonIdentifierQueryText, valuesFromSearch,} from "./workspace/searchFormModel";
 import {SearchWorkspace} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
@@ -245,6 +217,23 @@ export function SearchPage({
             });
         };
     }, []);
+    // Navigating back to a bare "/" (e.g. the top nav's Search link) resets
+    // the URL and, through `routeValues`/`initialValues` above, the form --
+    // but `state` lives independently of the route and nothing else cleared
+    // it, so the previous results, counts and filter sidebar kept showing.
+    // Mirrors `cancelSearch`'s reset, below, and cancels any submission still
+    // in flight the same way.
+    useEffect(() => {
+        if (hasExecutableCriteria(search)) {
+            return;
+        }
+        releaseSubmission();
+        setState({loading: false});
+        setProgress(undefined);
+        setLiveUnavailable(undefined);
+        setEmbyAvailability(undefined);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the route's identity, not its object reference
+    }, [routeKey(search)]);
     const submit = async (values: SearchFormValues) => {
         setRefillCriteria(undefined);
         const selectedCategory = catalog.categories.find(
