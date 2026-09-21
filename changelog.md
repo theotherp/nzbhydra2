@@ -1,3 +1,29 @@
+### v9.0.3 (2026-09-21)
+
+**Fix** Restore quality indicators.
+
+**Fix** Show NFOs properly.
+
+**Fix** Show search and download history in cards on mobile.
+
+**Fix** Scrolling in the search results now keep the previous top / bottom row(s) visible instead of skipping roughly three rows. See <a href="https://github.com/theotherp/nzbhydra2/issues/1088">#1088</a>
+
+**Fix** Opening a search result's details page crashed with an internal error when the indexer didn't provide a details URL for it. It now falls back to the download link, or shows a proper error if neither is available. See <a href="https://github.com/theotherp/nzbhydra2/issues/1087">#1087</a>
+
+**Fix** Indexer rate-limit responses no longer fill the log with HTML error pages and stack traces.
+
+**Fix** Form based login would show a failure message even though the login actually succeeded. See <a href="https://github.com/theotherp/nzbhydra2/issues/1090">#1090</a>
+
+**Fix** Repeating a search would return stale results. See <a href="https://github.com/theotherp/nzbhydra2/issues/1089">#1089</a>
+
+**Fix** Uploading debug infos actually succeeded but an error message was shown.
+
+**Fix** Make newly configured quick filters available in the next search without browser reload. See <a href="https://github.com/theotherp/nzbhydra2/issues/1089">#1089</a>
+
+**Fix** Indexer results with multiple languages or subtitle languages sent as several attributes would be reported with only one. See <a href="https://github.com/theotherp/nzbhydra2/issues/888">#888</a>
+
+
+
 ### v9.0.2 (2026-09-20)
 
 **Fix** Restore downloader category selection popup when sending results to the downloader by clicking the row action button. See <a href="https://github.com/theotherp/nzbhydra2/issues/1085">#1085</a>
