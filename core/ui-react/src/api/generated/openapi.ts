@@ -5308,6 +5308,11 @@ export interface components {
             /** Format: int64 */
             id?: number;
         };
+        UploadedDebugInfos: {
+            url?: string;
+            successful?: boolean;
+            errorMessage?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -7160,7 +7165,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/plain": string;
+                    "*/*": components["schemas"]["UploadedDebugInfos"];
                 };
             };
         };

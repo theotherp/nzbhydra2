@@ -1,11 +1,11 @@
 package org.nzbhydra.debuginfos;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
@@ -103,8 +103,8 @@ public class DebugInfosWeb {
     public GenericResponse rotateLog() {
         try {
             final List<String> rotated = logContentProvider.rotate();
-        //Logged after the rollover so the new file is never empty, and so the
-        //rollover itself is accounted for in the log it produced.
+            //Logged after the rollover so the new file is never empty, and so the
+            //rollover itself is accounted for in the log it produced.
             logger.info("NZBHydra2 rolled over {} log file(s) on request", rotated.size());
             return GenericResponse.ok(String.join(", ", rotated));
         } catch (IOException e) {
@@ -163,20 +163,21 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @GetMapping(value = "/internalapi/debuginfos/createAndUploadDebugInfos", produces = "text/plain")
-    public String createAndUploadDebugInfos() throws IOException {
+    @GetMapping("/internalapi/debuginfos/createAndUploadDebugInfos")
+    public UploadedDebugInfos createAndUploadDebugInfos() throws IOException {
         final File debugInfosZipFile;
         try {
             debugInfosZipFile = debugInfos.createDebugInfosZipFile();
         } catch (IOException e) {
             logger.error("Error while creating", e);
-            throw e;
+            return new UploadedDebugInfos(null, false, e.getMessage());
         }
         try {
-            return tmpFilesUploader.upload(debugInfosZipFile);
+            String url = tmpFilesUploader.upload(debugInfosZipFile);
+            return new UploadedDebugInfos(url, true, null);
         } catch (Exception e) {
             logger.error("Error while creating or uploading debug infos", e);
-            throw e;
+            return new UploadedDebugInfos(null, false, e.getMessage());
         } finally {
             debugInfosZipFile.delete();
         }
@@ -342,7 +343,7 @@ public class DebugInfosWeb {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     public static class ThreadCpuUsageChartData {
         private final String key;
         private final List<TimeAndValue> values;
@@ -359,7 +360,7 @@ public class DebugInfosWeb {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     public static class TimeAndValue {
         private final Instant time;
@@ -367,7 +368,7 @@ public class DebugInfosWeb {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     public static class PrefixAndEndpoint {
         private final String prefix;
@@ -376,7 +377,7 @@ public class DebugInfosWeb {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     public static class Endpoint {
         private final String endpoint;
@@ -384,6 +385,15 @@ public class DebugInfosWeb {
         private final String params;
         private final String consumes;
         private final String produces;
+    }
+
+    @Data
+    @ReflectionMarker
+    @AllArgsConstructor
+    public static class UploadedDebugInfos {
+        private final String url;
+        private final boolean successful;
+        private final String errorMessage;
     }
 
 

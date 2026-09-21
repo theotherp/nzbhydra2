@@ -1,7 +1,7 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
 -   version: "v9.0.3"
-    date: "2026-09-20"
+    date: "2026-09-21"
     final: true
     changes:
       -   type: "fix"
@@ -20,6 +20,8 @@
           text: "Form based login would show a failure message even though the login actually succeeded. See #1090"
       -   type: "fix"
           text: "Repeating a search would return stale results. See #1089"
+      -   type: "fix"
+          text: "Uploading debug infos actually succeeded but an error message was shown."
 -   version: "v9.0.2"
     date: "2026-09-20"
     final: true

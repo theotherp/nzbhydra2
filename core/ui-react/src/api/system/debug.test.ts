@@ -68,12 +68,37 @@ describe("debug API", () => {
         );
     });
 
-    it("should return the uploaded archive's URL as data", async () => {
-        const {transport} = textTransport("https://file.io/abc123\n");
+    it("should return the uploaded archive's URL from a successful response", async () => {
+        const {transport} = jsonTransport({
+            url: "https://file.io/abc123",
+            successful: true,
+            errorMessage: null,
+        });
 
         await expect(uploadDebugInfos(transport)).resolves.toEqual({
             kind: "successful",
             url: "https://file.io/abc123",
+        });
+    });
+
+    // DebugInfosWeb.createAndUploadDebugInfos used to declare
+    // produces = "text/plain" and return the URL as a bare string, which the
+    // JSON path's Accept header (every other call on this transport,
+    // including this one) cannot negotiate -- the server had nothing else to
+    // offer and answered 406 before the handler ran. It now answers 200 with
+    // UploadedDebugInfos even when creating or uploading the archive itself
+    // failed, so that failure is reported here rather than mistaken for a
+    // successful upload with no URL.
+    it("should report the upload failure's own error message", async () => {
+        const {transport} = jsonTransport({
+            url: null,
+            successful: false,
+            errorMessage: "Upload rejected by the share",
+        });
+
+        await expect(uploadDebugInfos(transport)).resolves.toEqual({
+            kind: "failed",
+            message: "Upload rejected by the share",
         });
     });
 

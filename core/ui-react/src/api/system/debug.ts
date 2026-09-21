@@ -30,6 +30,13 @@ const genericResponseSchema = z.looseObject({
     successful: z.boolean().nullish(),
 });
 
+/** `DebugInfosWeb.UploadedDebugInfos`. */
+const uploadedDebugInfosSchema = z.looseObject({
+    url: z.string().nullish(),
+    successful: z.boolean().nullish(),
+    errorMessage: z.string().nullish(),
+});
+
 /**
  * `DebugInfosWeb.ThreadCpuUsageChartData`: one series per thread, each a list
  * of `TimeAndValue` records. `time` is a Jackson `Instant`, which serializes
@@ -94,13 +101,10 @@ export function debugInfosFileName(now: Date): string {
 
 /**
  * `API-SYSTEM-DEBUG-UPLOAD`: creates the same archive and puts it on an
- * external file share, answering with the share's URL as `text/plain`.
- *
- * The URL is returned as *data*. Legacy built an anchor as an HTML string and
- * handed it to `ng-bind-html` (`system-controller.js:118`), which is an
- * injection-shaped hazard that is deliberately not reproduced: the caller
- * renders the value inside a React anchor, where it can only ever be an
- * attribute value and a text node.
+ * external file share, answering with `DebugInfosWeb.UploadedDebugInfos` --
+ * the share's URL plus whether the upload itself succeeded, since a failure
+ * to reach the share (as opposed to a transport-level failure) still answers
+ * 200.
  */
 export async function uploadDebugInfos(
     transport: ApiTransport,
@@ -114,10 +118,20 @@ export async function uploadDebugInfos(
         // structured error body is not a message for a human.
         return {kind: "failed", message: errorText(error)};
     }
-    if (typeof body !== "string" || body.trim() === "") {
-        return {kind: "failed", message: null};
+    const parsed = uploadedDebugInfosSchema.safeParse(body);
+    if (
+        !parsed.success ||
+        !parsed.data.successful ||
+        !parsed.data.url
+    ) {
+        return {
+            kind: "failed",
+            message: parsed.success
+                ? (parsed.data.errorMessage ?? null)
+                : null,
+        };
     }
-    return {kind: "successful", url: body.trim()};
+    return {kind: "successful", url: parsed.data.url};
 }
 
 /**

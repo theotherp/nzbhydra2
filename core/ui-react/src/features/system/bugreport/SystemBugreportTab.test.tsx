@@ -201,7 +201,11 @@ describe("SystemBugreportTab", () => {
         const hostile = 'https://file.io/x"><img src=x onerror="alert(1)">';
         const backend = createBackend((path) =>
             path.endsWith("/createAndUploadDebugInfos")
-                ? textResponse(hostile)
+                ? jsonResponse({
+                    url: hostile,
+                    successful: true,
+                    errorMessage: null,
+                })
                 : undefined,
         );
         renderTab(backend);
