@@ -345,7 +345,7 @@ export function activeFilterCount(
 function sameValues(left: string[], right: string[]): boolean {
     return (
         left.length === right.length &&
-        [...left].sort().join(" ") === [...right].sort().join(" ")
+        [...left].sort().join(" ") === [...right].sort().join(" ")
     );
 }
 

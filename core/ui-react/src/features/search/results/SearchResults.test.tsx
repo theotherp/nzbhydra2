@@ -725,6 +725,63 @@ describe("SearchResults", () => {
         ).toHaveAttribute("aria-pressed", "true");
     });
 
+    // A custom quick filter saved in Config -> Searching used to only reach
+    // the sidebar after a full page reload: the available-buttons list read
+    // the mount-time bootstrap snapshot instead of the live safe config
+    // (`SafeConfigContext`) every other config-derived value here already
+    // uses (ADR-0017).
+    it("should offer a custom quick filter added to the live safe config after mount", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+        const withResults = {
+            ...response,
+            numberOfAvailableResults: 1,
+            searchResults: [
+                {
+                    searchResultId: "1",
+                    title: "Release",
+                    indexer: "One",
+                    category: "Movies",
+                },
+            ],
+        };
+        const rendered = renderResults(
+            <SafeConfigContext.Provider
+                value={{searching: {showQuickFilterButtons: true}}}
+            >
+                <SearchResults data={withResults} />
+            </SafeConfigContext.Provider>,
+        );
+        expandRefineSidebar();
+        expect(
+            within(
+                screen.getByTestId("refine-quality-filters"),
+            ).queryByRole("button", {name: "test"}),
+        ).toBeNull();
+
+        rendered.rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SafeConfigContext.Provider
+                        value={{
+                            searching: {
+                                showQuickFilterButtons: true,
+                                customQuickFilterButtons: ["test=test"],
+                            },
+                        }}
+                    >
+                        <SearchResults data={withResults} />
+                    </SafeConfigContext.Provider>
+                </ToastProvider>
+            </DialogProvider>,
+        );
+
+        expect(
+            within(
+                screen.getByTestId("refine-quality-filters"),
+            ).getByRole("button", {name: "test"}),
+        ).toBeVisible();
+    });
+
     it("should expand groups and support keyboard bulk and shift selection", () => {
         renderResults(
             <SearchResults

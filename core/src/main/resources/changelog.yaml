@@ -22,6 +22,8 @@
           text: "Repeating a search would return stale results. See #1089"
       -   type: "fix"
           text: "Uploading debug infos actually succeeded but an error message was shown."
+      -   type: "fix"
+          text: "Make newly configured quick filters available in the next search without browser reload. See #1089"
 -   version: "v9.0.2"
     date: "2026-09-20"
     final: true

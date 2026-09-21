@@ -97,28 +97,20 @@ export function SearchResults({
     searchedCategory?: SearchedCategory;
     searchRequestId?: number;
 }) {
-    // FM-159: the mount-time snapshot. It is the seed the `SafeConfigContext`
-    // below falls back to when no provider is present, and -- deliberately --
-    // the source the quick-filter reads below keep using: `quickFilters` and
-    // `preselectedQuickFilters` seed per-search *selection* state, so making
-    // them live would clobber a user's quick-filter selections the moment any
-    // config is saved mid-session. That is a UX trade-off ADR-0017 does not
-    // settle; every read that feeds rendering rather than selection state
-    // uses `effectiveSafeConfig`.
-    const safeConfig =
+    // The mount-time snapshot, used only as the fallback `effectiveSafeConfig`
+    // falls back to when no `SafeConfigContext` provider is present (focused
+    // component tests only).
+    const bootstrapSafeConfig =
         window.__NZBHYDRA_BOOTSTRAP__ && isRecord(window.__NZBHYDRA_BOOTSTRAP__)
             ? window.__NZBHYDRA_BOOTSTRAP__.safeConfig
             : undefined;
-    const quickFilters = useMemo(
-        () => quickFiltersFromSafeConfig(safeConfig),
-        [safeConfig],
-    );
     // FM-082: legacy reads `HydraAuthService.getUserInfos().maySeeDetailsDl`
     // (`search-result.js:146`) to decide whether a row shows its external
     // links at all. The React equivalent is the bootstrap flag, read here from
     // the same `window.__NZBHYDRA_BOOTSTRAP__` object this component already
-    // reads `safeConfig` from -- this component is not passed `BootstrapData`,
-    // and its only caller (`SearchPage`) is outside this task's scope.
+    // reads the safe config from -- this component is not passed
+    // `BootstrapData`, and its only caller (`SearchPage`) is outside this
+    // task's scope.
     const maySeeDetailsDl =
         isRecord(window.__NZBHYDRA_BOOTSTRAP__) &&
         window.__NZBHYDRA_BOOTSTRAP__.maySeeDetailsDl === true;
@@ -128,7 +120,20 @@ export function SearchResults({
     // tests only), which falls back to the bootstrap seed above.
     const liveSafeConfig = useContext(SafeConfigContext);
     const effectiveSafeConfig =
-        liveSafeConfig === undefined ? safeConfig : liveSafeConfig;
+        liveSafeConfig === undefined ? bootstrapSafeConfig : liveSafeConfig;
+    // FM-159, made live: the *available* quick-filter buttons read from
+    // `effectiveSafeConfig` like everything else on this page (ADR-0017), so a
+    // custom quick filter saved in Config -> Searching is offered on the next
+    // search without a reload. `preselectedQuickFilters` below reads the same
+    // live config, but that is harmless -- it only runs when a new search
+    // starts or the user explicitly clears filters (`clearAllFilters`), never
+    // as a side effect of the config changing underneath an already-rendered
+    // search, so a saved config cannot clobber the selections the user has
+    // already toggled for the search on screen.
+    const quickFilters = useMemo(
+        () => quickFiltersFromSafeConfig(effectiveSafeConfig),
+        [effectiveSafeConfig],
+    );
     const dereferer = isRecord(effectiveSafeConfig)
         ? effectiveSafeConfig.dereferer
         : undefined;
@@ -234,7 +239,7 @@ export function SearchResults({
     // produces.
     const [filters, setFilters] = useState<ResultFilters>(() => ({
         ...filterDefaults,
-        quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
+        quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
     }));
     // A new search's results carry their own values for every filter, so the
     // previous search's filters cannot be kept: a title or range typed for
@@ -251,7 +256,7 @@ export function SearchResults({
         setLastSearchRequestId(searchRequestId);
         setFilters({
             ...filterDefaults,
-            quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
+            quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
         });
     }
     // Below `sm` the refine surface is FM-045's temporary drawer rather than
@@ -672,9 +677,9 @@ export function SearchResults({
     const clearAllFilters = useCallback(() => {
         setFilters({
             ...defaultFilters(data.searchResults, quickFilters),
-            quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
+            quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
         });
-    }, [data.searchResults, quickFilters, safeConfig]);
+    }, [data.searchResults, quickFilters, effectiveSafeConfig]);
     // FM-042: the results table's column header row sticks directly beneath
     // the sticky toolbar, at a `top` offset derived from the toolbar's own
     // rendered height -- never a hardcoded pixel constant -- so it stays
