@@ -925,118 +925,48 @@ export function SearchResults({
         // Re-runs when the table first mounts (or unmounts), which is when
         // `tableBodyRef` becomes observable at all.
     }, [hasResults]);
-    useEffect(() => {
-        let alignmentFrame = 0;
-        const handlePageKey = (event: KeyboardEvent) => {
-            if (
-                (event.key !== "PageDown" && event.key !== "PageUp") ||
-                event.defaultPrevented ||
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey
-            ) {
-                return;
-            }
-            const target = event.target;
-            if (
-                target instanceof Element &&
-                target.closest(
-                    "input, textarea, select, [contenteditable=\"true\"]",
-                )
-            ) {
-                return;
-            }
-            const root = resultsRootRef.current;
-            const toolbar = toolbarRef.current;
-            const body = tableBodyRef.current;
-            if (!root || !toolbar || !body) {
-                return;
-            }
-            const rootBox = root.getBoundingClientRect();
-            const toolbarBox = toolbar.getBoundingClientRect();
-            if (
-                toolbarBox.top > 1 ||
-                rootBox.top >= window.innerHeight ||
-                rootBox.bottom <= toolbarBox.bottom
-            ) {
-                return;
-            }
-            const headerBottom =
-                body.closest("table")?.tHead?.getBoundingClientRect().bottom ??
-                0;
-            const stickyBottom = Math.max(toolbarBox.bottom, headerBottom, 0);
-            const visibleHeight = window.innerHeight - stickyBottom;
-            if (visibleHeight <= 0) {
-                return;
-            }
-            const visibleRows = Array.from(
-                body.querySelectorAll<HTMLTableRowElement>(
-                    "tr[data-testid=\"search-result-row\"]",
-                ),
-                (row) => ({box: row.getBoundingClientRect(), row}),
-            ).filter(
-                ({box}) =>
-                    box.top >= stickyBottom && box.bottom <= window.innerHeight,
-            );
-            const anchor =
-                event.key === "PageDown" ? visibleRows.at(-1) : visibleRows[0];
-            const distance =
-                event.key === "PageDown"
-                    ? (anchor?.box.top ?? stickyBottom + visibleHeight) -
-                    stickyBottom
-                    : (anchor?.box.bottom ?? stickyBottom) - window.innerHeight;
-            if (distance === 0) {
-                return;
-            }
-
-            // Native paging counts the area hidden under the sticky toolbar
-            // and column header. Move by the part of the viewport where rows
-            // are actually visible, keeping the previous edge row as the first
-            // or last fully visible row after the move.
-            event.preventDefault();
-            window.scrollBy({
-                behavior: "auto",
-                left: 0,
-                top: distance,
-            });
-            if (anchor && typeof requestAnimationFrame !== "undefined") {
-                cancelAnimationFrame(alignmentFrame);
-                let remainingCorrections = 3;
-                const keepAnchorAtEdge = () => {
-                    if (!anchor.row.isConnected) {
-                        return;
-                    }
-                    const box = anchor.row.getBoundingClientRect();
-                    const correction =
-                        event.key === "PageDown"
-                            ? box.top - stickyBottom
-                            : box.bottom - window.innerHeight;
-                    if (Math.abs(correction) > 0.5) {
-                        window.scrollBy({
-                            behavior: "auto",
-                            left: 0,
-                            top: correction,
-                        });
-                    }
-                    remainingCorrections -= 1;
-                    if (remainingCorrections > 0) {
-                        alignmentFrame =
-                            requestAnimationFrame(keepAnchorAtEdge);
-                    }
-                };
-                alignmentFrame = requestAnimationFrame(keepAnchorAtEdge);
-            }
-        };
-
-        document.addEventListener("keydown", handlePageKey);
+    // #1088: the sticky results toolbar and pinned column header cover the
+    // top of the scrollport, so the browser's own page distance -- Page
+    // Down/Page Up, Space/Shift+Space, Home/End -- moved rows into that band
+    // instead of into view, and they read as skipped.
+    //
+    // `scroll-padding-top` is the property for exactly this: it declares the
+    // scrollport's "optimal viewing region", and the browser's scrolling
+    // operations aim at that region rather than at the raw viewport edge. It
+    // is set on `documentElement` because the document is the scroller here
+    // (ADR-0011 keeps it that way deliberately -- no wrapper between a sticky
+    // `<th>` and the viewport), and it covers `scrollIntoView` and in-page
+    // anchors at the same time, which a key handler would not.
+    //
+    // The value cannot be a static declaration in `theme.ts`: the toolbar
+    // wraps to two rows at narrow widths and grows with its own counters, so
+    // its height is measured (`toolbarHeight` above) rather than assumed, and
+    // the header row sits directly beneath it.
+    useLayoutEffect(() => {
+        const body = tableBodyRef.current;
+        const header = body?.closest("table")?.tHead;
+        if (typeof document === "undefined") {
+            return;
+        }
+        const root = document.documentElement;
+        // The header cells are what is pinned, not the row group, so its own
+        // box is the unstuck header once the page is scrolled. Below 768px
+        // the card layout hides the header entirely and its cells report an
+        // all-zero rect, which correctly contributes nothing.
+        const headerHeight = Array.from(
+            header?.querySelectorAll("th") ?? [],
+        ).reduce(
+            (tallest, cell) =>
+                Math.max(tallest, cell.getBoundingClientRect().height),
+            0,
+        );
+        root.style.scrollPaddingTop = `${Math.round(
+            toolbarHeight + headerHeight,
+        )}px`;
         return () => {
-            document.removeEventListener("keydown", handlePageKey);
-            if (typeof cancelAnimationFrame !== "undefined") {
-                cancelAnimationFrame(alignmentFrame);
-            }
+            root.style.removeProperty("scroll-padding-top");
         };
-    }, []);
+    }, [hasResults, toolbarHeight]);
     // FM-162: hands every mounted row to the virtualizer for measurement.
     //
     // The usual shape -- `ref={virtualizer.measureElement}` on each rendered

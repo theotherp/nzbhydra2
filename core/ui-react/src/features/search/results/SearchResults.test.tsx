@@ -5332,69 +5332,44 @@ describe("SearchResults", () => {
             ).toBeInTheDocument();
         });
 
-        it("pages by the viewport height left below the sticky results chrome", () => {
-            renderResults(<SearchResults data={manyResultsData(2000)} />);
-            const root = screen.getByTestId("search-results");
-            const toolbar = screen.getByTestId("results-toolbar");
-            const table = screen.getByTestId(
-                "search-results-table",
-            ) as HTMLTableElement;
-            vi.spyOn(root, "getBoundingClientRect").mockReturnValue({
-                ...root.getBoundingClientRect(),
-                bottom: 10_000,
-                top: -500,
-            });
-            vi.spyOn(toolbar, "getBoundingClientRect").mockReturnValue({
-                ...toolbar.getBoundingClientRect(),
-                bottom: 100,
-                top: 0,
-            });
+        it("declares the sticky results chrome as scroll padding on the document scroller", () => {
+            // #1088. `scroll-padding-top` moves the scrollport's "optimal
+            // viewing region" below the sticky toolbar and pinned column
+            // header, so the browser's own Page Down/Page Up, Space and
+            // `scrollIntoView` stop parking rows underneath that chrome.
+            //
+            // jsdom lays nothing out, so the two measured inputs are driven
+            // through a prototype spy installed before the render: the
+            // toolbar's height, and the pinned header cells' height. Both
+            // have to be in the declaration -- the header sits directly
+            // beneath the toolbar and is pinned to its bottom edge.
+            const realRect = Element.prototype.getBoundingClientRect;
             vi.spyOn(
-                table.tHead as HTMLTableSectionElement,
+                Element.prototype,
                 "getBoundingClientRect",
-            ).mockReturnValue({
-                ...(
-                    table.tHead as HTMLTableSectionElement
-                ).getBoundingClientRect(),
-                bottom: 140,
-                top: 100,
-            });
-            const rows = screen.getAllByTestId("search-result-row");
-            vi.spyOn(rows[0], "getBoundingClientRect").mockReturnValue({
-                ...rows[0].getBoundingClientRect(),
-                bottom: 180,
-                top: 140,
-            });
-            vi.spyOn(
-                rows[rows.length - 1],
-                "getBoundingClientRect",
-            ).mockReturnValue({
-                ...rows[rows.length - 1].getBoundingClientRect(),
-                bottom: 740,
-                top: 700,
-            });
-            const scrollBy = vi
-                .spyOn(window, "scrollBy")
-                .mockImplementation(() => undefined);
-
-            fireEvent.keyDown(document, {key: "PageDown"});
-            expect(scrollBy).toHaveBeenLastCalledWith({
-                behavior: "auto",
-                left: 0,
-                top: 700 - 140,
+            ).mockImplementation(function(this: Element) {
+                const rect = realRect.call(this) as DOMRect;
+                if (this.matches("[data-testid=\"results-toolbar\"]")) {
+                    return {...rect, height: 64} as DOMRect;
+                }
+                if (this.matches("thead th")) {
+                    return {...rect, height: 40} as DOMRect;
+                }
+                return rect;
             });
 
-            fireEvent.keyDown(document, {key: "PageUp"});
-            expect(scrollBy).toHaveBeenLastCalledWith({
-                behavior: "auto",
-                left: 0,
-                top: 180 - JSDOM_WINDOW_HEIGHT,
-            });
+            const view = renderResults(
+                <SearchResults data={manyResultsData(2000)} />,
+            );
+            expect(document.documentElement.style.scrollPaddingTop).toBe(
+                "104px",
+            );
 
-            const input = document.createElement("input");
-            root.append(input);
-            fireEvent.keyDown(input, {key: "PageDown"});
-            expect(scrollBy).toHaveBeenCalledTimes(2);
+            // Cleared on unmount, so the declaration never outlives the
+            // results page it describes -- every other route scrolls against
+            // an unpadded scrollport.
+            view.unmount();
+            expect(document.documentElement.style.scrollPaddingTop).toBe("");
         });
 
         it("keeps a shift-range selection anchored on a row that has since been unmounted", () => {

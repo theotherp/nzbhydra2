@@ -2742,106 +2742,6 @@ test.describe("Search results", () => {
                 );
 
                 if (viewport === "desktop") {
-                    const viewportHeight = page.viewportSize()?.height ?? 0;
-                    await page.evaluate(() => {
-                        const body = document.querySelector(
-                            "[data-testid=\"search-results-table\"] tbody",
-                        );
-                        if (body) {
-                            window.scrollTo(
-                                0,
-                                body.getBoundingClientRect().top +
-                                window.scrollY +
-                                200,
-                            );
-                        }
-                    });
-                    await page.evaluate(
-                        () =>
-                            new Promise<void>((resolve) =>
-                                requestAnimationFrame(() =>
-                                    requestAnimationFrame(() => resolve()),
-                                ),
-                            ),
-                    );
-                    await page.getByTestId("display-options-toggle").focus();
-                    const edgeRowTitle = await page.evaluate(
-                        ({stickyBottom, viewportBottom}) => {
-                            const rows = Array.from(
-                                document.querySelectorAll<HTMLElement>(
-                                    "[data-testid=\"search-result-row\"]",
-                                ),
-                            );
-                            return rows
-                                .filter((row) => {
-                                    const box = row.getBoundingClientRect();
-                                    return (
-                                        box.top >= stickyBottom &&
-                                        box.bottom <= viewportBottom
-                                    );
-                                })
-                                .at(-1)?.dataset.resultTitle;
-                        },
-                        {
-                            stickyBottom: stickyRegionBottomDesktop,
-                            viewportBottom: viewportHeight,
-                        },
-                    );
-                    expect(edgeRowTitle).toBeTruthy();
-                    const edgeRow = page.locator(
-                        `[data-result-title=${JSON.stringify(edgeRowTitle)}]`,
-                    );
-
-                    await page.keyboard.press("PageDown");
-                    await expect
-                        .poll(async () => {
-                            const box = await edgeRow.boundingBox();
-                            return Boolean(
-                                box &&
-                                box.y >= stickyRegionBottomDesktop - 1 &&
-                                box.y + box.height <= viewportHeight + 1,
-                            );
-                        })
-                        .toBe(true);
-
-                    await page.evaluate(() => {
-                        const body = document.querySelector(
-                            "[data-testid=\"search-results-table\"] tbody",
-                        );
-                        if (body) {
-                            window.scrollTo(
-                                0,
-                                body.getBoundingClientRect().top +
-                                window.scrollY +
-                                900,
-                            );
-                        }
-                    });
-                    await page.evaluate(
-                        () =>
-                            new Promise<void>((resolve) =>
-                                requestAnimationFrame(() =>
-                                    requestAnimationFrame(() => resolve()),
-                                ),
-                            ),
-                    );
-                    await page.getByTestId("display-options-toggle").focus();
-                    const scrollBeforePageUp = await page.evaluate(
-                        () => window.scrollY,
-                    );
-
-                    await page.keyboard.press("PageUp");
-                    await expect
-                        .poll(() => page.evaluate(() => window.scrollY))
-                        .toBeLessThan(scrollBeforePageUp);
-                    const pageUpDistance =
-                        scrollBeforePageUp -
-                        (await page.evaluate(() => window.scrollY));
-                    expect(pageUpDistance).toBeGreaterThan(0);
-                    expect(pageUpDistance).toBeLessThanOrEqual(
-                        viewportHeight - stickyRegionBottomDesktop + 1,
-                    );
-
                     // ADR-0011's `box-shadow`-on-`<th>` remedy for a sticky
                     // header's bottom edge under `border-collapse: collapse`
                     // (rather than switching to `separate`, which would
@@ -3047,6 +2947,229 @@ test.describe("Search results", () => {
     // Realistic, not synthetic, indexer/category values -- longer than a
     // single short word -- since ADR-0011 flags a long metadata value's fit
     // as unmeasured.
+    /**
+     * #1088: Page Up and Page Down used to move by the browser's own page
+     * distance, which counts the area the sticky toolbar and the pinned
+     * column header cover -- so roughly three rows slid under that chrome and
+     * were never read. `SearchResults` handles both keys itself and moves by
+     * the part of the viewport where rows are actually visible.
+     *
+     * This has its own fixture rather than riding on the sticky-evidence test
+     * above: that one's 40 results leave less scroll room than one page, so
+     * the browser clamps the move and the assertion below cannot tell a
+     * correct page from a broken one. 200 results give several full pages of
+     * headroom at every evidence viewport.
+     */
+    test("should page the results by the viewport left below the sticky chrome, without skipping rows", async ({
+                                                                                                                   page,
+                                                                                                               }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: Array.from({length: 200}, (_, index) => ({
+                        age: `${index} days`,
+                        category: "Movies",
+                        downloadType: "NZB",
+                        epoch: now - index * 86_400,
+                        indexer: "Alpha",
+                        searchResultId: `paging-${index}`,
+                        seeders: index + 1,
+                        size: (index + 1) * 1024 * 1024,
+                        title: `Paging Result ${String(index + 1).padStart(
+                            3,
+                            "0",
+                        )}`,
+                    })),
+                    indexerLimitWarnings: [],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Alpha", wasSuccessful: true},
+                    ],
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 200,
+                    numberOfRejectedResults: 0,
+                    rejectedReasonsMap: {},
+                },
+            }),
+        );
+        await page.goto("/");
+        await dismissWelcomeDialog(page);
+        await page.getByTestId("search-query").fill("paging");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await expect(page.getByTestId("search-results-table")).toBeVisible();
+
+        const viewportHeight = page.viewportSize()?.height ?? 0;
+        // The sticky region's bottom edge, read live from the pinned header
+        // *cells*. `<thead>` itself is not sticky -- `ResultsTable` pins each
+        // `<th>` -- so the row group's own box is the unstuck header row, far
+        // above the viewport once scrolled. Measuring the wrong one is exactly
+        // the defect this test exists for: it left the edge row inside the
+        // viewport but underneath the header, where it reads as skipped, so
+        // "visible" here has to mean "visible below the chrome".
+        const stickyBottom = () =>
+            page.evaluate(() => {
+                const toolbar = document.querySelector(
+                    "[data-testid=\"results-toolbar\"]",
+                );
+                const table = document.querySelector<HTMLTableElement>(
+                    "[data-testid=\"search-results-table\"]",
+                );
+                return Math.max(
+                    toolbar?.getBoundingClientRect().bottom ?? 0,
+                    ...Array.from(
+                        table?.tHead?.querySelectorAll("th") ?? [],
+                    ).map((cell) => cell.getBoundingClientRect().bottom),
+                    0,
+                );
+            });
+        const visibleTitles = async () =>
+            page.evaluate(
+                ({sticky, viewportBottom}) =>
+                    Array.from(
+                        document.querySelectorAll<HTMLElement>(
+                            "[data-testid=\"search-result-row\"]",
+                        ),
+                    )
+                        .filter((row) => {
+                            const box = row.getBoundingClientRect();
+                            return (
+                                box.top >= sticky - 1 &&
+                                box.bottom <= viewportBottom + 1
+                            );
+                        })
+                        .map((row) => row.dataset.resultTitle),
+                {sticky: await stickyBottom(), viewportBottom: viewportHeight},
+            );
+        const settle = () =>
+            page.evaluate(
+                () =>
+                    new Promise<void>((resolve) =>
+                        requestAnimationFrame(() =>
+                            requestAnimationFrame(() => resolve()),
+                        ),
+                    ),
+            );
+
+        // Far enough in that the toolbar and header are pinned and a whole
+        // page still fits below; a move the browser clamps at the end of the
+        // document proves nothing.
+        await page.evaluate(() => {
+            const body = document.querySelector(
+                "[data-testid=\"search-results-table\"] tbody",
+            );
+            if (body) {
+                window.scrollTo(
+                    0,
+                    body.getBoundingClientRect().top + window.scrollY + 400,
+                );
+            }
+        });
+        await settle();
+        await page.getByTestId("display-options-toggle").focus();
+
+        // The declaration itself: the scrollport's optimal viewing region
+        // starts below the sticky chrome, which is what keeps every browser
+        // scrolling operation -- paging, Space, Home/End, `scrollIntoView`,
+        // in-page anchors -- out from under it. Asserted here rather than
+        // before the scroll: unpinned, the header's distance from the
+        // viewport top is wherever the page happens to sit, and only once
+        // the chrome is actually stuck does it equal the declared padding.
+        expect(
+            await page.evaluate(
+                () =>
+                    getComputedStyle(document.documentElement).scrollPaddingTop,
+            ),
+        ).toBe(`${Math.round(await stickyBottom())}px`);
+
+        // Every snapshot below is taken only once the scroll has come to
+        // rest. A virtualized table mounts and measures its new rows over the
+        // next frames, so the row set moves for a moment after the key is
+        // pressed; sampling on "something changed" caught those intermediate
+        // states and compared two different pages against each other.
+        const settleScroll = async () => {
+            let previous = Number.NaN;
+            await expect
+                .poll(
+                    async () => {
+                        const y = await page.evaluate(() => window.scrollY);
+                        const stable = y === previous;
+                        previous = y;
+                        return stable;
+                    },
+                    {intervals: [100, 100, 100, 100, 100, 200, 200]},
+                )
+                .toBe(true);
+        };
+        const pageWith = async (key: string) => {
+            const before = await page.evaluate(() => window.scrollY);
+            await page.keyboard.press(key);
+            await expect
+                .poll(() => page.evaluate(() => window.scrollY))
+                .not.toBe(before);
+            await settleScroll();
+            return visibleTitles();
+        };
+
+        const beforeDown = await visibleTitles();
+        expect(beforeDown.length).toBeGreaterThan(3);
+        const bottomEdgeRow = beforeDown.at(-1);
+
+        const afterDown = await pageWith("PageDown");
+        // Nothing between the two pages was passed over: the row that sat on
+        // the previous bottom edge is still readable, below the chrome rather
+        // than buried under it.
+        //
+        // *How much* overlap a page keeps is the engine's own policy and is
+        // deliberately not asserted: Chromium advances by 87.5% of the padded
+        // scrollport (so it re-shows ~3 rows at 1080p and ~5 at 2160p), while
+        // Gecko keeps a small fixed overlap. Both are correct -- a repeated
+        // row costs a glance, a skipped row costs a result. Pinning a bound
+        // here would only pin one engine's constant.
+        expect(afterDown).toContain(bottomEdgeRow);
+        expect(afterDown.at(-1)).not.toBe(bottomEdgeRow);
+
+        // The inverse invariant: the row that sat on the new page's top edge
+        // is still readable after paging back up.
+        const afterUp = await pageWith("PageUp");
+        expect(afterUp).toContain(afterDown[0]);
+
+        // Space and Shift+Space page as well -- they are the keys most people
+        // reach for, and nothing here intercepts them, so they inherit the
+        // same corrected distance. Space is also an activation key, so it
+        // only pages with nothing focused; the focused-button case is
+        // asserted after the round trip.
+        await page.evaluate(() =>
+            (document.activeElement as HTMLElement | null)?.blur(),
+        );
+        const beforeSpace = await visibleTitles();
+        const afterSpace = await pageWith("Space");
+        expect(afterSpace).toContain(beforeSpace.at(-1));
+        expect(afterSpace.at(-1)).not.toBe(beforeSpace.at(-1));
+
+        const afterShiftSpace = await pageWith("Shift+Space");
+        expect(afterShiftSpace).toContain(afterSpace[0]);
+
+        // ...and Space still belongs to a focused control rather than to the
+        // page: it opens the display-options menu instead of scrolling. The
+        // scroll offset is the probe rather than the visible row set, because
+        // the menu that proves the point is an overlay -- it locks the body
+        // and changes which rows are unobstructed, which says nothing about
+        // whether the page moved.
+        await page.getByTestId("display-options-toggle").focus();
+        // Sampled after focusing, not before: moving focus is itself allowed
+        // to scroll, and the claim under test is only about what the Space
+        // keypress does.
+        const scrollBeforeButtonSpace = await page.evaluate(
+            () => window.scrollY,
+        );
+        await page.keyboard.press("Space");
+        await expect(page.getByTestId("display-options")).toBeVisible();
+        expect(await page.evaluate(() => window.scrollY)).toBe(
+            scrollBeforeButtonSpace,
+        );
+    });
+
     test("should render every column header's full label without scrollWidth overflow, and no scrolling ancestor between a sticky header and the document, at both evidence viewports and sidebar states", async ({
         page,
     }) => {

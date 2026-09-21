@@ -4022,3 +4022,25 @@ their text and relative order are unchanged.
   case passes against a freshly packaged local backend (1/1), whose Maven build also completed successfully; `git diff --check` clean.
 - **Deviation:** none. Chromium verifies that Page Down retains the previous bottom-edge row and that Page Up moves no farther than the result viewport below the sticky chrome. The Page Up assertion uses the scroll-distance invariant
   because its former edge row may be unmounted when the virtualized window changes.
+
+### 2026-09-21 — Replace the Page Up/Down key handler with `scroll-padding-top`
+
+- **Why not a packet:** follow-up to the entry above, same single-feature scope; no API, route, persistence or selector contract change.
+- **What was broken:** the 2026-09-20 fix above did not hold. It read the sticky column header's bottom edge off `tHead.getBoundingClientRect()`, but `ResultsTable` pins the individual `<th>` cells, not the row group — a row group is not
+  shifted by its cells' stickiness, so that box is the *unstuck* header, far above the viewport while scrolled. The page distance came out one header-height short and parked the previous edge row underneath the header. More
+  fundamentally, intercepting `keydown` only ever covered Page Up and Page Down, leaving Space and Shift+Space — the keys most people actually press — on the browser's uncorrected distance.
+- **What replaced it:** the whole `keydown` handler is deleted. A layout effect declares `scroll-padding-top` on `documentElement` (the document is the scroller, per ADR-0011) at the measured toolbar + header height. That is the property
+  for this: it moves the scrollport's optimal viewing region below the sticky chrome, so *every* browser scrolling operation — Page Up/Down, Space/Shift+Space, Home/End, `scrollIntoView`, in-page anchors — aims below it. The value is
+  measured rather than declared in `theme.ts` because the toolbar wraps to two rows at narrow widths.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`, `core/ui-react/src/features/search/results/SearchResults.test.tsx`, `tests/system/tests/results.spec.ts`, `core/src/main/resources/changelog.yaml`
+- **Measurements (owner-confirmed in Firefox, Chromium measured here against a running instance, "uitest" fixture, sticky region 151px):** before, Chromium at 1920x800 moved 700px and skipped 3 rows; after, Chromium moves exactly
+  `0.875 x (viewport - 151)` — 812px at 1080p, 1757px at 2160p — and skips nothing.
+- **Deviation (accepted by the owner):** Chromium's paging step is a hard-coded 87.5% of the padded scrollport with no CSS lever, so it now *repeats* about 3 rows at 1080p and 5 at 2160p instead of skipping them. Firefox keeps a small
+  fixed overlap and reads near-perfect. Offered row snapping (`scroll-snap-type: y proximity`) — it aligns the overlap to whole rows but does not change the 87.5% — and restoring the key handler; the owner chose to ship the property
+  alone. A repeated row costs a glance; a skipped row costs a result.
+- **System test:** the paging assertions moved out of the shared sticky-evidence case into their own test with a 200-result fixture. The shared case's 40 results leave less scroll room than one page, so the browser clamps the move and the
+  assertion cannot tell a correct page from a broken one — verified: with the old defect restored, the shared case still passed while the new test failed naming the skipped row. The new test asserts the declaration and the no-skip
+  invariant only; overlap size is engine policy and is deliberately not pinned.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors; 16 pre-existing warnings), `format:check` (3 pre-existing offenders, none touched here), `test --run` (146 files, 2152 tests), `build`, `check:api`, `validate:migration` — all
+  pass. `tests/system` `npx tsc --noEmit` and prettier pass; the whole `results.spec.ts` (40/40) passes against a freshly packaged local backend. `git diff --check` clean.
+- **Superseded:** the 2026-09-20 entry above. The workaround it describes is stashed, not deleted.
