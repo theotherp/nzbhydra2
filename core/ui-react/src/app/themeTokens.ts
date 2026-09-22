@@ -245,6 +245,10 @@ export function refineRowBackgrounds(theme: Theme): {
  * MUI's own dark-mode `--Paper-overlay` uses.
  */
 export function hoverWash(theme: Theme): string {
-    const wash = theme.palette.surfaces.hoverWash;
+    // Defensive for the same reason `refineRowBackgrounds` above is: some
+    // suites mount a consumer under MUI's stock theme, which has no
+    // `surfaces` block at all.
+    const wash =
+        theme.palette.surfaces?.hoverWash ?? theme.palette.action.hover;
     return `linear-gradient(${wash}, ${wash})`;
 }

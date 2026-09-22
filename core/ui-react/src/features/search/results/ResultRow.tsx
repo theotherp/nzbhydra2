@@ -5,18 +5,8 @@ import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
 import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import {
-    Box,
-    Checkbox,
-    Chip,
-    IconButton,
-    Popover,
-    Stack,
-    TableCell,
-    TableRow,
-    Tooltip,
-} from "@mui/material";
 import type {SxProps, Theme} from "@mui/material";
+import {Box, Checkbox, Chip, IconButton, Popover, Stack, TableCell, TableRow, Tooltip,} from "@mui/material";
 import type {
     FocusEvent as ReactFocusEvent,
     KeyboardEvent as ReactKeyboardEvent,
@@ -27,20 +17,15 @@ import {memo, useState} from "react";
 
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
-import type {
-    Downloader,
-    downloadSettings,
-} from "../../../domain/downloads/actions";
+import {hoverWash} from "../../../app/theme";
+import type {Downloader, downloadSettings,} from "../../../domain/downloads/actions";
 import {CoverLightbox} from "./CoverLightbox";
 import {DirectDownloadActions} from "./DownloadActions";
-import {
-    buildQualityTooltipSections,
-    qualityBadgeSeverity,
-} from "./qualityBadge";
+import {buildQualityTooltipSections, qualityBadgeSeverity,} from "./qualityBadge";
 import {ResultDetailLinks} from "./ResultDetailLinks";
+import {formatResultDetails, formatResultSize} from "./resultTable";
 import {SendToBlackHoleButton} from "./SendToBlackHoleButton";
 import {SendToDownloaderButtons} from "./SendToDownloaderButtons";
-import {formatResultDetails, formatResultSize} from "./resultTable";
 
 /**
  * FM-176: the two expand-control slots the current render reserves in every
@@ -99,6 +84,32 @@ const RECENT_AGE_CELL_SX: SxProps<Theme> = {
  */
 const RECENT_SELECT_CELL_SX = (theme: Theme) => ({
     boxShadow: `inset 3px 0 0 ${theme.alpha(theme.palette.primary.main, 0.4)}`,
+});
+
+/**
+ * The row's soft hover wash (`hoverWash`, ADR-0014's `surfaces.hoverWash`
+ * token), applied a second time on just the checkbox and, in
+ * `PRONOUNCED_ACTION_HOVER_SX` below, just the action icons -- never on the
+ * whole cell. `"& .MuiCheckbox-root:hover"` only paints while the pointer is
+ * over the control itself, so it is the checkbox, not the Select cell's whole
+ * (mostly empty) padding box, that reads as the more prominent hover target,
+ * stacked as a second layer over the row's own hover wash underneath.
+ */
+const PRONOUNCED_HOVER_SX = (theme: Theme) => ({
+    "& .MuiCheckbox-root:hover": {backgroundImage: hoverWash(theme)},
+});
+
+/**
+ * The same wash, but per Actions-cell icon button rather than on the cell:
+ * `"& .MuiIconButton-root:hover"` only paints while the pointer is over one
+ * button, so it is that button -- not the whole cell -- that reads as the
+ * more prominent hover target, in step with `ResultDetailLinks` /
+ * `DirectDownloadActions` / `SendToDownloaderButtons` /
+ * `SendToBlackHoleButton` each rendering their own `IconButton`s into this
+ * cell rather than one control this cell owns outright.
+ */
+const PRONOUNCED_ACTION_HOVER_SX = (theme: Theme) => ({
+    "& .MuiIconButton-root:hover": {backgroundImage: hoverWash(theme)},
 });
 
 /**
@@ -309,12 +320,18 @@ export const ResultRow = memo(function ResultRow({
             data-result-title={result.title}
             data-nesting-level={nestingLevel}
             data-testid="search-result-row"
-            sx={{
+            sx={(theme) => ({
                 bgcolor: nestingLevel > 0 ? "action.hover" : undefined,
                 borderTopColor: isNewGroup ? "divider" : undefined,
                 borderTopStyle: isNewGroup ? "solid" : undefined,
                 borderTopWidth: isNewGroup ? 2 : undefined,
-            }}
+                // Soft hover highlight, the same token-driven wash a
+                // `RefineMultiselect` row's unselected hover already uses
+                // (`refineRowBackgrounds`) -- a `background-image` layer
+                // rather than `bgcolor` so it composites over this row's own
+                // conditional background instead of replacing it.
+                "&:hover": {backgroundImage: hoverWash(theme)},
+            })}
         >
             {/* The recency flag's left-edge accent stripe (the mock's
                 `box-shadow:inset 3px 0 0 {{ r.stripe }}`), drawn on the row's
@@ -329,7 +346,10 @@ export const ResultRow = memo(function ResultRow({
             <TableCell
                 data-label="Select"
                 padding="checkbox"
-                sx={recent ? RECENT_SELECT_CELL_SX : undefined}
+                sx={(theme) => ({
+                    ...(recent ? RECENT_SELECT_CELL_SX(theme) : undefined),
+                    ...PRONOUNCED_HOVER_SX(theme),
+                })}
             >
                 <Checkbox
                     checked={selected}
@@ -528,7 +548,11 @@ export const ResultRow = memo(function ResultRow({
                     </TableCell>
                 );
             })}
-            <TableCell align="right" data-label="Actions">
+            <TableCell
+                align="right"
+                data-label="Actions"
+                sx={PRONOUNCED_ACTION_HOVER_SX}
+            >
                 {/* FM-150: a row at every breakpoint. This stack used to
                     switch to `column` at `sm` and up, which is what put the
                     download on a line of its own no matter how much room the

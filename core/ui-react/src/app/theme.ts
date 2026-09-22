@@ -13,21 +13,10 @@
  * theme this module produces.
  */
 
-import type {} from "@mui/x-date-pickers/themeAugmentation";
-import {
-    createTheme,
-    type CSSObject,
-    type Theme,
-    type TypographyStyle,
-} from "@mui/material/styles";
+import {createTheme, type CSSObject, type Theme, type TypographyStyle,} from "@mui/material/styles";
 
 import {createThemeComponents} from "./themeComponents";
-import {
-    resolveThemeName,
-    type SurfaceTokens,
-    themeColors,
-    type ThemePreference,
-} from "./themePalettes";
+import {resolveThemeName, type SurfaceTokens, themeColors, type ThemePreference,} from "./themePalettes";
 import {uiFontFamily} from "./themeTokens";
 
 export type {ThemeName, ThemePreference} from "./themePalettes";
@@ -35,6 +24,7 @@ export {resolveThemeName, themePreferenceOptions} from "./themePalettes";
 export {
     controlHeight,
     denseControlFontSize,
+    hoverWash,
     monoFontFamily,
     pillRadius,
     refineRowBackgrounds,
