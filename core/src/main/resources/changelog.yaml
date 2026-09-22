@@ -1,5 +1,11 @@
 #@formatter:off
 # These are for the user and should not be too technical and focus on what changes for them.
+-   version: "v9.0.4"
+    date: "2026-09-22"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Saving the config could fail with &quot;...was submitted as ***UNCHANGED*** but no stored value could be found to keep&quot; for indexers, downloaders or logins you never touched. This happened when an older version had saved that placeholder literally instead of the real API key/username/password (which also made searches on the affected indexer fail without explanation). Such a broken value is now detected and cleared automatically when the config is loaded, the affected indexer is marked incomplete so it's skipped until fixed, and you can simply enter the correct value again. See #1091"
 -   version: "v9.0.3"
     date: "2026-09-21"
     final: true

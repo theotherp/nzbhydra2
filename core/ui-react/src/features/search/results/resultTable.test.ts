@@ -1,29 +1,29 @@
 import {describe, expect, it, vi} from "vitest";
 
+import type {GroupingOptions, QuickFilter} from "./resultTable";
 import {
     actionsTrackWidth,
     activeFilterCount,
     ageInDays,
     blackHoleSlot,
     defaultFilters,
+    filterResults,
     formatResultDetails,
     formatResultSize,
     groupResults,
-    filterResults,
     indexerColorsFromSafeConfig,
     isRecentResult,
-    preselectedQuickFilters,
-    RECENT_RESULT_MAX_AGE_DAYS,
     kify,
+    preselectedQuickFilters,
     quickFilterKey,
     quickFiltersFromSafeConfig,
+    RECENT_RESULT_MAX_AGE_DAYS,
     selectedQuickFilterGroups,
     selectionAfterClick,
     selectionStatus,
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
-import type {GroupingOptions, QuickFilter} from "./resultTable";
 
 const results = [
     {
@@ -337,6 +337,31 @@ describe("result table transformations", () => {
         expect(filterResults(results, filters, quickFilters)).toEqual([]);
         filters.size = {min: "", max: ""};
         expect(filterResults(results, filters, quickFilters)).toEqual([]);
+    });
+
+    it("should accept a JS-style /regex/ title filter typed verbatim, backslashes included", () => {
+        const regexResults = [
+            {...results[0], searchResultId: "1", title: "release.abc.1080p"},
+            {...results[1], searchResultId: "2", title: "release.ac.720p"},
+            {...results[0], searchResultId: "3", title: "release.abbc.1080p"},
+        ];
+        const filters = defaultFilters(regexResults, []);
+
+        // "ab?c" -- the "b" is optional, so both "abc" and "ac" match but not "abbc".
+        filters.title = "/ab?c/";
+        expect(
+            filterResults(regexResults, filters, []).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["1", "2"]);
+
+        // "\S+" -- any non-whitespace run, i.e. every title here.
+        filters.title = "/\\S+/";
+        expect(
+            filterResults(regexResults, filters, []).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["1", "2", "3"]);
     });
 
     it("should derive download-type filter options from loaded results rather than a hardcoded NZB/Torrent pair, and never discard an undefined downloadType", () => {

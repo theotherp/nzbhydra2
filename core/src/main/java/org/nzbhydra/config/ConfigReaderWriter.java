@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -215,6 +216,10 @@ public class ConfigReaderWriter {
             BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
             // Decrypt sensitive data after loading
             sensitiveDataHandler.decryptSensitiveData(baseConfig);
+            final List<String> clearedMarkers = sensitiveDataHandler.clearCorruptedUnchangedMarkers(baseConfig);
+            if (!clearedMarkers.isEmpty()) {
+                logger.warn("Found the placeholder value stored as the actual value of {} setting(s) - an older version must have saved it literally instead of the real secret. Cleared so the field can be filled in again: {}", clearedMarkers.size(), clearedMarkers);
+            }
             return baseConfig;
         }
         return originalConfig();
