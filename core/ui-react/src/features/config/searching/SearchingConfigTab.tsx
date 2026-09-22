@@ -2,23 +2,10 @@ import {Box} from "@mui/material";
 import {useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
-import {
-    ChipsSetting,
-    ConfigFieldset,
-    MultiSelectSetting,
-    NumberSetting,
-    SelectSetting,
-    SwitchSetting,
-    TextSetting,
-} from "../components";
+import {ChipsSetting, ConfigFieldset, MultiSelectSetting, NumberSetting, SelectSetting, SwitchSetting, TextSetting,} from "../components";
 import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {languageOptions} from "./languages";
-import {
-    APPLY_RESTRICTIONS_OPTIONS,
-    percentValidator,
-    preselectQuickFilterOptions,
-    SEARCH_SOURCE_OPTIONS,
-} from "./searchingSettings";
+import {APPLY_RESTRICTIONS_OPTIONS, percentValidator, preselectQuickFilterOptions, SEARCH_SOURCE_OPTIONS,} from "./searchingSettings";
 
 /**
  * `F-CONFIG-SEARCHING`: the Searching configuration tab — every field of
@@ -251,7 +238,7 @@ export function SearchingConfigTab() {
                             "searching.customQuickFilterButtons",
                         )}
                         advanced
-                        tooltip='E.g. use WEB=webdl,web-dl. for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
+                        tooltip='E.g. use WEB=webdl,web-dl for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
                     />
                 ) : null}
                 {showQuickFilterButtons ? (

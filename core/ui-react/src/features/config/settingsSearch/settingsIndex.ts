@@ -1,11 +1,5 @@
-import {
-    settingRowTestId,
-    settingTestId,
-    type ConfigFieldPath,
-    type HelpContent,
-    type SettingProps,
-} from "../components/settings";
-import {CONFIG_TABS, configTabHref, type ConfigTab} from "../configTabs";
+import {type ConfigFieldPath, type HelpContent, type SettingProps, settingRowTestId, settingTestId,} from "../components/settings";
+import {CONFIG_TABS, type ConfigTab, configTabHref} from "../configTabs";
 import {
     CSRF_HELP,
     CSRF_WIKI,
@@ -16,10 +10,7 @@ import {
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
 } from "../main/mainSettings";
-import {
-    APPRISE_API_URL,
-    APPRISE_CLI_URL,
-} from "../notifications/notificationsSettings";
+import {APPRISE_API_URL, APPRISE_CLI_URL,} from "../notifications/notificationsSettings";
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
@@ -867,7 +858,7 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset}) => {
         {
             advanced: true,
             conditional: true,
-            help: "Enter in the format DisplayName=Required1,Required2. Prefix words with ! to exclude them. Surround with / to mark as a regex. Apply values with enter key.",
+            help: "Enter in the format DisplayName=RequiredWord. Prefix words with ! to exclude them. Provide multiple required (or forbidden words) separated by commas. Surround value with / to mark as a regex. Apply values with enter key.",
             label: "Custom quick filters",
             path: "searching.customQuickFilterButtons",
         },
