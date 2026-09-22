@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class ExternalApiStats {
                     + "and the same request the web interface sends; it is only answered when \"Allow stats access via "
                     + "API\" is enabled in the authentication settings. New integrations should use "
                     + "GET /externalapi/v1/stats instead, which is documented in the externalapi definition.")
-    @RequestMapping(value = "/api/stats", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/api/stats", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public StatsResponse apiStats(@RequestBody ApiStatsRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
@@ -58,7 +59,7 @@ public class ExternalApiStats {
     @Operation(summary = "The status and API hit limits of every configured indexer",
             description = "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via "
                     + "API\" in the authentication settings.")
-    @RequestMapping(value = "/api/stats/indexers", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/api/stats/indexers", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<IndexerStatusesAndLimits.IndexerStatus> indexerStatuses(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
@@ -69,7 +70,7 @@ public class ExternalApiStats {
             description = "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort "
                     + "model the web interface uses. Requires \"Allow stats access via API\" in the authentication "
                     + "settings. New integrations should use GET /externalapi/v1/history/searches instead.")
-    @RequestMapping(value = "/api/history/searches", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/api/history/searches", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<SearchEntity> apiHistorySearches(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
@@ -80,7 +81,7 @@ public class ExternalApiStats {
             description = "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort "
                     + "model the web interface uses. Requires \"Allow stats access via API\" in the authentication "
                     + "settings. New integrations should use GET /externalapi/v1/history/downloads instead.")
-    @RequestMapping(value = "/api/history/downloads", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/api/history/downloads", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<FileDownloadEntity> apiHistoryDownloads(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
