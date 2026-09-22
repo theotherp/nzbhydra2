@@ -183,10 +183,32 @@ Do not guess Maven coordinates or versions when they can be verified with
     - Use `intellij_execute_run_configuration` to run the relevant test. If no run config exists, **ask the user to create one**.
     - If a test fails, analyze the output, fix the code/test, and rerun.
     - Do not finish if tests are failing (unless they were failing before you started).
-6. When fixing a specific GH issue, reference it in the changelog.yaml using "See #xxxx" and in the commit using "Closes #xxxx"
+6. When fixing a specific GH issue, reference it in `changelog-unreleased.yaml` using "See #xxxx" and in the commit using "Closes #xxxx". See section 7.
 7. Don't do separate commits for ledger updates.
 
-## 7. Common Patterns & Libraries
+## 7. Release Notes
+
+User facing changes are collected in **`changelog-unreleased.yaml`** in the project root, as a flat list of
+entries without a version, date or `final` flag:
+
+```yaml
+-   type: "fix"
+    text: "Searching no longer takes forever. See #1234"
+```
+
+- Allowed types are `fix`, `feature`, `features` and `note` (enforced by `ChangelogGeneratorMojo`).
+- Write for the user: what changes for them, not how it was implemented. Use HTML entities (`&quot;`, `&apos;`) instead of literal quotes.
+- **Never edit `core/src/main/resources/changelog.yaml` by hand.** It holds released versions only.
+  Every installed NZBHydra2 fetches that file from master at runtime and parses it strictly, so an
+  entry with a non-semver version or an unknown field breaks the changelog display in versions that
+  are already released.
+- `misc/build_and_release.py` promotes the unreleased entries into `changelog.yaml` during a release (step `promote_changelog`): they become a section for the version passed via `--version`, dated
+  today and marked `final: true` unless `--beta` is given. The unreleased file is emptied again.
+- To preview the section without changing anything:
+  `python3 misc/promote_changelog.py --version 9.0.4 --dry-run`.
+- Tests for the promotion: `python3 -m unittest misc.test_promote_changelog` (run from the project root).
+
+## 8. Common Patterns & Libraries
 
 - **JSON/XML**: `Jackson` for JSON, `JAXB` for XML.
 - **HTTP**: `OkHttp3` for external requests.

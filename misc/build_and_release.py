@@ -4,6 +4,7 @@ Build and release script for NZBHydra2.
 
 Usage:
     python build_and_release.py --version 8.3.0
+    python build_and_release.py --version 8.3.0 --beta  # release as beta (final: false)
     python build_and_release.py --version 8.3.0 --dry-run local
     python build_and_release.py --version 8.3.0 --next-version 8.3.1  # override auto-increment
     python build_and_release.py --resume
@@ -28,6 +29,8 @@ from pathlib import Path
 from typing import Callable
 
 import click
+from promote_changelog import ChangelogError
+from promote_changelog import promote as promote_changelog_entries
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -125,6 +128,7 @@ class BuildContext:
     dry_run: DryRunMode
     log_file: Path
     skip_preconditions: bool = False
+    beta: bool = False
     github_token: str | None = None
     discord_token: str | None = None
     completed_steps: list[str] = field(default_factory=list)
@@ -135,6 +139,7 @@ class BuildContext:
         state = {
             "version": self.version,
             "next_version": self.next_version,
+            "beta": self.beta,
             "completed_steps": self.completed_steps,
             "timestamp": datetime.now().isoformat(),
             "log_file": str(self.log_file),
@@ -163,6 +168,7 @@ class BuildContext:
             ctx = cls(
                 version=state["version"],
                 next_version=state["next_version"],
+                beta=state.get("beta", False),
                 dry_run=dry_run,
                 log_file=log_file,
                 completed_steps=state.get("completed_steps", []),
@@ -569,6 +575,27 @@ def check_preconditions(ctx: BuildContext) -> None:
         if result and result.returncode != 0:
             raise RuntimeError("Docker is not running")
         console.print("  [green]✓[/green] Docker is running")
+
+
+@step("promote_changelog", "Promote release notes into the changelog")
+def promote_changelog(ctx: BuildContext) -> None:
+    """Move the notes collected in changelog-unreleased.yaml into changelog.yaml.
+
+    The entry is written for the version being released, dated today and marked final unless
+    --beta was given. Repeating the step (e.g. with --start-from) does not duplicate the entry.
+    """
+    try:
+        block = promote_changelog_entries(
+            ctx.version,
+            beta=ctx.beta,
+            dry_run=not ctx.dry_run.should_execute_local(),
+        )
+    except ChangelogError as e:
+        raise RuntimeError(f"Cannot promote the release notes: {e}") from e
+
+    console.print(f"  [green]✓[/green] Release notes for v{ctx.version} ({'beta' if ctx.beta else 'final'}):")
+    for line in block.splitlines():
+        console.print(f"    [dim]{line}[/dim]")
 
 
 @step("set_release_version", "Set release version in Maven")
@@ -1037,6 +1064,8 @@ def reset_build_changes() -> None:
 
     files_to_reset = [
         "changelog.md",
+        "changelog-unreleased.yaml",
+        "core/src/main/resources/changelog.yaml",
         "pom.xml",
         "core/pom.xml",
         "other/mockserver/pom.xml",
@@ -1110,6 +1139,7 @@ def run_build(
         Panel(
             f"Version: [bold]{ctx.version}[/bold]\n"
             f"Next version: [bold]{ctx.next_version}-SNAPSHOT[/bold]\n"
+            f"Release type: [bold]{'BETA' if ctx.beta else 'final'}[/bold]\n"
             f"Mode: {mode_str}\n"
             f"Log file: [dim]{ctx.log_file}[/dim]",
             title="NZBHydra2 Build & Release",
@@ -1162,7 +1192,7 @@ def run_build(
                 console.print(f"[dim]Check log file for details: {ctx.log_file}[/dim]")
 
                 # Automatically reset build changes if we've passed the commit_maven_versions step
-                if ctx.is_completed("commit_maven_versions"):
+                if ctx.is_completed("promote_changelog"):
                     console.print(f"\n[yellow]Automatically resetting build changes...[/yellow]")
                     reset_build_changes()
 
@@ -1185,6 +1215,7 @@ def run_build(
 @click.command()
 @click.option("--version", "-v", "version", help="Release version (e.g., 8.3.0)")
 @click.option("--next-version", "-n", "next_version", help="Next snapshot version (e.g., 8.3.1)")
+@click.option("--beta", is_flag=True, help="Release as beta (changelog entry gets final: false, GitHub release is a prerelease)")
 @click.option(
     "--dry-run",
     "-d",
@@ -1203,11 +1234,12 @@ def run_build(
 @click.option("--start-from", "-s", "start_from", help="Start from a specific step (use --list-steps to see options)")
 @click.option("--list-steps", "-l", "show_steps", is_flag=True, help="List all available steps")
 @click.option("--clear-state", is_flag=True, help="Clear saved state and exit")
-@click.option("--reset-changes", is_flag=True, help="Reset all build changes (changelog.md, pom.xml files, wrapperHashes2.json) and exit")
+@click.option("--reset-changes", is_flag=True, help="Reset all build changes (changelog files, pom.xml files, wrapperHashes2.json) and exit")
 @click.option("--skip-preconditions", is_flag=True, help="Skip precondition checks (git clean, docker running, etc.)")
 def main(
     version: str | None,
     next_version: str | None,
+    beta: bool,
     dry_run: str,
     resume: bool,
     start_from: str | None,
@@ -1266,6 +1298,7 @@ def main(
         dry_run=dry_run_mode,
         log_file=_create_log_file_path(),
         skip_preconditions=skip_preconditions,
+        beta=beta,
         use_remote_upload=use_remote_upload,
     )
 
@@ -1285,6 +1318,7 @@ def main(
         f.write(f"Started: {datetime.now().isoformat()}\n")
         f.write(f"Version: {version}\n")
         f.write(f"Next Version: {next_version}-SNAPSHOT\n")
+        f.write(f"Release Type: {'beta' if beta else 'final'}\n")
         f.write(f"Dry Run Mode: {dry_run}\n")
         f.write(f"{'=' * 80}\n\n")
 

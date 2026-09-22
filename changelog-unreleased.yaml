@@ -1,0 +1,15 @@
+#@formatter:off
+# Release notes for the next release. Written for the user: describe what changes for them, not
+# how it was implemented. Reference GitHub issues with "See #1234".
+# Allowed types: fix, feature, features, note.
+# Use HTML entities (&quot;, &apos;) instead of literal quotes inside the text.
+#
+# Example:
+# -   type: "fix"
+#     text: "Searching no longer takes forever. See #1234"
+#
+# misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
+# a release is built. Never add them to changelog.yaml by hand.
+
+-   type: "fix"
+    text: "Saving the config could fail with &quot;...was submitted as ***UNCHANGED*** but no stored value could be found to keep&quot; for indexers, downloaders or logins you never touched. This happened when an older version had saved that placeholder literally instead of the real API key/username/password (which also made searches on the affected indexer fail without explanation). Such a broken value is now detected and cleared automatically when the config is loaded, the affected indexer is marked incomplete so it's skipped until fixed, and you can simply enter the correct value again. See #1091"
