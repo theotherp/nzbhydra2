@@ -1,3 +1,13 @@
+### v9.0.4 (2026-09-22)
+
+**Fix** Saving the config could fail with &quot;...was submitted as ***UNCHANGED*** but no stored value could be found to keep&quot; for indexers, downloaders or logins you never touched. This happened when an older version had saved that placeholder literally instead of the real API key/username/password (which also made searches on the affected indexer fail without explanation). Such a broken value is now detected and cleared automatically when the config is loaded, the affected indexer is marked incomplete so it's skipped until fixed, and you can simply enter the correct value again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1091">#1091</a>
+
+**Fix** Logging in with form based authentication no longer shows &quot;Login failed!&quot; although the login actually worked and reloading the page showed you logged in. This affected instances reached through a reverse proxy that doesn&apos;t pass on the original protocol, where the browser refused to follow the redirect the login answered with. See <a href="https://github.com/theotherp/nzbhydra2/issues/1090">#1090</a>
+
+**Fix** Highlight search results on hover.
+
+
+
 ### v9.0.3 (2026-09-21)
 
 **Fix** Restore quality indicators.
