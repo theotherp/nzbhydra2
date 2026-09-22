@@ -1,8 +1,4 @@
-import {
-    ApiTransport,
-    ForbiddenError,
-    UnauthorizedError,
-} from "../../api/transport";
+import {ApiTransport, ForbiddenError, UnauthorizedError,} from "../../api/transport";
 import {type BootstrapData, getBootstrapData} from "../../bootstrap";
 
 export type FormCredentials = {
@@ -10,6 +6,16 @@ export type FormCredentials = {
     username: string;
 };
 
+/**
+ * Neither request tells us on its own whether the credentials were accepted.
+ * The backend answers a refused form login with a redirect to `/login?error`,
+ * which this fetch follows to the login page's own 200 of HTML, and
+ * `internalapi/userinfos` answers the session that remains with a 200 too --
+ * the anonymous bootstrap, whose `username` is `null`. So a wrong password
+ * resolved here and the page reported "Login successful!" and navigated, only
+ * to land back on the login form. Only an authenticated session carries a
+ * username, so that is what decides it.
+ */
 export async function loginWithForm(
     transport: ApiTransport,
     credentials: FormCredentials,
@@ -18,7 +24,11 @@ export async function loginWithForm(
         form: new URLSearchParams(credentials),
         method: "POST",
     });
-    return currentSession(transport);
+    const session = await currentSession(transport);
+    if (session.username === null) {
+        throw new Error("The login was refused");
+    }
+    return session;
 }
 
 /**

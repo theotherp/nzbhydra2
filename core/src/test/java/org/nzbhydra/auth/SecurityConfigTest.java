@@ -333,16 +333,39 @@ class SecurityConfigTest {
     }
 
     /**
-     * The default {@code HttpSessionRequestCache} saves whatever unauthenticated request it last saw, not just real
-     * page navigations - so an unauthenticated background call the login page itself makes (like the React app's own
-     * bootstrap requests) overwrites the saved request from the original navigation to a protected page. Without
-     * {@code alwaysUse=true}, {@link org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler}
-     * would then redirect a successful login to that stale background request instead of "/", and the fetch behind
-     * the login form follows it - which the frontend cannot tell apart from an actual login failure. This reproduces
-     * that poisoned cache and asserts the login still lands on "/".
+     * The React login form submits with a fetch. Answering it with a redirect made the login depend on the browser
+     * being able to follow that redirect, and the Location Tomcat builds carries the scheme and host of the request
+     * the server saw - behind a reverse proxy that sends neither X-Forwarded-Proto nor Forwarded, that is http:// for
+     * a page served over https://, which the browser refuses to follow from a fetch as mixed content. The fetch then
+     * rejects and the login page reports "Login failed!" although the very same response already established the
+     * session, so a reload showed the user logged in (#1090). A background login now gets 204 and no Location at all.
      */
     @Test
-    void shouldRedirectASuccessfulLoginToRootEvenWhenTheRequestCacheHoldsAStaleBackgroundRequest() throws Exception {
+    void shouldAnswerABackgroundLoginWith204() throws Exception {
+        UserAuthConfig user = new UserAuthConfig();
+        user.setUsername("testuser");
+        user.setPassword("{noop}testpass");
+        try (GenericWebApplicationContext context = buildContextWithUser(false, AuthType.FORM, user)) {
+            mockMvc(context).perform(post("/login")
+                    .header("Accept", "application/json")
+                    .param("username", "testuser")
+                    .param("password", "testpass"))
+                .andExpect(status().isNoContent())
+                .andExpect(redirectedUrl(null));
+        }
+    }
+
+    /**
+     * A browser navigation still gets the redirect, and it must go to "/" rather than to whatever the request cache
+     * holds. The default {@code HttpSessionRequestCache} saves whatever unauthenticated request it last saw, not just
+     * real page navigations - so an unauthenticated background call the login page itself makes overwrites the saved
+     * request from the original navigation to a protected page. Without
+     * {@code setAlwaysUseDefaultTargetUrl(true)}, {@link org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler}
+     * would send a successful login to that stale background request instead. This reproduces the poisoned cache and
+     * asserts the login still lands on "/".
+     */
+    @Test
+    void shouldStillRedirectABrowserLoginToTheRootEvenWhenTheRequestCacheHoldsAStaleBackgroundRequest() throws Exception {
         UserAuthConfig user = new UserAuthConfig();
         user.setUsername("testuser");
         user.setPassword("{noop}testpass");
@@ -354,6 +377,7 @@ class SecurityConfigTest {
                 .andExpect(status().isUnauthorized());
 
             mockMvc.perform(post("/login")
+                    .header("Accept", NAVIGATION_ACCEPT)
                     .param("username", "testuser")
                     .param("password", "testpass"))
                 .andExpect(status().isFound())

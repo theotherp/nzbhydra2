@@ -50,6 +50,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -229,17 +230,7 @@ public class SecurityConfig {
                     .formLogin(login -> login
                             .loginPage("/login")
                             .loginProcessingUrl("/login")
-                        //alwaysUse=true: without it, SavedRequestAwareAuthenticationSuccessHandler redirects to
-                        //whatever request HttpSessionRequestCache last saved for this session, which is not
-                        //necessarily the browser navigation that first hit /login - it is just as likely one of
-                        //the login page's own unauthenticated /internalapi/* background calls (401'd by
-                        //BackgroundRequestAuthenticationEntryPoint below, but still cached beforehand by
-                        //ExceptionTranslationFilter, which runs first). The POST /login fetch then follows that
-                        //stale redirect and can surface it as a login failure even though authentication and the
-                        //session already succeeded. React always does its own full-document navigation to
-                        //the application base URL after a successful login (navigation.ts), so the saved request
-                        //buys nothing here and only introduces that race.
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(backgroundAwareAuthenticationSuccessHandler())
                             .permitAll()
                             .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                                 @Override
@@ -429,6 +420,44 @@ public class SecurityConfig {
         }
     }
 
+
+    /**
+     * Answers a successful form login the way the client that sent it can read: 204 for a background request
+     * (XHR / fetch, recognized by {@link BackgroundRequestAuthenticationEntryPoint#isBackgroundRequest}), and a
+     * redirect to "/" for a browser navigation. The mirror image of {@link #backgroundAwareLogoutSuccessHandler()},
+     * for the same reason.
+     * <p>
+     * A redirect is the wrong answer to the React login form's {@code fetch} (see {@code features/auth/session.ts}).
+     * The redirect carries an absolute {@code Location} that Tomcat builds from the scheme and host of the request it
+     * sees, which behind a reverse proxy is not necessarily the one the browser used: with
+     * {@code server.forward-headers-strategy=NONE} the scheme is only corrected when the proxy sends
+     * {@code X-Forwarded-Proto} (or {@code Forwarded}) for {@code ForwardedHeaderFilter} to read. A proxy that sends
+     * neither leaves a page served over HTTPS with a {@code Location} of {@code http://<host>/...}, and the browser
+     * refuses to follow it from a fetch as mixed content - a different origin fails the same way, on CORS. The fetch
+     * rejects, and the login page cannot tell that from a refused login, so it reports "Login failed!" although this
+     * very response already set the session and remember-me cookies and a reload shows the user logged in. That is
+     * #1090, which {@code defaultSuccessUrl("/", true)} could not fix because the problem is not where the redirect
+     * points but that the fetch has to follow one at all.
+     * <p>
+     * Not redirecting also settles the saved-request race that {@code alwaysUse=true} was added for:
+     * {@code SavedRequestAwareAuthenticationSuccessHandler} would send the login to whatever request
+     * {@code HttpSessionRequestCache} last saved, which is just as likely one of the login page's own unauthenticated
+     * background calls (401'd by {@link BackgroundRequestAuthenticationEntryPoint}, but cached beforehand by
+     * {@code ExceptionTranslationFilter}, which runs first) as the navigation that first hit /login. The redirecting
+     * branch below therefore keeps ignoring the saved request. React navigates itself after a successful login
+     * anyway (see {@code features/auth/navigation.ts}), so the saved request buys nothing here either way.
+     */
+    private AuthenticationSuccessHandler backgroundAwareAuthenticationSuccessHandler() {
+        SimpleUrlAuthenticationSuccessHandler redirecting = new SimpleUrlAuthenticationSuccessHandler("/");
+        redirecting.setAlwaysUseDefaultTargetUrl(true);
+        return (request, response, authentication) -> {
+            if (BackgroundRequestAuthenticationEntryPoint.isBackgroundRequest(request)) {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                return;
+            }
+            redirecting.onAuthenticationSuccess(request, response, authentication);
+        };
+    }
 
     /**
      * Answers a logout the way the client that sent it can read: 204 for a background request (XHR / fetch, recognized

@@ -52,6 +52,28 @@ describe("auth session", () => {
         );
     });
 
+    it("should reject a FORM login the server refused", async () => {
+        // Neither answer is an error: the refused login redirects to
+        // `/login?error`, which the fetch follows to the login page's own 200
+        // of HTML, and `userinfos` then describes the anonymous session that
+        // remains. Only the missing username says the credentials were wrong.
+        const anonymous = {...bootstrap, maySeeSearch: false, username: null};
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response("<!DOCTYPE html>", {
+                    headers: {"Content-Type": "text/html"},
+                    status: 200,
+                }),
+            )
+            .mockResolvedValueOnce(jsonResponse(anonymous));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+
+        await expect(
+            loginWithForm(transport, {username: "hydra", password: "wrong"}),
+        ).rejects.toThrow("refused");
+    });
+
     it("should refresh the current permission state after logout", async () => {
         const loggedOut = {...bootstrap, maySeeAdmin: false, username: null};
         const fetchImplementation = vi
