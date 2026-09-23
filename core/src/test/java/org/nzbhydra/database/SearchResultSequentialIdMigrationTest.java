@@ -1,6 +1,7 @@
 package org.nzbhydra.database;
 
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,13 +119,84 @@ class SearchResultSequentialIdMigrationTest {
         assertThat(queryLong("SELECT COUNT(*) FROM SEARCHRESULT WHERE INDEXERGUID = 'sameGuid'")).isEqualTo(2);
     }
 
-    private void migrateTo(String target) {
-        Flyway.configure()
+    @Test
+    void shouldKeepDownloadsWhoseResultBelongsToADeletedIndexer() throws SQLException {
+        //See #1096
+        insertDownloadOfDeletedIndexer();
+
+        migrateTo("latest");
+
+        assertThat(queryLong("SELECT COUNT(*) FROM \"flyway_schema_history\" WHERE \"success\" = FALSE")).isZero();
+        assertThat(queryLong("SELECT COUNT(*) FROM INDEXERNZBDOWNLOAD WHERE ID = 2 AND SEARCH_RESULT_ID IS NULL")).isEqualTo(1L);
+        assertThat(queryLong("SELECT SEARCH_RESULT_ID FROM INDEXERNZBDOWNLOAD WHERE ID = 1")).isEqualTo(1L);
+        assertThat(queryLong("SELECT COUNT(*) FROM SEARCHRESULT")).isEqualTo(1L);
+    }
+
+    @Test
+    void shouldCompleteV8WhichFailedBecauseOfADeletedIndexer() throws SQLException {
+        //See #1096: versions without the repair left the database with a failed V8 which blocked every start
+        insertDownloadOfDeletedIndexer();
+        assertThatThrownBy(() -> flyway("latest").migrate()).isInstanceOf(FlywayException.class);
+        assertThat(queryLong("SELECT COUNT(*) FROM \"flyway_schema_history\" WHERE \"version\" = '8' AND \"success\" = FALSE")).isEqualTo(1L);
+
+        migrateTo("latest");
+
+        assertThat(queryLong("SELECT COUNT(*) FROM \"flyway_schema_history\" WHERE \"success\" = FALSE")).isZero();
+        assertThat(queryLong("SELECT COUNT(*) FROM \"flyway_schema_history\" WHERE \"version\" = '9' AND \"success\" = TRUE")).isEqualTo(1L);
+        assertThat(queryLong("SELECT COUNT(*) FROM INDEXERNZBDOWNLOAD WHERE ID = 2 AND SEARCH_RESULT_ID IS NULL")).isEqualTo(1L);
+        assertThat(queryLong("SELECT SEARCH_RESULT_ID FROM INDEXERNZBDOWNLOAD WHERE ID = 1")).isEqualTo(1L);
+        assertThat(queryLong("SELECT COUNT(*) FROM SEARCHRESULT")).isEqualTo(1L);
+        assertThat(queryLong("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME IN ('FKR5G21PDW3HHS1SEFVJY30TGMI', 'FKR5G21PDW3HHS1SEFKHD3HBDGL', 'ISRO_SEARCH_RESULT_FK')")).isEqualTo(3L);
+
+        //The foreign keys cascade again
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("DELETE FROM INDEXER WHERE ID = 1");
+        }
+        assertThat(queryLong("SELECT COUNT(*) FROM SEARCHRESULT")).isZero();
+        assertThat(queryLong("SELECT COUNT(*) FROM INDEXERSEARCHRESULTOCCURRENCE")).isZero();
+    }
+
+    @Test
+    void shouldDoNothingOnAnEmptyDatabase() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("DROP ALL OBJECTS");
+        }
+
+        migrateTo("latest");
+
+        assertThat(queryLong("SELECT COUNT(*) FROM \"flyway_schema_history\" WHERE \"success\" = TRUE AND \"version\" = '9'")).isEqualTo(1L);
+    }
+
+    private void migrateTo(String target) throws SQLException {
+        //Same as the migration strategy used by the application
+        try (Connection repairConnection = DriverManager.getConnection(URL, "sa", "sa")) {
+            SearchResultMigrationRepair.repair(repairConnection, "flyway_schema_history");
+        }
+        flyway(target).migrate();
+    }
+
+    private Flyway flyway(String target) {
+        return Flyway.configure()
             .dataSource(URL, "sa", "sa")
             .locations("classpath:migration")
             .target(target)
-            .load()
-            .migrate();
+            .load();
+    }
+
+    /**
+     * A download whose search result belongs to an indexer which no longer exists. Older versions could leave such
+     * rows behind.
+     */
+    private void insertDownloadOfDeletedIndexer() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("INSERT INTO INDEXER (ID, NAME) VALUES (2, 'deleted indexer')");
+            statement.execute("INSERT INTO SEARCHRESULT (ID, INDEXERGUID, TITLE, INDEXER_ID) VALUES (4711, 'guid3', 'title3', 2)");
+            statement.execute("INSERT INTO INDEXERNZBDOWNLOAD (ID, STATUS, TIME, SEARCH_RESULT_ID) VALUES (2, 'NZB_ADDED', CURRENT_TIMESTAMP, 4711)");
+            statement.execute("INSERT INTO INDEXERSEARCHRESULTOCCURRENCE (ID, INDEXER_SEARCH_ID, SEARCH_RESULT_ID) VALUES (3, 1, 4711)");
+            statement.execute("SET REFERENTIAL_INTEGRITY FALSE");
+            statement.execute("DELETE FROM INDEXER WHERE ID = 2");
+            statement.execute("SET REFERENTIAL_INTEGRITY TRUE");
+        }
     }
 
     private void insertLegacyData() throws SQLException {
