@@ -1,10 +1,13 @@
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SearchIcon from "@mui/icons-material/Search";
 import {
     Alert,
     Box,
     Button,
     Checkbox,
-    CircularProgress,
     Chip,
+    CircularProgress,
     Collapse,
     FormControlLabel,
     IconButton,
@@ -15,25 +18,19 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import SearchIcon from "@mui/icons-material/Search";
 import type {ReactNode} from "react";
-import {Controller, useForm, useWatch} from "react-hook-form";
 import {useEffect, useId, useMemo, useRef, useState} from "react";
+import {Controller, useForm, useWatch} from "react-hook-form";
 
 import type {MediaSuggestion} from "../../../api/media";
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {readItem, writeItem} from "../../../domain/storage/browserStorage";
 import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
 import {IndexerSelectionButton} from "./IndexerSelectionButton";
-import {SelectedIndexersValue} from "./SelectedIndexersValue";
 import type {SearchFormValues} from "./searchFormModel";
 import {identifierFields, mediaTypeForCategoryName} from "./searchFormModel";
-import {
-    SeasonEpisodeInput,
-    seasonEpisodeFieldWidth,
-} from "./SeasonEpisodeInput";
+import {seasonEpisodeFieldWidth, SeasonEpisodeInput,} from "./SeasonEpisodeInput";
+import {SelectedIndexersValue} from "./SelectedIndexersValue";
 
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
 
@@ -405,6 +402,7 @@ export function SearchWorkspace({
     };
     const queryInput = mediaType ? (
         <TextField
+            autoFocus
             fullWidth
             onBlur={(event) => {
                 titleOnBlur(event);
@@ -481,6 +479,7 @@ export function SearchWorkspace({
         />
     ) : (
         <TextField
+            autoFocus
             fullWidth
             onDragOver={(event) => event.preventDefault()}
             onDrop={onSearchDrop}

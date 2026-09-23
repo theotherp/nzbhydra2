@@ -18,3 +18,5 @@
     text: "The Emby API key is no longer sent to the browser of users who are not admins."
 -   type: "fix"
     text: "Saving the config after deleting, adding and renaming users, indexers or downloaders in one go could give one of them the saved password or API key of another. Each one now keeps its own. Testing the connection or checking the capabilities of an indexer or downloader you just renamed also uses its own saved credentials, and asks you to enter them again instead of sending a placeholder if they can&apos;t be found."
+-   type: "fix"
+    text: "Search field is autofocused again. See #1097"
