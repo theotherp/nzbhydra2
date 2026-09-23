@@ -1946,6 +1946,203 @@ describe("The Jackett and Prowlarr imports", () => {
  * the app — is unaffected, which is what keeps this an opt-in rather than a
  * behaviour change for `C-CONFIG-FIELDS` at large.
  */
+describe("Indexer record ids", () => {
+    it("keeps an indexer's id through a rename and posts it to the connection check", async () => {
+        const api = backend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({id: "idx-1", name: "Mock1"}),
+                newznab({id: "idx-2", name: "Mock2"}),
+            ]),
+        });
+
+        await openEntry(0);
+        fireEvent.change(draftField("name"), {target: {value: "Renamed"}});
+        fireEvent.change(draftField("host"), {
+            target: {value: "http://elsewhere"},
+        });
+        submitDialog();
+
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-indexer-dialog")).toBeNull(),
+        );
+        // The backend resolves the posted marker against the stored indexer
+        // with this id, not by the (new) name.
+        expect(api.connection).toEqual([
+            expect.objectContaining({
+                apiKey: UNCHANGED_SECRET_MARKER,
+                id: "idx-1",
+                name: "Renamed",
+            }),
+        ]);
+        expect(
+            indexersOf(harness).map((entry) => [entry.id, entry.name]),
+        ).toEqual([
+            ["idx-1", "Renamed"],
+            ["idx-2", "Mock2"],
+        ]);
+    });
+
+    it("posts the id of the entry being edited to the capability check", async () => {
+        const api = backend({
+            caps: () =>
+                jsonResponse([capsResult({indexerConfig: {id: "idx-1"}})]),
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({
+                    id: "idx-1",
+                    name: "Mock1",
+                    supportedSearchIds: undefined,
+                    supportedSearchTypes: undefined,
+                }),
+            ]),
+        });
+
+        await openEntry(0);
+        submitDialog();
+
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-indexer-dialog")).toBeNull(),
+        );
+        expect(api.caps).toEqual([
+            {
+                checkType: "SINGLE",
+                indexerConfig: expect.objectContaining({id: "idx-1"}),
+            },
+        ]);
+        expect(indexersOf(harness)[0]).toMatchObject({
+            id: "idx-1",
+            supportedSearchIds: ["IMDB", "TVDB"],
+        });
+    });
+
+    it("keeps the remaining ids after a delete and gives an indexer added from a preset none", async () => {
+        const api = backend();
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({id: "idx-1", name: "NZBGeek"}),
+                newznab({id: "idx-2", name: "Mock2"}),
+            ]),
+        });
+
+        await openEntry(0);
+        fireEvent.click(screen.getByTestId("config-indexer-dialog-delete"));
+        await waitFor(() => expect(indexersOf(harness)).toHaveLength(1));
+        // Same name as the one just deleted: the new entry still must not
+        // inherit its id.
+        await addPreset("newznab", "nzbgeek");
+        await screen.findByTestId("config-indexer-dialog");
+        fireEvent.change(draftField("apiKey"), {target: {value: "typed-key"}});
+        submitDialog();
+
+        await waitFor(() => expect(indexersOf(harness)).toHaveLength(2));
+        expect(indexersOf(harness)[0]).toEqual(
+            newznab({id: "idx-2", name: "Mock2"}),
+        );
+        expect(indexersOf(harness)[1]).toMatchObject({name: "NZBGeek"});
+        expect(indexersOf(harness)[1]).not.toHaveProperty("id");
+        expect(api.connection[0]).not.toHaveProperty("id");
+    });
+
+    it("merges a bulk recheck by id after an unsaved rename", async () => {
+        const api = backend({
+            caps: () =>
+                jsonResponse([
+                    capsResult({
+                        indexerConfig: {id: "idx-1", name: "Mock1"},
+                    }),
+                ]),
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([
+                newznab({
+                    id: "idx-1",
+                    name: "Renamed",
+                    allCapsChecked: false,
+                }),
+                newznab({id: "idx-2", name: "Mock2", allCapsChecked: false}),
+            ]),
+        });
+
+        fireEvent.click(
+            screen.getByTestId("config-indexers-recheck-incomplete"),
+        );
+        await screen.findByTestId("config-indexer-caps-dialog");
+        await waitFor(() =>
+            expect(
+                screen.queryByTestId("config-indexer-caps-dialog"),
+            ).toBeNull(),
+        );
+
+        const [checked, untouched] = indexersOf(harness);
+        expect(checked).toMatchObject({
+            allCapsChecked: true,
+            id: "idx-1",
+            name: "Renamed",
+        });
+        expect(untouched).toEqual(
+            newznab({id: "idx-2", name: "Mock2", allCapsChecked: false}),
+        );
+    });
+
+    it("sends the existing ids to an import and keeps the ids the server returns", async () => {
+        const api = backend({
+            jackett: (body) => {
+                const {existingIndexers} = body as {
+                    existingIndexers: IndexerValues[];
+                };
+                return jsonResponse(
+                    jackettImport({
+                        newIndexersConfig: [
+                            ...existingIndexers,
+                            newznab({name: "Imported tracker"}),
+                        ],
+                    }),
+                );
+            },
+        });
+        const harness = renderIndexers({
+            fetchMock: api.fetchMock,
+            values: configWith([newznab({id: "idx-1", name: "Mock1"})]),
+        });
+
+        fireEvent.click(screen.getByTestId("config-indexer-add"));
+        await screen.findByTestId("config-indexer-add-dialog");
+        fireEvent.click(screen.getByTestId("config-indexer-import-jackett"));
+        await screen.findByTestId("config-indexer-import-dialog");
+        fireEvent.change(
+            screen.getByTestId("config-input-indexerImport-apiKey"),
+            {target: {value: "jkt"}},
+        );
+        fireEvent.click(
+            screen.getByTestId("config-indexer-import-dialog-submit"),
+        );
+        await clickIn("config-indexer-import-result", "OK");
+
+        expect(api.imports).toEqual([
+            {
+                existingIndexers: [
+                    expect.objectContaining({id: "idx-1", name: "Mock1"}),
+                ],
+                jackettConfig: expect.not.objectContaining({
+                    id: expect.anything(),
+                }),
+            },
+        ]);
+        expect(
+            indexersOf(harness).map((entry) => [entry.id, entry.name]),
+        ).toEqual([
+            ["idx-1", "Mock1"],
+            [undefined, "Imported tracker"],
+        ]);
+    });
+});
+
 describe("SettingRow's table-cell opt-in", () => {
     function renderRow(children: React.ReactNode) {
         render(

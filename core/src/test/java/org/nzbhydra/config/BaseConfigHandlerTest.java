@@ -7,7 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -60,6 +66,32 @@ class BaseConfigHandlerTest {
         testee.onShutdown();
 
         verify(configReaderWriterMock, times(1)).save(any(BaseConfig.class));
+    }
+
+    @Test
+    void shouldGiveRecordsWithoutOrWithDuplicateIdsAnIdWhenReplacingTheConfig() {
+        final BaseConfig newConfig = new BaseConfig();
+        final IndexerConfig first = new IndexerConfig();
+        first.setName("first");
+        first.setId("same");
+        final IndexerConfig second = new IndexerConfig();
+        second.setName("second");
+        second.setId("same");
+        newConfig.setIndexers(new ArrayList<>(List.of(first, second)));
+        final UserAuthConfig user = new UserAuthConfig();
+        newConfig.getAuth().setUsers(new ArrayList<>(List.of(user)));
+        final DownloaderConfig downloader = new DownloaderConfig();
+        downloader.setName("sab");
+        newConfig.getDownloading().setDownloaders(new ArrayList<>(List.of(downloader)));
+
+        testee.replace(newConfig, false);
+
+        final BaseConfig live = (BaseConfig) ReflectionTestUtils.getField(testee, "baseConfig");
+        assertThat(live.getIndexers()).extracting(IndexerConfig::getName).containsExactly("first", "second");
+        assertThat(live.getIndexers().get(0).getId()).isEqualTo("same");
+        assertThat(live.getIndexers().get(1).getId()).isNotBlank().isNotEqualTo("same");
+        assertThat(live.getAuth().getUsers().get(0).getId()).isNotBlank();
+        assertThat(live.getDownloading().getDownloaders().get(0).getId()).isNotBlank();
     }
 
 }

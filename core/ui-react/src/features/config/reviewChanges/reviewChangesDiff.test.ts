@@ -224,7 +224,7 @@ describe("computeConfigChanges: list sections", () => {
         ]);
     });
 
-    it("keys users by username, which is the identity the save resolves", () => {
+    it("keys users by username, which has no name field", () => {
         const changes = changesOf(
             {auth: {users: [{username: "alice", maySeeAdmin: false}]}},
             {auth: {users: [{username: "alice", maySeeAdmin: true}]}},
@@ -289,6 +289,53 @@ describe("computeConfigChanges: list sections", () => {
             {categoriesConfig: {categories: [{name: true, min: true}]}},
         );
         expect(changes).toEqual([]);
+    });
+
+    it("does not list an entry whose only difference is its record id", () => {
+        // A new row paired by name with a removed stored one, or a stored row
+        // the server has just given an id: neither is an edit an admin made.
+        const changes = changesOf(
+            {
+                auth: {users: [{id: "u-1", username: "alice"}]},
+                downloading: {downloaders: [{name: "sab", url: "http://a"}]},
+                indexers: [{...geek, id: "i-1"}, planet],
+            },
+            {
+                auth: {users: [{username: "alice"}]},
+                downloading: {
+                    downloaders: [{id: "d-1", name: "sab", url: "http://a"}],
+                },
+                indexers: [{...geek, id: "i-2"}, planet],
+            },
+            {
+                auth: {users: [{id: true}]},
+                downloading: {downloaders: [{id: true}]},
+                indexers: [{id: true}],
+            },
+        );
+        expect(changes).toEqual([]);
+    });
+
+    it("ignores the record id on the positional path too, but not a real edit", () => {
+        const changes = changesOf(
+            {downloading: {downloaders: [{id: "d-1", name: ""}, {name: "x"}]}},
+            {downloading: {downloaders: [{name: ""}, {name: "y"}]}},
+            {downloading: {downloaders: [{id: true}, {name: true}]}},
+        );
+        expect(changes.map((change) => [change.label, change.status])).toEqual([
+            ["Downloaders: entry 2", "edited"],
+        ]);
+    });
+
+    it("still lists an edit to an entry that keeps its record id", () => {
+        const changes = changesOf(
+            {indexers: [{...geek, id: "i-1"}]},
+            {indexers: [{...geek, id: "i-1", score: 9}]},
+            {indexers: [{score: true}]},
+        );
+        expect(changes.map((change) => [change.label, change.status])).toEqual([
+            ["Indexers: NZBGeek", "edited"],
+        ]);
     });
 
     it("summarizes an entry list that did not exist before as added", () => {

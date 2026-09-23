@@ -237,14 +237,14 @@ function settingChange(
 }
 
 /**
- * The identity `API-CONFIG-PUT` resolves an entry by: its `name`, or its
+ * The key an entry row is labelled and paired by: its `name`, or its
  * `username` for `auth.users`, which has no name field. `null` means this
- * entry carries neither, and the list must be compared positionally — which is
- * also the backend's own fallback: since FM-068, `findCorrespondingOldItem`
- * resolves by record identity first and only then falls back to position, and
- * only while the list length is unchanged, refusing the marker outright
- * otherwise. So the panel and the save agree about which stored record an
- * entry is.
+ * entry carries neither, and the list must be compared positionally.
+ *
+ * This is a display pairing only. `API-CONFIG-PUT` resolves an indexer,
+ * downloader or user by its backend-assigned `id` (see `RECORD_ID_SECTIONS`),
+ * so a rename is listed here as one entry removed and one added although the
+ * save keeps it the same record.
  */
 function entryKey(entry: unknown): string | null {
     if (!isRecord(entry)) {
@@ -299,6 +299,35 @@ function entryChange(
     };
 }
 
+/**
+ * The list sections whose entries carry a backend-assigned record `id`
+ * (`IndexerConfig`, `DownloaderConfig`, `UserAuthConfig`). The id is not a
+ * setting: no control edits it and it is never the admin's change, so it is
+ * left out when two entries are compared. Otherwise an entry that differs only
+ * in it -- a new row paired by name with a removed stored one, say -- would be
+ * listed as "edited" with nothing the admin could find to look at.
+ */
+const RECORD_ID_SECTIONS: ReadonlySet<string> = new Set([
+    "auth.users",
+    "downloading.downloaders",
+    "indexers",
+]);
+
+function withoutRecordId(entry: unknown): unknown {
+    if (!isRecord(entry)) {
+        return entry;
+    }
+    const rest = {...entry};
+    delete rest.id;
+    return rest;
+}
+
+function isSameEntry(path: string, before: unknown, after: unknown): boolean {
+    return RECORD_ID_SECTIONS.has(path)
+        ? isDeepEqual(withoutRecordId(before), withoutRecordId(after))
+        : isDeepEqual(before, after);
+}
+
 function collectListChanges(
     path: string,
     oldValue: unknown,
@@ -331,7 +360,7 @@ function collectListChanges(
                         "removed",
                     ),
                 );
-            } else if (!isDeepEqual(before, after)) {
+            } else if (!isSameEntry(path, before, after)) {
                 out.push(
                     entryChange(path, section, String(index), legend, "edited"),
                 );
@@ -348,7 +377,7 @@ function collectListChanges(
             out.push(entryChange(path, section, key, key, "removed"));
             return;
         }
-        if (!isDeepEqual(oldList[index], newByKey.get(key))) {
+        if (!isSameEntry(path, oldList[index], newByKey.get(key))) {
             out.push(entryChange(path, section, key, key, "edited"));
         }
     });

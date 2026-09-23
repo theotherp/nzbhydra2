@@ -151,13 +151,12 @@ function UserDialogFields({
         true;
 
     /**
-     * A username is what the backend matches a submitted user back to its
-     * stored record by (`UserAuthConfigValidator.findCorrespondingOldUserConfig`
-     * and `SensitiveDataConfigValidator`'s identity pass, both plain
-     * `String.equals`). Two entries sharing one exactly means the first stored
-     * record answers for both, and one user's `***UNCHANGED***` marker resolves
-     * to the other's hash. Usernames that merely differ in case are *distinct*
-     * to both matchers and stay legal here.
+     * The backend matches a submitted user back to its stored record by the
+     * entry's `id`, but falls back to the username (plain `String.equals`) for
+     * a record without one, and a username is also what a login is resolved
+     * by. Two entries sharing one exactly are therefore never legal. Usernames
+     * that merely differ in case are *distinct* to the backend and stay legal
+     * here.
      */
     const uniqueUsername = (value: unknown) => {
         const username = textValue(value);

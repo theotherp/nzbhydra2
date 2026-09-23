@@ -475,12 +475,14 @@ export function needsCapsCheck(entry: IndexerValues): boolean {
  * capability check writes back onto the entry being edited.
  *
  * Only these nine are copied — never the server's whole `IndexerConfig`, even
- * though legacy's *close* path resolves with it. `IndexerChecker
- * .resolveUnchangedSensitiveFields` replaces a posted `***UNCHANGED***` marker
- * with the stored credential before running the check, so the returned config
- * carries the real API key and password; copying it wholesale would pull those
- * secrets into the browser's form and break `C-SECRET-INPUT`'s invariant that
- * the marker survives untouched until the admin edits the field.
+ * though legacy's *close* path resolves with it. Before running the check the
+ * backend replaces a posted `***UNCHANGED***` marker with the credential of the
+ * stored indexer that has the same record `id` (by name only when the posted
+ * entry has no `id`), so the returned config carries the real API key and
+ * password; copying it wholesale would pull those secrets into the browser's
+ * form and break `C-SECRET-INPUT`'s invariant that the marker survives
+ * untouched until the admin edits the field. The entry's own `id` is likewise
+ * never overwritten.
  */
 export const CAPS_RESULT_FIELDS = [
     "supportedSearchIds",
@@ -515,7 +517,7 @@ export type CapsCheckMerge = {
 
 /**
  * `recheckAllCaps` (`formly-config.js:627-645`): a bulk capability check's
- * results folded back into the list *entry by entry, keyed by name*.
+ * results folded back into the list entry by entry.
  *
  * This is the destructive-looking operation that must not be destructive. The
  * server answers with complete `IndexerConfig`s, but replacing an entry with
@@ -525,8 +527,14 @@ export type CapsCheckMerge = {
  * object and only `applyCapsCheckResult`'s nine capability fields are written
  * over it; an entry no result names is returned untouched, by identity.
  *
- * Matching needs a real name on both sides: an entry that has none cannot be
- * addressed by a result and must never soak up the first nameless one.
+ * A result is matched by record `id` when both sides carry one. Legacy keyed
+ * by name, but the server checks the *saved* indexers while the form may hold
+ * an unsaved rename: renaming "A" to "B" and "B" to "A" would otherwise write
+ * each indexer's capabilities onto the other. Only when either side has no
+ * `id` (an unsaved new entry, or a server that sends none) does the name
+ * decide, and then a real name is needed on both sides: an entry that has none
+ * cannot be addressed by a result and must never soak up the first nameless
+ * one.
  */
 export function mergeCapsCheckResults(
     entries: readonly IndexerValues[],
@@ -534,12 +542,8 @@ export function mergeCapsCheckResults(
 ): CapsCheckMerge {
     let matched = 0;
     const merged = entries.map((entry) => {
-        const name = indexerText(entry.name);
-        if (name === "") {
-            return entry;
-        }
-        const result = results.find(
-            (candidate) => indexerText(candidate.indexerConfig.name) === name,
+        const result = results.find((candidate) =>
+            isSameIndexer(entry, candidate.indexerConfig),
         );
         if (result === undefined) {
             return entry;
@@ -548,6 +552,17 @@ export function mergeCapsCheckResults(
         return applyCapsCheckResult(entry, result.indexerConfig);
     });
     return {entries: merged, matched};
+}
+
+/** Whether `result` is about `entry`; see `mergeCapsCheckResults`. */
+function isSameIndexer(entry: IndexerValues, result: IndexerValues): boolean {
+    const entryId = indexerText(entry.id);
+    const resultId = indexerText(result.id);
+    if (entryId !== "" && resultId !== "") {
+        return entryId === resultId;
+    }
+    const name = indexerText(entry.name);
+    return name !== "" && indexerText(result.name) === name;
 }
 
 /**

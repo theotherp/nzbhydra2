@@ -19,22 +19,16 @@ import java.util.Set;
  * and replacing actual values with placeholders when loading for display.
  * <p>
  * On the way out only {@link HiddenInUI} fields are masked. On the way in this is the *fallback* pass, and
- * {@link BaseConfigValidator#prepareForSaving} runs it after every validator that can identify its own records - see
- * {@link UserAuthConfigValidator}, which matches a user by its username, and whose password is not
- * {@code @HiddenInUI}. Running this pass first would resolve that password by a positional guess before the correct
- * matcher ever saw the marker.
+ * {@link BaseConfigValidator#prepareForSaving} runs it after every validator that handles its own records - see
+ * {@link UserAuthConfigValidator}, whose password is not {@code @HiddenInUI} and is hashed there. List entries are
+ * matched to their stored counterparts by {@link StoredRecordMatcher}: by record id, or by name for a record without
+ * an id, and never by position.
  */
 @Component
 public class SensitiveDataConfigValidator {
 
     private static final Logger logger = LoggerFactory.getLogger(SensitiveDataConfigValidator.class);
     public static final String UNCHANGED_MARKER = "***UNCHANGED***";
-
-    /**
-     * Field names that identify a record inside a list, tried in this order. A record recognised by one of these keeps
-     * its own stored secrets no matter where it sits in the submitted list.
-     */
-    private static final List<String> IDENTITY_FIELD_NAMES = List.of("name", "username");
 
     /**
      * Prepares sensitive fields for display in the frontend by replacing encrypted values with placeholder
@@ -218,12 +212,14 @@ public class SensitiveDataConfigValidator {
         // Handle lists
         if (newObj instanceof List<?> newList && oldObj instanceof List<?> oldList) {
 
-            // Match by identity field if available, by index only while the list length is unchanged
+            // Match by record id, or by name for records without one - never by position
+            final List<Object> oldItems = StoredRecordMatcher.matchList(newList, oldList);
             for (int i = 0; i < newList.size(); i++) {
-                Object newItem = newList.get(i);
-                Object oldItem = findCorrespondingOldItem(oldList, newItem, i, newList.size());
+                Object oldItem = oldItems.get(i);
                 if (oldItem != null) {
-                    processSensitiveFieldsForSaving(oldItem, newItem);
+                    processSensitiveFieldsForSaving(oldItem, newList.get(i));
+                } else if (newList.get(i) != null) {
+                    logger.debug("Unable to identify the stored counterpart of list entry {}. Any unchanged marker it carries will not be resolved", i);
                 }
             }
             return;
@@ -259,10 +255,10 @@ public class SensitiveDataConfigValidator {
                     Object newFieldValue = field.get(newObj);
                     Object oldFieldValue = field.get(oldObj);
 
-                    // Handle string fields with unchanged marker. This is the fallback pass: every validator that can
-                    // identify its own records (UserAuthConfig by username) has already run, so whatever marker is
-                    // still here is resolved against the record findCorrespondingOldItem could identify - or left
-                    // alone for the caller to reject.
+                    // Handle string fields with unchanged marker. This is the fallback pass: every validator that
+                    // handles its own records (UserAuthConfig) has already run, so whatever marker is still here is
+                    // resolved against the record StoredRecordMatcher could identify - or left alone for the caller
+                    // to reject.
                     if (field.getType() == String.class) {
                         if (UNCHANGED_MARKER.equals(newFieldValue) && oldFieldValue != null) {
                             // Replace unchanged marker with the original encrypted value
@@ -283,69 +279,6 @@ public class SensitiveDataConfigValidator {
                 }
             }
             clazz = clazz.getSuperclass();
-        }
-    }
-
-    /**
-     * Finds the stored counterpart of a submitted list entry.
-     * <p>
-     * An entry that carries an identity field ({@code name} or {@code username}) is matched by it, wherever it sits in
-     * either list. Without such a match the index is only a safe guess while the list has not changed length - a
-     * same-length list means an entry was edited or renamed, while an added or removed entry shifts every following
-     * record, and following the shift would move one record's credentials onto another one. In that case no counterpart
-     * is returned and the marker stays in place, which the caller then rejects rather than guessing.
-     *
-     * @return the corresponding old item or null if none could be identified
-     */
-    private Object findCorrespondingOldItem(List<?> oldList, Object newItem, int index, int newListSize) {
-        if (newItem == null) {
-            return null;
-        }
-
-        final Field identityField = findIdentityField(newItem.getClass());
-        if (identityField != null) {
-            final Object newIdentity = readField(identityField, newItem);
-            if (newIdentity != null) {
-                for (Object oldItem : oldList) {
-                    if (oldItem != null && oldItem.getClass() == newItem.getClass() && newIdentity.equals(readField(identityField, oldItem))) {
-                        return oldItem;
-                    }
-                }
-            }
-        }
-
-        if (newListSize != oldList.size()) {
-            logger.debug("Unable to identify the stored counterpart of list entry {} after the list length changed from {} to {}. Any unchanged marker it carries will not be resolved", index, oldList.size(), newListSize);
-            return null;
-        }
-
-        return index < oldList.size() ? oldList.get(index) : null;
-    }
-
-    private Field findIdentityField(Class<?> clazz) {
-        for (String candidate : IDENTITY_FIELD_NAMES) {
-            Class<?> current = clazz;
-            while (current != null && current != Object.class) {
-                try {
-                    final Field field = current.getDeclaredField(candidate);
-                    if (field.getType() == String.class) {
-                        field.setAccessible(true);
-                        return field;
-                    }
-                } catch (NoSuchFieldException | InaccessibleObjectException | SecurityException e) {
-                    // Try the next candidate or superclass
-                }
-                current = current.getSuperclass();
-            }
-        }
-        return null;
-    }
-
-    private Object readField(Field field, Object target) {
-        try {
-            return field.get(target);
-        } catch (Exception e) {
-            return null;
         }
     }
 

@@ -542,3 +542,56 @@ describe("F-CONFIG-AUTH users add and delete", () => {
         expect(screen.getByTestId("config-users-empty")).toBeVisible();
     });
 });
+
+describe("F-CONFIG-AUTH users record ids", () => {
+    it("should keep a user's record id through a rename and a cancelled edit", async () => {
+        const harness = renderUsers(
+            configWith([
+                user({id: "user-a", username: "alice"}),
+                user({id: "user-b", username: "bob"}),
+            ]),
+        );
+
+        await openEditor(1);
+        fireEvent.change(draftInput("username"), {target: {value: "robert"}});
+        await submitDialog();
+        await openEditor(0);
+        fireEvent.change(draftInput("username"), {target: {value: "gone"}});
+        fireEvent.click(screen.getByTestId("config-user-dialog-cancel"));
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-user-dialog")).toBeNull(),
+        );
+
+        expect(usersOf(harness)).toEqual([
+            user({id: "user-a", username: "alice"}),
+            user({id: "user-b", username: "robert"}),
+        ]);
+    });
+
+    it("should keep the remaining users' ids after a delete and give a new user none", async () => {
+        const harness = renderUsers(
+            configWith([
+                user({id: "user-a", username: "first"}),
+                user({id: "user-b", username: "middle"}),
+                user({id: "user-c", username: "last"}),
+            ]),
+        );
+
+        await confirmDelete(0);
+        fireEvent.click(screen.getByTestId("config-users-add"));
+        await screen.findByTestId("config-user-dialog");
+        fireEvent.change(draftInput("username"), {target: {value: "first"}});
+        fireEvent.change(draftInput("password"), {target: {value: "typed"}});
+        await submitDialog();
+
+        const users = usersOf(harness);
+        expect(users.map((entry) => entry.id)).toEqual([
+            "user-b",
+            "user-c",
+            undefined,
+        ]);
+        // Reusing the deleted user's name must not revive its record id.
+        expect(users[2]).not.toHaveProperty("id");
+        expect(users[2].username).toBe("first");
+    });
+});

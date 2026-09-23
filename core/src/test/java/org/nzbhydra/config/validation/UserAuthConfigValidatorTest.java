@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.nzbhydra.config.validation.SensitiveDataConfigValidator.UNCHANGED_MARKER;
 
 /**
- * Covers the by-username matching of {@link UserAuthConfigValidator}, driven through {@link AuthConfigValidator} the
+ * Covers the by-id and by-username matching of {@link UserAuthConfigValidator}, driven through {@link AuthConfigValidator} the
  * way {@link BaseConfigValidator#prepareForSaving} drives it. Neither needs a Spring context.
  */
 class UserAuthConfigValidatorTest {
@@ -30,6 +30,12 @@ class UserAuthConfigValidatorTest {
         final UserAuthConfig userAuthConfig = new UserAuthConfig();
         userAuthConfig.setUsername(username);
         userAuthConfig.setPassword(password);
+        return userAuthConfig;
+    }
+
+    private static UserAuthConfig user(String id, String username, String password) {
+        final UserAuthConfig userAuthConfig = user(username, password);
+        userAuthConfig.setId(id);
         return userAuthConfig;
     }
 
@@ -74,6 +80,48 @@ class UserAuthConfigValidatorTest {
         authConfigValidator.prepareForSaving(oldConfig, newConfig.getAuth());
 
         assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo(UNCHANGED_MARKER);
+    }
+
+    @Test
+    void shouldKeepTheRenamedUsersOwnPasswordWhenOneIsDeletedAndOneAdded() {
+        //[alice, bob]: delete alice, add carol, rename bob to robert. Same list length as before
+        final BaseConfig oldConfig = configWithUsers(user("id-alice", "alice", "{bcrypt}alice-hash"), user("id-bob", "bob", "{bcrypt}bob-hash"));
+        final BaseConfig newConfig = configWithUsers(user("id-bob", "robert", UNCHANGED_MARKER), user(null, "carol", "carol-plain"));
+
+        authConfigValidator.prepareForSaving(oldConfig, newConfig.getAuth());
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo("{bcrypt}bob-hash");
+        assertThat(newConfig.getAuth().getUsers().get(1).getPassword()).startsWith("{bcrypt}").isNotEqualTo("{bcrypt}alice-hash");
+    }
+
+    @Test
+    void shouldKeepTheRenamedUsersOwnPasswordWhenItTakesTheNameOfADeletedUser() {
+        final BaseConfig oldConfig = configWithUsers(user("id-alice", "alice", "{bcrypt}alice-hash"), user("id-bob", "bob", "{bcrypt}bob-hash"));
+        final BaseConfig newConfig = configWithUsers(user("id-bob", "alice", UNCHANGED_MARKER));
+
+        authConfigValidator.prepareForSaving(oldConfig, newConfig.getAuth());
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo("{bcrypt}bob-hash");
+    }
+
+    @Test
+    void shouldLeaveTheMarkerInPlaceForANewUserWithoutIdNamedLikeAUserClaimedById() {
+        final BaseConfig oldConfig = configWithUsers(user("id-alice", "alice", "{bcrypt}alice-hash"));
+        final BaseConfig newConfig = configWithUsers(user("id-alice", "alice2", UNCHANGED_MARKER), user(null, "alice", UNCHANGED_MARKER));
+
+        authConfigValidator.prepareForSaving(oldConfig, newConfig.getAuth());
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo("{bcrypt}alice-hash");
+        assertThat(newConfig.getAuth().getUsers().get(1).getPassword()).isEqualTo(UNCHANGED_MARKER);
+    }
+
+    @Test
+    void shouldMatchASingleUserByIdWhenPreparedOnItsOwn() {
+        final BaseConfig oldConfig = configWithUsers(user("id-alice", "alice", "{bcrypt}alice-hash"), user("id-bob", "bob", "{bcrypt}bob-hash"));
+
+        final UserAuthConfig prepared = testee.prepareForSaving(oldConfig, user("id-bob", "alice", UNCHANGED_MARKER));
+
+        assertThat(prepared.getPassword()).isEqualTo("{bcrypt}bob-hash");
     }
 
     @Test

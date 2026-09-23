@@ -94,8 +94,14 @@ public class AuthConfigValidator implements ConfigValidator<AuthConfig> {
 
     @Override
     public AuthConfig prepareForSaving(BaseConfig oldBaseConfig, AuthConfig newAuthConfig) {
-        // Need to update each user config and replace it with the result
-        newAuthConfig.getUsers().replaceAll(newConfig -> userAuthConfigValidator.prepareForSaving(oldBaseConfig, newConfig));
+        // Identify all users at once so a user's stored password is only ever kept for the same user (by id, or by
+        // username for a user without id) - never for another one that happens to sit at the same position
+        final List<UserAuthConfig> newUsers = newAuthConfig.getUsers();
+        final List<UserAuthConfig> oldUsers = oldBaseConfig == null || oldBaseConfig.getAuth() == null ? List.of() : oldBaseConfig.getAuth().getUsers();
+        final List<Object> matches = StoredRecordMatcher.matchList(newUsers, oldUsers);
+        for (int i = 0; i < newUsers.size(); i++) {
+            newUsers.set(i, userAuthConfigValidator.prepareForSaving(newUsers.get(i), (UserAuthConfig) matches.get(i)));
+        }
         return newAuthConfig;
     }
 

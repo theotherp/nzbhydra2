@@ -294,7 +294,8 @@ export function IndexersConfigTab({transport}: {transport: ApiTransport}) {
     };
 
     /**
-     * The merge legacy performs entry by entry, keyed by name. Read from the
+     * The merge legacy performs entry by entry (keyed by record id here, by
+     * name only where an id is missing; see `mergeCapsCheckResults`). Read from the
      * form at this moment rather than from a captured render: the check runs
      * for tens of seconds and the admin can keep editing other tabs meanwhile.
      */

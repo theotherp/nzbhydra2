@@ -476,9 +476,8 @@ export function IndexerDialog({
                          * are `@HiddenInUI`, so an existing entry arrives
                          * holding `***UNCHANGED***` and must send it back
                          * untouched unless the admin types a new one — which
-                         * both checks rely on, since
-                         * `IndexerChecker.resolveUnchangedSensitiveFields`
-                         * looks the stored value up by indexer name.
+                         * both checks rely on, since the backend looks the
+                         * stored value up by the entry's record `id`.
                          */}
                         {shows("apiKey") ? (
                             <SecretInput

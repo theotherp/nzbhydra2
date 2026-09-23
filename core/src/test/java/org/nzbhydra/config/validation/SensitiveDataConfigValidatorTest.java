@@ -45,6 +45,24 @@ class SensitiveDataConfigValidatorTest {
         return userAuthConfig;
     }
 
+    private static IndexerConfig indexer(String id, String name, String apiKey) {
+        final IndexerConfig indexerConfig = indexer(name, apiKey, null, null);
+        indexerConfig.setId(id);
+        return indexerConfig;
+    }
+
+    private static DownloaderConfig downloader(String id, String name, String apiKey) {
+        final DownloaderConfig downloaderConfig = downloader(name, apiKey, null, null);
+        downloaderConfig.setId(id);
+        return downloaderConfig;
+    }
+
+    private static UserAuthConfig user(String id, String username, String password) {
+        final UserAuthConfig userAuthConfig = user(username, password);
+        userAuthConfig.setId(id);
+        return userAuthConfig;
+    }
+
     private static BaseConfig configWith(List<IndexerConfig> indexers, List<DownloaderConfig> downloaders, List<UserAuthConfig> users) {
         final BaseConfig baseConfig = new BaseConfig();
         baseConfig.setIndexers(new ArrayList<>(indexers));
@@ -85,19 +103,181 @@ class SensitiveDataConfigValidatorTest {
     }
 
     @Test
-    void shouldResolveMarkersOnEqualLengthListsPositionallySoARenameKeepsItsSecret() {
+    void shouldResolveARenamedRecordByItsIdSoItKeepsItsOwnSecret() {
         final BaseConfig oldConfig = configWith(
-            List.of(indexer("first", "first-key", null, null), indexer("second", "second-key", null, null)),
+            List.of(indexer("id-first", "first", "first-key"), indexer("id-second", "second", "second-key")),
             List.of(), List.of());
         final BaseConfig newConfig = configWith(
-            List.of(indexer("renamed", UNCHANGED_MARKER, null, null), indexer("second", UNCHANGED_MARKER, null, null)),
+            List.of(indexer("id-second", "second", UNCHANGED_MARKER), indexer("id-first", "renamed", UNCHANGED_MARKER)),
             List.of(), List.of());
 
         testee.prepareForSaving(oldConfig, newConfig);
 
-        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("first-key");
-        assertThat(newConfig.getIndexers().get(1).getApiKey()).isEqualTo("second-key");
+        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("second-key");
+        assertThat(newConfig.getIndexers().get(1).getApiKey()).isEqualTo("first-key");
         assertThat(testee.findUnresolvedMarkers(newConfig)).isEmpty();
+    }
+
+    @Test
+    void shouldKeepEachUsersOwnHashWhenOneIsDeletedOneAddedAndOneRenamed() {
+        //Scenario: [alice, bob]; delete alice, add carol, rename bob to robert. The list length is unchanged, which
+        //used to hand robert alice's hash by position
+        final BaseConfig oldConfig = configWith(List.of(), List.of(),
+            List.of(user("id-alice", "alice", "{bcrypt}alice-hash"), user("id-bob", "bob", "{bcrypt}bob-hash")));
+        final BaseConfig newConfig = configWith(List.of(), List.of(),
+            List.of(user("id-bob", "robert", UNCHANGED_MARKER), user(null, "carol", "{bcrypt}carol-hash")));
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo("{bcrypt}bob-hash");
+        assertThat(newConfig.getAuth().getUsers().get(1).getPassword()).isEqualTo("{bcrypt}carol-hash");
+        assertThat(testee.findUnresolvedMarkers(newConfig)).isEmpty();
+    }
+
+    @Test
+    void shouldKeepEachIndexersOwnKeyWhenOneIsDeletedOneAddedAndOneRenamed() {
+        final BaseConfig oldConfig = configWith(
+            List.of(indexer("id-a", "A", "KA"), indexer("id-b", "B", "KB")),
+            List.of(), List.of());
+        final BaseConfig newConfig = configWith(
+            List.of(indexer("id-b", "B renamed", UNCHANGED_MARKER), indexer(null, "C", "KC")),
+            List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("KB");
+        assertThat(newConfig.getIndexers().get(1).getApiKey()).isEqualTo("KC");
+    }
+
+    @Test
+    void shouldKeepEachDownloadersOwnKeyWhenOneIsDeletedOneAddedAndOneRenamed() {
+        final BaseConfig oldConfig = configWith(List.of(),
+            List.of(downloader("id-a", "A", "KA"), downloader("id-b", "B", "KB")), List.of());
+        final BaseConfig newConfig = configWith(List.of(),
+            List.of(downloader("id-b", "B renamed", UNCHANGED_MARKER), downloader(null, "C", "KC")), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getDownloading().getDownloaders().get(0).getApiKey()).isEqualTo("KB");
+        assertThat(newConfig.getDownloading().getDownloaders().get(1).getApiKey()).isEqualTo("KC");
+    }
+
+    @Test
+    void shouldKeepTheRenamedIndexersOwnKeyWhenItTakesTheNameOfADeletedOne() {
+        //Scenario: [A(KA), B(KB)]; delete A, rename B to "A". Matching by name would hand B the deleted A's key
+        final BaseConfig oldConfig = configWith(
+            List.of(indexer("id-a", "A", "KA"), indexer("id-b", "B", "KB")),
+            List.of(), List.of());
+        final BaseConfig newConfig = configWith(List.of(indexer("id-b", "A", UNCHANGED_MARKER)), List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("KB");
+    }
+
+    @Test
+    void shouldKeepTheRenamedUsersOwnHashWhenItTakesTheNameOfADeletedOne() {
+        final BaseConfig oldConfig = configWith(List.of(), List.of(),
+            List.of(user("id-alice", "alice", "{bcrypt}alice-hash"), user("id-bob", "bob", "{bcrypt}bob-hash")));
+        final BaseConfig newConfig = configWith(List.of(), List.of(), List.of(user("id-bob", "alice", UNCHANGED_MARKER)));
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo("{bcrypt}bob-hash");
+    }
+
+    @Test
+    void shouldKeepEachDownloadersOwnKeyWhenTheirNamesAreEqual() {
+        //Scenario: two downloaders both named SAB, saved untouched. Matching by name gave both the first one's key
+        final BaseConfig oldConfig = configWith(List.of(),
+            List.of(downloader("id-1", "SAB", "K1"), downloader("id-2", "SAB", "K2")), List.of());
+        final BaseConfig newConfig = configWith(List.of(),
+            List.of(downloader("id-1", "SAB", UNCHANGED_MARKER), downloader("id-2", "SAB", UNCHANGED_MARKER)), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getDownloading().getDownloaders().get(0).getApiKey()).isEqualTo("K1");
+        assertThat(newConfig.getDownloading().getDownloaders().get(1).getApiKey()).isEqualTo("K2");
+    }
+
+    @Test
+    void shouldNotResolveEqualNamesOfRecordsWithoutIdBecauseTheyAreAmbiguous() {
+        final BaseConfig oldConfig = configWith(List.of(),
+            List.of(downloader(null, "SAB", "K1"), downloader(null, "SAB", "K2")), List.of());
+        final BaseConfig newConfig = configWith(List.of(),
+            List.of(downloader(null, "SAB", UNCHANGED_MARKER), downloader(null, "SAB", UNCHANGED_MARKER)), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(testee.findUnresolvedMarkers(newConfig)).containsExactly("downloading.downloaders[0].apiKey", "downloading.downloaders[1].apiKey");
+    }
+
+    @Test
+    void shouldMatchARecordWithoutIdByItsName() {
+        //API clients may not know about ids
+        final BaseConfig oldConfig = configWith(
+            List.of(indexer("id-a", "A", "KA"), indexer("id-b", "B", "KB")),
+            List.of(), List.of());
+        final BaseConfig newConfig = configWith(
+            List.of(indexer(null, "B", UNCHANGED_MARKER), indexer(null, "A", UNCHANGED_MARKER)),
+            List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("KB");
+        assertThat(newConfig.getIndexers().get(1).getApiKey()).isEqualTo("KA");
+    }
+
+    @Test
+    void shouldNotMatchARecordWithoutIdByNameToAStoredRecordAnotherSubmittedRecordClaimsById() {
+        final BaseConfig oldConfig = configWith(
+            List.of(indexer("id-a", "A", "KA")),
+            List.of(), List.of());
+        //"A" was renamed to "A2" and a new record named "A" was added with a marker
+        final BaseConfig newConfig = configWith(
+            List.of(indexer("id-a", "A2", UNCHANGED_MARKER), indexer(null, "A", UNCHANGED_MARKER)),
+            List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().get(0).getApiKey()).isEqualTo("KA");
+        assertThat(testee.findUnresolvedMarkers(newConfig)).containsExactly("indexers[1].apiKey");
+    }
+
+    @Test
+    void shouldRejectANewRecordWithoutIdThatCarriesAMarker() {
+        final BaseConfig oldConfig = configWith(List.of(indexer("id-a", "A", "KA")), List.of(), List.of());
+        final BaseConfig newConfig = configWith(
+            List.of(indexer("id-a", "A", UNCHANGED_MARKER), indexer(null, "New", UNCHANGED_MARKER)),
+            List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(testee.findUnresolvedMarkers(newConfig)).containsExactly("indexers[1].apiKey");
+    }
+
+    @Test
+    void shouldNotResolveARecordWithAnIdNoStoredRecordHas() {
+        final BaseConfig oldConfig = configWith(List.of(indexer("id-a", "A", "KA")), List.of(), List.of());
+        final BaseConfig newConfig = configWith(List.of(indexer("id-unknown", "A", UNCHANGED_MARKER)), List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().get(0).getApiKey())
+            .as("A record with an id is matched by its id only, never by its name")
+            .isEqualTo(UNCHANGED_MARKER);
+    }
+
+    @Test
+    void shouldNotResolveRecordsSubmittedWithTheSameId() {
+        final BaseConfig oldConfig = configWith(List.of(indexer("id-a", "A", "KA")), List.of(), List.of());
+        final BaseConfig newConfig = configWith(
+            List.of(indexer("id-a", "A", UNCHANGED_MARKER), indexer("id-a", "Copy of A", UNCHANGED_MARKER)),
+            List.of(), List.of());
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(testee.findUnresolvedMarkers(newConfig)).containsExactly("indexers[0].apiKey", "indexers[1].apiKey");
     }
 
     @Test
@@ -187,13 +367,26 @@ class SensitiveDataConfigValidatorTest {
     }
 
     @Test
-    void shouldFallBackToTheIndexForAUserRenameOnAnEqualLengthList() {
-        //The FM-060 rename-with-bystander case: no username identifies the renamed user any more, but the list is
-        //unchanged in length, so the index is still what it was and a plain rename keeps working
+    void shouldNotGuessByPositionForARenamedUserWithoutId() {
+        //Without an id nothing identifies the renamed user any more. The position is not evidence of identity either,
+        //so its marker stays and the save is rejected
         final BaseConfig oldConfig = configWith(List.of(), List.of(),
             List.of(user("rename-me", "{bcrypt}renamed-hash"), user("bystander", "{bcrypt}bystander-hash")));
         final BaseConfig newConfig = configWith(List.of(), List.of(),
             List.of(user("renamed", UNCHANGED_MARKER), user("bystander", UNCHANGED_MARKER)));
+
+        testee.prepareForSaving(oldConfig, newConfig);
+
+        assertThat(newConfig.getAuth().getUsers().get(0).getPassword()).isEqualTo(UNCHANGED_MARKER);
+        assertThat(newConfig.getAuth().getUsers().get(1).getPassword()).isEqualTo("{bcrypt}bystander-hash");
+    }
+
+    @Test
+    void shouldResolveAUserRenameByItsId() {
+        final BaseConfig oldConfig = configWith(List.of(), List.of(),
+            List.of(user("id-1", "rename-me", "{bcrypt}renamed-hash"), user("id-2", "bystander", "{bcrypt}bystander-hash")));
+        final BaseConfig newConfig = configWith(List.of(), List.of(),
+            List.of(user("id-1", "renamed", UNCHANGED_MARKER), user("id-2", "bystander", UNCHANGED_MARKER)));
 
         testee.prepareForSaving(oldConfig, newConfig);
 

@@ -194,6 +194,20 @@ describe("the list surface's order, filter, and bulk write", () => {
         expect(next[2]).toBe(entries[2]);
     });
 
+    it("keeps the record id of an entry whose state it writes", () => {
+        const next = applyIndexerStates(
+            [{id: "id-a", name: "Alpha", state: "ENABLED"}],
+            [0],
+            false,
+        );
+
+        expect(next[0]).toEqual({
+            id: "id-a",
+            name: "Alpha",
+            state: "DISABLED_USER",
+        });
+    });
+
     it("refuses to bulk-enable an indexer whose configuration is incomplete", () => {
         const next = applyIndexerStates(entries, [0, 1, 2], true);
 
@@ -534,6 +548,69 @@ describe("mergeCapsCheckResults", () => {
         expect(merged.entries[0]).toBe(entries[0]);
     });
 
+    it("matches by record id, so an unsaved rename cannot swap two indexers' capabilities", () => {
+        // The server checked the saved indexers, whose names the admin has
+        // since swapped in the form.
+        const entries = [
+            {id: "id-a", name: "B", configComplete: false, downloadLimit: 1},
+            {id: "id-b", name: "A", configComplete: false, downloadLimit: 2},
+        ];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({id: "id-a", name: "A", downloadLimit: 10}),
+            result({id: "id-b", name: "B", downloadLimit: 20}),
+        ]);
+
+        expect(merged.matched).toBe(2);
+        expect(merged.entries[0]).toMatchObject({
+            downloadLimit: 10,
+            id: "id-a",
+            name: "B",
+        });
+        expect(merged.entries[1]).toMatchObject({
+            downloadLimit: 20,
+            id: "id-b",
+            name: "A",
+        });
+    });
+
+    it("merges into a renamed entry by id and never takes the result's id", () => {
+        const entries = [{id: "id-a", name: "Renamed", configComplete: false}];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({id: "id-a", name: "Original"}),
+        ]);
+
+        expect(merged.matched).toBe(1);
+        expect(merged.entries[0]).toMatchObject({
+            configComplete: true,
+            id: "id-a",
+            name: "Renamed",
+        });
+    });
+
+    it("does not merge by name when both sides carry different ids", () => {
+        const entries = [{id: "id-new", name: "Mock1", configComplete: false}];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({id: "id-old", name: "Mock1"}),
+        ]);
+
+        expect(merged.matched).toBe(0);
+        expect(merged.entries[0]).toBe(entries[0]);
+    });
+
+    it("falls back to the name when an entry has no id yet", () => {
+        const entries = [{name: "Mock1", configComplete: false}];
+
+        const merged = mergeCapsCheckResults(entries, [
+            result({id: "id-a", name: "Mock1"}),
+        ]);
+
+        expect(merged.matched).toBe(1);
+        expect(merged.entries[0]).not.toHaveProperty("id");
+    });
+
     it("never merges into a nameless entry", () => {
         const entries = [{name: null, configComplete: false}];
 
@@ -826,5 +903,24 @@ describe("movedIndexerScore", () => {
         // A filtered view of two rows: the neighbour is whatever is shown.
         const rows = shown([1, 5, 20]).filter((row) => row.index !== 1);
         expect(movedIndexerScore(rows, 0, "up")).toBe(21);
+    });
+});
+
+describe("new indexer drafts", () => {
+    it("never carry a record id, whichever preset or importer seeds them", () => {
+        const presets = [
+            ...NEWZNAB_PRESETS,
+            ...TORZNAB_PRESETS,
+            ...SPECIAL_PRESETS,
+            CUSTOM_NEWZNAB_PRESET,
+            CUSTOM_TORZNAB_PRESET,
+        ];
+        for (const preset of presets) {
+            expect(newIndexerDraft(preset)).not.toHaveProperty("id");
+        }
+        expect(newIndexerDraft()).not.toHaveProperty("id");
+        // The importers clone this template for every indexer they add.
+        expect(importConfigDraft("jackett")).not.toHaveProperty("id");
+        expect(importConfigDraft("prowlarr")).not.toHaveProperty("id");
     });
 });

@@ -48,10 +48,12 @@ export type IndexerConnectionResult =
  * entry can be verified before it is accepted into the configuration. Nothing
  * is persisted by it.
  *
- * The posted entry keeps its `***UNCHANGED***` markers: `IndexerChecker
- * .resolveUnchangedSensitiveFields` looks the stored credentials up by indexer
- * name, so the browser never has to hold a real secret to run the check
- * (`C-SECRET-INPUT`'s invariant).
+ * The posted entry keeps its `***UNCHANGED***` markers and its record `id`:
+ * the backend resolves each marker against the stored indexer with the same
+ * `id` (by name only when the posted entry has no `id`), so the browser never
+ * has to hold a real secret to run the check (`C-SECRET-INPUT`'s invariant).
+ * A marker it cannot resolve fails the check with a "Please enter ... again"
+ * message, without the indexer being contacted.
  */
 export async function checkIndexerConnection(
     transport: ApiTransport,

@@ -7,6 +7,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.config.validation.StoredRecordMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class DownloaderProvider implements InitializingBean {
@@ -61,7 +63,18 @@ public class DownloaderProvider implements InitializingBean {
         }
     }
 
+    /**
+     * The UI shows saved credentials as an unchanged marker, and a connection check runs before the config is saved.
+     * So the markers are replaced by the values stored for the same downloader - identified by its id, or by its name
+     * if it has none, see {@link StoredRecordMatcher}. Without them the downloader is not contacted at all.
+     */
     public GenericResponse checkConnection(DownloaderConfig downloaderConfig) {
+        final List<DownloaderConfig> storedDownloaders = Optional.ofNullable(configProvider.getBaseConfig().getDownloading().getDownloaders()).orElse(List.of());
+        final StoredRecordMatcher.Resolution resolution = StoredRecordMatcher.resolveUnchangedMarkers(downloaderConfig, storedDownloaders);
+        if (!resolution.isComplete()) {
+            logger.warn("Not checking connection to downloader {} because its saved credentials could not be found", downloaderConfig.getName());
+            return GenericResponse.notOk(resolution.getMessage("downloader", downloaderConfig.getName()));
+        }
         Downloader downloader = downloaderInstatiator.instantiate(downloaderConfig.getDownloaderType());
         downloader.initialize(downloaderConfig);
         return downloader.checkConnection();

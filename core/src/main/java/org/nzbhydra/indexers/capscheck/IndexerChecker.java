@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.CapsCheckRequest;
@@ -19,6 +20,7 @@ import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.validation.StoredRecordMatcher;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -98,7 +100,11 @@ public class IndexerChecker {
     }
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
-        resolveUnchangedSensitiveFields(indexerConfig);
+        final StoredRecordMatcher.Resolution resolution = resolveUnchangedSensitiveFields(indexerConfig);
+        if (!resolution.isComplete()) {
+            logger.warn("Not checking connection to indexer {} because its saved credentials could not be found", indexerConfig.getName());
+            return GenericResponse.notOk(resolution.getMessage("indexer", indexerConfig.getName()));
+        }
         try {
             //Try multiple searches for indexers that only support certain search types
             List<URI> uris = List.of(
@@ -161,28 +167,13 @@ public class IndexerChecker {
         return null;
     }
 
-    private void resolveUnchangedSensitiveFields(IndexerConfig indexerConfig) {
-        String unchangedMarker = "***UNCHANGED***";
-        boolean apiKeyUnchanged = unchangedMarker.equals(indexerConfig.getApiKey());
-        boolean usernameUnchanged = unchangedMarker.equals(indexerConfig.getUsername().orElse(null));
-        boolean passwordUnchanged = unchangedMarker.equals(indexerConfig.getPassword().orElse(null));
-        if (!apiKeyUnchanged && !usernameUnchanged && !passwordUnchanged) {
-            return;
-        }
-        configProvider.getBaseConfig().getIndexers().stream()
-                .filter(x -> x.getName().equals(indexerConfig.getName()))
-                .findFirst()
-                .ifPresent(stored -> {
-                    if (apiKeyUnchanged) {
-                        indexerConfig.setApiKey(stored.getApiKey());
-                    }
-                    if (usernameUnchanged) {
-                        indexerConfig.setUsername(stored.getUsername().orElse(null));
-                    }
-                    if (passwordUnchanged) {
-                        indexerConfig.setPassword(stored.getPassword().orElse(null));
-                    }
-                });
+    /**
+     * The UI shows saved secrets as an unchanged marker, and these checks run before the config is saved. So the
+     * markers are replaced by the values stored for the same indexer - identified by its id, or by its name if it has
+     * none, see {@link StoredRecordMatcher}.
+     */
+    private StoredRecordMatcher.Resolution resolveUnchangedSensitiveFields(IndexerConfig indexerConfig) {
+        return StoredRecordMatcher.resolveUnchangedMarkers(indexerConfig, configProvider.getBaseConfig().getIndexers());
     }
 
     /**
@@ -224,7 +215,16 @@ public class IndexerChecker {
      * Executes a search for each of the known IDs. If enough returned results match the expected title the ID is probably supported.
      */
     public CheckCapsResponse checkCaps(IndexerConfig indexerConfig) {
-        resolveUnchangedSensitiveFields(indexerConfig);
+        final StoredRecordMatcher.Resolution resolution = resolveUnchangedSensitiveFields(indexerConfig);
+        if (!resolution.isComplete()) {
+            final String message = resolution.getMessage("indexer", indexerConfig.getName());
+            logger.warn("Not checking caps of indexer {}: {}", indexerConfig.getName(), message);
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), message));
+            indexerConfig.setConfigComplete(false);
+            indexerConfig.setAllCapsChecked(false);
+            indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM);
+            return new CheckCapsResponse(withMarkersRestored(indexerConfig, resolution), false, false);
+        }
         List<CheckCapsRequest> requests = Arrays.asList(
                 new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
                 new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
@@ -330,8 +330,18 @@ public class IndexerChecker {
         indexerConfig.setConfigComplete(configComplete);
         indexerConfig.setAllCapsChecked(allChecked);
         indexerConfig.setState(configComplete ? IndexerConfig.State.ENABLED : IndexerConfig.State.DISABLED_SYSTEM);
+        return new CheckCapsResponse(withMarkersRestored(indexerConfig, resolution), allChecked, configComplete);
+    }
 
-        return new CheckCapsResponse(indexerConfig, allChecked, configComplete);
+    /**
+     * The config is returned to the UI, which must not receive the stored secrets it only knew as markers. The markers
+     * are put back into a copy: a caps request that timed out may still be running and must keep using the real
+     * secrets instead of sending the marker to the indexer.
+     */
+    private static IndexerConfig withMarkersRestored(IndexerConfig indexerConfig, StoredRecordMatcher.Resolution resolution) {
+        final IndexerConfig copy = Jackson.JSON_MAPPER.convertValue(indexerConfig, IndexerConfig.class);
+        resolution.restoreMarkers(copy);
+        return copy;
     }
 
     public IndexerConfig.ForbiddenWordPrefix determineForbiddenWordPrefix(IndexerConfig indexerConfig) {

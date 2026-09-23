@@ -4,6 +4,7 @@ package org.nzbhydra.config.validation;
 
 import com.google.common.base.Joiner;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigRecordIds;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.slf4j.Logger;
@@ -148,14 +149,18 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
 
     @Override
     public BaseConfig prepareForSaving(BaseConfig oldBaseConfig, BaseConfig newConfig) {
-        // Validators that know how to identify their own records resolve their unchanged markers first. A user is
-        // matched by its username, which the generic pass below cannot do, and letting that pass go first would
-        // overwrite the password with the entry that happens to sit at the same index.
+        // Validators that handle their own records resolve their unchanged markers first. A user's password is not
+        // @HiddenInUI: the auth validator keeps the stored hash of the same user (StoredRecordMatcher: by id, or by
+        // username for a user without id) and hashes a new plaintext password, before the generic pass sees it.
         authConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getAuth());
 
-        // Then the generic pass for every unchanged marker still standing, matching each record by its identity and
-        // falling back to its index only while its list has not changed length
+        // Then the generic pass for every unchanged marker still standing, matching each list record by its id (or by
+        // name for a record without id) and never by its position
         sensitiveDataConfigValidator.prepareForSaving(oldBaseConfig, newConfig);
+
+        // Only now, after the markers were resolved, records the UI just added (which never carry an id) get one. An
+        // id assigned earlier would make them look like a stored record that does not exist.
+        ConfigRecordIds.ensureUniqueIds(newConfig);
 
         categoriesConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getCategoriesConfig());
         downloadingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getDownloading());

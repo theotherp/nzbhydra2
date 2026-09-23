@@ -26,22 +26,17 @@ import {settingTestId, type ConfigFieldPath} from "./settings";
  * Keying each row by its array index (rather than, say, a `username`, which
  * can be edited and is not unique while a row is blank) is correct for
  * rendering and editing: row *N* always shows and edits whatever is
- * currently at index *N*, and that is what gets saved to index *N*. This is
- * not, however, a safe *identity* for secret-marker resolution once an entry
- * has been removed. Legacy/the backend resolves a `***UNCHANGED***` marker
- * positionally before any field-level match
- * (`SensitiveDataConfigValidator.findCorrespondingOldItem` falls back to
- * `oldList.get(index)` for an element type with no `name` field, before any
- * name-aware validator such as `UserAuthConfigValidator` runs). `UserAuthConfig`
- * has no `name` field, so removing a user shifts every following row's index
- * and the positional fallback resolves its untouched password marker against
- * a *different* stored user's hash -- a credential swap, not a safety
- * property of index keying. (`IndexerConfig`, a future consumer of this
- * component per FM-066, does have a `name` field and is protected by the
- * name-match branch instead.) This is a pre-existing backend defect, not
- * something this component can fix: it only ever holds the marker, never a
- * plaintext or hash, so there is no correct value it could send instead for
- * a shifted row.
+ * currently at index *N*, and that is what gets saved to index *N*. The index
+ * is only a rendering concern, never a record identity: every indexer,
+ * downloader and user carries a backend-assigned `id`, and the backend
+ * resolves a `***UNCHANGED***` marker only against the stored record with the
+ * same `id` (a record without one, e.g. from an API client, falls back to
+ * matching by name or username, never by position). A marker it cannot
+ * resolve fails the save with "Please enter the value again" instead of
+ * borrowing another record's secret. So removing or reordering entries is
+ * safe as long as each entry's `id` travels with it, which it does here: an
+ * entry is written back whole, and a newly appended one has no `id` until the
+ * backend assigns one on save.
  *
  * `addChoices` is the optional second add shape legacy also has: its generic
  * `repeatSection` controller takes a `preset` in `addNew(preset)`

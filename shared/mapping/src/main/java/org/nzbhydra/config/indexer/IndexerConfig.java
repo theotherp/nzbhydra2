@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.sensitive.HiddenInUI;
@@ -29,6 +30,14 @@ import java.util.Optional;
 @ReflectionMarker
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig {
+
+    /**
+     * Stable identity of this record, assigned by the backend (see ConfigRecordIds in core) and never shown to the
+     * user. Secrets are sent to the UI masked, and a masked value is resolved against the stored record with the same
+     * id, so a rename or a reordered list can never move one record's secret onto another.
+     */
+    @DiffIgnore
+    private String id;
 
     public enum State {
         ENABLED,

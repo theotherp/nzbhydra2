@@ -8596,6 +8596,9 @@
             "DownloaderConfig": {
                 "type": "object",
                 "properties": {
+                    "id": {
+                        "type": "string"
+                    },
                     "apiKey": {
                         "type": "string"
                     },
@@ -8833,6 +8836,9 @@
             "IndexerConfig": {
                 "type": "object",
                 "properties": {
+                    "id": {
+                        "type": "string"
+                    },
                     "allCapsChecked": {
                         "type": "boolean"
                     },
@@ -9543,6 +9549,9 @@
             "UserAuthConfig": {
                 "type": "object",
                 "properties": {
+                    "id": {
+                        "type": "string"
+                    },
                     "maySeeAdmin": {
                         "type": "boolean"
                     },

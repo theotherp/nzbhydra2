@@ -980,6 +980,79 @@ describe("Downloading config tab connection check", () => {
     });
 });
 
+describe("Downloading config tab record ids", () => {
+    it("keeps a downloader's id through a rename and posts it to the connection check", async () => {
+        const fetchMock = checkOk();
+        const harness = renderDownloading({
+            fetchMock,
+            values: configWith({
+                downloaders: [
+                    {...SABNZBD, id: "dl-sab"},
+                    {...NZBGET, id: "dl-get"},
+                ],
+            }),
+        });
+
+        await openEntry(0);
+        fireEvent.change(
+            screen.getByTestId("config-input-downloading-downloaderDraft-name"),
+            {target: {value: "Sab renamed"}},
+        );
+        fireEvent.change(
+            screen.getByTestId("config-input-downloading-downloaderDraft-url"),
+            {target: {value: "http://moved:8080"}},
+        );
+        submitDialog();
+
+        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+        // The backend resolves the posted `***UNCHANGED***` API key against the
+        // stored downloader with this id.
+        expect(JSON.parse(init.body as string)).toMatchObject({
+            apiKey: UNCHANGED_SECRET_MARKER,
+            id: "dl-sab",
+            name: "Sab renamed",
+        });
+        await waitFor(() =>
+            expect(downloadersOf(harness)[0].name).toBe("Sab renamed"),
+        );
+        expect(downloadersOf(harness).map((entry) => entry.id)).toEqual([
+            "dl-sab",
+            "dl-get",
+        ]);
+    });
+
+    it("keeps the remaining ids after a delete and gives a new downloader none", async () => {
+        const fetchMock = checkOk();
+        const harness = renderDownloading({
+            fetchMock,
+            values: configWith({
+                downloaders: [
+                    {...SABNZBD, id: "dl-sab"},
+                    {...NZBGET, id: "dl-get"},
+                ],
+            }),
+        });
+
+        await openEntry(0);
+        fireEvent.click(screen.getByTestId("config-downloader-dialog-delete"));
+        await waitFor(() => expect(downloadersOf(harness)).toHaveLength(1));
+        // Same name as the deleted one: a new entry still must not inherit its id.
+        await addFromPreset("SABNZBD");
+        fireEvent.change(
+            screen.getByTestId("config-input-downloading-downloaderDraft-name"),
+            {target: {value: "Sab"}},
+        );
+        submitDialog();
+
+        await waitFor(() => expect(downloadersOf(harness)).toHaveLength(2));
+        expect(downloadersOf(harness)[0]).toEqual({...NZBGET, id: "dl-get"});
+        expect(downloadersOf(harness)[1]).not.toHaveProperty("id");
+        const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+        expect(JSON.parse(init.body as string)).not.toHaveProperty("id");
+    });
+});
+
 /**
  * The dialog is portalled to the document body, but React context crosses a
  * portal, so its advanced rows are context-descendants of

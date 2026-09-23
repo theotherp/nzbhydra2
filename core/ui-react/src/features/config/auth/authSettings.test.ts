@@ -187,4 +187,8 @@ describe("defaultUser", () => {
             username: null,
         });
     });
+
+    it("gives a new user no record id; the backend assigns one on save", () => {
+        expect(defaultUser()).not.toHaveProperty("id");
+    });
 });

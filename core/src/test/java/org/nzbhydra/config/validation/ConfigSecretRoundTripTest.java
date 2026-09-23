@@ -10,6 +10,7 @@ import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigRecordIds;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.ConfigWeb;
 import org.nzbhydra.config.IndexerConfigService;
@@ -144,6 +145,8 @@ class ConfigSecretRoundTripTest {
             user("a", "{bcrypt}a-hash"),
             user("b", "{bcrypt}b-hash"),
             user("c", "{bcrypt}c-hash"))));
+        //The running configuration always has ids (config migration / BaseConfigHandler.replace)
+        ConfigRecordIds.ensureUniqueIds(baseConfig);
         return baseConfig;
     }
 
@@ -286,8 +289,11 @@ class ConfigSecretRoundTripTest {
     }
 
     @Test
-    void shouldRejectAMarkerForAUsernameThatDoesNotExistAnyMore() throws Exception {
+    void shouldRejectAMarkerForAUserWithoutIdWhoseUsernameDoesNotExistAnyMore() throws Exception {
+        //An API client that does not send ids: the renamed user can only be identified by its username, which no
+        //stored user has, and its position is no evidence after a removal
         final BaseConfig submitted = maskedViewOf(liveConfig);
+        submitted.getAuth().getUsers().forEach(user -> user.setId(null));
         submitted.getAuth().getUsers().get(1).setUsername("renamed-in-the-same-save-as-a-removal");
         submitted.getAuth().getUsers().remove(2);
 
@@ -297,5 +303,59 @@ class ConfigSecretRoundTripTest {
         assertThat(result.getErrorMessages()).anyMatch(message -> message.contains("auth.users[1].password"));
         verify(baseConfigHandler, never()).replace(any(BaseConfig.class));
         assertLiveConfigStillHoldsTheRealSecrets();
+    }
+
+    @Test
+    void shouldKeepEachUsersOwnPasswordWhenOneIsDeletedOneAddedAndOneRenamed() throws Exception {
+        final String idOfB = liveConfig.getAuth().getUsers().get(1).getId();
+        final BaseConfig submitted = maskedViewOf(liveConfig);
+        //Delete "a", rename "b", add "d" with a typed password. The list length is unchanged
+        submitted.getAuth().getUsers().remove(0);
+        submitted.getAuth().getUsers().get(0).setUsername("b renamed");
+        submitted.getAuth().getUsers().add(user("d", "d-plain"));
+
+        final ConfigValidationResult result = configWeb.setConfig(submitted);
+
+        assertThat(result.getErrorMessages()).isEmpty();
+        assertThat(result.isOk()).isTrue();
+        final List<UserAuthConfig> users = liveConfig.getAuth().getUsers();
+        assertThat(users).extracting(UserAuthConfig::getUsername).containsExactly("b renamed", "c", "d");
+        assertThat(users.get(0).getPassword()).isEqualTo("{bcrypt}b-hash");
+        assertThat(users.get(0).getId()).isEqualTo(idOfB);
+        assertThat(users.get(1).getPassword()).isEqualTo("{bcrypt}c-hash");
+        assertThat(users.get(2).getPassword()).startsWith("{bcrypt}").isNotEqualTo("{bcrypt}a-hash");
+        assertThat(users.get(2).getId())
+            .as("The new user is given an id of its own when saving")
+            .isNotBlank()
+            .isNotIn(users.get(0).getId(), users.get(1).getId());
+    }
+
+    @Test
+    void shouldKeepTheRenamedIndexersOwnKeyWhenItTakesTheNameOfADeletedOne() throws Exception {
+        final BaseConfig submitted = maskedViewOf(liveConfig);
+        submitted.getIndexers().remove(0);
+        submitted.getIndexers().get(0).setName("indexer-a");
+
+        final ConfigValidationResult result = configWeb.setConfig(submitted);
+
+        assertThat(result.isOk()).isTrue();
+        assertThat(liveConfig.getIndexers()).hasSize(1);
+        assertThat(liveConfig.getIndexers().get(0).getName()).isEqualTo("indexer-a");
+        assertThat(liveConfig.getIndexers().get(0).getApiKey()).isEqualTo("indexer-b-key");
+        assertThat(liveConfig.getIndexers().get(0).getUsername()).contains("indexer-b-user");
+        assertThat(liveConfig.getIndexers().get(0).getPassword()).contains("indexer-b-password");
+    }
+
+    @Test
+    void shouldKeepEachDownloadersOwnKeyWhenTheirNamesAreEqual() throws Exception {
+        liveConfig.getDownloading().getDownloaders().get(1).setName("downloader-a");
+        final BaseConfig submitted = maskedViewOf(liveConfig);
+
+        final ConfigValidationResult result = configWeb.setConfig(submitted);
+
+        assertThat(result.isOk()).isTrue();
+        assertThat(liveConfig.getDownloading().getDownloaders().get(0).getApiKey()).isEqualTo("downloader-a-key");
+        assertThat(liveConfig.getDownloading().getDownloaders().get(1).getApiKey()).isEqualTo("downloader-b-key");
+        assertThat(liveConfig.getDownloading().getDownloaders().get(1).getPassword()).contains("downloader-b-password");
     }
 }

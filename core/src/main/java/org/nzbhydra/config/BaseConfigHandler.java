@@ -81,6 +81,9 @@ public class BaseConfigHandler {
 
     public void replace(BaseConfig newConfig, boolean fireConfigChangedEvent) {
         BaseConfig oldBaseConfig = configReaderWriter.getCopy(baseConfig);
+        // Covers every config that becomes the live one: the file loaded at startup (possibly hand-edited or restored
+        // from an old backup) and every saved or reloaded config
+        ConfigRecordIds.ensureUniqueIds(newConfig);
         baseConfig.setMain(newConfig.getMain());
         baseConfig.setIndexers(newConfig.getIndexers().stream().sorted(Comparator.comparing(IndexerConfig::getName)).collect(Collectors.toList()));
         baseConfig.setCategoriesConfig(newConfig.getCategoriesConfig());

@@ -35,6 +35,13 @@ export const RESTRICTIONS_TOOLTIP =
 
 /** `UserAuthConfig.java`'s fields, as the shape a Users row edits. */
 export type UserAuthConfigValues = {
+    /**
+     * The backend-assigned record id. A stored user always carries one and it
+     * must travel with the entry unchanged: the backend resolves the entry's
+     * `***UNCHANGED***` password marker against the stored user with the same
+     * id. A user added here has none until the config is saved.
+     */
+    id?: string;
     maySeeAdmin: boolean;
     maySeeDetailsDl: boolean;
     maySeeStats: boolean;

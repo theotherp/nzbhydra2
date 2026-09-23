@@ -14,7 +14,8 @@ public class UserAuthConfigValidator implements ConfigValidator<UserAuthConfig> 
     /**
      * The same marker the generic pass uses. {@link org.nzbhydra.config.auth.UserAuthConfig#password} is masked here
      * rather than by that pass ({@code @HiddenInUI}), and {@link BaseConfigValidator#prepareForSaving} runs this
-     * validator first so a user is identified by its username before anything falls back to a positional guess.
+     * validator first so the stored hash is kept, and a new plaintext password hashed, before the generic pass sees
+     * the user. A user is identified by {@link StoredRecordMatcher}: by its id, or by its username if it has none.
      */
     private static final String UNCHANGED_PASSWORD_MARKER = SensitiveDataConfigValidator.UNCHANGED_MARKER;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -29,13 +30,25 @@ public class UserAuthConfigValidator implements ConfigValidator<UserAuthConfig> 
         return new ConfigValidationResult();
     }
 
+    /**
+     * Prepares a single user, identifying its stored counterpart on its own. When saving the whole config
+     * {@link AuthConfigValidator} matches all users at once instead (see {@link #prepareForSaving(UserAuthConfig, UserAuthConfig)}),
+     * which also knows which stored users the other submitted users claim.
+     */
     @Override
     public UserAuthConfig prepareForSaving(BaseConfig oldBaseConfig, UserAuthConfig newConfig) {
+        return prepareForSaving(newConfig, findCorrespondingOldUserConfig(oldBaseConfig, newConfig));
+    }
+
+    /**
+     * @param oldUserConfig the stored counterpart of {@code newConfig} as identified by {@link StoredRecordMatcher}, or
+     *                      null if there is none. An unchanged password marker is then left in place and the save is
+     *                      rejected.
+     */
+    public UserAuthConfig prepareForSaving(UserAuthConfig newConfig, UserAuthConfig oldUserConfig) {
         if (newConfig.getPassword() != null) {
-            // If password is the unchanged marker, find the old password and keep it
+            // If password is the unchanged marker, keep the stored password of the same user
             if (UNCHANGED_PASSWORD_MARKER.equals(newConfig.getPassword())) {
-                // Find the corresponding old user config
-                UserAuthConfig oldUserConfig = findCorrespondingOldUserConfig(oldBaseConfig, newConfig);
                 if (oldUserConfig != null && oldUserConfig.getPassword() != null) {
                     newConfig.setPassword(oldUserConfig.getPassword());
                 }
@@ -74,10 +87,6 @@ public class UserAuthConfigValidator implements ConfigValidator<UserAuthConfig> 
         if (oldBaseConfig == null || oldBaseConfig.getAuth() == null || oldBaseConfig.getAuth().getUsers() == null) {
             return null;
         }
-        // Match by username
-        return oldBaseConfig.getAuth().getUsers().stream()
-                .filter(user -> user.getUsername() != null && user.getUsername().equals(newConfig.getUsername()))
-                .findFirst()
-                .orElse(null);
+        return StoredRecordMatcher.findStoredCounterpart(newConfig, oldBaseConfig.getAuth().getUsers());
     }
 }

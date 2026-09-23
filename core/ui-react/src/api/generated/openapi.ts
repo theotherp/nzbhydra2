@@ -2991,6 +2991,7 @@ export interface components {
             examples?: string[];
         };
         DownloaderConfig: {
+            id?: string;
             apiKey?: string;
             defaultCategory?: string;
             /** @enum {string} */
@@ -3084,6 +3085,7 @@ export interface components {
             categories?: components["schemas"]["MainCategory"][];
         };
         IndexerConfig: {
+            id?: string;
             allCapsChecked?: boolean;
             apiKey?: string;
             apiPath?: string;
@@ -3417,6 +3419,7 @@ export interface components {
             name?: string;
         };
         UserAuthConfig: {
+            id?: string;
             maySeeAdmin?: boolean;
             maySeeDetailsDl?: boolean;
             maySeeStats?: boolean;
