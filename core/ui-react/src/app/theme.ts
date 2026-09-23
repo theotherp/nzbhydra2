@@ -14,6 +14,7 @@
  */
 
 import {createTheme, type CSSObject, type Theme, type TypographyStyle,} from "@mui/material/styles";
+// Looks unused, but declares the MuiPickers* theme keys; import optimizers strip it.
 
 import {createThemeComponents} from "./themeComponents";
 import {resolveThemeName, type SurfaceTokens, themeColors, type ThemePreference,} from "./themePalettes";
