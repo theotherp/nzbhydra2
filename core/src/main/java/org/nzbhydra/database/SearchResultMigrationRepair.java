@@ -79,7 +79,9 @@ public class SearchResultMigrationRepair {
             int deleted = statement.executeUpdate("DELETE FROM SEARCHRESULT WHERE ID IN (" + ORPHANED_RESULT_IDS + ")");
             log.info("Removed {} search results of deleted indexers. Their downloads are kept.", deleted);
 
-            //Same statements as at the end of V8
+            //Same statements as at the end of V8, after the rename
+            statement.execute("CREATE INDEX IF NOT EXISTS UKFTFA80663URIMM78EPNXHYOM_INDEX_C ON SEARCHRESULT (INDEXER_ID, INDEXERGUID)");
+            statement.execute("CREATE INDEX IF NOT EXISTS SEARCHRESULT_FIRST_FOUND_INDEX ON SEARCHRESULT (FIRST_FOUND)");
             if (constraintDoesNotExist(connection, "FKR5G21PDW3HHS1SEFVJY30TGMI")) {
                 statement.execute("ALTER TABLE SEARCHRESULT ADD CONSTRAINT FKR5G21PDW3HHS1SEFVJY30TGMI FOREIGN KEY (INDEXER_ID) REFERENCES INDEXER (ID) ON DELETE CASCADE");
             }

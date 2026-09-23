@@ -147,6 +147,7 @@ class SearchResultSequentialIdMigrationTest {
         assertThat(queryLong("SELECT SEARCH_RESULT_ID FROM INDEXERNZBDOWNLOAD WHERE ID = 1")).isEqualTo(1L);
         assertThat(queryLong("SELECT COUNT(*) FROM SEARCHRESULT")).isEqualTo(1L);
         assertThat(queryLong("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME IN ('FKR5G21PDW3HHS1SEFVJY30TGMI', 'FKR5G21PDW3HHS1SEFKHD3HBDGL', 'ISRO_SEARCH_RESULT_FK')")).isEqualTo(3L);
+        assertThat(indexNames("SEARCHRESULT")).contains("SEARCHRESULT_HASH_INDEX", "SEARCHRESULT_FIRST_FOUND_INDEX", "UKFTFA80663URIMM78EPNXHYOM_INDEX_C");
 
         //The foreign keys cascade again
         try (Statement statement = connection.createStatement()) {
