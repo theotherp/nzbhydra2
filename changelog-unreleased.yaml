@@ -13,4 +13,6 @@
 -   type: "fix"
     text: "Testing a downloader connection no longer fails with an API key error when the saved API key, username or password were left at &quot;Value unchanged&quot;. See #1098"
 -   type: "fix"
+    text: "Backups now store passwords and API keys obfuscated, like the main config file. Backups made by older versions can still be restored."
+-   type: "fix"
     text: "Saving the config after deleting, adding and renaming users, indexers or downloaders in one go could give one of them the saved password or API key of another. Each one now keeps its own. Testing the connection or checking the capabilities of an indexer or downloader you just renamed also uses its own saved credentials, and asks you to enter them again instead of sending a placeholder if they can&apos;t be found."

@@ -45,27 +45,13 @@ public class ConfigReaderWriter {
 
 
     public void save(BaseConfig baseConfig) {
-        try {
-            // Create a copy to avoid modifying the original
-            BaseConfig copy = getCopy(baseConfig);
-            // Encrypt sensitive data before saving
-            sensitiveDataHandler.encryptSensitiveData(copy);
-            save(buildConfigFileFile(), Jackson.YAML_MAPPER.writeValueAsString(copy));
-        } catch (JacksonException e) {
-            throw new RuntimeException("Unable to save config", e);
-        }
+        save(buildConfigFileFile(), getAsEncryptedYamlString(baseConfig));
     }
 
     public void save(BaseConfig baseConfig, File targetFile) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            // Create a copy to avoid modifying the original
-            BaseConfig copy = getCopy(baseConfig);
-            // Encrypt sensitive data before saving
-            sensitiveDataHandler.encryptSensitiveData(copy);
-            save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(copy));
-        } catch (JacksonException e) {
-            throw new RuntimeException("Unable to save config", e);
+            save(targetFile, getAsEncryptedYamlString(baseConfig));
         } finally {
             logger.debug(LoggingMarkers.PERFORMANCE, "Writing config took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
@@ -253,6 +239,21 @@ public class ConfigReaderWriter {
             return Jackson.YAML_MAPPER.readValue(Jackson.YAML_MAPPER.writeValueAsString(toCopy), BaseConfig.class);
         } catch (JacksonException e) {
             throw new RuntimeException("Unable to copy config", e);
+        }
+    }
+
+    /**
+     * Serializes the config the way it is stored on disk, with its sensitive data encrypted. The given config is not
+     * modified.
+     */
+    public String getAsEncryptedYamlString(BaseConfig baseConfig) {
+        try {
+            // Create a copy to avoid modifying the original
+            BaseConfig copy = getCopy(baseConfig);
+            sensitiveDataHandler.encryptSensitiveData(copy);
+            return Jackson.YAML_MAPPER.writeValueAsString(copy);
+        } catch (JacksonException e) {
+            throw new RuntimeException("Unable to save config", e);
         }
     }
 

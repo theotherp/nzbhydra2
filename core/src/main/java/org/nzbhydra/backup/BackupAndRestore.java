@@ -118,7 +118,9 @@ public class BackupAndRestore {
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
             Path nf = fs.getPath("nzbhydra.yml");
             try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardOpenOption.CREATE)) {
-                writer.write(configReaderWriter.getAsYamlString(configProvider.getBaseConfig()));
+                // Encrypted like the live config file. Restoring works with encrypted and (older) plaintext backups alike
+                // because decrypting leaves unencrypted values as they are
+                writer.write(configReaderWriter.getAsEncryptedYamlString(configProvider.getBaseConfig()));
                 logger.debug("Successfully wrote config to backup ZIP");
                 backupCertificates(fs);
             }
