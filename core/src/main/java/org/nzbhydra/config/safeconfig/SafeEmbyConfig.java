@@ -1,5 +1,6 @@
 package org.nzbhydra.config.safeconfig;
 
+import com.google.common.base.Strings;
 import lombok.Getter;
 import org.nzbhydra.config.emby.EmbyConfig;
 
@@ -8,11 +9,15 @@ import org.nzbhydra.config.emby.EmbyConfig;
 public class SafeEmbyConfig {
 
     private final String embyBaseUrl;
-    private final String embyApiKey;
+    /**
+     * The API key itself is never sent to the UI: the safe config is readable by every user and all Emby calls go
+     * through the server. The UI only needs to know whether Emby is set up.
+     */
+    private final boolean embyApiKeySet;
 
     public SafeEmbyConfig(EmbyConfig embyConfig) {
         embyBaseUrl = embyConfig.getEmbyBaseUrl();
-        embyApiKey = embyConfig.getEmbyApiKey();
+        embyApiKeySet = !Strings.isNullOrEmpty(embyConfig.getEmbyApiKey());
     }
 
 }

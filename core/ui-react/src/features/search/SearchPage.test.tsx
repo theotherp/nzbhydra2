@@ -71,7 +71,7 @@ const embyBootstrap = {
             categories: [{name: "Movies", searchType: "MOVIE"}],
             defaultCategory: "Movies",
         },
-        emby: {embyBaseUrl: "http://emby", embyApiKey: "key"},
+        emby: {embyBaseUrl: "http://emby", embyApiKeySet: true},
     },
 };
 
@@ -1479,6 +1479,42 @@ describe("SearchPage", () => {
         );
         fireEvent.click(screen.getByTestId("search-submit"));
         expect(await screen.findByText(message)).toBeVisible();
+    });
+
+    it("should not check Emby availability without an Emby API key", async () => {
+        embySearch();
+        const fetchImplementation = vi.fn<
+            (url: RequestInfo | URL) => Promise<Response>
+        >(() => Promise.resolve(searchResponse()));
+        render(
+            <SearchPage
+                bootstrap={{
+                    ...embyBootstrap,
+                    safeConfig: {
+                        ...embyBootstrap.safeConfig,
+                        emby: {
+                            embyBaseUrl: "http://emby",
+                            embyApiKeySet: false,
+                        },
+                    },
+                }}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledWith(
+                expect.stringContaining("/internalapi/search"),
+                expect.anything(),
+            ),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(
+            fetchImplementation.mock.calls.some(([url]) =>
+                String(url).includes("/internalapi/emby/"),
+            ),
+        ).toBe(false);
     });
 
     it("should show an Emby availability error", async () => {

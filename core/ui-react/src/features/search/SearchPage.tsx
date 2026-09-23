@@ -808,11 +808,11 @@ function isEmbyConfigured(safeConfig: unknown): boolean {
     if (!emby || typeof emby !== "object") {
         return false;
     }
-    const {embyBaseUrl, embyApiKey} = emby as {
+    const {embyBaseUrl, embyApiKeySet} = emby as {
         embyBaseUrl?: unknown;
-        embyApiKey?: unknown;
+        embyApiKeySet?: unknown;
     };
-    return typeof embyBaseUrl === "string" && typeof embyApiKey === "string";
+    return typeof embyBaseUrl === "string" && embyApiKeySet === true;
 }
 
 function isCheckboxIndexerSelection(safeConfig: unknown): boolean {

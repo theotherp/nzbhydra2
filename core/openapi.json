@@ -10989,8 +10989,8 @@
                     "embyBaseUrl": {
                         "type": "string"
                     },
-                    "embyApiKey": {
-                        "type": "string"
+                    "embyApiKeySet": {
+                        "type": "boolean"
                     }
                 }
             },

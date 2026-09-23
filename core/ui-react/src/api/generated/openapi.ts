@@ -3994,7 +3994,7 @@ export interface components {
         };
         SafeEmbyConfig: {
             embyBaseUrl?: string;
-            embyApiKey?: string;
+            embyApiKeySet?: boolean;
         };
         SafeIndexerConfig: {
             name?: string;
