@@ -11,6 +11,7 @@ import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.sensitive.HiddenInDebugInfos;
 import org.nzbhydra.config.sensitive.HiddenInUI;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -98,6 +99,7 @@ public class IndexerConfig {
     @SensitiveData
     @HiddenInUI
     private String password = null;
+    @HiddenInDebugInfos
     private List<String> customParameters = new ArrayList<>();
     private boolean preselect = true;
     private List<String> schedule = new ArrayList<>();

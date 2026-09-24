@@ -126,7 +126,67 @@ public class LogAnonymizerTest {
 
         anonymized = anonymized.replaceAll("IP4:[a-z0-9]*>-5", "IP4:abc>-5");
 
-        assertThat(anonymized).isEqualTo("2024-11-13 08:13:43.656  INFO --- [http-nio-<IP4:abc>-5] org.nzbhydra.searching.SearchWeb         : [ID: 35674, Host: <hidden>] New search request: SearchRequest{source=INTERNAL, indexers=[NZBGeek], searchType=SEARCH, category=All, offset=0, limit=100, query=high potential, identifiers={}}");
+        assertThat(anonymized).isEqualTo("2024-11-13 08:13:43.656  INFO --- [http-nio-0.0.0.0-5] org.nzbhydra.searching.SearchWeb         : [ID: 35674, Host: <hidden>] New search request: SearchRequest{source=INTERNAL, indexers=[NZBGeek], searchType=SEARCH, category=All, offset=0, limit=100, query=high potential, identifiers={}}");
+    }
+
+    @Test
+    void shouldAnonymizeUsernameOfLoggedRequest() {
+        //Users logged in via OIDC are not known in the config
+        String anonymized = testee.getAnonymizedLog("[ID: 25291, User: TheKnick] Creating debug infos\n[ID: 25292, User: TheKnick] Done");
+
+        assertThat(anonymized).doesNotContain("TheKnick");
+        String replacement = testee.anonymizeUsername("TheKnick");
+        assertThat(replacement).startsWith("<USER:");
+        assertThat(anonymized).isEqualTo("[ID: 25291, User: " + replacement + "] Creating debug infos\n[ID: 25292, User: " + replacement + "] Done");
+    }
+
+    @Test
+    void shouldKeepTechnicalPrincipalsOfLoggedRequests() {
+        String anonymized = testee.getAnonymizedLog("[ID: 1, User: externalApi] a [ID: 2, User: internalApi] b");
+
+        assertThat(anonymized).isEqualTo("[ID: 1, User: externalApi] a [ID: 2, User: internalApi] b");
+    }
+
+    @Test
+    void shouldAnonymizeUsernameFromConfigFollowedBySpace() {
+        String anonymized = testee.getAnonymizedLog("username: someusername");
+
+        assertThat(anonymized).isEqualTo("username: <USERNAME>");
+    }
+
+    @Test
+    void shouldRemoveInternalApiKey() {
+        String previous = System.getProperty("internalApiKey");
+        System.setProperty("internalApiKey", "currentinternalkey");
+        try {
+            String anonymized = testee.getAnonymizedLog("./core -Xmx512M -DinternalApiKey=oldinternalkey -Dfile.encoding=UTF8\n"
+                    + "GET /internalapi/control/restart?internalApiKey=otherkey&x=y\nsomething currentinternalkey");
+
+            assertThat(anonymized).isEqualTo("./core -Xmx512M -DinternalApiKey=<hidden> -Dfile.encoding=UTF8\n"
+                    + "GET /internalapi/control/restart?internalApiKey=<hidden>&x=y\nsomething <hidden>");
+        } finally {
+            if (previous == null) {
+                System.clearProperty("internalApiKey");
+            } else {
+                System.setProperty("internalApiKey", previous);
+            }
+        }
+    }
+
+    @Test
+    void shouldRemoveIdentifyingConfigValues() {
+        BaseConfig baseConfig = configProviderMock.getBaseConfig();
+        baseConfig.getAuth().setOidcIssuerUri("https://auth.mydomain.net/application/o/nzbhydra2/");
+        baseConfig.getAuth().setOidcClientId("DUEVc0L9xa3qlbyVPY7ezME7dQr9fttlNVhEKsDk");
+        baseConfig.getDownloading().setExternalUrl("https://hydra.mydomain.net");
+        baseConfig.getEmby().setEmbyApiKey("embysecret");
+        baseConfig.getIndexers().get(0).getCustomParameters().add("secret=abcdef");
+
+        String anonymized = testee.getAnonymizedLog("I/O error on GET request for \"https://auth.mydomain.net/application/o/nzbhydra2/.well-known/openid-configuration\" "
+                + "client DUEVc0L9xa3qlbyVPY7ezME7dQr9fttlNVhEKsDk url https://hydra.mydomain.net/getnzb key embysecret calling /api?t=search&secret=abcdef");
+
+        assertThat(anonymized).isEqualTo("I/O error on GET request for \"<hidden>/.well-known/openid-configuration\" "
+                + "client <hidden> url <hidden>/getnzb key <hidden> calling /api?t=search&<hidden>");
     }
 
 

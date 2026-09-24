@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.RestartRequired;
+import org.nzbhydra.config.sensitive.HiddenInDebugInfos;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -37,16 +38,22 @@ public class AuthConfig {
     private boolean restrictStats = false;
     private boolean allowApiStats = true;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcIssuerUri;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcAuthorizationUri;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcTokenUri;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcUserInfoUri;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcJwkSetUri;
     @RestartRequired
+    @HiddenInDebugInfos
     private String oidcClientId;
     @RestartRequired
     @SensitiveData

@@ -10,8 +10,7 @@ public class SensitiveDataAnnotationIntrospector extends JacksonAnnotationIntros
 
     @Override
     public Object findSerializer(MapperConfig<?> config, Annotated a) {
-        SensitiveData annotation = a.getAnnotation(SensitiveData.class);
-        if (annotation != null) {
+        if (a.hasAnnotation(SensitiveData.class) || a.hasAnnotation(HiddenInDebugInfos.class)) {
             return sensitiveDataHidingSerializer;
         }
 

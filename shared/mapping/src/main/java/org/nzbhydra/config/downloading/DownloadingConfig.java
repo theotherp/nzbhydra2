@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.sensitive.HiddenInDebugInfos;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -31,6 +32,7 @@ public class DownloadingConfig {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
     private SearchSourceRestriction fallbackForFailed = SearchSourceRestriction.BOTH;
+    @HiddenInDebugInfos
     private String externalUrl;
     private String primaryDownloader;
 

@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -39,12 +38,13 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.sun.management.HotSpotDiagnosticMXBean;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -100,7 +100,7 @@ public class DebugInfosProvider {
     @Autowired
     private Ssl ssl;
 
-    @Value("spring.datasource.url")
+    @Value("${spring.datasource.url:}")
     private String datasourceUrl;
 
     private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
@@ -279,7 +279,7 @@ public class DebugInfosProvider {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
                 writeStringToZip(zos, "nzbhydra2.log", anonymizedLog.getBytes(StandardCharsets.UTF_8));
                 writeStringToZip(zos, "nzbhydra2-config.yaml", anonymizedConfig.getBytes(StandardCharsets.UTF_8));
-                writeFileIfExists(zos, new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
+                writeAnonymizedFileIfExists(zos, new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
                 File logsFolder = new File(NzbHydra.getDataFolder(), "logs");
                 //Write all GC logs
                 File[] files = logsFolder.listFiles((dir, name) -> name.startsWith("gclog"));
@@ -288,16 +288,11 @@ public class DebugInfosProvider {
                         writeFileToZip(zos, file.getName(), file);
                     }
                 }
-                writeFileIfExists(zos, logsFolder, "wrapper.log");
-                writeFileIfExists(zos, logsFolder, "system.err.log");
-                writeFileIfExists(zos, logsFolder, "system.out.log");
-
-                File servLogFile = new File(logsFolder, "nzbhydra2.serv.log");
-                if (servLogFile.exists()) {
-                    try (FileReader reader = new FileReader(servLogFile)) {
-                        writeStringToZip(zos, "nzbhydra2.serv.log", logAnonymizer.getAnonymizedLog(IOUtils.toString(reader)).getBytes());
-                    }
-                }
+                //The wrapper log contains the command line the core was started with, including the internal API key
+                writeAnonymizedFileIfExists(zos, logsFolder, "wrapper.log");
+                writeAnonymizedFileIfExists(zos, logsFolder, "system.err.log");
+                writeAnonymizedFileIfExists(zos, logsFolder, "system.out.log");
+                writeAnonymizedFileIfExists(zos, logsFolder, "nzbhydra2.serv.log");
             }
         }
         logger.debug("Finished creating debug infos ZIP");
@@ -420,10 +415,11 @@ public class DebugInfosProvider {
         return new DecimalFormat(pattern).format(value) + suffix;
     }
 
-    private void writeFileIfExists(ZipOutputStream zos, File logsFolder, String filename) throws IOException {
-        File file = new File(logsFolder, filename);
+    private void writeAnonymizedFileIfExists(ZipOutputStream zos, File folder, String filename) throws IOException {
+        File file = new File(folder, filename);
         if (file.exists()) {
-            writeFileToZip(zos, filename, file);
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            writeStringToZip(zos, filename, logAnonymizer.getAnonymizedLog(content).getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -487,8 +483,30 @@ public class DebugInfosProvider {
     }
 
 
-    private String getAnonymizedConfig() throws JacksonException {
-        return Jackson.SENSITIVE_YAML_MAPPER.writeValueAsString(configProvider.getBaseConfig());
+    protected String getAnonymizedConfig() throws JacksonException {
+        final JsonNode configTree = Jackson.SENSITIVE_YAML_MAPPER.valueToTree(configProvider.getBaseConfig());
+        if (configTree.get("genericStorage") instanceof ObjectNode genericStorage) {
+            ((ObjectNode) configTree).set("genericStorage", anonymizeGenericStorageKeys(genericStorage));
+        }
+        return logAnonymizer.anonymizeIps(Jackson.SENSITIVE_YAML_MAPPER.writeValueAsString(configTree));
+    }
+
+    /**
+     * Keys stored for a user are suffixed with its name (see GenericStorageWeb) and users logged in via OIDC or header
+     * auth are not known in the config, so the part after the first dash of every key is replaced. Other keys with a
+     * dash lose a suffix which has no use for debugging.
+     */
+    private ObjectNode anonymizeGenericStorageKeys(ObjectNode genericStorage) {
+        final ObjectNode anonymized = Jackson.SENSITIVE_YAML_MAPPER.createObjectNode();
+        for (Map.Entry<String, JsonNode> entry : genericStorage.properties()) {
+            String key = entry.getKey();
+            int dashIndex = key.indexOf('-');
+            if (dashIndex > 0) {
+                key = key.substring(0, dashIndex + 1) + logAnonymizer.anonymizeUsername(key.substring(dashIndex + 1));
+            }
+            anonymized.set(key, entry.getValue());
+        }
+        return anonymized;
     }
 
     @Data

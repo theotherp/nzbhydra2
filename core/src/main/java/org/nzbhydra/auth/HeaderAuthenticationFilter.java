@@ -28,6 +28,11 @@ import java.util.Objects;
 public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderAuthenticationFilter.class);
+    /**
+     * Name of both the system property the wrapper passes the internal API key with and the request parameter it is sent in.
+     */
+    public static final String INTERNAL_API_KEY_PARAMETER = "internalApiKey";
+    public static final String INTERNAL_API_PRINCIPAL = "internalApi";
 
     private final HydraUserDetailsManager userDetailsManager;
     private AuthConfig authConfig;
@@ -39,7 +44,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         this.userDetailsManager = userDetailsManager;
         this.authConfig = authConfig;
         //Must be provided by wrapper
-        internalApiKey = System.getProperty("internalApiKey");
+        internalApiKey = System.getProperty(INTERNAL_API_KEY_PARAMETER);
         if (internalApiKey != null) {
             logger.info("Using internal API key");
         }
@@ -47,12 +52,12 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final String sentInternalApiKey = request.getParameterValues("internalApiKey") == null ? null : request.getParameterValues("internalApiKey")[0];
+        final String sentInternalApiKey = request.getParameterValues(INTERNAL_API_KEY_PARAMETER) == null ? null : request.getParameterValues(INTERNAL_API_KEY_PARAMETER)[0];
         if (sentInternalApiKey != null) {
             if (Objects.equals(sentInternalApiKey, internalApiKey)) {
 
                 final UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.authenticated(
-                        "internalApi", null, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+                        INTERNAL_API_PRINCIPAL, null, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
                 token.setDetails(new HydraWebAuthenticationDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(token);
                 onSuccessfulAuthentication(request, response, token);

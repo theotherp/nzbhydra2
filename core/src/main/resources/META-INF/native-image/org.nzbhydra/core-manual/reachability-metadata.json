@@ -13255,6 +13255,9 @@
       "type": "org.nzbhydra.config.searching.SearchType"
     },
     {
+      "type": "org.nzbhydra.config.sensitive.HiddenInDebugInfos"
+    },
+    {
       "type": "org.nzbhydra.config.sensitive.HiddenInUI"
     },
     {

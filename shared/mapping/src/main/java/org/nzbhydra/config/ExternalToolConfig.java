@@ -4,6 +4,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.nzbhydra.config.sensitive.HiddenInDebugInfos;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.externaltools.AddRequest;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -28,12 +29,14 @@ public class ExternalToolConfig {
 
     private String name;
     private ExternalToolType type = ExternalToolType.SONARR;
+    @HiddenInDebugInfos
     private String host;
     @SensitiveData
     private String apiKey;
     private boolean enabled = true;
     private SyncType syncType = AddRequest.AddType.SINGLE.name().equals("SINGLE") ? SyncType.SINGLE : SyncType.PER_INDEXER;
     private String nzbhydraName = "NZBHydra2";
+    @HiddenInDebugInfos
     private String nzbhydraHost = "http://host.docker.internal:5076";
 
     // Sync settings

@@ -6,6 +6,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public class SensitiveDataHidingSerializer extends ValueSerializer<Object> {
@@ -14,6 +15,16 @@ public class SensitiveDataHidingSerializer extends ValueSerializer<Object> {
 
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializationContext serializers) {
+        if (value instanceof Collection<?> collection) {
+            //Keep the number of entries visible and the value readable as the list it is
+            logger.debug("Hiding sensitive data in config setting \"{}\"", gen.streamWriteContext().currentName());
+            gen.writeStartArray();
+            for (int i = 0; i < collection.size(); i++) {
+                gen.writeString("<REMOVED>");
+            }
+            gen.writeEndArray();
+            return;
+        }
         String toWrite = "<REMOVED>";
         if (value instanceof Optional optional) {
             toWrite = optional.isPresent() ? "<REMOVED>" : "<NOTSET>";

@@ -516,7 +516,8 @@ func buildMainProcessArgs() []string {
 
 func runMainProcess(executable string, arguments []string) int {
 	terminatedByWrapper = false
-	commandLine := executable + " " + strings.Join(arguments, " ")
+	//The internal API key grants admin access, so it must not end up in the wrapper log (which is part of the debug infos)
+	commandLine := strings.ReplaceAll(executable+" "+strings.Join(arguments, " "), internalApiKey, "<hidden>")
 	Logf(logrus.InfoLevel, "Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
 	if determineReleaseType() == NATIVE {
 		executable = filepath.Join(basePath, executable)

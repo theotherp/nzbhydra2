@@ -28,3 +28,7 @@
     text: "Updating to v9 no longer fails with a database migration error when the download history contains downloads from indexers that were deleted. The downloads are kept. Installations where the update already failed are repaired on the next start. See #1096"
 -   type: "fix"
     text: "Requesting the caps as JSON (with &quot;o=json&quot;) no longer fails with error 900 in the native builds. See #1094"
+-   type: "fix"
+    text: "Some potentially sensitive values are revoked when generating debug infos."
+-   type: "fix"
+    text: "The Emby API key is now stored obfuscated in the config file, like the other API keys."
