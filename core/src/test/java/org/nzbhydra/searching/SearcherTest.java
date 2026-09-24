@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -156,6 +157,71 @@ class SearcherTest {
     }
 
     @Test
+    void shouldScaleMaxResultsLoadAllWithHeap() {
+        long mb = 1024 * 1024;
+        assertThat(Searcher.maxResultsLoadAllForHeap(256 * mb)).isEqualTo(10_240);
+        assertThat(Searcher.maxResultsLoadAllForHeap(1024 * mb)).isEqualTo(40_960);
+        assertThat(Searcher.maxResultsLoadAllForHeap(10 * mb)).isEqualTo(1000);
+    }
+
+    /**
+     * Reproduces the "Load all" 112k-result scenario from the bug report: a load-all search is paging through many
+     * rounds of results when the client aborts it (e.g. by starting a new search). {@code shortcutSearch} must stop
+     * the loop promptly - after the round of indexer calls that is in flight when it's called - instead of paging
+     * until the load-all cap or the server runs out of memory.
+     */
+    @Test
+    @Timeout(value = 120, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    void shouldStopLoadAllSearchPromptlyWhenShortcutIsRequested() throws Exception {
+        CountDownLatch firstRoundCalled = new CountDownLatch(1);
+        CountDownLatch releaseFirstRound = new CountDownLatch(1);
+        AtomicInteger calls = new AtomicInteger();
+        when(indexer.search(any(), anyInt(), any())).thenAnswer(invocation -> {
+            int call = calls.incrementAndGet();
+            if (call == 1) {
+                firstRoundCalled.countDown();
+                //Blocks until the shortcut has been requested, so the round in flight when it arrives is the only one
+                if (!releaseFirstRound.await(30, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Shortcut was never requested");
+                }
+            } else if (call > EMERGENCY_STOP_AFTER_CALLS) {
+                //Without a prompt shortcut the searcher would keep paging almost indefinitely
+                throw new IllegalStateException("Emergency stop after " + EMERGENCY_STOP_AFTER_CALLS + " calls");
+            }
+            int offset = invocation.getArgument(1);
+            IndexerSearchResult indexerSearchResult = new IndexerSearchResult(indexer, true);
+            indexerSearchResult.setSearchResultItems(List.of(searchResultItem("title" + offset)));
+            indexerSearchResult.setTotalResults(1_000_000);
+            indexerSearchResult.setTotalResultsKnown(true);
+            indexerSearchResult.setHasMoreResults(true);
+            indexerSearchResult.setOffset(offset);
+            indexerSearchResult.setPageSize(1);
+            return indexerSearchResult;
+        });
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("query");
+        searchRequest.setLoadAll(true);
+        searchRequest.setSearchRequestId(555L);
+
+        Thread searchThread = new Thread(() -> testee.search(searchRequest), "load-all-search-under-test");
+        searchThread.start();
+        try {
+            assertThat(firstRoundCalled.await(10, TimeUnit.SECONDS)).isTrue();
+
+            testee.shortcutSearch(555L);
+            releaseFirstRound.countDown();
+
+            searchThread.join(10_000);
+            assertThat(searchThread.isAlive()).as("load-all search thread finished promptly").isFalse();
+            //Only the round already in flight when the shortcut arrived was ever queried
+            assertThat(calls.get()).isEqualTo(1);
+        } finally {
+            releaseFirstRound.countDown();
+            searchThread.join(5_000);
+        }
+    }
+
+    @Test
     @Timeout(value = 120, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     void shouldStopLoadAllOnceMaxResultsCapIsReached() throws Exception {
         Searcher.maxResultsLoadAll = 5;
@@ -176,8 +242,8 @@ class SearcherTest {
 
         SearchResult searchResult = testee.search(searchRequest);
 
-        assertThat(searchResult.getSearchResultItems().size()).isGreaterThanOrEqualTo(Searcher.maxResultsLoadAll);
-        assertThat(searchResult.getSearchResultItems().size()).isLessThan(EMERGENCY_STOP_AFTER_CALLS * 2);
+        //Two results per page: the check before the fourth round sees 6 >= 5
+        assertThat(searchResult.getSearchResultItems()).hasSize(6);
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
         assertThat(captor.getAllValues()).anyMatch(SearchMessageEvent.class::isInstance);

@@ -168,6 +168,7 @@ public class SearchRequest {
             .add("category", category.getName())
             .add("offset", offset)
             .add("limit", limit)
+            .add("loadAll", loadAll ? true : null)
                 .add("minsize", minsize)
                 .add("maxsize", maxsize)
                 .add("minage", minage)

@@ -27,12 +27,14 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,7 +79,13 @@ public class SearchWeb {
 
         SearchRequest searchRequest = createSearchRequest(parameters);
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.info("New search request: {}", searchRequest);
+        if (searchRequest.isLoadAll()) {
+            logger.info("User clicked \"Load all\" for search request: {}", searchRequest);
+        } else if (searchRequest.getOffset() > 0) {
+            logger.info("User clicked \"Load more\" for search request: {}", searchRequest);
+        } else {
+            logger.info("New search request: {}", searchRequest);
+        }
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
 
         SearchResponse searchResponse = searchResultProcessor.createSearchResponse(searchResult);
@@ -109,6 +117,30 @@ public class SearchWeb {
         searcher.shortcutSearch(searchRequestId);
     }
 
+    /**
+     * Called when the UI stops waiting for a search (new search, cancelled, page left or closed) so that e.g. a
+     * "Load all" doesn't keep running. Has no effect if the search isn't running (anymore).
+     */
+    @Secured({"ROLE_USER"})
+    @PostMapping("/internalapi/abortSearch/{searchRequestId}")
+    public void abortSearch(@PathVariable Long searchRequestId, @RequestParam(required = false) String reason) {
+        String sanitizedReason = sanitizeAbortReason(reason);
+        if (sanitizedReason != null) {
+            logger.info("User aborted search with ID {} (reason: {})", searchRequestId, sanitizedReason);
+        } else {
+            logger.info("User aborted search with ID {}", searchRequestId);
+        }
+        searcher.shortcutSearch(searchRequestId);
+    }
+
+    private static final Set<String> ALLOWED_ABORT_REASONS = Set.of("newSearch", "cancelled", "leftPage", "tabClosed");
+
+    private static String sanitizeAbortReason(String reason) {
+        if (reason == null) {
+            return null;
+        }
+        return ALLOWED_ABORT_REASONS.contains(reason) ? reason : "other";
+    }
 
     private void sendSearchState(SearchState searchState) {
         messagingTemplate.convertAndSend("/topic/searchState", searchState);

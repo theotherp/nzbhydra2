@@ -2476,7 +2476,203 @@ describe("SearchPage", () => {
             }
         });
     });
+
+    // The scenario the abort endpoint exists for: a "Load all" (or any other
+    // request of this page) still running on the server when the user does
+    // something that makes the client stop waiting on it.
+    describe("aborting an in-flight search on the server", () => {
+        it("should abort the previous in-flight search when a new search starts", async () => {
+            const fetchImplementation = vi
+                .fn()
+                .mockImplementation((url: string) =>
+                    String(url).includes("abortSearch")
+                        ? Promise.resolve(new Response(null, {status: 200}))
+                        : new Promise<Response>(() => undefined),
+                );
+            render(
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const firstSearchRequestId = (
+                searchRequestBody(fetchImplementation) as {
+                    searchRequestId: number;
+                }
+            ).searchRequestId;
+
+            // Submitted through the form rather than the button: the button is
+            // busy while a search is in flight, but other submission paths can
+            // still start a second search while the first is unresolved.
+            fireEvent.submit(screen.getByTestId("search-workspace"));
+            await waitFor(() =>
+                expect(abortSearchCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const [abortUrl] = abortSearchCalls(fetchImplementation)[0];
+            expect(String(abortUrl)).toBe(
+                `http://localhost:3000/hydra/internalapi/abortSearch/${firstSearchRequestId}?reason=newSearch`,
+            );
+        });
+
+        it("should not send an abort when nothing is in flight", async () => {
+            const fetchImplementation = vi.fn(() =>
+                Promise.resolve(searchResponse()),
+            );
+            render(
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            // The first search already resolved, so submitting again must not
+            // abort anything.
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(2),
+            );
+            expect(abortSearchCalls(fetchImplementation)).toHaveLength(0);
+        });
+
+        it("should abort the in-flight search when the user cancels it", async () => {
+            const fetchImplementation = vi
+                .fn()
+                .mockImplementation((url: string) =>
+                    String(url).includes("abortSearch")
+                        ? Promise.resolve(new Response(null, {status: 200}))
+                        : new Promise<Response>(() => undefined),
+                );
+            render(
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const {searchRequestId} = searchRequestBody(
+                fetchImplementation,
+            ) as {
+                searchRequestId: number;
+            };
+            fireEvent.click(
+                await screen.findByRole("button", {
+                    name: "Cancel search and return to search mask",
+                }),
+            );
+
+            await waitFor(() =>
+                expect(abortSearchCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const [abortUrl] = abortSearchCalls(fetchImplementation)[0];
+            expect(String(abortUrl)).toBe(
+                `http://localhost:3000/hydra/internalapi/abortSearch/${searchRequestId}?reason=cancelled`,
+            );
+        });
+
+        it("should abort an in-flight search when the page unmounts", async () => {
+            const fetchImplementation = vi
+                .fn()
+                .mockImplementation((url: string) =>
+                    String(url).includes("abortSearch")
+                        ? Promise.resolve(new Response(null, {status: 200}))
+                        : new Promise<Response>(() => undefined),
+                );
+            const {unmount} = render(
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const searchRequestId = (
+                searchRequestBody(fetchImplementation) as {
+                    searchRequestId: number;
+                }
+            ).searchRequestId;
+
+            unmount();
+            // The release (and, with it, the abort) is deferred by a macrotask
+            // so a StrictMode double-invoke unmount/remount doesn't trigger it.
+            await waitFor(() =>
+                expect(abortSearchCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const [abortUrl] = abortSearchCalls(fetchImplementation)[0];
+            expect(String(abortUrl)).toBe(
+                `http://localhost:3000/hydra/internalapi/abortSearch/${searchRequestId}?reason=leftPage`,
+            );
+        });
+
+        it("should abort an in-flight search with a keepalive request on pagehide", async () => {
+            const fetchImplementation = vi
+                .fn()
+                .mockImplementation((url: string) =>
+                    String(url).includes("abortSearch")
+                        ? Promise.resolve(new Response(null, {status: 200}))
+                        : new Promise<Response>(() => undefined),
+                );
+            render(
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />,
+            );
+
+            fireEvent.click(screen.getByTestId("search-submit"));
+            await waitFor(() =>
+                expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const searchRequestId = (
+                searchRequestBody(fetchImplementation) as {
+                    searchRequestId: number;
+                }
+            ).searchRequestId;
+
+            fireEvent(window, new Event("pagehide"));
+
+            await waitFor(() =>
+                expect(abortSearchCalls(fetchImplementation)).toHaveLength(1),
+            );
+            const [abortUrl, abortInit] =
+                abortSearchCalls(fetchImplementation)[0];
+            expect(String(abortUrl)).toBe(
+                `http://localhost:3000/hydra/internalapi/abortSearch/${searchRequestId}?reason=tabClosed`,
+            );
+            expect((abortInit as RequestInit).keepalive).toBe(true);
+            // A `pagehide` abort must carry the same credentials/CSRF handling
+            // as every other `/internalapi/**` call -- `sendBeacon` can't set
+            // the `X-XSRF-TOKEN` header, which is why this goes through `fetch`.
+            expect((abortInit as RequestInit).credentials).toBe("same-origin");
+        });
+    });
 });
+
+function abortSearchCalls(mock: ReturnType<typeof vi.fn>) {
+    return mock.mock.calls.filter(([url]) =>
+        String(url).includes("/internalapi/abortSearch/"),
+    );
+}
 
 function searchRequestCalls(mock: ReturnType<typeof vi.fn>) {
     return mock.mock.calls.filter(([url]) =>

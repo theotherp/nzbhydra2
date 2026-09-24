@@ -131,6 +131,31 @@ export async function shortcutSearch(
     });
 }
 
+// Only used for the server's log line.
+export type AbortSearchReason =
+    | "newSearch"
+    | "cancelled"
+    | "leftPage"
+    | "tabClosed";
+
+// Stops a running internal search on the server, e.g. a "Load all" nobody is
+// waiting for anymore. `keepalive` lets the request outlive a closed tab.
+export async function abortSearch(
+    transport: ApiTransport,
+    searchRequestId: number,
+    reason?: AbortSearchReason,
+    keepalive?: boolean,
+): Promise<void> {
+    const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+    await transport.request(
+        `internalapi/abortSearch/${searchRequestId}${query}`,
+        {
+            method: "POST",
+            ...(keepalive ? {keepalive: true} : {}),
+        },
+    );
+}
+
 export function parseSearchResponse(response: unknown): SearchResponse {
     const parsed = responseSchema.safeParse(response);
     if (!parsed.success) {

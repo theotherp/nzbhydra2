@@ -22,8 +22,8 @@ import {getAutocomplete, getEmbyAvailability} from "../../api/media";
 import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
-import type {SearchRequest, SearchResponse} from "../../api/search";
-import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
+import type {AbortSearchReason, SearchRequest, SearchResponse} from "../../api/search";
+import {abortSearch, continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
 import {DEFAULT_QUERY_STALE_TIME_MS, retryUnlessUnauthorized,} from "../../app/queryDefaults";
 import {reportSessionError} from "../../app/sessionExpiry";
@@ -182,6 +182,26 @@ export function SearchPage({
     const activeSubmission = useRef<
         {cancelled: boolean; subscription?: LiveSubscription} | undefined
     >(undefined);
+    // The search (initial, "Load more" or "Load all") currently running on the
+    // server, aborted there when this page gives up on it.
+    const inFlightSearchRequestId = useRef<number | undefined>(undefined);
+    // Best effort: a failed abort is of no interest to the user.
+    const abortRunningSearch = useCallback(
+        (reason: AbortSearchReason, keepalive?: boolean) => {
+            const searchRequestId = inFlightSearchRequestId.current;
+            if (searchRequestId === undefined) {
+                return;
+            }
+            inFlightSearchRequestId.current = undefined;
+            void abortSearch(
+                transport,
+                searchRequestId,
+                reason,
+                keepalive,
+            ).catch(() => undefined);
+        },
+        [transport],
+    );
     const embyGeneration = useRef(0);
     const releaseSubmission = (submission = activeSubmission.current) => {
         if (!submission || submission.cancelled) {
@@ -214,9 +234,18 @@ export function SearchPage({
                 pendingUnmountRelease.current = null;
                 embyGeneration.current++;
                 releaseSubmission();
+                // A real unmount; a StrictMode remount cleared this timeout.
+                abortRunningSearch("leftPage");
             });
         };
-    }, []);
+    }, [abortRunningSearch]);
+    // Tab closed or reloaded. `keepalive` lets the request outlive the page;
+    // `sendBeacon` can't send the CSRF header `/internalapi/**` requires.
+    useEffect(() => {
+        const handlePageHide = () => abortRunningSearch("tabClosed", true);
+        window.addEventListener("pagehide", handlePageHide);
+        return () => window.removeEventListener("pagehide", handlePageHide);
+    }, [abortRunningSearch]);
     // Navigating back to a bare "/" (e.g. the top nav's Search link) resets
     // the URL and, through `routeValues`/`initialValues` above, the form --
     // but `state` lives independently of the route and nothing else cleared
@@ -227,6 +256,7 @@ export function SearchPage({
         if (hasExecutableCriteria(search)) {
             return;
         }
+        abortRunningSearch("leftPage");
         releaseSubmission();
         setState({loading: false});
         setProgress(undefined);
@@ -244,6 +274,7 @@ export function SearchPage({
         if (indexers.length === 0) {
             return;
         }
+        abortRunningSearch("newSearch");
         releaseSubmission();
         const submission: {
             cancelled: boolean;
@@ -353,6 +384,7 @@ export function SearchPage({
                     }
                 },
             );
+        inFlightSearchRequestId.current = request.searchRequestId;
         try {
             const data = await executeSearch(transport, request);
             if (activeSubmission.current === submission) {
@@ -384,6 +416,9 @@ export function SearchPage({
                 });
             }
         } finally {
+            if (inFlightSearchRequestId.current === request.searchRequestId) {
+                inFlightSearchRequestId.current = undefined;
+            }
             releaseSubmission(submission);
         }
     };
@@ -408,14 +443,13 @@ export function SearchPage({
             setLiveUnavailable("Unable to show early results.");
         }
     };
-    // No server-side cancellation request is sent (legacy parity: the
-    // backend keeps searching; only the client abandons it, recorded as a
-    // deliberate `F-SEARCH-PROGRESS` gap). `releaseSubmission` already marks
+    // The server-side search is aborted as well. `releaseSubmission` marks
     // the submission cancelled and closes its live subscription, which
     // starves every post-await check in `submit` (`activeSubmission.current
     // === submission`) guarding the abandoned `executeSearch`/subscribe
     // continuations, so their eventual resolution can no longer write state.
     const cancelSearch = () => {
+        abortRunningSearch("cancelled");
         releaseSubmission();
         setState({loading: false});
         setProgress(undefined);
@@ -444,15 +478,23 @@ export function SearchPage({
                       data.numberOfAvailableResults -
                           data.numberOfProcessedResults,
                   );
-        const next = await executeSearch(
-            transport,
-            continuationRequest(
-                request,
-                offset,
-                loadAll ? remaining : undefined,
-                loadAll,
-            ),
-        );
+        inFlightSearchRequestId.current = request.searchRequestId;
+        let next: SearchResponse;
+        try {
+            next = await executeSearch(
+                transport,
+                continuationRequest(
+                    request,
+                    offset,
+                    loadAll ? remaining : undefined,
+                    loadAll,
+                ),
+            );
+        } finally {
+            if (inFlightSearchRequestId.current === request.searchRequestId) {
+                inFlightSearchRequestId.current = undefined;
+            }
+        }
         const terminalLoadAllResponse =
             loadAll && next.offset === 0 && next.limit === 0;
         if (

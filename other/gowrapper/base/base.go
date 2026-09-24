@@ -311,38 +311,19 @@ func determineXmxAndLogGc() (string, bool, string) {
 	xmx := ""
 	logGc := false
 	customVmOptions := ""
-	if *argsXmx != "" {
-		xmx = *argsXmx
-	}
 	if _, err := os.Stat(yamlPath); err == nil {
 		file, err := os.Open(yamlPath)
 		LogFatalIfError(err)
 
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if strings.Contains(line, "argsXmx:") {
-				xmx = strings.TrimSpace(line[5:])
-			}
-			if strings.Contains(line, "logGc: ") {
-				logGc = strings.TrimSpace(line[7:]) == "true"
-			}
-			if strings.Contains(line, "customVmOptions:") {
-				customVmOptions = strings.TrimSpace(line[17:])
-				// Remove quotes if present
-				customVmOptions = strings.Trim(customVmOptions, `"'`)
-				// Treat "null" as empty string
-				if customVmOptions == "null" {
-					customVmOptions = ""
-				}
-			}
-		}
-
-		err = file.Close()
-		LogFatalIfError(err)
-		if err := scanner.Err(); err != nil {
+		xmx, logGc, customVmOptions, err = readVmSettings(file)
+		closeErr := file.Close()
+		LogFatalIfError(closeErr)
+		if err != nil {
 			Fatal(err)
 		}
+	}
+	if *argsXmx != "" {
+		xmx = *argsXmx
 	}
 	if xmx == "" {
 		xmx = "256"
@@ -353,6 +334,33 @@ func determineXmxAndLogGc() (string, bool, string) {
 		xmx = xmx[:len(xmx)-1]
 	}
 	return xmx, logGc, customVmOptions
+}
+
+// readVmSettings reads xmx, logGc and customVmOptions from the main section of nzbhydra.yml.
+// The keys are indented in the YAML file so the values must be taken after the key, not at a fixed position.
+func readVmSettings(reader io.Reader) (string, bool, string, error) {
+	xmx := ""
+	logGc := false
+	customVmOptions := ""
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if value, found := strings.CutPrefix(line, "xmx:"); found {
+			xmx = strings.TrimSpace(value)
+		}
+		if value, found := strings.CutPrefix(line, "logGc:"); found {
+			logGc = strings.TrimSpace(value) == "true"
+		}
+		if value, found := strings.CutPrefix(line, "customVmOptions:"); found {
+			// Remove quotes if present
+			customVmOptions = strings.Trim(strings.TrimSpace(value), `"'`)
+			// Treat "null" as empty string
+			if customVmOptions == "null" {
+				customVmOptions = ""
+			}
+		}
+	}
+	return xmx, logGc, customVmOptions, scanner.Err()
 }
 
 func handleUnexpectedExit() {

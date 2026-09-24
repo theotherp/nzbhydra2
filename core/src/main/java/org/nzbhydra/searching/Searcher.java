@@ -45,10 +45,21 @@ public class Searcher {
     private static final int LOAD_LIMIT_API = 500;
 
     /**
-     * Maximum number of results kept for one "load all" search. The total reported by indexers can't be trusted and
-     * loading ~30k results exhausted a 256MB heap. Not final so tests can lower it.
+     * Number of results a "load all" search may keep per MB of max heap. The total reported by indexers can't be
+     * trusted and loading ~30k results exhausted a 256MB heap, so this allows ~10k results for 256MB.
      */
-    static int maxResultsLoadAll = 10_000;
+    private static final int LOAD_ALL_RESULTS_PER_MB_HEAP = 40;
+    private static final int MIN_RESULTS_LOAD_ALL = 1000;
+
+    /**
+     * Maximum number of results kept for one "load all" search. Not final so tests can lower it.
+     */
+    static int maxResultsLoadAll = maxResultsLoadAllForHeap(Runtime.getRuntime().maxMemory());
+
+    static int maxResultsLoadAllForHeap(long maxHeapBytes) {
+        long maxHeapMb = maxHeapBytes / (1024 * 1024);
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(MIN_RESULTS_LOAD_ALL, maxHeapMb * LOAD_ALL_RESULTS_PER_MB_HEAP));
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
@@ -115,8 +126,8 @@ public class Searcher {
                 //Every accepted result ends up in the merged items (API searches may drop duplicates) so they bound memory use
                 int resultsFetched = searchCacheEntry.getSearchResultItems().size();
                 if (resultsFetched >= maxResultsLoadAll) {
-                    logger.info("Stopped loading all results after {} results were fetched from indexers to avoid exhausting memory", resultsFetched);
-                    eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Stopped loading all results after " + resultsFetched + " results to avoid running out of memory"));
+                    logger.info("Stopped loading all results after {} results to avoid running out of memory. The limit is {} results; increase the XMX value in the main config to load more", resultsFetched, maxResultsLoadAll);
+                    eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Stopped loading all results after " + resultsFetched + " results to avoid running out of memory. Increase the XMX value in the main config to load more"));
                     break;
                 }
             }
