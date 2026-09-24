@@ -10,6 +10,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.FallbackSearchInitiatedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerQueriesStartedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
@@ -234,6 +235,15 @@ public class SearchWeb {
         updateAndSendSearchState(event.getSearchRequest().getSearchRequestId(), searchState -> {
             searchState.setIndexerSelectionFinished(true);
             searchState.setIndexersSelected(event.getIndexersSelected());
+        });
+    }
+
+    @EventListener
+    public void handleIndexerQueriesStartedEvent(IndexerQueriesStartedEvent event) {
+        //One indexer may be queried several times for more pages. Continuations never get an IndexerSelectionEvent
+        updateAndSendSearchState(event.getSearchRequest().getSearchRequestId(), searchState -> {
+            searchState.setIndexerSelectionFinished(true);
+            searchState.setIndexersSelected(Math.max(searchState.getIndexersSelected(), searchState.getIndexersFinished() + event.getNumberOfQueries()));
         });
     }
 

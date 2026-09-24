@@ -10,6 +10,9 @@ import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.searching.dtoseventsenums.IndexerQueriesStartedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
@@ -79,6 +82,46 @@ class SearchWebTest {
 
         assertThat(response).isEqualTo(searchResponse);
         assertThat(searchStates().get(42L).isSearchFinished()).isTrue();
+    }
+
+    @Test
+    void shouldKeepIndexersFinishedAndSelectedEqualWhenOneIndexerIsPagedSeveralTimes() {
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setSearchRequestId(200L);
+        searchStates().put(200L, new SearchState(200L));
+
+        testee.handleIndexerSelectionEvent(new IndexerSelectionEvent(searchRequest, 1));
+        assertThat(searchStates().get(200L).getIndexersSelected()).isEqualTo(1);
+        assertThat(searchStates().get(200L).getIndexersFinished()).isEqualTo(0);
+
+        for (int round = 1; round <= 3; round++) {
+            testee.handleIndexerQueriesStartedEvent(new IndexerQueriesStartedEvent(searchRequest, 1));
+            SearchState afterQueryStarted = searchStates().get(200L);
+            assertThat(afterQueryStarted.getIndexersFinished()).isLessThanOrEqualTo(afterQueryStarted.getIndexersSelected());
+
+            testee.handleIndexerSearchFinishedEvent(new IndexerSearchFinishedEvent(searchRequest));
+            SearchState afterFinished = searchStates().get(200L);
+            assertThat(afterFinished.getIndexersFinished()).isLessThanOrEqualTo(afterFinished.getIndexersSelected());
+            assertThat(afterFinished.getIndexersFinished()).isEqualTo(round);
+        }
+
+        SearchState finalState = searchStates().get(200L);
+        assertThat(finalState.getIndexersFinished()).isEqualTo(3);
+        assertThat(finalState.getIndexersSelected()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldSetIndexersSelectedForContinuationRequestWithoutIndexerSelectionEvent() {
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 100);
+        searchRequest.setSearchRequestId(201L);
+        searchStates().put(201L, new SearchState(201L));
+
+        //Continuation requests reuse a cached search and never trigger IndexerSelectionEvent
+        testee.handleIndexerQueriesStartedEvent(new IndexerQueriesStartedEvent(searchRequest, 1));
+
+        SearchState searchState = searchStates().get(201L);
+        assertThat(searchState.isIndexerSelectionFinished()).isTrue();
+        assertThat(searchState.getIndexersSelected()).isEqualTo(1);
     }
 
     @SuppressWarnings("unchecked")

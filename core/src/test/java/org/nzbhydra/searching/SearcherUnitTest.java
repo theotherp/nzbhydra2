@@ -461,9 +461,12 @@ public class SearcherUnitTest {
         searcher.search(searchRequest);
 
         ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(applicationEventPublisherMock).publishEvent(eventCaptor.capture());
-        assertThat(eventCaptor.getValue()).isInstanceOf(Searcher.SearchEvent.class);
-        assertThat(((Searcher.SearchEvent) eventCaptor.getValue()).searchRequest()).isSameAs(searchRequest);
+        verify(applicationEventPublisherMock, org.mockito.Mockito.atLeastOnce()).publishEvent(eventCaptor.capture());
+        List<Object> searchEvents = eventCaptor.getAllValues().stream()
+            .filter(Searcher.SearchEvent.class::isInstance)
+            .collect(java.util.stream.Collectors.toList());
+        assertThat(searchEvents).hasSize(1);
+        assertThat(((Searcher.SearchEvent) searchEvents.get(0)).searchRequest()).isSameAs(searchRequest);
     }
 
     // ------------------------------------------------------------------------------------------------

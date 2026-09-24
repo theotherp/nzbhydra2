@@ -352,7 +352,7 @@ describe("SearchResults", () => {
         );
 
         expect(screen.getByRole("status")).toHaveTextContent(
-            "invalid paging cursor",
+            "returned none that could be shown",
         );
         const loadMoreButton = screen.getByRole("button", {
             name: "Load more",
@@ -360,6 +360,34 @@ describe("SearchResults", () => {
         expect(loadMoreButton).toBeDisabled();
         fireEvent.click(loadMoreButton);
         expect(loadMore).not.toHaveBeenCalled();
+    });
+
+    it("should explain rejected counts and reasons for an initial zero paging cursor", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 0,
+                    numberOfProcessedResults: 0,
+                    numberOfRejectedResults: 7500,
+                    rejectedReasonsMap: {"Wrong age": 7500},
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                        },
+                    ],
+                }}
+                onLoadMore={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "None of the 7,500 results loaded from the indexers passed your filters, so the search stopped. Rejected: Wrong age (7,500). Try a more specific query",
+        );
     });
 
     it("should preserve result selectors for valid entries", () => {

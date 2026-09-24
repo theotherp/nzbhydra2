@@ -1,8 +1,10 @@
 package org.nzbhydra.searching;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -14,7 +16,9 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.dtoseventsenums.IndexerQueriesStartedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,9 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SearcherTest {
@@ -56,12 +58,19 @@ class SearcherTest {
     @InjectMocks
     private Searcher testee;
 
+    private static final int DEFAULT_MAX_RESULTS_LOAD_ALL = Searcher.maxResultsLoadAll;
+
     @BeforeEach
     void setUp() {
         when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
         when(searchPersister.createSearchEntity(any(), any())).thenReturn(new SearchEntity());
         when(indexer.getName()).thenReturn("indexerName");
         when(indexerSelector.pickIndexers(any())).thenReturn(new IndexerForSearchSelection(Collections.emptyMap(), List.of(indexer)));
+    }
+
+    @AfterEach
+    void restoreMaxResultsLoadAll() {
+        Searcher.maxResultsLoadAll = DEFAULT_MAX_RESULTS_LOAD_ALL;
     }
 
     @Test
@@ -114,6 +123,64 @@ class SearcherTest {
 
         assertThat(searchResult.getSearchResultItems()).hasSize(3);
         verify(indexer, atMost(4)).search(any(), anyInt(), any());
+    }
+
+    @Test
+    @Timeout(value = 120, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    void shouldPublishIndexerQueriesStartedEventForEveryRoundOfQueries() throws Exception {
+        when(indexer.search(any(), anyInt(), any())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            IndexerSearchResult indexerSearchResult = new IndexerSearchResult(indexer, true);
+            indexerSearchResult.setSearchResultItems(List.of(searchResultItem("title" + offset)));
+            indexerSearchResult.setTotalResults(3);
+            indexerSearchResult.setTotalResultsKnown(true);
+            indexerSearchResult.setHasMoreResults(offset < 2);
+            indexerSearchResult.setOffset(offset);
+            indexerSearchResult.setPageSize(1);
+            return indexerSearchResult;
+        });
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 3);
+        searchRequest.setQuery("query");
+
+        SearchResult searchResult = testee.search(searchRequest);
+
+        assertThat(searchResult.getSearchResultItems()).hasSize(3);
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
+        List<IndexerQueriesStartedEvent> queriesStartedEvents = captor.getAllValues().stream()
+            .filter(IndexerQueriesStartedEvent.class::isInstance)
+            .map(IndexerQueriesStartedEvent.class::cast)
+            .collect(java.util.stream.Collectors.toList());
+        assertThat(queriesStartedEvents).hasSize(3);
+        assertThat(queriesStartedEvents).allSatisfy(event -> assertThat(event.getNumberOfQueries()).isEqualTo(1));
+    }
+
+    @Test
+    @Timeout(value = 120, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    void shouldStopLoadAllOnceMaxResultsCapIsReached() throws Exception {
+        Searcher.maxResultsLoadAll = 5;
+        when(indexer.search(any(), anyInt(), any())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            IndexerSearchResult indexerSearchResult = new IndexerSearchResult(indexer, true);
+            indexerSearchResult.setSearchResultItems(List.of(searchResultItem("title" + offset), searchResultItem("title" + (offset + 1))));
+            indexerSearchResult.setTotalResults(Integer.MAX_VALUE);
+            indexerSearchResult.setTotalResultsKnown(true);
+            indexerSearchResult.setHasMoreResults(true);
+            indexerSearchResult.setOffset(offset);
+            indexerSearchResult.setPageSize(2);
+            return indexerSearchResult;
+        });
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("query");
+        searchRequest.setLoadAll(true);
+
+        SearchResult searchResult = testee.search(searchRequest);
+
+        assertThat(searchResult.getSearchResultItems().size()).isGreaterThanOrEqualTo(Searcher.maxResultsLoadAll);
+        assertThat(searchResult.getSearchResultItems().size()).isLessThan(EMERGENCY_STOP_AFTER_CALLS * 2);
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
+        assertThat(captor.getAllValues()).anyMatch(SearchMessageEvent.class::isInstance);
     }
 
     private SearchResultItem searchResultItem(String title) {

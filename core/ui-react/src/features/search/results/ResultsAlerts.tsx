@@ -12,15 +12,31 @@ import type {SearchResponse} from "../../../api/search";
  * layout. Every condition, message and `data-testid` is the one
  * `SearchResults` rendered before this split.
  */
+
+// `offset: 0, limit: 0` with more results available means Hydra rejected
+// every result it loaded (or the indexers returned only empty pages) until the
+// per-search query limit stopped it.
+function nothingAcceptedMessage(data: SearchResponse): string {
+    if (data.numberOfRejectedResults === 0) {
+        return "The indexers report more results but returned none that could be shown, so the search stopped. Try again later or use a more specific query.";
+    }
+    const reasons = Object.entries(data.rejectedReasonsMap)
+        .sort((first, second) => second[1] - first[1])
+        .map(([reason, count]) => `${reason} (${count.toLocaleString()})`)
+        .join(", ");
+    const reasonsPhrase = reasons ? ` Rejected: ${reasons}.` : "";
+    return `None of the ${data.numberOfRejectedResults.toLocaleString()} results loaded from the indexers passed your filters, so the search stopped.${reasonsPhrase} Try a more specific query or less restrictive filters.`;
+}
+
 export function ResultsAlerts({
     allIndexersFailed,
     data,
-    hasInvalidPagingCursor,
+                                  nothingAcceptedButMoreAvailable,
     pagingError,
 }: {
     allIndexersFailed: boolean;
     data: SearchResponse;
-    hasInvalidPagingCursor: boolean;
+    nothingAcceptedButMoreAvailable: boolean;
     pagingError: string | undefined;
 }) {
     return (
@@ -88,10 +104,9 @@ export function ResultsAlerts({
                     incomplete paging information.
                 </Alert>
             )}
-            {hasInvalidPagingCursor && (
+            {nothingAcceptedButMoreAvailable && (
                 <Alert role="status" severity="warning">
-                    More results cannot be loaded because the server returned an
-                    invalid paging cursor.
+                    {nothingAcceptedMessage(data)}
                 </Alert>
             )}
             {pagingError && (

@@ -610,7 +610,9 @@ export function SearchResults({
     const hasRemainingKnownResults =
         data.numberOfProcessedResults !== undefined &&
         data.numberOfProcessedResults < data.numberOfAvailableResults;
-    const hasInvalidPagingCursor =
+    // `offset: 0, limit: 0` means no loaded result was accepted. Continuing
+    // from offset 0 would start a new search, so paging has to stop here.
+    const nothingAcceptedButMoreAvailable =
         data.pagingState === "ready" &&
         data.offset === 0 &&
         data.limit === 0 &&
@@ -619,7 +621,7 @@ export function SearchResults({
         onLoadMore !== undefined &&
         data.pagingState === "ready" &&
         (hasMoreResults || hasRemainingKnownResults) &&
-        !hasInvalidPagingCursor &&
+        !nothingAcceptedButMoreAvailable &&
         !pagingExhausted;
     const requestContinuation = async (loadAll: boolean) => {
         if (!onLoadMore || pagingLoading || !pagingAvailable) {
@@ -1018,7 +1020,7 @@ export function SearchResults({
             <ResultsAlerts
                 allIndexersFailed={allIndexersFailed}
                 data={data}
-                hasInvalidPagingCursor={hasInvalidPagingCursor}
+                nothingAcceptedButMoreAvailable={nothingAcceptedButMoreAvailable}
                 pagingError={pagingError}
             />
             {showToolbar && (

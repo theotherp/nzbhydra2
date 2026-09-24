@@ -1376,7 +1376,7 @@ describe("SearchPage", () => {
             name: "Load more",
         });
         expect(screen.getByRole("status")).toHaveTextContent(
-            "invalid paging cursor",
+            "returned none that could be shown",
         );
         expect(loadMore).toBeDisabled();
         fireEvent.click(loadMore);

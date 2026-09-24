@@ -13,7 +13,9 @@ import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.dtoseventsenums.IndexerQueriesStartedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -41,6 +43,12 @@ import java.util.stream.Collectors;
 public class Searcher {
 
     private static final int LOAD_LIMIT_API = 500;
+
+    /**
+     * Maximum number of results kept for one "load all" search. The total reported by indexers can't be trusted and
+     * loading ~30k results exhausted a 256MB heap. Not final so tests can lower it.
+     */
+    static int maxResultsLoadAll = 10_000;
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
@@ -104,9 +112,11 @@ public class Searcher {
                 break;
             }
             if (searchRequest.isLoadAll()) {
-                int maxResultsToLoad = searchCacheEntry.getNumberOfTotalAvailableResults();
-                if (searchCacheEntry.getSearchResultItems().size() > maxResultsToLoad) {
-                    logger.info("Aborting loading all results because more than {} results were already loaded and we don't want to hammer the indexers too much", maxResultsToLoad);
+                //Every accepted result ends up in the merged items (API searches may drop duplicates) so they bound memory use
+                int resultsFetched = searchCacheEntry.getSearchResultItems().size();
+                if (resultsFetched >= maxResultsLoadAll) {
+                    logger.info("Stopped loading all results after {} results were fetched from indexers to avoid exhausting memory", resultsFetched);
+                    eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Stopped loading all results after " + resultsFetched + " results to avoid running out of memory"));
                     break;
                 }
             }
@@ -119,6 +129,7 @@ public class Searcher {
 
             //Do the actual search
             if (!indexersToSearch.isEmpty()) {
+                eventPublisher.publishEvent(new IndexerQueriesStartedEvent(searchRequest, indexersToSearch.size()));
                 List<IndexerSearchResult> newIndexerSearchResults = queryIndexers(searchRequest, indexersToSearch, activeSearch);
                 //Group the new items right away so that the merge can decide which of them to return
                 List<SearchResultItem> newItems = newIndexerSearchResults.stream()

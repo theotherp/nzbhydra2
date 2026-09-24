@@ -10,3 +10,9 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "The search progress dialog now counts indexer queries instead of claiming more indexers were searched than selected. One indexer may be queried several times to load more results."
+-   type: "fix"
+    text: "When no loaded result passed your filters (e.g. a minimum age on a broad query) the search page now says so and lists the rejection reasons instead of showing &quot;invalid paging cursor&quot;."
+-   type: "fix"
+    text: "&quot;Load all&quot; stops after 10,000 results. Loading more could run Hydra out of memory and break its database until a restart."

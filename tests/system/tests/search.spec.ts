@@ -1,17 +1,5 @@
-import {
-    csrfHeaders,
-    dismissWelcomeDialog,
-    expect,
-    test,
-    testEnvironment,
-} from "./fixtures";
-import {
-    captureVisualRegion,
-    expectVisualGeometry,
-    prepareVisualEvidence,
-    visualEvidencePath,
-    visualViewports,
-} from "./visualEvidence";
+import {csrfHeaders, dismissWelcomeDialog, expect, test, testEnvironment,} from "./fixtures";
+import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 const movieQuery = "Hydra Browser Movie";
 
@@ -848,7 +836,7 @@ test.describe("Search", () => {
             const modal = page.getByTestId("search-status-modal");
             await expect(modal).toBeVisible();
             await expect(modal).toContainText("DemoIndexer1 returned results");
-            await expect(modal).toContainText("Indexers finished: 1 / 3");
+            await expect(modal).toContainText("Indexer queries finished: 1 / 3");
 
             // FM-083: the Cancel button sits alongside "Show early results"
             // -- the two-button layout the Visual Gate screenshot strip

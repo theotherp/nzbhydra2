@@ -619,7 +619,7 @@ export function SearchPage({
                     >
                         <Typography>
                             {progress
-                                ? `Indexers finished: ${progress.indexersFinished} / ${progress.indexersSelected}`
+                                ? `Indexer queries finished: ${progress.indexersFinished} / ${progress.indexersSelected}`
                                 : "Preparing live search progress…"}
                         </Typography>
                         {progress?.indexerSelectionFinished ? (
