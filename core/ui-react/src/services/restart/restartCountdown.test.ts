@@ -128,6 +128,27 @@ describe("pingRestartTarget", () => {
         ).resolves.toBeUndefined();
     });
 
+    it("should resolve when the session did not survive the restart (401)", async () => {
+        // Only a running Hydra can answer with an auth rejection; a
+        // session-only login never survives the restart, so this is the
+        // common case, not an edge case.
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 401}));
+        await expect(
+            pingRestartTarget("http://host/ping", fetchImplementation),
+        ).resolves.toBeUndefined();
+    });
+
+    it("should resolve when the instance rejects with 403", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 403}));
+        await expect(
+            pingRestartTarget("http://host/ping", fetchImplementation),
+        ).resolves.toBeUndefined();
+    });
+
     it("should reject while the instance is still down", async () => {
         const fetchImplementation = vi
             .fn()
@@ -135,5 +156,14 @@ describe("pingRestartTarget", () => {
         await expect(
             pingRestartTarget("http://host/ping", fetchImplementation),
         ).rejects.toThrow("Restart ping failed with status 503");
+    });
+
+    it("should reject when a reverse proxy answers while Hydra is down", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 502}));
+        await expect(
+            pingRestartTarget("http://host/ping", fetchImplementation),
+        ).rejects.toThrow("Restart ping failed with status 502");
     });
 });

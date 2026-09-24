@@ -11,6 +11,10 @@
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "fix"
+    text: "After a restart or update you now stay logged in if &quot;Remember users&quot; is enabled. Previously every restart logged you out. See #1099"
+-   type: "fix"
+    text: "After a restart or update the page now reloads when NZBHydra is back, even if you need to log in again. Previously it could wait on &quot;Restarting NZBHydra2&quot; forever. See #1099"
+-   type: "fix"
     text: "Testing a downloader connection no longer fails with an API key error when the saved API key, username or password were left at &quot;Value unchanged&quot;. See #1098"
 -   type: "fix"
     text: "Backups now store passwords and API keys obfuscated, like the main config file. Backups made by older versions can still be restored."

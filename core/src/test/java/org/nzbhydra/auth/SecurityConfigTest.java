@@ -432,6 +432,9 @@ class SecurityConfigTest {
         context.getBeanFactory().registerSingleton("authAndAccessEventHandler", accessDeniedHandler());
         context.getBeanFactory().registerSingleton("asyncSupportFilter", new AsyncSupportFilter());
         context.getBeanFactory().registerSingleton("externalApiKeyFilter", new ExternalApiKeyFilter(configProvider, false));
+        RememberMeKeyProvider rememberMeKeyProvider = Mockito.mock(RememberMeKeyProvider.class);
+        Mockito.when(rememberMeKeyProvider.getKey()).thenReturn("test-remember-me-key");
+        context.getBeanFactory().registerSingleton("rememberMeKeyProvider", rememberMeKeyProvider);
         AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(context);
         reader.register(SecurityConfig.class);
         reader.register(EndpointsUnderTest.class);

@@ -171,6 +171,8 @@ public class SecurityConfig {
     private AsyncSupportFilter asyncSupportFilter;
     @Autowired
     private ExternalApiKeyFilter externalApiKeyFilter;
+    @Autowired
+    private RememberMeKeyProvider rememberMeKeyProvider;
     private HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Bean
@@ -306,6 +308,7 @@ public class SecurityConfig {
                 int rememberMeValiditySeconds = rememberMeValidityDays * SECONDS_PER_DAY;
                 http = http
                         .rememberMe(me -> me
+                                .key(rememberMeKeyProvider.getKey())
                                 .alwaysRemember(true)
                                 .tokenValiditySeconds(rememberMeValiditySeconds)
                                 .userDetailsService(userDetailsService));

@@ -58,6 +58,15 @@ export function restartTarget(
  * why this is a plain `fetch` rather than `C-API-TRANSPORT` (which is
  * deliberately locked to the application's own origin). The endpoint carries
  * `@CrossOrigin` for exactly this reason.
+ *
+ * The endpoint is `@Secured ROLE_ADMIN`. A session-only login does not
+ * survive the restart (sessions live in memory), so the restarted instance
+ * answers 401; background requests get a plain 401/403 rather than a login
+ * redirect (`BackgroundRequestAuthenticationEntryPoint`). Only a running
+ * Hydra can produce that auth rejection, so 401/403 count as "back up" too -
+ * the reload then lands on the login page. Anything else that isn't OK (e.g.
+ * a reverse proxy answering 502/503 while Hydra itself is still down) must
+ * keep throwing so polling continues.
  */
 export async function pingRestartTarget(
     url: string,
@@ -67,7 +76,7 @@ export async function pingRestartTarget(
         credentials: "same-origin",
         headers: {Accept: "application/json"},
     });
-    if (!response.ok) {
+    if (!response.ok && response.status !== 401 && response.status !== 403) {
         throw new Error(`Restart ping failed with status ${response.status}`);
     }
 }

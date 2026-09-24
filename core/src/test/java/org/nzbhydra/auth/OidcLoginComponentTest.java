@@ -192,6 +192,7 @@ class OidcLoginComponentTest {
         context.getBeanFactory().registerSingleton("authAndAccessEventHandler", Mockito.mock(AuthAndAccessEventHandler.class));
         context.getBeanFactory().registerSingleton("asyncSupportFilter", new AsyncSupportFilter());
         context.getBeanFactory().registerSingleton("externalApiKeyFilter", new ExternalApiKeyFilter(configProvider, false));
+        context.getBeanFactory().registerSingleton("rememberMeKeyProvider", Mockito.mock(RememberMeKeyProvider.class));
         new AnnotatedBeanDefinitionReader(context).register(SecurityConfig.class);
         context.refresh();
         return context;
