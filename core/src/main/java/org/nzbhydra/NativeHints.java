@@ -71,7 +71,8 @@ public class NativeHints implements RuntimeHintsRegistrar {
         classes.add(HtmlRenderer.class);
         logger.info("Registering {} classes", classes.size());
         for (Class<?> clazz : classes) {
-            hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+            //Jackson reads and writes fields directly, e.g. when the JSON name is only declared on the field
+            hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.ACCESS_DECLARED_FIELDS);
             for (Method method : clazz.getDeclaredMethods()) {
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }

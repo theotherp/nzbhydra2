@@ -9,7 +9,10 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonLimitsAttributes;
 import org.nzbhydra.springnative.ReflectionMarker;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
 import java.io.File;
 import java.io.Serializable;
@@ -41,6 +44,15 @@ public class NativeHintsTest {
         }
         Assertions.assertThat(classesWithMissingReflectionMarker).isEmpty();
 
+    }
+
+    @Test
+    public void shouldRegisterFieldAccessForMarkedClasses() {
+        final RuntimeHints hints = new RuntimeHints();
+        new NativeHints().registerHints(hints, getClass().getClassLoader());
+
+        //Jackson accesses the field directly when serializing caps as JSON, see #1094
+        Assertions.assertThat(RuntimeHintsPredicates.reflection().onFieldAccess(CapsJsonLimitsAttributes.class, "_default")).accepts(hints);
     }
 
     private static void checkNestedTypes(Set<String> classesWithMissingReflectionMarker, JavaClassSource javaClassSource) {

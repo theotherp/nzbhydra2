@@ -26,3 +26,5 @@
     text: "Search field is autofocused again. See #1097"
 -   type: "fix"
     text: "Updating to v9 no longer fails with a database migration error when the download history contains downloads from indexers that were deleted. The downloads are kept. Installations where the update already failed are repaired on the next start. See #1096"
+-   type: "fix"
+    text: "Requesting the caps as JSON (with &quot;o=json&quot;) no longer fails with error 900 in the native builds. See #1094"
