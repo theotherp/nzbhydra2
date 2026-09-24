@@ -51,6 +51,7 @@ jobs:
       contents: read
       pull-requests: write
       actions: read
+      packages: read
     # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
     # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
     # cancelled mid-suite, which discards the reporter's summary and leaves the
@@ -120,10 +121,32 @@ jobs:
               mkdir -p /tmp/hydraBlackhole_core /tmp/hydra/defaultDataFolder
               chmod 777 /tmp/hydraBlackhole_core
 
+      -   name: "Login to GitHub Container Registry"
+          # Anonymous pulls share a rate limit with every other anonymous client on the runner's network; the
+          # linuxserver images are popular enough to exhaust it (toomanyrequests).
+          uses: docker/login-action@v4
+          with:
+              registry: ghcr.io
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+
+      -   name: "Pull images"
+          working-directory: docker/docker-compose-systemtest/linux
+          run: |
+              for attempt in 1 2 3; do
+                if docker compose pull --quiet; then
+                  exit 0
+                fi
+                if [ "$attempt" -lt 3 ]; then
+                  sleep "$((attempt * 10))"
+                fi
+              done
+              exit 1
+
       - name: "Run docker compose"
         run: |
           cd docker/docker-compose-systemtest/linux
-          if ! docker compose up --quiet-pull -d; then
+            if ! docker compose up -d; then
             docker compose ps
             docker compose logs --no-color
             exit 1
@@ -304,6 +327,7 @@ jobs:
       contents: read
       pull-requests: write
       actions: read
+      packages: read
     # The Playwright suite alone is ~26 minutes on this runner, on top of ~5
     # minutes of setup, ~3 of maven, and the Java suite. At 30 the job was
     # cancelled mid-suite, which discards the reporter's summary and leaves the
@@ -417,9 +441,30 @@ jobs:
               mkdir -p /tmp/hydraBlackhole_core /tmp/hydra/defaultDataFolder
               chmod 777 /tmp/hydraBlackhole_core
 
+      -   name: "Login to GitHub Container Registry"
+          # Anonymous pulls share a rate limit with every other anonymous client on the runner's network; the
+          # linuxserver images are popular enough to exhaust it (toomanyrequests).
+          uses: docker/login-action@v4
+          with:
+              registry: ghcr.io
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+
+      -   name: "Pull images"
+          run: |
+              for attempt in 1 2 3; do
+                if docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml pull --quiet mockserver sonarr radarr core; then
+                  exit 0
+                fi
+                if [ "$attempt" -lt 3 ]; then
+                  sleep "$((attempt * 10))"
+                fi
+              done
+              exit 1
+
       - name: "Run JVM core and supporting containers"
         run: |
-          docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml up --quiet-pull -d mockserver sonarr radarr core
+            docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml up -d mockserver sonarr radarr core
 
       - name: "Wait for JVM core"
         run: |
@@ -544,6 +589,7 @@ jobs:
           contents: read
           pull-requests: write
           actions: read
+          packages: read
       timeout-minutes: 45
       env:
           spring_profiles_active: build,systemtest,testdocker,core
@@ -594,8 +640,27 @@ jobs:
           -   name: "Create docker network"
               run: docker network create systemtest
 
+          -   name: "Login to GitHub Container Registry"
+              uses: docker/login-action@v4
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+          -   name: "Pull images"
+              run: |
+                  for attempt in 1 2 3; do
+                      if docker compose $COMPOSE_FILES pull --quiet mockserver core; then
+                          exit 0
+                      fi
+                      if [ "$attempt" -lt 3 ]; then
+                          sleep "$((attempt * 10))"
+                      fi
+                  done
+                  exit 1
+
           -   name: "Run mockserver and JVM core with the fixture"
-              run: docker compose $COMPOSE_FILES up --quiet-pull -d mockserver core
+              run: docker compose $COMPOSE_FILES up -d mockserver core
 
           -   name: "Wait for the migrated JVM core"
               # The migration exports and re-imports the database in separate java processes; allow well over the usual
@@ -688,6 +753,7 @@ jobs:
           contents: read
           pull-requests: write
           actions: read
+          packages: read
       timeout-minutes: 45
       env:
           spring_profiles_active: build,systemtest,testdocker,core
@@ -748,8 +814,27 @@ jobs:
           -   name: "Create docker network"
               run: docker network create systemtest
 
+          -   name: "Login to GitHub Container Registry"
+              uses: docker/login-action@v4
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+          -   name: "Pull images"
+              run: |
+                  for attempt in 1 2 3; do
+                      if docker compose $COMPOSE_FILES pull --quiet mockserver core; then
+                          exit 0
+                      fi
+                      if [ "$attempt" -lt 3 ]; then
+                          sleep "$((attempt * 10))"
+                      fi
+                  done
+                  exit 1
+
           -   name: "Run mockserver and native core with the fixture"
-              run: docker compose $COMPOSE_FILES up --quiet-pull -d mockserver core
+              run: docker compose $COMPOSE_FILES up -d mockserver core
 
           -   name: "Wait for the migrated native core"
               # The migration exports and re-imports the database within the core process; allow well over the
