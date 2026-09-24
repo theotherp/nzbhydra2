@@ -2,6 +2,32 @@
 # These are for the user and should not be too technical and focus on what changes for them.
 # Released versions only. Do not add entries by hand: write them to changelog-unreleased.yaml,
 # misc/build_and_release.py moves them here when a release is built.
+-   version: "v9.0.5"
+    date: "2026-09-24"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "After a restart or update you now stay logged in if &quot;Remember users&quot; is enabled. Previously every restart logged you out. See #1099"
+      -   type: "fix"
+          text: "After a restart or update the page now reloads when NZBHydra is back, even if you need to log in again. Previously it could wait on &quot;Restarting NZBHydra2&quot; forever. See #1099"
+      -   type: "fix"
+          text: "Testing a downloader connection no longer fails with an API key error when the saved API key, username or password were left at &quot;Value unchanged&quot;. See #1098"
+      -   type: "fix"
+          text: "Backups now store passwords and API keys obfuscated, like the main config file. Backups made by older versions can still be restored."
+      -   type: "fix"
+          text: "The Emby API key is no longer sent to the browser of users who are not admins."
+      -   type: "fix"
+          text: "Saving the config after deleting, adding and renaming users, indexers or downloaders in one go could give one of them the saved password or API key of another. Each one now keeps its own. Testing the connection or checking the capabilities of an indexer or downloader you just renamed also uses its own saved credentials, and asks you to enter them again instead of sending a placeholder if they can&apos;t be found."
+      -   type: "fix"
+          text: "Search field is autofocused again. See #1097"
+      -   type: "fix"
+          text: "Updating to v9 no longer fails with a database migration error when the download history contains downloads from indexers that were deleted. The downloads are kept. Installations where the update already failed are repaired on the next start. See #1096"
+      -   type: "fix"
+          text: "Requesting the caps as JSON (with &quot;o=json&quot;) no longer fails with error 900 in the native builds. See #1094"
+      -   type: "fix"
+          text: "Some potentially sensitive values are revoked when generating debug infos."
+      -   type: "fix"
+          text: "The Emby API key is now stored obfuscated in the config file, like the other API keys."
 -   version: "v9.0.4"
     date: "2026-09-22"
     final: true

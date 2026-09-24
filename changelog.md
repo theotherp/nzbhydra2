@@ -1,3 +1,29 @@
+### v9.0.5 (2026-09-24)
+
+**Fix** After a restart or update you now stay logged in if &quot;Remember users&quot; is enabled. Previously every restart logged you out. See <a href="https://github.com/theotherp/nzbhydra2/issues/1099">#1099</a>
+
+**Fix** After a restart or update the page now reloads when NZBHydra is back, even if you need to log in again. Previously it could wait on &quot;Restarting NZBHydra2&quot; forever. See <a href="https://github.com/theotherp/nzbhydra2/issues/1099">#1099</a>
+
+**Fix** Testing a downloader connection no longer fails with an API key error when the saved API key, username or password were left at &quot;Value unchanged&quot;. See <a href="https://github.com/theotherp/nzbhydra2/issues/1098">#1098</a>
+
+**Fix** Backups now store passwords and API keys obfuscated, like the main config file. Backups made by older versions can still be restored.
+
+**Fix** The Emby API key is no longer sent to the browser of users who are not admins.
+
+**Fix** Saving the config after deleting, adding and renaming users, indexers or downloaders in one go could give one of them the saved password or API key of another. Each one now keeps its own. Testing the connection or checking the capabilities of an indexer or downloader you just renamed also uses its own saved credentials, and asks you to enter them again instead of sending a placeholder if they can&apos;t be found.
+
+**Fix** Search field is autofocused again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1097">#1097</a>
+
+**Fix** Updating to v9 no longer fails with a database migration error when the download history contains downloads from indexers that were deleted. The downloads are kept. Installations where the update already failed are repaired on the next start. See <a href="https://github.com/theotherp/nzbhydra2/issues/1096">#1096</a>
+
+**Fix** Requesting the caps as JSON (with &quot;o=json&quot;) no longer fails with error 900 in the native builds. See <a href="https://github.com/theotherp/nzbhydra2/issues/1094">#1094</a>
+
+**Fix** Some potentially sensitive values are revoked when generating debug infos.
+
+**Fix** The Emby API key is now stored obfuscated in the config file, like the other API keys.
+
+
+
 ### v9.0.4 (2026-09-22)
 
 **Fix** Saving the config could fail with &quot;...was submitted as ***UNCHANGED*** but no stored value could be found to keep&quot; for indexers, downloaders or logins you never touched. This happened when an older version had saved that placeholder literally instead of the real API key/username/password (which also made searches on the affected indexer fail without explanation). Such a broken value is now detected and cleared automatically when the config is loaded, the affected indexer is marked incomplete so it's skipped until fixed, and you can simply enter the correct value again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1091">#1091</a>
