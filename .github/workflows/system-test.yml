@@ -267,7 +267,10 @@ jobs:
         if: always()
         with:
           name: system-test--linux-native--core--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
-          path: /tmp/hydra
+            # rememberMe.key is a secret the core writes owner-only as root; the runner cannot read it.
+          path: |
+              /tmp/hydra
+              !/tmp/hydra/**/rememberMe.key
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v7
@@ -654,7 +657,10 @@ jobs:
               if: always()
               with:
                   name: system-test--migration--jvm--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
-                  path: /tmp/hydraMigration
+                  # rememberMe.key is a secret the core writes owner-only as root; the runner cannot read it.
+                  path: |
+                      /tmp/hydraMigration
+                      !/tmp/hydraMigration/**/rememberMe.key
 
           -   name: "Upload test logs artifact"
               uses: actions/upload-artifact@v7
@@ -805,7 +811,10 @@ jobs:
               if: always()
               with:
                   name: system-test--migration--native--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
-                  path: /tmp/hydraMigration
+                  # rememberMe.key is a secret the core writes owner-only as root; the runner cannot read it.
+                  path: |
+                      /tmp/hydraMigration
+                      !/tmp/hydraMigration/**/rememberMe.key
 
           -   name: "Upload test logs artifact"
               uses: actions/upload-artifact@v7
