@@ -23,7 +23,13 @@ export function recentSearchCriteria(
         criteria.minsize = search.minSize.toString();
     if (search.maxSize !== undefined)
         criteria.maxsize = search.maxSize.toString();
-    if (search.selectedIndexers !== undefined) {
+    // Searches recorded before the indexer selection was stored come back
+    // with an empty list, which would leave the form without an indexer and
+    // make repeating the search a silent no-op. See #1101.
+    if (
+        search.selectedIndexers !== undefined &&
+        search.selectedIndexers.length > 0
+    ) {
         criteria.indexers = search.selectedIndexers.join(",");
     }
     for (const identifier of search.identifiers) {

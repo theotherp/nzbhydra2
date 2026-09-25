@@ -67,4 +67,13 @@ describe("recentSearchCriteria", () => {
             ),
         ).toEqual({category: "Movies"});
     });
+
+    it("should omit an empty indexer selection recorded before selections were stored", () => {
+        expect(
+            recentSearchCriteria(
+                {categoryName: "Movies", identifiers: [], selectedIndexers: []},
+                catalog,
+            ),
+        ).toEqual({category: "Movies"});
+    });
 });

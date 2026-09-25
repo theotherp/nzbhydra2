@@ -82,7 +82,16 @@ function indexersFromSearch(
     if (typeof search.indexers !== "string") {
         return catalog.preselectedIndexerNames(category);
     }
-    return search.indexers.split(",").filter((name) => eligible.has(name));
+    const indexers = search.indexers
+        .split(",")
+        .filter((name) => eligible.has(name));
+    // A repeated search may only name indexers that were since disabled or
+    // removed. That empty selection can't be submitted, so the default
+    // preselection applies instead. An explicitly empty selection stays
+    // empty. See #1101.
+    return indexers.length > 0 || search.indexers === ""
+        ? indexers
+        : catalog.preselectedIndexerNames(category);
 }
 
 function fieldValue(search: Record<string, unknown>, name: string): string {

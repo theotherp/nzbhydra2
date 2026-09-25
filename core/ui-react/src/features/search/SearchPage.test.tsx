@@ -504,6 +504,56 @@ describe("SearchPage", () => {
         });
     });
 
+    // #1101: rows recorded before the indexer selection was stored come
+    // back with `selectedIndexers: []` (JPA's `@ElementCollection` yields an
+    // empty set, not null). Repeating such a search used to fall through to
+    // zero indexers and silently do nothing; it should fall back to the
+    // category's preselected indexers instead.
+    it("should repeat a recent search recorded before indexer selection was stored", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (url: RequestInfo | URL, init?: RequestInit) => {
+                if (String(url).endsWith("/internalapi/search") && init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify(
+                            String(url).includes("forsearching")
+                                ? [
+                                    {
+                                        categoryName: "All",
+                                        source: "INTERNAL",
+                                        query: "pre-9.0.0 query",
+                                        selectedIndexers: [],
+                                        identifiers: [],
+                                    },
+                                ]
+                                : responseEnvelope,
+                        ),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
+        fireEvent.click(
+            await screen.findByRole("menuitem", {name: /^Repeat:/}),
+        );
+        await waitFor(() => expect(requests).toHaveLength(1));
+        expect(JSON.parse(requests[0].body as string)).toMatchObject({
+            indexers: ["Configured"],
+        });
+    });
+
     it("should open, focus, and close the recent-search menu", async () => {
         const fetchImplementation = vi.fn(() =>
             Promise.resolve(

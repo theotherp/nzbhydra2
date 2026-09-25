@@ -20,3 +20,5 @@
     text: "On Windows the wrapper ignored the XMX, logGc and custom VM options values from the main config and always started Hydra with 256MB. Requires a new wrapper."
 -   type: "fix"
     text: "A running search, including &quot;Load all&quot;, is stopped on the server when you start a new search, cancel it, leave the search page or close the browser tab. Before, it kept loading results in the background."
+-   type: "fix"
+    text: "Repeating an older recent search or an entry on the search history page did nothing. This affected searches made before 9.0.0 and searches whose indexers have since been disabled or removed. They now run with your preselected indexers. See #1101"
