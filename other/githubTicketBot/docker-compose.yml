@@ -1,0 +1,15 @@
+services:
+    githubticketbot:
+        build: .
+        image: githubticketbot:latest
+        restart: unless-stopped
+        env_file:
+            - .env
+        # Container paths; these take precedence over the same keys in .env,
+        # so a .env written for a non-docker run still works here.
+        environment:
+            BOT_STATE_FILE: /data/state.json
+            BOT_GITHUB_APP_PRIVATE_KEY_FILE: /secrets/app.pem
+        volumes:
+            - ./state:/data
+            - ./secrets/app.pem:/secrets/app.pem:ro
