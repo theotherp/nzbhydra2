@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "The indexer statuses page is much more compact on phones: each indexer shows its name and a colored state badge on one line and hides empty fields. The state badge also makes problem indexers easier to spot on desktop."
