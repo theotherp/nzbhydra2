@@ -1,0 +1,16 @@
+[Unit]
+Description=NZBHydra2 GitHub ticket bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=githubticketbot
+WorkingDirectory=/opt/githubticketbot
+EnvironmentFile=/opt/githubticketbot/.env
+ExecStart=/opt/githubticketbot/venv/bin/python -m ticketbot
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
