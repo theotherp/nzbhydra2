@@ -33,6 +33,11 @@ export type StoredChoices = {
     // `showCovers`.
     hideDownloaded?: boolean;
     highlightRecent?: boolean;
+    // FM-199 (ADR-0054): whether the per-indexer summary above the toolbar is
+    // expanded -- legacy's `indexerStatusesExpanded`
+    // (`search-results-controller.js:161,980-982` at `3ce28441e^`), which it
+    // kept under its own storage key and defaulted *off*, as here.
+    indexerSummaryOpen?: boolean;
     refineCategoryOpen?: boolean;
     refineIndexerOpen?: boolean;
     // FM-176 (ADR-0054): "Show duplicate expand controls", the opt-in that
@@ -46,6 +51,10 @@ export type StoredChoices = {
     // (`search-results-controller.js:153`); here it joins the other display
     // options in this one payload.
     showCovers?: boolean;
+    // FM-199 (ADR-0054): "Show indexer summary", whether the per-indexer
+    // summary renders at all. Owner (2026-09-26): shown by default; legacy
+    // had no such switch, its accordion always rendered.
+    showIndexerSummary?: boolean;
     // FM-197 (ADR-0054): "Show button to download results as ZIP", legacy's
     // preference (`search-results-controller.js:171,317-320` at
     // `3ce28441e^`), which defaulted *on* there and here. Offered only while

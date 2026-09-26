@@ -221,6 +221,7 @@ features:
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
       - core/ui-react/src/features/search/results/resultTable.test.ts
       - core/ui-react/src/features/search/results/ResultDetailLinks.test.tsx
+      - core/ui-react/src/features/search/results/IndexerSummary.test.tsx
     selectors:
       - search-results
       - indexer-limit-warnings
@@ -241,6 +242,17 @@ features:
       - display-options-toggle
       - display-options
       - display-option-hide-downloaded
+      # 2026-09-26 (FM-199, owner request): legacy's collapsible "Indexer
+      # statuses" accordion (`search-results.html:12-123` at `3ce28441e^`)
+      # is restored as `indexer-summary`, a stock `Accordion` between the
+      # alerts and `results-toolbar`. See the note at the end of this record.
+      - indexer-summary
+      - indexer-summary-toggle
+      - indexer-summary-details
+      - indexer-summary-row-{{indexerName}}
+      - indexer-summary-status-link-{{indexerName}}
+      - display-option-indexer-summary
+      - results-indexer-failures
       - search-result-indexer-swatch
       - search-result-cover
       - search-result-cover-tile
@@ -332,8 +344,36 @@ features:
       # the count and the hide both read only that persisted field, never a
       # session's own send (see F-SEARCH-DOWNLOADS below). The filter
       # dimension itself is F-SEARCH-SORT-FILTER's.
+      # 2026-09-26 (FM-199, owner request): `indexer-summary` restores
+      # legacy's "Indexer statuses" accordion. Collapsed, the
+      # `indexer-summary-toggle` line reads "Indexers · N searched · N failed
+      # (warning colour, only when > 0) · N not searched (only when > 0) ·
+      # slowest <indexer> (<s>)"; below 768px it is counts only ("N indexers
+      # · N failed · N not searched"), measured to fit at 390px. Expanded,
+      # `indexer-summary-details` has one `indexer-summary-row-<name>` per
+      # indexer -- failed, then successful by name, then not searched --
+      # with results as "found of total" (">" before a total the indexer
+      # could not count), the response time in seconds with a determinate
+      # `LinearProgress` against the slowest, and a success icon, the error
+      # message, or "Not searched: <reason>"; below 768px each row is a
+      # two-line card. Every figure is the indexer's most recent request, not
+      # a sum over continuations (see API-SEARCH-EXECUTE), and a caption says
+      # so. A failed or not-searched indexer's name opens the indexer
+      # statuses page in a new tab when the session may see stats. Two
+      # ADR-0054 choices join `hydra.search-results.table`:
+      # `showIndexerSummary` (default on, the `display-option-indexer-summary`
+      # entry) and `indexerSummaryOpen` (default off, legacy's
+      # `indexerStatusesExpanded`). Hidden with a failure, the count phrase
+      # gains `results-indexer-failures` ("N indexer(s) failed"), which
+      # re-shows and expands the summary. The alerts are unchanged.
     parity: partial
     gaps:
+      - deliberate - FM-199 (owner request 2026-09-26) adds a "Show indexer summary" display option (default on) that
+        hides the restored indexer summary; legacy's accordion always rendered. Rejection reasons are not repeated in it;
+        they stay in `results-rejected-popover`, where legacy listed them under the same accordion
+      - deliberate - FM-199 shows each searched indexer's results as "found of total" of its most recent request, where
+        legacy showed only the indexer's reported total (`numberOfAvailableResults`), and its response time in seconds
+        with a bar relative to the slowest, where legacy showed milliseconds
       - deliberate - FM-177 (owner request 2026-09-02) renders the optional result cover behind a "Show covers" display option
         that is off by default, where legacy defaulted it on (`search-results-controller.js:153`); the separate `poster` field
         is not built

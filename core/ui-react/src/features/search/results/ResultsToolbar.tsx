@@ -1,6 +1,14 @@
 import BookmarkAddOutlinedIcon from "@mui/icons-material/BookmarkAddOutlined";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import {Badge, Box, Button, IconButton, Stack, Typography} from "@mui/material";
+import {
+    Badge,
+    Box,
+    Button,
+    IconButton,
+    Link,
+    Stack,
+    Typography,
+} from "@mui/material";
 import type {SortingState, Table} from "@tanstack/react-table";
 import type {ContextType, Dispatch, RefObject, SetStateAction} from "react";
 
@@ -69,10 +77,12 @@ export function ResultsToolbar({
     hasResults,
     hideDownloaded,
     highlightRecent,
+    indexerFailureCount,
     invertVisibleSelection,
     moreResultsAvailable,
     onLoadMore,
     onSaveSearch,
+    onRevealIndexerSummary,
     onToggleExpandGroupsByDefault,
     pagingAvailable,
     pagingLoading,
@@ -94,10 +104,12 @@ export function ResultsToolbar({
     setSelected,
     setShowCovers,
     setShowDuplicateControls,
+    setShowIndexerSummary,
     setShowZipButton,
     setSorting,
     showCovers,
     showDuplicateControls,
+    showIndexerSummary,
     showZipButton,
     sorting,
     table,
@@ -130,10 +142,15 @@ export function ResultsToolbar({
     // default here; see `useResultDisplayChoices`.
     hideDownloaded: boolean;
     highlightRecent: boolean;
+    // FM-199: searched indexers that failed, shown as a hint in the count
+    // phrase while the indexer summary is hidden.
+    indexerFailureCount: number;
     invertVisibleSelection: () => void;
     moreResultsAvailable: boolean;
     onLoadMore?: (loadAll: boolean) => Promise<void>;
     onSaveSearch?: () => Promise<void>;
+    // FM-199: re-shows and expands the indexer summary.
+    onRevealIndexerSummary: () => void;
     // Not a `Dispatch` like its neighbours: flipping this option also drops
     // the per-group expansion overrides, which only `SearchResults` holds.
     onToggleExpandGroupsByDefault: () => void;
@@ -157,10 +174,12 @@ export function ResultsToolbar({
     setSelected: Dispatch<SetStateAction<Set<string>>>;
     setShowCovers: Dispatch<SetStateAction<boolean>>;
     setShowDuplicateControls: Dispatch<SetStateAction<boolean>>;
+    setShowIndexerSummary: Dispatch<SetStateAction<boolean>>;
     setShowZipButton: Dispatch<SetStateAction<boolean>>;
     setSorting: (next: SortingState) => void;
     showCovers: boolean;
     showDuplicateControls: boolean;
+    showIndexerSummary: boolean;
     // FM-197: the browser-local preference; see `useResultDisplayChoices`.
     showZipButton: boolean;
     sorting: SortingState;
@@ -292,6 +311,32 @@ export function ResultsToolbar({
                                     />
                                 </>
                             )}
+                            {/* FM-199 (owner, 2026-09-26): with the
+                                indexer summary hidden a failed indexer
+                                would be silent again, so the phrase names
+                                it, and activating it brings the summary
+                                back expanded. Same inline `Link` anatomy
+                                as the rejection trigger beside it; the
+                                warning colour is the header's own "N
+                                failed". */}
+                            {!showIndexerSummary && indexerFailureCount > 0 && (
+                                <>
+                                    {" · "}
+                                    <Link
+                                        component="button"
+                                        data-testid="results-indexer-failures"
+                                        onClick={onRevealIndexerSummary}
+                                        sx={{color: "warning.main"}}
+                                        type="button"
+                                    >
+                                        {indexerFailureCount}{" "}
+                                        {indexerFailureCount === 1
+                                            ? "indexer"
+                                            : "indexers"}{" "}
+                                        failed
+                                    </Link>
+                                </>
+                            )}
                             {!refineSurfaceCompact && selected.size > 0 && (
                                 <Box
                                     component="span"
@@ -413,9 +458,13 @@ export function ResultsToolbar({
                                 onToggleShowZipButton={() =>
                                     setShowZipButton((current) => !current)
                                 }
+                                onToggleShowIndexerSummary={() =>
+                                    setShowIndexerSummary((current) => !current)
+                                }
                                 refineSurfaceShown={refineSurfaceShown}
                                 showCovers={showCovers}
                                 showDuplicateControls={showDuplicateControls}
+                                showIndexerSummary={showIndexerSummary}
                                 showZipButton={showZipButton}
                                 zipButtonAllowed={zipButtonAllowed}
                             />

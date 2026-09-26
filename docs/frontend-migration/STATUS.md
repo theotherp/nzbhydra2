@@ -1836,6 +1836,16 @@ description (pointer/hover access works, and the packet's literal wording is met
 `throw new Error(...)` lines were reflowed by Prettier as incidental noise in an allowed file. Candidates for a
 future quickfix.
 
+FM-199 (Per-Indexer Search Summary Above The Results) is done. Legacy's search-results indexer accordion returns as a
+collapsed one-line `indexer-summary` above the toolbar (searched / failed / not searched / slowest; counts only below
+768px) that expands to a per-indexer table or phone cards: found-of-total, response time with a relative bar, status or
+error, not-picked reasons, and a base-URL-safe link to indexer statuses for failed or skipped indexers. `showIndexerSummary`
+(default on) and `indexerSummaryOpen` (default off) join ADR-0054's payload; hidden with a failure, the toolbar shows
+`results-indexer-failures`. Metadata is per last request per indexer (`Searcher.java:180-183`), captioned as such.
+Passed with minor findings, not corrected (optional): the phone header says "N indexers" where "N searched" keeps the
+meaning; a pre-existing quality-badge comment now heads the new test block; literal `fontWeight: 600`; with the summary
+hidden and zero results loaded, nothing re-enables it from that search. Candidates for a future quickfix.
+
 ## Review
 
 None.

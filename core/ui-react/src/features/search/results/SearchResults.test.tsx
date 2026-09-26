@@ -1,4 +1,12 @@
-import {act, cleanup, fireEvent, render, screen, waitFor, within,} from "@testing-library/react";
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import {createElement} from "react";
 import type {MockedFunction} from "vitest";
 import {afterEach, describe, expect, it, vi} from "vitest";
@@ -6,7 +14,10 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
-import {stubMissingLocalStorage, stubNarrowViewport,} from "../../../test/browserStubs";
+import {
+    stubMissingLocalStorage,
+    stubNarrowViewport,
+} from "../../../test/browserStubs";
 import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
 import {SearchResults} from "./SearchResults";
 
@@ -781,9 +792,10 @@ describe("SearchResults", () => {
         );
         expandRefineSidebar();
         expect(
-            within(
-                screen.getByTestId("refine-quality-filters"),
-            ).queryByRole("button", {name: "test"}),
+            within(screen.getByTestId("refine-quality-filters")).queryByRole(
+                "button",
+                {name: "test"},
+            ),
         ).toBeNull();
 
         rendered.rerender(
@@ -804,9 +816,10 @@ describe("SearchResults", () => {
         );
 
         expect(
-            within(
-                screen.getByTestId("refine-quality-filters"),
-            ).getByRole("button", {name: "test"}),
+            within(screen.getByTestId("refine-quality-filters")).getByRole(
+                "button",
+                {name: "test"},
+            ),
         ).toBeVisible();
     });
 
@@ -3598,6 +3611,7 @@ describe("SearchResults", () => {
             ["Show duplicate expand controls", false],
             ["Show covers", false],
             ["Hide downloaded results (0)", false],
+            ["Show indexer summary", true],
             ["Show refine sidebar", false],
         ]);
     });
@@ -4937,10 +4951,12 @@ describe("SearchResults", () => {
             "groupTorrentAndUsenet",
             "hideDownloaded",
             "highlightRecent",
+            "indexerSummaryOpen",
             "refineCategoryOpen",
             "refineIndexerOpen",
             "showCovers",
             "showDuplicateControls",
+            "showIndexerSummary",
             "showZipButton",
             "sidebarCollapsed",
             "sorting",
@@ -5432,9 +5448,9 @@ describe("SearchResults", () => {
             vi.spyOn(
                 Element.prototype,
                 "getBoundingClientRect",
-            ).mockImplementation(function(this: Element) {
+            ).mockImplementation(function (this: Element) {
                 const rect = realRect.call(this) as DOMRect;
-                if (this.matches("[data-testid=\"results-toolbar\"]")) {
+                if (this.matches('[data-testid="results-toolbar"]')) {
                     return {...rect, height: 64} as DOMRect;
                 }
                 if (this.matches("thead th")) {
@@ -7447,6 +7463,176 @@ describe("SearchResults per-row send to black hole", () => {
 // `qualityRating`/`qualityWarnings` are only ever populated together by the
 // backend, so presence of the badge is tested directly against the field
 // rather than any config.
+// FM-199: the per-indexer summary's wiring -- where it renders, the two
+// display choices it adds to the `hydra.search-results.table` payload, and the
+// toolbar hint that stands in for it while it is hidden.
+describe("SearchResults indexer summary", () => {
+    const withFailure = {
+        ...response,
+        numberOfAvailableResults: 1,
+        searchResults: [
+            {
+                searchResultId: "1",
+                title: "Summary result",
+                indexer: "Working",
+                category: "Movies",
+            },
+        ],
+        indexerSearchMetaDatas: [
+            {
+                indexerName: "Working",
+                wasSuccessful: true,
+                didSearch: true,
+                responseTime: 300,
+                numberOfFoundResults: 1,
+                numberOfAvailableResults: 1,
+            },
+            {
+                indexerName: "Broken",
+                wasSuccessful: false,
+                didSearch: true,
+                errorMessage: "Connection refused",
+            },
+        ],
+        notPickedIndexersWithReason: {Idle: "Disabled"},
+    };
+
+    function storedPayload(): Record<string, unknown> {
+        return JSON.parse(
+            window.localStorage.getItem("hydra.search-results.table") ?? "{}",
+        ) as Record<string, unknown>;
+    }
+
+    it("should render the summary collapsed above the toolbar by default", () => {
+        renderResults(<SearchResults data={withFailure} />);
+        const summary = screen.getByTestId("indexer-summary");
+        const toolbar = screen.getByTestId("results-toolbar");
+        expect(
+            summary.compareDocumentPosition(toolbar) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(screen.getByTestId("indexer-summary-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(screen.queryByTestId("results-indexer-failures")).toBeNull();
+        expect(storedPayload()).toMatchObject({
+            indexerSummaryOpen: false,
+            showIndexerSummary: true,
+        });
+    });
+
+    it("should keep the summary expanded and a hidden summary hidden across a remount", () => {
+        const {unmount} = renderResults(<SearchResults data={withFailure} />);
+        fireEvent.click(screen.getByTestId("indexer-summary-toggle"));
+        expect(screen.getByTestId("indexer-summary-details")).toBeVisible();
+        expect(storedPayload()).toMatchObject({indexerSummaryOpen: true});
+        unmount();
+
+        const second = renderResults(<SearchResults data={withFailure} />);
+        expect(screen.getByTestId("indexer-summary-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        fireEvent.click(
+            within(openDisplayOptions()).getByTestId(
+                "display-option-indexer-summary",
+            ),
+        );
+        expect(screen.queryByTestId("indexer-summary")).toBeNull();
+        expect(storedPayload()).toMatchObject({showIndexerSummary: false});
+        second.unmount();
+
+        // A stored `false` must survive: `??`, not `||`.
+        renderResults(<SearchResults data={withFailure} />);
+        expect(screen.queryByTestId("indexer-summary")).toBeNull();
+        expect(
+            within(openDisplayOptions()).getByTestId(
+                "display-option-indexer-summary",
+            ),
+        ).not.toBeChecked();
+    });
+
+    it("should name failed indexers in the toolbar while hidden and bring the summary back expanded", () => {
+        window.localStorage.setItem(
+            "hydra.search-results.table",
+            JSON.stringify({
+                indexerSummaryOpen: false,
+                showIndexerSummary: false,
+            }),
+        );
+        renderResults(<SearchResults data={withFailure} />);
+        expect(screen.queryByTestId("indexer-summary")).toBeNull();
+        const hint = within(
+            screen.getByTestId("search-results-summary"),
+        ).getByTestId("results-indexer-failures");
+        expect(hint).toHaveTextContent("1 indexer failed");
+
+        fireEvent.click(hint);
+        expect(screen.getByTestId("indexer-summary-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(
+            screen.getByTestId("indexer-summary-row-Broken"),
+        ).toHaveTextContent("Connection refused");
+        expect(screen.queryByTestId("results-indexer-failures")).toBeNull();
+        expect(storedPayload()).toMatchObject({
+            indexerSummaryOpen: true,
+            showIndexerSummary: true,
+        });
+    });
+
+    it("should not add a failure hint when every searched indexer succeeded", () => {
+        window.localStorage.setItem(
+            "hydra.search-results.table",
+            JSON.stringify({showIndexerSummary: false}),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...withFailure,
+                    indexerSearchMetaDatas: [
+                        withFailure.indexerSearchMetaDatas[0],
+                    ],
+                }}
+            />,
+        );
+        expect(screen.queryByTestId("results-indexer-failures")).toBeNull();
+    });
+
+    it("should keep the all-failed and none-picked alerts beside the summary", () => {
+        const {rerender} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Broken", wasSuccessful: false},
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getByText(/Unable to search any indexer/)).toBeVisible();
+        expect(screen.getByTestId("indexer-summary-toggle")).toHaveTextContent(
+            "1 failed",
+        );
+        rerender(
+            <SearchResults
+                data={{
+                    ...response,
+                    notPickedIndexersWithReason: {Idle: "Disabled"},
+                }}
+            />,
+        );
+        expect(
+            screen.getByText("No indexers were picked for this search"),
+        ).toBeVisible();
+        expect(screen.getByTestId("indexer-summary-toggle")).toHaveTextContent(
+            "1 not searched",
+        );
+    });
+});
+
 describe("SearchResults quality badge", () => {
     afterEach(() => {
         cleanup();

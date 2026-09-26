@@ -2242,6 +2242,8 @@ test.describe("Search results", () => {
             // `nzbAccessType: "PROXY"`, so the capability holds and the
             // entry renders, checked by its own default.
             ["Show button to download results as ZIP", true],
+            // FM-199: shown by default (owner, 2026-09-26).
+            ["Show indexer summary", true],
             ["Show refine sidebar", true],
         ] as Array<[string, boolean]>) {
             const entry = page.getByRole("checkbox", {name, exact: true});
@@ -5017,6 +5019,7 @@ test.describe("Search results", () => {
             "Show covers",
             "Hide downloaded results (0)",
             "Show button to download results as ZIP",
+            "Show indexer summary",
             "Show refine sidebar",
         ]);
         await expect(
@@ -5363,6 +5366,7 @@ test.describe("Search results", () => {
             "Show covers",
             "Hide downloaded results (0)",
             "Show button to download results as ZIP",
+            "Show indexer summary",
             "Show refine sidebar",
         ]);
         await captureVisualRegion(
@@ -5502,6 +5506,334 @@ test.describe("Search results", () => {
             await expect(lightbox).toBeHidden();
         } finally {
             await context.close();
+        }
+    });
+
+    // FM-199: legacy's "Indexer statuses" accordion, restored as the
+    // per-indexer summary above the toolbar. The response is synthetic so
+    // that it can carry a failed and a not-picked indexer beside two
+    // successful ones, which the mock indexers do not produce on demand.
+    test("should summarise each indexer above the results, collapsed by default and persisted, with a toolbar hint while hidden", async ({
+        page,
+    }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "summary-one",
+                            title: "Indexer Summary Example One",
+                            indexer: "Alpha",
+                            category: "Movies",
+                            size: 4 * 1024 * 1024,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "summary-two",
+                            title: "Indexer Summary Example Two",
+                            indexer: "Bravo",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Alpha",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 850,
+                            numberOfFoundResults: 1,
+                            numberOfAvailableResults: 240,
+                            totalResultsKnown: true,
+                            hasMoreResults: false,
+                        },
+                        {
+                            indexerName: "Bravo",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 2_400,
+                            numberOfFoundResults: 1,
+                            numberOfAvailableResults: 100,
+                            totalResultsKnown: false,
+                            hasMoreResults: false,
+                        },
+                        {
+                            indexerName: "Charlie",
+                            wasSuccessful: false,
+                            didSearch: true,
+                            errorMessage:
+                                "Connection timed out after 10 seconds",
+                            responseTime: 0,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {
+                        Delta: "Not enabled for this category",
+                    },
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 2,
+                    numberOfAcceptedResults: 2,
+                    offset: 0,
+                    limit: 100,
+                },
+            }),
+        );
+        const search = async () => {
+            await page.getByTestId("search-query").fill("indexer summary");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(page.getByTestId("search-results-table")).toBeVisible();
+        };
+        const summary = page.getByTestId("indexer-summary");
+        const toggle = page.getByTestId("indexer-summary-toggle");
+        const details = page.getByTestId("indexer-summary-details");
+        const hint = page.getByTestId("results-indexer-failures");
+
+        await search();
+
+        // Collapsed by default, above the toolbar, on one line.
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+        await expect(details).toHaveCount(0);
+        await expect(toggle).toContainText(
+            "Indexers · 3 searched · 1 failed · 1 not searched · slowest Bravo (2.40 s)",
+        );
+        const [summaryBox, toolbarBox] = await Promise.all([
+            summary.boundingBox(),
+            page.getByTestId("results-toolbar").boundingBox(),
+        ]);
+        expect(summaryBox).not.toBeNull();
+        expect(toolbarBox).not.toBeNull();
+        if (!summaryBox || !toolbarBox) {
+            throw new Error("Summary and toolbar require geometry");
+        }
+        expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual(
+            toolbarBox.y,
+        );
+        await expect(hint).toHaveCount(0);
+
+        // Expanded: failed first, the successful ones by name, then the
+        // indexer that was not picked.
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await expect(details.getByTestId(/^indexer-summary-row-/)).toHaveCount(4);
+        const order = await details
+            .getByTestId(/^indexer-summary-row-/)
+            .evaluateAll((rows) =>
+                rows.map((row) => row.getAttribute("data-testid")),
+            );
+        expect(order).toEqual([
+            "indexer-summary-row-Charlie",
+            "indexer-summary-row-Alpha",
+            "indexer-summary-row-Bravo",
+            "indexer-summary-row-Delta",
+        ]);
+        await expect(page.getByTestId("indexer-summary-row-Bravo")).toContainText(
+            "1 of >100",
+        );
+        await expect(
+            page.getByTestId("indexer-summary-row-Charlie"),
+        ).toContainText("Connection timed out after 10 seconds");
+        await expect(page.getByTestId("indexer-summary-row-Delta")).toContainText(
+            "Not searched: Not enabled for this category",
+        );
+        // The test instance runs without authentication, so the failed and
+        // the not-picked indexer link to the indexer statuses page.
+        await expect(
+            page
+                .getByTestId("indexer-summary-row-Charlie")
+                .getByRole("link", {name: "Charlie"}),
+        ).toHaveAttribute("href", /\/stats\/indexers$/);
+
+        // The expanded state survives a reload. The suite's `page` fixture
+        // clears storage on every new document, so the payload just written
+        // is re-seeded, as in the refine-sidebar persistence test above.
+        const expandedPayload = await page.evaluate(() =>
+            window.localStorage.getItem("hydra.search-results.table"),
+        );
+        expect(expandedPayload).toContain('"indexerSummaryOpen":true');
+        await page.addInitScript((payload) => {
+            window.localStorage.setItem("hydra.search-results.table", payload);
+        }, expandedPayload as string);
+        await page.reload();
+        await search();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await expect(details).toBeVisible();
+
+        // Hidden through Display, a failed indexer is named in the toolbar
+        // instead, and activating that brings the summary back expanded.
+        await toggleDisplayOption(page, "Show indexer summary");
+        await expect(summary).toHaveCount(0);
+        await expect(hint).toHaveText("1 indexer failed");
+        const hiddenPayload = await page.evaluate(() =>
+            window.localStorage.getItem("hydra.search-results.table"),
+        );
+        expect(hiddenPayload).toContain('"showIndexerSummary":false');
+        await page.addInitScript((payload) => {
+            window.localStorage.setItem("hydra.search-results.table", payload);
+        }, hiddenPayload as string);
+        await page.reload();
+        await search();
+        await expect(summary).toHaveCount(0);
+        expect(await displayOptionChecked(page, "Show indexer summary")).toBe(
+            false,
+        );
+        await hint.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await expect(details).toBeVisible();
+        await expect(hint).toHaveCount(0);
+        expect(await displayOptionChecked(page, "Show indexer summary")).toBe(
+            true,
+        );
+    });
+
+    test("should provide deterministic indexer-summary visual evidence across desktop and mobile", async ({
+        page,
+    }) => {
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "summary-visual",
+                            title: "Indexer Summary Visual Evidence",
+                            indexer: "NZBgeek",
+                            category: "Movies",
+                            size: 4 * 1024 * 1024,
+                            epoch: Math.floor(Date.now() / 1_000) - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "NZBgeek",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 1_180,
+                            numberOfFoundResults: 100,
+                            numberOfAvailableResults: 2_345,
+                            totalResultsKnown: true,
+                        },
+                        {
+                            indexerName: "DrunkenSlug",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 3_450,
+                            numberOfFoundResults: 100,
+                            numberOfAvailableResults: 100,
+                            totalResultsKnown: false,
+                        },
+                        {
+                            indexerName: "NZBPlanet",
+                            wasSuccessful: false,
+                            didSearch: true,
+                            errorMessage:
+                                "Indexer returned error code 429: Request limit reached",
+                            responseTime: 0,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {
+                        "Tabula Rasa": "Hit limit reached",
+                    },
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 1,
+                    numberOfAcceptedResults: 1,
+                    offset: 0,
+                    limit: 100,
+                },
+            }),
+        );
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("/");
+                await page
+                    .getByTestId("search-query")
+                    .fill("indexer summary visual evidence");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+            const summary = page.getByTestId("indexer-summary");
+            const toggle = page.getByTestId("indexer-summary-toggle");
+
+            // Collapsed: one line, no sideways scroll.
+            await expect(toggle).toHaveAttribute("aria-expanded", "false");
+            await expectVisualGeometry(page, {
+                region: `indexer-summary-collapsed-${viewport}`,
+                locator: summary,
+            });
+            const lineMetrics = await toggle
+                .locator(".MuiTypography-root")
+                .evaluate((element) => ({
+                    height: element.getBoundingClientRect().height,
+                    lineHeight: parseFloat(getComputedStyle(element).lineHeight),
+                }));
+            expect(lineMetrics.height).toBeLessThanOrEqual(
+                lineMetrics.lineHeight + 1,
+            );
+            // ...and the whole line fits: nothing is cut off by the
+            // ellipsis that only guards against very long indexer names.
+            expect(
+                await toggle
+                    .locator(".MuiTypography-root")
+                    .evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+            ).toBe(true);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `indexer-summary-collapsed-${viewport}`,
+                ),
+            });
+
+            await toggle.click();
+            await expect(
+                page.getByTestId("indexer-summary-details"),
+            ).toBeVisible();
+            await expectVisualGeometry(page, {
+                region: `indexer-summary-expanded-${viewport}`,
+                locator: summary,
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `indexer-summary-expanded-${viewport}`,
+                ),
+                fullPage: true,
+            });
+
+            await toggleDisplayOption(page, "Show indexer summary");
+            await expect(summary).toHaveCount(0);
+            await expect(
+                page.getByTestId("results-indexer-failures"),
+            ).toBeVisible();
+            await expectVisualGeometry(page, {
+                region: `indexer-summary-hidden-toolbar-${viewport}`,
+                locator: page.getByTestId("results-toolbar"),
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `indexer-summary-hidden-${viewport}`,
+                ),
+            });
         }
     });
 });

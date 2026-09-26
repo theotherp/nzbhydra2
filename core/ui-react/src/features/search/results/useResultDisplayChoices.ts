@@ -111,6 +111,15 @@ export function useResultDisplayChoices() {
     const [expandGroupsByDefault, setExpandGroupsByDefault] = useState(
         () => choices.expandGroupsByDefault ?? false,
     );
+    // FM-199: the per-indexer summary above the toolbar. Owner (2026-09-26):
+    // shown and collapsed by default. `??` rather than `||`, so a stored
+    // `false` for either survives a new search and a reload.
+    const [showIndexerSummary, setShowIndexerSummary] = useState(
+        () => choices.showIndexerSummary ?? true,
+    );
+    const [indexerSummaryOpen, setIndexerSummaryOpen] = useState(
+        () => choices.indexerSummaryOpen ?? false,
+    );
 
     useEffect(() => {
         writeItem(
@@ -123,10 +132,12 @@ export function useResultDisplayChoices() {
                 groupTorrentAndUsenet,
                 hideDownloaded,
                 highlightRecent,
+                indexerSummaryOpen,
                 refineCategoryOpen: categoryOpen,
                 refineIndexerOpen: indexerOpen,
                 showCovers,
                 showDuplicateControls,
+                showIndexerSummary,
                 showZipButton,
                 sidebarCollapsed,
                 sorting,
@@ -142,8 +153,10 @@ export function useResultDisplayChoices() {
         hideDownloaded,
         highlightRecent,
         indexerOpen,
+        indexerSummaryOpen,
         showCovers,
         showDuplicateControls,
+        showIndexerSummary,
         showZipButton,
         sidebarCollapsed,
         sorting,
@@ -159,6 +172,7 @@ export function useResultDisplayChoices() {
         hideDownloaded,
         highlightRecent,
         indexerOpen,
+        indexerSummaryOpen,
         setCategoryOpen,
         setCompactRows,
         setExpandGroupsByDefault,
@@ -168,13 +182,16 @@ export function useResultDisplayChoices() {
         setHideDownloaded,
         setHighlightRecent,
         setIndexerOpen,
+        setIndexerSummaryOpen,
         setShowCovers,
         setShowDuplicateControls,
+        setShowIndexerSummary,
         setShowZipButton,
         setSidebarCollapsed,
         setSorting,
         showCovers,
         showDuplicateControls,
+        showIndexerSummary,
         showZipButton,
         sidebarCollapsed,
         sorting,

@@ -1,16 +1,36 @@
 import {Stack} from "@mui/material";
 import type {ColumnDef} from "@tanstack/react-table";
-import {getCoreRowModel, getSortedRowModel, useReactTable,} from "@tanstack/react-table";
+import {
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from "@tanstack/react-table";
 import {useWindowVirtualizer} from "@tanstack/react-virtual";
-import {useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,} from "react";
+import {
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
-import type {SearchResponse, SearchResult} from "../../../api/search";
+import {
+    failedIndexerCount,
+    type SearchResponse,
+    type SearchResult,
+} from "../../../api/search";
 import {ApiTransport} from "../../../api/transport";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
 import {ToastContext} from "../../../components/toasts/toasts";
-import {configuredDownloaders, type Downloader, downloadSettings,} from "../../../domain/downloads/actions";
+import {
+    configuredDownloaders,
+    type Downloader,
+    downloadSettings,
+} from "../../../domain/downloads/actions";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
 import {bootstrapBase} from "./DownloadActions";
 import type {SearchedCategory} from "./groupEpisodesHelp";
@@ -22,12 +42,18 @@ import {
 } from "./groupEpisodesHelp";
 import {RefineSidebar} from "./RefineSidebar";
 import type {ExpandSlots} from "./ResultRow";
+import {IndexerSummary} from "./IndexerSummary";
 import {ResultsAlerts} from "./ResultsAlerts";
 import {ResultsPagingFooter} from "./ResultsPagingFooter";
 import type {VisibleRowDescriptor} from "./ResultsTable";
 import {ResultsTable} from "./ResultsTable";
 import {ResultsToolbar} from "./ResultsToolbar";
-import type {NumericRange, QuickFilter, ResultFilters, ResultGroup,} from "./resultTable";
+import type {
+    NumericRange,
+    QuickFilter,
+    ResultFilters,
+    ResultGroup,
+} from "./resultTable";
 import {
     activeFilterCount,
     blackHoleSlot,
@@ -204,6 +230,7 @@ export function SearchResults({
         hideDownloaded,
         highlightRecent,
         indexerOpen,
+        indexerSummaryOpen,
         setCategoryOpen,
         setCompactRows,
         setExpandGroupsByDefault,
@@ -213,17 +240,36 @@ export function SearchResults({
         setHideDownloaded,
         setHighlightRecent,
         setIndexerOpen,
+        setIndexerSummaryOpen,
         setShowCovers,
         setShowDuplicateControls,
+        setShowIndexerSummary,
         setShowZipButton,
         setSidebarCollapsed,
         setSorting,
         showCovers,
         showDuplicateControls,
+        showIndexerSummary,
         showZipButton,
         sidebarCollapsed,
         sorting,
     } = useResultDisplayChoices();
+    // FM-199: the toolbar's failure hint re-shows the summary expanded and
+    // brings it into view, since the sticky toolbar may be far below it.
+    const indexerSummaryRef = useRef<HTMLDivElement>(null);
+    const revealIndexerSummary = useCallback(() => {
+        setShowIndexerSummary(true);
+        setIndexerSummaryOpen(true);
+        window.requestAnimationFrame(() => {
+            const summary = indexerSummaryRef.current;
+            if (
+                summary !== null &&
+                typeof summary.scrollIntoView === "function"
+            ) {
+                summary.scrollIntoView({block: "nearest"});
+            }
+        });
+    }, [setIndexerSummaryOpen, setShowIndexerSummary]);
     // Recomputed from whatever results are currently loaded, so the
     // per-search reset below always selects every value of the search it is
     // resetting for.
@@ -239,7 +285,10 @@ export function SearchResults({
     // produces.
     const [filters, setFilters] = useState<ResultFilters>(() => ({
         ...filterDefaults,
-        quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
+        quickFilters: preselectedQuickFilters(
+            effectiveSafeConfig,
+            quickFilters,
+        ),
     }));
     // A new search's results carry their own values for every filter, so the
     // previous search's filters cannot be kept: a title or range typed for
@@ -256,7 +305,10 @@ export function SearchResults({
         setLastSearchRequestId(searchRequestId);
         setFilters({
             ...filterDefaults,
-            quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
+            quickFilters: preselectedQuickFilters(
+                effectiveSafeConfig,
+                quickFilters,
+            ),
         });
     }
     // Below `sm` the refine surface is FM-045's temporary drawer rather than
@@ -679,7 +731,10 @@ export function SearchResults({
     const clearAllFilters = useCallback(() => {
         setFilters({
             ...defaultFilters(data.searchResults, quickFilters),
-            quickFilters: preselectedQuickFilters(effectiveSafeConfig, quickFilters),
+            quickFilters: preselectedQuickFilters(
+                effectiveSafeConfig,
+                quickFilters,
+            ),
         });
     }, [data.searchResults, quickFilters, effectiveSafeConfig]);
     // FM-042: the results table's column header row sticks directly beneath
@@ -1020,9 +1075,19 @@ export function SearchResults({
             <ResultsAlerts
                 allIndexersFailed={allIndexersFailed}
                 data={data}
-                nothingAcceptedButMoreAvailable={nothingAcceptedButMoreAvailable}
+                nothingAcceptedButMoreAvailable={
+                    nothingAcceptedButMoreAvailable
+                }
                 pagingError={pagingError}
             />
+            {showIndexerSummary && (
+                <IndexerSummary
+                    data={data}
+                    onOpenChange={setIndexerSummaryOpen}
+                    open={indexerSummaryOpen}
+                    ref={indexerSummaryRef}
+                />
+            )}
             {showToolbar && (
                 <ResultsToolbar
                     activeFilters={activeFilters}
@@ -1044,9 +1109,11 @@ export function SearchResults({
                     hasResults={hasResults}
                     hideDownloaded={hideDownloaded}
                     highlightRecent={highlightRecent}
+                    indexerFailureCount={failedIndexerCount(data)}
                     invertVisibleSelection={invertVisibleSelection}
                     moreResultsAvailable={moreResultsAvailable}
                     onLoadMore={onLoadMore}
+                    onRevealIndexerSummary={revealIndexerSummary}
                     onSaveSearch={onSaveSearch}
                     onToggleExpandGroupsByDefault={
                         handleToggleExpandGroupsByDefault
@@ -1071,10 +1138,12 @@ export function SearchResults({
                     setSelected={setSelected}
                     setShowCovers={setShowCovers}
                     setShowDuplicateControls={setShowDuplicateControls}
+                    setShowIndexerSummary={setShowIndexerSummary}
                     setShowZipButton={setShowZipButton}
                     setSorting={setSorting}
                     showCovers={showCovers}
                     showDuplicateControls={showDuplicateControls}
+                    showIndexerSummary={showIndexerSummary}
                     showZipButton={showZipButton}
                     sorting={sorting}
                     table={table}

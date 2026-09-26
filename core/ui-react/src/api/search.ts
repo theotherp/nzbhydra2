@@ -70,15 +70,38 @@ export type SearchResult = {
     qualityWarnings?: string[];
 };
 
+/**
+ * One searched indexer's `IndexerSearchMetaData`.
+ *
+ * FM-199: every entry describes that indexer's *most recent* request only, not
+ * the search as a whole. `Searcher.search` hands back the last
+ * `IndexerSearchResult` of each indexer's cache entry
+ * (`Iterables.getLast(...)`), so after a "Load more" or "Load all" the counts
+ * and the response time are those of the latest page fetched from that
+ * indexer -- or, for an indexer the continuation did not query again, still
+ * those of its earlier request. `numberOfFoundResults` counts that page's
+ * results that passed the acceptor; `numberOfAvailableResults` is the total
+ * the indexer reported with it (a lower bound when `totalResultsKnown` is
+ * false). A continuation's response replaces the whole list
+ * (`mergeSearchResponses` keeps `next`'s), so nothing here is ever summed.
+ */
+type IndexerSearchMetaData = {
+    indexerName: string;
+    wasSuccessful: boolean;
+    hasMoreResults?: boolean;
+    totalResultsKnown?: boolean;
+    didSearch?: boolean;
+    errorMessage?: string;
+    /** Milliseconds the latest request took. */
+    responseTime?: number;
+    numberOfFoundResults?: number;
+    numberOfAvailableResults?: number;
+};
+
 export type SearchResponse = {
     searchResults: SearchResult[];
     malformedResultCount: number;
-    indexerSearchMetaDatas: Array<{
-        indexerName: string;
-        wasSuccessful: boolean;
-        hasMoreResults?: boolean;
-        totalResultsKnown?: boolean;
-    }>;
+    indexerSearchMetaDatas: IndexerSearchMetaData[];
     indexerLimitWarnings: string[];
     rejectedReasonsMap: Record<string, number>;
     notPickedIndexersWithReason: Record<string, string>;
@@ -353,12 +376,60 @@ function isSupportedCoverUrl(cover: string): boolean {
     return isAbsoluteCoverUrl(cover) || PROXIED_COVER_PATH.test(cover);
 }
 
+// FM-199: the per-indexer summary's fields. A `null`, missing or unusable
+// value (wrong type, negative count) becomes `undefined` and leaves that cell
+// blank, via `.catch` like `hasNfo` above: before this task an entry was kept
+// whatever these fields held, and the entries also decide `allIndexersFailed`
+// and "more results available", so these display-only fields must never be
+// what drops one. An entry that fails the fields above (no `indexerName`, a
+// non-boolean `wasSuccessful`) is still malformed and dropped, not fatal.
 const metadataSchema = z.object({
     indexerName: z.string().min(1),
     wasSuccessful: z.boolean().default(false),
     hasMoreResults: z.boolean().optional(),
     totalResultsKnown: z.boolean().optional(),
+    didSearch: z
+        .boolean()
+        .nullish()
+        .catch(undefined)
+        .transform((value) => value ?? undefined),
+    errorMessage: z
+        .string()
+        .nullish()
+        .catch(undefined)
+        .transform((value) => (value ? value : undefined)),
+    responseTime: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .catch(undefined)
+        .transform((value) => value ?? undefined),
+    numberOfFoundResults: z
+        .number()
+        .int()
+        .nonnegative()
+        .nullish()
+        .catch(undefined)
+        .transform((value) => value ?? undefined),
+    numberOfAvailableResults: z
+        .number()
+        .int()
+        .nonnegative()
+        .nullish()
+        .catch(undefined)
+        .transform((value) => value ?? undefined),
 });
+
+/**
+ * FM-199: the indexers this search queried that failed -- the per-indexer
+ * summary's "N failed" and the toolbar's hint while that summary is hidden.
+ */
+export function failedIndexerCount(response: SearchResponse): number {
+    return response.indexerSearchMetaDatas.filter(
+        (entry) => entry.didSearch !== false && !entry.wasSuccessful,
+    ).length;
+}
 
 export function continuationRequest(
     request: SearchRequest,

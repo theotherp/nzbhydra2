@@ -2,6 +2,7 @@ import {describe, expect, it, vi} from "vitest";
 
 import {
     executeSearch,
+    failedIndexerCount,
     isAbsoluteCoverUrl,
     MalformedSearchResponseError,
     mergeSearchResponses,
@@ -435,6 +436,132 @@ describe("search API", () => {
             ],
             searchResults: [{searchResultId: "one"}, {searchResultId: "two"}],
         });
+    });
+
+    // FM-199: the per-indexer summary reads these five fields, which the
+    // parser used to drop.
+    it("should keep each indexer's summary fields", () => {
+        const parsed = parseSearchResponse({
+            ...responseEnvelope,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Alpha",
+                    wasSuccessful: true,
+                    didSearch: true,
+                    errorMessage: null,
+                    responseTime: 1234,
+                    numberOfFoundResults: 100,
+                    numberOfAvailableResults: 2500,
+                    totalResultsKnown: false,
+                    hasMoreResults: true,
+                },
+                {
+                    indexerName: "Beta",
+                    wasSuccessful: false,
+                    didSearch: true,
+                    errorMessage: "Connection timed out",
+                    responseTime: 0,
+                    numberOfFoundResults: 0,
+                    numberOfAvailableResults: 0,
+                },
+            ],
+        });
+
+        expect(parsed.indexerSearchMetaDatas).toEqual([
+            {
+                indexerName: "Alpha",
+                wasSuccessful: true,
+                didSearch: true,
+                errorMessage: undefined,
+                responseTime: 1234,
+                numberOfFoundResults: 100,
+                numberOfAvailableResults: 2500,
+                totalResultsKnown: false,
+                hasMoreResults: true,
+            },
+            {
+                indexerName: "Beta",
+                wasSuccessful: false,
+                didSearch: true,
+                errorMessage: "Connection timed out",
+                responseTime: 0,
+                numberOfFoundResults: 0,
+                numberOfAvailableResults: 0,
+            },
+        ]);
+    });
+
+    it("should blank nullish or unusable summary fields but keep the entry", () => {
+        const parsed = parseSearchResponse({
+            ...responseEnvelope,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Nulls",
+                    wasSuccessful: true,
+                    didSearch: null,
+                    errorMessage: null,
+                    responseTime: null,
+                    numberOfFoundResults: null,
+                    numberOfAvailableResults: null,
+                },
+                {indexerName: "Missing", wasSuccessful: true},
+                {
+                    indexerName: "Unusable",
+                    wasSuccessful: false,
+                    didSearch: "yes",
+                    errorMessage: 42,
+                    responseTime: -5,
+                    numberOfFoundResults: 1.5,
+                    numberOfAvailableResults: "many",
+                },
+            ],
+        });
+
+        expect(
+            parsed.indexerSearchMetaDatas.map((entry) => entry.indexerName),
+        ).toEqual(["Nulls", "Missing", "Unusable"]);
+        for (const entry of parsed.indexerSearchMetaDatas) {
+            expect(entry.didSearch).toBeUndefined();
+            expect(entry.errorMessage).toBeUndefined();
+            expect(entry.responseTime).toBeUndefined();
+            expect(entry.numberOfFoundResults).toBeUndefined();
+            expect(entry.numberOfAvailableResults).toBeUndefined();
+        }
+        expect(parsed.indexerSearchMetaDatas[2]?.wasSuccessful).toBe(false);
+    });
+
+    it("should drop a malformed indexer entry without failing the response", () => {
+        const parsed = parseSearchResponse({
+            ...responseEnvelope,
+            indexerSearchMetaDatas: [
+                {indexerName: "", wasSuccessful: true, responseTime: 10},
+                {wasSuccessful: true, responseTime: 10},
+                {indexerName: "Typed wrong", wasSuccessful: "true"},
+                "not an entry",
+                {indexerName: "Kept", wasSuccessful: true, responseTime: 10},
+            ],
+        });
+
+        expect(parsed.indexerSearchMetaDatas).toEqual([
+            expect.objectContaining({indexerName: "Kept", responseTime: 10}),
+        ]);
+    });
+
+    it("should count the searched indexers that failed", () => {
+        const parsed = parseSearchResponse({
+            ...responseEnvelope,
+            indexerSearchMetaDatas: [
+                {indexerName: "Ok", wasSuccessful: true, didSearch: true},
+                {indexerName: "Failed", wasSuccessful: false, didSearch: true},
+                {indexerName: "Unknown", wasSuccessful: false},
+                {
+                    indexerName: "Unsearched",
+                    wasSuccessful: false,
+                    didSearch: false,
+                },
+            ],
+        });
+        expect(failedIndexerCount(parsed)).toBe(2);
     });
 
     it("should reject empty response envelopes", () => {

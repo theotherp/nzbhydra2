@@ -210,10 +210,12 @@ export function DisplayOptionsMenu({
     onToggleRefineSurface,
     onToggleShowCovers,
     onToggleShowDuplicateControls,
+    onToggleShowIndexerSummary,
     onToggleShowZipButton,
     refineSurfaceShown,
     showCovers,
     showDuplicateControls,
+    showIndexerSummary,
     showZipButton,
     zipButtonAllowed,
 }: {
@@ -255,6 +257,7 @@ export function DisplayOptionsMenu({
     onToggleRefineSurface: () => void;
     onToggleShowCovers: () => void;
     onToggleShowDuplicateControls: () => void;
+    onToggleShowIndexerSummary: () => void;
     onToggleShowZipButton: () => void;
     // "Is the refine surface currently shown", resolved by the parent from
     // whichever per-viewport mechanism is live, so this entry's checked state
@@ -268,6 +271,9 @@ export function DisplayOptionsMenu({
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there too.
     showDuplicateControls: boolean;
+    // FM-199: whether the per-indexer summary renders above the toolbar;
+    // shown by default (owner, 2026-09-26).
+    showIndexerSummary: boolean;
     // FM-197: legacy's "Show button to download results as ZIP"
     // (`search-results-controller.js:171`), on by default there and here.
     showZipButton: boolean;
@@ -370,6 +376,12 @@ export function DisplayOptionsMenu({
                   },
               ]
             : []),
+        {
+            checked: showIndexerSummary,
+            label: "Show indexer summary",
+            onToggle: onToggleShowIndexerSummary,
+            testId: "display-option-indexer-summary",
+        },
     ];
     const toggleProps = {
         "aria-expanded": open ? ("true" as const) : ("false" as const),
