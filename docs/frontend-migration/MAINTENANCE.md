@@ -1355,19 +1355,6 @@ symbol — a rule the repository already states in packet prompts and does not e
   27 tests, OK; `git diff --check` clean.
 - **Commit:** `2632ec18b`
 
-### 2026-09-26 — Compact the indexer statuses cards on mobile
-
-- **Why not a packet:** markup and styling inside F-STATS-INDEXERS only; table semantics, `data-label`s, `indexer-statuses-scroller`, cell count and rendered values unchanged.
-- **What was broken:** below 768px the `stackedCardTableSx` card gave every column its own labelled line, empty or not (8 lines per indexer, usually 2–3 filled), and the caption wrapped one word per line (noted but left in the
-  Saved searches/Indexer statuses stacking entry above). Users reported the page needed too much scrolling.
-- **What changed:** a page-local `compactCardSx` layered after the shared helper: each card is a wrapping flex line with name + state chip as the heading, API hits/Downloads side by side, long values under their label, empty cells
-  hidden, caption at full width. The state is an outlined MUI `Chip` coloured by state on every width. The shared helper is untouched.
-- **Paths:** `core/ui-react/src/features/stats/indexers/IndexerStatusesPage.tsx`, `changelog-unreleased.yaml`
-- **Visual gate:** before/after strips from `tests/stats.spec.ts` (`visual-evidence/F-STATS-INDEXERS/table-stacked-cards-mobile.png`, `indexer-statuses-desktop.png`); owner reviewed in session.
-- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (147 files, 2192 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `format:check` 14
-  pre-existing offenders, none touched. `tests/stats.spec.ts` 11/11 against a locally built backend. `git diff --check` clean.
-- **Candidate (not fixed):** Saved searches and the history tables share the same one-line-per-column card and would gain from hiding empty cells in `stackedCardTableSx` itself; that changes several features, so it is not a quickfix.
-- **Commit:** `d5cf7a89f`
 
 ## Open candidates
 
@@ -4058,3 +4045,17 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors; 16 pre-existing warnings), `format:check` (3 pre-existing offenders, none touched here), `test --run` (146 files, 2152 tests), `build`, `check:api`, `validate:migration` — all
   pass. `tests/system` `npx tsc --noEmit` and prettier pass; the whole `results.spec.ts` (40/40) passes against a freshly packaged local backend. `git diff --check` clean.
 - **Superseded:** the 2026-09-20 entry above. The workaround it describes is stashed, not deleted.
+
+### 2026-09-26 — Compact the indexer statuses cards on mobile
+
+- **Why not a packet:** markup and styling inside F-STATS-INDEXERS only; table semantics, `data-label`s, `indexer-statuses-scroller`, cell count and rendered values unchanged.
+- **What was broken:** below 768px the `stackedCardTableSx` card gave every column its own labelled line, empty or not (8 lines per indexer, usually 2–3 filled), and the caption wrapped one word per line (noted but left in the
+  Saved searches/Indexer statuses stacking entry above). Users reported the page needed too much scrolling.
+- **What changed:** a page-local `compactCardSx` layered after the shared helper: each card is a wrapping flex line with name + state chip as the heading, API hits/Downloads side by side, long values under their label, empty cells
+  hidden, caption at full width. The state is an outlined MUI `Chip` coloured by state on every width. The shared helper is untouched.
+- **Paths:** `core/ui-react/src/features/stats/indexers/IndexerStatusesPage.tsx`, `changelog-unreleased.yaml`
+- **Visual gate:** before/after strips from `tests/stats.spec.ts` (`visual-evidence/F-STATS-INDEXERS/table-stacked-cards-mobile.png`, `indexer-statuses-desktop.png`); owner reviewed in session.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (147 files, 2192 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `format:check` 14
+  pre-existing offenders, none touched. `tests/stats.spec.ts` 11/11 against a locally built backend. `git diff --check` clean.
+- **Candidate (not fixed):** Saved searches and the history tables share the same one-line-per-column card and would gain from hiding empty cells in `stackedCardTableSx` itself; that changes several features, so it is not a quickfix.
+- **Commit:** `d5cf7a89f`
