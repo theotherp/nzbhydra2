@@ -1,12 +1,15 @@
 # Image used to build the linux amd64 core executable locally. Mirrors the arm64 image and
 # .github/workflows/buildNative.yml (GraalVM community 25, Node 26, Java 17 sources).
 # Rebuilt by buildLinuxCore.sh on every run (docker layer cache makes that cheap).
-# The executable is linked with -H:+StaticExecutableWithDynamicLibC, so the base image's glibc
-# (22.04 -> 2.35) is the minimum glibc users need.
-FROM ubuntu:22.04
-RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
-RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl xz-utils git libfreetype6 libfreetype6-dev zlib1g-dev build-essential ca-certificates
+# The executable is linked with -H:+StaticExecutableWithDynamicLibC, so the base image's glibc is the minimum
+# glibc users need. AlmaLinux 8 has glibc 2.28 (Debian 10, RHEL 8), which is also the oldest glibc Node 26 runs on.
+# buildInContainer.sh fails the build if the executable requires a newer glibc.
+FROM almalinux:8
+# powertools has the static libraries native-image links into the executable
+RUN dnf install -y dnf-plugins-core && dnf config-manager --set-enabled powertools \
+    && dnf install -y --setopt=install_weak_deps=False zip unzip wget xz tar gzip findutils git freetype-devel \
+       gcc gcc-c++ make libatomic glibc-devel zlib-devel zlib-static libstdc++-static binutils ca-certificates \
+    && dnf clean all
 
 # Maven. archive.apache.org keeps old versions, dlcdn.apache.org only the newest
 ARG MAVEN_VERSION=3.9.9
