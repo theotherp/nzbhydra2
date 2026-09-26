@@ -1,3 +1,21 @@
+### v9.0.6 (2026-09-26)
+
+**Fix** The search progress dialog now counts indexer queries instead of claiming more indexers were searched than selected. One indexer may be queried several times to load more results.
+
+**Fix** When no loaded result passed your filters (e.g. a minimum age on a broad query) the search page now says so and lists the rejection reasons instead of showing &quot;invalid paging cursor&quot;.
+
+**Fix** &quot;Load all&quot; stops at a number of results that depends on the XMX value (about 10,000 for 256MB, 40,000 for 1024MB). Loading more could run Hydra out of memory and break its database until a restart.
+
+**Fix** On Windows the wrapper ignored the XMX, logGc and custom VM options values from the main config and always started Hydra with 256MB. Requires a new wrapper, sorry for the second update in a row.
+
+**Fix** A running search, including &quot;Load all&quot;, is stopped on the server when you start a new search, cancel it, leave the search page or close the browser tab. Before, it kept loading results in the background.
+
+**Fix** Repeating an older recent search or an entry on the search history page did nothing. This affected searches made before 9.0.0 and searches whose indexers have since been disabled or removed. They now run with your preselected indexers. See <a href="https://github.com/theotherp/nzbhydra2/issues/1101">#1101</a>
+
+**Fix** The Linux executables of 9.0.0 to 9.0.5 needed glibc 2.34 or newer and didn&apos;t start on older systems like Debian 11 or Ubuntu 20.04. They now run on glibc 2.28 or newer (e.g. Debian 10, Ubuntu 20.04, RHEL 8).
+
+
+
 ### v9.0.5 (2026-09-24)
 
 **Fix** After a restart or update you now stay logged in if &quot;Remember users&quot; is enabled. Previously every restart logged you out. See <a href="https://github.com/theotherp/nzbhydra2/issues/1099">#1099</a>
