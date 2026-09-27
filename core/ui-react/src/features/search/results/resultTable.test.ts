@@ -1088,15 +1088,15 @@ describe("table column tracks", () => {
         );
     }
 
-    it("should reproduce FM-175's hand-written tracks for the default column set", () => {
+    it("should reproduce FM-175's tracks, Size and Age 1px wider for the sort glyph's gap, for the default column set", () => {
         expect(tableColumnTracks(ALL, 0)).toEqual([
             {id: "select", narrowWidth: 40, pixelWidth: 40},
             {id: "title", narrowWidth: undefined, pixelWidth: undefined},
             {id: "indexer", narrowWidth: "9.62%", pixelWidth: 90},
             {id: "category", narrowWidth: "10.47%", pixelWidth: 98},
-            {id: "size", narrowWidth: "6.94%", pixelWidth: 65},
+            {id: "size", narrowWidth: "7.05%", pixelWidth: 66},
             {id: "grabs", narrowWidth: "9.62%", pixelWidth: 90},
-            {id: "epoch", narrowWidth: "5.56%", pixelWidth: 52},
+            {id: "epoch", narrowWidth: "5.66%", pixelWidth: 53},
             {id: "actions", narrowWidth: "14.96%", pixelWidth: 140},
         ]);
     });
@@ -1134,15 +1134,15 @@ describe("table column tracks", () => {
                 track.narrowWidth === undefined,
         );
         expect(undeclared.map((track) => track.id)).toEqual(["title"]);
-        // At the 936px basis the pixel tracks leave Title 361px with every
-        // column shown and 549px with Category and Details hidden.
+        // At the 936px basis the pixel tracks leave Title 359px with every
+        // column shown and 547px with Category and Details hidden.
         const declared = (ids: string[]) =>
             tableColumnTracks(ids, 0).reduce(
                 (sum, track) => sum + (track.pixelWidth ?? 0),
                 0,
             );
-        expect(936 - declared(ALL)).toBe(361);
-        expect(936 - declared(visible)).toBe(549);
+        expect(936 - declared(ALL)).toBe(359);
+        expect(936 - declared(visible)).toBe(547);
     });
 
     it("should grow the Actions track with the slot count whatever is hidden", () => {

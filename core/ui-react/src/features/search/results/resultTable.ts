@@ -731,15 +731,18 @@ const TABLE_BASIS_WIDTH = 936;
 // values are the measured worst case of each column's own header label
 // (uppercase 11px plus the sort glyph, plus the header cell's 8px paddings)
 // rounded up: Indexer 88 -> 90, Category 96 -> 98, Size 64 -> 65, Details
-// 87 -> 90, Age 51 -> 52; Details 90 is the owner's own number. Title has no
+// 87 -> 90, Age 51 -> 52; Details 90 is the owner's own number. Since
+// 2026-09-27 the glyph sits 2px off its label (owner: the two touched), which
+// the rounding already covered except for Size and Age, now 66 and 53. 2px is
+// the most FM-175's 340px Title floor at 1280 leaves room for. Title has no
 // entry: a track with no declared width is the only one that absorbs the
 // whole remainder under `tableLayout: fixed`.
 const DATA_COLUMN_PIXEL_WIDTHS: Record<string, number> = {
     category: 98,
-    epoch: 52,
+    epoch: 53,
     grabs: 90,
     indexer: 90,
-    size: 65,
+    size: 66,
 };
 
 // The checkbox track: 40px in both sets, since it holds one fixed-size control.
@@ -775,7 +778,7 @@ function percentOfBasis(width: number): string {
  * The percentage set is each pixel track over the 936px basis, computed
  * rather than restated, so the two sets are the same table at the basis
  * whatever is hidden; the values for the default column set are the ones
- * FM-175 wrote out by hand (9.62%, 10.47%, 6.94%, 9.62%, 5.56%). The Actions
+ * FM-175 wrote out by hand, with Size and Age 1px wider since 2026-09-27. The Actions
  * track grows with `slotCount` (`actionsTrackWidth`).
  */
 export function tableColumnTracks(

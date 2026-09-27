@@ -7765,9 +7765,9 @@ describe("SearchResults hideable columns", () => {
         // The later tracks keep their own widths rather than shifting onto
         // their left neighbour's, and the hidden one leaves no rule behind.
         expect(trackRuleCount("category")).toBe(0);
-        expect(trackRules("size")).toEqual({narrow: "6.94%", pixel: "65px"});
+        expect(trackRules("size")).toEqual({narrow: "7.05%", pixel: "66px"});
         expect(trackRules("grabs")).toEqual({narrow: "9.62%", pixel: "90px"});
-        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(trackRules("epoch")).toEqual({narrow: "5.66%", pixel: "53px"});
         expect(actionsTrackRules()).toEqual({
             narrow: "14.96%",
             pixel: "140px",
@@ -7807,7 +7807,7 @@ describe("SearchResults hideable columns", () => {
             narrow: "10.47%",
             pixel: "98px",
         });
-        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(trackRules("epoch")).toEqual({narrow: "5.66%", pixel: "53px"});
         expect(
             screen.queryByTestId("number-filter-min-refine-grabs"),
         ).toBeNull();
@@ -7840,8 +7840,8 @@ describe("SearchResults hideable columns", () => {
             narrow: "9.62%",
             pixel: "90px",
         });
-        expect(trackRules("size")).toEqual({narrow: "6.94%", pixel: "65px"});
-        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(trackRules("size")).toEqual({narrow: "7.05%", pixel: "66px"});
+        expect(trackRules("epoch")).toEqual({narrow: "5.66%", pixel: "53px"});
         expect(screen.queryByTestId("refine-category-toggle")).toBeNull();
         expect(
             screen.queryByTestId("number-filter-min-refine-grabs"),

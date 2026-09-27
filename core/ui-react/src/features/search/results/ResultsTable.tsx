@@ -883,13 +883,19 @@ export function ResultsTable({
                                                     header.getContext(),
                                                 )}
                                                 {sortDirection && (
+                                                    // A margin, not the leading space
+                                                    // this used to carry: inside the
+                                                    // button's flex row that space
+                                                    // collapsed and the glyph touched
+                                                    // the label.
                                                     <Box
                                                         aria-hidden="true"
                                                         component="span"
+                                                        sx={{ml: 0.25}}
                                                     >
                                                         {sortDirection === "asc"
-                                                            ? " ▲"
-                                                            : " ▼"}
+                                                            ? "▲"
+                                                            : "▼"}
                                                     </Box>
                                                 )}
                                             </Button>
