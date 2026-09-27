@@ -297,7 +297,7 @@ main:
   backupEveryXDays: 7
   backupBeforeUpdate: true
   checkOpenPort: true
-  configVersion: 26
+  configVersion: 27
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 500
@@ -367,7 +367,19 @@ searching:
   alwaysShowQuickFilterButtons: false
   applyRestrictions: "NONE"
   coverSize: 128
-  customQuickFilterButtons: []
+  customQuickFilterButtons:
+    - "Source:CAM / TS=/cam|ts/"
+    - "Source:TV=hdtv"
+    - "Source:WEB=/webrip|web-dl|webdl/"
+    - "Source:DVD=dvd"
+    - "Source:Blu-Ray=/bluray|blu-ray/"
+    - "Resolution:480p=480p"
+    - "Resolution:720p=720p"
+    - "Resolution:1080p=1080p"
+    - "Resolution:2160p=2160p"
+    - "Other:3D=3d"
+    - "Other:x265=x265"
+    - "Other:HEVC=hevc"
   customMappings: [ ]
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0

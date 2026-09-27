@@ -118,12 +118,12 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
 
     @Override
     public SearchingConfig prepareForSaving(BaseConfig oldBaseConfig, SearchingConfig newConfig) {
-        final Set<String> customQuickfilterNames = newConfig.getCustomQuickFilterButtons().stream().map(x -> x.split("=")[0]).collect(Collectors.toSet());
+        // All quick filters are configured ones and preselected as "custom|<everything left of the =>"
+        final Set<String> quickFilterKeys = newConfig.getCustomQuickFilterButtons().stream().map(x -> "custom|" + x.split("=")[0].trim()).collect(Collectors.toSet());
         for (Iterator<String> iterator = newConfig.getPreselectQuickFilterButtons().iterator(); iterator.hasNext(); ) {
             String preselectQuickFilterButton = iterator.next();
-            final String[] split = preselectQuickFilterButton.split("\\|");
-            if ("custom".equals(split[0]) && !customQuickfilterNames.contains(split[1])) {
-                logger.info("Custom quickfilter {} doesn't exist anymore, removing it from list of filters to preselect.", preselectQuickFilterButton);
+            if (!quickFilterKeys.contains(preselectQuickFilterButton)) {
+                logger.info("Quickfilter {} doesn't exist anymore, removing it from list of filters to preselect.", preselectQuickFilterButton);
                 iterator.remove();
             }
         }

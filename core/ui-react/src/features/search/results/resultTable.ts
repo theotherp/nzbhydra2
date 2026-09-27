@@ -19,8 +19,14 @@ export type ResultFilters = {
     quickFilters: Record<string, boolean>;
 };
 
+/**
+ * One `searching.customQuickFilterButtons` entry, `[Group:]Label=term,term`.
+ * `id` is everything left of the `=`, so it stays unique even when two groups
+ * use the same label. Selected filters sharing a `group` are ORed; each group,
+ * and each ungrouped filter, must match on its own.
+ */
 export type QuickFilter = {
-    group: "source" | "quality" | "other" | "custom";
+    group: string | null;
     id: string;
     label: string;
     terms: string[];
@@ -239,42 +245,11 @@ function normalizeGroupingValue(value: string): string {
     return value.toLocaleLowerCase().replace(/[\s._-]+/g, "");
 }
 
-export function quickFilterKey(
-    filter: Pick<QuickFilter, "group" | "id">,
-): string {
-    return `${filter.group}|${filter.id}`;
+export function quickFilterKey(filter: Pick<QuickFilter, "id">): string {
+    // The `custom|` prefix is what `searching.preselectQuickFilterButtons` has
+    // always stored for configured filters.
+    return `custom|${filter.id}`;
 }
-
-const sourceFilters: QuickFilter[] = [
-    {group: "source", id: "camts", label: "CAM / TS", terms: ["cam", "ts"]},
-    {group: "source", id: "tv", label: "TV", terms: ["hdtv"]},
-    {
-        group: "source",
-        id: "web",
-        label: "WEB",
-        terms: ["webrip", "web-dl", "webdl"],
-    },
-    {group: "source", id: "dvd", label: "DVD", terms: ["dvd"]},
-    {
-        group: "source",
-        id: "bluray",
-        label: "Blu-Ray",
-        terms: ["bluray", "blu-ray"],
-    },
-];
-
-const qualityFilters: QuickFilter[] = [480, 720, 1080, 2160].map((quality) => ({
-    group: "quality",
-    id: `q${quality}p`,
-    label: `${quality}p`,
-    terms: [`${quality}p`],
-}));
-
-const otherFilters: QuickFilter[] = [
-    {group: "other", id: "q3d", label: "3D", terms: ["3d"]},
-    {group: "other", id: "x265", label: "x265", terms: ["x265"]},
-    {group: "other", id: "hevc", label: "HEVC", terms: ["hevc"]},
-];
 
 export function defaultFilters(
     results: SearchResult[],
@@ -389,12 +364,9 @@ export function quickFiltersFromSafeConfig(value: unknown): QuickFilter[] {
     ) {
         return [];
     }
-    const custom = Array.isArray(value.searching.customQuickFilterButtons)
-        ? value.searching.customQuickFilterButtons.flatMap(
-              parseCustomQuickFilter,
-          )
+    return Array.isArray(value.searching.customQuickFilterButtons)
+        ? value.searching.customQuickFilterButtons.flatMap(parseQuickFilter)
         : [];
-    return [...sourceFilters, ...qualityFilters, ...otherFilters, ...custom];
 }
 
 // Legacy's stored format (`color-control.html`, `formly-config.js:290-322`):
@@ -501,7 +473,7 @@ export function filterResults(
     );
 }
 
-function parseCustomQuickFilter(entry: unknown): QuickFilter[] {
+function parseQuickFilter(entry: unknown): QuickFilter[] {
     if (typeof entry !== "string") {
         return [];
     }
@@ -509,15 +481,17 @@ function parseCustomQuickFilter(entry: unknown): QuickFilter[] {
     if (separator <= 0) {
         return [];
     }
-    const label = entry.slice(0, separator).trim();
+    const id = entry.slice(0, separator).trim();
+    const groupSeparator = id.indexOf(":");
+    const group =
+        groupSeparator > 0 ? id.slice(0, groupSeparator).trim() : null;
+    const label = group === null ? id : id.slice(groupSeparator + 1).trim();
     const terms = entry
         .slice(separator + 1)
         .split(",")
         .map((term) => term.trim())
         .filter(Boolean);
-    return label && terms.length > 0
-        ? [{group: "custom", id: label, label, terms}]
-        : [];
+    return label && terms.length > 0 ? [{group, id, label, terms}] : [];
 }
 
 function makeTitleMatcher(query: string): (title: string) => boolean {
@@ -544,8 +518,8 @@ function makeTitleMatcher(query: string): (title: string) => boolean {
 }
 
 /**
- * The currently selected quick filters, bucketed by their group -- the
- * per-scan half of `matchesQuickFilters`, which depends only on the selection
+ * The currently selected quick filters, bucketed by their group (an ungrouped
+ * filter is a bucket of its own), in config order -- the per-scan half of `matchesQuickFilters`, which depends only on the selection
  * and the configured filters and never on a result. Exported so its own
  * behavior (and the fact that it is computed once per `filterResults` call
  * rather than once per result) is directly testable.
@@ -554,16 +528,26 @@ export function selectedQuickFilterGroups(
     selected: Record<string, boolean>,
     filters: QuickFilter[],
 ): QuickFilter[][] {
-    const byGroup = filters
-        .filter((filter) => selected[quickFilterKey(filter)])
-        .reduce<Partial<Record<QuickFilter["group"], QuickFilter[]>>>(
-            (groups, filter) => {
-                (groups[filter.group] ??= []).push(filter);
-                return groups;
-            },
-            {},
-        );
-    return Object.values(byGroup);
+    const groups: QuickFilter[][] = [];
+    const byGroup = new Map<string, QuickFilter[]>();
+    for (const filter of filters) {
+        if (!selected[quickFilterKey(filter)]) {
+            continue;
+        }
+        if (filter.group === null) {
+            groups.push([filter]);
+            continue;
+        }
+        const group = byGroup.get(filter.group);
+        if (group) {
+            group.push(filter);
+        } else {
+            const created = [filter];
+            byGroup.set(filter.group, created);
+            groups.push(created);
+        }
+    }
+    return groups;
 }
 
 function matchesQuickFilters(
@@ -571,15 +555,9 @@ function matchesQuickFilters(
     selectedByGroup: QuickFilter[][],
 ): boolean {
     return selectedByGroup.every((groupFilters) =>
-        groupFilters[0].group === "custom"
-            ? groupFilters.every((filter) =>
-                  filter.terms.every((term) => matchesTerm(title, term)),
-              )
-            : groupFilters.some((filter) =>
-                  filter.group === "source"
-                      ? filter.terms.some((term) => matchesTerm(title, term))
-                      : filter.terms.every((term) => matchesTerm(title, term)),
-              ),
+        groupFilters.some((filter) =>
+            filter.terms.every((term) => matchesTerm(title, term)),
+        ),
     );
 }
 

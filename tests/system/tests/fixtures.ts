@@ -115,6 +115,22 @@ type HydraFixtures = {
     sensitiveDataLogging: void;
 };
 
+/** `searching.customQuickFilterButtons` as `baseConfig.yml` ships it. */
+export const DEFAULT_QUICK_FILTER_BUTTONS = [
+    "Source:CAM / TS=/cam|ts/",
+    "Source:TV=hdtv",
+    "Source:WEB=/webrip|web-dl|webdl/",
+    "Source:DVD=dvd",
+    "Source:Blu-Ray=/bluray|blu-ray/",
+    "Resolution:480p=480p",
+    "Resolution:720p=720p",
+    "Resolution:1080p=1080p",
+    "Resolution:2160p=2160p",
+    "Other:3D=3d",
+    "Other:x265=x265",
+    "Other:HEVC=hevc",
+];
+
 export const test = base.extend<HydraFixtures>({
     page: async ({page}, use) => {
         await page.addInitScript(() => window.localStorage.clear());
@@ -598,7 +614,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             ...(config.searching as HydraConfig),
             alwaysShowQuickFilterButtons: false,
             customMappings: [],
-            customQuickFilterButtons: [],
+            customQuickFilterButtons: DEFAULT_QUICK_FILTER_BUTTONS,
             forbiddenGroups: [],
             forbiddenPosters: [],
             forbiddenRegex: null,

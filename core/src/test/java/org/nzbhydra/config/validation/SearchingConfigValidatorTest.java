@@ -6,6 +6,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,6 +76,26 @@ class SearchingConfigValidatorTest {
 
         assertThat(result.isOk()).isTrue();
         assertThat(result.getWarningMessages()).isEmpty();
+    }
+
+    @Test
+    void shouldRemovePreselectionsOfQuickFiltersWhichDoNotExist() {
+        final SearchingConfig searchingConfig = new SearchingConfig();
+        searchingConfig.setCustomQuickFilterButtons(new ArrayList<>(List.of("Source:WEB=/webrip|web-dl/", "German=german")));
+        searchingConfig.setPreselectQuickFilterButtons(new ArrayList<>(List.of("custom|Source:WEB", "custom|German", "custom|Deleted", "source|web")));
+
+        final SearchingConfig result = testee.prepareForSaving(new BaseConfig(), searchingConfig);
+
+        assertThat(result.getPreselectQuickFilterButtons()).containsExactly("custom|Source:WEB", "custom|German");
+    }
+
+    @Test
+    void shouldAcceptTheDefaultQuickFilters() {
+        final BaseConfig baseConfig = new BaseConfig();
+
+        final ConfigValidationResult result = testee.validateConfig(new BaseConfig(), baseConfig, baseConfig.getSearching());
+
+        assertThat(result.getErrorMessages()).isEmpty();
     }
 
     private ConfigValidationResult validate(CustomQueryAndTitleMapping... mappings) {

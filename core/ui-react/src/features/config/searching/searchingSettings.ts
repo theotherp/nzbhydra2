@@ -42,45 +42,28 @@ export const APPLY_RESTRICTIONS_OPTIONS: readonly SettingOption[] = [
     {label: "Never", value: "NONE"},
 ];
 
-/** `config-fields-service.js:1493-1506`, the built-in quick filters. */
-const PRESELECT_QUICK_FILTER_OPTIONS: readonly SettingOption[] = [
-    {label: "CAM / TS", value: "source|camts"},
-    {label: "TV", value: "source|tv"},
-    {label: "WEB", value: "source|web"},
-    {label: "DVD", value: "source|dvd"},
-    {label: "Blu-Ray", value: "source|bluray"},
-    {label: "480p", value: "quality|q480p"},
-    {label: "720p", value: "quality|q720p"},
-    {label: "1080p", value: "quality|q1080p"},
-    {label: "2160p", value: "quality|q2160p"},
-    {label: "3D", value: "other|q3d"},
-    {label: "x265", value: "other|qx265"},
-    {label: "HEVC", value: "other|qhevc"},
-];
-
 /**
- * Legacy's `optionsFunction` (`config-fields-service.js:1507-1515`) appends one
- * option per configured custom quick filter, taking the display name from the
- * `DisplayName=Required1,Required2` entry. Reproduced here so a custom filter
- * that is already saved can be preselected; the tooltip still tells the admin
- * to save before selecting one they have only just typed, because
- * `SearchingConfigValidator.prepareForSaving` drops a preselection whose
- * custom filter does not exist in the *saved* config.
+ * Legacy's `optionsFunction` (`config-fields-service.js:1507-1515`) offers one
+ * option per configured quick filter, keyed by everything left of the `=` in
+ * its `[Group:]DisplayName=Required1,Required2` entry. The former built-in
+ * filters are configured entries too now, so there is no fixed list in front.
+ * The tooltip still tells the admin to save before selecting a filter they
+ * have only just typed, because `SearchingConfigValidator.prepareForSaving`
+ * drops a preselection whose filter does not exist in the *saved* config.
  */
 export function preselectQuickFilterOptions(
     customQuickFilterButtons: unknown,
 ): readonly SettingOption[] {
     if (!Array.isArray(customQuickFilterButtons)) {
-        return PRESELECT_QUICK_FILTER_OPTIONS;
+        return [];
     }
-    const custom = customQuickFilterButtons
-        .map((entry) => String(entry).split("=")[0])
+    return customQuickFilterButtons
+        .map((entry) => String(entry).split("=")[0].trim())
         .filter((displayName) => displayName !== "")
         .map((displayName) => ({
             label: displayName,
             value: `custom|${displayName}`,
         }));
-    return [...PRESELECT_QUICK_FILTER_OPTIONS, ...custom];
 }
 
 export const CACHED_QUERIES_WIKI =

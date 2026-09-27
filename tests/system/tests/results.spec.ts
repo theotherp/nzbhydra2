@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import {csrfHeaders, dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
+import {csrfHeaders, DEFAULT_QUICK_FILTER_BUTTONS, dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
 import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
@@ -128,10 +128,13 @@ test.describe("Search results", () => {
         const searching = config.searching as Record<string, unknown>;
         searching.showQuickFilterButtons = true;
         searching.alwaysShowQuickFilterButtons = true;
-        searching.customQuickFilterButtons = ["BLURAY=bluray"];
+        searching.customQuickFilterButtons = [
+            ...DEFAULT_QUICK_FILTER_BUTTONS,
+            "BLURAY=bluray",
+        ];
         searching.preselectQuickFilterButtons = [
-            "quality|q720p",
-            "other|q3d",
+            "custom|Resolution:720p",
+            "custom|Other:3D",
             "custom|BLURAY",
         ];
         await hydra.saveConfig(config);
@@ -507,11 +510,14 @@ test.describe("Search results", () => {
         const searching = config.searching as Record<string, unknown>;
         searching.showQuickFilterButtons = true;
         searching.alwaysShowQuickFilterButtons = true;
-        searching.customQuickFilterButtons = ["Preferred=x265"];
+        searching.customQuickFilterButtons = [
+            ...DEFAULT_QUICK_FILTER_BUTTONS,
+            "Preferred=x265",
+        ];
         searching.preselectQuickFilterButtons = [
-            "source|web",
-            "quality|q1080p",
-            "other|x265",
+            "custom|Source:WEB",
+            "custom|Resolution:1080p",
+            "custom|Other:x265",
             "custom|Preferred",
         ];
         await hydra.saveConfig(config);

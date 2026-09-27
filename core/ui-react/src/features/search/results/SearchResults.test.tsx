@@ -722,7 +722,11 @@ describe("SearchResults", () => {
             safeConfig: {
                 searching: {
                     showQuickFilterButtons: true,
-                    preselectQuickFilterButtons: ["source|web"],
+                    customQuickFilterButtons: [
+                        "Source:WEB=/webrip|web-dl|webdl/",
+                        "Source:Blu-Ray=/bluray|blu-ray/",
+                    ],
+                    preselectQuickFilterButtons: ["custom|Source:WEB"],
                 },
             },
         };
@@ -792,12 +796,8 @@ describe("SearchResults", () => {
             </SafeConfigContext.Provider>,
         );
         expandRefineSidebar();
-        expect(
-            within(screen.getByTestId("refine-quality-filters")).queryByRole(
-                "button",
-                {name: "test"},
-            ),
-        ).toBeNull();
+        // No quick filter is configured yet, so the section is not there.
+        expect(screen.queryByTestId("refine-quality-filters")).toBeNull();
 
         rendered.rerender(
             <DialogProvider>
@@ -2831,7 +2831,14 @@ describe("SearchResults", () => {
 
     it("should reset a typed title filter, a size range, and a toggled quick filter on a new search while keeping them across onLoadMore", async () => {
         window.__NZBHYDRA_BOOTSTRAP__ = {
-            safeConfig: {searching: {showQuickFilterButtons: true}},
+            safeConfig: {
+                searching: {
+                    showQuickFilterButtons: true,
+                    customQuickFilterButtons: [
+                        "Source:WEB=/webrip|web-dl|webdl/",
+                    ],
+                },
+            },
         };
         const {rerender: rerenderRoot} = renderResults(
             <SearchResults
@@ -8479,6 +8486,7 @@ describe("SearchResults quality column", () => {
             searching: {
                 showQualityIndicator: true,
                 showQuickFilterButtons: true,
+                customQuickFilterButtons: ["Resolution:1080p=1080p"],
             },
         });
         const sidebar = screen.getByTestId("refine-sidebar");

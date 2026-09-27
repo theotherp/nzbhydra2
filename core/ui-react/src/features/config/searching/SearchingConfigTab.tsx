@@ -251,7 +251,7 @@ export function SearchingConfigTab() {
                             "searching.customQuickFilterButtons",
                         )}
                         advanced
-                        tooltip='E.g. use WEB=webdl,web-dl for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
+                        tooltip='E.g. use WEB=/webdl|web-dl/ for a quick filter with the name "WEB" to be displayed that searches for "webdl" or "web-dl" in lowercase search results. Selected filters with the same group prefix (e.g. "Resolution:720p" and "Resolution:1080p") match if any of them matches.'
                     />
                 ) : null}
                 {showQuickFilterButtons ? (

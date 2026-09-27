@@ -41,7 +41,12 @@ const results: SearchResult[] = [
 ];
 
 const oneQualityFilter: QuickFilter[] = [
-    {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
+    {
+        group: "Resolution",
+        id: "Resolution:1080p",
+        label: "1080p",
+        terms: ["1080p"],
+    },
 ];
 
 function Harness({

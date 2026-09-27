@@ -245,7 +245,7 @@ export function RefineSidebar({
                                         quickFilterKey(filter)
                                     ] ?? false
                                 }
-                                key={`${filter.group}-${filter.id}`}
+                                key={quickFilterKey(filter)}
                                 label={filter.label}
                                 onToggle={() => onToggleQuickFilter(filter)}
                             />

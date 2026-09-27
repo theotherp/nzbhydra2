@@ -16,7 +16,7 @@ const baseSearching: Record<string, unknown> = {
     applyRestrictions: "BOTH",
     coverSize: 128,
     customMappings: [],
-    customQuickFilterButtons: ["Remux=remux"],
+    customQuickFilterButtons: ["Resolution:1080p=1080p", "Remux=remux"],
     duplicateAgeThreshold: 2,
     duplicateSizeThresholdInPercent: 1,
     forbiddenGroups: ["spamgroup"],
@@ -38,7 +38,7 @@ const baseSearching: Record<string, unknown> = {
     loadLimitInternal: 100,
     maxAge: 1000,
     minSeeders: 1,
-    preselectQuickFilterButtons: ["source|web"],
+    preselectQuickFilterButtons: ["custom|Resolution:1080p"],
     removeTrailing: ["english"],
     replaceUmlauts: false,
     requiredRegex: "required.*",
@@ -236,8 +236,8 @@ describe("F-CONFIG-SEARCHING conditional groups", () => {
         }
         expect(searchingValues(harness)).toMatchObject({
             alwaysShowQuickFilterButtons: true,
-            customQuickFilterButtons: ["Remux=remux"],
-            preselectQuickFilterButtons: ["source|web"],
+            customQuickFilterButtons: ["Resolution:1080p=1080p", "Remux=remux"],
+            preselectQuickFilterButtons: ["custom|Resolution:1080p"],
             showQuickFilterButtons: false,
         });
     });
@@ -250,7 +250,10 @@ describe("F-CONFIG-SEARCHING conditional groups", () => {
         );
 
         expect(screen.getByRole("option", {name: "Remux"})).toBeVisible();
-        expect(screen.getByRole("option", {name: "1080p"})).toBeVisible();
+        expect(
+            screen.getByRole("option", {name: "Resolution:1080p"}),
+        ).toBeVisible();
+        expect(screen.getAllByRole("option")).toHaveLength(2);
     });
 });
 

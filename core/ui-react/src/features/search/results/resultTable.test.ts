@@ -54,7 +54,12 @@ const results = [
 // filter active" that `refine-clear-all`'s disabled state is derived from.
 describe("activeFilterCount", () => {
     const quickFilters: QuickFilter[] = [
-        {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
+        {
+            group: "Resolution",
+            id: "Resolution:1080p",
+            label: "1080p",
+            terms: ["1080p"],
+        },
     ];
     const base = () => defaultFilters(results, quickFilters);
 
@@ -81,7 +86,10 @@ describe("activeFilterCount", () => {
         ).toBe(1);
         expect(
             activeFilterCount(
-                {...base(), quickFilters: {"quality|q1080p": true}},
+                {
+                    ...base(),
+                    quickFilters: {"custom|Resolution:1080p": true},
+                },
                 base(),
             ),
         ).toBe(1);
@@ -112,7 +120,7 @@ describe("activeFilterCount", () => {
                     grabs: {min: "2", max: ""},
                     indexers: ["One"],
                     qualityRating: {min: "", max: "6"},
-                    quickFilters: {"quality|q1080p": true},
+                    quickFilters: {"custom|Resolution:1080p": true},
                     size: {min: "", max: "3"},
                     title: "movie",
                 },
@@ -138,40 +146,52 @@ describe("activeFilterCount", () => {
 // the result being tested).
 describe("selectedQuickFilterGroups", () => {
     const quickFilters: QuickFilter[] = [
-        {group: "source", id: "web", label: "WEB", terms: ["web"]},
-        {group: "source", id: "dvd", label: "DVD", terms: ["dvd"]},
-        {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
-        {group: "custom", id: "Mine", label: "Mine", terms: ["mine"]},
+        {group: "Source", id: "Source:WEB", label: "WEB", terms: ["web"]},
+        {group: "Source", id: "Source:DVD", label: "DVD", terms: ["dvd"]},
+        {
+            group: "Resolution",
+            id: "Resolution:1080p",
+            label: "1080p",
+            terms: ["1080p"],
+        },
+        {group: null, id: "Mine", label: "Mine", terms: ["mine"]},
+        {group: null, id: "Example", label: "Example", terms: ["example"]},
     ];
 
     it("should bucket only the selected filters, by group", () => {
         expect(
             selectedQuickFilterGroups(
                 {
-                    "source|web": true,
-                    "source|dvd": true,
-                    "quality|q1080p": false,
+                    "custom|Source:WEB": true,
+                    "custom|Source:DVD": true,
+                    "custom|Resolution:1080p": false,
                 },
                 quickFilters,
             ).map((group) => group.map((filter) => quickFilterKey(filter))),
-        ).toEqual([["source|web", "source|dvd"]]);
+        ).toEqual([["custom|Source:WEB", "custom|Source:DVD"]]);
     });
 
     it("should bucket nothing when nothing is selected", () => {
         expect(selectedQuickFilterGroups({}, quickFilters)).toEqual([]);
     });
 
-    it("should keep each group separate so filterResults ANDs across groups", () => {
+    it("should keep each group and each ungrouped filter separate so filterResults ANDs them", () => {
         expect(
             selectedQuickFilterGroups(
                 {
-                    "source|web": true,
-                    "quality|q1080p": true,
+                    "custom|Source:WEB": true,
+                    "custom|Resolution:1080p": true,
                     "custom|Mine": true,
+                    "custom|Example": true,
                 },
                 quickFilters,
             ).map((group) => group.map((filter) => quickFilterKey(filter))),
-        ).toEqual([["source|web"], ["quality|q1080p"], ["custom|Mine"]]);
+        ).toEqual([
+            ["custom|Source:WEB"],
+            ["custom|Resolution:1080p"],
+            ["custom|Mine"],
+            ["custom|Example"],
+        ]);
     });
 
     it("should be computed once per filterResults scan, not once per result", () => {
@@ -183,19 +203,19 @@ describe("selectedQuickFilterGroups", () => {
         let idReads = 0;
         const counted: QuickFilter[] = [
             {
-                group: "source",
+                group: "Source",
                 get id() {
                     idReads++;
-                    return "web";
+                    return "Source:WEB";
                 },
                 label: "WEB",
                 terms: ["web"],
             },
             {
-                group: "quality",
+                group: "Resolution",
                 get id() {
                     idReads++;
-                    return "q1080p";
+                    return "Resolution:1080p";
                 },
                 label: "1080p",
                 terms: ["1080p"],
@@ -213,7 +233,10 @@ describe("selectedQuickFilterGroups", () => {
             }));
         const filters = {
             ...defaultFilters(loaded(1), counted),
-            quickFilters: {"source|web": true, "quality|q1080p": true},
+            quickFilters: {
+                "custom|Source:WEB": true,
+                "custom|Resolution:1080p": true,
+            },
         };
 
         idReads = 0;
@@ -225,7 +248,7 @@ describe("selectedQuickFilterGroups", () => {
         expect(readsForFour).toBe(counted.length);
     });
 
-    it("should keep filterResults' quick-filter semantics unchanged", () => {
+    it("should OR selected filters within a group and AND everything else", () => {
         const titles = [
             "Example WEB 1080p",
             "Example DVD 1080p",
@@ -249,20 +272,25 @@ describe("selectedQuickFilterGroups", () => {
                 quickFilters,
             ).map((result) => result.title);
         // Within a group the selected filters are ORed ...
-        expect(matching({"source|web": true, "source|dvd": true})).toEqual([
+        expect(
+            matching({"custom|Source:WEB": true, "custom|Source:DVD": true}),
+        ).toEqual([
             "Example WEB 1080p",
             "Example DVD 1080p",
             "Example WEB 720p",
             "Example mine WEB 1080p",
         ]);
         // ... and across groups they are ANDed.
-        expect(matching({"source|dvd": true, "quality|q1080p": true})).toEqual([
-            "Example DVD 1080p",
-        ]);
-        // A custom filter's own terms must all match.
-        expect(matching({"custom|Mine": true})).toEqual([
-            "Example mine WEB 1080p",
-        ]);
+        expect(
+            matching({
+                "custom|Source:DVD": true,
+                "custom|Resolution:1080p": true,
+            }),
+        ).toEqual(["Example DVD 1080p"]);
+        // Ungrouped filters are ANDed with each other.
+        expect(matching({"custom|Mine": true, "custom|Example": true})).toEqual(
+            ["Example mine WEB 1080p"],
+        );
         expect(matching({})).toHaveLength(titles.length);
     });
 
@@ -317,9 +345,8 @@ describe("result table transformations", () => {
             },
         };
         const quickFilters = quickFiltersFromSafeConfig(safeConfig);
-        expect(quickFilters.map((filter) => filter.id)).toContain("Required");
+        expect(quickFilters.map((filter) => filter.id)).toEqual(["Required"]);
         expect(preselectedQuickFilters(safeConfig, quickFilters)).toEqual({
-            "source|web": true,
             "custom|Required": true,
         });
         expect(
@@ -418,19 +445,66 @@ describe("result table transformations", () => {
         expect(defaultFilters(results, []).downloadTypes).toEqual([]);
     });
 
-    it("should use OR semantics for multiple selected source, quality, and other filters", () => {
+    it("should show only configured quick filters, in config order, with their group", () => {
+        expect(
+            quickFiltersFromSafeConfig({
+                searching: {
+                    showQuickFilterButtons: true,
+                    customQuickFilterButtons: [
+                        "Resolution:1080p=1080p",
+                        "German=german",
+                        "Source: WEB = /webrip|web-dl/",
+                        ":Empty group=x",
+                        "Resolution:=720p",
+                    ],
+                },
+            }),
+        ).toEqual([
+            {
+                group: "Resolution",
+                id: "Resolution:1080p",
+                label: "1080p",
+                terms: ["1080p"],
+            },
+            {group: null, id: "German", label: "German", terms: ["german"]},
+            {
+                group: "Source",
+                id: "Source: WEB",
+                label: "WEB",
+                terms: ["/webrip|web-dl/"],
+            },
+            {
+                group: null,
+                id: ":Empty group",
+                label: ":Empty group",
+                terms: ["x"],
+            },
+        ]);
+        expect(
+            quickFiltersFromSafeConfig({
+                searching: {showQuickFilterButtons: true},
+            }),
+        ).toEqual([]);
+    });
+
+    it("should match the default quick filters like the former built-in ones", () => {
         const quickFilters = quickFiltersFromSafeConfig({
-            searching: {showQuickFilterButtons: true},
+            searching: {
+                showQuickFilterButtons: true,
+                customQuickFilterButtons: [
+                    "Source:WEB=/webrip|web-dl|webdl/",
+                    "Source:Blu-Ray=/bluray|blu-ray/",
+                    "Resolution:720p=720p",
+                    "Resolution:1080p=1080p",
+                    "Other:x265=x265",
+                    "Other:HEVC=hevc",
+                ],
+            },
         });
         const filters = defaultFilters(results, quickFilters);
-        filters.quickFilters = {
-            "source|web": true,
-            "source|bluray": true,
-            "quality|q720p": true,
-            "quality|q1080p": true,
-            "other|x265": true,
-            "other|hevc": true,
-        };
+        filters.quickFilters = Object.fromEntries(
+            quickFilters.map((filter) => [quickFilterKey(filter), true]),
+        );
 
         expect(
             filterResults(
@@ -438,6 +512,7 @@ describe("result table transformations", () => {
                     {...results[0], title: "Movie WEB-DL 1080p x265"},
                     {...results[1], title: "Movie BluRay 720p HEVC"},
                     {...results[1], title: "Movie DVD 480p 3D"},
+                    {...results[1], title: "Movie WEBRip 2160p x265"},
                 ],
                 filters,
                 quickFilters,
@@ -457,9 +532,7 @@ describe("result table transformations", () => {
         });
         const filters = defaultFilters(results, quickFilters);
         filters.quickFilters = Object.fromEntries(
-            quickFilters
-                .filter((filter) => filter.group === "custom")
-                .map((filter) => [quickFilterKey(filter), true]),
+            quickFilters.map((filter) => [quickFilterKey(filter), true]),
         );
 
         expect(
@@ -475,17 +548,17 @@ describe("result table transformations", () => {
         ).toEqual(["Movie WEB-DL release"]);
     });
 
-    it("should distinguish a custom label from a built-in quick-filter ID", () => {
+    it("should distinguish the same label in different groups", () => {
         const quickFilters = quickFiltersFromSafeConfig({
             searching: {
                 showQuickFilterButtons: true,
-                customQuickFilterButtons: ["web=movie"],
+                customQuickFilterButtons: ["A:web=movie", "B:web=nomatch"],
             },
         });
         const filters = defaultFilters(results, quickFilters);
-        filters.quickFilters["custom|web"] = true;
+        filters.quickFilters["custom|A:web"] = true;
 
-        expect(filters.quickFilters["source|web"]).toBe(false);
+        expect(filters.quickFilters["custom|B:web"]).toBe(false);
         expect(
             filterResults(results, filters, quickFilters).map(
                 (result) => result.searchResultId,
