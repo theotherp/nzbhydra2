@@ -39,6 +39,7 @@ describe("LoginPage", () => {
         expect(
             screen.getByRole("heading", {name: "Log in"}),
         ).toBeInTheDocument();
+        expect(document.title).toBe("NZBHydra 2 - Login");
         expect(screen.getByLabelText("Username")).toHaveFocus();
         expect(screen.getByLabelText("Password")).toHaveAttribute(
             "type",

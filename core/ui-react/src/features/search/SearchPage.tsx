@@ -54,6 +54,7 @@ import {
     DEFAULT_QUERY_STALE_TIME_MS,
     retryUnlessUnauthorized,
 } from "../../app/queryDefaults";
+import {useDocumentTitle} from "../../app/documentTitle";
 import {reportSessionError} from "../../app/sessionExpiry";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
@@ -132,6 +133,7 @@ export function SearchPage({
     );
     const navigate = useNavigate({from: "/"});
     const search = useSearch({strict: false});
+    useDocumentTitle("Search", searchTitleSubject(search));
     const safeConfig = useSafeConfig(bootstrap);
     const catalog = useMemo(
         () => createCategoryCatalog(safeConfig),
@@ -897,4 +899,21 @@ function isCheckboxIndexerSelection(safeConfig: unknown): boolean {
         (safeConfig as {indexerSelectionAsCheckboxes?: unknown})
             .indexerSelectionAsCheckboxes === true,
     );
+}
+
+/**
+ * What the browser tab names for the search in the URL: the media title of an
+ * ID search or the query, and for a search without either (browsing a
+ * category) the category.
+ */
+function searchTitleSubject(
+    search: Record<string, unknown>,
+): string | undefined {
+    for (const key of ["title", "query", "category"]) {
+        const value = search[key];
+        if (typeof value === "string" && value.trim() !== "") {
+            return value;
+        }
+    }
+    return undefined;
 }

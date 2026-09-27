@@ -4122,14 +4122,14 @@ their text and relative order are unchanged.
 - **Why not a packet:** it is not a quickfix. All three are new or changed user-observable behaviour, which the gate sends to packets. The owner asked for them directly, and chose implementing them directly over an FM packet
   for the chip editing. They are recorded here so the history stays complete, and the registries were updated with them.
 - **What changed:** `f079cab0f` moves the built-in quick filters into `searching.customQuickFilterButtons` (config migration 26->27, optional `Group:` prefix, OR within a group), `4cab49869` sorts the refine sidebar's quick
-  filters by group, and `afe86f5c6` makes `C-CONFIG-FIELDS`' chips editable in place.
+  filters by group, and `453528af6` makes `C-CONFIG-FIELDS`' chips editable in place.
 - **Paths:** `core/ui-react/src/features/{search/results/{resultTable.ts,RefineSidebar.tsx},config/components/ChipsSetting.tsx,config/searching/*,config/settingsSearch/settingsIndex.ts}` and their tests; backend
   `SearchingConfig`, `MainConfig`, `baseConfig.yml`, `SearchingConfigValidator`, `ConfigMigrationStep026to027`; `tests/system/tests/{fixtures.ts,results.spec.ts}`; `FEATURES.yaml` (F-SEARCH-SORT-FILTER), `COMPONENTS.yaml`
   (C-CONFIG-FIELDS).
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (148 files, 2278 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass;
   Java `org.nzbhydra.config` tests 107 passed, 3 skipped; Playwright `results.spec.ts` 44/44, `config-control-treatment`, `config-searching`, `focus-indication` 23/23; `git diff --check` clean.
 - **Not done:** no screenshot strip for the chip edit state (an outlined chip while editing).
-- **Commit:** `f079cab0f`, `4cab49869`, `afe86f5c6`
+- **Commit:** `f079cab0f`, `4cab49869`, `453528af6`
 
 ### 2026-09-27 — Hide the indexer summary from users without the indexer selection (owner-directed, outside the packet pipeline)
 
@@ -4139,4 +4139,16 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (148 files, 2280 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass;
   `UserInfosProviderTest` 4/4; `tests/results.spec.ts` 44/44; `git diff --check` clean.
 - **Not tested end to end:** a real restricted login needs a non-`NONE` auth type at boot, which the shared Playwright instance never has; the backend half is covered by `UserInfosProviderTest`.
-- **Commit:** `c5312b195`
+- **Commit:** `5cd69b02a`
+
+### 2026-09-27 — Name the current page in the document title (owner-directed, outside the packet pipeline)
+
+- **Why not a packet:** not a quickfix, since it is a new user-observable behaviour across several shells. The owner asked for it directly.
+- **What changed:** `app/documentTitle.ts` (`useDocumentTitle`) sets "NZBHydra 2 - <section> - <tab or subject>" while a page is mounted and puts "NZBHydra 2" back on unmount. Callers: `SearchPage` (the URL's media title, else query, else
+  category), `LoginPage`, `ConfigShell` and `SystemShell` (active tab label), and `StatsShell` ("Indexer statuses", "History - Searches/Saved searches/Downloads/Notifications", "Stats"). `index.html`'s dev title now matches
+  `react.html` ("NZBHydra 2").
+- **Paths:** `core/ui-react/src/app/documentTitle{.ts,.test.tsx}`, `core/ui-react/index.html`, `core/ui-react/src/features/{search/SearchPage,auth/LoginPage,config/ConfigShell,system/SystemShell,stats/StatsShell}.tsx` and their tests
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (149 files, 2287 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass. `format:check` fails only on
+  `settingsSearch/settingsIndex.ts`, which is unformatted since `926eecd98` and was fixed separately. `git diff --check` clean.
+- **Also:** corrected the SHAs cited for the chip editing (`453528af6`) and the indexer summary restriction (`5cd69b02a`) after those commits were squashed.
+- **Commit:** the commit adding this entry.

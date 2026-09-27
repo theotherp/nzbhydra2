@@ -1,6 +1,7 @@
 import {Box, Tab, Tabs} from "@mui/material";
 import {Link, Outlet, useLocation} from "@tanstack/react-router";
 
+import {useDocumentTitle} from "../../app/documentTitle";
 import {
     activeSystemTab,
     SYSTEM_TABS,
@@ -17,6 +18,7 @@ import {
 export function SystemShell() {
     const pathname = useLocation({select: (location) => location.pathname});
     const active = activeSystemTab(pathname);
+    useDocumentTitle("System", active.label);
     return (
         <Box component="section" data-testid="system-shell" sx={{py: 3}}>
             <Tabs

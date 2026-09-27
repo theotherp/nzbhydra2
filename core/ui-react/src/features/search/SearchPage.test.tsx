@@ -297,6 +297,45 @@ describe("SearchPage", () => {
         });
     });
 
+    it("should name the search in the page title", () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        const page = () => (
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />
+        );
+        const {rerender} = render(page());
+        expect(document.title).toBe("NZBHydra 2 - Search");
+
+        // A search without a query names its category ...
+        router.search = {category: "Movies"};
+        rerender(page());
+        expect(document.title).toBe("NZBHydra 2 - Search - Movies");
+
+        // ... one with a query names the query ...
+        router.search = {category: "Movies", query: "mysearchquery"};
+        rerender(page());
+        expect(document.title).toBe("NZBHydra 2 - Search - mysearchquery");
+
+        // ... and an ID search names what it is for.
+        embySearch();
+        rerender(page());
+        expect(document.title).toBe("NZBHydra 2 - Search - Movie");
+    });
+
     it("should submit typed TV season and episode criteria without an identifier", async () => {
         router.search = {category: "Series"};
         const fetchImplementation = vi.fn((url: RequestInfo | URL) =>

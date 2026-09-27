@@ -165,6 +165,17 @@ describe("SystemShell", () => {
         expect(screen.queryByTestId("system-control")).toBeNull();
     });
 
+    it("should name the open tab in the page title", async () => {
+        renderSystemArea();
+        await screen.findByTestId("system-shell");
+        expect(document.title).toBe("NZBHydra 2 - System - Control");
+
+        fireEvent.click(screen.getByTestId("system-tab-tasks"));
+
+        expect(await screen.findByTestId("system-tasks")).toBeVisible();
+        expect(document.title).toBe("NZBHydra 2 - System - Tasks");
+    });
+
     it("should render the updates tab inside the shell", async () => {
         renderSystemArea("/hydra/system/updates");
         await screen.findByTestId("system-shell");

@@ -2,6 +2,7 @@ import {Box, Button, Paper, Stack, TextField, Typography} from "@mui/material";
 import {useForm} from "react-hook-form";
 
 import {ApiTransport} from "../../api/transport";
+import {useDocumentTitle} from "../../app/documentTitle";
 import type {BootstrapData} from "../../bootstrap";
 import {useToasts} from "../../components/toasts/toasts";
 import {navigateToApplication} from "./navigation";
@@ -27,6 +28,7 @@ export function LoginPage({
     transport,
     navigate = navigateToApplication,
 }: LoginPageProps) {
+    useDocumentTitle("Login");
     const toasts = useToasts();
     const {formState, handleSubmit, register, watch} = useForm<FormCredentials>(
         {defaultValues: {username: "", password: ""}},

@@ -392,6 +392,18 @@ describe("ConfigShell", () => {
         expect(scrollTo).toHaveBeenCalledWith({top: 0});
     });
 
+    it("should name the open tab in the page title", async () => {
+        renderConfigArea({backend: createBackend()});
+        await waitForShell();
+        expect(document.title).toBe("NZBHydra 2 - Config - Main");
+
+        fireEvent.click(screen.getByTestId("config-tab-searching"));
+
+        await waitFor(() =>
+            expect(document.title).toBe("NZBHydra 2 - Config - Searching"),
+        );
+    });
+
     it("should offer every canonical tab", async () => {
         renderConfigArea({backend: createBackend()});
         await waitForShell();

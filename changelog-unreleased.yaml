@@ -26,3 +26,5 @@
     text: "The quick filters that used to be built in (CAM / TS, WEB, 1080p, x265 and so on) are now regular quick filters in Config &gt; Searching, so you can change or delete them. Your existing quick filters are kept and listed after them. Put a group name in front of a filter&apos;s name, like Resolution:1080p=1080p, to show results matching any of the selected filters in that group. The search results sort quick filters by group, with ungrouped ones last."
 -   type: "feature"
     text: "List settings in the config (quick filters, forbidden words, user agents and so on) can be edited in place: click an entry, change it and press Enter. Escape cancels."
+-   type: "feature"
+    text: "The browser tab now names the page you are on, e.g. &quot;NZBHydra 2 - Config - Searching&quot;, &quot;NZBHydra 2 - History - Downloads&quot; or &quot;NZBHydra 2 - Search - your query&quot;, instead of always &quot;NZBHydra 2&quot;."

@@ -3,6 +3,8 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {StatsShell} from "./StatsShell";
 
+const location = vi.hoisted(() => ({pathname: "/stats/indexers"}));
+
 vi.mock("@tanstack/react-router", () => ({
     Link: ({
         to,
@@ -21,7 +23,7 @@ vi.mock("@tanstack/react-router", () => ({
         select,
     }: {
         select: (location: {pathname: string}) => string;
-    }) => select({pathname: "/stats/indexers"}),
+    }) => select({pathname: location.pathname}),
 }));
 
 function bootstrap(safeConfig: {keepHistory: boolean}) {
@@ -46,7 +48,10 @@ function bootstrap(safeConfig: {keepHistory: boolean}) {
 
 // This suite does not run with vitest globals, so RTL's automatic cleanup is
 // not registered and each render would otherwise stack in the same document.
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    location.pathname = "/stats/indexers";
+});
 
 describe("StatsShell", () => {
     it("should hide keep-history tabs when history is disabled", () => {
@@ -85,6 +90,25 @@ describe("StatsShell", () => {
         expect(
             screen.queryByRole("tab", {name: "Stats"}),
         ).not.toBeInTheDocument();
+    });
+
+    it("should name the open tab in the page title", () => {
+        const {rerender} = render(
+            <StatsShell bootstrap={bootstrap({keepHistory: true})} />,
+        );
+        expect(document.title).toBe("NZBHydra 2 - Indexer statuses");
+
+        for (const [path, title] of [
+            ["searches", "NZBHydra 2 - History - Searches"],
+            ["saved-searches", "NZBHydra 2 - History - Saved searches"],
+            ["downloads", "NZBHydra 2 - History - Downloads"],
+            ["notifications", "NZBHydra 2 - History - Notifications"],
+            ["stats", "NZBHydra 2 - Stats"],
+        ]) {
+            location.pathname = `/stats/${path}`;
+            rerender(<StatsShell bootstrap={bootstrap({keepHistory: true})} />);
+            expect(document.title).toBe(title);
+        }
     });
 
     it("should render the matched tab through the router outlet", () => {

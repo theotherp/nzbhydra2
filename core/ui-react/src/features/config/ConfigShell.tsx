@@ -21,6 +21,7 @@ import {
 } from "../../api/config/config";
 import type {ConfigValues} from "../../api/config/schema";
 import {ApiTransport} from "../../api/transport";
+import {useDocumentTitle} from "../../app/documentTitle";
 import {useDialogs} from "../../components/dialogs/dialogs";
 import {useToasts} from "../../components/toasts/toasts";
 import {useRestartCoordinator} from "../../services/restart/useRestartCoordinator";
@@ -161,6 +162,7 @@ function ConfigForm({
     const {navigateToSetting} = settingsNavigation;
     const pathname = useLocation({select: (location) => location.pathname});
     const activeTab = activeConfigTab(pathname);
+    useDocumentTitle("Config", activeTab.label);
     // FM-102: the active tab's mounted `ConfigFieldset`s, for ADR-0028's "on
     // this page" list. One registry for the whole shell -- the tab body
     // registering through `<Outlet />` and `ConfigNav` reading the result are

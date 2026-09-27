@@ -1,6 +1,7 @@
 import {Box, Tab, Tabs} from "@mui/material";
 import {Link, Outlet, useLocation} from "@tanstack/react-router";
 
+import {useDocumentTitle} from "../../app/documentTitle";
 import {
     useSafeConfig,
     type BootstrapData,
@@ -21,9 +22,10 @@ type StatsShellProps = {bootstrap: BootstrapData};
 export function StatsShell({bootstrap}: StatsShellProps) {
     const pathname = useLocation({select: (location) => location.pathname});
     const tabs = statsTabs(useSafeConfig(bootstrap));
-    const active =
-        tabs.find((tab) => pathname.endsWith(`/${tab.path}`))?.path ??
-        "indexers";
+    const activeTab =
+        tabs.find((tab) => pathname.endsWith(`/${tab.path}`)) ?? tabs[0];
+    const active = activeTab.path;
+    useDocumentTitle(...activeTab.title);
     return (
         <Box component="section" sx={{py: 3}}>
             <Tabs
@@ -56,15 +58,35 @@ export function StatsShell({bootstrap}: StatsShellProps) {
 function statsTabs(safeConfig: SafeConfig) {
     const history = safeConfig?.keepHistory === true;
     return [
-        {label: "Indexer statuses", path: "indexers"},
+        {
+            label: "Indexer statuses",
+            path: "indexers",
+            title: ["Indexer statuses"],
+        },
         ...(history
             ? [
-                  {label: "Search history", path: "searches"},
-                  {label: "Saved searches", path: "saved-searches"},
-                  {label: "Download history", path: "downloads"},
+                  {
+                      label: "Search history",
+                      path: "searches",
+                      title: ["History", "Searches"],
+                  },
+                  {
+                      label: "Saved searches",
+                      path: "saved-searches",
+                      title: ["History", "Saved searches"],
+                  },
+                  {
+                      label: "Download history",
+                      path: "downloads",
+                      title: ["History", "Downloads"],
+                  },
               ]
             : []),
-        {label: "Notification history", path: "notifications"},
-        ...(history ? [{label: "Stats", path: "stats"}] : []),
+        {
+            label: "Notification history",
+            path: "notifications",
+            title: ["History", "Notifications"],
+        },
+        ...(history ? [{label: "Stats", path: "stats", title: ["Stats"]}] : []),
     ];
 }
