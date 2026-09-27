@@ -1,10 +1,4 @@
-import {
-    type ConfigFieldPath,
-    type HelpContent,
-    type SettingProps,
-    settingRowTestId,
-    settingTestId,
-} from "../components/settings";
+import {type ConfigFieldPath, type HelpContent, type SettingProps, settingRowTestId, settingTestId,} from "../components/settings";
 import {CONFIG_TABS, type ConfigTab, configTabHref} from "../configTabs";
 import {
     CSRF_HELP,
@@ -16,10 +10,7 @@ import {
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
 } from "../main/mainSettings";
-import {
-    APPRISE_API_URL,
-    APPRISE_CLI_URL,
-} from "../notifications/notificationsSettings";
+import {APPRISE_API_URL, APPRISE_CLI_URL,} from "../notifications/notificationsSettings";
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
@@ -275,7 +266,7 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
         },
         {
             conditional: true,
-            help: "Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key.",
+            help: "Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key. Click to edit.",
             label: "Bypass domains",
             path: "main.proxyIgnoreDomains",
         },
@@ -867,7 +858,7 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset}) => {
         {
             advanced: true,
             conditional: true,
-            help: "Enter in the format DisplayName=RequiredWord. Prefix words with ! to exclude them. Provide multiple required (or forbidden words) separated by commas. Surround value with / to mark as a regex. Prefix the name with a group, like Resolution:1080p=1080p, to show results matching any selected filter of that group. The search results show them sorted by group, ungrouped filters last. Apply values with enter key.",
+            help: "Enter in the format DisplayName=RequiredWord. Prefix words with ! to exclude them. Provide multiple required (or forbidden words) separated by commas. Surround value with / to mark as a regex. Prefix the name with a group, like Resolution:1080p=1080p, to show results matching any selected filter of that group. The search results show them sorted by group, ungrouped filters last. Apply values with enter key. Click to edit.",
             label: "Custom quick filters",
             path: "searching.customQuickFilterButtons",
         },
