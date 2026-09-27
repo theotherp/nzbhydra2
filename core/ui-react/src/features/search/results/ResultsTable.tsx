@@ -1,3 +1,4 @@
+import HighQualityOutlinedIcon from "@mui/icons-material/HighQualityOutlined";
 import {
     Box,
     Button,
@@ -6,6 +7,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Typography,
     useTheme,
 } from "@mui/material";
@@ -485,10 +487,10 @@ function headerActionsCellSx(
 }
 
 /**
- * The header sort button's style block. It has exactly two shapes -- the
- * left-aligned Title header's and every other header's -- and neither depends
- * on the theme or on any state, so both are module constants rather than an
- * object rebuilt per header per render.
+ * The header sort button's style block. It has three shapes -- the
+ * left-aligned Title header's, the centred quality header's (FM-201) and every
+ * other header's -- and none depends on the theme or on any state, so all are
+ * module constants rather than an object rebuilt per header per render.
  *
  * A native `<button>` keeps its intrinsic shrink-to-fit width even with
  * `display: flex` (buttons never stretch to fill their containing block the
@@ -507,7 +509,10 @@ function headerActionsCellSx(
  * 6px adrift of every title in the column. The right-aligned headers keep
  * their 4px, which is what holds them off their cell's right edge.
  */
-function sortButtonSx(isTitle: boolean): SxProps<Theme> {
+function sortButtonSx(
+    justifyContent: "center" | "flex-end" | "flex-start",
+): SxProps<Theme> {
+    const isTitle = justifyContent === "flex-start";
     return {
         alignItems: "center",
         color: HEADER_LABEL_COLOR,
@@ -515,7 +520,7 @@ function sortButtonSx(isTitle: boolean): SxProps<Theme> {
         flexShrink: 0,
         fontSize: HEADER_LABEL_FONT_SIZE,
         fontWeight: HEADER_LABEL_FONT_WEIGHT,
-        justifyContent: isTitle ? "flex-start" : "flex-end",
+        justifyContent,
         letterSpacing: HEADER_LABEL_LETTER_SPACING,
         maxWidth: "100%",
         minWidth: 0,
@@ -528,8 +533,10 @@ function sortButtonSx(isTitle: boolean): SxProps<Theme> {
     };
 }
 
-const TITLE_SORT_BUTTON_SX = sortButtonSx(true);
-const COLUMN_SORT_BUTTON_SX = sortButtonSx(false);
+const TITLE_SORT_BUTTON_SX = sortButtonSx("flex-start");
+const COLUMN_SORT_BUTTON_SX = sortButtonSx("flex-end");
+// FM-201: the quality column's header, centred like its badges.
+const CENTERED_SORT_BUTTON_SX = sortButtonSx("center");
 
 /**
  * FM-192: the results table itself -- the empty-filter notice, the
@@ -790,6 +797,14 @@ export function ResultsTable({
                           downloader). Every other track keeps
                           its own width, because each `<col>`
                           is addressed by its `data-column`.
+                        - FM-201 (owner request, 2026-09-27)
+                          adds a 58px quality column left of
+                          Title while the quality indicator is
+                          on and some loaded result is rated.
+                          Title pays for it: 285px of content
+                          with no downloader, below FM-175's
+                          340px floor, which the default column
+                          set still clears.
 
                         These `<col>` elements carry no width
                         of their own: both sets of tracks are
@@ -830,6 +845,10 @@ export function ResultsTable({
                             </TableCell>
                             {headerGroup.headers.map((header) => {
                                 const isTitle = header.column.id === "title";
+                                // FM-201: the quality column's header is an
+                                // icon, centred over its centred badges.
+                                const isQuality =
+                                    header.column.id === "quality";
                                 const label =
                                     typeof header.column.columnDef.header ===
                                     "string"
@@ -837,9 +856,71 @@ export function ResultsTable({
                                         : undefined;
                                 const sortDirection =
                                     header.column.getIsSorted();
+                                const sortButton =
+                                    header.isPlaceholder ? null : (
+                                        <Button
+                                            aria-label={`${label ?? ""}${
+                                                sortDirection === "asc"
+                                                    ? " (ascending)"
+                                                    : sortDirection === "desc"
+                                                      ? " (descending)"
+                                                      : ""
+                                            }`}
+                                            data-sort-direction={
+                                                sortDirection || "none"
+                                            }
+                                            data-testid={`sort-${header.column.id}`}
+                                            onClick={header.column.getToggleSortingHandler()}
+                                            size="small"
+                                            sx={
+                                                isTitle
+                                                    ? TITLE_SORT_BUTTON_SX
+                                                    : isQuality
+                                                      ? CENTERED_SORT_BUTTON_SX
+                                                      : COLUMN_SORT_BUTTON_SX
+                                            }
+                                        >
+                                            {isQuality ? (
+                                                // Owner (2026-09-27): an icon
+                                                // that expresses "quality" as
+                                                // the column head, named by the
+                                                // button's `aria-label` and the
+                                                // tooltip around it.
+                                                <HighQualityOutlinedIcon fontSize="small" />
+                                            ) : (
+                                                flexRender(
+                                                    header.column.columnDef
+                                                        .header,
+                                                    header.getContext(),
+                                                )
+                                            )}
+                                            {sortDirection && (
+                                                // A margin, not the leading space
+                                                // this used to carry: inside the
+                                                // button's flex row that space
+                                                // collapsed and the glyph touched
+                                                // the label.
+                                                <Box
+                                                    aria-hidden="true"
+                                                    component="span"
+                                                    sx={{ml: 0.25}}
+                                                >
+                                                    {sortDirection === "asc"
+                                                        ? "▲"
+                                                        : "▼"}
+                                                </Box>
+                                            )}
+                                        </Button>
+                                    );
                                 return (
                                     <TableCell
-                                        align={isTitle ? "left" : "right"}
+                                        align={
+                                            isTitle
+                                                ? "left"
+                                                : isQuality
+                                                  ? "center"
+                                                  : "right"
+                                        }
                                         aria-sort={
                                             sortDirection === "asc"
                                                 ? "ascending"
@@ -855,50 +936,12 @@ export function ResultsTable({
                                                 : headerCellSx.column
                                         }
                                     >
-                                        {header.isPlaceholder ? null : (
-                                            <Button
-                                                aria-label={`${label ?? ""}${
-                                                    sortDirection === "asc"
-                                                        ? " (ascending)"
-                                                        : sortDirection ===
-                                                            "desc"
-                                                          ? " (descending)"
-                                                          : ""
-                                                }`}
-                                                data-sort-direction={
-                                                    sortDirection || "none"
-                                                }
-                                                data-testid={`sort-${header.column.id}`}
-                                                onClick={header.column.getToggleSortingHandler()}
-                                                size="small"
-                                                sx={
-                                                    isTitle
-                                                        ? TITLE_SORT_BUTTON_SX
-                                                        : COLUMN_SORT_BUTTON_SX
-                                                }
-                                            >
-                                                {flexRender(
-                                                    header.column.columnDef
-                                                        .header,
-                                                    header.getContext(),
-                                                )}
-                                                {sortDirection && (
-                                                    // A margin, not the leading space
-                                                    // this used to carry: inside the
-                                                    // button's flex row that space
-                                                    // collapsed and the glyph touched
-                                                    // the label.
-                                                    <Box
-                                                        aria-hidden="true"
-                                                        component="span"
-                                                        sx={{ml: 0.25}}
-                                                    >
-                                                        {sortDirection === "asc"
-                                                            ? "▲"
-                                                            : "▼"}
-                                                    </Box>
-                                                )}
-                                            </Button>
+                                        {isQuality && sortButton !== null ? (
+                                            <Tooltip title={label}>
+                                                {sortButton}
+                                            </Tooltip>
+                                        ) : (
+                                            sortButton
                                         )}
                                     </TableCell>
                                 );

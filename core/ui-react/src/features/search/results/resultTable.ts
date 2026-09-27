@@ -1,6 +1,10 @@
 import type {SearchResult} from "../../../api/search";
+import {resultQualityRating} from "./qualityBadge";
 
 export type NumericRange = {min: string; max: string};
+
+/** The `ResultFilters` fields that are a min/max range. */
+export type RangeFilterName = "age" | "grabs" | "qualityRating" | "size";
 
 export type ResultFilters = {
     title: string;
@@ -10,6 +14,8 @@ export type ResultFilters = {
     size: NumericRange;
     grabs: NumericRange;
     age: NumericRange;
+    // FM-201: the quality column's range, on `resultQualityRating`.
+    qualityRating: NumericRange;
     quickFilters: Record<string, boolean>;
 };
 
@@ -292,6 +298,7 @@ export function defaultFilters(
         size: {min: "", max: ""},
         grabs: {min: "", max: ""},
         age: {min: "", max: ""},
+        qualityRating: {min: "", max: ""},
         quickFilters: Object.fromEntries(
             quickFilters.map((filter) => [quickFilterKey(filter), false]),
         ),
@@ -299,9 +306,9 @@ export function defaultFilters(
 }
 
 /**
- * FM-181: how many of the refine surface's eight filter dimensions -- title,
- * categories, indexers, download types, size, age, grabs, quick filters --
- * currently differ from `defaults`, the `defaultFilters(results,
+ * FM-181: how many of the refine surface's filter dimensions -- title,
+ * categories, indexers, download types, size, age, grabs, quality rating
+ * (FM-201), quick filters -- currently differ from `defaults`, the `defaultFilters(results,
  * quickFilters)` of the same loaded results.
  *
  * The defaults are a parameter rather than recomputed here because every call
@@ -332,7 +339,7 @@ export function activeFilterCount(
         ...(["categories", "downloadTypes", "indexers"] as const).map(
             (key) => !sameValues(filters[key], defaults[key]),
         ),
-        ...(["age", "grabs", "size"] as const).map(
+        ...(["age", "grabs", "qualityRating", "size"] as const).map(
             (key) =>
                 filters[key].min !== defaults[key].min ||
                 filters[key].max !== defaults[key].max,
@@ -356,6 +363,21 @@ function sameQuickFilterSelection(
     const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
     return [...keys].every(
         (key) => (left[key] ?? false) === (right[key] ?? false),
+    );
+}
+
+/**
+ * FM-201: the safe config's `searching.showQualityIndicator`
+ * (`SafeSearchingConfig`, the `searching.showMovieQualityIndicator` setting).
+ * The backend only rates results while it is on, but a result set loaded
+ * before it was switched off still carries ratings, so the quality column
+ * reads the flag as well as the data.
+ */
+export function qualityIndicatorFromSafeConfig(value: unknown): boolean {
+    return (
+        isRecord(value) &&
+        isRecord(value.searching) &&
+        value.searching.showQualityIndicator === true
     );
 }
 
@@ -472,6 +494,9 @@ export function filterResults(
             ) &&
             inRange(result.seeders ?? result.grabs, filters.grabs) &&
             inRange(ageInDays(result), filters.age) &&
+            // FM-201: like size and grabs, an unrated result passes only
+            // while neither bound is set.
+            inRange(resultQualityRating(result), filters.qualityRating) &&
             matchesQuickFilters(result.title, selectedQuickFilters),
     );
 }
@@ -720,6 +745,13 @@ export function actionsTrackWidth(downloaderCount: number): number {
 export type HideableResultColumn = "category" | "grabs";
 
 /**
+ * FM-201: the columns whose absence resets a refine dimension -- the two the
+ * reader can hide, plus the quality column, which exists only while the
+ * quality indicator is on and some loaded result is rated.
+ */
+export type ConditionalResultColumn = HideableResultColumn | "quality";
+
+/**
  * The basis table's width in px, i.e. what a 1280x800 viewport leaves beside
  * the docked refine sidebar. Every percentage track is its own pixel track
  * over this width, which is what makes the two track sets the same table at
@@ -737,11 +769,18 @@ const TABLE_BASIS_WIDTH = 936;
 // the most FM-175's 340px Title floor at 1280 leaves room for. Title has no
 // entry: a track with no declared width is the only one that absorbs the
 // whole remainder under `tableLayout: fixed`.
+//
+// FM-201: the conditional quality column's track is the wider of its header
+// and its widest badge, each measured in Chromium at 1280x800 with its cell's
+// 8px paddings: the header's 20px icon, sort glyph and 2px gap inside the
+// button's 4px paddings needs 57.4px, the "10" badge 48px, so 58. Title pays
+// for it only while the column exists.
 const DATA_COLUMN_PIXEL_WIDTHS: Record<string, number> = {
     category: 98,
     epoch: 53,
     grabs: 90,
     indexer: 90,
+    quality: 58,
     size: 66,
 };
 
@@ -810,30 +849,25 @@ export function tableColumnTracks(
 }
 
 /**
- * FM-200: `filters` with the refine section behind a hidden column reset to
- * its default -- every loaded category selected, or an empty grabs range --
- * so a filter the reader can no longer see or clear never narrows the
- * results.
- */
-/**
  * FM-200: `filters` as they apply while some columns are hidden -- each hidden
  * column's refine dimension at its default, `filters` itself when nothing is
  * hidden. Hiding a column already clears its filter (`clearColumnFilter`);
  * this also covers what arrives afterwards, since "Load more" can bring a
  * category the stored selection never held, and with the section hidden
- * nothing could select it.
+ * nothing could select it. FM-201: the quality column's range follows the
+ * same rule while that column is absent, so a bound nobody can see or clear
+ * never drops every unrated result.
  */
 export function withoutHiddenColumnFilters(
     filters: ResultFilters,
     defaults: ResultFilters,
-    hidden: {category: boolean; grabs: boolean},
+    hidden: Record<ConditionalResultColumn, boolean>,
 ): ResultFilters {
     let effective = filters;
-    if (hidden.category) {
-        effective = clearColumnFilter(effective, defaults, "category");
-    }
-    if (hidden.grabs) {
-        effective = clearColumnFilter(effective, defaults, "grabs");
+    for (const column of ["category", "grabs", "quality"] as const) {
+        if (hidden[column]) {
+            effective = clearColumnFilter(effective, defaults, column);
+        }
     }
     return effective;
 }
@@ -841,11 +875,16 @@ export function withoutHiddenColumnFilters(
 export function clearColumnFilter(
     filters: ResultFilters,
     defaults: ResultFilters,
-    column: HideableResultColumn,
+    column: ConditionalResultColumn,
 ): ResultFilters {
-    return column === "category"
-        ? {...filters, categories: defaults.categories}
-        : {...filters, grabs: defaults.grabs};
+    switch (column) {
+        case "category":
+            return {...filters, categories: defaults.categories};
+        case "grabs":
+            return {...filters, grabs: defaults.grabs};
+        case "quality":
+            return {...filters, qualityRating: defaults.qualityRating};
+    }
 }
 
 /**

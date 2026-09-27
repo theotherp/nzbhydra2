@@ -6093,6 +6093,365 @@ test.describe("Search results", () => {
             expect(await displayOptionChecked(page, "Details")).toBe(false);
         }
     });
+
+    // FM-201 (owner request, 2026-09-27): with the movie quality indicator on
+    // and rated results loaded, the badge moves into its own column left of
+    // Title -- sortable, unrated results last in both directions -- and the
+    // refine surface gains a "Quality rating" range between the Quality
+    // quick filters and "Title contains".
+    test("should show the movie quality rating as a sortable, filterable column at both evidence viewports", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        const searching = config.searching as Record<string, unknown>;
+        const indicatorBefore = searching.showMovieQualityIndicator;
+        searching.showMovieQualityIndicator = true;
+        await hydra.saveConfig(config);
+        const now = Math.floor(Date.now() / 1_000);
+        const fixture: [string, number | undefined][] = [
+            ["mid", 5],
+            ["unrated-a", undefined],
+            ["top", 10],
+            ["low", 2],
+            ["unrated-b", undefined],
+        ];
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: fixture.map(([id, rating], index) => ({
+                        searchResultId: `quality-${id}`,
+                        title: `Quality.Column.Example.${id}.2024.1080p.WEB-DL.x264`,
+                        indexer: "Alpha",
+                        category: "Movies",
+                        grabs: 3,
+                        size: 700 * 1024 * 1024,
+                        epoch: now - (index + 1) * 86_400,
+                        age: `${index + 1}d`,
+                        downloadType: "NZB",
+                        ...(rating === undefined
+                            ? {}
+                            : {
+                                  qualityRating: rating,
+                                  qualityWarnings: [
+                                      "[QUALITY] 1080p WEB-DL",
+                                  ],
+                              }),
+                    })),
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Alpha",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 400,
+                            numberOfFoundResults: fixture.length,
+                            numberOfAvailableResults: fixture.length,
+                            totalResultsKnown: true,
+                            hasMoreResults: false,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: fixture.length,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: fixture.length,
+                    numberOfAcceptedResults: fixture.length,
+                    offset: 0,
+                    limit: 100,
+                },
+            }),
+        );
+        const table = page.getByTestId("search-results-table");
+        const rowIds = () =>
+            table
+                .getByTestId("search-result-row")
+                .evaluateAll((rows) =>
+                    rows.map((row) =>
+                        (row.getAttribute("data-result-id") ?? "").replace(
+                            "quality-",
+                            "",
+                        ),
+                    ),
+                );
+        const noHorizontalScroll = () =>
+            page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth <=
+                    document.documentElement.clientWidth,
+            );
+
+        try {
+            for (const viewport of ["desktop", "mobile"] as const) {
+                const mobile = viewport === "mobile";
+                await prepareVisualEvidence(page, viewport, async () => {
+                    await page.goto("/");
+                    await page.evaluate(() =>
+                        window.localStorage.removeItem(
+                            "hydra.search-results.table",
+                        ),
+                    );
+                    await page.getByTestId("search-query").fill("quality column");
+                    await page.getByTestId("search-submit").click();
+                    await expect(
+                        page.getByTestId("search-status-modal"),
+                    ).toBeHidden();
+                    await expect(table).toBeVisible();
+                });
+
+                // The column: first after the checkbox, one badge per rated
+                // result in its own cell, none left in a Title cell.
+                await expect(table.locator("colgroup > col")).toHaveCount(9);
+                expect(
+                    await table
+                        .locator("colgroup > col")
+                        .evaluateAll((cols) =>
+                            cols
+                                .slice(0, 3)
+                                .map((col) => col.getAttribute("data-column")),
+                        ),
+                ).toEqual(["select", "quality", "title"]);
+                const badges = table.getByTestId("search-result-quality-badge");
+                await expect(badges).toHaveText(["5", "10", "2"]);
+                await expect(
+                    table.locator(
+                        'td[data-label="Quality"] [data-testid="search-result-quality-badge"]',
+                    ),
+                ).toHaveCount(3);
+                await expect(
+                    table.locator(
+                        '[data-testid="search-result-title"] [data-testid="search-result-quality-badge"]',
+                    ),
+                ).toHaveCount(0);
+                await expect(table.locator('td[data-label="Quality"]')).toHaveCount(
+                    5,
+                );
+                expect(await noHorizontalScroll()).toBe(true);
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-SEARCH-RESULTS",
+                        `quality-column-${viewport}`,
+                    ),
+                });
+
+                if (mobile) {
+                    // The stacked card labels the line "Quality".
+                    const firstCell = table
+                        .locator('td[data-label="Quality"]')
+                        .first();
+                    expect(
+                        await firstCell.evaluate(
+                            (cell) =>
+                                getComputedStyle(cell, "::before").content,
+                        ),
+                    ).toBe('"Quality"');
+                    await expect(firstCell.getByTestId("search-result-quality-badge")).toBeVisible();
+
+                    // The phone sort menu offers the column first.
+                    await page.getByTestId("results-sort-toggle").click();
+                    const menu = page.getByTestId("results-sort-menu");
+                    await expect(menu.getByRole("menuitemradio").first()).toHaveText(
+                        "Quality rating",
+                    );
+                    await captureVisualRegion(
+                        menu,
+                        "F-SEARCH-SORT-FILTER",
+                        "quality-sort-menu-mobile",
+                    );
+                    await page.getByTestId("results-sort-column-quality").click();
+                    await expect(menu).toHaveCount(0);
+                } else {
+                    // The header: an icon in the sort button, named and
+                    // tooltipped "Quality rating".
+                    const header = page.getByTestId("sort-quality");
+                    await expect(header).toHaveAccessibleName("Quality rating");
+                    // An icon, not text (MUI names the glyph's test id only
+                    // in development builds).
+                    await expect(header.locator("svg")).toBeVisible();
+                    await expect(header).toHaveText("");
+                    await header.hover();
+                    await expect(page.getByRole("tooltip")).toHaveText(
+                        "Quality rating",
+                    );
+                    await page.screenshot({
+                        path: visualEvidencePath(
+                            "F-SEARCH-RESULTS",
+                            "quality-header-tooltip-desktop",
+                        ),
+                    });
+                    await page.mouse.move(0, 0);
+                    await expect(page.getByRole("tooltip")).toHaveCount(0);
+                    await header.click();
+                }
+
+                // Best first, unrated last; then ascending, unrated still
+                // last.
+                await expect.poll(rowIds).toEqual([
+                    "top",
+                    "mid",
+                    "low",
+                    "unrated-a",
+                    "unrated-b",
+                ]);
+                if (mobile) {
+                    await page.getByTestId("results-sort-toggle").click();
+                    await page.getByTestId("results-sort-direction-asc").click();
+                } else {
+                    await expect(page.getByTestId("sort-quality")).toHaveAttribute(
+                        "data-sort-direction",
+                        "desc",
+                    );
+                    await expect(
+                        page.getByTestId("sort-quality"),
+                    ).toHaveAccessibleName("Quality rating (descending)");
+                    // FM-201's track: the header with its sort glyph, and the
+                    // widest badge ("10"), each with the cell's own paddings,
+                    // fit the track the column was given.
+                    const fit = await table.evaluate((element) => {
+                        const header = element.querySelector<HTMLElement>(
+                            'th[data-label="Quality rating"]',
+                        )!;
+                        const button = header.querySelector<HTMLElement>(
+                            '[data-testid="sort-quality"]',
+                        )!;
+                        const padding = (cell: HTMLElement) => {
+                            const style = getComputedStyle(cell);
+                            return (
+                                parseFloat(style.paddingLeft) +
+                                parseFloat(style.paddingRight)
+                            );
+                        };
+                        // The icon and the sort glyph; MUI's ripple layer is
+                        // an absolutely positioned child as wide as the
+                        // button and takes no room of its own.
+                        const content = [...button.children].filter(
+                            (child) =>
+                                !child.classList.contains("MuiTouchRipple-root"),
+                        );
+                        const buttonContent = content.reduce(
+                            (sum, child) =>
+                                sum + child.getBoundingClientRect().width,
+                            0,
+                        );
+                        const buttonStyle = getComputedStyle(button);
+                        const badges = [
+                            ...element.querySelectorAll<HTMLElement>(
+                                '[data-testid="search-result-quality-badge"]',
+                            ),
+                        ];
+                        const widest = badges.reduce((best, badge) =>
+                            badge.getBoundingClientRect().width >
+                            best.getBoundingClientRect().width
+                                ? badge
+                                : best,
+                        );
+                        const glyph = button.querySelector<HTMLElement>(
+                            'span[aria-hidden="true"]',
+                        )!;
+                        return {
+                            track: header.getBoundingClientRect().width,
+                            headerNeed:
+                                buttonContent +
+                                parseFloat(getComputedStyle(glyph).marginLeft) +
+                                parseFloat(buttonStyle.paddingLeft) +
+                                parseFloat(buttonStyle.paddingRight) +
+                                padding(header),
+                            badgeNeed:
+                                widest.getBoundingClientRect().width +
+                                padding(widest.closest("td")!),
+                            widestBadge: widest.textContent,
+                            headerFits: header.scrollWidth <= header.clientWidth,
+                        };
+                    });
+                    test.info().annotations.push({
+                        type: "FM-201 quality track",
+                        description: JSON.stringify(fit),
+                    });
+                    expect(fit.widestBadge).toBe("10");
+                    expect(fit.headerFits).toBe(true);
+                    expect(fit.headerNeed).toBeLessThanOrEqual(fit.track);
+                    expect(fit.badgeNeed).toBeLessThanOrEqual(fit.track);
+                    // Title pays for the column; recorded rather than held
+                    // to FM-175's 340px floor, which the default column set
+                    // keeps (see the FM-175 density test).
+                    const density = await rowDensityGeometry(page);
+                    test.info().annotations.push({
+                        type: "FM-201 title content width",
+                        description: String(density.titleContentWidth),
+                    });
+                    await page.getByTestId("sort-quality").click();
+                    await expect(page.getByTestId("sort-quality")).toHaveAttribute(
+                        "data-sort-direction",
+                        "asc",
+                    );
+                }
+                await expect.poll(rowIds).toEqual([
+                    "low",
+                    "mid",
+                    "top",
+                    "unrated-a",
+                    "unrated-b",
+                ]);
+
+                // The refine section, after the Quality quick filters and
+                // before "Title contains", docked and in the drawer alike.
+                if (mobile) {
+                    await page.getByTestId("refine-sidebar-toggle").click();
+                } else {
+                    await openRefineSidebar(page);
+                }
+                const sidebar = page.getByTestId("refine-sidebar");
+                const minimum = sidebar.getByTestId(
+                    "number-filter-min-refine-quality-rating",
+                );
+                await expect(minimum).toBeVisible();
+                const top = async (locator: import("@playwright/test").Locator) =>
+                    (await locator.boundingBox())!.y;
+                const quickFiltersTop = await top(
+                    sidebar.getByTestId("refine-quality-filters"),
+                );
+                const rangeTop = await top(minimum);
+                const titleTop = await top(
+                    sidebar.getByTestId("refine-filter-title"),
+                );
+                expect(quickFiltersTop).toBeLessThan(rangeTop);
+                expect(rangeTop).toBeLessThan(titleTop);
+                await minimum.fill("5");
+                await expect.poll(rowIds).toEqual(["mid", "top"]);
+                await captureVisualRegion(
+                    sidebar
+                        .getByTestId("filter-toggle-refine-quality-rating")
+                        .locator("xpath=.."),
+                    "F-SEARCH-SORT-FILTER",
+                    `quality-rating-refine-${viewport}`,
+                );
+                if (mobile) {
+                    await page.getByTestId("refine-sidebar-close").click();
+                    await expect(
+                        page.getByTestId("refine-sidebar-drawer"),
+                    ).toBeHidden();
+                    // The toolbar badge counts the range as one filter.
+                    await expect(
+                        page.getByTestId("refine-sidebar-toggle").locator(".."),
+                    ).toContainText("1");
+                    await page.getByTestId("refine-sidebar-toggle").click();
+                }
+                await sidebar
+                    .getByTestId("number-filter-clear-refine-quality-rating")
+                    .click();
+                await expect.poll(rowIds).toHaveLength(5);
+                if (mobile) {
+                    await page.getByTestId("refine-sidebar-close").click();
+                }
+                expect(await noHorizontalScroll()).toBe(true);
+            }
+        } finally {
+            const restore = await hydra.getConfig();
+            (restore.searching as Record<string, unknown>).showMovieQualityIndicator =
+                indicatorBefore;
+            await hydra.saveConfig(restore);
+        }
+    });
 });
 
 // FM-177: the checked-in cover image every routed `artworks.thetvdb.com`

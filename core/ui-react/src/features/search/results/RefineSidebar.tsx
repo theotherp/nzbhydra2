@@ -15,7 +15,12 @@ import type {
 } from "../../../components/refine/RefineSurface";
 import {RefineSurface} from "../../../components/refine/RefineSurface";
 import {NumericFilter, useDebouncedFilterValue} from "./filterControls";
-import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
+import type {
+    NumericRange,
+    QuickFilter,
+    RangeFilterName,
+    ResultFilters,
+} from "./resultTable";
 import {activeFilterCount, quickFilterKey} from "./resultTable";
 
 // The results page's own chrome vocabulary for ADR-0046's shared refine
@@ -104,6 +109,7 @@ export function RefineSidebar({
     setFilters,
     showCategorySection = true,
     showGrabsSection = true,
+    showQualityRatingSection = false,
     toolbarHeight,
     updateRange,
 }: {
@@ -112,7 +118,7 @@ export function RefineSidebar({
     // `hydra.search-results.table` blob; this component stays presentational
     // and keeps no `useState` of its own for either.
     categoryOpen: boolean;
-    clearRange: (name: "size" | "grabs" | "age") => void;
+    clearRange: (name: RangeFilterName) => void;
     collapsed: boolean;
     // The below-768px drawer's open state, owned by `SearchResults.tsx` since
     // FM-041 so its display-options "Show refine sidebar" entry can read and
@@ -155,6 +161,9 @@ export function RefineSidebar({
     // results.
     showCategorySection?: boolean;
     showGrabsSection?: boolean;
+    // FM-201: the quality column's range section, present exactly while that
+    // column is (`SearchResults`' `showQualityColumn`).
+    showQualityRatingSection?: boolean;
     // FM-055: the sticky results toolbar's *measured* rendered height, owned
     // and re-measured by `SearchResults.tsx` (which already maintains it for
     // the table header's own sticky offset). It is handed on as the shell's
@@ -164,7 +173,7 @@ export function RefineSidebar({
     // viewport width, font loading, and its own wrapping.
     toolbarHeight: number;
     updateRange: (
-        name: "size" | "grabs" | "age",
+        name: RangeFilterName,
         bound: keyof NumericRange,
         value: string,
     ) => void;
@@ -242,6 +251,25 @@ export function RefineSidebar({
                             />
                         ))}
                     </Stack>
+                </RefineSection>
+            )}
+            {/* FM-201 (owner request, 2026-09-27): after the "Quality" quick
+                filters and before "Title contains". `NumericFilter` types
+                its `name` as the three pre-existing ranges and only echoes it
+                back to `onChange`/`onClear`, so this section binds its own
+                field through those two callbacks instead of the name. */}
+            {showQualityRatingSection && (
+                <RefineSection label="Quality rating">
+                    <NumericFilter
+                        label="Quality rating"
+                        name="size"
+                        onChange={(_name, bound, value) =>
+                            updateRange("qualityRating", bound, value)
+                        }
+                        onClear={() => clearRange("qualityRating")}
+                        range={filters.qualityRating}
+                        testIdPrefix="refine-quality-rating"
+                    />
                 </RefineSection>
             )}
             <RefineSection label="Title contains">

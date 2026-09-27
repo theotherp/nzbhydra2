@@ -11,6 +11,7 @@ import {createElement} from "react";
 import type {MockedFunction} from "vitest";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
+import type {SafeConfig} from "../../../bootstrap";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
@@ -8117,8 +8118,21 @@ describe("SearchResults hideable columns", () => {
 
 // Movie quality indicator badge (`search-result.html:33-38`, restored).
 // `qualityRating`/`qualityWarnings` are only ever populated together by the
-// backend, so presence of the badge is tested directly against the field
-// rather than any config.
+// backend. Since FM-201 the badge lives in the quality column, which also
+// needs the safe config's `showQualityIndicator`.
+const QUALITY_CONFIG = {searching: {showQualityIndicator: true}};
+
+function renderWithConfig(
+    ui: React.ReactNode,
+    config: SafeConfig = QUALITY_CONFIG,
+) {
+    return renderResults(
+        <SafeConfigContext.Provider value={config}>
+            {ui}
+        </SafeConfigContext.Provider>,
+    );
+}
+
 describe("SearchResults quality badge", () => {
     afterEach(() => {
         cleanup();
@@ -8145,21 +8159,21 @@ describe("SearchResults quality badge", () => {
     }
 
     it("should not render a badge when qualityRating is absent", () => {
-        renderResults(<SearchResults data={resultWithQuality(undefined)} />);
+        renderWithConfig(<SearchResults data={resultWithQuality(undefined)} />);
         expect(
             screen.queryByTestId("search-result-quality-badge"),
         ).not.toBeInTheDocument();
     });
 
     it("should not render a badge for a rating of 0 (legacy's truthiness ng-if)", () => {
-        renderResults(<SearchResults data={resultWithQuality(0)} />);
+        renderWithConfig(<SearchResults data={resultWithQuality(0)} />);
         expect(
             screen.queryByTestId("search-result-quality-badge"),
         ).not.toBeInTheDocument();
     });
 
     it("should render the rating as the badge label", () => {
-        renderResults(<SearchResults data={resultWithQuality(8)} />);
+        renderWithConfig(<SearchResults data={resultWithQuality(8)} />);
         expect(
             screen.getByTestId("search-result-quality-badge"),
         ).toHaveTextContent("8");
@@ -8172,7 +8186,9 @@ describe("SearchResults quality badge", () => {
     ] as const)(
         "should map rating %i onto the %s chip colour",
         (rating, colorClassFragment) => {
-            renderResults(<SearchResults data={resultWithQuality(rating)} />);
+            renderWithConfig(
+                <SearchResults data={resultWithQuality(rating)} />,
+            );
             const badge = screen.getByTestId("search-result-quality-badge");
             expect(badge.className).toContain(
                 `MuiChip-color${
@@ -8182,6 +8198,323 @@ describe("SearchResults quality badge", () => {
             );
         },
     );
+});
+
+// FM-201 (owner request, 2026-09-27): the badge in its own sortable column
+// left of Title, with a "Quality rating" range in the refine surface, while
+// the quality indicator is on and some loaded result is rated.
+describe("SearchResults quality column", () => {
+    afterEach(() => {
+        cleanup();
+        window.localStorage.clear();
+    });
+
+    const rated = (
+        id: string,
+        qualityRating: number | undefined,
+        epoch = 0,
+    ) => ({
+        searchResultId: id,
+        title: `Release ${id}`,
+        indexer: "One",
+        category: "Movies",
+        size: 100,
+        age: "1d",
+        epoch,
+        qualityRating,
+        qualityWarnings: qualityRating === undefined ? undefined : [],
+    });
+    const qualityData = {
+        ...response,
+        numberOfAvailableResults: 4,
+        searchResults: [
+            rated("mid", 6, 400),
+            rated("unrated-a", undefined, 300),
+            rated("high", 9, 200),
+            rated("low", 2, 100),
+            rated("unrated-b", undefined, 50),
+        ],
+    };
+    const unratedData = {
+        ...qualityData,
+        searchResults: qualityData.searchResults.map((result) => ({
+            ...result,
+            qualityRating: undefined,
+            qualityWarnings: undefined,
+        })),
+    };
+
+    function renderQuality(
+        data: typeof qualityData = qualityData,
+        config: SafeConfig = QUALITY_CONFIG,
+        choices: Record<string, unknown> = {},
+    ) {
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({sidebarCollapsed: false, ...choices}),
+        );
+        return renderWithConfig(<SearchResults data={data} />, config);
+    }
+
+    function rerenderQuality(
+        rendered: ReturnType<typeof renderResults>,
+        data: typeof qualityData,
+        config: SafeConfig = QUALITY_CONFIG,
+    ) {
+        rendered.rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SafeConfigContext.Provider value={config}>
+                        <SearchResults data={data} />
+                    </SafeConfigContext.Provider>
+                </ToastProvider>
+            </DialogProvider>,
+        );
+    }
+
+    function colIds(): string[] {
+        return [
+            ...screen
+                .getByTestId("search-results-table")
+                .querySelectorAll("colgroup > col"),
+        ].map((col) => col.getAttribute("data-column") ?? "");
+    }
+
+    function rowIds(): string[] {
+        return screen
+            .getAllByTestId("search-result-row")
+            .map((row) => row.getAttribute("data-result-id") ?? "");
+    }
+
+    function storedSorting(): unknown {
+        return (
+            JSON.parse(
+                window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+            ) as Record<string, unknown>
+        ).sorting;
+    }
+
+    function expectNoQualityColumn(): void {
+        expect(colIds()).not.toContain("quality");
+        expect(screen.queryByTestId("sort-quality")).toBeNull();
+        expect(
+            screen
+                .getByTestId("search-results-table")
+                .querySelectorAll('[data-label="Quality"]'),
+        ).toHaveLength(0);
+        expect(screen.queryByTestId("search-result-quality-badge")).toBeNull();
+        expect(
+            screen.queryByTestId("number-filter-min-refine-quality-rating"),
+        ).toBeNull();
+    }
+
+    it("should render no column, badge or refine section without the config flag, even for rated results", () => {
+        renderQuality(qualityData, {searching: {showQualityIndicator: false}});
+        expectNoQualityColumn();
+        expect(colIds()[1]).toBe("title");
+    });
+
+    it("should render no column with the flag on but no rated result", () => {
+        renderQuality(unratedData);
+        expectNoQualityColumn();
+    });
+
+    it("should render the column between the checkbox and Title, with the badge moved out of the Title cell", () => {
+        renderQuality();
+        expect(colIds().slice(0, 3)).toEqual(["select", "quality", "title"]);
+        expect(trackRuleCount("quality")).toBe(2);
+        const header = screen.getByTestId("sort-quality");
+        expect(header).toHaveAccessibleName("Quality rating");
+        expect(header.closest("th")).toHaveAttribute(
+            "data-label",
+            "Quality rating",
+        );
+        expect(header.textContent).toBe("");
+        expect(
+            header.querySelector('[data-testid="HighQualityOutlinedIcon"]'),
+        ).not.toBeNull();
+        for (const row of screen.getAllByTestId("search-result-row")) {
+            const labels = [...row.querySelectorAll("td")].map((cell) =>
+                cell.getAttribute("data-label"),
+            );
+            expect(labels.slice(0, 3)).toEqual(["Select", "Quality", "Title"]);
+        }
+        // One badge per rated result, each in its quality cell, none in a
+        // title cell; unrated rows leave the cell empty.
+        const badges = screen.getAllByTestId("search-result-quality-badge");
+        expect(badges.map((badge) => badge.textContent)).toEqual([
+            "6",
+            "9",
+            "2",
+        ]);
+        for (const badge of badges) {
+            expect(badge.closest("td")).toHaveAttribute(
+                "data-label",
+                "Quality",
+            );
+        }
+        for (const title of screen.getAllByTestId("search-result-title")) {
+            expect(
+                within(title).queryByTestId("search-result-quality-badge"),
+            ).toBeNull();
+        }
+        const unratedCell = screen
+            .getAllByTestId("search-result-row")
+            .find((row) => row.getAttribute("data-result-id") === "unrated-a")
+            ?.querySelector('td[data-label="Quality"]');
+        expect(unratedCell).toBeEmptyDOMElement();
+    });
+
+    it("should sort by rating with unrated results last in both directions", () => {
+        renderQuality();
+        const header = screen.getByTestId("sort-quality");
+        fireEvent.click(header);
+        expect(header).toHaveAttribute("data-sort-direction", "desc");
+        expect(header).toHaveAccessibleName("Quality rating (descending)");
+        expect(rowIds().slice(0, 3)).toEqual(["high", "mid", "low"]);
+        expect(rowIds().slice(3).sort()).toEqual(["unrated-a", "unrated-b"]);
+
+        fireEvent.click(header);
+        expect(header).toHaveAttribute("data-sort-direction", "asc");
+        expect(rowIds().slice(0, 3)).toEqual(["low", "mid", "high"]);
+        expect(rowIds().slice(3).sort()).toEqual(["unrated-a", "unrated-b"]);
+    });
+
+    it("should fall back to the default sort, and store it, when the column goes away", () => {
+        const rendered = renderQuality(qualityData, QUALITY_CONFIG, {
+            sorting: [{id: "quality", desc: false}],
+        });
+        expect(screen.getByTestId("sort-quality")).toHaveAttribute(
+            "data-sort-direction",
+            "asc",
+        );
+        rerenderQuality(rendered, qualityData, {
+            searching: {showQualityIndicator: false},
+        });
+        expect(screen.queryByTestId("sort-quality")).toBeNull();
+        expect(screen.getByTestId("sort-epoch")).toHaveAttribute(
+            "data-sort-direction",
+            "desc",
+        );
+        expect(storedSorting()).toEqual([{id: "epoch", desc: true}]);
+        expect(rowIds()).toEqual([
+            "mid",
+            "unrated-a",
+            "high",
+            "low",
+            "unrated-b",
+        ]);
+    });
+
+    it("should drop a stored quality sort for a result set without ratings", () => {
+        renderQuality(unratedData, QUALITY_CONFIG, {
+            sorting: [{id: "quality", desc: true}],
+        });
+        expect(screen.getByTestId("sort-epoch")).toHaveAttribute(
+            "data-sort-direction",
+            "desc",
+        );
+        expect(storedSorting()).toEqual([{id: "epoch", desc: true}]);
+    });
+
+    it("should add the column when a load brings the first rated result", () => {
+        const firstPage = {
+            ...unratedData,
+            searchResults: unratedData.searchResults.slice(0, 2),
+        };
+        const rendered = renderQuality(firstPage);
+        expect(colIds()).not.toContain("quality");
+        rerenderQuality(rendered, {
+            ...firstPage,
+            searchResults: [...firstPage.searchResults, rated("late", 7, 10)],
+        });
+        expect(colIds().slice(0, 3)).toEqual(["select", "quality", "title"]);
+        expect(
+            screen.getByTestId("search-result-quality-badge"),
+        ).toHaveTextContent("7");
+    });
+
+    it("should filter by the rating range, excluding unrated results, counted by Clear all", async () => {
+        renderQuality();
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+        fireEvent.change(
+            screen.getByTestId("number-filter-min-refine-quality-rating"),
+            {target: {value: "5"}},
+        );
+        await settleFilterCommits();
+        expect(rowIds()).toEqual(["mid", "high"]);
+        expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
+
+        fireEvent.click(screen.getByTestId("refine-clear-all"));
+        expect(rowIds()).toHaveLength(5);
+        expect(
+            screen.getByTestId("number-filter-min-refine-quality-rating"),
+        ).toHaveValue(null);
+    });
+
+    it("should reset the rating filter when the column goes away", async () => {
+        const rendered = renderQuality();
+        fireEvent.change(
+            screen.getByTestId("number-filter-max-refine-quality-rating"),
+            {target: {value: "3"}},
+        );
+        await settleFilterCommits();
+        expect(rowIds()).toEqual(["low"]);
+
+        rerenderQuality(rendered, qualityData, {
+            searching: {showQualityIndicator: false},
+        });
+        expect(rowIds()).toHaveLength(5);
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+
+        rerenderQuality(rendered, qualityData);
+        expect(
+            screen.getByTestId("number-filter-max-refine-quality-rating"),
+        ).toHaveValue(null);
+        expect(rowIds()).toHaveLength(5);
+    });
+
+    it("should place the refine section after the Quality quick filters and before Title contains", () => {
+        renderQuality(qualityData, {
+            searching: {
+                showQualityIndicator: true,
+                showQuickFilterButtons: true,
+            },
+        });
+        const sidebar = screen.getByTestId("refine-sidebar");
+        const label = (text: string) =>
+            within(sidebar).getByText(text, {selector: "div"});
+        const follows = (first: string, second: string) =>
+            Boolean(
+                label(first).compareDocumentPosition(label(second)) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+            );
+        expect(follows("Quality", "Quality rating")).toBe(true);
+        expect(follows("Quality rating", "Title contains")).toBe(true);
+    });
+
+    it("should offer the column first in the phone sort menu while it exists", () => {
+        stubViewportWidth(390);
+        renderQuality();
+        fireEvent.click(screen.getByTestId("results-sort-toggle"));
+        const items = within(screen.getByTestId("results-sort-menu"))
+            .getAllByRole("menuitemradio")
+            .map((item) => item.textContent);
+        expect(items[0]).toBe("Quality rating");
+        fireEvent.click(screen.getByTestId("results-sort-column-quality"));
+        expect(rowIds().slice(0, 3)).toEqual(["high", "mid", "low"]);
+    });
+
+    it("should leave the phone sort menu without the column when it is absent", () => {
+        stubViewportWidth(390);
+        renderQuality(unratedData);
+        fireEvent.click(screen.getByTestId("results-sort-toggle"));
+        expect(
+            within(screen.getByTestId("results-sort-menu"))
+                .getAllByRole("menuitemradio")
+                .map((item) => item.textContent),
+        ).not.toContain("Quality rating");
+    });
 });
 
 /**

@@ -16,6 +16,7 @@ import {
     isRecentResult,
     kify,
     preselectedQuickFilters,
+    qualityIndicatorFromSafeConfig,
     quickFilterKey,
     quickFiltersFromSafeConfig,
     RECENT_RESULT_MAX_AGE_DAYS,
@@ -101,7 +102,7 @@ describe("activeFilterCount", () => {
         expect(activeFilterCount(otherDefaults, otherDefaults)).toBe(0);
     });
 
-    it("should count every one of the eight dimensions it covers", () => {
+    it("should count every one of the nine dimensions it covers", () => {
         expect(
             activeFilterCount(
                 {
@@ -110,13 +111,24 @@ describe("activeFilterCount", () => {
                     downloadTypes: ["NZB"],
                     grabs: {min: "2", max: ""},
                     indexers: ["One"],
+                    qualityRating: {min: "", max: "6"},
                     quickFilters: {"quality|q1080p": true},
                     size: {min: "", max: "3"},
                     title: "movie",
                 },
                 base(),
             ),
-        ).toBe(8);
+        ).toBe(9);
+    });
+
+    // FM-201: the quality rating range is one more range dimension.
+    it("should count a quality rating bound as one active filter", () => {
+        expect(
+            activeFilterCount(
+                {...base(), qualityRating: {min: "4", max: "8"}},
+                base(),
+            ),
+        ).toBe(1);
     });
 });
 
@@ -1145,6 +1157,28 @@ describe("table column tracks", () => {
         expect(936 - declared(visible)).toBe(547);
     });
 
+    // FM-201: the quality column sits between the checkbox and Title with its
+    // own fixed track, which Title pays for; every other track is unchanged.
+    it("should give the quality column its own fixed track left of Title", () => {
+        const withQuality = ["quality", ...ALL];
+        const tracks = tableColumnTracks(withQuality, 0);
+        expect(tracks.map((track) => track.id)).toEqual([
+            "select",
+            ...withQuality,
+            "actions",
+        ]);
+        expect(tracks[1]).toEqual({
+            id: "quality",
+            narrowWidth: "6.20%",
+            pixelWidth: 58,
+        });
+        const all = widthsById(ALL);
+        const remaining = widthsById(withQuality);
+        for (const id of Object.keys(all)) {
+            expect(remaining[id]).toEqual(all[id]);
+        }
+    });
+
     it("should grow the Actions track with the slot count whatever is hidden", () => {
         expect(widthsById(["title", "indexer"], 2).actions).toEqual([
             196,
@@ -1166,23 +1200,47 @@ describe("clear column filter", () => {
             withoutHiddenColumnFilters(filtered, defaults, {
                 category: false,
                 grabs: false,
+                quality: false,
             }),
         ).toBe(filtered);
         expect(
             withoutHiddenColumnFilters(filtered, defaults, {
                 category: true,
                 grabs: false,
+                quality: false,
             }),
         ).toEqual({...filtered, categories: defaults.categories});
         expect(
             withoutHiddenColumnFilters(filtered, defaults, {
                 category: true,
                 grabs: true,
+                quality: false,
             }),
         ).toEqual({
             ...filtered,
             categories: defaults.categories,
             grabs: defaults.grabs,
+        });
+    });
+
+    // FM-201: an absent quality column holds its range at the default, so
+    // a bound nobody can see never drops the unrated results.
+    it("should empty the quality rating range while the quality column is absent", () => {
+        const filtered = {
+            ...defaults,
+            qualityRating: {min: "7", max: ""},
+            size: {min: "1", max: ""},
+        };
+        expect(
+            withoutHiddenColumnFilters(filtered, defaults, {
+                category: false,
+                grabs: false,
+                quality: true,
+            }),
+        ).toEqual({...filtered, qualityRating: {min: "", max: ""}});
+        expect(clearColumnFilter(filtered, defaults, "quality")).toEqual({
+            ...filtered,
+            qualityRating: {min: "", max: ""},
         });
     });
 
@@ -1299,5 +1357,48 @@ describe("black hole slot", () => {
         );
         expect(slot).toBe(false);
         expect(actionsTrackWidth(0 + (slot ? 1 : 0))).toBe(140);
+    });
+});
+
+// FM-201: the safe config flag the quality column is gated on
+// (`SafeSearchingConfig.showQualityIndicator`).
+describe("qualityIndicatorFromSafeConfig", () => {
+    it.each([
+        [{searching: {showQualityIndicator: true}}, true],
+        [{searching: {showQualityIndicator: false}}, false],
+        [{searching: {}}, false],
+        [{searching: {showQualityIndicator: "true"}}, false],
+        [{}, false],
+        [undefined, false],
+        [null, false],
+    ])("reads %j as %s", (config, expected) => {
+        expect(qualityIndicatorFromSafeConfig(config)).toBe(expected);
+    });
+});
+
+// FM-201: the quality rating range, on the same terms as the size and grabs
+// ranges: bounds are inclusive, and an unrated result passes only while
+// neither bound is set.
+describe("quality rating filter", () => {
+    const rated = [
+        {...results[0], searchResultId: "low", qualityRating: 3},
+        {...results[0], searchResultId: "mid", qualityRating: 6},
+        {...results[0], searchResultId: "high", qualityRating: 9},
+        {...results[0], searchResultId: "unrated"},
+    ];
+    const defaults = defaultFilters(rated, []);
+    const ids = (min: string, max: string) =>
+        filterResults(rated, {...defaults, qualityRating: {min, max}}, []).map(
+            (result) => result.searchResultId,
+        );
+
+    it("should keep every result, unrated included, with no bound", () => {
+        expect(ids("", "")).toEqual(["low", "mid", "high", "unrated"]);
+    });
+
+    it("should apply inclusive bounds and exclude unrated results once one is set", () => {
+        expect(ids("6", "")).toEqual(["mid", "high"]);
+        expect(ids("", "6")).toEqual(["low", "mid"]);
+        expect(ids("4", "8")).toEqual(["mid"]);
     });
 });

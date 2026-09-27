@@ -53,6 +53,7 @@ function Harness({
     quickFilters = [],
     showCategorySection,
     showGrabsSection,
+    showQualityRatingSection,
     // FM-055: in the app this is `SearchResults.tsx`'s measured
     // `results-toolbar` height. A fixed stand-in here is enough: jsdom lays
     // nothing out, so only the CSS declarations derived from the value are
@@ -71,6 +72,8 @@ function Harness({
     // FM-200: omitted, the sidebar's own default (shown) applies.
     showCategorySection?: boolean;
     showGrabsSection?: boolean;
+    // FM-201: omitted, the sidebar's own default (absent) applies.
+    showQualityRatingSection?: boolean;
     toolbarHeight?: number;
 }) {
     const [filters, setFilters] = useState<ResultFilters>(() =>
@@ -136,6 +139,7 @@ function Harness({
                 setFilters={setFilters}
                 showCategorySection={showCategorySection}
                 showGrabsSection={showGrabsSection}
+                showQualityRatingSection={showQualityRatingSection}
                 toolbarHeight={toolbarHeight}
                 updateRange={(name, bound, value) =>
                     setFilters((current) => ({
@@ -656,5 +660,121 @@ describe("RefineSidebar", () => {
         expect(
             within(drawer).getByTestId("refine-indexer-toggle"),
         ).toBeVisible();
+    });
+
+    // FM-201 (owner, 2026-09-27): the quality column's range section, after
+    // the "Quality" quick filters and before "Title contains", only while
+    // the column exists.
+    describe("quality rating section", () => {
+        const rated: SearchResult[] = [
+            {...results[0], qualityRating: 8, title: "Rated high"},
+            {...results[1], qualityRating: 3, title: "Rated low"},
+            {...results[2], title: "Unrated"},
+        ];
+
+        function sectionLabels(root: HTMLElement): string[] {
+            return [
+                "Quality",
+                "Quality rating",
+                "Title contains",
+                "Size (MB)",
+            ].filter((label) =>
+                within(root).queryByText(label, {selector: "div"}),
+            );
+        }
+
+        function precedes(first: HTMLElement, second: HTMLElement): boolean {
+            return Boolean(
+                first.compareDocumentPosition(second) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+            );
+        }
+
+        it("is absent by default", () => {
+            render(<Harness loadedResults={rated} />);
+            expect(
+                screen.queryByTestId("number-filter-min-refine-quality-rating"),
+            ).toBeNull();
+            expect(
+                within(screen.getByTestId("refine-sidebar")).queryByText(
+                    "Quality rating",
+                ),
+            ).toBeNull();
+        });
+
+        it.each([
+            ["docked", false],
+            ["drawer", true],
+        ])(
+            "sits between the Quality quick filters and Title contains (%s)",
+            (_label, narrow) => {
+                if (narrow) {
+                    stubNarrowViewport();
+                }
+                render(
+                    <Harness
+                        loadedResults={rated}
+                        quickFilters={oneQualityFilter}
+                        showQualityRatingSection
+                    />,
+                );
+                if (narrow) {
+                    fireEvent.click(
+                        screen.getByTestId("harness-refine-trigger"),
+                    );
+                }
+                const sidebar = screen.getByTestId("refine-sidebar");
+                expect(sectionLabels(sidebar)).toEqual([
+                    "Quality",
+                    "Quality rating",
+                    "Title contains",
+                    "Size (MB)",
+                ]);
+                const labelOf = (text: string) =>
+                    within(sidebar).getByText(text, {selector: "div"});
+                expect(
+                    precedes(labelOf("Quality"), labelOf("Quality rating")),
+                ).toBe(true);
+                expect(
+                    precedes(
+                        labelOf("Quality rating"),
+                        labelOf("Title contains"),
+                    ),
+                ).toBe(true);
+                expect(
+                    within(sidebar).getByTestId(
+                        "number-filter-min-refine-quality-rating",
+                    ),
+                ).toBeVisible();
+            },
+        );
+
+        it("filters on the rating, excluding unrated results while a bound is set, and clears", async () => {
+            render(<Harness loadedResults={rated} showQualityRatingSection />);
+            fireEvent.change(
+                screen.getByRole("spinbutton", {
+                    name: "Quality rating minimum",
+                }),
+                {target: {value: "5"}},
+            );
+            await act(async () => {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, FILTER_COMMIT_DELAY_MS + 5),
+                );
+            });
+            expect(filteredTitles()).toEqual(["Rated high"]);
+            expect(screen.getByTestId("refine-clear-all")).toBeEnabled();
+
+            fireEvent.click(
+                screen.getByRole("button", {
+                    name: "Clear Quality rating filter",
+                }),
+            );
+            expect(filteredTitles()).toEqual([
+                "Rated high",
+                "Rated low",
+                "Unrated",
+            ]);
+        });
     });
 });

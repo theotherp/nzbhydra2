@@ -257,6 +257,10 @@ features:
       # subsection. See the note at the end of this record.
       - display-option-column-category
       - display-option-column-details
+      # 2026-09-27 (FM-201, owner request): the movie quality column's header
+      # sort button (`sort-quality`, F-SEARCH-SORT-FILTER's pattern) and the
+      # badge, now in its own cell. See the note at the end of this record.
+      - search-result-quality-badge
       - search-result-indexer-swatch
       - search-result-cover
       - search-result-cover-tile
@@ -389,8 +393,24 @@ features:
       # seeders" section (docked and drawer alike), clearing that section's
       # filter in the same toggle; the filter dimensions themselves are
       # F-SEARCH-SORT-FILTER's.
+      # 2026-09-27 (FM-201, owner request): the movie quality badge
+      # (`search-result-quality-badge`, colours and tooltip unchanged) moves
+      # out of the Title cell into a column of its own between the checkbox
+      # and Title (`data-column="quality"`, body cells `data-label="Quality"`,
+      # centred, empty for an unrated result). It is not a display choice: it
+      # exists while the live safe config's `searching.showQualityIndicator`
+      # is on and some *loaded* result carries a `qualityRating`, so a "Load
+      # more" that brings the first rated result adds it and refining never
+      # removes it. Its header is a `HighQualityOutlined` icon in the sort
+      # button with the tooltip and accessible name "Quality rating". The
+      # track is 58px, the measured worst case of that header with its sort
+      # glyph (57.4px) and the "10" badge (48px); Title pays for it, leaving
+      # 285px of content at 1280x800 with no downloader while the column is
+      # present. FM-175's 340px floor still holds for the default column set.
     parity: partial
     gaps:
+      - deliberate - FM-201 (owner request 2026-09-27) shows the movie quality badge in its own sortable column left of
+        Title instead of inside the Title cell as legacy did (`search-result.html:33-38`)
       - deliberate - FM-200 (owner request 2026-09-27) lets the Category and Details columns be hidden from the Display
         popover, which also hides their refine sections and clears their filters; legacy had no per-column visibility
       - deliberate - FM-199 (owner request 2026-09-26) adds a "Show indexer summary" display option (default on) that
@@ -472,6 +492,21 @@ features:
       - filter-toggle-refine-size
       - filter-toggle-refine-age
       - filter-toggle-refine-grabs
+      # 2026-09-27 (FM-201, owner request): the quality column's sort button
+      # (`sort-quality`, by `qualityRating`, best first on the first click,
+      # unrated results after rated ones in both directions, and in the
+      # phone sort menu as "Quality rating") and a "Quality rating" min/max
+      # range section after the Quality quick filters and before "Title
+      # contains", docked and in the drawer, present exactly while that
+      # column is. The range follows the size/grabs convention -- an unrated
+      # result is excluded while either bound is set -- counts as one active
+      # filter and is reset by "Clear all". When the column goes away, a sort
+      # on it falls back to Age descending (stored, as FM-200 does) and its
+      # range is cleared.
+      - filter-toggle-refine-quality-rating
+      - number-filter-min-refine-quality-rating
+      - number-filter-max-refine-quality-rating
+      - number-filter-clear-refine-quality-rating
       - display-options-toggle
       - display-options
       # 2026-09-03 (FM-182, ADR-0054): below 768px `thead` is hidden and with

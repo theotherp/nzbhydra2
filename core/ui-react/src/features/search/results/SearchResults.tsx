@@ -1,5 +1,5 @@
 import {Stack} from "@mui/material";
-import type {ColumnDef} from "@tanstack/react-table";
+import type {ColumnDef, SortingState} from "@tanstack/react-table";
 import {
     getCoreRowModel,
     getSortedRowModel,
@@ -43,6 +43,7 @@ import {
 import {RefineSidebar} from "./RefineSidebar";
 import type {ExpandSlots} from "./ResultRow";
 import {IndexerSummary} from "./IndexerSummary";
+import {resultQualityRating, showsQualityColumn} from "./qualityBadge";
 import {ResultsAlerts} from "./ResultsAlerts";
 import {ResultsPagingFooter} from "./ResultsPagingFooter";
 import type {VisibleRowDescriptor} from "./ResultsTable";
@@ -52,6 +53,7 @@ import type {
     HideableResultColumn,
     NumericRange,
     QuickFilter,
+    RangeFilterName,
     ResultFilters,
     ResultGroup,
 } from "./resultTable";
@@ -65,6 +67,7 @@ import {
     groupResults,
     indexerColorsFromSafeConfig,
     preselectedQuickFilters,
+    qualityIndicatorFromSafeConfig,
     quickFilterKey,
     quickFiltersFromSafeConfig,
     visibleGroupedResults,
@@ -105,6 +108,13 @@ const ROW_OVERSCAN = 8;
 // ordinary, fast result set, so the prompt only appears once the request is
 // clearly beyond what the user could have meant by a single click.
 const LOAD_ALL_CONFIRMATION_THRESHOLD = 500;
+
+// FM-201: the quality column's TanStack id, and the sort a sort on it falls
+// back to when the column goes away -- the results' default, newest first,
+// the same fallback FM-200 gives a hidden column
+// (`useResultDisplayChoices`).
+const QUALITY_COLUMN_ID = "quality";
+const QUALITY_FALLBACK_SORTING: SortingState = [{id: "epoch", desc: true}];
 
 export function SearchResults({
     data,
@@ -366,6 +376,45 @@ export function SearchResults({
     const dialogs = useContext(DialogContext);
     const toasts = useContext(ToastContext);
     const groupEpisodesHelpChecked = useRef(false);
+    // FM-201 (owner request, 2026-09-27): the movie quality column, left of
+    // Title. Not a display choice: it exists while the live config's quality
+    // indicator is on and some *loaded* result is rated, so a "Load more"
+    // that brings the first rated result adds it, and refining never
+    // removes it.
+    const showQualityColumn = useMemo(
+        () =>
+            showsQualityColumn(
+                qualityIndicatorFromSafeConfig(effectiveSafeConfig),
+                data.searchResults,
+            ),
+        [data.searchResults, effectiveSafeConfig],
+    );
+    // The table's visibility: the reader's hidden columns plus the quality
+    // column's own state. Memoized, because every `ResultRow` takes it and
+    // is `memo`ized.
+    const tableColumnVisibility = useMemo(
+        () => ({...columnVisibility, quality: showQualityColumn}),
+        [columnVisibility, showQualityColumn],
+    );
+    // FM-201: FM-200's rules for a hidden column, applied when the quality
+    // column goes away -- a sort on it falls back to the default (newest
+    // first), and its range filter is cleared. Adjusted during render, like
+    // the per-search filter reset above, so no frame is sorted or filtered
+    // by a column that is gone.
+    if (
+        !showQualityColumn &&
+        sorting.some((entry) => entry.id === QUALITY_COLUMN_ID)
+    ) {
+        setSorting(QUALITY_FALLBACK_SORTING);
+    }
+    if (
+        !showQualityColumn &&
+        (filters.qualityRating.min !== "" || filters.qualityRating.max !== "")
+    ) {
+        setFilters((current) =>
+            clearColumnFilter(current, filterDefaults, "quality"),
+        );
+    }
     // FM-200: the filters as they apply, with a hidden column's refine
     // dimension held at its default.
     const effectiveFilters = useMemo(
@@ -373,8 +422,15 @@ export function SearchResults({
             withoutHiddenColumnFilters(filters, filterDefaults, {
                 category: !showCategoryColumn,
                 grabs: !showDetailsColumn,
+                quality: !showQualityColumn,
             }),
-        [filterDefaults, filters, showCategoryColumn, showDetailsColumn],
+        [
+            filterDefaults,
+            filters,
+            showCategoryColumn,
+            showDetailsColumn,
+            showQualityColumn,
+        ],
     );
     const filteredResults = useMemo(
         () =>
@@ -398,6 +454,17 @@ export function SearchResults({
     );
     const columns = useMemo<ColumnDef<SearchResult>[]>(
         () => [
+            {
+                // FM-201: unrated results sort after rated ones in both
+                // directions (`sortUndefined: "last"` is applied before the
+                // direction is), and the first click sorts best first.
+                accessorFn: (result) => resultQualityRating(result),
+                header: "Quality rating",
+                id: QUALITY_COLUMN_ID,
+                sortDescFirst: true,
+                sortUndefined: "last",
+                sortingFn: "basic",
+            },
             {accessorKey: "title", header: "Title"},
             {accessorKey: "indexer", header: "Indexer"},
             {accessorKey: "category", header: "Category"},
@@ -427,8 +494,9 @@ export function SearchResults({
         getRowId: (result) => result.searchResultId,
         getSortedRowModel: getSortedRowModel(),
         onSortingChange: setSorting,
-        // FM-200: the hidden Category/Details columns.
-        state: {columnVisibility, sorting},
+        // FM-200: the hidden Category/Details columns; FM-201: the quality
+        // column.
+        state: {columnVisibility: tableColumnVisibility, sorting},
     });
     const sortedRows = table.getRowModel().rows;
     const sortedResults = useMemo(
@@ -718,7 +786,7 @@ export function SearchResults({
         }
     };
     const updateRange = (
-        name: "size" | "grabs" | "age",
+        name: RangeFilterName,
         bound: keyof NumericRange,
         value: string,
     ) => {
@@ -727,7 +795,7 @@ export function SearchResults({
             [name]: {...current[name], [bound]: value},
         }));
     };
-    const clearRange = (name: "size" | "grabs" | "age") => {
+    const clearRange = (name: RangeFilterName) => {
         setFilters((current) => ({...current, [name]: {min: "", max: ""}}));
     };
     const toggleQuickFilter = useCallback((filter: QuickFilter) => {
@@ -1221,12 +1289,13 @@ export function SearchResults({
                             setFilters={setFilters}
                             showCategorySection={showCategoryColumn}
                             showGrabsSection={showDetailsColumn}
+                            showQualityRatingSection={showQualityColumn}
                             toolbarHeight={toolbarHeight}
                             updateRange={updateRange}
                         />
                         <ResultsTable
                             actionsSlotCount={actionsSlotCount}
-                            columnVisibility={columnVisibility}
+                            columnVisibility={tableColumnVisibility}
                             compactRows={compactRows}
                             coverWidth={coverWidth}
                             currentSelectionStatus={currentSelectionStatus}

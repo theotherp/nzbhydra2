@@ -20,3 +20,5 @@
     text: "The download history is much more compact on phones: each download shows its title with the NZB button first, then its result, indexer, time and age on one line."
 -   type: "feature"
     text: "The Category and Details columns of the search results can now be hidden in the Display menu. Hiding a column also hides its filter in the Refine sidebar. Your choice is remembered."
+-   type: "feature"
+    text: "When the movie quality indicator is enabled, the quality rating now has its own column left of the title. You can sort by it (unrated results always come last) and filter by a minimum and maximum rating in the Refine sidebar."

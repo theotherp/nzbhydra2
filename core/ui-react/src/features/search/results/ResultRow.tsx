@@ -38,6 +38,7 @@ import {DirectDownloadActions} from "./DownloadActions";
 import {
     buildQualityTooltipSections,
     qualityBadgeSeverity,
+    resultQualityRating,
 } from "./qualityBadge";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {formatResultDetails, formatResultSize} from "./resultTable";
@@ -58,7 +59,7 @@ export type ExpandSlots = {
 };
 
 type ResultColumn = {
-    align: "left" | "right";
+    align: "center" | "left" | "right";
     id: string;
     label: string;
     testId?: string;
@@ -179,6 +180,25 @@ const COVER_TILE_HEIGHT = 56;
 const COVER_TILE_MIN_WIDTH = 38;
 
 const resultColumns: ResultColumn[] = [
+    {
+        // FM-201 (owner request, 2026-09-27): the movie quality badge, in its
+        // own column left of Title rather than inside the Title cell. Only
+        // rendered while the column is visible (`columnVisibility.quality`,
+        // resolved by `SearchResults` from the config flag and the loaded
+        // results); an unrated result leaves the cell empty.
+        align: "center",
+        id: "quality",
+        label: "Quality",
+        value: (result) => {
+            const rating = resultQualityRating(result);
+            return rating === undefined ? null : (
+                <QualityBadge
+                    rating={rating}
+                    warnings={result.qualityWarnings}
+                />
+            );
+        },
+    },
     {
         align: "left",
         id: "title",
@@ -402,7 +422,14 @@ export const ResultRow = memo(function ResultRow({
                 />
             </TableCell>
             {resultColumns.map((column) => {
-                if (columnVisibility[column.id] === false) {
+                // FM-201: the quality column is opt-in -- rendered only when
+                // the visibility says so -- while every other column is
+                // shown unless hidden, as before.
+                const shown =
+                    column.id === "quality"
+                        ? columnVisibility.quality === true
+                        : columnVisibility[column.id] !== false;
+                if (!shown) {
                     return null;
                 }
                 const isTitle = column.id === "title";
@@ -525,19 +552,6 @@ export const ResultRow = memo(function ResultRow({
                                             title={result.title}
                                         />
                                     )}
-                                {/* Movie quality indicator (`search-result.html:33-38`).
-                                    `qualityRating` is only ever populated
-                                    alongside `qualityWarnings` for a movie
-                                    result with the config flag on, so
-                                    presence is the whole gate -- and, like
-                                    legacy's `ng-if`, a rating of 0 renders
-                                    nothing. */}
-                                {result.qualityRating ? (
-                                    <QualityBadge
-                                        rating={result.qualityRating}
-                                        warnings={result.qualityWarnings}
-                                    />
-                                ) : null}
                                 <Box>{column.value(result)}</Box>
                             </Stack>
                         ) : isIndexer ? (
@@ -678,7 +692,8 @@ export const ResultRow = memo(function ResultRow({
 });
 
 /**
- * Movie quality indicator badge (`search-result.html:33-38`). A `Chip` is
+ * Movie quality indicator badge (`search-result.html:33-38`), rendered in the
+ * quality column since FM-201. A `Chip` is
  * the stock component for a coloured, labelled pill -- no bespoke `Box`
  * needed here, unlike `CoverThumbnail` below. Colour is chosen by severity
  * (`qualityBadgeSeverity`), never a literal: high/medium/low map onto

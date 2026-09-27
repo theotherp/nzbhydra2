@@ -3,6 +3,8 @@ import {describe, expect, it} from "vitest";
 import {
     buildQualityTooltipSections,
     qualityBadgeSeverity,
+    resultQualityRating,
+    showsQualityColumn,
 } from "./qualityBadge";
 
 describe("qualityBadgeSeverity", () => {
@@ -78,5 +80,29 @@ describe("buildQualityTooltipSections", () => {
                 messages: ["1080p release", "x264 codec"],
             },
         ]);
+    });
+});
+
+// FM-201: what the quality column treats as a rating.
+describe("resultQualityRating", () => {
+    it.each([
+        [{qualityRating: 10}, 10],
+        [{qualityRating: 1}, 1],
+        [{qualityRating: 0}, undefined],
+        [{}, undefined],
+    ])("reads %j as %s", (result, expected) => {
+        expect(resultQualityRating(result)).toBe(expected);
+    });
+});
+
+// FM-201: the quality column exists only with the indicator on and a rated
+// loaded result.
+describe("showsQualityColumn", () => {
+    it("should need both the indicator and a rated result", () => {
+        const rated = [{}, {qualityRating: 5}];
+        expect(showsQualityColumn(true, rated)).toBe(true);
+        expect(showsQualityColumn(false, rated)).toBe(false);
+        expect(showsQualityColumn(true, [{}, {qualityRating: 0}])).toBe(false);
+        expect(showsQualityColumn(true, [])).toBe(false);
     });
 });

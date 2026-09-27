@@ -1856,6 +1856,15 @@ corrected (optional): a stale duplicate JSDoc before `withoutHiddenColumnFilters
 more" brought new values leaves them unselected (the pre-existing Load-more selection issue, also open with all columns
 shown). Candidates for a future quickfix.
 
+FM-201 (Movie Quality Rating As A Sortable, Filterable Column) is done. While `showQualityIndicator` is on and some
+loaded result is rated, the quality badge moves out of the Title cell into a 58px column left of Title (HQ icon header,
+tooltip "Quality rating", `sort-quality`, best first, unrated last in both directions) and a "Quality rating" range
+(`refine-quality-rating-*`) sits between the Quality quick filters and "Title contains", reset with the column. Title
+keeps 285px at 1280x800 while the column is present; FM-175's 340px floor still holds for the default column set.
+Passed with minor findings, not corrected (optional): the section passes `name="size"` to `NumericFilter` because its
+`name` type is narrower than `RangeFilterName` (harmless, misleading); F-SEARCH-SORT-FILTER lacks a `deliberate - FM-201`
+gap line like its FM-089/FM-178 ones. Candidates for a future quickfix.
+
 ## Review
 
 None.

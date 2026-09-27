@@ -6,6 +6,35 @@
  * needs no config of its own.
  */
 
+/**
+ * FM-201: a result's rating as the quality column shows, sorts and filters
+ * it -- `undefined` for an unrated result. Legacy's `ng-if` rendered no badge
+ * for a falsy rating, and the backend clamps a real one to 1..10
+ * (`QualityAnalyzer.getQualityRating`), so a 0 counts as unrated here too
+ * rather than as the lowest rating.
+ */
+export function resultQualityRating(result: {
+    qualityRating?: number;
+}): number | undefined {
+    return result.qualityRating ? result.qualityRating : undefined;
+}
+
+/**
+ * FM-201: whether the results table carries the quality column -- the safe
+ * config's `searching.showQualityIndicator` is on *and* some loaded result has
+ * a rating. The caller passes every loaded result, not the filtered ones, so
+ * refining never adds or removes the column.
+ */
+export function showsQualityColumn(
+    indicatorEnabled: boolean,
+    results: {qualityRating?: number}[],
+): boolean {
+    return (
+        indicatorEnabled &&
+        results.some((result) => resultQualityRating(result) !== undefined)
+    );
+}
+
 /** `getQualityClass` (`search-result.js`): thresholds unchanged. */
 export function qualityBadgeSeverity(
     rating: number,
