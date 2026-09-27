@@ -364,9 +364,22 @@ export function quickFiltersFromSafeConfig(value: unknown): QuickFilter[] {
     ) {
         return [];
     }
-    return Array.isArray(value.searching.customQuickFilterButtons)
+    const filters = Array.isArray(value.searching.customQuickFilterButtons)
         ? value.searching.customQuickFilterButtons.flatMap(parseQuickFilter)
         : [];
+    // Groups alphabetically, ungrouped filters after them; within a group the
+    // config order is kept (the sort is stable).
+    return filters.sort((first, second) =>
+        first.group === second.group
+            ? 0
+            : first.group === null
+              ? 1
+              : second.group === null
+                ? -1
+                : first.group.localeCompare(second.group, undefined, {
+                      sensitivity: "base",
+                  }),
+    );
 }
 
 // Legacy's stored format (`color-control.html`, `formly-config.js:290-322`):

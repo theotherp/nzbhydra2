@@ -445,7 +445,7 @@ describe("result table transformations", () => {
         expect(defaultFilters(results, []).downloadTypes).toEqual([]);
     });
 
-    it("should show only configured quick filters, in config order, with their group", () => {
+    it("should show only configured quick filters, with their group", () => {
         expect(
             quickFiltersFromSafeConfig({
                 searching: {
@@ -466,13 +466,13 @@ describe("result table transformations", () => {
                 label: "1080p",
                 terms: ["1080p"],
             },
-            {group: null, id: "German", label: "German", terms: ["german"]},
             {
                 group: "Source",
                 id: "Source: WEB",
                 label: "WEB",
                 terms: ["/webrip|web-dl/"],
             },
+            {group: null, id: "German", label: "German", terms: ["german"]},
             {
                 group: null,
                 id: ":Empty group",
@@ -485,6 +485,24 @@ describe("result table transformations", () => {
                 searching: {showQuickFilterButtons: true},
             }),
         ).toEqual([]);
+    });
+
+    it("should sort quick filters by group, keep config order within a group and put ungrouped ones last", () => {
+        expect(
+            quickFiltersFromSafeConfig({
+                searching: {
+                    showQuickFilterButtons: true,
+                    customQuickFilterButtons: [
+                        "free=1",
+                        "b:x=1",
+                        "Other:a=1",
+                        "A:y=1",
+                        "b:z=1",
+                        "also free=1",
+                    ],
+                },
+            }).map((filter) => filter.id),
+        ).toEqual(["A:y", "b:x", "b:z", "Other:a", "free", "also free"]);
     });
 
     it("should match the default quick filters like the former built-in ones", () => {

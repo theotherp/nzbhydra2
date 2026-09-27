@@ -867,7 +867,7 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset}) => {
         {
             advanced: true,
             conditional: true,
-            help: "Enter in the format DisplayName=RequiredWord. Prefix words with ! to exclude them. Provide multiple required (or forbidden words) separated by commas. Surround value with / to mark as a regex. Prefix the name with a group, like Resolution:1080p=1080p, to show results matching any selected filter of that group. Filters are shown in the order entered here. Apply values with enter key.",
+            help: "Enter in the format DisplayName=RequiredWord. Prefix words with ! to exclude them. Provide multiple required (or forbidden words) separated by commas. Surround value with / to mark as a regex. Prefix the name with a group, like Resolution:1080p=1080p, to show results matching any selected filter of that group. The search results show them sorted by group, ungrouped filters last. Apply values with enter key.",
             label: "Custom quick filters",
             path: "searching.customQuickFilterButtons",
         },
