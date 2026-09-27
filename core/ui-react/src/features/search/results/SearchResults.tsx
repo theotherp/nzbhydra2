@@ -153,6 +153,12 @@ export function SearchResults({
     const maySeeDetailsDl =
         isRecord(window.__NZBHYDRA_BOOTSTRAP__) &&
         window.__NZBHYDRA_BOOTSTRAP__.maySeeDetailsDl === true;
+    // Owner (2026-09-27): the indexer summary names the searched indexers, so
+    // a user who may not see the indexer selection may not see it either --
+    // neither the summary nor its Display-menu entry renders for them.
+    const indexerSummaryAllowed =
+        isRecord(window.__NZBHYDRA_BOOTSTRAP__) &&
+        window.__NZBHYDRA_BOOTSTRAP__.showIndexerSelection === true;
     // ADR-0017: the dereferer must come from the *live* safe configuration, so
     // saving a new one reaches the rendered links without a page reload. The
     // context's `undefined` means "no provider above me" (focused component
@@ -1179,7 +1185,7 @@ export function SearchResults({
                 }
                 pagingError={pagingError}
             />
-            {showIndexerSummary && (
+            {indexerSummaryAllowed && showIndexerSummary && (
                 <IndexerSummary
                     data={data}
                     onOpenChange={setIndexerSummaryOpen}
@@ -1209,6 +1215,7 @@ export function SearchResults({
                     hideDownloaded={hideDownloaded}
                     highlightRecent={highlightRecent}
                     indexerFailureCount={failedIndexerCount(data)}
+                    indexerSummaryAllowed={indexerSummaryAllowed}
                     invertVisibleSelection={invertVisibleSelection}
                     moreResultsAvailable={moreResultsAvailable}
                     onLoadMore={onLoadMore}

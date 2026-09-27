@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import {createElement} from "react";
 import type {MockedFunction} from "vitest";
-import {afterEach, describe, expect, it, vi} from "vitest";
+import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import type {SafeConfig} from "../../../bootstrap";
 import {SafeConfigContext} from "../../../bootstrap";
@@ -3582,6 +3582,7 @@ describe("SearchResults", () => {
     });
 
     it("should gather every display preference into one accessible display-options popover", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {showIndexerSelection: true};
         renderResults(
             <SearchResults
                 data={{
@@ -7509,6 +7510,50 @@ describe("SearchResults indexer summary", () => {
         return JSON.parse(
             window.localStorage.getItem("hydra.search-results.table") ?? "{}",
         ) as Record<string, unknown>;
+    }
+
+    // The summary is only for users who may see the indexer selection.
+    beforeEach(() => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {showIndexerSelection: true};
+    });
+
+    afterEach(() => {
+        delete window.__NZBHYDRA_BOOTSTRAP__;
+    });
+
+    // Owner (2026-09-27): a user who may not see the indexer selection
+    // (`auth.restrictIndexerSelection` without the user's
+    // `showIndexerSelection`) may not see the indexer summary either.
+    for (const bootstrap of [{showIndexerSelection: false}, {}] as const) {
+        it(`should hide the summary and its display option without the indexer selection permission (${JSON.stringify(bootstrap)})`, () => {
+            window.__NZBHYDRA_BOOTSTRAP__ = bootstrap;
+            // Even with the summary stored as shown and expanded.
+            window.localStorage.setItem(
+                "hydra.search-results.table",
+                JSON.stringify({
+                    indexerSummaryOpen: true,
+                    showIndexerSummary: true,
+                }),
+            );
+            renderResults(<SearchResults data={withFailure} />);
+
+            expect(screen.queryByTestId("indexer-summary")).toBeNull();
+            expect(screen.queryByText("Broken")).toBeNull();
+            expect(
+                within(openDisplayOptions()).queryByTestId(
+                    "display-option-indexer-summary",
+                ),
+            ).toBeNull();
+            // The failure count stays, as text that names no indexer and
+            // opens nothing.
+            const hint = within(
+                screen.getByTestId("search-results-summary"),
+            ).getByTestId("results-indexer-failures");
+            expect(hint).toHaveTextContent("1 indexer failed");
+            expect(hint.tagName).toBe("SPAN");
+            fireEvent.click(hint);
+            expect(screen.queryByTestId("indexer-summary")).toBeNull();
+        });
     }
 
     it("should render the summary collapsed above the toolbar by default", () => {

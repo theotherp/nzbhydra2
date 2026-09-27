@@ -416,6 +416,9 @@ features:
       - deliberate - FM-199 (owner request 2026-09-26) adds a "Show indexer summary" display option (default on) that
         hides the restored indexer summary; legacy's accordion always rendered. Rejection reasons are not repeated in it;
         they stay in `results-rejected-popover`, where legacy listed them under the same accordion
+      - deliberate - owner request 2026-09-27 -- the indexer summary and its display option render only when the bootstrap's
+        `showIndexerSelection` is true (the user may see the indexer selection); legacy showed its accordion to every
+        user. Without it the toolbar's failure count is plain text that opens nothing
       - deliberate - FM-199 shows each searched indexer's results as "found of total" of its most recent request, where
         legacy showed only the indexer's reported total (`numberOfAvailableResults`), and its response time in seconds
         with a bar relative to the slowest, where legacy showed milliseconds

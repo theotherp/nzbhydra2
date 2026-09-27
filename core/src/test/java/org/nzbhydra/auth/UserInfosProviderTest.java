@@ -14,6 +14,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.web.BootstrappedDataTO;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -95,6 +96,41 @@ class UserInfosProviderTest {
         assertThat(bootstrappedData.getUsername()).isNull();
         assertThat(bootstrappedData.getMaySeeSearch()).isFalse();
         assertThat(bootstrappedData.getMaySeeAdmin()).isFalse();
+    }
+
+    /**
+     * {@code showIndexerSelection} decides whether the search page offers the indexer selection and whether the search
+     * results show the indexer summary, which names the searched indexers.
+     */
+    @Test
+    void shouldShowTheIndexerSelectionOnlyToUsersAllowedToSeeIt() {
+        baseConfig.getAuth().setAuthType(AuthType.BASIC);
+        baseConfig.getAuth().setRestrictIndexerSelection(true);
+        baseConfig.getAuth().setUsers(List.of(
+                user("restricted", false, false),
+                user("allowed", true, false),
+                user("admin", false, true)));
+
+        assertThat(testee.getUserInfos(loggedIn("restricted")).getShowIndexerSelection()).isFalse();
+        assertThat(testee.getUserInfos(loggedIn("allowed")).getShowIndexerSelection()).isTrue();
+        assertThat(testee.getUserInfos(loggedIn("admin")).getShowIndexerSelection()).isTrue();
+        assertThat(testee.getUserInfos(null).getShowIndexerSelection()).isFalse();
+
+        baseConfig.getAuth().setRestrictIndexerSelection(false);
+        assertThat(testee.getUserInfos(loggedIn("restricted")).getShowIndexerSelection()).isTrue();
+        assertThat(testee.getUserInfos(null).getShowIndexerSelection()).isTrue();
+    }
+
+    private static UserAuthConfig user(String username, boolean showIndexerSelection, boolean maySeeAdmin) {
+        UserAuthConfig user = new UserAuthConfig();
+        user.setUsername(username);
+        user.setShowIndexerSelection(showIndexerSelection);
+        user.setMaySeeAdmin(maySeeAdmin);
+        return user;
+    }
+
+    private static UsernamePasswordAuthenticationToken loggedIn(String username) {
+        return UsernamePasswordAuthenticationToken.authenticated(username, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
     }
 
     private OAuth2AuthenticationToken tokenFor(String usernameClaim, Map<String, Object> claims) {

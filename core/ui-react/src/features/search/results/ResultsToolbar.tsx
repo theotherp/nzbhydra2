@@ -78,6 +78,7 @@ export function ResultsToolbar({
     hideDownloaded,
     highlightRecent,
     indexerFailureCount,
+    indexerSummaryAllowed,
     invertVisibleSelection,
     moreResultsAvailable,
     onLoadMore,
@@ -148,6 +149,10 @@ export function ResultsToolbar({
     // FM-199: searched indexers that failed, shown as a hint in the count
     // phrase while the indexer summary is hidden.
     indexerFailureCount: number;
+    // Whether this user may see the indexer summary at all (their indexer
+    // selection is not restricted). Without it the failure hint is plain
+    // text and the Display menu has no summary entry.
+    indexerSummaryAllowed: boolean;
     invertVisibleSelection: () => void;
     moreResultsAvailable: boolean;
     onLoadMore?: (loadAll: boolean) => Promise<void>;
@@ -328,24 +333,35 @@ export function ResultsToolbar({
                                 as the rejection trigger beside it; the
                                 warning colour is the header's own "N
                                 failed". */}
-                            {!showIndexerSummary && indexerFailureCount > 0 && (
-                                <>
-                                    {" · "}
-                                    <Link
-                                        component="button"
-                                        data-testid="results-indexer-failures"
-                                        onClick={onRevealIndexerSummary}
-                                        sx={{color: "warning.main"}}
-                                        type="button"
-                                    >
-                                        {indexerFailureCount}{" "}
-                                        {indexerFailureCount === 1
-                                            ? "indexer"
-                                            : "indexers"}{" "}
-                                        failed
-                                    </Link>
-                                </>
-                            )}
+                            {(!showIndexerSummary || !indexerSummaryAllowed) &&
+                                indexerFailureCount > 0 && (
+                                    <>
+                                        {" · "}
+                                        {indexerSummaryAllowed ? (
+                                            <Link
+                                                component="button"
+                                                data-testid="results-indexer-failures"
+                                                onClick={onRevealIndexerSummary}
+                                                sx={{color: "warning.main"}}
+                                                type="button"
+                                            >
+                                                {indexerFailurePhrase(
+                                                    indexerFailureCount,
+                                                )}
+                                            </Link>
+                                        ) : (
+                                            <Box
+                                                component="span"
+                                                data-testid="results-indexer-failures"
+                                                sx={{color: "warning.main"}}
+                                            >
+                                                {indexerFailurePhrase(
+                                                    indexerFailureCount,
+                                                )}
+                                            </Box>
+                                        )}
+                                    </>
+                                )}
                             {!refineSurfaceCompact && selected.size > 0 && (
                                 <Box
                                     component="span"
@@ -484,6 +500,7 @@ export function ResultsToolbar({
                                 showCovers={showCovers}
                                 showDetailsColumn={showDetailsColumn}
                                 showDuplicateControls={showDuplicateControls}
+                                indexerSummaryAllowed={indexerSummaryAllowed}
                                 showIndexerSummary={showIndexerSummary}
                                 showZipButton={showZipButton}
                                 zipButtonAllowed={zipButtonAllowed}
@@ -634,4 +651,8 @@ export function ResultsToolbar({
 
 function downloadIdFor(result: SearchResult): string {
     return result.downloadId ?? result.searchResultId;
+}
+
+function indexerFailurePhrase(count: number): string {
+    return `${count} ${count === 1 ? "indexer" : "indexers"} failed`;
 }

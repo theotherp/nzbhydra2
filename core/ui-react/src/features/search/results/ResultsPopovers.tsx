@@ -212,6 +212,7 @@ export function DisplayOptionsMenu({
     onToggleRefineSurface,
     onToggleShowCovers,
     onToggleShowDuplicateControls,
+    indexerSummaryAllowed,
     onToggleShowIndexerSummary,
     onToggleShowZipButton,
     refineSurfaceShown,
@@ -282,6 +283,9 @@ export function DisplayOptionsMenu({
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there too.
     showDuplicateControls: boolean;
+    // Whether this user may see the indexer summary at all; like the ZIP
+    // entry, the summary entry is omitted while it does not hold.
+    indexerSummaryAllowed: boolean;
     // FM-199: whether the per-indexer summary renders above the toolbar;
     // shown by default (owner, 2026-09-26).
     showIndexerSummary: boolean;
@@ -387,12 +391,16 @@ export function DisplayOptionsMenu({
                   },
               ]
             : []),
-        {
-            checked: showIndexerSummary,
-            label: "Show indexer summary",
-            onToggle: onToggleShowIndexerSummary,
-            testId: "display-option-indexer-summary",
-        },
+        ...(indexerSummaryAllowed
+            ? [
+                  {
+                      checked: showIndexerSummary,
+                      label: "Show indexer summary",
+                      onToggle: onToggleShowIndexerSummary,
+                      testId: "display-option-indexer-summary",
+                  },
+              ]
+            : []),
     ];
     const toggleProps = {
         "aria-expanded": open ? ("true" as const) : ("false" as const),

@@ -4130,3 +4130,13 @@ their text and relative order are unchanged.
   Java `org.nzbhydra.config` tests 107 passed, 3 skipped; Playwright `results.spec.ts` 44/44, `config-control-treatment`, `config-searching`, `focus-indication` 23/23; `git diff --check` clean.
 - **Not done:** no screenshot strip for the chip edit state (an outlined chip while editing).
 - **Commit:** `f079cab0f`, `4cab49869`, `afe86f5c6`
+
+### 2026-09-27 — Hide the indexer summary from users without the indexer selection (owner-directed, outside the packet pipeline)
+
+- **Why not a packet:** not a quickfix. It changes who sees an F-SEARCH-RESULTS surface, and the owner asked for it directly. The deviation is recorded in `FEATURES.yaml`.
+- **What changed:** `SearchResults` renders `IndexerSummary` and the "Show indexer summary" display option only when the bootstrap's `showIndexerSelection` is true. Without it, `results-indexer-failures` is plain text.
+- **Paths:** `core/ui-react/src/features/search/results/{SearchResults,ResultsToolbar,ResultsPopovers}.tsx`, `SearchResults.test.tsx`; `core/src/test/java/org/nzbhydra/auth/UserInfosProviderTest.java`
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (148 files, 2280 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass;
+  `UserInfosProviderTest` 4/4; `tests/results.spec.ts` 44/44; `git diff --check` clean.
+- **Not tested end to end:** a real restricted login needs a non-`NONE` auth type at boot, which the shared Playwright instance never has; the backend half is covered by `UserInfosProviderTest`.
+- **Commit:** `c5312b195`
