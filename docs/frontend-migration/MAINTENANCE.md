@@ -4105,3 +4105,14 @@ their text and relative order are unchanged.
 - **Refused as a quickfix (2026-09-27):** showing `CopyValueButton` on touch devices (`@media (hover: none)`) changes `C-COPY-VALUE-BUTTON`'s registered reveal rule ("revealed on row hover and on focus"), so it needs a packet;
   today the history pages' copy buttons are tappable but invisible on phones.
 - **Commit:** `a9829b76e`
+
+### 2026-09-27 — Separate the results sort glyph from its header label
+
+- **Why not a packet:** styling inside F-SEARCH-RESULTS; no selector, registry or behaviour change.
+- **What was broken:** the glyph's leading space collapsed inside the header's flex button, so "AGE▼" touched (owner report).
+- **What changed:** a 2px (`ml: 0.25`) margin; Size and Age tracks 65→66 and 52→53px (others already had the slack). A 4px gap was tried first and broke FM-175's 340px Title floor at 1280 (Title 325px), so 2px is the ceiling
+  without renegotiating that floor.
+- **Paths:** `core/ui-react/src/features/search/results/{ResultsTable.tsx,resultTable.ts,resultTable.test.ts,SearchResults.test.tsx}`
+- **Visual gate:** `visual-evidence/F-SEARCH-RESULTS/columns-default-desktop.png` (sorted Age header).
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (148 files, 2238 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `tests/results.spec.ts` 43/43; `git diff --check` clean.
+- **Commit:** `37d450b59`
