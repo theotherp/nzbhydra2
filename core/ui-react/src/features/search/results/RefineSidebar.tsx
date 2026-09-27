@@ -102,6 +102,8 @@ export function RefineSidebar({
     quickFilters,
     results,
     setFilters,
+    showCategorySection = true,
+    showGrabsSection = true,
     toolbarHeight,
     updateRange,
 }: {
@@ -146,6 +148,13 @@ export function RefineSidebar({
     quickFilters: QuickFilter[];
     results: SearchResult[];
     setFilters: Dispatch<SetStateAction<ResultFilters>>;
+    // FM-200 (owner, 2026-09-27): a section filters by a table column, so
+    // hiding the Category or Details (grabs / seeders) column hides its
+    // section too, docked and in the drawer alike. `SearchResults` clears the
+    // section's filter in the same toggle, so nothing hidden narrows the
+    // results.
+    showCategorySection?: boolean;
+    showGrabsSection?: boolean;
     // FM-055: the sticky results toolbar's *measured* rendered height, owned
     // and re-measured by `SearchResults.tsx` (which already maintains it for
     // the table header's own sticky offset). It is handed on as the shell's
@@ -255,26 +264,28 @@ export function RefineSidebar({
                     value={title}
                 />
             </RefineSection>
-            <RefineMultiselect
-                entries={categoryEntries}
-                label="Category"
-                onChange={(categories) =>
-                    setFilters((current) => ({
-                        ...current,
-                        categories,
-                    }))
-                }
-                onToggleOpen={onToggleCategoryOpen}
-                open={categoryOpen}
-                selected={filters.categories}
-                // FM-188: this page's multiselects start with every value
-                // selected (`defaultFilters`) and `filterResults` keeps only
-                // what is selected, so "only this one" and "everything but
-                // these" are otherwise a click per row. The history views'
-                // sections deliberately get no such row (ADR-0016).
-                selectionActions
-                testIds={CATEGORY_TEST_IDS}
-            />
+            {showCategorySection && (
+                <RefineMultiselect
+                    entries={categoryEntries}
+                    label="Category"
+                    onChange={(categories) =>
+                        setFilters((current) => ({
+                            ...current,
+                            categories,
+                        }))
+                    }
+                    onToggleOpen={onToggleCategoryOpen}
+                    open={categoryOpen}
+                    selected={filters.categories}
+                    // FM-188: this page's multiselects start with every value
+                    // selected (`defaultFilters`) and `filterResults` keeps only
+                    // what is selected, so "only this one" and "everything but
+                    // these" are otherwise a click per row. The history views'
+                    // sections deliberately get no such row (ADR-0016).
+                    selectionActions
+                    testIds={CATEGORY_TEST_IDS}
+                />
+            )}
             <RefineMultiselect
                 entries={indexerEntries}
                 label="Indexer"
@@ -310,16 +321,18 @@ export function RefineSidebar({
                     testIdPrefix="refine-age"
                 />
             </RefineSection>
-            <RefineSection label="Grabs / seeders">
-                <NumericFilter
-                    label="Grabs / seeders"
-                    name="grabs"
-                    onChange={updateRange}
-                    onClear={clearRange}
-                    range={filters.grabs}
-                    testIdPrefix="refine-grabs"
-                />
-            </RefineSection>
+            {showGrabsSection && (
+                <RefineSection label="Grabs / seeders">
+                    <NumericFilter
+                        label="Grabs / seeders"
+                        name="grabs"
+                        onChange={updateRange}
+                        onClear={clearRange}
+                        range={filters.grabs}
+                        testIdPrefix="refine-grabs"
+                    />
+                </RefineSection>
+            )}
             {downloadTypeOptions.length > 0 && (
                 <RefineSection label="Type">
                     <Stack

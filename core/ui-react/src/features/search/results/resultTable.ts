@@ -712,6 +712,140 @@ export function actionsTrackWidth(downloaderCount: number): number {
 }
 
 /**
+ * FM-200: the result columns the Display popover's "Columns" subsection can
+ * switch off, by their TanStack column id -- `grabs` is the Details column.
+ * Everything else (Title, Indexer, Size, Age, Actions, the checkbox) always
+ * renders.
+ */
+export type HideableResultColumn = "category" | "grabs";
+
+/**
+ * The basis table's width in px, i.e. what a 1280x800 viewport leaves beside
+ * the docked refine sidebar. Every percentage track is its own pixel track
+ * over this width, which is what makes the two track sets the same table at
+ * the basis.
+ */
+const TABLE_BASIS_WIDTH = 936;
+
+// FM-175's pixel tracks, keyed by column id rather than by position. The px
+// values are the measured worst case of each column's own header label
+// (uppercase 11px plus the sort glyph, plus the header cell's 8px paddings)
+// rounded up: Indexer 88 -> 90, Category 96 -> 98, Size 64 -> 65, Details
+// 87 -> 90, Age 51 -> 52; Details 90 is the owner's own number. Title has no
+// entry: a track with no declared width is the only one that absorbs the
+// whole remainder under `tableLayout: fixed`.
+const DATA_COLUMN_PIXEL_WIDTHS: Record<string, number> = {
+    category: 98,
+    epoch: 52,
+    grabs: 90,
+    indexer: 90,
+    size: 65,
+};
+
+// The checkbox track: 40px in both sets, since it holds one fixed-size control.
+const SELECT_TRACK_WIDTH = 40;
+
+/** One rendered `<col>`, with its width in each of the table's two track sets. */
+export type ColumnTrack = {
+    // The `<col>`'s `data-column` value; the track rules select on it.
+    id: string;
+    // Used below the pixel-track breakpoint; `undefined` declares no width.
+    narrowWidth: number | string | undefined;
+    // Used at and above it; `undefined` declares no width.
+    pixelWidth: number | undefined;
+};
+
+function percentOfBasis(width: number): string {
+    return `${((width / TABLE_BASIS_WIDTH) * 100).toFixed(2)}%`;
+}
+
+/**
+ * FM-200: the table's `<colgroup>`, derived from the *visible* data columns
+ * rather than written out as a positional list: the checkbox, then each
+ * visible data column in render order, then Actions.
+ *
+ * Before FM-200 both width sets were eight-entry arrays addressed by
+ * `col:nth-of-type(n)`, so removing a middle column would have handed every
+ * later column its left neighbour's width. Each track now carries its own
+ * column id and both widths, and the table's rules select `<col>`s by that
+ * id, so a hidden column takes nothing but its own track with it: every
+ * other column keeps its width in both sets and Title (declared no width)
+ * absorbs what the hidden one freed.
+ *
+ * The percentage set is each pixel track over the 936px basis, computed
+ * rather than restated, so the two sets are the same table at the basis
+ * whatever is hidden; the values for the default column set are the ones
+ * FM-175 wrote out by hand (9.62%, 10.47%, 6.94%, 9.62%, 5.56%). The Actions
+ * track grows with `slotCount` (`actionsTrackWidth`).
+ */
+export function tableColumnTracks(
+    visibleDataColumnIds: readonly string[],
+    slotCount: number,
+): ColumnTrack[] {
+    const actionsWidth = actionsTrackWidth(slotCount);
+    return [
+        {
+            id: "select",
+            narrowWidth: SELECT_TRACK_WIDTH,
+            pixelWidth: SELECT_TRACK_WIDTH,
+        },
+        ...visibleDataColumnIds.map((id): ColumnTrack => {
+            const width = DATA_COLUMN_PIXEL_WIDTHS[id];
+            return {
+                id,
+                narrowWidth:
+                    width === undefined ? undefined : percentOfBasis(width),
+                pixelWidth: width,
+            };
+        }),
+        {
+            id: "actions",
+            narrowWidth: percentOfBasis(actionsWidth),
+            pixelWidth: actionsWidth,
+        },
+    ];
+}
+
+/**
+ * FM-200: `filters` with the refine section behind a hidden column reset to
+ * its default -- every loaded category selected, or an empty grabs range --
+ * so a filter the reader can no longer see or clear never narrows the
+ * results.
+ */
+/**
+ * FM-200: `filters` as they apply while some columns are hidden -- each hidden
+ * column's refine dimension at its default, `filters` itself when nothing is
+ * hidden. Hiding a column already clears its filter (`clearColumnFilter`);
+ * this also covers what arrives afterwards, since "Load more" can bring a
+ * category the stored selection never held, and with the section hidden
+ * nothing could select it.
+ */
+export function withoutHiddenColumnFilters(
+    filters: ResultFilters,
+    defaults: ResultFilters,
+    hidden: {category: boolean; grabs: boolean},
+): ResultFilters {
+    let effective = filters;
+    if (hidden.category) {
+        effective = clearColumnFilter(effective, defaults, "category");
+    }
+    if (hidden.grabs) {
+        effective = clearColumnFilter(effective, defaults, "grabs");
+    }
+    return effective;
+}
+
+export function clearColumnFilter(
+    filters: ResultFilters,
+    defaults: ResultFilters,
+    column: HideableResultColumn,
+): ResultFilters {
+    return column === "category"
+        ? {...filters, categories: defaults.categories}
+        : {...filters, grabs: defaults.grabs};
+}
+
+/**
  * FM-187: whether any loaded result renders the row's send-to-black-hole
  * button, i.e. whether the Actions track has to reserve one more 28px slot
  * for it (`actionsTrackWidth(downloaders.length + 1)`).

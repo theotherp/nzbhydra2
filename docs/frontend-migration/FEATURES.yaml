@@ -253,6 +253,10 @@ features:
       - indexer-summary-status-link-{{indexerName}}
       - display-option-indexer-summary
       - results-indexer-failures
+      # 2026-09-27 (FM-200, owner request): the Display popover's "Columns"
+      # subsection. See the note at the end of this record.
+      - display-option-column-category
+      - display-option-column-details
       - search-result-indexer-swatch
       - search-result-cover
       - search-result-cover-tile
@@ -366,8 +370,29 @@ features:
       # `indexerStatusesExpanded`). Hidden with a failure, the count phrase
       # gains `results-indexer-failures` ("N indexer(s) failed"), which
       # re-shows and expands the summary. The alerts are unchanged.
+      # 2026-09-27 (FM-200, owner request): `display-options` gains a
+      # hairline-separated "Columns" subsection after the other entries and
+      # before "Show refine sidebar", headed like the popover, with a
+      # "Category" (`display-option-column-category`) and a "Details"
+      # (`display-option-column-details`) checkbox, both on by default. Two
+      # ADR-0054 choices join `hydra.search-results.table`:
+      # `showCategoryColumn` and `showDetailsColumn`. A hidden column is gone
+      # at every width -- no `<th>`, no `<col>` track, no body cell (so no
+      # stacked-card line below 768px) and no `results-sort-menu` entry.
+      # Each `<col>` now carries its column id (`data-column`) and the track
+      # rules select on it rather than on `nth-of-type`, so every remaining
+      # column keeps its own width in both the pixel and the percentage set
+      # and Title, the only undeclared track, takes the freed 98px/90px.
+      # Hiding the column being sorted by falls back to the default sort
+      # (Age descending), which is what is stored. Hiding Category also hides
+      # the refine surface's Category section and hiding Details its "Grabs /
+      # seeders" section (docked and drawer alike), clearing that section's
+      # filter in the same toggle; the filter dimensions themselves are
+      # F-SEARCH-SORT-FILTER's.
     parity: partial
     gaps:
+      - deliberate - FM-200 (owner request 2026-09-27) lets the Category and Details columns be hidden from the Display
+        popover, which also hides their refine sections and clears their filters; legacy had no per-column visibility
       - deliberate - FM-199 (owner request 2026-09-26) adds a "Show indexer summary" display option (default on) that
         hides the restored indexer summary; legacy's accordion always rendered. Rejection reasons are not repeated in it;
         they stay in `results-rejected-popover`, where legacy listed them under the same accordion

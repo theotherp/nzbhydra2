@@ -6,6 +6,7 @@ import {
     activeFilterCount,
     ageInDays,
     blackHoleSlot,
+    clearColumnFilter,
     defaultFilters,
     filterResults,
     formatResultDetails,
@@ -22,7 +23,9 @@ import {
     selectionAfterClick,
     selectionStatus,
     selectVisibleResults,
+    tableColumnTracks,
     visibleGroupedResults,
+    withoutHiddenColumnFilters,
 } from "./resultTable";
 
 const results = [
@@ -1067,6 +1070,141 @@ describe("actions track width", () => {
     });
     it("should size a downloader plus FM-187's black hole slot alike", () =>
         expect(actionsTrackWidth(3)).toBe(224));
+});
+
+// FM-200: the `<colgroup>` is derived from the visible columns, and each
+// track carries its own id and both widths, so hiding a middle column cannot
+// hand a later column its neighbour's width the way the positional
+// `nth-of-type` list could.
+describe("table column tracks", () => {
+    const ALL = ["title", "indexer", "category", "size", "grabs", "epoch"];
+
+    function widthsById(visible: string[], slotCount = 0) {
+        return Object.fromEntries(
+            tableColumnTracks(visible, slotCount).map((track) => [
+                track.id,
+                [track.pixelWidth, track.narrowWidth],
+            ]),
+        );
+    }
+
+    it("should reproduce FM-175's hand-written tracks for the default column set", () => {
+        expect(tableColumnTracks(ALL, 0)).toEqual([
+            {id: "select", narrowWidth: 40, pixelWidth: 40},
+            {id: "title", narrowWidth: undefined, pixelWidth: undefined},
+            {id: "indexer", narrowWidth: "9.62%", pixelWidth: 90},
+            {id: "category", narrowWidth: "10.47%", pixelWidth: 98},
+            {id: "size", narrowWidth: "6.94%", pixelWidth: 65},
+            {id: "grabs", narrowWidth: "9.62%", pixelWidth: 90},
+            {id: "epoch", narrowWidth: "5.56%", pixelWidth: 52},
+            {id: "actions", narrowWidth: "14.96%", pixelWidth: 140},
+        ]);
+    });
+
+    it.each([
+        ["Category", ["category"]],
+        ["Details", ["grabs"]],
+        ["both", ["category", "grabs"]],
+    ])(
+        "should keep every remaining column's own widths with %s hidden",
+        (_, hidden) => {
+            const all = widthsById(ALL, 1);
+            const visible = ALL.filter((id) => !hidden.includes(id));
+            const tracks = tableColumnTracks(visible, 1);
+            expect(tracks.map((track) => track.id)).toEqual([
+                "select",
+                ...visible,
+                "actions",
+            ]);
+            const remaining = widthsById(visible, 1);
+            for (const id of Object.keys(remaining)) {
+                expect(remaining[id]).toEqual(all[id]);
+            }
+            for (const id of hidden) {
+                expect(remaining[id]).toBeUndefined();
+            }
+        },
+    );
+
+    it("should leave Title the only track without a width, so it absorbs what a hidden column frees", () => {
+        const visible = ["title", "indexer", "size", "epoch"];
+        const undeclared = tableColumnTracks(visible, 0).filter(
+            (track) =>
+                track.pixelWidth === undefined ||
+                track.narrowWidth === undefined,
+        );
+        expect(undeclared.map((track) => track.id)).toEqual(["title"]);
+        // At the 936px basis the pixel tracks leave Title 361px with every
+        // column shown and 549px with Category and Details hidden.
+        const declared = (ids: string[]) =>
+            tableColumnTracks(ids, 0).reduce(
+                (sum, track) => sum + (track.pixelWidth ?? 0),
+                0,
+            );
+        expect(936 - declared(ALL)).toBe(361);
+        expect(936 - declared(visible)).toBe(549);
+    });
+
+    it("should grow the Actions track with the slot count whatever is hidden", () => {
+        expect(widthsById(["title", "indexer"], 2).actions).toEqual([
+            196,
+            "20.94%",
+        ]);
+    });
+});
+
+describe("clear column filter", () => {
+    const defaults = defaultFilters(results, []);
+
+    it("should hold each hidden column's dimension at its default, and return the filters themselves with nothing hidden", () => {
+        const filtered = {
+            ...defaults,
+            categories: ["TV"],
+            grabs: {min: "5", max: ""},
+        };
+        expect(
+            withoutHiddenColumnFilters(filtered, defaults, {
+                category: false,
+                grabs: false,
+            }),
+        ).toBe(filtered);
+        expect(
+            withoutHiddenColumnFilters(filtered, defaults, {
+                category: true,
+                grabs: false,
+            }),
+        ).toEqual({...filtered, categories: defaults.categories});
+        expect(
+            withoutHiddenColumnFilters(filtered, defaults, {
+                category: true,
+                grabs: true,
+            }),
+        ).toEqual({
+            ...filtered,
+            categories: defaults.categories,
+            grabs: defaults.grabs,
+        });
+    });
+
+    it("should reselect every loaded category for Category", () => {
+        const filtered = {...defaults, categories: ["TV"], title: "keep"};
+        expect(clearColumnFilter(filtered, defaults, "category")).toEqual({
+            ...filtered,
+            categories: defaults.categories,
+        });
+    });
+
+    it("should empty the grabs range for Details, leaving the other ranges", () => {
+        const filtered = {
+            ...defaults,
+            grabs: {min: "5", max: "9"},
+            size: {min: "1", max: ""},
+        };
+        expect(clearColumnFilter(filtered, defaults, "grabs")).toEqual({
+            ...filtered,
+            grabs: {min: "", max: ""},
+        });
+    });
 });
 
 // FM-187: the black hole button's Actions slot is reserved from the loaded

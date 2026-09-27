@@ -18,3 +18,5 @@
     text: "The search history is much more compact on phones: each search shows its query first, category and time on one line with the Details and Repeat buttons, and its parameters below. About five searches now fit on a screen instead of two."
 -   type: "fix"
     text: "The download history is much more compact on phones: each download shows its title with the NZB button first, then its result, indexer, time and age on one line."
+-   type: "feature"
+    text: "The Category and Details columns of the search results can now be hidden in the Display menu. Hiding a column also hides its filter in the Refine sidebar. Your choice is remembered."

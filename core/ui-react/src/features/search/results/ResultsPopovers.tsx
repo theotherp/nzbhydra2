@@ -200,7 +200,9 @@ export function DisplayOptionsMenu({
     groupTorrentAndUsenet,
     hideDownloaded,
     highlightRecent,
+    onToggleCategoryColumn,
     onToggleCompactRows,
+    onToggleDetailsColumn,
     onToggleExpandGroupsByDefault,
     onToggleGroupEpisodes,
     onToggleGroupTitles,
@@ -213,7 +215,9 @@ export function DisplayOptionsMenu({
     onToggleShowIndexerSummary,
     onToggleShowZipButton,
     refineSurfaceShown,
+    showCategoryColumn,
     showCovers,
+    showDetailsColumn,
     showDuplicateControls,
     showIndexerSummary,
     showZipButton,
@@ -247,7 +251,9 @@ export function DisplayOptionsMenu({
     // default here (owner asked for off, as with `showCovers`).
     hideDownloaded: boolean;
     highlightRecent: boolean;
+    onToggleCategoryColumn: () => void;
     onToggleCompactRows: () => void;
+    onToggleDetailsColumn: () => void;
     onToggleExpandGroupsByDefault: () => void;
     onToggleGroupEpisodes: () => void;
     onToggleGroupTitles: () => void;
@@ -264,10 +270,15 @@ export function DisplayOptionsMenu({
     // can never disagree with the live `refine-sidebar-toggle`'s
     // `aria-expanded`.
     refineSurfaceShown: boolean;
+    // FM-200: the "Columns" subsection -- whether the table renders its
+    // Category and Details columns; both shown by default (owner,
+    // 2026-09-27).
+    showCategoryColumn: boolean;
     // FM-177: legacy's "Show movie covers in results"
     // (`search-results-controller.js:197`), which defaulted on there; the
     // owner asked for off.
     showCovers: boolean;
+    showDetailsColumn: boolean;
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there too.
     showDuplicateControls: boolean;
@@ -462,17 +473,35 @@ export function DisplayOptionsMenu({
                                 tooltip={entry.tooltip}
                             />
                         ))}
+                        {/* FM-200 (owner, 2026-09-27): which optional
+                            columns the table renders, as a subsection of its
+                            own below the row/grouping treatments and above
+                            the refine-surface entry, headed like the popover
+                            itself. */}
+                        <PopoverHairline />
+                        <Typography
+                            component="div"
+                            sx={POPOVER_HEADING_SX}
+                            variant="refineSectionLabel"
+                        >
+                            Columns
+                        </Typography>
+                        <DisplayOption
+                            checked={showCategoryColumn}
+                            label="Category"
+                            onToggle={onToggleCategoryColumn}
+                            testId="display-option-column-category"
+                        />
+                        <DisplayOption
+                            checked={showDetailsColumn}
+                            label="Details"
+                            onToggle={onToggleDetailsColumn}
+                            testId="display-option-column-details"
+                        />
                         {/* The mock's own hairline before the refine-surface
                             entry, separating the row/grouping treatments from
                             the surrounding-layout one. */}
-                        <Box
-                            sx={{
-                                backgroundColor: "surfaces.hairlineFaint",
-                                height: "1px",
-                                mx: 0.5,
-                                my: 0.75,
-                            }}
-                        />
+                        <PopoverHairline />
                         {/* The only entry that closes the popover: below `sm`
                             the refine surface is a temporary `Drawer`, and
                             leaving this popover open behind it would stack two
@@ -502,7 +531,8 @@ export function DisplayOptionsMenu({
 // hidden desktop copy, which would break a strict-mode locator for
 // `results-sort-toggle` at every width.
 //
-// The six column entries and the two direction entries are `menuitemradio`s
+// The column entries (one per *visible* column -- FM-200 hides Category and
+// Details here too when their columns are off) and the two direction entries are `menuitemradio`s
 // (`aria-checked`, not MUI's paint-only `selected`), the same non-stock-but-
 // precedented shape `AppShell.tsx`'s theme selector and `DownloadActions.tsx`'s
 // send menu already use for "one of several mutually exclusive values". Rows
@@ -513,7 +543,7 @@ export function ResultsSortMenu({
     onSortingChange,
     sorting,
 }: {
-    // `table.getAllLeafColumns()` -- column *instances*, not the column defs
+    // `table.getVisibleLeafColumns()` -- column *instances*, not the column defs
     // `useReactTable` was given. `getAutoSortDir()` lives only on the
     // instance; reading it off a plain `ColumnDef` does not compile.
     columns: Column<SearchResult, unknown>[];
@@ -623,6 +653,20 @@ export function ResultsSortMenu({
     );
 }
 
+// The mock's hairline between the Display popover's groups of entries.
+function PopoverHairline() {
+    return (
+        <Box
+            sx={{
+                backgroundColor: "surfaces.hairlineFaint",
+                height: "1px",
+                mx: 0.5,
+                my: 0.75,
+            }}
+        />
+    );
+}
+
 // One popover entry, matching the mock's `<label>` + `<input type=checkbox>`
 // shape: a row at `7px 8px` padding with a 9px gap, at the shared 8px action
 // radius.
@@ -638,7 +682,8 @@ function DisplayOption({
     onToggle: () => void;
     // FM-198: `Hide downloaded results (N)`'s only stable handle, since its
     // label carries a count and so is not a fixed string like every other
-    // entry's. No other entry needs one.
+    // entry's. FM-199's indexer-summary entry and FM-200's two column entries
+    // carry one too.
     testId?: string;
     // FM-198 (owner, 2026-09-19): "Hide downloaded results"' clarification
     // that the count and the hide read only a persisted `downloadedAt`, not

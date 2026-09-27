@@ -1846,6 +1846,16 @@ Passed with minor findings, not corrected (optional): the phone header says "N i
 meaning; a pre-existing quality-badge comment now heads the new test block; literal `fontWeight: 600`; with the summary
 hidden and zero results loaded, nothing re-enables it from that search. Candidates for a future quickfix.
 
+FM-200 (Category And Details Columns As Display Options) is done. The Display popover gains a "Columns" subsection
+above "Show refine sidebar" with `display-option-column-category`/`-details`; `showCategoryColumn`/`showDetailsColumn`
+(default on) join ADR-0054's payload. A hidden column loses its header, `<col>` track, cells and phone sort option, and
+its refine section (Category, or Grabs / seeders for Details, owner 2026-09-27) with its filter cleared and pinned to the
+default while hidden. Tracks are now keyed `col[data-column]` from the visible set, so remaining widths are unchanged and
+Title absorbs the rest; hiding the sorted column falls back to `epoch` desc and stores it. Passed with minor findings, not
+corrected (optional): a stale duplicate JSDoc before `withoutHiddenColumnFilters`; re-showing a column after a "Load
+more" brought new values leaves them unselected (the pre-existing Load-more selection issue, also open with all columns
+shown). Candidates for a future quickfix.
+
 ## Review
 
 None.

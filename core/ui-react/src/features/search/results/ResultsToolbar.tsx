@@ -24,7 +24,7 @@ import {
     ResultsSortMenu,
 } from "./ResultsPopovers";
 import {SelectionMenu} from "./SelectionMenu";
-import type {SelectionStatus} from "./resultTable";
+import type {HideableResultColumn, SelectionStatus} from "./resultTable";
 
 // FM-042: the mock's own sticky toolbar/header stacking relationship
 // (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
@@ -94,6 +94,7 @@ export function ResultsToolbar({
     selectAllVisible,
     selected,
     selectedResults,
+    setColumnShown,
     setCompactRows,
     setDownloadedIds,
     setGroupEpisodes,
@@ -107,7 +108,9 @@ export function ResultsToolbar({
     setShowIndexerSummary,
     setShowZipButton,
     setSorting,
+    showCategoryColumn,
     showCovers,
+    showDetailsColumn,
     showDuplicateControls,
     showIndexerSummary,
     showZipButton,
@@ -164,6 +167,10 @@ export function ResultsToolbar({
     selectAllVisible: () => void;
     selected: Set<string>;
     selectedResults: SearchResult[];
+    // FM-200: shows or hides the Category or Details column. Not a
+    // `Dispatch`: `SearchResults` also clears that column's refine filter and
+    // the hook falls back from a sort on it.
+    setColumnShown: (column: HideableResultColumn, shown: boolean) => void;
     setCompactRows: Dispatch<SetStateAction<boolean>>;
     setDownloadedIds: Dispatch<SetStateAction<Set<string>>>;
     setGroupEpisodes: Dispatch<SetStateAction<boolean>>;
@@ -177,7 +184,9 @@ export function ResultsToolbar({
     setShowIndexerSummary: Dispatch<SetStateAction<boolean>>;
     setShowZipButton: Dispatch<SetStateAction<boolean>>;
     setSorting: (next: SortingState) => void;
+    showCategoryColumn: boolean;
     showCovers: boolean;
+    showDetailsColumn: boolean;
     showDuplicateControls: boolean;
     showIndexerSummary: boolean;
     // FM-197: the browser-local preference; see `useResultDisplayChoices`.
@@ -360,7 +369,7 @@ export function ResultsToolbar({
                         from the DOM entirely at >= 768px. */}
                     {refineSurfaceCompact && hasResults && (
                         <ResultsSortMenu
-                            columns={table.getAllLeafColumns()}
+                            columns={table.getVisibleLeafColumns()}
                             onSortingChange={setSorting}
                             sorting={sorting}
                         />
@@ -423,8 +432,17 @@ export function ResultsToolbar({
                                 groupTorrentAndUsenet={groupTorrentAndUsenet}
                                 hideDownloaded={hideDownloaded}
                                 highlightRecent={highlightRecent}
+                                onToggleCategoryColumn={() =>
+                                    setColumnShown(
+                                        "category",
+                                        !showCategoryColumn,
+                                    )
+                                }
                                 onToggleCompactRows={() =>
                                     setCompactRows((current) => !current)
+                                }
+                                onToggleDetailsColumn={() =>
+                                    setColumnShown("grabs", !showDetailsColumn)
                                 }
                                 onToggleExpandGroupsByDefault={
                                     onToggleExpandGroupsByDefault
@@ -462,7 +480,9 @@ export function ResultsToolbar({
                                     setShowIndexerSummary((current) => !current)
                                 }
                                 refineSurfaceShown={refineSurfaceShown}
+                                showCategoryColumn={showCategoryColumn}
                                 showCovers={showCovers}
+                                showDetailsColumn={showDetailsColumn}
                                 showDuplicateControls={showDuplicateControls}
                                 showIndexerSummary={showIndexerSummary}
                                 showZipButton={showZipButton}

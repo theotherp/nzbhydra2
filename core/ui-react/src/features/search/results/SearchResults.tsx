@@ -49,6 +49,7 @@ import type {VisibleRowDescriptor} from "./ResultsTable";
 import {ResultsTable} from "./ResultsTable";
 import {ResultsToolbar} from "./ResultsToolbar";
 import type {
+    HideableResultColumn,
     NumericRange,
     QuickFilter,
     ResultFilters,
@@ -57,6 +58,7 @@ import type {
 import {
     activeFilterCount,
     blackHoleSlot,
+    clearColumnFilter,
     defaultFilters,
     duplicateGroupKey,
     filterResults,
@@ -66,6 +68,7 @@ import {
     quickFilterKey,
     quickFiltersFromSafeConfig,
     visibleGroupedResults,
+    withoutHiddenColumnFilters,
 } from "./resultTable";
 import {isRecord} from "./storedChoices";
 import {useResultDisplayChoices} from "./useResultDisplayChoices";
@@ -222,6 +225,7 @@ export function SearchResults({
     // `hydra.search-results.table` payload.
     const {
         categoryOpen,
+        columnVisibility,
         compactRows,
         expandGroupsByDefault,
         groupEpisodes,
@@ -232,6 +236,7 @@ export function SearchResults({
         indexerOpen,
         indexerSummaryOpen,
         setCategoryOpen,
+        setColumnShown,
         setCompactRows,
         setExpandGroupsByDefault,
         setGroupEpisodes,
@@ -247,7 +252,9 @@ export function SearchResults({
         setShowZipButton,
         setSidebarCollapsed,
         setSorting,
+        showCategoryColumn,
         showCovers,
+        showDetailsColumn,
         showDuplicateControls,
         showIndexerSummary,
         showZipButton,
@@ -359,15 +366,25 @@ export function SearchResults({
     const dialogs = useContext(DialogContext);
     const toasts = useContext(ToastContext);
     const groupEpisodesHelpChecked = useRef(false);
+    // FM-200: the filters as they apply, with a hidden column's refine
+    // dimension held at its default.
+    const effectiveFilters = useMemo(
+        () =>
+            withoutHiddenColumnFilters(filters, filterDefaults, {
+                category: !showCategoryColumn,
+                grabs: !showDetailsColumn,
+            }),
+        [filterDefaults, filters, showCategoryColumn, showDetailsColumn],
+    );
     const filteredResults = useMemo(
         () =>
             filterResults(
                 data.searchResults,
-                filters,
+                effectiveFilters,
                 quickFilters,
                 hideDownloaded,
             ),
-        [data.searchResults, filters, quickFilters, hideDownloaded],
+        [data.searchResults, effectiveFilters, quickFilters, hideDownloaded],
     );
     // FM-198: the entry's count -- every *loaded* result carrying a
     // `downloadedAt`, before any filtering, so it reads the same whether the
@@ -410,7 +427,8 @@ export function SearchResults({
         getRowId: (result) => result.searchResultId,
         getSortedRowModel: getSortedRowModel(),
         onSortingChange: setSorting,
-        state: {sorting},
+        // FM-200: the hidden Category/Details columns.
+        state: {columnVisibility, sorting},
     });
     const sortedRows = table.getRowModel().rows;
     const sortedResults = useMemo(
@@ -728,6 +746,19 @@ export function SearchResults({
     // the exact same shape the initial `filters` state is computed from,
     // minus any persisted `choices` override. Sorting, grouping, selection,
     // paging, and the search form are untouched.
+    // FM-200: hiding a column also clears the refine filter of the section
+    // that goes with it (see `RefineSidebar`'s `showCategorySection`).
+    const handleColumnShown = useCallback(
+        (column: HideableResultColumn, shown: boolean) => {
+            setColumnShown(column, shown);
+            if (!shown) {
+                setFilters((current) =>
+                    clearColumnFilter(current, filterDefaults, column),
+                );
+            }
+        },
+        [filterDefaults, setColumnShown],
+    );
     const clearAllFilters = useCallback(() => {
         setFilters({
             ...defaultFilters(data.searchResults, quickFilters),
@@ -843,8 +874,8 @@ export function SearchResults({
     // FM-181: how many refine dimensions are active, for the phone toolbar's
     // badge. The same function `RefineSidebar` disables its "Clear all" on.
     const activeFilters = useMemo(
-        () => activeFilterCount(filters, filterDefaults),
-        [filterDefaults, filters],
+        () => activeFilterCount(effectiveFilters, filterDefaults),
+        [effectiveFilters, filterDefaults],
     );
     useLayoutEffect(() => {
         const node = toolbarRef.current;
@@ -1128,6 +1159,7 @@ export function SearchResults({
                     selectAllVisible={selectAllVisible}
                     selected={selected}
                     selectedResults={selectedResults}
+                    setColumnShown={handleColumnShown}
                     setCompactRows={setCompactRows}
                     setDownloadedIds={setDownloadedIds}
                     setGroupEpisodes={setGroupEpisodes}
@@ -1141,7 +1173,9 @@ export function SearchResults({
                     setShowIndexerSummary={setShowIndexerSummary}
                     setShowZipButton={setShowZipButton}
                     setSorting={setSorting}
+                    showCategoryColumn={showCategoryColumn}
                     showCovers={showCovers}
+                    showDetailsColumn={showDetailsColumn}
                     showDuplicateControls={showDuplicateControls}
                     showIndexerSummary={showIndexerSummary}
                     showZipButton={showZipButton}
@@ -1168,7 +1202,7 @@ export function SearchResults({
                             drawerOpen={refineDrawerOpen}
                             filterDefaults={filterDefaults}
                             filteredCount={filteredResults.length}
-                            filters={filters}
+                            filters={effectiveFilters}
                             indexerOpen={indexerOpen}
                             onClearAll={clearAllFilters}
                             onDrawerOpenChange={setRefineDrawerOpen}
@@ -1185,11 +1219,14 @@ export function SearchResults({
                             quickFilters={quickFilters}
                             results={data.searchResults}
                             setFilters={setFilters}
+                            showCategorySection={showCategoryColumn}
+                            showGrabsSection={showDetailsColumn}
                             toolbarHeight={toolbarHeight}
                             updateRange={updateRange}
                         />
                         <ResultsTable
                             actionsSlotCount={actionsSlotCount}
+                            columnVisibility={columnVisibility}
                             compactRows={compactRows}
                             coverWidth={coverWidth}
                             currentSelectionStatus={currentSelectionStatus}

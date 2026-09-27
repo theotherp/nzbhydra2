@@ -3612,6 +3612,8 @@ describe("SearchResults", () => {
             ["Show covers", false],
             ["Hide downloaded results (0)", false],
             ["Show indexer summary", true],
+            ["Category", true],
+            ["Details", true],
             ["Show refine sidebar", false],
         ]);
     });
@@ -4954,7 +4956,9 @@ describe("SearchResults", () => {
             "indexerSummaryOpen",
             "refineCategoryOpen",
             "refineIndexerOpen",
+            "showCategoryColumn",
             "showCovers",
+            "showDetailsColumn",
             "showDuplicateControls",
             "showIndexerSummary",
             "showZipButton",
@@ -7629,6 +7633,488 @@ describe("SearchResults indexer summary", () => {
     });
 });
 
+// FM-200 (owner request, 2026-09-27): the Display popover's "Columns"
+// subsection hides the Category and Details columns at every width, persisted
+// in the ADR-0054 payload; hiding one also hides its refine section and clears
+// that section's filter.
+describe("SearchResults hideable columns", () => {
+    const columnData = {
+        ...response,
+        numberOfAvailableResults: 2,
+        searchResults: [
+            {
+                searchResultId: "movie",
+                title: "Movie release",
+                indexer: "One",
+                category: "Movies",
+                size: 200,
+                grabs: 10,
+                age: "2d",
+                epoch: 200,
+            },
+            {
+                searchResultId: "tv",
+                title: "TV release",
+                indexer: "Two",
+                category: "TV",
+                size: 100,
+                grabs: 1,
+                age: "1d",
+                epoch: 100,
+            },
+        ],
+    };
+
+    function storedPayload(): Record<string, unknown> {
+        return JSON.parse(
+            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+        ) as Record<string, unknown>;
+    }
+
+    function renderColumns(choices: Record<string, unknown> = {}) {
+        // The docked sidebar expanded, so its sections are rendered.
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({sidebarCollapsed: false, ...choices}),
+        );
+        return renderResults(<SearchResults data={columnData} />);
+    }
+
+    function toggleColumn(testId: string): void {
+        fireEvent.click(within(openDisplayOptions()).getByTestId(testId));
+        closeDisplayOptions();
+    }
+
+    function colIds(): string[] {
+        return [
+            ...screen
+                .getByTestId("search-results-table")
+                .querySelectorAll("colgroup > col"),
+        ].map((col) => col.getAttribute("data-column") ?? "");
+    }
+
+    function headerLabels(): string[] {
+        return [
+            ...screen
+                .getByTestId("search-results-table")
+                .querySelectorAll("thead th"),
+        ].map((cell) => cell.getAttribute("data-label") ?? "");
+    }
+
+    function rowCellLabels(row: HTMLElement): string[] {
+        return [...row.querySelectorAll("td")].map(
+            (cell) => cell.getAttribute("data-label") ?? "",
+        );
+    }
+
+    it("should show both columns, their checked entries and their refine sections by default", () => {
+        renderColumns();
+        expect(displayOption("Category")).toBeChecked();
+        expect(displayOption("Details")).toBeChecked();
+        closeDisplayOptions();
+        expect(colIds()).toEqual([
+            "select",
+            "title",
+            "indexer",
+            "category",
+            "size",
+            "grabs",
+            "epoch",
+            "actions",
+        ]);
+        expect(headerLabels()).toEqual([
+            "Select",
+            "Title",
+            "Indexer",
+            "Category",
+            "Size",
+            "Details",
+            "Age",
+            "Actions",
+        ]);
+        for (const row of screen.getAllByTestId("search-result-row")) {
+            expect(rowCellLabels(row)).toEqual(headerLabels());
+        }
+        expect(screen.getByTestId("refine-category-toggle")).toBeVisible();
+        expect(
+            screen.getByTestId("number-filter-min-refine-grabs"),
+        ).toBeVisible();
+        expect(storedPayload()).toMatchObject({
+            showCategoryColumn: true,
+            showDetailsColumn: true,
+        });
+    });
+
+    it("should drop the Category header, cells, track and refine section, keeping every other track's own width", () => {
+        renderColumns();
+        toggleColumn("display-option-column-category");
+        expect(colIds()).toEqual([
+            "select",
+            "title",
+            "indexer",
+            "size",
+            "grabs",
+            "epoch",
+            "actions",
+        ]);
+        expect(headerLabels()).not.toContain("Category");
+        expect(screen.queryByTestId("sort-category")).toBeNull();
+        for (const row of screen.getAllByTestId("search-result-row")) {
+            expect(rowCellLabels(row)).toEqual(headerLabels());
+        }
+        // The later tracks keep their own widths rather than shifting onto
+        // their left neighbour's, and the hidden one leaves no rule behind.
+        expect(trackRuleCount("category")).toBe(0);
+        expect(trackRules("size")).toEqual({narrow: "6.94%", pixel: "65px"});
+        expect(trackRules("grabs")).toEqual({narrow: "9.62%", pixel: "90px"});
+        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(actionsTrackRules()).toEqual({
+            narrow: "14.96%",
+            pixel: "140px",
+        });
+        expect(trackRuleCount("title")).toBe(0);
+        expect(screen.queryByTestId("refine-category-toggle")).toBeNull();
+        expect(
+            screen.getByTestId("number-filter-min-refine-grabs"),
+        ).toBeVisible();
+        expect(storedPayload()).toMatchObject({
+            showCategoryColumn: false,
+            showDetailsColumn: true,
+        });
+    });
+
+    it("should drop the Details header, cells, track and grabs refine section", () => {
+        renderColumns();
+        toggleColumn("display-option-column-details");
+        expect(colIds()).toEqual([
+            "select",
+            "title",
+            "indexer",
+            "category",
+            "size",
+            "epoch",
+            "actions",
+        ]);
+        expect(screen.queryByTestId("sort-grabs")).toBeNull();
+        expect(screen.queryAllByTestId("search-result-details")).toHaveLength(
+            0,
+        );
+        for (const row of screen.getAllByTestId("search-result-row")) {
+            expect(rowCellLabels(row)).toEqual(headerLabels());
+        }
+        expect(trackRuleCount("grabs")).toBe(0);
+        expect(trackRules("category")).toEqual({
+            narrow: "10.47%",
+            pixel: "98px",
+        });
+        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(
+            screen.queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(screen.getByTestId("refine-category-toggle")).toBeVisible();
+        expect(storedPayload()).toMatchObject({
+            showCategoryColumn: true,
+            showDetailsColumn: false,
+        });
+    });
+
+    it("should render six tracks with both hidden", () => {
+        renderColumns({showCategoryColumn: false, showDetailsColumn: false});
+        expect(colIds()).toEqual([
+            "select",
+            "title",
+            "indexer",
+            "size",
+            "epoch",
+            "actions",
+        ]);
+        expect(headerLabels()).toEqual([
+            "Select",
+            "Title",
+            "Indexer",
+            "Size",
+            "Age",
+            "Actions",
+        ]);
+        expect(trackRules("indexer")).toEqual({
+            narrow: "9.62%",
+            pixel: "90px",
+        });
+        expect(trackRules("size")).toEqual({narrow: "6.94%", pixel: "65px"});
+        expect(trackRules("epoch")).toEqual({narrow: "5.56%", pixel: "52px"});
+        expect(screen.queryByTestId("refine-category-toggle")).toBeNull();
+        expect(
+            screen.queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(displayOption("Category")).not.toBeChecked();
+        expect(displayOption("Details")).not.toBeChecked();
+    });
+
+    it("should span the virtualization spacer rows over the visible tracks only", () => {
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({showCategoryColumn: false}),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 80,
+                    searchResults: Array.from({length: 80}, (_, index) => ({
+                        searchResultId: `row-${index}`,
+                        title: `Release ${index}`,
+                        indexer: "One",
+                        category: "Movies",
+                        epoch: 1000 - index,
+                    })),
+                }}
+            />,
+        );
+        const spacer = screen.getByTestId("results-virtual-spacer-bottom");
+        expect(spacer.querySelector("td")).toHaveAttribute("colspan", "7");
+        expect(colIds()).toHaveLength(7);
+    });
+
+    it("should keep a hidden column hidden across a remount, and restore it when switched back on", () => {
+        const first = renderColumns();
+        toggleColumn("display-option-column-category");
+        toggleColumn("display-option-column-details");
+        first.unmount();
+
+        // A stored `false` must survive: `??`, not `||`.
+        const second = renderResults(<SearchResults data={columnData} />);
+        expect(headerLabels()).not.toContain("Category");
+        expect(headerLabels()).not.toContain("Details");
+        toggleColumn("display-option-column-category");
+        expect(headerLabels()).toContain("Category");
+        second.unmount();
+
+        renderResults(<SearchResults data={columnData} />);
+        expect(headerLabels()).toContain("Category");
+        expect(headerLabels()).not.toContain("Details");
+        expect(storedPayload()).toMatchObject({
+            showCategoryColumn: true,
+            showDetailsColumn: false,
+        });
+    });
+
+    it("should fall back to the default sort, and store it, when the sorted column is hidden", () => {
+        renderColumns({sorting: [{id: "category", desc: false}]});
+        expect(screen.getByTestId("sort-category")).toHaveAttribute(
+            "data-sort-direction",
+            "asc",
+        );
+        toggleColumn("display-option-column-category");
+        expect(screen.getByTestId("sort-epoch")).toHaveAttribute(
+            "data-sort-direction",
+            "desc",
+        );
+        expect(storedPayload().sorting).toEqual([{id: "epoch", desc: true}]);
+        // Newest first again.
+        expect(
+            screen
+                .getAllByTestId("search-result-row")
+                .map((row) => row.getAttribute("data-result-id")),
+        ).toEqual(["movie", "tv"]);
+
+        // A sort on a column that stays visible is left alone.
+        fireEvent.click(screen.getByTestId("sort-size"));
+        const sizeSort = storedPayload().sorting;
+        toggleColumn("display-option-column-details");
+        expect(storedPayload().sorting).toEqual(sizeSort);
+    });
+
+    it("should drop a stored sort on a column that is stored hidden", () => {
+        renderColumns({
+            showDetailsColumn: false,
+            sorting: [{id: "grabs", desc: true}],
+        });
+        expect(screen.getByTestId("sort-epoch")).toHaveAttribute(
+            "data-sort-direction",
+            "desc",
+        );
+        expect(storedPayload().sorting).toEqual([{id: "epoch", desc: true}]);
+    });
+
+    it("should offer only the visible columns in the phone sort menu", () => {
+        stubViewportWidth(390);
+        renderColumns({showCategoryColumn: false, showDetailsColumn: false});
+        expect(
+            screen.getByTestId("search-results-table").querySelector("col"),
+        ).not.toBeNull();
+        fireEvent.click(screen.getByTestId("results-sort-toggle"));
+        expect(
+            within(screen.getByTestId("results-sort-menu"))
+                .getAllByRole("menuitemradio")
+                .map((item) => item.textContent),
+        ).toEqual([
+            "Title",
+            "Indexer",
+            "Size",
+            "Age",
+            "Ascending",
+            "Descending",
+        ]);
+    });
+
+    it("should clear an active category filter when Category is hidden, and restore the section unfiltered", () => {
+        renderColumns();
+        fireEvent.click(refineOption("refine-category-option", "TV"));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+
+        toggleColumn("display-option-column-category");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        expect(screen.queryByTestId("refine-category-toggle")).toBeNull();
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+
+        toggleColumn("display-option-column-category");
+        expect(screen.getByTestId("refine-category-toggle")).toBeVisible();
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Movies",
+            "TV",
+        ]);
+    });
+
+    it("should not let a hidden Category filter out a category that arrives with Load more", () => {
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({sidebarCollapsed: false}),
+        );
+        const {rerender} = renderResults(
+            <SearchResults
+                data={columnData}
+                onLoadMore={vi.fn()}
+                searchRequestId={1}
+            />,
+        );
+        toggleColumn("display-option-column-category");
+        rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SearchResults
+                        data={{
+                            ...columnData,
+                            numberOfAvailableResults: 3,
+                            searchResults: [
+                                ...columnData.searchResults,
+                                {
+                                    searchResultId: "audio",
+                                    title: "Audio release",
+                                    indexer: "One",
+                                    category: "Audio",
+                                    epoch: 50,
+                                },
+                            ],
+                        }}
+                        onLoadMore={vi.fn()}
+                        searchRequestId={1}
+                    />
+                </ToastProvider>
+            </DialogProvider>,
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+    });
+
+    it("should clear an active grabs filter when Details is hidden, and restore the section unfiltered", async () => {
+        renderColumns();
+        fireEvent.change(screen.getByTestId("number-filter-min-refine-grabs"), {
+            target: {value: "5"},
+        });
+        await settleFilterCommits();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+
+        toggleColumn("display-option-column-details");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        expect(
+            screen.queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(screen.getByTestId("refine-clear-all")).toBeDisabled();
+
+        toggleColumn("display-option-column-details");
+        expect(
+            screen.getByTestId("number-filter-min-refine-grabs"),
+        ).toHaveValue(null);
+    });
+
+    it("should leave the refine drawer without the hidden sections on a phone", () => {
+        stubViewportWidth(390);
+        renderColumns({showCategoryColumn: false, showDetailsColumn: false});
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        const drawer = screen.getByTestId("refine-sidebar");
+        expect(
+            within(drawer).queryByTestId("refine-category-toggle"),
+        ).toBeNull();
+        expect(
+            within(drawer).queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(
+            within(drawer).getByTestId("refine-indexer-toggle"),
+        ).toBeVisible();
+    });
+
+    it("should render the same cell set on grouped, duplicate and nested rows", () => {
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                expandGroupsByDefault: true,
+                showCategoryColumn: false,
+                showDetailsColumn: false,
+                showDuplicateControls: true,
+            }),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Example release",
+                            indexer: "One",
+                            category: "TV",
+                            hash: 1,
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Example release",
+                            indexer: "Two",
+                            category: "TV",
+                            hash: 1,
+                        },
+                        {
+                            searchResultId: "three",
+                            title: "Example release",
+                            indexer: "Three",
+                            category: "TV",
+                            hash: 2,
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(
+            screen.getAllByRole("button", {name: "Expand duplicates"})[0],
+        );
+        const rows = screen.getAllByTestId("search-result-row");
+        expect(rows).toHaveLength(3);
+        expect(
+            rows.some((row) => row.getAttribute("data-nesting-level") !== "0"),
+        ).toBe(true);
+        for (const row of rows) {
+            expect(rowCellLabels(row)).toEqual([
+                "Select",
+                "Title",
+                "Indexer",
+                "Size",
+                "Age",
+                "Actions",
+            ]);
+        }
+    });
+});
+
 // Movie quality indicator badge (`search-result.html:33-38`, restored).
 // `qualityRating`/`qualityWarnings` are only ever populated together by the
 // backend, so presence of the badge is tested directly against the field
@@ -7708,23 +8194,43 @@ describe("SearchResults quality badge", () => {
  * an earlier render in this document inserted.
  */
 function actionsTrackRules(): {narrow: string; pixel: string} {
-    const classes = [
-        ...screen.getByTestId("search-results-table").classList,
-    ].filter((name) => name.startsWith("css-"));
-    const widths = [...document.querySelectorAll("style")]
-        .flatMap((style) => (style.textContent ?? "").split("}"))
-        .filter(
-            (rule) =>
-                rule.includes("col:nth-of-type(8){") &&
-                classes.some((name) => rule.includes(`.${name} `)),
-        )
-        .map((rule) => rule.split("width:")[1]?.replace(";", "") ?? "");
+    return trackRules("actions");
+}
+
+/**
+ * FM-200: the same, for any track, addressed by the `data-column` id its
+ * `<col>` and its rule carry. Throws unless exactly one pixel and one
+ * percentage rule exist for it -- so a hidden column's track must have none,
+ * which `trackRuleCount` checks.
+ */
+function trackRules(columnId: string): {narrow: string; pixel: string} {
+    const widths = trackRuleWidths(columnId);
     const pixel = widths.filter((width) => width.endsWith("px"));
     const narrow = widths.filter((width) => width.endsWith("%"));
     if (pixel.length !== 1 || narrow.length !== 1) {
-        throw new Error(`Unexpected Actions track rules: ${widths.join(", ")}`);
+        throw new Error(
+            `Unexpected ${columnId} track rules: ${widths.join(", ")}`,
+        );
     }
     return {narrow: narrow[0], pixel: pixel[0]};
+}
+
+function trackRuleCount(columnId: string): number {
+    return trackRuleWidths(columnId).length;
+}
+
+function trackRuleWidths(columnId: string): string[] {
+    const classes = [
+        ...screen.getByTestId("search-results-table").classList,
+    ].filter((name) => name.startsWith("css-"));
+    return [...document.querySelectorAll("style")]
+        .flatMap((style) => (style.textContent ?? "").split("}"))
+        .filter(
+            (rule) =>
+                rule.includes(`col[data-column="${columnId}"]{`) &&
+                classes.some((name) => rule.includes(`.${name} `)),
+        )
+        .map((rule) => rule.split("width:")[1]?.replace(";", "") ?? "");
 }
 
 /**

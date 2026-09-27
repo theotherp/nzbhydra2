@@ -6,6 +6,7 @@ import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type {SxProps, Theme} from "@mui/material";
+import type {VisibilityState} from "@tanstack/react-table";
 import {
     Box,
     Checkbox,
@@ -223,6 +224,7 @@ const resultColumns: ResultColumn[] = [
 ];
 
 export const ResultRow = memo(function ResultRow({
+    columnVisibility,
     coverWidth,
     dereferer,
     downloaded,
@@ -248,6 +250,11 @@ export const ResultRow = memo(function ResultRow({
     titleGroupKey,
     transport,
 }: {
+    // FM-200: TanStack's column visibility, the same object the header row
+    // renders from, so a hidden column loses its header and every row's cell
+    // together -- grouped, duplicate and nested rows included, since they are
+    // all this component. One parent-memoized reference, for `memo`.
+    columnVisibility: VisibilityState;
     // FM-177: the width, in px, one cover is rendered at -- `undefined` while
     // the "Show covers" display option is off, which is what makes the option
     // reserve no width at all rather than render a zero-width image. A
@@ -395,6 +402,9 @@ export const ResultRow = memo(function ResultRow({
                 />
             </TableCell>
             {resultColumns.map((column) => {
+                if (columnVisibility[column.id] === false) {
+                    return null;
+                }
                 const isTitle = column.id === "title";
                 // FM-096: the swatch needs the config-derived `indexerColors`
                 // map, which `resultColumns`' `value(result)` cannot see (it

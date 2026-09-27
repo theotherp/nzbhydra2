@@ -1,7 +1,8 @@
-import type {SortingState} from "@tanstack/react-table";
-import {useEffect, useState} from "react";
+import type {SortingState, VisibilityState} from "@tanstack/react-table";
+import {useCallback, useEffect, useMemo, useState} from "react";
 
 import {writeItem} from "../../../domain/storage/browserStorage";
+import type {HideableResultColumn} from "./resultTable";
 import type {StoredChoices} from "./storedChoices";
 import {loadChoices, STORAGE_KEY} from "./storedChoices";
 
@@ -25,8 +26,24 @@ import {loadChoices, STORAGE_KEY} from "./storedChoices";
  */
 export function useResultDisplayChoices() {
     const [choices] = useState(() => loadChoices());
-    const [sorting, setSorting] = useState<SortingState>(
-        choices.sorting ?? [{id: "epoch", desc: true}],
+    // FM-200: whether the table renders its Category and Details columns.
+    // Owner (2026-09-27): both shown by default. `??` rather than `||`, so a
+    // stored `false` survives a new search and a reload.
+    const [showCategoryColumn, setShowCategoryColumn] = useState(
+        () => choices.showCategoryColumn ?? true,
+    );
+    const [showDetailsColumn, setShowDetailsColumn] = useState(
+        () => choices.showDetailsColumn ?? true,
+    );
+    // The stored sort is dropped for the default if it names a hidden column
+    // -- which the toggle below never writes, but a hand-edited or older
+    // payload could hold, and TanStack would keep sorting by a column no
+    // control can show or change.
+    const [sorting, setSorting] = useState<SortingState>(() =>
+        withoutHiddenColumnSort(choices.sorting ?? DEFAULT_SORTING, {
+            category: showCategoryColumn,
+            grabs: showDetailsColumn,
+        }),
     );
     // Below `sm` the sidebar starts collapsed by default; at `sm` and up it
     // starts expanded, matching the "persistent left column ... at sm and
@@ -121,6 +138,35 @@ export function useResultDisplayChoices() {
         () => choices.indexerSummaryOpen ?? false,
     );
 
+    // FM-200: TanStack's `columnVisibility` for the table, the header row,
+    // the body rows, the column tracks and the phone sort menu alike. `grabs`
+    // is the Details column's id. Memoized, because every `ResultRow` takes it
+    // and is `memo`ized.
+    const columnVisibility = useMemo<VisibilityState>(
+        () => ({category: showCategoryColumn, grabs: showDetailsColumn}),
+        [showCategoryColumn, showDetailsColumn],
+    );
+    // FM-200: shows or hides one column. Hiding the column the table is
+    // sorted by falls back to the default sort in the same step, so the
+    // stored payload never names a column no control can show or change.
+    // Clearing that column's refine filter is `SearchResults`' part, since the
+    // filters are not a display choice.
+    const setColumnShown = useCallback(
+        (column: HideableResultColumn, shown: boolean) => {
+            if (column === "category") {
+                setShowCategoryColumn(shown);
+            } else {
+                setShowDetailsColumn(shown);
+            }
+            if (!shown) {
+                setSorting((current) =>
+                    withoutHiddenColumnSort(current, {[column]: false}),
+                );
+            }
+        },
+        [],
+    );
+
     useEffect(() => {
         writeItem(
             STORAGE_KEY,
@@ -135,7 +181,9 @@ export function useResultDisplayChoices() {
                 indexerSummaryOpen,
                 refineCategoryOpen: categoryOpen,
                 refineIndexerOpen: indexerOpen,
+                showCategoryColumn,
                 showCovers,
+                showDetailsColumn,
                 showDuplicateControls,
                 showIndexerSummary,
                 showZipButton,
@@ -154,7 +202,9 @@ export function useResultDisplayChoices() {
         highlightRecent,
         indexerOpen,
         indexerSummaryOpen,
+        showCategoryColumn,
         showCovers,
+        showDetailsColumn,
         showDuplicateControls,
         showIndexerSummary,
         showZipButton,
@@ -164,6 +214,7 @@ export function useResultDisplayChoices() {
 
     return {
         categoryOpen,
+        columnVisibility,
         compactRows,
         expandGroupsByDefault,
         groupEpisodes,
@@ -174,6 +225,7 @@ export function useResultDisplayChoices() {
         indexerOpen,
         indexerSummaryOpen,
         setCategoryOpen,
+        setColumnShown,
         setCompactRows,
         setExpandGroupsByDefault,
         setGroupEpisodes,
@@ -189,13 +241,33 @@ export function useResultDisplayChoices() {
         setShowZipButton,
         setSidebarCollapsed,
         setSorting,
+        showCategoryColumn,
         showCovers,
+        showDetailsColumn,
         showDuplicateControls,
         showIndexerSummary,
         showZipButton,
         sidebarCollapsed,
         sorting,
     };
+}
+
+// The results' default sort, newest first -- also what hiding the sorted
+// column falls back to (FM-200).
+const DEFAULT_SORTING: SortingState = [{id: "epoch", desc: true}];
+
+/**
+ * FM-200: `sorting`, or the default sort if any of its entries is on a column
+ * `visibility` marks hidden. The same array is returned when nothing changes,
+ * so a state update with it bails out.
+ */
+function withoutHiddenColumnSort(
+    sorting: SortingState,
+    visibility: VisibilityState,
+): SortingState {
+    return sorting.some((entry) => visibility[entry.id] === false)
+        ? DEFAULT_SORTING
+        : sorting;
 }
 
 // MUI's default `sm` breakpoint (600px and up). Mirrors theme.ts's

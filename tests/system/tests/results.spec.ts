@@ -2244,6 +2244,9 @@ test.describe("Search results", () => {
             ["Show button to download results as ZIP", true],
             // FM-199: shown by default (owner, 2026-09-26).
             ["Show indexer summary", true],
+            // FM-200: the "Columns" subsection, both shown by default.
+            ["Category", true],
+            ["Details", true],
             ["Show refine sidebar", true],
         ] as Array<[string, boolean]>) {
             const entry = page.getByRole("checkbox", {name, exact: true});
@@ -5020,6 +5023,8 @@ test.describe("Search results", () => {
             "Hide downloaded results (0)",
             "Show button to download results as ZIP",
             "Show indexer summary",
+            "Category",
+            "Details",
             "Show refine sidebar",
         ]);
         await expect(
@@ -5367,6 +5372,8 @@ test.describe("Search results", () => {
             "Hide downloaded results (0)",
             "Show button to download results as ZIP",
             "Show indexer summary",
+            "Category",
+            "Details",
             "Show refine sidebar",
         ]);
         await captureVisualRegion(
@@ -5834,6 +5841,256 @@ test.describe("Search results", () => {
                     `indexer-summary-hidden-${viewport}`,
                 ),
             });
+        }
+    });
+
+    // FM-200 (owner request, 2026-09-27): the Display popover's "Columns"
+    // subsection hides the Category and Details columns at every width -- no
+    // header, no track, no card line, no sort entry, no refine section --
+    // with Title taking the freed width, no sideways scroll, and the choice
+    // surviving a reload.
+    test("should hide the Category and Details columns from the Display popover at both evidence viewports, persisted across a reload", async ({
+        page,
+    }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        ["movie", "Column Toggle Example Movie", "Movies", 12, 1],
+                        ["tv", "Column Toggle Example Show", "TV", 3, 2],
+                        ["audio", "Column Toggle Example Album", "Audio", 0, 3],
+                    ].map(([id, title, category, grabs, days]) => ({
+                        searchResultId: `columns-${id}`,
+                        title,
+                        indexer: "Alpha",
+                        category,
+                        grabs,
+                        size: 700 * 1024 * 1024,
+                        epoch: now - Number(days) * 86_400,
+                        age: `${days}d`,
+                        downloadType: "NZB",
+                    })),
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Alpha",
+                            wasSuccessful: true,
+                            didSearch: true,
+                            responseTime: 400,
+                            numberOfFoundResults: 3,
+                            numberOfAvailableResults: 3,
+                            totalResultsKnown: true,
+                            hasMoreResults: false,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 3,
+                    numberOfAcceptedResults: 3,
+                    offset: 0,
+                    limit: 100,
+                },
+            }),
+        );
+        const table = page.getByTestId("search-results-table");
+        const search = async () => {
+            await page.getByTestId("search-query").fill("column toggle");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(table).toBeVisible();
+        };
+        const headerWidths = () =>
+            table.locator("thead th").evaluateAll((cells) =>
+                Object.fromEntries(
+                    cells.map((cell) => [
+                        cell.getAttribute("data-label") ?? "",
+                        Math.round(cell.getBoundingClientRect().width),
+                    ]),
+                ),
+            );
+        const noHorizontalScroll = () =>
+            page.evaluate(
+                () =>
+                    document.documentElement.scrollWidth <=
+                    document.documentElement.clientWidth,
+            );
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("/");
+                // A reload below re-seeds the hidden payload through an init
+                // script, which also runs for this viewport's navigation;
+                // every viewport starts from the defaults.
+                await page.evaluate(() =>
+                    window.localStorage.removeItem("hydra.search-results.table"),
+                );
+                await search();
+            });
+            const mobile = viewport === "mobile";
+            const before = mobile ? {} : await headerWidths();
+            await expect(
+                table.locator('td[data-label="Category"]'),
+            ).toHaveCount(3);
+            await expect(
+                table.locator('td[data-label="Details"]'),
+            ).toHaveCount(3);
+            // The same results with every column shown, for comparing the
+            // tracks against `columns-hidden-*` below.
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `columns-default-${viewport}`,
+                ),
+            });
+
+            // The subsection: headed "Columns", after the other entries and
+            // before "Show refine sidebar", both shown by default.
+            await openDisplayOptions(page);
+            const popover = page.getByTestId("display-options");
+            await expect(popover.getByText("Columns", {exact: true})).toBeVisible();
+            const labels = await popover
+                .getByRole("checkbox")
+                .evaluateAll((entries) =>
+                    entries.map(
+                        (entry) => entry.closest("label")?.textContent ?? "",
+                    ),
+                );
+            expect(labels.slice(-3)).toEqual([
+                "Category",
+                "Details",
+                "Show refine sidebar",
+            ]);
+            await captureVisualRegion(
+                displayOptionsPaper(page),
+                "F-SEARCH-RESULTS",
+                `columns-menu-${viewport}`,
+            );
+            await page
+                .getByRole("checkbox", {name: "Category", exact: true})
+                .click();
+            await page
+                .getByRole("checkbox", {name: "Details", exact: true})
+                .click();
+            await closeDisplayOptions(page);
+
+            // Gone at this width: cells (the stacked card's lines on a
+            // phone), headers and tracks.
+            for (const label of ["Category", "Details"]) {
+                await expect(
+                    table.locator(`td[data-label="${label}"]`),
+                ).toHaveCount(0);
+                await expect(
+                    table.locator(`th[data-label="${label}"]`),
+                ).toHaveCount(0);
+            }
+            await expect(
+                table.locator('col[data-column="category"]'),
+            ).toHaveCount(0);
+            await expect(table.locator('col[data-column="grabs"]')).toHaveCount(
+                0,
+            );
+            await expect(table.locator("colgroup > col")).toHaveCount(6);
+            expect(await noHorizontalScroll()).toBe(true);
+
+            if (mobile) {
+                // The phone sort menu offers only the visible columns.
+                await page.getByTestId("results-sort-toggle").click();
+                await expect(
+                    page
+                        .getByTestId("results-sort-menu")
+                        .getByRole("menuitemradio"),
+                ).toHaveText([
+                    "Title",
+                    "Indexer",
+                    "Size",
+                    "Age",
+                    "Ascending",
+                    "Descending",
+                ]);
+                await page.keyboard.press("Escape");
+                await expect(page.getByTestId("results-sort-menu")).toHaveCount(
+                    0,
+                );
+                // The drawer carries neither hidden column's section.
+                await page.getByTestId("refine-sidebar-toggle").click();
+                const drawer = page.getByTestId("refine-sidebar");
+                await expect(
+                    drawer.getByTestId("refine-indexer-toggle"),
+                ).toBeVisible();
+                await expect(
+                    drawer.getByTestId("refine-category-toggle"),
+                ).toHaveCount(0);
+                await expect(
+                    drawer.getByTestId("number-filter-min-refine-grabs"),
+                ).toHaveCount(0);
+                await page.getByTestId("refine-sidebar-close").click();
+                await expect(
+                    page.getByTestId("refine-sidebar-drawer"),
+                ).toBeHidden();
+            } else {
+                // Every remaining column keeps its own width; Title takes the
+                // 98px + 90px the two hidden tracks held.
+                const after = await headerWidths();
+                for (const label of ["Select", "Indexer", "Size", "Age", "Actions"]) {
+                    expect(after[label], label).toBe(before[label]);
+                }
+                expect(after.Title - before.Title).toBeGreaterThanOrEqual(
+                    before.Category + before.Details - 1,
+                );
+                expect(after.Title - before.Title).toBeLessThanOrEqual(
+                    before.Category + before.Details + 1,
+                );
+                const sidebar = page.getByTestId("refine-sidebar");
+                await expect(
+                    sidebar.getByTestId("refine-indexer-toggle"),
+                ).toBeVisible();
+                await expect(
+                    sidebar.getByTestId("refine-category-toggle"),
+                ).toHaveCount(0);
+                await expect(
+                    sidebar.getByTestId("number-filter-min-refine-grabs"),
+                ).toHaveCount(0);
+            }
+            await expectVisualGeometry(page, {
+                region: `columns-hidden-${viewport}`,
+                locator: table,
+            });
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `columns-hidden-${viewport}`,
+                ),
+            });
+
+            // Persisted: the suite's `page` fixture clears storage on every
+            // new document, so the payload just written is re-seeded, as in
+            // the indexer-summary persistence test above.
+            const payload = await page.evaluate(() =>
+                window.localStorage.getItem("hydra.search-results.table"),
+            );
+            expect(payload).toContain('"showCategoryColumn":false');
+            expect(payload).toContain('"showDetailsColumn":false');
+            await page.addInitScript((stored) => {
+                window.localStorage.setItem(
+                    "hydra.search-results.table",
+                    stored,
+                );
+            }, payload as string);
+            await page.reload();
+            await search();
+            await expect(
+                table.locator('td[data-label="Category"]'),
+            ).toHaveCount(0);
+            await expect(table.locator('td[data-label="Details"]')).toHaveCount(
+                0,
+            );
+            await expect(table.locator("colgroup > col")).toHaveCount(6);
+            expect(await noHorizontalScroll()).toBe(true);
+            expect(await displayOptionChecked(page, "Category")).toBe(false);
+            expect(await displayOptionChecked(page, "Details")).toBe(false);
         }
     });
 });

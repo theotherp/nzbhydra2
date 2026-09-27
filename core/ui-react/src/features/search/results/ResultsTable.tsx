@@ -10,7 +10,10 @@ import {
     useTheme,
 } from "@mui/material";
 import type {SxProps, Theme} from "@mui/material";
-import type {Table as ReactTableInstance} from "@tanstack/react-table";
+import type {
+    Table as ReactTableInstance,
+    VisibilityState,
+} from "@tanstack/react-table";
 import {flexRender} from "@tanstack/react-table";
 import type {VirtualItem} from "@tanstack/react-virtual";
 import type {RefObject} from "react";
@@ -27,8 +30,8 @@ import type {ExpandSlots} from "./ResultRow";
 import {ResultRow} from "./ResultRow";
 import {STICKY_BACKGROUND} from "./ResultsToolbar";
 import {SelectionMenu} from "./SelectionMenu";
-import type {SelectionStatus} from "./resultTable";
-import {actionsTrackWidth, isRecentResult} from "./resultTable";
+import type {ColumnTrack, SelectionStatus} from "./resultTable";
+import {isRecentResult, tableColumnTracks} from "./resultTable";
 
 // Header cells carry MUI's default 16px vertical `TableCell` padding, which
 // -- together with the tallest control each cell held -- set the pre-FM-045
@@ -102,76 +105,45 @@ const COMPACT_CHIP_FONT_SIZE = "10.5px";
 // consider an open `Menu`/`Popover`.
 const HEADER_STICKY_Z_INDEX = 10;
 
-// The table's fixed `<colgroup>` track widths, single source for both the
-// rendered `<colgroup>` below and TABLE_COLUMN_COUNT, so the spacer rows'
-// colSpan can never drift from the actual track count under `tableLayout:
-// fixed`. In rendered order:
-// Checkbox/Title/Indexer/Category/Size/Details/Age/Actions -- which is the
-// order `resultColumns` in `ResultRow.tsx` declares, not the one this
-// comment claimed before FM-175.
+// The table's fixed `<colgroup>` tracks come from `tableColumnTracks`
+// (`resultTable.ts`), the single source for both the rendered `<col>` list
+// below and the spacer rows' colSpan, so the two can never drift apart under
+// `tableLayout: fixed`. In rendered order: Checkbox, then the visible data
+// columns as `resultColumns` in `ResultRow.tsx` declares them
+// (Title/Indexer/Category/Size/Details/Age), then Actions.
 //
-// FM-175 (owner request, 2026-09-02) replaces the percentages with fixed
-// pixel tracks and leaves Title alone with no width at all. Under
+// FM-175 (owner request, 2026-09-02) replaced the percentages with fixed
+// pixel tracks and left Title alone with no width at all. Under
 // `tableLayout: fixed` a percentage Title is starved twice over -- it is
 // sized *before* the surplus is known, and any width the other columns do
 // not need is redistributed to every track pro rata rather than to the one
 // column that can use it. A track with no declared width is the only one
 // that absorbs the whole remainder, which is exactly the "Title takes what
-// the others leave" behaviour ADR-0011 asks for. The px values are the
-// measured worst case of each column's own header label (uppercase 11px
-// plus the sort glyph, plus the header cell's 8px paddings) rounded up:
-// Indexer 88 -> 90, Category 96 -> 98, Size 64 -> 65, Details 87 -> 90,
-// Age 51 -> 52; Actions 140 and Details 90 are the owner's own numbers.
-// See the `<colgroup>` note below for the resulting Title measurement.
+// the others leave" behaviour ADR-0011 asks for. See the `<colgroup>` note
+// below for the resulting Title measurement.
 //
-// `undefined` means "declare no width for this track"; the entry still
-// exists so TABLE_COLUMN_COUNT and the rendered `<col>` list stay in step.
+// FM-186 makes the Actions track a function of how many send buttons the
+// row's Actions cell has to hold -- `actionsTrackWidth`, the single source
+// both sets derive from. FM-187 adds one more slot to that count for the
+// send-to-black-hole button, when some loaded result renders it
+// (`actionsSlotCount` below).
 //
-// FM-186 makes the last track a function of how many send buttons the row's
-// Actions cell has to hold -- `actionsTrackWidth`, the single source both this
-// set and the percentage set below derive from. FM-187 adds one more slot to
-// that count for the send-to-black-hole button, when some loaded result
-// renders it (`actionsSlotCount` below).
-function tableColumnWidths(
-    slotCount: number,
-): Array<number | string | undefined> {
-    return [40, undefined, 90, 98, 65, 90, 52, actionsTrackWidth(slotCount)];
-}
-
-// The same tracks below the basis width, as percentages of the table.
+// Below the basis width the same tracks are percentages of the table. Pixel
+// tracks have no give: their sum (575px including the checkbox, with every
+// column shown) is a floor the table cannot go under, and a fixed-layout
+// table simply overflows its box rather than scaling them -- measured, and
+// exactly the horizontal scroll ADR-0011 forbids. Every percentage is its
+// pixel track over the 936px basis table (`TABLE_BASIS_WIDTH`), so at the
+// basis the two sets are the same table to the pixel and below it every
+// track (Title included) shrinks in proportion instead of Title alone being
+// crushed to nothing. Headers clip with an ellipsis at the narrow end, as
+// they did before FM-175; the "every header fits" criterion is a criterion
+// at the 1280x800 basis, not below it.
 //
-// Pixel tracks have no give: their sum (575px including the checkbox) is a
-// floor the table cannot go under, and a fixed-layout table simply overflows
-// its box rather than scaling them -- measured, and exactly the horizontal
-// scroll ADR-0011 forbids. Every percentage here is its pixel track over the
-// 936px basis table, so at the basis the two sets are the same table to the
-// pixel and below it every track (Title included) shrinks in proportion
-// instead of Title alone being crushed to nothing. Headers clip with an
-// ellipsis at the narrow end, as they did before FM-175; the "every header
-// fits" criterion is a criterion at the 1280x800 basis, not below it.
-function narrowTableColumnWidths(
-    slotCount: number,
-): Array<number | string | undefined> {
-    return [
-        40,
-        undefined,
-        "9.62%",
-        "10.47%",
-        "6.94%",
-        "9.62%",
-        "5.56%",
-        // Computed rather than written out, so it cannot drift from the pixel
-        // track above: 140px is 14.96%, and each 28px slot adds ~2.99% (one
-        // slot 17.95%, two 20.94%, three 23.93%).
-        `${((actionsTrackWidth(slotCount) / TABLE_BASIS_WIDTH) * 100).toFixed(2)}%`,
-    ];
-}
-
-// The basis table's width in px, i.e. what a 1280x800 viewport leaves beside
-// the docked refine sidebar. Every percentage above is its own pixel track
-// over this width, which is what makes the two sets the same table at the
-// basis.
-const TABLE_BASIS_WIDTH = 936;
+// FM-200: the Category and Details columns can be hidden. The tracks are
+// derived from the visible columns and each `<col>` carries its column id,
+// which the rules below select on -- not an `nth-of-type` position, which a
+// removed middle track would shift onto every later column.
 
 // The viewport width the pixel tracks above are measured at, and the width
 // at or above which they are used. It is deliberately the same 1280 as the
@@ -190,29 +162,28 @@ const TABLE_PIXEL_TRACK_BREAKPOINT = 1280;
  * Inline styles cannot be overridden by a media query, and FM-175 needs
  * exactly that: one set of tracks at and above the basis width, another
  * below it. Tracks with no declared width are skipped so they stay `auto`
- * in both sets -- that is what makes Title absorb the remainder.
+ * in both sets -- that is what makes Title absorb the remainder. FM-200:
+ * each rule addresses its `<col>` by `data-column`, so it follows its own
+ * column whatever else is hidden.
  */
 function columnTrackRules(
-    widths: Array<number | string | undefined>,
+    tracks: ColumnTrack[],
+    set: "narrowWidth" | "pixelWidth",
 ): Record<string, {width: number | string}> {
     return Object.fromEntries(
-        widths.flatMap((width, index) =>
-            width === undefined
+        tracks.flatMap((track) => {
+            const width = track[set];
+            return width === undefined
                 ? []
-                : [[`& colgroup > col:nth-of-type(${index + 1})`, {width}]],
-        ),
+                : [[`& colgroup > col[data-column="${track.id}"]`, {width}]];
+        }),
     );
 }
-
-// The table's fixed `<colgroup>` track count, which the spacer rows have to
-// span so the fixed layout is not disturbed by a row with a different cell
-// count.
-const TABLE_COLUMN_COUNT = tableColumnWidths(0).length;
 
 /**
  * The results table's own style block, hoisted out of the `Table`'s JSX so
  * it is built from a `useMemo` on its actual inputs (theme, row density and
- * the two column-track sets) rather than as a fresh ~40-rule object on every
+ * the column tracks) rather than as a fresh ~40-rule object on every
  * render. The window virtualizer re-renders `SearchResults` on every scroll
  * offset change, and an `sx` callback in the JSX rebuilt and re-serialized
  * all of this per scroll frame. The rules themselves -- and their order,
@@ -222,15 +193,16 @@ const TABLE_COLUMN_COUNT = tableColumnWidths(0).length;
 function resultsTableSx(
     theme: Theme,
     compactRows: boolean,
-    narrowColumnWidths: Array<number | string | undefined>,
-    pixelColumnWidths: Array<number | string | undefined>,
+    tracks: ColumnTrack[],
 ): SxProps<Theme> {
     return {
         tableLayout: "fixed",
         width: "100%",
-        ...columnTrackRules(narrowColumnWidths),
-        [theme.breakpoints.up(TABLE_PIXEL_TRACK_BREAKPOINT)]:
-            columnTrackRules(pixelColumnWidths),
+        ...columnTrackRules(tracks, "narrowWidth"),
+        [theme.breakpoints.up(TABLE_PIXEL_TRACK_BREAKPOINT)]: columnTrackRules(
+            tracks,
+            "pixelWidth",
+        ),
         // FM-162: the two virtualization spacer rows carry nothing but height
         // -- no padding, no card separator at <768px. Declared here rather than
         // on the rows themselves because the body-cell padding rule below is a
@@ -577,6 +549,7 @@ const COLUMN_SORT_BUTTON_SX = sortButtonSx(false);
  */
 export function ResultsTable({
     actionsSlotCount,
+    columnVisibility,
     compactRows,
     coverWidth,
     currentSelectionStatus,
@@ -608,6 +581,10 @@ export function ResultsTable({
     virtualRows,
 }: {
     actionsSlotCount: number;
+    // FM-200: the hidden Category/Details columns, as TanStack visibility.
+    // `table` already applies it to the header row; each body row reads it
+    // from here.
+    columnVisibility: VisibilityState;
     compactRows: boolean;
     coverWidth: number;
     currentSelectionStatus: SelectionStatus;
@@ -642,15 +619,21 @@ export function ResultsTable({
     ) => void;
     virtualRows: VirtualItem[];
 }) {
-    // The two `<colgroup>` track sets, both derived from that count so they
-    // still describe the same table at the 936px basis.
-    const pixelColumnWidths = useMemo(
-        () => tableColumnWidths(actionsSlotCount),
-        [actionsSlotCount],
-    );
-    const narrowColumnWidths = useMemo(
-        () => narrowTableColumnWidths(actionsSlotCount),
-        [actionsSlotCount],
+    // FM-200: the visible data columns, as TanStack's column visibility
+    // (`columnVisibility` in `SearchResults`) resolves them -- the same
+    // source the header row below renders from. Joined into a key so the
+    // tracks' memo holds across the scroll-driven re-renders, which rebuild
+    // the column array but not its contents.
+    const visibleColumnKey = table
+        .getVisibleLeafColumns()
+        .map((column) => column.id)
+        .join(" ");
+    // The `<colgroup>` tracks, both width sets derived from the visible
+    // columns and the Actions slot count so they still describe the same
+    // table at the 936px basis.
+    const tracks = useMemo(
+        () => tableColumnTracks(visibleColumnKey.split(" "), actionsSlotCount),
+        [actionsSlotCount, visibleColumnKey],
     );
     // The results table's and its sticky header cells' style blocks, built
     // once per change of their actual inputs rather than per render: the
@@ -660,14 +643,8 @@ export function ResultsTable({
     // The emitted CSS is unchanged -- see the builders at module level.
     const theme = useTheme();
     const tableSx = useMemo(
-        () =>
-            resultsTableSx(
-                theme,
-                compactRows,
-                narrowColumnWidths,
-                pixelColumnWidths,
-            ),
-        [compactRows, narrowColumnWidths, pixelColumnWidths, theme],
+        () => resultsTableSx(theme, compactRows, tracks),
+        [compactRows, theme, tracks],
     );
     const headerCellSx = useMemo(
         () => ({
@@ -712,7 +689,7 @@ export function ResultsTable({
                 {/* FM-042 (ADR-0011) established that this
                         table never scrolls horizontally and
                         carries no `min-width` floor, so these
-                        eight tracks are the whole width
+                        tracks are the whole width
                         budget: what one column gives up,
                         another gets.
 
@@ -803,6 +780,16 @@ export function ResultsTable({
                           install must stay at 140px; and from
                           the *unfiltered* results, so refining
                           never shifts the columns.
+                        - FM-200 (owner request, 2026-09-27)
+                          lets the Category (98px) and Details
+                          (90px) tracks be hidden. The hidden
+                          track is simply not rendered and
+                          Title takes its width: 459px with
+                          Category off, 451px with Details
+                          off, 549px with both off (no
+                          downloader). Every other track keeps
+                          its own width, because each `<col>`
+                          is addressed by its `data-column`.
 
                         These `<col>` elements carry no width
                         of their own: both sets of tracks are
@@ -816,13 +803,13 @@ export function ResultsTable({
                         add up to more table than there is:
                         a fixed layout does not scale them
                         down, it overflows, so
-                        `narrowTableColumnWidths` holds
+                        each track's `narrowWidth` holds
                         the same shape as percentages there
                         and ADR-0011's "no horizontal scroll"
                         stays true at every width. */}
                 <colgroup>
-                    {pixelColumnWidths.map((_, index) => (
-                        <col key={index} />
+                    {tracks.map((track) => (
+                        <col data-column={track.id} key={track.id} />
                     ))}
                 </colgroup>
                 <TableHead>
@@ -933,7 +920,7 @@ export function ResultsTable({
                             data-virtual-spacer="top"
                         >
                             <TableCell
-                                colSpan={TABLE_COLUMN_COUNT}
+                                colSpan={tracks.length}
                                 style={{
                                     height: `${spacerHeightTop}px`,
                                 }}
@@ -944,6 +931,7 @@ export function ResultsTable({
                         const row = rowDescriptors[virtualRow.index];
                         return (
                             <ResultRow
+                                columnVisibility={columnVisibility}
                                 coverWidth={showCovers ? coverWidth : undefined}
                                 dereferer={dereferer}
                                 // FM-198: legacy's single signal restored
@@ -998,7 +986,7 @@ export function ResultsTable({
                             data-virtual-spacer="bottom"
                         >
                             <TableCell
-                                colSpan={TABLE_COLUMN_COUNT}
+                                colSpan={tracks.length}
                                 style={{
                                     height: `${spacerHeightBottom}px`,
                                 }}

@@ -45,6 +45,12 @@ export type StoredChoices = {
     // display options in this browser-local payload rather than becoming a
     // server-side per-user preference.
     showDuplicateControls?: boolean;
+    // FM-200 (ADR-0054): the Display popover's "Columns" subsection -- whether
+    // the results table renders its Category and Details columns. Owner
+    // (2026-09-27): both shown by default, which is the table every earlier
+    // payload was written under. Legacy had no such switch.
+    showCategoryColumn?: boolean;
+    showDetailsColumn?: boolean;
     // FM-177 (ADR-0054): "Show covers", the opt-in that gates the cover image
     // in a result's title cell. Legacy kept the same preference in browser
     // storage under its own `showCovers` key

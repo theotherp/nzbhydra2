@@ -51,6 +51,8 @@ function Harness({
     onFiltersCommit,
     onToggleCollapsed = vi.fn(),
     quickFilters = [],
+    showCategorySection,
+    showGrabsSection,
     // FM-055: in the app this is `SearchResults.tsx`'s measured
     // `results-toolbar` height. A fixed stand-in here is enough: jsdom lays
     // nothing out, so only the CSS declarations derived from the value are
@@ -66,6 +68,9 @@ function Harness({
     onFiltersCommit?: (filters: ResultFilters) => void;
     onToggleCollapsed?: () => void;
     quickFilters?: QuickFilter[];
+    // FM-200: omitted, the sidebar's own default (shown) applies.
+    showCategorySection?: boolean;
+    showGrabsSection?: boolean;
     toolbarHeight?: number;
 }) {
     const [filters, setFilters] = useState<ResultFilters>(() =>
@@ -129,6 +134,8 @@ function Harness({
                 quickFilters={quickFilters}
                 results={loadedResults}
                 setFilters={setFilters}
+                showCategorySection={showCategorySection}
+                showGrabsSection={showGrabsSection}
                 toolbarHeight={toolbarHeight}
                 updateRange={(name, bound, value) =>
                     setFilters((current) => ({
@@ -607,5 +614,47 @@ describe("RefineSidebar", () => {
                 screen.queryByTestId("refine-sidebar"),
             ).not.toBeInTheDocument(),
         );
+    });
+
+    // FM-200 (owner, 2026-09-27): a hidden Category or Details column takes
+    // its refine section with it, docked and in the drawer alike.
+    it("renders both column sections by default and omits each one hidden", () => {
+        const {unmount} = render(<Harness />);
+        expect(screen.getByTestId("refine-category-toggle")).toBeVisible();
+        expect(
+            screen.getByTestId("number-filter-min-refine-grabs"),
+        ).toBeVisible();
+        unmount();
+
+        render(
+            <Harness showCategorySection={false} showGrabsSection={false} />,
+        );
+        expect(screen.queryByTestId("refine-category-toggle")).toBeNull();
+        expect(screen.queryByTestId("refine-category-list")).toBeNull();
+        expect(
+            screen.queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(screen.getByTestId("refine-indexer-toggle")).toBeVisible();
+        expect(
+            screen.getByTestId("number-filter-min-refine-size"),
+        ).toBeVisible();
+    });
+
+    it("omits hidden column sections from the drawer below sm", () => {
+        stubNarrowViewport();
+        render(
+            <Harness showCategorySection={false} showGrabsSection={false} />,
+        );
+        fireEvent.click(screen.getByTestId("harness-refine-trigger"));
+        const drawer = screen.getByTestId("refine-sidebar");
+        expect(
+            within(drawer).queryByTestId("refine-category-toggle"),
+        ).toBeNull();
+        expect(
+            within(drawer).queryByTestId("number-filter-min-refine-grabs"),
+        ).toBeNull();
+        expect(
+            within(drawer).getByTestId("refine-indexer-toggle"),
+        ).toBeVisible();
     });
 });
