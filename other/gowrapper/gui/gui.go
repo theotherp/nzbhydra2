@@ -38,25 +38,27 @@ func onReady() {
 
 	menuItemOpenWebUI := systray.AddMenuItem("Open web UI", "")
 	go func() {
-		<-menuItemOpenWebUI.ClickedCh
-		if base.Uri == "" {
-			base.Logf(logrus.ErrorLevel, "NZBHydra2 URI could not be determined")
-			dialog.Alert("NZBHydra2 URI could not be determined")
-			return
+		for range menuItemOpenWebUI.ClickedCh {
+			if base.Uri == "" {
+				base.Logf(logrus.ErrorLevel, "NZBHydra2 URI could not be determined")
+				dialog.Alert("NZBHydra2 URI could not be determined")
+				continue
+			}
+			base.OpenBrowser(base.Uri)
 		}
-		base.OpenBrowser(base.Uri)
 	}()
 
 	menuItemRestart := systray.AddMenuItem("Restart", "")
 	go func() {
-		<-menuItemRestart.ClickedCh
-		if base.Uri == "" {
-			base.Logf(logrus.ErrorLevel, "NZBHydra2 URI could not be determined")
-			dialog.Alert("NZBHydra2 URI could not be determined")
-			return
+		for range menuItemRestart.ClickedCh {
+			if base.Uri == "" {
+				base.Logf(logrus.ErrorLevel, "NZBHydra2 URI could not be determined")
+				dialog.Alert("NZBHydra2 URI could not be determined")
+				continue
+			}
+			base.Logf(logrus.InfoLevel, "Sending restart command to main process")
+			_, _ = base.ExecuteGetRequest(base.Uri + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
 		}
-		base.Logf(logrus.InfoLevel, "Sending restart command to main process")
-		_, _ = base.ExecuteGetRequest(base.Uri + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
 	}()
 
 	menuItemShutdown := systray.AddMenuItem("Shutdown", "")
@@ -65,7 +67,7 @@ func onReady() {
 		if base.Uri != "" {
 			base.Logf(logrus.InfoLevel, "Sending shutdown command to main process")
 			resp, _ := base.ExecuteGetRequest(base.Uri + "internalapi/control/shutdown?internalApiKey=" + base.GetInternalApiKey())
-			if resp.StatusCode != 200 {
+			if resp == nil || resp.StatusCode != 200 {
 				base.Logf(logrus.WarnLevel, "Shutdown command could not be sent to main process - shutting down wrapper")
 				//Try shutting down wrapper, child process is hopefully killed gracefully
 				exit(0)

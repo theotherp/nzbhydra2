@@ -30,3 +30,5 @@
     text: "The browser tab now names the page you are on, e.g. &quot;NZBHydra 2 - Config - Searching&quot;, &quot;NZBHydra 2 - History - Downloads&quot; or &quot;NZBHydra 2 - Search - your query&quot;, instead of always &quot;NZBHydra 2&quot;."
 -   type: "feature"
     text: "New setting &quot;Show indexer groups in separate section&quot; in Config &gt; Main &gt; UI. When indexer groups are configured, the search page shows a button for each group to the right of the indexer selection, so you can select a group with one click instead of going through the selection menu. The button of the currently selected group is highlighted."
+-   type: "fix"
+    text: "Windows: &quot;Open web UI&quot; and &quot;Restart&quot; in the tray icon menu work more than once. See #953"
