@@ -1,4 +1,10 @@
-import {type ConfigFieldPath, type HelpContent, type SettingProps, settingRowTestId, settingTestId,} from "../components/settings";
+import {
+    type ConfigFieldPath,
+    type HelpContent,
+    type SettingProps,
+    settingRowTestId,
+    settingTestId,
+} from "../components/settings";
 import {CONFIG_TABS, type ConfigTab, configTabHref} from "../configTabs";
 import {
     CSRF_HELP,
@@ -10,7 +16,10 @@ import {
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
 } from "../main/mainSettings";
-import {APPRISE_API_URL, APPRISE_CLI_URL,} from "../notifications/notificationsSettings";
+import {
+    APPRISE_API_URL,
+    APPRISE_CLI_URL,
+} from "../notifications/notificationsSettings";
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
