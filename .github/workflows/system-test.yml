@@ -132,16 +132,7 @@ jobs:
 
       -   name: "Pull images"
           working-directory: docker/docker-compose-systemtest/linux
-          run: |
-              for attempt in 1 2 3; do
-                if docker compose pull --quiet; then
-                  exit 0
-                fi
-                if [ "$attempt" -lt 3 ]; then
-                  sleep "$((attempt * 10))"
-                fi
-              done
-              exit 1
+          run: "$GITHUB_WORKSPACE/.github/scripts/pull-compose-images.sh"
 
       - name: "Run docker compose"
         run: |
@@ -451,16 +442,7 @@ jobs:
               password: ${{ secrets.GITHUB_TOKEN }}
 
       -   name: "Pull images"
-          run: |
-              for attempt in 1 2 3; do
-                if docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml pull --quiet mockserver sonarr radarr core; then
-                  exit 0
-                fi
-                if [ "$attempt" -lt 3 ]; then
-                  sleep "$((attempt * 10))"
-                fi
-              done
-              exit 1
+          run: .github/scripts/pull-compose-images.sh -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml -- mockserver sonarr radarr core
 
       - name: "Run JVM core and supporting containers"
         run: |
@@ -648,16 +630,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
           -   name: "Pull images"
-              run: |
-                  for attempt in 1 2 3; do
-                      if docker compose $COMPOSE_FILES pull --quiet mockserver core; then
-                          exit 0
-                      fi
-                      if [ "$attempt" -lt 3 ]; then
-                          sleep "$((attempt * 10))"
-                      fi
-                  done
-                  exit 1
+              run: .github/scripts/pull-compose-images.sh $COMPOSE_FILES -- mockserver core
 
           -   name: "Run mockserver and JVM core with the fixture"
               run: docker compose $COMPOSE_FILES up -d mockserver core
@@ -822,16 +795,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
           -   name: "Pull images"
-              run: |
-                  for attempt in 1 2 3; do
-                      if docker compose $COMPOSE_FILES pull --quiet mockserver core; then
-                          exit 0
-                      fi
-                      if [ "$attempt" -lt 3 ]; then
-                          sleep "$((attempt * 10))"
-                      fi
-                  done
-                  exit 1
+              run: .github/scripts/pull-compose-images.sh $COMPOSE_FILES -- mockserver core
 
           -   name: "Run mockserver and native core with the fixture"
               run: docker compose $COMPOSE_FILES up -d mockserver core
