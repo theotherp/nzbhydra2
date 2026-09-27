@@ -3255,6 +3255,7 @@ export interface components {
             disableTour?: boolean;
             theme?: string;
             indexerSelectionAsCheckboxes?: boolean;
+            showIndexerGroupsSeparately?: boolean;
             /** Format: int32 */
             databaseCompactTime?: number;
             /** Format: int32 */
@@ -3972,6 +3973,7 @@ export interface components {
             keepHistory?: boolean;
             disableTour?: boolean;
             indexerSelectionAsCheckboxes?: boolean;
+            showIndexerGroupsSeparately?: boolean;
             indexers?: components["schemas"]["SafeIndexerConfig"][];
         };
         SafeDownloaderConfig: {

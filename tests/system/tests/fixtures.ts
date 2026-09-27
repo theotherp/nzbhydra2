@@ -1,14 +1,6 @@
+import {APIRequestContext, APIResponse, expect, Page, Response, test as base,} from "@playwright/test";
 import {mkdir, readdir, rm} from "node:fs/promises";
 import {join} from "node:path";
-
-import {
-    APIRequestContext,
-    APIResponse,
-    expect,
-    Page,
-    Response,
-    test as base,
-} from "@playwright/test";
 import {testEnvironment} from "./environment";
 
 type HydraConfig = Record<string, unknown>;
@@ -505,6 +497,9 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *   form's indexer control is a checkbox group rather than the `Select`
      *   `focus-indication.spec.ts:705` waits for -- a 30 second timeout, not
      *   a wrong value.
+     * - `main.showIndexerGroupsSeparately`: off, also that default.
+     *   `search.spec.ts` turns it on, which moves the "Select group" actions
+     *   out of the indexer selection menu.
      * - `auth`: the whole block back to `AuthConfig`'s defaults, not just
      *   `authType`. `authType` and `users` move together because either alone
      *   is refused, and the `restrict*` flags move with them because they
@@ -598,6 +593,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             apiKey: BASELINE_API_KEY,
             showNews: true,
             indexerSelectionAsCheckboxes: false,
+            showIndexerGroupsSeparately: false,
             welcomeShown: true,
         };
         config.auth = {

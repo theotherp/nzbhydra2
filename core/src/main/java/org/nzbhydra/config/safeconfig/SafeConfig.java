@@ -24,6 +24,7 @@ public class SafeConfig {
     private boolean keepHistory;
     private boolean disableTour;
     private boolean indexerSelectionAsCheckboxes;
+    private boolean showIndexerGroupsSeparately;
 
 
     private List<SafeIndexerConfig> indexers;
@@ -42,6 +43,7 @@ public class SafeConfig {
         this.keepHistory = baseConfig.getMain().isKeepHistory();
         this.disableTour = baseConfig.getMain().isDisableTour();
         this.indexerSelectionAsCheckboxes = baseConfig.getMain().isIndexerSelectionAsCheckboxes();
+        this.showIndexerGroupsSeparately = baseConfig.getMain().isShowIndexerGroupsSeparately();
 
     }
 

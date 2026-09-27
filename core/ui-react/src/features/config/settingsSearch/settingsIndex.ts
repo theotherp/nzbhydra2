@@ -1,10 +1,4 @@
-import {
-    type ConfigFieldPath,
-    type HelpContent,
-    type SettingProps,
-    settingRowTestId,
-    settingTestId,
-} from "../components/settings";
+import {type ConfigFieldPath, type HelpContent, type SettingProps, settingRowTestId, settingTestId,} from "../components/settings";
 import {CONFIG_TABS, type ConfigTab, configTabHref} from "../configTabs";
 import {
     CSRF_HELP,
@@ -16,10 +10,7 @@ import {
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
 } from "../main/mainSettings";
-import {
-    APPRISE_API_URL,
-    APPRISE_CLI_URL,
-} from "../notifications/notificationsSettings";
+import {APPRISE_API_URL, APPRISE_CLI_URL,} from "../notifications/notificationsSettings";
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
@@ -286,6 +277,12 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
             help: "Show indexer selection on the search page as a checkbox list with a separate action menu instead of a multiselect dropdown.",
             label: "Indexer checkbox list",
             path: "main.indexerSelectionAsCheckboxes",
+        },
+        {
+            advanced: true,
+            help: "Show indexer groups as buttons next to the indexer selection instead of in its action menu. Only has an effect when indexer groups are configured.",
+            label: "Show indexer groups in separate section",
+            path: "main.showIndexerGroupsSeparately",
         },
     ]);
     fieldset("Security", {}, [

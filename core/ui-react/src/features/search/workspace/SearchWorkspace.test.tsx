@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import {beforeEach, describe, expect, it, vi} from "vitest";
 
@@ -613,6 +614,96 @@ describe("SearchWorkspace", () => {
             "aria-selected",
             "true",
         );
+    });
+
+    describe("with indexer groups shown separately", () => {
+        const groupCatalog = createCategoryCatalog({
+            categoriesConfig: {
+                defaultCategory: "All",
+                categories: [{name: "All"}],
+            },
+            indexers: [
+                {name: "First", preselect: true, groupNames: ["Primary"]},
+                {name: "Second", groupNames: ["Primary", "Secondary"]},
+                {name: "Third"},
+            ],
+        });
+
+        function renderGroups(
+            catalogProp: CategoryCatalog,
+            indexerSelectionAsCheckboxes: boolean,
+        ) {
+            render(
+                <SearchWorkspace
+                    catalog={catalogProp}
+                    initialValues={valuesFromSearch({}, catalogProp)}
+                    onSubmit={vi.fn()}
+                    showIndexerSelection
+                    indexerSelectionAsCheckboxes={indexerSelectionAsCheckboxes}
+                    showIndexerGroupsSeparately
+                />,
+            );
+            fireEvent.click(screen.getByTestId("search-advanced-toggle"));
+        }
+
+        it.each([true, false])(
+            "should select a group with its button instead of the menu (checkboxes: %s)",
+            (asCheckboxes) => {
+                renderGroups(groupCatalog, asCheckboxes);
+                const groups = within(
+                    screen.getByRole("group", {name: "Indexer groups"}),
+                );
+                const primary = groups.getByRole("button", {
+                    name: "Select group Primary",
+                });
+                const secondary = groups.getByRole("button", {
+                    name: "Select group Secondary",
+                });
+                expect(primary).toHaveAttribute("aria-pressed", "false");
+
+                fireEvent.click(primary);
+                expect(primary).toHaveAttribute("aria-pressed", "true");
+                expect(secondary).toHaveAttribute("aria-pressed", "false");
+                if (asCheckboxes) {
+                    expect(
+                        screen.getByRole("checkbox", {name: "First"}),
+                    ).toBeChecked();
+                    expect(
+                        screen.getByRole("checkbox", {name: "Second"}),
+                    ).toBeChecked();
+                    expect(
+                        screen.getByRole("checkbox", {name: "Third"}),
+                    ).not.toBeChecked();
+                }
+
+                fireEvent.click(secondary);
+                expect(secondary).toHaveAttribute("aria-pressed", "true");
+                expect(primary).toHaveAttribute("aria-pressed", "false");
+
+                fireEvent.click(
+                    screen.getByRole("button", {
+                        name: "More selection options",
+                    }),
+                );
+                expect(
+                    screen.getByRole("menuitem", {name: "Select all"}),
+                ).toBeVisible();
+                expect(screen.queryByText("Indexer groups")).toBeNull();
+                expect(
+                    screen.queryByRole("menuitem", {
+                        name: "Select group Primary",
+                    }),
+                ).toBeNull();
+            },
+        );
+
+        it("should keep the menu unchanged when no indexer has a group", () => {
+            renderGroups(selectionCatalog, true);
+            expect(
+                screen.queryByRole("group", {name: "Indexer groups"}),
+            ).toBeNull();
+            expect(screen.queryByTestId("workspace-indexer-groups")).toBeNull();
+        });
     });
 
     it("should select autocomplete results with the keyboard and clear stale identifiers on edit", async () => {

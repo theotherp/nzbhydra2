@@ -26,6 +26,8 @@ import type {MediaSuggestion} from "../../../api/media";
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {readItem, writeItem} from "../../../domain/storage/browserStorage";
 import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
+import {IndexerGroupButtons} from "./IndexerGroupButtons";
+import {indexerGroupNames} from "./indexerGroups";
 import {IndexerSelectionButton} from "./IndexerSelectionButton";
 import type {SearchFormValues} from "./searchFormModel";
 import {identifierFields, mediaTypeForCategoryName} from "./searchFormModel";
@@ -138,6 +140,7 @@ export function SearchWorkspace({
     busy = false,
     showIndexerSelection = false,
     indexerSelectionAsCheckboxes = false,
+    showIndexerGroupsSeparately = false,
     onSearchDrop,
     historyTool,
 }: {
@@ -151,6 +154,7 @@ export function SearchWorkspace({
     busy?: boolean;
     showIndexerSelection?: boolean;
     indexerSelectionAsCheckboxes?: boolean;
+    showIndexerGroupsSeparately?: boolean;
     onSearchDrop?(): void;
     historyTool?: ReactNode;
 }) {
@@ -365,6 +369,9 @@ export function SearchWorkspace({
         [catalog, selectedCategory],
     );
     const selectedIndexers = watch("indexers");
+    const separateGroups = showIndexerGroupsSeparately
+        ? indexerGroupNames(eligibleIndexers)
+        : [];
     const noIndexers = selectedIndexers.length === 0;
     const selectIndexers = (names: string[]) => setValue("indexers", names);
     const resetIndexers = (category = selectedCategory) =>
@@ -1004,6 +1011,22 @@ export function SearchWorkspace({
                                         // field's own value is what has to
                                         // give (`SelectedIndexersValue`).
                                         minWidth: 0,
+                                        ...(separateGroups.length > 0 && {
+                                            display: "grid",
+                                            columnGap: 2,
+                                            gridTemplateColumns: {
+                                                xs: "minmax(0, 1fr)",
+                                                md: "minmax(0, 2fr) minmax(0, 1fr)",
+                                            },
+                                            // The last row takes whatever
+                                            // height a long group list adds,
+                                            // so the heading and the selection
+                                            // stay together.
+                                            gridTemplateRows: {
+                                                md: "auto auto 1fr",
+                                            },
+                                            alignItems: "start",
+                                        }),
                                     }}
                                 >
                                     <Typography
@@ -1124,8 +1147,35 @@ export function SearchWorkspace({
                                             onReset={() => resetIndexers()}
                                             onSelect={selectIndexers}
                                             selectedIndexers={selectedIndexers}
+                                            showGroups={
+                                                separateGroups.length === 0
+                                            }
                                         />
                                     </Box>
+                                    {separateGroups.length > 0 && (
+                                        // Placed explicitly into the right
+                                        // third beside all three rows; the
+                                        // other children fill the left column
+                                        // in order. Below `md` it follows them.
+                                        <Box
+                                            sx={{
+                                                gridColumn: {md: 2},
+                                                gridRow: {md: "1 / span 3"},
+                                                mt: {xs: 1.5, md: 0},
+                                            }}
+                                        >
+                                            <IndexerGroupButtons
+                                                eligibleIndexers={
+                                                    eligibleIndexers
+                                                }
+                                                groups={separateGroups}
+                                                onSelect={selectIndexers}
+                                                selectedIndexers={
+                                                    selectedIndexers
+                                                }
+                                            />
+                                        </Box>
+                                    )}
                                 </Box>
                             )}
                     </Box>

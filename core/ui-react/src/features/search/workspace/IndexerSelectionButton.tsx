@@ -1,3 +1,11 @@
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import DnsIcon from "@mui/icons-material/Dns";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import RemoveDoneIcon from "@mui/icons-material/RemoveDone";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import ShareIcon from "@mui/icons-material/Share";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import {
     Button,
     ButtonGroup,
@@ -8,17 +16,10 @@ import {
     Menu,
     MenuItem,
 } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import DnsIcon from "@mui/icons-material/Dns";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import RemoveDoneIcon from "@mui/icons-material/RemoveDone";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import ShareIcon from "@mui/icons-material/Share";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import {useState} from "react";
 
 import type {SearchIndexer} from "../../../domain/categories/catalog";
+import {indexerGroupMembers, indexerGroupNames} from "./indexerGroups";
 
 // A split button mirroring the legacy UI's actual search-page indexer
 // selection control: a default "Invert selection" action plus a dropdown
@@ -33,16 +34,20 @@ import type {SearchIndexer} from "../../../domain/categories/catalog";
 // action per indexer group under an "Indexer groups" subheader, exactly as
 // legacy's `group: 'Indexer groups'` actions render. Icons substitute a
 // semantically equivalent MUI icon per legacy glyphicon (ADR-0002).
+// `showGroups={false}` drops the group subsection when the groups are shown
+// as buttons beside the selection instead (`IndexerGroupButtons`).
 export function IndexerSelectionButton({
     eligibleIndexers,
     selectedIndexers,
     onSelect,
     onReset,
+    showGroups = true,
 }: {
     eligibleIndexers: SearchIndexer[];
     selectedIndexers: string[];
     onSelect(names: string[]): void;
     onReset(): void;
+    showGroups?: boolean;
 }) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
@@ -57,9 +62,7 @@ export function IndexerSelectionButton({
     const torznabIndexers = eligibleIndexers
         .filter((indexer) => indexer.searchModuleType === "TORZNAB")
         .map((indexer) => indexer.name);
-    const groups = [
-        ...new Set(eligibleIndexers.flatMap((indexer) => indexer.groupNames)),
-    ].sort();
+    const groups = showGroups ? indexerGroupNames(eligibleIndexers) : [];
     return (
         <>
             <ButtonGroup
@@ -157,11 +160,10 @@ export function IndexerSelectionButton({
                             key={group}
                             onClick={() =>
                                 choose(
-                                    eligibleIndexers
-                                        .filter((indexer) =>
-                                            indexer.groupNames.includes(group),
-                                        )
-                                        .map((indexer) => indexer.name),
+                                    indexerGroupMembers(
+                                        eligibleIndexers,
+                                        group,
+                                    ),
                                 )
                             }
                         >

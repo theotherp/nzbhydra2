@@ -50,11 +50,11 @@ import {
     shortcutSearch,
 } from "../../api/search";
 import {ApiTransport} from "../../api/transport";
+import {useDocumentTitle} from "../../app/documentTitle";
 import {
     DEFAULT_QUERY_STALE_TIME_MS,
     retryUnlessUnauthorized,
 } from "../../app/queryDefaults";
-import {useDocumentTitle} from "../../app/documentTitle";
 import {reportSessionError} from "../../app/sessionExpiry";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
@@ -629,8 +629,13 @@ export function SearchPage({
                 busy={state.loading}
                 autocomplete={autocomplete}
                 showIndexerSelection={bootstrap.showIndexerSelection === true}
-                indexerSelectionAsCheckboxes={isCheckboxIndexerSelection(
+                indexerSelectionAsCheckboxes={safeConfigFlag(
                     safeConfig,
+                    "indexerSelectionAsCheckboxes",
+                )}
+                showIndexerGroupsSeparately={safeConfigFlag(
+                    safeConfig,
+                    "showIndexerGroupsSeparately",
                 )}
                 onSearchDrop={() => {
                     if (draggedRecentSearch) {
@@ -892,12 +897,14 @@ function isEmbyConfigured(safeConfig: unknown): boolean {
     return typeof embyBaseUrl === "string" && embyApiKeySet === true;
 }
 
-function isCheckboxIndexerSelection(safeConfig: unknown): boolean {
+function safeConfigFlag(
+    safeConfig: unknown,
+    key: "indexerSelectionAsCheckboxes" | "showIndexerGroupsSeparately",
+): boolean {
     return Boolean(
         safeConfig &&
         typeof safeConfig === "object" &&
-        (safeConfig as {indexerSelectionAsCheckboxes?: unknown})
-            .indexerSelectionAsCheckboxes === true,
+        (safeConfig as Record<string, unknown>)[key] === true,
     );
 }
 

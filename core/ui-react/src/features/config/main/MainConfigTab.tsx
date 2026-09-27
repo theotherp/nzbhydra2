@@ -147,6 +147,10 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                     {...indexedSetting("main.indexerSelectionAsCheckboxes")}
                     advanced
                 />
+                <SwitchSetting
+                    {...indexedSetting("main.showIndexerGroupsSeparately")}
+                    advanced
+                />
             </ConfigFieldset>
 
             <ConfigFieldset label="Security">

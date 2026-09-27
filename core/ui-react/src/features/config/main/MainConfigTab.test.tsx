@@ -13,7 +13,8 @@ import {MainConfigTab} from "./MainConfigTab";
 
 /**
  * The 52 fields of `config-fields-service.js:50-735`, in legacy's order and
- * grouping, as the paths they bind to. `advanced` mirrors the effective legacy
+ * grouping, as the paths they bind to, plus `main.showIndexerGroupsSeparately`,
+ * which has no legacy counterpart. `advanced` mirrors the effective legacy
  * flag: a field is advanced when its own `templateOptions.advanced` is set or
  * when its fieldset's is (`fieldset-wrapper.html` hides the whole group).
  */
@@ -33,9 +34,10 @@ const MAIN_FIELDS: readonly {advanced: boolean; path: string}[] = [
     {advanced: true, path: "main.proxyPassword"},
     {advanced: true, path: "main.proxyIgnoreLocal"},
     {advanced: true, path: "main.proxyIgnoreDomains"},
-    // UI (1). FM-155 removed the Theme dropdown (ADR-0049): the theme is a
+    // UI (2). FM-155 removed the Theme dropdown (ADR-0049): the theme is a
     // per-user preference chosen in the nav bar, not a config field.
     {advanced: true, path: "main.indexerSelectionAsCheckboxes"},
+    {advanced: true, path: "main.showIndexerGroupsSeparately"},
     // Security (7)
     {advanced: false, path: "main.apiKey"},
     {advanced: true, path: "main.dereferer"},
@@ -101,6 +103,7 @@ const fullyVisibleConfig: ConfigValues = {
         disableTour: false,
         host: "0.0.0.0",
         indexerSelectionAsCheckboxes: false,
+        showIndexerGroupsSeparately: false,
         keepHistory: true,
         keepHistoryForWeeks: null,
         keepStatsForWeeks: null,
@@ -200,13 +203,13 @@ function visibleSettingPaths(): string[] {
 afterEach(cleanup);
 
 describe("F-CONFIG-MAIN field inventory", () => {
-    it("should render all 52 fields of the legacy Main tab", () => {
+    it("should render all 53 fields of the Main tab", () => {
         renderMain();
 
         expect(visibleSettingPaths()).toEqual(
             MAIN_FIELDS.map((field) => field.path),
         );
-        expect(MAIN_FIELDS).toHaveLength(52);
+        expect(MAIN_FIELDS).toHaveLength(53);
     });
 
     it("should group them into legacy's ten fieldsets", () => {

@@ -101,6 +101,7 @@ public class MainConfig {
     private boolean disableTour = false;
     protected String theme;
     private boolean indexerSelectionAsCheckboxes = false;
+    private boolean showIndexerGroupsSeparately = false;
 
 
     //Database settings

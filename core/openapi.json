@@ -9189,6 +9189,9 @@
                     "indexerSelectionAsCheckboxes": {
                         "type": "boolean"
                     },
+                    "showIndexerGroupsSeparately": {
+                        "type": "boolean"
+                    },
                     "databaseCompactTime": {
                         "type": "integer",
                         "format": "int32"
@@ -10920,6 +10923,9 @@
                         "type": "boolean"
                     },
                     "indexerSelectionAsCheckboxes": {
+                        "type": "boolean"
+                    },
+                    "showIndexerGroupsSeparately": {
                         "type": "boolean"
                     },
                     "indexers": {

@@ -11143,6 +11143,9 @@
           "name": "scheduledRestartTime"
         },
         {
+            "name": "showIndexerGroupsSeparately"
+        },
+          {
           "name": "showNews"
         },
         {
@@ -11360,6 +11363,10 @@
         {
           "name": "isProxyImages",
           "parameterTypes": []
+        },
+          {
+              "name": "isShowIndexerGroupsSeparately",
+              "parameterTypes": []
         },
         {
           "name": "isShowNews",
@@ -11602,6 +11609,12 @@
           ]
         },
         {
+            "name": "setShowIndexerGroupsSeparately",
+            "parameterTypes": [
+                "boolean"
+            ]
+        },
+          {
           "name": "setShowNews",
           "parameterTypes": [
             "boolean"

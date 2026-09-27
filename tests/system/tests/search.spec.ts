@@ -1043,6 +1043,29 @@ test.describe("Search", () => {
         expect((await checkboxRequest).request().postDataJSON()).toMatchObject({
             indexers: ["Mock2"],
         });
+
+        main.showIndexerGroupsSeparately = true;
+        await hydra.saveConfig(config);
+        await page.reload();
+        await openAdvanced(page);
+        // prettier-ignore
+        await page.getByRole("button", {name: "More selection options"}).click();
+        await expect(
+            page.getByRole("menuitem", {name: "Select group Primary"}),
+        ).toHaveCount(0);
+        await page.keyboard.press("Escape");
+        const groupButton = page
+            .getByRole("group", {name: "Indexer groups"})
+            .getByRole("button", {name: "Select group Primary"});
+        await groupButton.click();
+        await expect(groupButton).toHaveAttribute("aria-pressed", "true");
+        const groupButtonRequest = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        expect(
+            (await groupButtonRequest).request().postDataJSON(),
+        ).toMatchObject({indexers: ["Mock1"]});
     });
 
     test("should refill and repeat complete recent React search criteria", async ({
