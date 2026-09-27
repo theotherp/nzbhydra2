@@ -601,6 +601,15 @@ features:
         `MAINTENANCE.md`'s two per-key scoping ledger entries
         (`24329c640`, `27efd28f5`), which generalize into this one
         whole-filter-set reset"
+      - "deliberate - owner request 2026-09-27 (`f079cab0f`, `4cab49869`):
+        legacy's twelve built-in source/quality/other quick filters are no
+        longer hardcoded; config migration 26->27 moves them into
+        `searching.customQuickFilterButtons`, where they can be edited or
+        deleted. Entries take an optional `Group:` prefix; selected filters
+        of one group are ORed and groups are ANDed, which keeps the
+        built-ins' behaviour. The refine sidebar sorts quick filters by group
+        name, ungrouped ones last, and every preselection key is
+        `custom|<everything left of the =>`"
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
     routes:

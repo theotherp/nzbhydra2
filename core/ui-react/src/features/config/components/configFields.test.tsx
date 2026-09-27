@@ -318,6 +318,147 @@ describe("C-CONFIG-FIELDS control kinds", () => {
         ).toBeNull();
     });
 
+    it("should edit a clicked chip in place and keep its position", () => {
+        const harness = renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+            {values: {main: {sniDisabledFor: ["a.example", "b.example"]}}},
+        );
+
+        fireEvent.click(
+            screen.getByTestId(
+                "config-input-main-sniDisabledFor-chip-a.example",
+            ),
+        );
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+        expect(input).toHaveValue("a.example");
+
+        fireEvent.change(input, {target: {value: "c.example"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["c.example", "b.example"],
+        });
+        expect(input).toHaveValue("");
+    });
+
+    it("should start editing a focused chip with Enter", () => {
+        const harness = renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+            {values: {main: {sniDisabledFor: ["a.example", "b.example"]}}},
+        );
+
+        const chip = screen.getByTestId(
+            "config-input-main-sniDisabledFor-chip-b.example",
+        );
+        fireEvent.keyDown(chip, {key: "Enter"});
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+        expect(input).toHaveValue("b.example");
+
+        fireEvent.change(input, {target: {value: "d.example"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a.example", "d.example"],
+        });
+    });
+
+    it("should leave the chip unchanged when an edit is cancelled with Escape or blur", () => {
+        const harness = renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+            {values: {main: {sniDisabledFor: ["a.example", "b.example"]}}},
+        );
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+
+        fireEvent.click(
+            screen.getByTestId(
+                "config-input-main-sniDisabledFor-chip-a.example",
+            ),
+        );
+        fireEvent.change(input, {target: {value: "changed"}});
+        fireEvent.keyDown(input, {key: "Escape"});
+        expect(input).toHaveValue("");
+
+        fireEvent.click(
+            screen.getByTestId(
+                "config-input-main-sniDisabledFor-chip-b.example",
+            ),
+        );
+        fireEvent.change(input, {target: {value: "changed"}});
+        fireEvent.blur(input);
+        expect(input).toHaveValue("");
+
+        // Enter after a cancelled edit adds a new chip as usual.
+        fireEvent.change(input, {target: {value: "new.example"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a.example", "b.example", "new.example"],
+        });
+    });
+
+    it("should remove a chip whose edit is emptied and refuse an edit to a duplicate", () => {
+        const harness = renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+            {values: {main: {sniDisabledFor: ["a", "b", "c"]}}},
+        );
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+
+        fireEvent.click(
+            screen.getByTestId("config-input-main-sniDisabledFor-chip-b"),
+        );
+        fireEvent.change(input, {target: {value: "c"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a", "b", "c"],
+        });
+        expect(
+            screen.getByTestId("config-error-main-sniDisabledFor"),
+        ).toHaveTextContent('"c" is already in the list');
+        // The edit stays open so the entry can be corrected.
+        expect(input).toHaveValue("c");
+
+        fireEvent.change(input, {target: {value: "  "}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a", "c"],
+        });
+    });
+
+    it("should refuse an edit its validator rejects and keep the stored chip", () => {
+        const harness = renderSetting(
+            <ChipsSetting
+                label="Disable SNI"
+                name="main.sniDisabledFor"
+                validateChip={(value) =>
+                    /^\d+$/.test(String(value))
+                        ? true
+                        : `"${String(value)}" is not a number`
+                }
+            />,
+            {values: {main: {sniDisabledFor: ["1", "2"]}}},
+        );
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+
+        fireEvent.click(
+            screen.getByTestId("config-input-main-sniDisabledFor-chip-1"),
+        );
+        fireEvent.change(input, {target: {value: "nope"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["1", "2"],
+        });
+        expect(
+            screen.getByTestId("config-error-main-sniDisabledFor"),
+        ).toHaveTextContent('"nope" is not a number');
+
+        fireEvent.change(input, {target: {value: "3"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["3", "2"],
+        });
+        expect(
+            screen.queryByTestId("config-error-main-sniDisabledFor"),
+        ).toBeNull();
+    });
+
     it("should generate a 24-character alphanumeric API key and dirty the form", () => {
         const harness = renderSetting(
             <ApiKeySetting label="API key" name="main.apiKey" />,

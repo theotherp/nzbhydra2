@@ -4116,3 +4116,17 @@ their text and relative order are unchanged.
 - **Visual gate:** `visual-evidence/F-SEARCH-RESULTS/columns-default-desktop.png` (sorted Age header).
 - **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (148 files, 2238 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `tests/results.spec.ts` 43/43; `git diff --check` clean.
 - **Commit:** `37d450b59`
+
+### 2026-09-27 — Configurable quick filters and in-place chip editing (owner-directed, outside the packet pipeline)
+
+- **Why not a packet:** it is not a quickfix. All three are new or changed user-observable behaviour, which the gate sends to packets. The owner asked for them directly, and chose implementing them directly over an FM packet
+  for the chip editing. They are recorded here so the history stays complete, and the registries were updated with them.
+- **What changed:** `f079cab0f` moves the built-in quick filters into `searching.customQuickFilterButtons` (config migration 26->27, optional `Group:` prefix, OR within a group), `4cab49869` sorts the refine sidebar's quick
+  filters by group, and `afe86f5c6` makes `C-CONFIG-FIELDS`' chips editable in place.
+- **Paths:** `core/ui-react/src/features/{search/results/{resultTable.ts,RefineSidebar.tsx},config/components/ChipsSetting.tsx,config/searching/*,config/settingsSearch/settingsIndex.ts}` and their tests; backend
+  `SearchingConfig`, `MainConfig`, `baseConfig.yml`, `SearchingConfigValidator`, `ConfigMigrationStep026to027`; `tests/system/tests/{fixtures.ts,results.spec.ts}`; `FEATURES.yaml` (F-SEARCH-SORT-FILTER), `COMPONENTS.yaml`
+  (C-CONFIG-FIELDS).
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (148 files, 2278 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass;
+  Java `org.nzbhydra.config` tests 107 passed, 3 skipped; Playwright `results.spec.ts` 44/44, `config-control-treatment`, `config-searching`, `focus-indication` 23/23; `git diff --check` clean.
+- **Not done:** no screenshot strip for the chip edit state (an outlined chip while editing).
+- **Commit:** `f079cab0f`, `4cab49869`, `afe86f5c6`
