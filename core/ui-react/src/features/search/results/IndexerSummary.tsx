@@ -273,17 +273,17 @@ export function IndexerSummary({
     const slowest = slowestRow?.responseTime ?? 0;
     const linkNames = maySeeIndexerStatuses();
 
-    // Below 768px the line keeps only the counts, and the title folds into
-    // the first of them ("3 indexers" rather than "Indexers · 3 searched"):
-    // measured at 390px, the long form cut "1 not searched" off.
+    // Below 768px the line keeps only the counts, and the title is dropped
+    // ("3 searched" rather than "Indexers · 3 searched"): measured at 390px,
+    // the long form cut "1 not searched" off. "searched" rather than
+    // "indexers", which read as the total when some were not searched.
     const headerParts: {key: string; node: ReactNode}[] = compact
         ? [
               {
                   key: "searched",
                   node: (
-                      <Box component="span" sx={{fontWeight: 600}}>
-                          {searchedCount}{" "}
-                          {searchedCount === 1 ? "indexer" : "indexers"}
+                      <Box component="span" sx={{fontWeight: "fontWeightBold"}}>
+                          {searchedCount} searched
                       </Box>
                   ),
               },
@@ -292,7 +292,7 @@ export function IndexerSummary({
               {
                   key: "title",
                   node: (
-                      <Box component="span" sx={{fontWeight: 600}}>
+                      <Box component="span" sx={{fontWeight: "fontWeightBold"}}>
                           Indexers
                       </Box>
                   ),
@@ -462,7 +462,7 @@ function SummaryCard({
                 <Typography
                     component="span"
                     sx={{
-                        fontWeight: 600,
+                        fontWeight: "fontWeightBold",
                         minWidth: 0,
                         overflowWrap: "anywhere",
                     }}

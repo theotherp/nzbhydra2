@@ -121,7 +121,7 @@ describe("IndexerSummary", () => {
         stubNarrowViewport();
         render(<Harness data={mixedResponse} />);
         expect(screen.getByTestId("indexer-summary-toggle")).toHaveTextContent(
-            /^3 indexers · 1 failed · 1 not searched$/,
+            /^3 searched · 1 failed · 1 not searched$/,
         );
     });
 

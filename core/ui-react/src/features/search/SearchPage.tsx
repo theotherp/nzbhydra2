@@ -11,10 +11,25 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {MutationCache, QueryCache, QueryClient, QueryClientProvider,} from "@tanstack/react-query";
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
-import {useCallback, useContext, useEffect, useMemo, useRef, useState,} from "react";
-import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import {
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+import type {
+    SearchLiveTransport,
+    SearchProgress,
+} from "../../api/live/searchState";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {SockJsStompLiveTransport} from "../../api/live/transport";
@@ -22,10 +37,23 @@ import {getAutocomplete, getEmbyAvailability} from "../../api/media";
 import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
-import type {AbortSearchReason, SearchRequest, SearchResponse} from "../../api/search";
-import {abortSearch, continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
+import type {
+    AbortSearchReason,
+    SearchRequest,
+    SearchResponse,
+} from "../../api/search";
+import {
+    abortSearch,
+    continuationRequest,
+    executeSearch,
+    mergeSearchResponses,
+    shortcutSearch,
+} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
-import {DEFAULT_QUERY_STALE_TIME_MS, retryUnlessUnauthorized,} from "../../app/queryDefaults";
+import {
+    DEFAULT_QUERY_STALE_TIME_MS,
+    retryUnlessUnauthorized,
+} from "../../app/queryDefaults";
 import {reportSessionError} from "../../app/sessionExpiry";
 import type {BootstrapData} from "../../bootstrap";
 import {useSafeConfig} from "../../bootstrap";
@@ -35,7 +63,12 @@ import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/searchFormModel";
-import {canonicalSearch, hasIdentifier, nonIdentifierQueryText, valuesFromSearch,} from "./workspace/searchFormModel";
+import {
+    canonicalSearch,
+    hasIdentifier,
+    nonIdentifierQueryText,
+    valuesFromSearch,
+} from "./workspace/searchFormModel";
 import {SearchWorkspace} from "./workspace/SearchWorkspace";
 
 export function SearchPage({

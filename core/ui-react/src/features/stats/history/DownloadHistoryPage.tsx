@@ -11,6 +11,7 @@ import {
     TableHead,
     TableRow,
     Tooltip,
+    type Theme,
     Typography,
 } from "@mui/material";
 import {useCallback, type ReactNode} from "react";
@@ -186,7 +187,14 @@ export function DownloadHistoryPage({
                             <TableRow
                                 data-testid="download-history-row"
                                 key={entry.id}
-                                sx={rowRevealsCopyButtonsOnHover}
+                                sx={[
+                                    rowRevealsCopyButtonsOnHover,
+                                    (theme) =>
+                                        compactCardRowSx(
+                                            theme,
+                                            entry.accessSource !== "API",
+                                        ),
+                                ]}
                             >
                                 <TableCell data-label="Time" sx={NOWRAP}>
                                     {formatServerDateTime(
@@ -252,6 +260,75 @@ export function DownloadHistoryPage({
             )}
         </HistoryPageFrame>
     );
+}
+
+/**
+ * Replaces `stackedCardTableSx`'s one-labelled-line-per-column card with a
+ * compact one below the same 768px breakpoint, as `SearchHistoryPage` does
+ * for its own rows: a card listed Time, Indexer, Title, Result, Source and
+ * Age on six labelled lines, about two downloads per phone screen. Now the
+ * title (with its NZB button) heads the card and the result, indexer, time
+ * and age (plus username and IP when shown) follow as one unlabelled line.
+ * Source is dropped from the card unless it is "API" (owner, 2026-09-27).
+ * Every cell stays in the row, so the column labels and the desktop table are
+ * unchanged.
+ *
+ * `&&` doubles the row's class: `stackedCardTableSx` styles `tr`/`td` from
+ * the table (one class plus an element), which a single row class would lose
+ * to. The reduced cell padding is the deviation from the theme's table
+ * density: inside a card the card border, not cell padding, separates rows.
+ */
+function compactCardRowSx(theme: Theme, hideSource: boolean) {
+    // Flex `order` places the cells; the DOM keeps the desktop column order
+    // (Time first), so every item on the meta line needs its own.
+    const meta = (order: number) => ({
+        color: theme.palette.text.secondary,
+        flex: "0 0 auto",
+        order,
+    });
+    const separated = (order: number) => ({
+        ...meta(order),
+        "&::before": {
+            content: '"·"',
+            display: "inline",
+            fontSize: "inherit",
+            fontWeight: "inherit",
+            textTransform: "none",
+        },
+    });
+    return {
+        [theme.breakpoints.down(768)]: {
+            "&&": {
+                alignItems: "center",
+                columnGap: theme.spacing(1),
+                display: "flex",
+                flexWrap: "wrap",
+                paddingBlock: theme.spacing(1),
+            },
+            "&& td": {
+                paddingBlock: theme.spacing(0.25),
+                paddingInline: 0,
+            },
+            "&& td::before": {display: "none"},
+            "&& td[data-label='Title']": {
+                flex: "1 1 100%",
+                order: 0,
+                textAlign: "left",
+            },
+            // The result keeps its own colour: the icon is what says how the
+            // download ended.
+            "&& td[data-label='Result']": {flex: "0 0 auto", order: 1},
+            "&& td[data-label='Indexer']": separated(2),
+            "&& td[data-label='Time']": separated(3),
+            "&& td[data-label='Age']": separated(4),
+            "&& td[data-label='Age']:empty": {display: "none"},
+            "&& td[data-label='Source']": hideSource
+                ? {display: "none"}
+                : separated(5),
+            "&& td[data-label='Username']": separated(6),
+            "&& td[data-label='IP address']": separated(7),
+        },
+    };
 }
 
 function TitleCell({

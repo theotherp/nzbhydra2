@@ -2,10 +2,23 @@ import {Box} from "@mui/material";
 import {useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
-import {ChipsSetting, ConfigFieldset, MultiSelectSetting, NumberSetting, SelectSetting, SwitchSetting, TextSetting,} from "../components";
+import {
+    ChipsSetting,
+    ConfigFieldset,
+    MultiSelectSetting,
+    NumberSetting,
+    SelectSetting,
+    SwitchSetting,
+    TextSetting,
+} from "../components";
 import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {languageOptions} from "./languages";
-import {APPLY_RESTRICTIONS_OPTIONS, percentValidator, preselectQuickFilterOptions, SEARCH_SOURCE_OPTIONS,} from "./searchingSettings";
+import {
+    APPLY_RESTRICTIONS_OPTIONS,
+    percentValidator,
+    preselectQuickFilterOptions,
+    SEARCH_SOURCE_OPTIONS,
+} from "./searchingSettings";
 
 /**
  * `F-CONFIG-SEARCHING`: the Searching configuration tab — every field of

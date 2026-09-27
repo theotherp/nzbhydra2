@@ -13,10 +13,20 @@
  * theme this module produces.
  */
 
-import {createTheme, type CSSObject, type Theme, type TypographyStyle,} from "@mui/material/styles";
+import {
+    createTheme,
+    type CSSObject,
+    type Theme,
+    type TypographyStyle,
+} from "@mui/material/styles";
 
 import {createThemeComponents} from "./themeComponents";
-import {resolveThemeName, type SurfaceTokens, themeColors, type ThemePreference,} from "./themePalettes";
+import {
+    resolveThemeName,
+    type SurfaceTokens,
+    themeColors,
+    type ThemePreference,
+} from "./themePalettes";
 import {uiFontFamily} from "./themeTokens";
 
 export type {ThemeName, ThemePreference} from "./themePalettes";

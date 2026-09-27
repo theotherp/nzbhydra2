@@ -1,9 +1,24 @@
-import {act, cleanup, fireEvent, render, screen, waitFor, within,} from "@testing-library/react";
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
-import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import type {
+    SearchLiveTransport,
+    SearchProgress,
+} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {ApiTransport} from "../../api/transport";
-import {isSessionExpired, resetSessionExpiryForTests, subscribeToSessionExpiry,} from "../../app/sessionExpiry";
+import {
+    isSessionExpired,
+    resetSessionExpiryForTests,
+    subscribeToSessionExpiry,
+} from "../../app/sessionExpiry";
 import {SafeConfigContext} from "../../bootstrap";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {SearchPage} from "./SearchPage";
@@ -521,14 +536,14 @@ describe("SearchPage", () => {
                         JSON.stringify(
                             String(url).includes("forsearching")
                                 ? [
-                                    {
-                                        categoryName: "All",
-                                        source: "INTERNAL",
-                                        query: "pre-9.0.0 query",
-                                        selectedIndexers: [],
-                                        identifiers: [],
-                                    },
-                                ]
+                                      {
+                                          categoryName: "All",
+                                          source: "INTERNAL",
+                                          query: "pre-9.0.0 query",
+                                          selectedIndexers: [],
+                                          identifiers: [],
+                                      },
+                                  ]
                                 : responseEnvelope,
                         ),
                         {headers: {"Content-Type": "application/json"}},
@@ -2176,8 +2191,8 @@ describe("SearchPage", () => {
             Promise.resolve(
                 String(url).includes("forsearching")
                     ? new Response(JSON.stringify([]), {
-                        headers: {"Content-Type": "application/json"},
-                    })
+                          headers: {"Content-Type": "application/json"},
+                      })
                     : searchResponse(),
             ),
         );

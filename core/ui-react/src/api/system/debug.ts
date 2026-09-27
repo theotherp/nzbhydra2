@@ -119,16 +119,10 @@ export async function uploadDebugInfos(
         return {kind: "failed", message: errorText(error)};
     }
     const parsed = uploadedDebugInfosSchema.safeParse(body);
-    if (
-        !parsed.success ||
-        !parsed.data.successful ||
-        !parsed.data.url
-    ) {
+    if (!parsed.success || !parsed.data.successful || !parsed.data.url) {
         return {
             kind: "failed",
-            message: parsed.success
-                ? (parsed.data.errorMessage ?? null)
-                : null,
+            message: parsed.success ? (parsed.data.errorMessage ?? null) : null,
         };
     }
     return {kind: "successful", url: parsed.data.url};

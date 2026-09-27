@@ -4059,3 +4059,49 @@ their text and relative order are unchanged.
   pre-existing offenders, none touched. `tests/stats.spec.ts` 11/11 against a locally built backend. `git diff --check` clean.
 - **Candidate (not fixed):** Saved searches and the history tables share the same one-line-per-column card and would gain from hiding empty cells in `stackedCardTableSx` itself; that changes several features, so it is not a quickfix.
 - **Commit:** `d5cf7a89f`
+
+### 2026-09-27 — Compact the search history cards on mobile
+
+- **Why not a packet:** markup and styling inside F-HISTORY-SEARCHES only; every cell, `data-label`, `data-testid` and desktop rendering unchanged.
+- **What was broken:** below 768px the shared `stackedCardTableSx` card gave each of the six columns a labelled line (~410px per search, two per phone screen), with the query right-aligned in a narrow column.
+- **What changed:** a row-level `compactCardRowSx` (`&&` to outrank the table-level helper): query first and bold, then category · time (· source only when "API", owner 2026-09-27; · username/IP when shown) with Details/Repeat at
+  the line's end, then the parameters as a wrapping inline list; user agent keeps its label on its own line. `HistoryPageFrame` is untouched.
+- **Paths:** `core/ui-react/src/features/stats/history/SearchHistoryPage.tsx`, `changelog-unreleased.yaml`
+- **Visual gate:** `tests/search-history.spec.ts` strips `visual-evidence/F-HISTORY-SEARCHES/{table-stacked-cards-mobile,row-mobile,row-desktop}.png`, before (2026-09-21 run) and after.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (148 files, 2213 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `format:check` 12
+  pre-existing offenders, none touched. `tests/search-history.spec.ts` 8/8 against a locally built backend. `git diff --check` clean.
+- **Candidate (not fixed):** `rowRevealsCopyButtonsOnHover` reveals copy buttons on hover only, so on touch devices they are tappable but invisible on all three history pages.
+- **Commit:** `10c9f1f68`
+
+### 2026-09-27 — Compact the download history cards on mobile
+
+- **Why not a packet:** markup and styling inside F-HISTORY-DOWNLOADS only; every cell, `data-label`, `data-testid` and desktop rendering unchanged.
+- **What was broken:** below 768px each download took six labelled lines (~335px, two per phone screen).
+- **What changed:** the search history's row-level compact card, page-local here too: title with its NZB button first, then result · indexer · time · age (· source only when "API", owner 2026-09-27; · username/IP when shown).
+- **Paths:** `core/ui-react/src/features/stats/history/DownloadHistoryPage.tsx`, `changelog-unreleased.yaml`
+- **Visual gate:** `tests/downloads.spec.ts` strips `visual-evidence/F-HISTORY-DOWNLOADS/{table-stacked-cards-mobile,table-scroll-affordance-desktop}.png`, before (2026-09-21 run) and after.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (148 files, 2213 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `format:check` 12
+  pre-existing offenders, none touched. `tests/downloads.spec.ts` 11/11 against a locally built backend. `git diff --check` clean.
+- **Note:** when the meta line wraps, the wrapped item starts with its "·" separator (seen with the fixture's 20723-day age; real ages are short). Same on the search history card. Cosmetic, left.
+- **Commit:** `3a4998627`
+
+### 2026-09-27 — Address FM-199's cosmetic review findings
+
+- **Why not a packet:** wording, a theme token and a comment move inside F-SEARCH-RESULTS; no selector, registry or behaviour change. Discharges FM-199 review minor findings 1–3 (see `STATUS.md`).
+- **Paths:** `core/ui-react/src/features/search/results/{IndexerSummary.tsx,IndexerSummary.test.tsx,SearchResults.test.tsx}`
+- **Visual gate:** `visual-evidence/F-SEARCH-RESULTS/indexer-summary-*-{desktop,mobile}.png` regenerated; the 390px header reads "3 searched · 1 failed · 1 not searched" on one line.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (148 files, 2213 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `format:check` 12
+  pre-existing offenders, none touched. `tests/results.spec.ts` 42/42 against a locally built backend. `git diff --check` clean.
+- **Not a quickfix, left:** FM-199 finding 4 — with the summary hidden and no results loaded, neither the toolbar hint nor the Display menu renders, so nothing re-shows the summary from that search. Needs a behaviour change (a packet).
+- **Commit:** `464dee8e1`
+
+### 2026-09-27 — Repair the `format:check` baseline (again)
+
+- **Why not a packet:** formatter output only.
+- **What was broken:** `format:check` had 12 offenders (14 on 2026-09-26), carried as pre-existing debt by FM-199 and the three mobile-card quickfixes, including `ResultsAlerts.tsx` from FM-199's follow-up list.
+- **Paths:** `core/ui-react/src/` `api/system/debug.ts`, `app/theme.ts`, `features/auth/session.ts`, `features/config/searching/SearchingConfigTab.tsx`, `features/config/settingsSearch/settingsIndex.ts`,
+  `features/search/{SearchPage.tsx,SearchPage.test.tsx,workspace/SearchWorkspace.tsx,results/ResultRow.tsx,results/ResultsAlerts.tsx}`, `features/system/bugreport/{SystemBugreportTab.tsx,SystemBugreportTab.test.tsx}`
+- **Gates:** `format:check` clean; `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `test -- --run` (148 files, 2213 tests), `build`, `check:api`, `validate:migration`, `validate:focus-affordances` pass; `git diff --check` clean.
+- **Refused as a quickfix (2026-09-27):** showing `CopyValueButton` on touch devices (`@media (hover: none)`) changes `C-COPY-VALUE-BUTTON`'s registered reveal rule ("revealed on row hover and on focus"), so it needs a packet;
+  today the history pages' copy buttons are tappable but invisible on phones.
+- **Commit:** `a9829b76e`

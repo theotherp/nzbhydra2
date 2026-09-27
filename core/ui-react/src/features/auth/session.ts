@@ -1,4 +1,8 @@
-import {ApiTransport, ForbiddenError, UnauthorizedError,} from "../../api/transport";
+import {
+    ApiTransport,
+    ForbiddenError,
+    UnauthorizedError,
+} from "../../api/transport";
 import {type BootstrapData, getBootstrapData} from "../../bootstrap";
 
 export type FormCredentials = {

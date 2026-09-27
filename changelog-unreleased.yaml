@@ -14,3 +14,7 @@
     text: "The indexer statuses page is much more compact on phones: each indexer shows its name and a colored state badge on one line and hides empty fields. The state badge also makes problem indexers easier to spot on desktop."
 -   type: "feature"
     text: "Due to popular demand: The indexer statuses view in the search results is back. It starts collapsed, remembers whether you expanded it, and can be hidden in the Display menu. While it is hidden, failed indexers are still named next to the result count."
+-   type: "fix"
+    text: "The search history is much more compact on phones: each search shows its query first, category and time on one line with the Details and Repeat buttons, and its parameters below. About five searches now fit on a screen instead of two."
+-   type: "fix"
+    text: "The download history is much more compact on phones: each download shows its title with the NZB button first, then its result, indexer, time and age on one line."

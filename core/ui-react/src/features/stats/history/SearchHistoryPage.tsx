@@ -16,6 +16,7 @@ import {
     TableHead,
     TableRow,
     Tooltip,
+    type Theme,
     Typography,
 } from "@mui/material";
 import {useQuery, type UseQueryResult} from "@tanstack/react-query";
@@ -317,7 +318,14 @@ export function SearchHistoryPage({
                             <TableRow
                                 data-testid="search-history-row"
                                 key={entry.id}
-                                sx={rowRevealsCopyButtonsOnHover}
+                                sx={[
+                                    rowRevealsCopyButtonsOnHover,
+                                    (theme) =>
+                                        compactCardRowSx(
+                                            theme,
+                                            entry.source !== "API",
+                                        ),
+                                ]}
                             >
                                 {/*
                                  * FM-174: the whole timestamp on one line.
@@ -487,6 +495,111 @@ export function SearchHistoryPage({
             )}
         </HistoryPageFrame>
     );
+}
+
+/**
+ * Replaces `stackedCardTableSx`'s one-labelled-line-per-column card with a
+ * compact one below the same 768px breakpoint: a card listed Time, Query,
+ * Category, Additional parameters, Source and Details on six labelled lines,
+ * about two searches per phone screen. Now the query heads the card, category
+ * and time (plus username and IP when shown) follow as one unlabelled line
+ * with Details and Repeat at its end, and the additional parameters wrap
+ * inline below. Source is dropped from the card when it is "Internal", the
+ * normal case, so only an API search says where it came from (owner,
+ * 2026-09-27). Every cell stays in the row, so the column labels and the
+ * desktop table are unchanged.
+ *
+ * `&&` doubles the row's class: `stackedCardTableSx` styles `tr`/`td` from
+ * the table (one class plus an element), which a single row class would lose
+ * to. The reduced cell padding is the deviation from the theme's table
+ * density: inside a card the card border, not cell padding, separates rows.
+ */
+function compactCardRowSx(theme: Theme, hideSource: boolean) {
+    // Flex `order` places the cells; the DOM keeps the desktop column order
+    // (Time before Query), so every item on the meta line needs its own.
+    const meta = (order: number) => ({
+        color: theme.palette.text.secondary,
+        flex: "0 0 auto",
+        order,
+    });
+    const separated = (order: number) => ({
+        ...meta(order),
+        "&::before": {
+            content: '"·"',
+            display: "inline",
+            fontSize: "inherit",
+            fontWeight: "inherit",
+            textTransform: "none",
+        },
+    });
+    return {
+        [theme.breakpoints.down(768)]: {
+            "&&": {
+                alignItems: "center",
+                columnGap: theme.spacing(1),
+                display: "flex",
+                flexWrap: "wrap",
+                paddingBlock: theme.spacing(1),
+            },
+            // A zero-height, full-width flex item ordered after the meta line,
+            // so the parameters always start a line of their own.
+            "&&::before": {content: '""', flexBasis: "100%", order: 7},
+            "&& td": {
+                paddingBlock: theme.spacing(0.25),
+                paddingInline: 0,
+            },
+            "&& td::before": {display: "none"},
+            "&& td[data-label='Query']": {
+                flex: "1 1 100%",
+                fontWeight: theme.typography.fontWeightBold,
+                order: 0,
+                overflowWrap: "anywhere",
+                textAlign: "left",
+            },
+            "&& td[data-label='Category']": meta(1),
+            "&& td[data-label='Time']": separated(2),
+            "&& td[data-label='Source']": hideSource
+                ? {display: "none"}
+                : separated(3),
+            "&& td[data-label='Username']": separated(4),
+            "&& td[data-label='IP address']": separated(5),
+            "&& td[data-label='Details']": {
+                flex: "0 0 auto",
+                marginInlineStart: "auto",
+                order: 6,
+            },
+            "&& td[data-label='Additional parameters']": {
+                flex: "1 1 100%",
+                order: 8,
+                textAlign: "left",
+            },
+            "&& td[data-label='Additional parameters']:has(dl:empty)": {
+                display: "none",
+            },
+            "&& td[data-label='Additional parameters'] dl": {
+                columnGap: theme.spacing(1.5),
+                flexDirection: "row",
+                flexWrap: "wrap",
+                rowGap: 0,
+            },
+            // The list stacks with Stack's sibling margins; inline they would
+            // offset every item after the first.
+            "&& td[data-label='Additional parameters'] dl > *": {
+                marginTop: 0,
+            },
+            // The user agent can be long and means nothing unlabelled, so it
+            // keeps the helper's label, stacked above its value.
+            "&& td[data-label='User agent']": {
+                alignItems: "flex-start",
+                flex: "1 1 100%",
+                flexDirection: "column",
+                gap: 0,
+                order: 9,
+                textAlign: "left",
+            },
+            "&& td[data-label='User agent']::before": {display: "block"},
+        },
+    };
 }
 
 /**

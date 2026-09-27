@@ -6,7 +6,17 @@ import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type {SxProps, Theme} from "@mui/material";
-import {Box, Checkbox, Chip, IconButton, Popover, Stack, TableCell, TableRow, Tooltip,} from "@mui/material";
+import {
+    Box,
+    Checkbox,
+    Chip,
+    IconButton,
+    Popover,
+    Stack,
+    TableCell,
+    TableRow,
+    Tooltip,
+} from "@mui/material";
 import type {
     FocusEvent as ReactFocusEvent,
     KeyboardEvent as ReactKeyboardEvent,
@@ -18,10 +28,16 @@ import {memo, useState} from "react";
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
 import {hoverWash} from "../../../app/theme";
-import type {Downloader, downloadSettings,} from "../../../domain/downloads/actions";
+import type {
+    Downloader,
+    downloadSettings,
+} from "../../../domain/downloads/actions";
 import {CoverLightbox} from "./CoverLightbox";
 import {DirectDownloadActions} from "./DownloadActions";
-import {buildQualityTooltipSections, qualityBadgeSeverity,} from "./qualityBadge";
+import {
+    buildQualityTooltipSections,
+    qualityBadgeSeverity,
+} from "./qualityBadge";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {formatResultDetails, formatResultSize} from "./resultTable";
 import {SendToBlackHoleButton} from "./SendToBlackHoleButton";

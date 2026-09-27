@@ -31,7 +31,7 @@ function nothingAcceptedMessage(data: SearchResponse): string {
 export function ResultsAlerts({
     allIndexersFailed,
     data,
-                                  nothingAcceptedButMoreAvailable,
+    nothingAcceptedButMoreAvailable,
     pagingError,
 }: {
     allIndexersFailed: boolean;

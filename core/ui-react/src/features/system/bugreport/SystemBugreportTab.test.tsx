@@ -1,5 +1,12 @@
 import {ThemeProvider} from "@mui/material";
-import {act, cleanup, fireEvent, render, screen, waitFor,} from "@testing-library/react";
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import {ApiTransport} from "../../../api/transport";
@@ -7,7 +14,12 @@ import {createHydraTheme} from "../../../app/theme";
 import type {BootstrapData} from "../../../bootstrap";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
 import {CPU_CHART_HELP} from "./CpuUsageCard";
-import {SENSITIVE_DISABLED_INFO, SENSITIVE_ENABLED_WARNING, SystemBugreportTab, UPLOAD_RESULT_PREFIX,} from "./SystemBugreportTab";
+import {
+    SENSITIVE_DISABLED_INFO,
+    SENSITIVE_ENABLED_WARNING,
+    SystemBugreportTab,
+    UPLOAD_RESULT_PREFIX,
+} from "./SystemBugreportTab";
 import {CPU_POLL_INTERVAL_MS} from "./useThreadCpuUsage";
 
 type Backend = {
@@ -202,10 +214,10 @@ describe("SystemBugreportTab", () => {
         const backend = createBackend((path) =>
             path.endsWith("/createAndUploadDebugInfos")
                 ? jsonResponse({
-                    url: hostile,
-                    successful: true,
-                    errorMessage: null,
-                })
+                      url: hostile,
+                      successful: true,
+                      errorMessage: null,
+                  })
                 : undefined,
         );
         renderTab(backend);

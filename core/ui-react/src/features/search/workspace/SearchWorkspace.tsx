@@ -29,7 +29,10 @@ import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
 import {IndexerSelectionButton} from "./IndexerSelectionButton";
 import type {SearchFormValues} from "./searchFormModel";
 import {identifierFields, mediaTypeForCategoryName} from "./searchFormModel";
-import {seasonEpisodeFieldWidth, SeasonEpisodeInput,} from "./SeasonEpisodeInput";
+import {
+    seasonEpisodeFieldWidth,
+    SeasonEpisodeInput,
+} from "./SeasonEpisodeInput";
 import {SelectedIndexersValue} from "./SelectedIndexersValue";
 
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];

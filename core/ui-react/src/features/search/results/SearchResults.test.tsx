@@ -7459,10 +7459,6 @@ describe("SearchResults per-row send to black hole", () => {
     });
 });
 
-// Movie quality indicator badge (`search-result.html:33-38`, restored).
-// `qualityRating`/`qualityWarnings` are only ever populated together by the
-// backend, so presence of the badge is tested directly against the field
-// rather than any config.
 // FM-199: the per-indexer summary's wiring -- where it renders, the two
 // display choices it adds to the `hydra.search-results.table` payload, and the
 // toolbar hint that stands in for it while it is hidden.
@@ -7633,6 +7629,10 @@ describe("SearchResults indexer summary", () => {
     });
 });
 
+// Movie quality indicator badge (`search-result.html:33-38`, restored).
+// `qualityRating`/`qualityWarnings` are only ever populated together by the
+// backend, so presence of the badge is tested directly against the field
+// rather than any config.
 describe("SearchResults quality badge", () => {
     afterEach(() => {
         cleanup();
