@@ -52,6 +52,12 @@ export default defineConfig({
     test: {
         environment: "jsdom",
         setupFiles: "./vitest.setup.ts",
+        // Vitest's default is 5s per test. The GitHub runner is about five
+        // times slower than a developer machine: in run 36306721397 (2026-09-27)
+        // a SearchResults test taking ~1.2s locally hit 5.3s and failed, and
+        // fourteen others took 2.2-4.5s. 15s leaves room for that runner while
+        // a genuinely hanging test still fails quickly.
+        testTimeout: 15_000,
         exclude: [
             ...configDefaults.exclude,
             "scripts/validate-migration.test.mjs",

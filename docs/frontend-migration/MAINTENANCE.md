@@ -4152,3 +4152,13 @@ their text and relative order are unchanged.
   `settingsSearch/settingsIndex.ts`, which is unformatted since `926eecd98` and was fixed separately. `git diff --check` clean.
 - **Also:** corrected the SHAs cited for the chip editing (`453528af6`) and the indexer summary restriction (`5cd69b02a`) after those commits were squashed.
 - **Commit:** the commit adding this entry.
+
+### 2026-09-27 — Raise the Vitest per-test timeout for the CI runner
+
+- **Why not a packet:** test-runner configuration only; no product code, contract or selector touched.
+- **What was broken:** Frontend CI run 36306721397 (`77a2c9fd5`) failed "should persist compact rows, … without persisting the mobile drawer" with "Test timed out in 5000ms". Locally that test takes ~1.2s, but the runner is about 5x
+  slower (`SearchResults.test.tsx` took 106s there) and it reached 5.3s. Fourteen other tests took 2.2–4.5s in the same run, so any of them was close to failing too.
+- **What changed:** `vite.config.ts` `test.testTimeout` is 15000ms. A throwaway 6s test passes under it (it would have failed at the old default).
+- **Paths:** `core/ui-react/vite.config.ts`
+- **Gates:** `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (149 files, 2287 tests) pass; `validate:migration` valid; `git diff --check` clean. Not re-run on CI yet, since master is unpushed.
+- **Commit:** the commit adding this entry.
