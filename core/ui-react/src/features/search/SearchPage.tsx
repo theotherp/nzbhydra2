@@ -66,6 +66,7 @@ import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/searchFormModel";
 import {
     canonicalSearch,
+    hasExecutableCriteria,
     hasIdentifier,
     nonIdentifierQueryText,
     valuesFromSearch,
@@ -147,18 +148,12 @@ export function SearchPage({
     // The values behind every route this page has submitted, keyed by that
     // route.
     //
-    // `canonicalSearch` omits an empty field and `valuesFromSearch` fills an
-    // absent `minsize`/`maxsize` from the category's size preset, so a URL
-    // cannot tell "the user cleared this range" from "the user never touched
-    // it". Re-resolving a URL that a submit just wrote therefore hands the
-    // preset back: the workspace (keyed on the resolved values) remounts with
-    // the size chip restored, and `AutoSubmitFromRoute` re-runs the search
-    // with the constraint the user had removed, cancelling and replacing the
-    // correct request that was already in flight. Distinguishing the two
-    // cases in the URL would change the URL contract, and doing it in the
-    // form model would change the FM-087-frozen `valuesFromSearch`; instead
-    // the submitted values stay authoritative for exactly the route they
-    // produced, which is the only place the ambiguity actually arises.
+    // Re-resolving a URL a submit just wrote would give back an equal
+    // reading of it (`valuesFromSearch` leaves an executed search's absent
+    // size bounds empty instead of refilling the category preset), but the
+    // submitted values are kept as the authoritative reading of exactly the
+    // route they produced, so the workspace and `AutoSubmitFromRoute` never
+    // see a second, re-derived copy of the search just submitted.
     //
     // Keyed by route rather than kept as "the last submission" so that the
     // renders between a submit and the router catching up -- and any later
@@ -814,33 +809,6 @@ function rememberSubmittedRoute(
         }
         remembered.delete(key);
     }
-}
-
-// A `search` route object represents a real, executable search — not just a
-// prefill hint — in either of two cases: it carries `indexers`
-// (`canonicalSearch` always writes this once indexers are selected, which
-// only happens by actually submitting the form; the "submit" button is
-// disabled otherwise), or it carries the Search History repeat marker
-// (`repeat: "history"`, written only by `SearchHistoryPage`'s "Repeat"
-// action). The marker is still needed alongside the `indexers` check because
-// `recentSearchCriteria` omits `indexers` entirely when the history entry
-// has no recorded `selectedIndexers` — a real, ADR-0005-designed case for
-// pre-existing rows and for searches that never explicitly restricted
-// indexers (evidenced by `SearchEntity.selectedIndexers` being nullable with
-// no `@NotNull`, `Searcher.java` only setting it when the request explicitly
-// restricts indexers, and ADR-0005's accepted contract requiring repeat to
-// remain usable with default indexers for entries that lack it). Without the
-// marker, such a repeat would silently downgrade to a non-executing prefill
-// instead of auto-running as it did before this trigger existed. Route
-// search states that carry neither signal — e.g. a bare category default,
-// or fields a test/page sets to prefill without submitting — are left
-// alone, so a partial prefill URL doesn't fire a premature, incomplete
-// request.
-function hasExecutableCriteria(search: Record<string, unknown>): boolean {
-    return (
-        (typeof search.indexers === "string" && search.indexers !== "") ||
-        search.repeat === "history"
-    );
 }
 
 function numberOrUndefined(value: string): number | undefined {

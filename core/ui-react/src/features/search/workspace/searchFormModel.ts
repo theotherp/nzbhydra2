@@ -39,10 +39,15 @@ export function valuesFromSearch(
         typeof search[name] === "string" && /^\d*$/.test(search[name])
             ? search[name]
             : "";
-    const preset =
-        catalog.enableCategorySizes && category === catalog.defaultCategory.name
-            ? catalog.defaultCategory
-            : catalog.categories.find((entry) => entry.name === category);
+    // A URL that records an executed search reproduces it exactly: an absent
+    // size bound means the search had none, so the category preset only
+    // prefills a form that is not already describing a search.
+    const preset = hasExecutableCriteria(search)
+        ? undefined
+        : catalog.enableCategorySizes &&
+            category === catalog.defaultCategory.name
+          ? catalog.defaultCategory
+          : catalog.categories.find((entry) => entry.name === category);
     return {
         query: typeof search.query === "string" ? search.query : "",
         category,
@@ -69,6 +74,35 @@ export function valuesFromSearch(
         tvrageId: fieldValue(search, "tvrageId"),
         indexers: indexersFromSearch(search, catalog, category),
     };
+}
+
+// A `search` route object represents a real, executable search — not just a
+// prefill hint — in either of two cases: it carries `indexers`
+// (`canonicalSearch` always writes this once indexers are selected, which
+// only happens by actually submitting the form; the "submit" button is
+// disabled otherwise), or it carries the Search History repeat marker
+// (`repeat: "history"`, written only by `SearchHistoryPage`'s "Repeat"
+// action). The marker is still needed alongside the `indexers` check because
+// `recentSearchCriteria` omits `indexers` entirely when the history entry
+// has no recorded `selectedIndexers` — a real, ADR-0005-designed case for
+// pre-existing rows and for searches that never explicitly restricted
+// indexers (evidenced by `SearchEntity.selectedIndexers` being nullable with
+// no `@NotNull`, `Searcher.java` only setting it when the request explicitly
+// restricts indexers, and ADR-0005's accepted contract requiring repeat to
+// remain usable with default indexers for entries that lack it). Without the
+// marker, such a repeat would silently downgrade to a non-executing prefill
+// instead of auto-running as it did before this trigger existed. Route
+// search states that carry neither signal — e.g. a bare category default,
+// or fields a test/page sets to prefill without submitting — are left
+// alone, so a partial prefill URL doesn't fire a premature, incomplete
+// request.
+export function hasExecutableCriteria(
+    search: Record<string, unknown>,
+): boolean {
+    return (
+        (typeof search.indexers === "string" && search.indexers !== "") ||
+        search.repeat === "history"
+    );
 }
 
 function indexersFromSearch(

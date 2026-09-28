@@ -49,3 +49,50 @@ describe("valuesFromSearch", () => {
         ).toEqual([]);
     });
 });
+
+describe("valuesFromSearch size presets", () => {
+    const presetCatalog = createCategoryCatalog({
+        categoriesConfig: {
+            categories: [
+                {name: "All"},
+                {name: "Movies", minSizePreset: 500, maxSizePreset: 20000},
+            ],
+            defaultCategory: "Movies",
+            enableCategorySizes: true,
+        },
+        indexers: [{name: "Preselected", preselect: true}],
+    });
+
+    it("should prefill the preset when the URL is not an executed search", () => {
+        const values = valuesFromSearch({}, presetCatalog);
+        expect([values.minsize, values.maxsize]).toEqual(["500", "20000"]);
+    });
+
+    it("should leave the size empty when the URL is an executed search without one", () => {
+        const values = valuesFromSearch(
+            {
+                category: "Movies",
+                title: "Gladiator II",
+                indexers: "Preselected",
+            },
+            presetCatalog,
+        );
+        expect([values.minsize, values.maxsize]).toEqual(["", ""]);
+    });
+
+    it("should leave the size empty when repeating a history search without one", () => {
+        const values = valuesFromSearch(
+            {category: "Movies", query: "gladiator", repeat: "history"},
+            presetCatalog,
+        );
+        expect([values.minsize, values.maxsize]).toEqual(["", ""]);
+    });
+
+    it("should keep the sizes an executed search carries", () => {
+        const values = valuesFromSearch(
+            {category: "Movies", minsize: "100", indexers: "Preselected"},
+            presetCatalog,
+        );
+        expect([values.minsize, values.maxsize]).toEqual(["100", ""]);
+    });
+});

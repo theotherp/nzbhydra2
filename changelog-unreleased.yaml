@@ -42,3 +42,5 @@
     text: "Selected results are sent to the downloader in the order you selected them again. See #1106"
 -   type: "fix"
     text: "Searches with a minimum age find older results again when there are many newer ones, e.g. 1080p releases between 7 and 10 days old. Most indexers can&apos;t leave out recent results themselves, so NZBHydra used to load them page by page and gave up before reaching the older ones. It now jumps ahead to them with a few extra requests. See #1105"
+-   type: "fix"
+    text: "Reloading the search page or opening a search link runs the same search again. The category&apos;s minimum and maximum size were added to it even though the original search had none. They are still filled in when you open the empty search page or change the category."
