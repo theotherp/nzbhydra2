@@ -4,6 +4,7 @@ import {
     categories,
     configuredDefaultCategory,
     downloadId,
+    downloadZip,
     historyDownloadResult,
     isCompatibleWithDownloader,
     MalformedDownloadResponseError,
@@ -24,6 +25,28 @@ const result = {
     originalCategory: "2000",
 };
 describe("download actions", () => {
+    // #1104: the server compares the raw body with the ZIP's absolute path,
+    // so a JSON-quoted path never matched and every ZIP download failed.
+    it("should send the ZIP path unquoted when downloading the ZIP", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response("zip-content"));
+        const transport = new ApiTransport("/", fetchImplementation);
+        const zipFilepath = "C:\\hydra\\data\\tmp\\results.zip";
+
+        await downloadZip(transport, zipFilepath);
+
+        const [, init] = fetchImplementation.mock.calls[0] as [
+            string,
+            RequestInit,
+        ];
+        expect(init.method).toBe("POST");
+        expect(init.body).toBe(zipFilepath);
+        expect(new Headers(init.headers).get("Content-Type")).toBe(
+            "text/plain;charset=UTF-8",
+        );
+    });
+
     it("should prefer download IDs and preserve source and mapped categories", () =>
         expect(addFilesRequest({name: "SAB"}, [result], null, null)).toEqual({
             downloaderName: "SAB",

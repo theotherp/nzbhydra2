@@ -36,3 +36,5 @@
     text: "Saving the config no longer undoes changes stored in the meantime, like a user&apos;s theme choice or a dismissed notice, when the config page had been open for a while."
 -   type: "feature"
     text: "Display options and similar choices (search results display and sorting, the stats selection, &quot;Advanced settings&quot; in the config, the open search options, the history filter column and the log view toggles) are now saved on the server for each user instead of in the browser. They follow you to other browsers and machines and no longer get lost when the browser clears its data. Without login all browsers share one set. Your current choices are taken over the first time you open a page after the update."
+-   type: "fix"
+    text: "Downloading the selected results as a ZIP file works again. See #1104"

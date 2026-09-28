@@ -287,9 +287,14 @@ export async function downloadZip(
     transport: ApiTransport,
     zipFilepath: string,
 ): Promise<Blob> {
+    // The endpoint binds the raw request body to a `String` and compares it
+    // with the ZIP's absolute path, so the path must go unquoted. Sending it
+    // as JSON wrapped it in quotes (and escaped Windows backslashes), no path
+    // matched and every ZIP download failed. See #1104.
     return transport.requestBlob("internalapi/nzbzipDownload", {
         method: "POST",
-        json: zipFilepath,
+        body: zipFilepath,
+        headers: {"Content-Type": "text/plain;charset=UTF-8"},
     });
 }
 
