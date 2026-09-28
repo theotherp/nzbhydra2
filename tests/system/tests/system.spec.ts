@@ -162,7 +162,7 @@ async function openSystem(page: Page, path = "control"): Promise<void> {
  * `RawLogView` fetches the entire current log file and renders it into one
  * unbounded `<pre>`, so what this waits for is proportional to how much the
  * suite has logged before it. Auto-refresh is not a factor -- it defaults off
- * (`persistence.ts:33`) and the `page` fixture clears `localStorage` -- so it is
+ * (`persistence.ts`) and the `baseline` fixture resets the stored preference -- so it is
  * a single fetch and a single render, just a large one. On the JaCoCo
  * instrumented job, which runs the Java suite and this one against the same
  * instance and logs more while running slower, run 4fe040e16 was still showing

@@ -650,9 +650,8 @@ async function openExternalTools(page: Page): Promise<void> {
 
 /**
  * Legacy gates several of this tab's fields (categories, the seeding options,
- * the additional parameters) behind the advanced toggle, which is a
- * per-browser `localStorage` preference the `page` fixture clears on every
- * document load — so it has to be switched on again after a reload.
+ * the additional parameters) behind the advanced toggle, which is a user
+ * preference (ADR-0057) reset before every test by the `baseline` fixture.
  */
 async function showAdvanced(page: Page): Promise<void> {
     // FM-097: below `md` the settings nav is a temporary `Drawer`, so the

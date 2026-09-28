@@ -6,7 +6,7 @@ const movieQuery = "Hydra Browser Movie";
 /**
  * FM-087 moved the media refinement, the age/size ranges, and the indexer
  * selection into the Advanced `Collapse`, whose open state is remembered in
- * `localStorage`, so a case that needs those controls opens the disclosure
+ * the user's preferences, so a case that needs those controls opens the disclosure
  * only when it is actually closed.
  */
 /**

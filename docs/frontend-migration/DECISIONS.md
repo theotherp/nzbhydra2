@@ -936,6 +936,7 @@ server-side is rejected as inconsistent. **Cover width:** the owner said 100px, 
 (`baseConfig.yml`, default 128; Config → Searching "Cover width", help text "when enabled in display options").
 Decision: React honours `searching.coverSize` (fallback 100 when absent) and the default stays 128; no Java change.
 Binding on FM-176 and FM-177. Owner decided 2026-09-02.
+*Persistence superseded by ADR-0057 (2026-09-28).*
 
 ## ADR-0055 — The two dark themes leave pure black for a layered near-black (accepted 2026-09-03)
 
@@ -973,3 +974,19 @@ pinning v7's. Research report: session scratchpad `mui-7-to-9-leverage.md` (2026
 closed (roving tabindex), where 7 always focused the first item. ADR-0012's contract — ArrowRight reaches the nested
 Refill, ArrowLeft/Escape return — still holds; per this entry's "keep v9's changed defaults" the behaviour is kept and
 the ADR-0012 keyboard trace is re-traced rather than the old focus pinned.
+
+## ADR-0057 — UI preferences move from `localStorage` to per-user server storage (accepted 2026-09-28)
+
+Users reported that display options did not stick or did not follow them to another machine. Everything the UI kept in
+`localStorage` as a preference -- the results display options and sort (`hydra.search-results.table`, ADR-0054), the stats
+dashboard selection, the config page's advanced toggle, the search form's advanced disclosure, the history refine column's
+collapsed state and the system log toggles -- is now one per-user record in the generic storage (`userPreferences-<user>`,
+`userPreferences` without authentication, shared by every browser). The record is a JSON object of per-feature sections
+written independently (`PUT /internalapi/userpreferences/{section}`, `UserPreferencesWeb`; the key is derived from the
+session, never sent, and `GenericStorageWeb` refuses the reserved prefix; 32 KB cap). It reaches the page in the bootstrap,
+so reads stay synchronous and the first paint uses the stored options; writes apply at once and are sent after 1 s, and on
+`pagehide` with `keepalive`. On first read a section the server lacks is taken from the old `localStorage` key and
+uploaded, so nobody loses their options; the old keys are never written again. The theme keeps its own ADR-0049 record,
+and the mobile refine drawer's open state stays unpersisted. Consequence: a config `PUT` now keeps the running generic
+storage instead of the stale copy the form posts back, so the system-test baseline resets it through a systemtest-only
+`PUT /internalapi/systemtest/genericstorage`. Owner decided 2026-09-28.

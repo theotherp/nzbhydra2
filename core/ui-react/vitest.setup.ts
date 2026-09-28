@@ -4,6 +4,10 @@ import {cleanup} from "@testing-library/react";
 import {afterEach, beforeEach, vi} from "vitest";
 
 import {
+    createUserPreferenceStore,
+    setUserPreferenceStore,
+} from "./src/services/preferences/userPreferences";
+import {
     resetBrowserStubs,
     stubWorkingLocalStorage,
 } from "./src/test/browserStubs";
@@ -13,8 +17,14 @@ import {
 // teardown. Installing it here gives every test a fresh, empty store and
 // leaves only the deviations -- a blocked store, a throwing accessor, no store
 // at all -- for a test file to state explicitly (see `src/test/browserStubs.ts`).
+//
+// The user preference store (`C-USER-PREFERENCES`) is a page-wide singleton
+// seeded from the bootstrap. Every test gets an empty one that keeps writes in
+// memory, the way it gets a fresh localStorage, so no test sends a preference
+// write through a `fetch` it stubbed for something else.
 beforeEach(() => {
     stubWorkingLocalStorage();
+    setUserPreferenceStore(createUserPreferenceStore({}, undefined));
 });
 
 // Class-wide guard (FM-122): unmount every rendered tree after each test, in

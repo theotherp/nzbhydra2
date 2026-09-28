@@ -1,17 +1,17 @@
 import type {SortingState, VisibilityState} from "@tanstack/react-table";
 import {useCallback, useEffect, useMemo, useState} from "react";
 
-import {writeItem} from "../../../domain/storage/browserStorage";
 import type {HideableResultColumn} from "./resultTable";
 import type {StoredChoices} from "./storedChoices";
-import {loadChoices, STORAGE_KEY} from "./storedChoices";
+import {loadChoices, saveChoices} from "./storedChoices";
 
 /**
  * FM-192: the results region's display choices — every value that survives a
  * search, plus the single effect that persists them.
  *
- * ADR-0054: all of them travel in one `hydra.search-results.table` payload
- * under one key, so the write stays one effect over one object literal rather
+ * ADR-0054: all of them travel in one payload (ADR-0057: the `searchResults`
+ * section of the user's preferences, formerly the `hydra.search-results.table`
+ * localStorage key), so the write stays one effect over one object literal rather
  * than one write per choice. That is why the sort state and the sidebar's
  * collapsed flag live here beside the display options proper: they are in the
  * payload, and splitting the write to tidy the hook boundary would break the
@@ -168,29 +168,26 @@ export function useResultDisplayChoices() {
     );
 
     useEffect(() => {
-        writeItem(
-            STORAGE_KEY,
-            JSON.stringify({
-                compactRows,
-                expandGroupsByDefault,
-                groupEpisodes,
-                groupTitles,
-                groupTorrentAndUsenet,
-                hideDownloaded,
-                highlightRecent,
-                indexerSummaryOpen,
-                refineCategoryOpen: categoryOpen,
-                refineIndexerOpen: indexerOpen,
-                showCategoryColumn,
-                showCovers,
-                showDetailsColumn,
-                showDuplicateControls,
-                showIndexerSummary,
-                showZipButton,
-                sidebarCollapsed,
-                sorting,
-            } satisfies StoredChoices),
-        );
+        saveChoices({
+            compactRows,
+            expandGroupsByDefault,
+            groupEpisodes,
+            groupTitles,
+            groupTorrentAndUsenet,
+            hideDownloaded,
+            highlightRecent,
+            indexerSummaryOpen,
+            refineCategoryOpen: categoryOpen,
+            refineIndexerOpen: indexerOpen,
+            showCategoryColumn,
+            showCovers,
+            showDetailsColumn,
+            showDuplicateControls,
+            showIndexerSummary,
+            showZipButton,
+            sidebarCollapsed,
+            sorting,
+        } satisfies StoredChoices);
     }, [
         categoryOpen,
         compactRows,

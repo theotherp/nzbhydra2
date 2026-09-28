@@ -13,6 +13,8 @@ type ConfigValidationResult = {
 
 /** FM-139's reset (`SystemTestStateResetWeb.RESET_ENDPOINT`, ADR-0048). */
 const RESET_ENDPOINT = "/internalapi/systemtest/reset";
+/** `SystemTestStateResetWeb.GENERIC_STORAGE_ENDPOINT`, behind the same gate. */
+const GENERIC_STORAGE_ENDPOINT = "/internalapi/systemtest/genericstorage";
 
 /**
  * The per-indexer fields the baseline pins on a mock indexer, and the value it
@@ -125,7 +127,14 @@ export const DEFAULT_QUICK_FILTER_BUTTONS = [
 
 export const test = base.extend<HydraFixtures>({
     page: async ({page}, use) => {
-        await page.addInitScript(() => window.localStorage.clear());
+        await page.addInitScript(() => {
+            try {
+                window.localStorage.clear();
+            } catch {
+                // A document without storage, e.g. the `about:blank` that
+                // `settleUserPreferences` parks the page on.
+            }
+        });
         await use(page);
     },
 
@@ -297,6 +306,94 @@ export async function csrfHeaders(page: Page): Promise<Record<string, string>> {
         `The application handed out no ${CSRF_COOKIE_NAME} cookie, so no unsafe request can be made`,
     ).toBeTruthy();
     return {[CSRF_HEADER_NAME]: token as string};
+}
+
+/**
+ * The generic storage every test starts with (`applyBaseline`): the
+ * baseline's empty map with `isGroupEpisodesHelpShown` raised.
+ */
+const BASELINE_GENERIC_STORAGE = {isGroupEpisodesHelpShown: "true"};
+
+/**
+ * ADR-0057: the display options and other UI preferences the page's session
+ * stored on the server (`API-USER-PREFERENCES-GET`). The page sends a change
+ * about a second after it was made, so assert on this with
+ * `expectStoredUserPreferences`, which waits for it.
+ */
+export async function storedUserPreferences(
+    page: Page,
+): Promise<Record<string, unknown>> {
+    const response = await page.request.get("/internalapi/userpreferences");
+    await expectSuccessfulResponse(response, "GET /internalapi/userpreferences");
+    return (await response.json()) as Record<string, unknown>;
+}
+
+export async function expectStoredUserPreferences(
+    page: Page,
+    section: string,
+    expected: Record<string, unknown>,
+): Promise<void> {
+    await expect
+        .poll(async () => (await storedUserPreferences(page))[section], {
+            message: `The stored ${section} preferences`,
+            timeout: 10_000,
+        })
+        .toMatchObject(expected);
+}
+
+/**
+ * Leaves the page and waits until the preferences it was still sending have
+ * arrived, so nothing it sends afterwards can undo what a test establishes
+ * next. The page sends pending changes when it is left (`pagehide`); they have
+ * arrived once the stored record stays the same for longer than the page's
+ * one-second write delay.
+ */
+async function settleUserPreferences(page: Page): Promise<void> {
+    await page.goto("about:blank");
+    let previous = JSON.stringify(await storedUserPreferences(page));
+    for (let attempt = 0; attempt < 10; attempt++) {
+        await page.waitForTimeout(1500);
+        const current = JSON.stringify(await storedUserPreferences(page));
+        if (current === previous) {
+            return;
+        }
+        previous = current;
+    }
+    throw new Error("The stored user preferences kept changing");
+}
+
+/**
+ * Deletes every stored user preference, the way a test starts
+ * (`applyBaseline`). The page is left on `about:blank`; the next `goto`
+ * renders it with the default display options.
+ */
+export async function clearUserPreferences(page: Page): Promise<void> {
+    await settleUserPreferences(page);
+    const response = await page.request.put(GENERIC_STORAGE_ENDPOINT, {
+        params: {internalApiKey: testEnvironment.hydraInternalApiKey},
+        data: BASELINE_GENERIC_STORAGE,
+    });
+    await expectSuccessfulResponse(response, `PUT ${GENERIC_STORAGE_ENDPOINT}`);
+}
+
+/**
+ * Stores one section of the page session's user preferences, replacing it.
+ * The page is left on `about:blank`; the next `goto` renders with it.
+ */
+export async function seedUserPreferences(
+    page: Page,
+    section: string,
+    value: Record<string, unknown>,
+): Promise<void> {
+    await settleUserPreferences(page);
+    const response = await page.request.put(
+        `/internalapi/userpreferences/${section}`,
+        {data: value, headers: await csrfHeaders(page)},
+    );
+    await expectSuccessfulResponse(
+        response,
+        `PUT /internalapi/userpreferences/${section}`,
+    );
 }
 
 export async function dismissWelcomeDialog(page: Page): Promise<void> {
@@ -556,10 +653,14 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *   paid two real HTTP round trips per changed indexer. See the `indexers`
      *   bullet: this is where the "four seconds per changed indexer" went.
      * - `genericStorage`: emptied to the baseline's `{}`, then
-     *   `isGroupEpisodesHelpShown` raised. It is a `BaseConfig` field, so this
-     *   `PUT` reaches it -- including the `forUser` keys, which for an
-     *   anonymous session are the plain keys
-     *   (`GenericStorageWeb` only suffixes a `getRemoteUser()` it has). The
+     *   `isGroupEpisodesHelpShown` raised. A config `PUT` keeps the running
+     *   generic storage (a save must not undo preferences users stored while
+     *   the config page was open), so this goes through
+     *   `GENERIC_STORAGE_ENDPOINT` instead. That covers the `forUser` keys,
+     *   which for an anonymous session are the plain keys
+     *   (`GenericStorageWeb` only suffixes a `getRemoteUser()` it has), and the
+     *   user preferences (ADR-0057), which the results, stats, history, log
+     *   and config pages read their display options from. The
      *   flag is raised rather than merely defined because *not* raised is what
      *   opens FM-091's modal help dialog on the next eligible TV search, and a
      *   modal intercepts pointer events for the rest of the page:
@@ -628,10 +729,23 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         config.categoriesConfig = structuredClone(baseline.categoriesConfig);
         config.downloading = structuredClone(baseline.downloading);
         config.externalTools = structuredClone(baseline.externalTools);
-        config.genericStorage = {
+        const genericStorage = {
             ...(structuredClone(baseline.genericStorage) as HydraConfig),
-            isGroupEpisodesHelpShown: "true",
+            ...BASELINE_GENERIC_STORAGE,
         };
+        if (
+            JSON.stringify(config.genericStorage) !==
+            JSON.stringify(genericStorage)
+        ) {
+            const response = await request.put(
+                GENERIC_STORAGE_ENDPOINT,
+                internalRequest(genericStorage),
+            );
+            await expectSuccessfulResponse(
+                response,
+                `PUT ${GENERIC_STORAGE_ENDPOINT}`,
+            );
+        }
         if (JSON.stringify(config) !== inherited) {
             await saveConfig(config);
         }

@@ -17,9 +17,8 @@ async function openSearchingConfig(page: Page): Promise<void> {
 }
 
 /**
- * The advanced toggle is a per-browser preference in `localStorage`, and the
- * `page` fixture clears storage on every document load — so it has to be
- * switched on again after a reload, not only once per test.
+ * The advanced toggle is a user preference (ADR-0057), reset before every test
+ * by the `baseline` fixture, so each test switches it on itself.
  */
 async function showAdvanced(page: Page): Promise<void> {
     // FM-097: below `md` the settings nav is a temporary `Drawer`, so the

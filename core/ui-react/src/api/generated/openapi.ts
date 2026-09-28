@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+    "/internalapi/userpreferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getUserPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internalapi/userpreferences/{section}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["putUserPreferenceSection"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internalapi/welcomeshown": {
         parameters: {
             query?: never;
@@ -3943,6 +3975,9 @@ export interface components {
             safeConfig?: components["schemas"]["SafeConfig"];
             baseUrl?: string;
             serverTimeZone?: string;
+            userPreferences?: {
+                [key: string]: unknown;
+            };
         };
         SafeCategoriesConfig: {
             enableCategorySizes?: boolean;
@@ -5327,6 +5362,52 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getUserPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    putUserPreferenceSection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                section: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     logfileContent: {
         parameters: {
             query?: never;

@@ -3,8 +3,14 @@ import {
     STAT_FAMILIES,
     type StatFamilySelection,
 } from "../../../api/stats/mainStats";
-import {readItem, writeItem} from "../../../domain/storage/browserStorage";
+import {readItem} from "../../../domain/storage/browserStorage";
+import {
+    readPreference,
+    writePreference,
+} from "../../../services/preferences/userPreferences";
 
+// ADR-0057: both live in the `statsDashboard` section of the user's
+// preferences. These keys are read once, to migrate this browser's values.
 const INCLUDE_DISABLED_KEY = "hydra.stats-dashboard.include-disabled";
 const FAMILIES_KEY = "hydra.stats-dashboard.families";
 
@@ -31,34 +37,43 @@ export function defaultFamilySelection(
 }
 
 export function loadIncludeDisabled(): boolean | undefined {
-    const raw = readItem(INCLUDE_DISABLED_KEY);
-    if (raw === "true") return true;
-    if (raw === "false") return false;
-    return undefined;
+    const value = readPreference("statsDashboard", "includeDisabled", () => {
+        const raw = readItem(INCLUDE_DISABLED_KEY);
+        return raw === "true" ? true : raw === "false" ? false : undefined;
+    });
+    return typeof value === "boolean" ? value : undefined;
 }
 
 export function saveIncludeDisabled(value: boolean): void {
-    writeItem(INCLUDE_DISABLED_KEY, String(value));
+    writePreference("statsDashboard", "includeDisabled", value);
 }
 
 export function loadFamilySelection(): StatFamilySelection | undefined {
+    return familySelectionOf(
+        readPreference("statsDashboard", "families", legacyFamilySelection),
+    );
+}
+
+export function saveFamilySelection(selection: StatFamilySelection): void {
+    writePreference("statsDashboard", "families", selection);
+}
+
+function legacyFamilySelection(): StatFamilySelection | undefined {
     try {
         const raw = readItem(FAMILIES_KEY);
-        if (!raw) return undefined;
-        const parsed: unknown = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return undefined;
-        const record = parsed as Record<string, unknown>;
-        const result = {} as StatFamilySelection;
-        for (const family of STAT_FAMILIES) {
-            if (typeof record[family] !== "boolean") return undefined;
-            result[family] = record[family];
-        }
-        return result;
+        return raw ? familySelectionOf(JSON.parse(raw)) : undefined;
     } catch {
         return undefined;
     }
 }
 
-export function saveFamilySelection(selection: StatFamilySelection): void {
-    writeItem(FAMILIES_KEY, JSON.stringify(selection));
+function familySelectionOf(value: unknown): StatFamilySelection | undefined {
+    if (!value || typeof value !== "object") return undefined;
+    const record = value as Record<string, unknown>;
+    const result = {} as StatFamilySelection;
+    for (const family of STAT_FAMILIES) {
+        if (typeof record[family] !== "boolean") return undefined;
+        result[family] = record[family];
+    }
+    return result;
 }

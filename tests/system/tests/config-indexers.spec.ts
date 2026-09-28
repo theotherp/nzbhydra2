@@ -44,8 +44,8 @@ async function openIndexersConfig(page: Page): Promise<void> {
 }
 
 /**
- * The advanced toggle is a per-browser preference in `localStorage`, and the
- * `page` fixture clears storage on every document load.
+ * The advanced toggle is a user preference (ADR-0057), reset before every test
+ * by the `baseline` fixture.
  */
 async function showAdvanced(page: Page): Promise<void> {
     // FM-097: below `md` the settings nav is a temporary `Drawer`, so the

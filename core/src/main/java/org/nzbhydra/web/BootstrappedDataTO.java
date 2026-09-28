@@ -4,6 +4,8 @@ import lombok.Data;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.springnative.ReflectionMarker;
 
+import java.util.Map;
+
 @Data
 @ReflectionMarker
 public class BootstrappedDataTO {
@@ -23,5 +25,6 @@ public class BootstrappedDataTO {
     private SafeConfig safeConfig;
     private String baseUrl;
     private String serverTimeZone;
+    private Map<String, Object> userPreferences;
 
 }

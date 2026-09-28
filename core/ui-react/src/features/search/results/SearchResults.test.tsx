@@ -15,6 +15,7 @@ import type {SafeConfig} from "../../../bootstrap";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {userPreferences} from "../../../services/preferences/userPreferences";
 import {
     stubMissingLocalStorage,
     stubNarrowViewport,
@@ -2092,10 +2093,7 @@ describe("SearchResults", () => {
         // FM-176: the one case that pins the persisted option instead of
         // clicking it, which also proves `showDuplicateControls` is restored
         // on mount the way `compactRows` is.
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({showDuplicateControls: true}),
-        );
+        seedChoices(JSON.stringify({showDuplicateControls: true}));
         renderResults(
             <SearchResults
                 data={{
@@ -3129,10 +3127,7 @@ describe("SearchResults", () => {
     it("should load an old-shape stored payload lacking the refine collapse keys with both sections defaulting to expanded", () => {
         // A payload written before this task's two keys existed (or a
         // hand-edited one) still loads cleanly through `loadChoices`.
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({sidebarCollapsed: false}),
-        );
+        seedChoices(JSON.stringify({sidebarCollapsed: false}));
         renderResults(
             <SearchResults
                 data={{
@@ -3202,8 +3197,7 @@ describe("SearchResults", () => {
         // indexer/category selection and a title, both scoped to the results
         // of the search they were made in -- which must be ignored entirely
         // on mount; only the collapse state below is restored.
-        window.localStorage.setItem(
-            STORAGE_KEY,
+        seedChoices(
             JSON.stringify({
                 filters: {
                     categories: ["Movies"],
@@ -3272,7 +3266,7 @@ describe("SearchResults", () => {
         );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
         const stored: Record<string, unknown> = JSON.parse(
-            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+            storedChoicesJson() ?? "{}",
         );
         expect(stored).not.toHaveProperty("filters");
         unmount();
@@ -3448,8 +3442,7 @@ describe("SearchResults", () => {
         // same failure mode: a search that returned only NZBs would hide
         // every torrent of the next search. The stored title is likewise
         // ignored: FM-178 scopes every refine filter to one search.
-        window.localStorage.setItem(
-            STORAGE_KEY,
+        seedChoices(
             JSON.stringify({
                 filters: {downloadTypes: ["NZB"], title: "result"},
             }),
@@ -3506,7 +3499,7 @@ describe("SearchResults", () => {
             "Alpha Result",
         );
         const stored: Record<string, unknown> = JSON.parse(
-            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+            storedChoicesJson() ?? "{}",
         );
         expect(stored).not.toHaveProperty("filters");
 
@@ -3742,10 +3735,7 @@ describe("SearchResults", () => {
         });
 
         it("should hide the downloadedAt rows on mount when the preference is stored", () => {
-            window.localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({hideDownloaded: true}),
-            );
+            seedChoices(JSON.stringify({hideDownloaded: true}));
             renderResults(
                 <SearchResults
                     data={{
@@ -5008,10 +4998,7 @@ describe("SearchResults", () => {
     // `useState` defaults. A stored choice has to drive the *grouping*, not
     // just the checkbox, from the very first render.
     it("should group torrent and Usenet results from the first render when the stored payload says so", () => {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({groupTorrentAndUsenet: true}),
-        );
+        seedChoices(JSON.stringify({groupTorrentAndUsenet: true}));
         renderResults(
             <SearchResults
                 data={{
@@ -5073,10 +5060,7 @@ describe("SearchResults", () => {
         // A stored *expanded* docked preference must not pop the drawer open
         // over the results when the same user opens the page on a phone: the
         // two mechanisms are deliberately separate (see `RefineSidebar.tsx`).
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({sidebarCollapsed: false}),
-        );
+        seedChoices(JSON.stringify({sidebarCollapsed: false}));
         renderResults(
             <SearchResults
                 data={{
@@ -5278,10 +5262,7 @@ describe("SearchResults", () => {
         // Now that the choice is restored from storage on mount, the restored
         // `false` has to reach the eligibility check on that same first render.
         it("shows nothing for an eligible search when the stored payload turned episode grouping off", async () => {
-            window.localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({groupEpisodes: false}),
-            );
+            seedChoices(JSON.stringify({groupEpisodes: false}));
             const {puts} = genericStorageFetch(false);
             renderResults(
                 <SearchResults
@@ -6447,7 +6428,7 @@ describe("SearchResults phone sort menu", () => {
 
     function renderSortPhone(choices?: Record<string, unknown>) {
         if (choices) {
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(choices));
+            seedChoices(JSON.stringify(choices));
         }
         stubViewportWidth(390);
         return renderResults(<SearchResults data={sortData} />);
@@ -6565,7 +6546,7 @@ describe("SearchResults phone sort menu", () => {
         // Trap: `column.getAutoSortDir()` reads off the column instance
         // (`table.getColumn(id)`), not the column def -- a string column's
         // instance reports "asc".
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({sorting: []}));
+        seedChoices(JSON.stringify({sorting: []}));
         rerender(<SearchResults data={sortData} />);
         openMenu();
         fireEvent.click(
@@ -7507,9 +7488,10 @@ describe("SearchResults indexer summary", () => {
     };
 
     function storedPayload(): Record<string, unknown> {
-        return JSON.parse(
-            window.localStorage.getItem("hydra.search-results.table") ?? "{}",
-        ) as Record<string, unknown>;
+        return JSON.parse(storedChoicesJson() ?? "{}") as Record<
+            string,
+            unknown
+        >;
     }
 
     // The summary is only for users who may see the indexer selection.
@@ -7528,8 +7510,7 @@ describe("SearchResults indexer summary", () => {
         it(`should hide the summary and its display option without the indexer selection permission (${JSON.stringify(bootstrap)})`, () => {
             window.__NZBHYDRA_BOOTSTRAP__ = bootstrap;
             // Even with the summary stored as shown and expanded.
-            window.localStorage.setItem(
-                "hydra.search-results.table",
+            seedChoices(
                 JSON.stringify({
                     indexerSummaryOpen: true,
                     showIndexerSummary: true,
@@ -7607,8 +7588,7 @@ describe("SearchResults indexer summary", () => {
     });
 
     it("should name failed indexers in the toolbar while hidden and bring the summary back expanded", () => {
-        window.localStorage.setItem(
-            "hydra.search-results.table",
+        seedChoices(
             JSON.stringify({
                 indexerSummaryOpen: false,
                 showIndexerSummary: false,
@@ -7637,10 +7617,7 @@ describe("SearchResults indexer summary", () => {
     });
 
     it("should not add a failure hint when every searched indexer succeeded", () => {
-        window.localStorage.setItem(
-            "hydra.search-results.table",
-            JSON.stringify({showIndexerSummary: false}),
-        );
+        seedChoices(JSON.stringify({showIndexerSummary: false}));
         renderResults(
             <SearchResults
                 data={{
@@ -7719,17 +7696,15 @@ describe("SearchResults hideable columns", () => {
     };
 
     function storedPayload(): Record<string, unknown> {
-        return JSON.parse(
-            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
-        ) as Record<string, unknown>;
+        return JSON.parse(storedChoicesJson() ?? "{}") as Record<
+            string,
+            unknown
+        >;
     }
 
     function renderColumns(choices: Record<string, unknown> = {}) {
         // The docked sidebar expanded, so its sections are rendered.
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({sidebarCollapsed: false, ...choices}),
-        );
+        seedChoices(JSON.stringify({sidebarCollapsed: false, ...choices}));
         return renderResults(<SearchResults data={columnData} />);
     }
 
@@ -7904,10 +7879,7 @@ describe("SearchResults hideable columns", () => {
     });
 
     it("should span the virtualization spacer rows over the visible tracks only", () => {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({showCategoryColumn: false}),
-        );
+        seedChoices(JSON.stringify({showCategoryColumn: false}));
         renderResults(
             <SearchResults
                 data={{
@@ -8029,10 +8001,7 @@ describe("SearchResults hideable columns", () => {
     });
 
     it("should not let a hidden Category filter out a category that arrives with Load more", () => {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({sidebarCollapsed: false}),
-        );
+        seedChoices(JSON.stringify({sidebarCollapsed: false}));
         const {rerender} = renderResults(
             <SearchResults
                 data={columnData}
@@ -8107,8 +8076,7 @@ describe("SearchResults hideable columns", () => {
     });
 
     it("should render the same cell set on grouped, duplicate and nested rows", () => {
-        window.localStorage.setItem(
-            STORAGE_KEY,
+        seedChoices(
             JSON.stringify({
                 expandGroupsByDefault: true,
                 showCategoryColumn: false,
@@ -8301,10 +8269,7 @@ describe("SearchResults quality column", () => {
         config: SafeConfig = QUALITY_CONFIG,
         choices: Record<string, unknown> = {},
     ) {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({sidebarCollapsed: false, ...choices}),
-        );
+        seedChoices(JSON.stringify({sidebarCollapsed: false, ...choices}));
         return renderWithConfig(<SearchResults data={data} />, config);
     }
 
@@ -8340,9 +8305,7 @@ describe("SearchResults quality column", () => {
 
     function storedSorting(): unknown {
         return (
-            JSON.parse(
-                window.localStorage.getItem(STORAGE_KEY) ?? "{}",
-            ) as Record<string, unknown>
+            JSON.parse(storedChoicesJson() ?? "{}") as Record<string, unknown>
         ).sorting;
     }
 
@@ -8738,8 +8701,6 @@ function expandSlotsByRow(): [string, string[]][] {
     });
 }
 
-const STORAGE_KEY = "hydra.search-results.table";
-
 // The `data-filter-value`s currently selected in one of the refine sidebar's
 // toggle-row lists, in the list's own (alphabetical) render order.
 function selectedFilterValues(optionTestId: string): string[] {
@@ -8854,10 +8815,19 @@ async function dismissLightbox(tile: HTMLElement): Promise<void> {
     await popoverClosed();
 }
 
+// ADR-0057: the choices are the `searchResults` section of the user's
+// preferences, which every test starts with empty (`vitest.setup.ts`).
+function seedChoices(json: string): void {
+    userPreferences().write("searchResults", JSON.parse(json));
+}
+
+function storedChoicesJson(): string | null {
+    const stored = userPreferences().read("searchResults");
+    return stored === undefined ? null : JSON.stringify(stored);
+}
+
 function storedChoices(): Record<string, unknown> {
-    return JSON.parse(
-        window.localStorage.getItem(STORAGE_KEY) ?? "{}",
-    ) as Record<string, unknown>;
+    return JSON.parse(storedChoicesJson() ?? "{}") as Record<string, unknown>;
 }
 
 // FM-181: `stubNarrowViewport`, but width-aware, because two of the phone chrome's

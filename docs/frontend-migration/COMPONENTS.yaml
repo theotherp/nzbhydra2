@@ -161,7 +161,8 @@ components:
     state: done
     note: "FM-109 extracted it from five byte-similar getStorage()/try-catch copies (stats dashboard persistence, system-log persistence, config advancedFields,
       SearchWorkspace's advanced-panel flag, SearchResults' table choices). No storage key, payload, or default changed; the only observable difference is that
-      SearchResults' choices write, previously guarded on the accessor but not on setItem, now also survives a throwing setItem."
+      SearchResults' choices write, previously guarded on the accessor but not on setItem, now also survives a throwing setItem. ADR-0057 moved every
+      preference but the theme's startup seed to C-USER-PREFERENCES; the former call sites use readItem only to migrate their old key once."
   - id: C-SERVER-PREFERENCES
     responsibility: Server-backed per-user and global acknowledgements and UI preferences
     legacy:
@@ -177,6 +178,27 @@ components:
       asymmetry is interpreted -- `GenericStorageWeb.put` stores the request body as a `String`, so the `false` a client writes to clear a flag reads back as the *string* `\"false\"`, which legacy's truthiness test accepted as a
       raised flag and which `isRaisedFlag` does not. FM-091 adopted it for F-SEARCH-SORT-FILTER's group-episodes help dialog (its polarity is inverted relative to FM-079's warning flags: raised means \"already shown\"), correcting
       this note's earlier F-SEARCH-RESULTS anticipation -- that feature never needed a server-backed preference."
+  - id: C-USER-PREFERENCES
+    responsibility: "Per-user UI preferences (display options, disclosure states) stored on the server: a page-wide store seeded from the bootstrap's
+      userPreferences, synchronous section reads, immediate in-memory writes sent per section after a 1s delay and on pagehide, and a one-time migration of
+      each option from its pre-ADR-0057 localStorage key. Validation of what a section holds stays with the reading feature."
+    legacy: []
+    target: core/ui-react/src/services/preferences/userPreferences.ts; core/ui-react/src/api/userPreferences.ts
+    consumers:
+      - F-SEARCH-FORM
+      - F-SEARCH-SORT-FILTER
+      - F-CONFIG-SHELL
+      - F-STATS-MAIN
+      - F-SYSTEM-LOG
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-NOTIFICATIONS
+    classification: shared_hydra
+    state: done
+    note: "ADR-0057, built outside the packet pipeline (MAINTENANCE.md 2026-09-28). Sections: searchResults (the former hydra.search-results.table payload,
+      now type-checked per key by storedChoices.ts), statsDashboard, config, searchForm, history, systemLog. readSection/readPreference take the legacy
+      localStorage reader and upload what it returns only when the server has nothing for that section or option. vitest.setup.ts gives every test an
+      empty in-memory store; setUserPreferenceStore replaces it."
   - id: C-RESTART-COORDINATOR
     responsibility: Restart command, progress dialog, readiness polling, and safe reload
     legacy:

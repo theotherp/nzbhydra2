@@ -5,6 +5,7 @@ import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
+import org.nzbhydra.genericstorage.UserPreferences;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -20,6 +21,8 @@ public class UserInfosProvider {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private UserPreferences userPreferences;
 
     public BootstrappedDataTO getUserInfos(Principal principal) {
         BootstrappedDataTO bootstrappedData = new BootstrappedDataTO();
@@ -96,6 +99,8 @@ public class UserInfosProvider {
         BootstrappedDataTO bootstrappedData = getUserInfos(principal);
         bootstrappedData.setSafeConfig(new SafeConfig(configProvider.getBaseConfig()));
         bootstrappedData.setBaseUrl(normalizeBaseUrl(baseUrl));
+        //Delivered with the page so it renders with the user's display options instead of the defaults
+        bootstrappedData.setUserPreferences(userPreferences.get(principal == null ? null : principal.getName()));
         return bootstrappedData;
     }
 

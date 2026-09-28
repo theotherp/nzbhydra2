@@ -28,9 +28,9 @@ import {createHydraTheme} from "../../app/theme";
 import type {BootstrapData} from "../../bootstrap";
 import {DialogProvider} from "../../components/dialogs/DialogProvider";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
+import {userPreferences} from "../../services/preferences/userPreferences";
 import {stubNarrowViewport} from "../../test/browserStubs";
 import {StatsShell} from "../stats/StatsShell";
-import {SHOW_ADVANCED_STORAGE_KEY} from "./advancedFields";
 import type {ConfigTab} from "./configTabs";
 import {CONFIG_TABS, configTabTestId} from "./configTabs";
 import {createConfigRoute} from "./routes";
@@ -900,9 +900,7 @@ describe("ConfigShell", () => {
         fireEvent.click(
             screen.getByRole("switch", {name: "Advanced settings"}),
         );
-        expect(window.localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBe(
-            "true",
-        );
+        expect(userPreferences().read("config")).toEqual({showAdvanced: true});
 
         // Toggling it must not dirty the form: leaving does not prompt.
         fireEvent.click(screen.getByTestId("leave-config"));
@@ -1710,7 +1708,9 @@ describe("ConfigShell invalid-field banner (FM-101)", () => {
             await screen.findByTestId("config-setting-main-urlBase"),
         ).toBeVisible();
         expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
-        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBe("false");
+        expect(userPreferences().read("config")).toEqual({
+            showAdvanced: false,
+        });
         await waitFor(() =>
             expect(
                 [...document.querySelectorAll("style")].some((style) =>
@@ -1889,7 +1889,7 @@ describe("settings search (FM-099)", () => {
             await screen.findByTestId("config-setting-main-urlBase"),
         ).toBeVisible();
         expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
-        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
+        expect(userPreferences().read("config")).toBeUndefined();
 
         // …and marked, by a rule scoped to that row's own test id.
         await waitFor(() =>
@@ -1945,7 +1945,7 @@ describe("settings search (FM-099)", () => {
             screen.getByTestId("config-advanced-expander-category handling"),
         ).toHaveAttribute("aria-expanded", "false");
         expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
-        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
+        expect(userPreferences().read("config")).toBeUndefined();
 
         await waitFor(() =>
             expect(
@@ -1992,7 +1992,7 @@ describe("settings search (FM-099)", () => {
             ),
         ).toBeVisible();
         expect(screen.getByTestId("config-advanced-toggle")).not.toBeChecked();
-        expect(localStorage.getItem(SHOW_ADVANCED_STORAGE_KEY)).toBeNull();
+        expect(userPreferences().read("config")).toBeUndefined();
     });
 });
 

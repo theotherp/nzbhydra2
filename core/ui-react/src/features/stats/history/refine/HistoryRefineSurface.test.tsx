@@ -16,6 +16,7 @@ import type {
     HistoryFilterValues,
 } from "../../../../api/history/filters";
 import {createHydraTheme} from "../../../../app/theme";
+import {userPreferences} from "../../../../services/preferences/userPreferences";
 import {
     localStorageStore,
     stubMissingLocalStorage,
@@ -263,11 +264,13 @@ describe("HistoryRefineSurface", () => {
         expect(screen.getByLabelText("Title")).toBeVisible();
     });
 
-    it("should persist the collapsed column under the shared history key and restore it on a later mount", () => {
+    it("should persist the collapsed column in the user's history preferences and restore it on a later mount", () => {
         const store = localStorageStore();
         renderSurface();
         fireEvent.click(screen.getByTestId("history-refine-toggle"));
-        expect(store.get("hydra.history.refine")).toBe("collapsed");
+        expect(userPreferences().read("history")).toEqual({
+            refineCollapsed: true,
+        });
         cleanup();
 
         renderSurface();
@@ -276,7 +279,9 @@ describe("HistoryRefineSurface", () => {
             "false",
         );
         fireEvent.click(screen.getByTestId("history-refine-toggle"));
-        expect(store.get("hydra.history.refine")).toBe("expanded");
+        expect(userPreferences().read("history")).toEqual({
+            refineCollapsed: false,
+        });
         cleanup();
 
         renderSurface();
@@ -284,6 +289,19 @@ describe("HistoryRefineSurface", () => {
             "aria-expanded",
             "true",
         );
+        expect(store.size).toBe(0);
+    });
+
+    it("should migrate the collapsed state this browser stored before it moved to the user's preferences", () => {
+        localStorageStore().set("hydra.history.refine", "collapsed");
+        renderSurface();
+        expect(screen.getByTestId("history-refine-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(userPreferences().read("history")).toEqual({
+            refineCollapsed: true,
+        });
     });
 
     it("should start expanded when the stored preference is absent or garbage", () => {

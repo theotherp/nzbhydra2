@@ -1,4 +1,8 @@
-import {readItem, writeItem} from "../../../domain/storage/browserStorage";
+import {readItem} from "../../../domain/storage/browserStorage";
+import {
+    readPreference,
+    writePreference,
+} from "../../../services/preferences/userPreferences";
 
 const AUTO_REFRESH_KEY = "hydra.system-log.auto-refresh";
 const TAIL_KEY = "hydra.system-log.tail";
@@ -10,31 +14,34 @@ const TAIL_KEY = "hydra.system-log.tail";
  * prefixes and JSON-encodes them, and neither UI should be able to corrupt the
  * other's state while both shells exist (ADR-0001).
  *
- * Every access goes through `domain/storage/browserStorage`, which absorbs the
- * three ways `localStorage` can fail; the default-off semantics below stay
- * here, at the call site.
+ * ADR-0057 moved both into the `systemLog` section of the user's preferences;
+ * the old keys are read once, to migrate a value this browser already had.
  */
 export function loadAutoRefresh(): boolean {
-    return readFlag(AUTO_REFRESH_KEY);
+    return readFlag("autoRefresh", AUTO_REFRESH_KEY);
 }
 
 export function saveAutoRefresh(value: boolean): void {
-    writeFlag(AUTO_REFRESH_KEY, value);
+    writePreference("systemLog", "autoRefresh", value);
 }
 
 export function loadTail(): boolean {
-    return readFlag(TAIL_KEY);
+    return readFlag("tail", TAIL_KEY);
 }
 
 export function saveTail(value: boolean): void {
-    writeFlag(TAIL_KEY, value);
+    writePreference("systemLog", "tail", value);
 }
 
 /** Legacy's default for both toggles is off (`hydra-log.js:13-14`). */
-function readFlag(key: string): boolean {
-    return readItem(key) === "true";
+function readFlag(option: string, legacyKey: string): boolean {
+    return (
+        readPreference("systemLog", option, () => legacyFlag(legacyKey)) ===
+        true
+    );
 }
 
-function writeFlag(key: string, value: boolean): void {
-    writeItem(key, String(value));
+function legacyFlag(key: string): boolean | undefined {
+    const raw = readItem(key);
+    return raw === "true" ? true : raw === "false" ? false : undefined;
 }

@@ -4,14 +4,20 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -33,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * one controller through MockMvc.
  */
 class SystemTestStateResetWebTest {
+
+    private final BaseConfig baseConfig = new BaseConfig();
 
     @Test
     void shouldAnswerNotFoundWithoutSystemtestProfile() throws Exception {
@@ -59,12 +67,34 @@ class SystemTestStateResetWebTest {
         }
     }
 
+    @Test
+    void shouldReplaceTheGenericStorageOnlyWithSystemtestProfile() throws Exception {
+        baseConfig.getGenericStorage().put("userPreferences", "{}");
+        try (GenericWebApplicationContext context = buildContext()) {
+            MockMvcBuilders.webAppContextSetup(context).build()
+                    .perform(put(SystemTestStateResetWeb.GENERIC_STORAGE_ENDPOINT).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                    .andExpect(status().isNotFound());
+            assertThat(baseConfig.getGenericStorage()).containsOnlyKeys("userPreferences");
+        }
+        try (GenericWebApplicationContext context = buildContext("systemtest")) {
+            MockMvcBuilders.webAppContextSetup(context).build()
+                    .perform(put(SystemTestStateResetWeb.GENERIC_STORAGE_ENDPOINT).contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"isGroupEpisodesHelpShown\":\"true\"}"))
+                    .andExpect(status().isOk());
+            assertThat(baseConfig.getGenericStorage()).isEqualTo(Map.of("isGroupEpisodesHelpShown", "true"));
+            Mockito.verify(context.getBean(BaseConfigHandler.class)).save(true);
+        }
+    }
+
     private GenericWebApplicationContext buildContext(String... activeProfiles) {
         final GenericWebApplicationContext context = new GenericWebApplicationContext(new MockServletContext());
         context.getEnvironment().setActiveProfiles(activeProfiles);
         //A manually registered singleton skips bean post-processing, so the mock's own inherited @Autowired fields
         //are not resolved and the context stays down to the controller and the MVC infrastructure
         context.getBeanFactory().registerSingleton("baseConfigHandler", Mockito.mock(BaseConfigHandler.class));
+        final ConfigProvider configProvider = Mockito.mock(ConfigProvider.class);
+        Mockito.when(configProvider.getBaseConfig()).thenReturn(baseConfig);
+        context.getBeanFactory().registerSingleton("configProvider", configProvider);
         //The controller reads the environment set above - the very mechanism under test - so it answers exactly as it
         //would in a running application with or without the profile
         new AnnotatedBeanDefinitionReader(context).register(TestWebConfig.class, SystemTestStateResetWeb.class);

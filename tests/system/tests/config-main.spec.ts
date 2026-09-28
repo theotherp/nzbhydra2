@@ -151,6 +151,9 @@ test.describe("Config main tab round trip", () => {
         mainSection(expected).proxyImages = !proxyImagesBefore;
         loggingSection(expected).logMaxHistory = expectedLogMaxHistory;
         const after = (await hydra.getConfig()) as Json;
+        // The generic storage is not config the page edits: switching the
+        // advanced toggle stores a user preference there (ADR-0057).
+        expected.genericStorage = after.genericStorage;
         expect(allowReMaskedSecrets(after, expected)).toEqual(expected);
     });
 
@@ -195,7 +198,7 @@ test.describe("Config main tab round trip", () => {
         // fieldset, then hidden again, then carried across a tab switch (which
         // unmounts the whole tab body) and a save.
         const ui = page.getByTestId("config-advanced-expander-ui");
-        await expect(ui).toHaveText("1 advanced setting hidden");
+        await expect(ui).toHaveText("2 advanced settings hidden");
         await ui.click();
         const checkboxes = page
             .getByTestId("config-setting-main-indexerSelectionAsCheckboxes")
@@ -229,6 +232,9 @@ test.describe("Config main tab round trip", () => {
         const expected = structuredClone(before);
         mainSection(expected).indexerSelectionAsCheckboxes = !checkboxesBefore;
         const after = (await hydra.getConfig()) as Json;
+        // The generic storage is not config the page edits: switching the
+        // advanced toggle stores a user preference there (ADR-0057).
+        expected.genericStorage = after.genericStorage;
         expect(allowReMaskedSecrets(after, expected)).toEqual(expected);
     });
 

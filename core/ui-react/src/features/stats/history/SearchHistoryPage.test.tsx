@@ -23,6 +23,7 @@ import {describe, expect, it, vi} from "vitest";
 import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
+import {userPreferences} from "../../../services/preferences/userPreferences";
 import {localStorageStore} from "../../../test/browserStubs";
 import {
     createHistorySearchSchema,
@@ -1033,8 +1034,8 @@ describe("SearchHistoryPage", () => {
 
     /**
      * ADR-0046: the three history views are one refine concept, so the docked
-     * column's collapsed state is one preference under `hydra.history.refine`
-     * rather than one per view. This spans two of them deliberately -- and the
+     * column's collapsed state is one preference (ADR-0057: `refineCollapsed`
+     * in the user's `history` preferences) rather than one per view. This spans two of them deliberately -- and the
      * second mount is also what a reload does, since each view reads the
      * preference when its own surface mounts.
      */
@@ -1055,7 +1056,9 @@ describe("SearchHistoryPage", () => {
         expect(collapse).toHaveAttribute("aria-expanded", "true");
         fireEvent.click(collapse);
         expect(collapse).toHaveAttribute("aria-expanded", "false");
-        expect(store.get("hydra.history.refine")).toBe("collapsed");
+        expect(userPreferences().read("history")).toEqual({
+            refineCollapsed: true,
+        });
         cleanup();
 
         renderNotificationPage(
@@ -1074,9 +1077,12 @@ describe("SearchHistoryPage", () => {
             "aria-expanded",
             "false",
         );
-        // One key, and only that one: the sub-768px drawer's open state is
+        // One option, and only that one: the sub-768px drawer's open state is
         // never written, so nothing else was persisted along the way.
-        expect([...store.keys()]).toEqual(["hydra.history.refine"]);
+        expect(userPreferences().read("history")).toEqual({
+            refineCollapsed: true,
+        });
+        expect(store.size).toBe(0);
     });
 
     it("should carry the filter, the sort, and the page in the URL and restore them on a fresh mount", async () => {

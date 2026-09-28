@@ -4162,3 +4162,34 @@ their text and relative order are unchanged.
 - **Paths:** `core/ui-react/vite.config.ts`
 - **Gates:** `typecheck`, `lint` (0 errors, 16 pre-existing warnings), `format:check`, `test -- --run` (149 files, 2287 tests) pass; `validate:migration` valid; `git diff --check` clean. Not re-run on CI yet, since master is unpushed.
 - **Commit:** the commit adding this entry.
+
+### 2026-09-28 — UI preferences stored per user on the server (owner-directed, outside the packet pipeline)
+
+- **Why not a packet:** not a quickfix. It is a new capability with a new API, a persisted-data change and a new decision (ADR-0057), which the gate
+  sends to a packet with independent review. The owner asked for it directly after an analysis in conversation; an independent review was run after
+  implementation instead of before handoff (see below).
+- **What changed:** backend `UserPreferences`/`UserPreferencesWeb` (`/internalapi/userpreferences`, sections per feature, 32 KB cap), the record in the
+  bootstrap (`BootstrappedDataTO.userPreferences`), `GenericStorageWeb` refusing the `userPreferences` prefix, `GenericStorage` synchronized. A config
+  save keeps the running generic storage (`BaseConfigValidator.prepareForSaving`), fixing a lost-update bug that also hit the theme and show-once flags;
+  the systemtest-only `PUT /internalapi/systemtest/genericstorage` lets the Playwright baseline reset it. Frontend `C-USER-PREFERENCES`; the results
+  display options, stats dashboard selection, config advanced toggle, search advanced disclosure, history refine column and system log toggles read and
+  write it and migrate their old `localStorage` key once. Playwright helpers `storedUserPreferences`/`expectStoredUserPreferences`/
+  `clearUserPreferences`/`seedUserPreferences` replace the specs' `localStorage` reads and re-seeding; a new results test proves a second browser
+  context gets the options. `openapi.json` gained only the two new paths and the bootstrap field (the regenerated file also showed unrelated drift --
+  `abortSearch` missing, the `nfo` parameter type, operation-id suffixes -- which was left out).
+- **Paths:** backend `core/src/main/java/org/nzbhydra/{genericstorage/{UserPreferences,UserPreferencesWeb,GenericStorage,GenericStorageWeb},config/validation/BaseConfigValidator,auth/UserInfosProvider,web/BootstrappedDataTO,systemtest/SystemTestStateResetWeb}.java`
+  and their tests (`genericstorage/{UserPreferencesTest,GenericStorageWebTest}`, `UserInfosProviderTest`, `SystemTestStateResetWebTest`, `ConfigSecretRoundTripTest`), `core/openapi.json`;
+  frontend `core/ui-react/src/{services/preferences/userPreferences,api/userPreferences}.ts` (+ tests), `vitest.setup.ts`,
+  `features/{search/results/{storedChoices,useResultDisplayChoices},search/workspace/SearchWorkspace,stats/dashboard/persistence,stats/history/refine/historyRefineCollapsed,system/logs/persistence,config/advancedFields}`
+  and their tests, `api/generated/openapi.ts`; `tests/system/tests/{fixtures,results.spec,config.spec,config-main.spec}.ts` plus comment-only updates in seven other specs;
+  `DECISIONS.md` (ADR-0057, ADR-0054 note), `COMPONENTS.yaml` (C-USER-PREFERENCES, C-BROWSER-STORAGE), `APIS.yaml` (API-USER-PREFERENCES-GET/PUT); `changelog-unreleased.yaml`.
+- **Gates:** core Java `mvn -o -pl core test -DskipTests=false` 930 run, 0 failures, 30 skipped; Java system tests `GenericStorageTest`, `StateResetSystemTest`,
+  `ConfigurationPersistenceSystemTest` 8/8 (`run_gui_systemtest.py --runtime local --java-test`); `core/ui-react` `typecheck`, `lint` (0 errors, 16 pre-existing
+  warnings), `test -- --run` (152 files, 2313 tests), `check:api`, `validate:migration`, `validate:focus-affordances` pass; `knip` reports only the pre-existing
+  `decodeCharacterReferences`; `format:check` fails only on the pre-existing `settingsIndex.ts`. Playwright full run 241/250, the 9 failures fixed
+  (7 from the fixture's `localStorage.clear()` throwing on `about:blank`, 2 in `config-main`: a whole-config comparison now ignores `genericStorage`, and
+  "2 advanced settings hidden", broken since `119202891`), then `config-main.spec.ts` + `results.spec.ts` 52/52. `git diff --check` clean.
+- **Review:** an independent reviewer subagent ran after implementation: no required findings; the ledger gaps and a character-vs-byte size cap were fixed.
+- **Not verified:** the native image. `BootstrappedDataTO.userPreferences` is the first free-form `Map<String, Object>` in the Thymeleaf bootstrap; it only
+  holds JSON primitives, maps and lists, but check it on the next native system-test run.
+- **Commit:** the commit adding this entry.

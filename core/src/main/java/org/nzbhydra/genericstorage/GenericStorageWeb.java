@@ -4,12 +4,14 @@ package org.nzbhydra.genericstorage;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class GenericStorageWeb {
@@ -19,6 +21,7 @@ public class GenericStorageWeb {
 
     @GetMapping("/internalapi/genericstorage/{key}")
     public Object get(@PathVariable String key, @RequestParam(required = false) boolean forUser, HttpServletRequest request) {
+        refuseReservedKey(key);
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();
@@ -28,6 +31,7 @@ public class GenericStorageWeb {
 
     @PutMapping("/internalapi/genericstorage/{key}")
     public void put(@PathVariable String key, @RequestParam(required = false) boolean forUser, @RequestBody String data, HttpServletRequest request) {
+        refuseReservedKey(key);
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();
@@ -35,5 +39,13 @@ public class GenericStorageWeb {
         genericStorage.save(keyToUse, data);
     }
 
+    /**
+     * Without this any session could read or overwrite another user's preferences by spelling out their key.
+     */
+    private static void refuseReservedKey(String key) {
+        if (UserPreferences.isReservedKey(key)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
 
 }

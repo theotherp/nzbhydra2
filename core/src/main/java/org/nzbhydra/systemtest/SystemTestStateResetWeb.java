@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
@@ -17,9 +18,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,6 +69,7 @@ import java.util.concurrent.TimeUnit;
 public class SystemTestStateResetWeb {
 
     public static final String RESET_ENDPOINT = "/internalapi/systemtest/reset";
+    public static final String GENERIC_STORAGE_ENDPOINT = "/internalapi/systemtest/genericstorage";
 
     private static final Profiles SYSTEMTEST = Profiles.of("systemtest");
 
@@ -75,6 +80,9 @@ public class SystemTestStateResetWeb {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private ConfigProvider configProvider;
 
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
@@ -93,6 +101,25 @@ public class SystemTestStateResetWeb {
         final long durationMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         logger.info("Reset state to the checked-in baseline in {}ms", durationMs);
         return ResponseEntity.ok(new ResetResult(true, durationMs));
+    }
+
+    /**
+     * Replaces the whole generic storage (user preferences, show-once flags) with the given map, behind the same gate
+     * as {@link #reset()}. A config {@code PUT} keeps the running generic storage (see
+     * {@code BaseConfigValidator.prepareForSaving}), so the per-test baseline cannot establish it that way, and a full
+     * reset per test would be far more than the fixture needs.
+     */
+    @Secured({"ROLE_ADMIN"})
+    @PutMapping(value = GENERIC_STORAGE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> setGenericStorage(@RequestBody Map<String, String> genericStorage) {
+        if (!environment.acceptsProfiles(SYSTEMTEST)) {
+            return ResponseEntity.notFound().build();
+        }
+        final Map<String, String> live = configProvider.getBaseConfig().getGenericStorage();
+        live.clear();
+        live.putAll(genericStorage);
+        baseConfigHandler.save(true);
+        return ResponseEntity.ok().build();
     }
 
     @Data

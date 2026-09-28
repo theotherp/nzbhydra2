@@ -20,6 +20,55 @@
         }
     ],
     "paths": {
+        "/internalapi/userpreferences": {
+            "get": {
+                "tags": ["user-preferences-web"],
+                "operationId": "getUserPreferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/internalapi/userpreferences/{section}": {
+            "put": {
+                "tags": ["user-preferences-web"],
+                "operationId": "putUserPreferenceSection",
+                "parameters": [
+                    {
+                        "name": "section",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/internalapi/welcomeshown": {
             "get": {
                 "tags": ["welcome-web"],
@@ -10838,6 +10887,10 @@
                     },
                     "serverTimeZone": {
                         "type": "string"
+                    },
+                    "userPreferences": {
+                        "type": "object",
+                        "additionalProperties": {}
                     }
                 }
             },

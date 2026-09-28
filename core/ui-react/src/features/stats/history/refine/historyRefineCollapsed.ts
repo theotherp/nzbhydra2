@@ -1,6 +1,10 @@
 import {useState} from "react";
 
-import {readItem, writeItem} from "../../../../domain/storage/browserStorage";
+import {readItem} from "../../../../domain/storage/browserStorage";
+import {
+    readPreference,
+    writePreference,
+} from "../../../../services/preferences/userPreferences";
 
 /**
  * ADR-0046: one key for all three history views. Search, download, and
@@ -13,6 +17,9 @@ import {readItem, writeItem} from "../../../../domain/storage/browserStorage";
  * The results page keeps its own `hydra.search-results.table` blob; nothing
  * here reads or writes it. This closes the storage-key candidate the old
  * horizontal bar left open (`MAINTENANCE.md`'s entry was discharged by FM-087).
+ *
+ * ADR-0057 moved it to the `history` section of the user's preferences as
+ * `refineCollapsed`; this key is read once, to migrate this browser's value.
  */
 const COLLAPSED_KEY = "hydra.history.refine";
 
@@ -34,7 +41,14 @@ const EXPANDED = "expanded";
  * keeping the two booleans separate in the first place).
  */
 function loadCollapsed(): boolean {
-    return readItem(COLLAPSED_KEY) === COLLAPSED;
+    return (
+        readPreference("history", "refineCollapsed", legacyCollapsed) === true
+    );
+}
+
+function legacyCollapsed(): boolean | undefined {
+    const raw = readItem(COLLAPSED_KEY);
+    return raw === COLLAPSED ? true : raw === EXPANDED ? false : undefined;
 }
 
 /**
@@ -49,7 +63,7 @@ export function useHistoryRefineCollapsed(): [boolean, () => void] {
     // persisting a preference the user never expressed.
     const toggle = () => {
         const next = !collapsed;
-        writeItem(COLLAPSED_KEY, next ? COLLAPSED : EXPANDED);
+        writePreference("history", "refineCollapsed", next);
         setCollapsed(next);
     };
     return [collapsed, toggle];

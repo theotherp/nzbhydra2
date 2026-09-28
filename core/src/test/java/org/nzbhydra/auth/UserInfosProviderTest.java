@@ -13,6 +13,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.genericstorage.UserPreferences;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -43,6 +44,8 @@ class UserInfosProviderTest {
 
     @Mock
     private ConfigProvider configProvider;
+    @Mock
+    private UserPreferences userPreferences;
     @InjectMocks
     private UserInfosProvider testee;
 
@@ -119,6 +122,17 @@ class UserInfosProviderTest {
         baseConfig.getAuth().setRestrictIndexerSelection(false);
         assertThat(testee.getUserInfos(loggedIn("restricted")).getShowIndexerSelection()).isTrue();
         assertThat(testee.getUserInfos(null).getShowIndexerSelection()).isTrue();
+    }
+
+    @Test
+    void shouldDeliverTheSessionUsersPreferencesWithTheBootstrapData() {
+        baseConfig.getAuth().setAuthType(AuthType.BASIC);
+        Mockito.when(userPreferences.get("allowed")).thenReturn(Map.of("searchResults", Map.of("compactRows", true)));
+        Mockito.when(userPreferences.get(null)).thenReturn(Map.of());
+
+        assertThat(testee.getBootstrapData(loggedIn("allowed"), "/").getUserPreferences())
+                .isEqualTo(Map.of("searchResults", Map.of("compactRows", true)));
+        assertThat(testee.getBootstrapData(null, "/").getUserPreferences()).isEmpty();
     }
 
     private static UserAuthConfig user(String username, boolean showIndexerSelection, boolean maySeeAdmin) {

@@ -1,6 +1,6 @@
 import type {Page} from "@playwright/test";
 
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {dismissWelcomeDialog, expect, storedUserPreferences, test} from "./fixtures";
 import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
 
 const UNCHANGED_MARKER = "***UNCHANGED***";
@@ -720,11 +720,7 @@ test.describe("Config settings search", () => {
         await expect(
             page.getByTestId("config-setting-main-dereferer"),
         ).toBeHidden();
-        expect(
-            await page.evaluate(() =>
-                window.localStorage.getItem("hydra.config.showAdvanced"),
-            ),
-        ).toBeNull();
+        expect((await storedUserPreferences(page)).config).toBeUndefined();
 
         // The temporary mark is really painted, and really clears itself.
         await expect
@@ -778,11 +774,7 @@ test.describe("Config settings search", () => {
             page.getByTestId("config-advanced-expander-category handling"),
         ).toHaveAttribute("aria-expanded", "false");
         await expect(toggle).not.toBeChecked();
-        expect(
-            await page.evaluate(() =>
-                window.localStorage.getItem("hydra.config.showAdvanced"),
-            ),
-        ).toBeNull();
+        expect((await storedUserPreferences(page)).config).toBeUndefined();
 
         await expect
             .poll(() =>

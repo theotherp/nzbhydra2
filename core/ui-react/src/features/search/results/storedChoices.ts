@@ -6,7 +6,13 @@
 import type {SortingState} from "@tanstack/react-table";
 
 import {readItem} from "../../../domain/storage/browserStorage";
+import {
+    readSection,
+    userPreferences,
+} from "../../../services/preferences/userPreferences";
 
+// ADR-0057: the choices are the `searchResults` section of the user's
+// preferences. This key is read once, to migrate this browser's payload.
 export const STORAGE_KEY = "hydra.search-results.table";
 
 export type StoredChoices = {
@@ -72,20 +78,71 @@ export type StoredChoices = {
 };
 
 export function loadChoices(): StoredChoices {
+    return choicesOf(readSection("searchResults", legacyChoices));
+}
+
+export function saveChoices(choices: StoredChoices): void {
+    userPreferences().write("searchResults", choices);
+}
+
+function legacyChoices(): unknown {
     try {
-        const value: unknown = JSON.parse(readItem(STORAGE_KEY) ?? "null");
-        if (!isRecord(value)) {
-            return {};
-        }
-        // FM-178: refine filters (`ResultFilters`, formerly the `filters`
-        // key here) reset on every new search and are therefore never
-        // persisted; a `filters` key in a payload written by an earlier
-        // build is simply not part of `StoredChoices` any more and is
-        // ignored by every reader, same as any other unknown key.
-        return value as StoredChoices;
+        return JSON.parse(readItem(STORAGE_KEY) ?? "null") ?? undefined;
     } catch {
+        return undefined;
+    }
+}
+
+const BOOLEAN_CHOICES = [
+    "compactRows",
+    "expandGroupsByDefault",
+    "groupEpisodes",
+    "groupTitles",
+    "groupTorrentAndUsenet",
+    "hideDownloaded",
+    "highlightRecent",
+    "indexerSummaryOpen",
+    "refineCategoryOpen",
+    "refineIndexerOpen",
+    "showCategoryColumn",
+    "showCovers",
+    "showDetailsColumn",
+    "showDuplicateControls",
+    "showIndexerSummary",
+    "showZipButton",
+    "sidebarCollapsed",
+] as const satisfies readonly Exclude<keyof StoredChoices, "sorting">[];
+
+/**
+ * The stored payload, keeping only values of the right type: it may have been
+ * written by another version of this UI or by hand. FM-178: refine filters
+ * (`ResultFilters`, formerly the `filters` key here) reset on every new search
+ * and are therefore never persisted; a `filters` key in a payload written by
+ * an earlier build is dropped here like any other unknown key.
+ */
+function choicesOf(value: unknown): StoredChoices {
+    if (!isRecord(value)) {
         return {};
     }
+    const choices: StoredChoices = {};
+    for (const key of BOOLEAN_CHOICES) {
+        const choice = value[key];
+        if (typeof choice === "boolean") {
+            choices[key] = choice;
+        }
+    }
+    if (
+        Array.isArray(value.sorting) &&
+        value.sorting.every(
+            (sort: unknown) =>
+                isRecord(sort) &&
+                typeof sort.id === "string" &&
+                typeof sort.desc === "boolean",
+        )
+    ) {
+        choices.sorting = value.sorting as SortingState;
+    }
+    return choices;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

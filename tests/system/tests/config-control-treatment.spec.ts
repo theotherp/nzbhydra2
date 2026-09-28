@@ -193,8 +193,8 @@ async function openConfig(page: Page, path: string, ready: string) {
 }
 
 /**
- * The advanced toggle is a per-browser `localStorage` preference the `page`
- * fixture clears on every document load, so it is switched on per navigation.
+ * The advanced toggle is a user preference (ADR-0057) reset before every test
+ * by the `baseline` fixture, so each test switches it on itself.
  * Below `md` it lives at the foot of the nav `Drawer` and is only mounted while
  * that drawer is open.
  */

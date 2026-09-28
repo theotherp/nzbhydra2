@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import {csrfHeaders, DEFAULT_QUICK_FILTER_BUTTONS, dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
+import {clearUserPreferences, csrfHeaders, DEFAULT_QUICK_FILTER_BUTTONS, dismissWelcomeDialog, expect, expectStoredUserPreferences, searchForResult, seedUserPreferences, test, testEnvironment,} from "./fixtures";
 import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
@@ -1331,7 +1331,7 @@ test.describe("Search results", () => {
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
 
         // A fresh mobile load starts with no stored preference.
-        await page.evaluate(() => window.localStorage.clear());
+        await clearUserPreferences(page);
 
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
@@ -1443,9 +1443,9 @@ test.describe("Search results", () => {
     });
 
     // FM-089: the refine sidebar's Category and Indexer sections persist
-    // their own expand/collapse state through the same
-    // `hydra.search-results.table` payload the docked-column preference
-    // already uses, independently of one another. Re-runs the search after
+    // their own expand/collapse state through the same `searchResults`
+    // preferences (ADR-0057) the docked-column preference already uses,
+    // independently of one another. Re-runs the search after
     // `page.reload()` (the sidebar only renders with results present)
     // instead of trusting a reload alone.
     test("should persist the refine sidebar's Category/Indexer collapse state across a reload", async ({
@@ -1467,24 +1467,10 @@ test.describe("Search results", () => {
         await expect(categoryToggle).toHaveAttribute("aria-expanded", "false");
         await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
 
-        const persistedPayload = await page.evaluate(() =>
-            window.localStorage.getItem("hydra.search-results.table"),
-        );
-        expect(persistedPayload).toContain('"refineCategoryOpen":false');
-
-        // This suite's own `page` fixture (`fixtures.ts`) registers an
-        // `addInitScript` that clears every key of `localStorage` on every
-        // new document -- including a `page.reload()` -- so every other
-        // test starts genuinely storage-clean regardless of what an earlier
-        // test wrote. A real user's browser reload does not clear its own
-        // storage; re-seeding the just-observed payload through the test's
-        // own later-registered `addInitScript` (which layers on top of, and
-        // so runs after, the fixture's clear on the very next navigation)
-        // stands in for that real persistence without weakening the
-        // fixture's cross-test isolation guarantee.
-        await page.addInitScript((payload) => {
-            window.localStorage.setItem("hydra.search-results.table", payload);
-        }, persistedPayload as string);
+        await expectStoredUserPreferences(page, "searchResults", {
+            refineCategoryOpen: false,
+            refineIndexerOpen: true,
+        });
 
         await page.reload();
         await searchForUiTestResults(page);
@@ -1493,12 +1479,49 @@ test.describe("Search results", () => {
         await expect(indexerToggle).toHaveAttribute("aria-expanded", "true");
     });
 
+    // ADR-0057: the display options are stored per user on the server, so a
+    // second browser -- another machine, or the same one after its storage was
+    // cleared -- renders the results with the options chosen in the first.
+    test("should apply display options chosen in one browser in another", async ({
+        page,
+        browser,
+    }) => {
+        await page.goto("/");
+        await searchForUiTestResults(page);
+        await toggleDisplayOption(page, "Compact rows");
+        await expect(page.getByTestId("search-results-table")).toHaveAttribute(
+            "data-compact-rows",
+            "true",
+        );
+        await expectStoredUserPreferences(page, "searchResults", {
+            compactRows: true,
+        });
+
+        const context = await browser.newContext({
+            baseURL: testEnvironment.playwrightBaseUrl,
+        });
+        try {
+            const other = await context.newPage();
+            await other.goto("/");
+            await dismissWelcomeDialog(other);
+            await searchForUiTestResults(other);
+            await expect(
+                other.getByTestId("search-results-table"),
+            ).toHaveAttribute("data-compact-rows", "true");
+            expect(await displayOptionChecked(other, "Compact rows")).toBe(
+                true,
+            );
+        } finally {
+            await context.close();
+        }
+    });
+
     // FM-189: the owner reported "Group TV episodes" coming back checked
     // after every new search -- `SearchPage` drops `state.data` on submit and
     // remounts `SearchResults`, which used to fall back to bare `useState`
-    // defaults. Both grouping options now ride the same
-    // `hydra.search-results.table` payload as the other display options, so a
-    // second search (the defect's own path, no reload involved) keeps them.
+    // defaults. Both grouping options now ride the same `searchResults`
+    // preferences as the other display options, so a second search (the
+    // defect's own path, no reload involved) keeps them.
     test("should keep both grouping options across a new search and across a reload", async ({
         page,
     }) => {
@@ -1520,11 +1543,10 @@ test.describe("Search results", () => {
         await toggleDisplayOption(page, "Group TV episodes");
         await toggleDisplayOption(page, "Group torrent and Usenet results");
 
-        const persistedPayload = await page.evaluate(() =>
-            window.localStorage.getItem("hydra.search-results.table"),
-        );
-        expect(persistedPayload).toContain('"groupEpisodes":false');
-        expect(persistedPayload).toContain('"groupTorrentAndUsenet":true');
+        await expectStoredUserPreferences(page, "searchResults", {
+            groupEpisodes: false,
+            groupTorrentAndUsenet: true,
+        });
 
         // The owner's exact path: a second search in the same document.
         await searchForUiTestResults(page);
@@ -1538,13 +1560,7 @@ test.describe("Search results", () => {
             ),
         ).toBe(true);
 
-        // And across a reload, re-seeding the payload the way the FM-089 case
-        // above does -- this suite's `page` fixture clears `localStorage` on
-        // every new document, so only this half needs `addInitScript`.
-        await page.addInitScript((payload) => {
-            window.localStorage.setItem("hydra.search-results.table", payload);
-        }, persistedPayload as string);
-
+        // And across a reload.
         await page.reload();
         await searchForUiTestResults(page);
         expect(await displayOptionChecked(page, "Group TV episodes")).toBe(
@@ -1757,7 +1773,7 @@ test.describe("Search results", () => {
         });
 
         // Mobile: a fresh load starts with no stored preference.
-        await page.evaluate(() => window.localStorage.clear());
+        await clearUserPreferences(page);
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
             await page
@@ -2049,7 +2065,7 @@ test.describe("Search results", () => {
         // density, the toolbar's mobile-reachable checkbox copy renders at
         // the same square target, and its caret menu stays fully within the
         // narrower viewport.
-        await page.evaluate(() => window.localStorage.clear());
+        await clearUserPreferences(page);
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
             await page.getByTestId("search-query").fill("toolbar mock density");
@@ -2395,12 +2411,9 @@ test.describe("Search results", () => {
         // Mobile: a deliberately stored *expanded* docked preference must not
         // pop the drawer open over the results, because the below-`sm` surface
         // is a transient overlay rather than that persisted preference.
-        await page.evaluate(() =>
-            window.localStorage.setItem(
-                "hydra.search-results.table",
-                JSON.stringify({sidebarCollapsed: false}),
-            ),
-        );
+        await seedUserPreferences(page, "searchResults", {
+            sidebarCollapsed: false,
+        });
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
             await page.getByTestId("search-query").fill("display options");
@@ -5395,6 +5408,7 @@ test.describe("Search results", () => {
         await toggleDisplayOption(page, "Show covers");
         await expect(tiles.first()).toBeVisible();
 
+        await clearUserPreferences(page);
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("/");
             await dismissWelcomeDialog(page);
@@ -5405,9 +5419,9 @@ test.describe("Search results", () => {
                 page.getByTestId("search-results-table"),
             ).toBeVisible();
         });
-        // The suite clears `localStorage` on every navigation (`fixtures.ts`'s
-        // `addInitScript`), so this reload starts from the default -- off --
-        // and the option is switched on the way a user would.
+        // The stored preferences were cleared above, so this load starts from
+        // the default -- off -- and the option is switched on the way a user
+        // would.
         await expect(tiles).toHaveCount(0);
         await toggleDisplayOption(page, "Show covers");
         await expect(tiles.first()).toBeVisible();
@@ -5665,16 +5679,10 @@ test.describe("Search results", () => {
                 .getByRole("link", {name: "Charlie"}),
         ).toHaveAttribute("href", /\/stats\/indexers$/);
 
-        // The expanded state survives a reload. The suite's `page` fixture
-        // clears storage on every new document, so the payload just written
-        // is re-seeded, as in the refine-sidebar persistence test above.
-        const expandedPayload = await page.evaluate(() =>
-            window.localStorage.getItem("hydra.search-results.table"),
-        );
-        expect(expandedPayload).toContain('"indexerSummaryOpen":true');
-        await page.addInitScript((payload) => {
-            window.localStorage.setItem("hydra.search-results.table", payload);
-        }, expandedPayload as string);
+        // The expanded state survives a reload.
+        await expectStoredUserPreferences(page, "searchResults", {
+            indexerSummaryOpen: true,
+        });
         await page.reload();
         await search();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
@@ -5685,13 +5693,9 @@ test.describe("Search results", () => {
         await toggleDisplayOption(page, "Show indexer summary");
         await expect(summary).toHaveCount(0);
         await expect(hint).toHaveText("1 indexer failed");
-        const hiddenPayload = await page.evaluate(() =>
-            window.localStorage.getItem("hydra.search-results.table"),
-        );
-        expect(hiddenPayload).toContain('"showIndexerSummary":false');
-        await page.addInitScript((payload) => {
-            window.localStorage.setItem("hydra.search-results.table", payload);
-        }, hiddenPayload as string);
+        await expectStoredUserPreferences(page, "searchResults", {
+            showIndexerSummary: false,
+        });
         await page.reload();
         await search();
         await expect(summary).toHaveCount(0);
@@ -5926,13 +5930,10 @@ test.describe("Search results", () => {
 
         for (const viewport of ["desktop", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
+                // The previous viewport's columns stay hidden in the stored
+                // preferences; every viewport starts from the defaults.
+                await clearUserPreferences(page);
                 await page.goto("/");
-                // A reload below re-seeds the hidden payload through an init
-                // script, which also runs for this viewport's navigation;
-                // every viewport starts from the defaults.
-                await page.evaluate(() =>
-                    window.localStorage.removeItem("hydra.search-results.table"),
-                );
                 await search();
             });
             const mobile = viewport === "mobile";
@@ -6071,20 +6072,11 @@ test.describe("Search results", () => {
                 ),
             });
 
-            // Persisted: the suite's `page` fixture clears storage on every
-            // new document, so the payload just written is re-seeded, as in
-            // the indexer-summary persistence test above.
-            const payload = await page.evaluate(() =>
-                window.localStorage.getItem("hydra.search-results.table"),
-            );
-            expect(payload).toContain('"showCategoryColumn":false');
-            expect(payload).toContain('"showDetailsColumn":false');
-            await page.addInitScript((stored) => {
-                window.localStorage.setItem(
-                    "hydra.search-results.table",
-                    stored,
-                );
-            }, payload as string);
+            // Persisted.
+            await expectStoredUserPreferences(page, "searchResults", {
+                showCategoryColumn: false,
+                showDetailsColumn: false,
+            });
             await page.reload();
             await search();
             await expect(
@@ -6191,12 +6183,8 @@ test.describe("Search results", () => {
             for (const viewport of ["desktop", "mobile"] as const) {
                 const mobile = viewport === "mobile";
                 await prepareVisualEvidence(page, viewport, async () => {
+                    await clearUserPreferences(page);
                     await page.goto("/");
-                    await page.evaluate(() =>
-                        window.localStorage.removeItem(
-                            "hydra.search-results.table",
-                        ),
-                    );
                     await page.getByTestId("search-query").fill("quality column");
                     await page.getByTestId("search-submit").click();
                     await expect(

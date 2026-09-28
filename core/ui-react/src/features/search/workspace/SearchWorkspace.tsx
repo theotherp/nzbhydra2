@@ -24,7 +24,11 @@ import {Controller, useForm, useWatch} from "react-hook-form";
 
 import type {MediaSuggestion} from "../../../api/media";
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
-import {readItem, writeItem} from "../../../domain/storage/browserStorage";
+import {readItem} from "../../../domain/storage/browserStorage";
+import {
+    readPreference,
+    writePreference,
+} from "../../../services/preferences/userPreferences";
 import {AdvancedRangeInput, rangeFieldWidth} from "./AdvancedRangeInput";
 import {IndexerGroupButtons} from "./IndexerGroupButtons";
 import {indexerGroupNames} from "./indexerGroups";
@@ -50,16 +54,19 @@ type AdvancedField =
 
 const advancedOpenStorageKey = "nzbhydra.search.advancedOpen";
 
-// `domain/storage/browserStorage` absorbs every way `localStorage` can fail,
-// so a missing or refused store simply means "closed" rather than a broken
-// search form.
+// ADR-0057: a user preference (`searchForm` section). The localStorage key is
+// read once, to migrate this browser's value; nothing stored means "closed".
 function readAdvancedOpen(): boolean {
-    return readItem(advancedOpenStorageKey) === "true";
+    return (
+        readPreference("searchForm", "advancedOpen", () => {
+            const raw = readItem(advancedOpenStorageKey);
+            return raw === "true" ? true : raw === "false" ? false : undefined;
+        }) === true
+    );
 }
 
 function persistAdvancedOpen(open: boolean): void {
-    // The disclosure still opens and closes; only the memory is lost.
-    writeItem(advancedOpenStorageKey, String(open));
+    writePreference("searchForm", "advancedOpen", open);
 }
 
 function rangeLabel(

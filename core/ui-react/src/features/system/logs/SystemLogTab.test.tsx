@@ -15,6 +15,11 @@ import {ApiTransport} from "../../../api/transport";
 import {createHydraTheme} from "../../../app/theme";
 import type {BootstrapData} from "../../../bootstrap";
 import {
+    createUserPreferenceStore,
+    setUserPreferenceStore,
+    userPreferences,
+} from "../../../services/preferences/userPreferences";
+import {
     localStorageStore,
     stubBlockedLocalStorage,
 } from "../../../test/browserStubs";
@@ -333,20 +338,24 @@ describe("SystemLogTab raw view", () => {
         fireEvent.click(tail);
         await waitFor(() => expect(refresh).toBeChecked());
         expect(tail).toBeChecked();
-        expect(storage.get("hydra.system-log.auto-refresh")).toBe("true");
-        expect(storage.get("hydra.system-log.tail")).toBe("true");
+        expect(userPreferences().read("systemLog")).toEqual({
+            autoRefresh: true,
+            tail: true,
+        });
 
         // Legacy's `toggleUpdate`: cancelling the refresh clears the tail.
         fireEvent.click(refresh);
         await waitFor(() => expect(tail).not.toBeChecked());
         expect(refresh).not.toBeChecked();
-        expect(storage.get("hydra.system-log.auto-refresh")).toBe("false");
-        expect(storage.get("hydra.system-log.tail")).toBe("false");
+        expect(userPreferences().read("systemLog")).toEqual({
+            autoRefresh: false,
+            tail: false,
+        });
+        expect(storage.size).toBe(0);
     });
 
-    it("should restore the persisted toggles, and survive unusable storage", async () => {
-        storage.set("hydra.system-log.auto-refresh", "true");
-        storage.set("hydra.system-log.tail", "true");
+    it("should restore the stored toggles", async () => {
+        userPreferences().write("systemLog", {autoRefresh: true, tail: true});
         renderLogTab(createBackend());
         selectView("Raw");
 
@@ -354,8 +363,25 @@ describe("SystemLogTab raw view", () => {
             await screen.findByTestId("system-log-refresh-toggle"),
         ).toBeChecked();
         expect(screen.getByTestId("system-log-tail-toggle")).toBeChecked();
+    });
+
+    it("should migrate the toggles this browser stored, and survive unusable storage", async () => {
+        storage.set("hydra.system-log.auto-refresh", "true");
+        storage.set("hydra.system-log.tail", "false");
+        renderLogTab(createBackend());
+        selectView("Raw");
+
+        expect(
+            await screen.findByTestId("system-log-refresh-toggle"),
+        ).toBeChecked();
+        expect(screen.getByTestId("system-log-tail-toggle")).not.toBeChecked();
+        expect(userPreferences().read("systemLog")).toEqual({
+            autoRefresh: true,
+            tail: false,
+        });
 
         cleanup();
+        setUserPreferenceStore(createUserPreferenceStore({}, undefined));
         stubBlockedLocalStorage();
         renderLogTab(createBackend());
         selectView("Raw");

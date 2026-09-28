@@ -225,8 +225,8 @@ test.describe("Outlined label notch geometry", () => {
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("config-searching")).toBeVisible();
         // The longest labels on this tab are advanced settings, and the
-        // disclosure is a per-browser `localStorage` preference the `page`
-        // fixture clears on every document load.
+        // disclosure is a user preference (ADR-0057) the `baseline` fixture
+        // resets before every test.
         const advanced = page.getByRole("switch", {name: "Advanced settings"});
         await advanced.setChecked(true);
         await expect(advanced).toBeChecked();

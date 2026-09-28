@@ -11,6 +11,7 @@ import {beforeEach, describe, expect, it, vi} from "vitest";
 
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
+import {userPreferences} from "../../../services/preferences/userPreferences";
 import {
     localStorageStore,
     stubBlockedLocalStorage,
@@ -1132,7 +1133,7 @@ describe("SearchWorkspace", () => {
             expect(panel).toBeVisible();
         });
 
-        it("should restore the remembered open state and record every toggle", () => {
+        it("should restore the open state this browser remembered and record every toggle in the user's preferences", () => {
             advancedOpenStore.set("nzbhydra.search.advancedOpen", "true");
             renderWorkspace({});
 
@@ -1141,13 +1142,13 @@ describe("SearchWorkspace", () => {
             expect(screen.getByTestId("search-advanced-panel")).toBeVisible();
 
             fireEvent.click(toggle);
-            expect(advancedOpenStore.get("nzbhydra.search.advancedOpen")).toBe(
-                "false",
-            );
+            expect(userPreferences().read("searchForm")).toEqual({
+                advancedOpen: false,
+            });
             fireEvent.click(toggle);
-            expect(advancedOpenStore.get("nzbhydra.search.advancedOpen")).toBe(
-                "true",
-            );
+            expect(userPreferences().read("searchForm")).toEqual({
+                advancedOpen: true,
+            });
         });
 
         it("should start closed when the store is blocked, and still toggle", () => {
@@ -1166,9 +1167,7 @@ describe("SearchWorkspace", () => {
 
             fireEvent.click(screen.getByTestId("search-chip-season"));
             expect(screen.getByTestId("search-advanced-panel")).toBeVisible();
-            expect(advancedOpenStore.has("nzbhydra.search.advancedOpen")).toBe(
-                false,
-            );
+            expect(userPreferences().read("searchForm")).toBeUndefined();
         });
     });
 
@@ -1606,9 +1605,7 @@ describe("SearchWorkspace", () => {
         expect(screen.getByTestId("search-advanced-panel")).toBeVisible();
         expect(screen.getByLabelText("Season")).toHaveFocus();
         // The auto-open is not the toggle, so it leaves no memory behind.
-        expect(advancedOpenStore.has("nzbhydra.search.advancedOpen")).toBe(
-            false,
-        );
+        expect(userPreferences().read("searchForm")).toBeUndefined();
     });
 
     it("should open Advanced on the additional filter after a movie suggestion is chosen", async () => {
