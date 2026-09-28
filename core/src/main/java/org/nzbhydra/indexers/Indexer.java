@@ -232,6 +232,8 @@ public abstract class Indexer<T> {
         }
 
         indexerSearchResult.setPageSize(searchResultItems.size());
+        //Needed to find the first result old enough for a minimum age, see MinAgeOffsetSearch
+        indexerSearchResult.rememberResultDates(searchResultItems);
         debug(LoggingMarkers.PERFORMANCE, "Parsing of results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();

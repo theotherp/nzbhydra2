@@ -25,12 +25,16 @@ public final class PagingScenarios {
     public static final String SHOW_QUERY_PREFIX = "show";
     public static final String BLUB_QUERY_PREFIX = "blub";
     public static final String PAGING_QUERY = "paging";
+    public static final String MIN_AGE_QUERY = "minagepaging";
+    public static final int MIN_AGE_TOTAL = 20_000;
+    public static final int MIN_AGE_PAGE_SIZE = 100;
+    public static final int MIN_AGE_SPREAD_DAYS = 10;
 
     private PagingScenarios() {
     }
 
     public static List<Scenario> scenarios() {
-        return List.of(offsetTest(), offsetTest2(), dognzbTotalTest(), show(), blub(), paging(), pagingWithTotal());
+        return List.of(offsetTest(), offsetTest2(), dognzbTotalTest(), show(), blub(), paging(), pagingWithTotal(), minAgePaging());
     }
 
     public static Scenario offsetTest() {
@@ -189,6 +193,37 @@ public final class PagingScenarios {
                                 .offset(context.offset())
                                 .build())
                         .withTotal(context -> Integer.parseInt(context.query().substring(PAGING_QUERY.length()))));
+    }
+
+    /**
+     * An indexer which returns its results newest first but can't filter by minimum age, like most newznab indexers
+     * (see #1105). Result n is titled "minagepaging-n" and is one minute plus n times ten days / 20,000 old, so
+     * searching for a minimum age of 7 days means skipping the first ~14,000 results.
+     */
+    public static Scenario minAgePaging() {
+        return new Scenario("paging-minage",
+                MIN_AGE_TOTAL + " results newest first, spread evenly over " + MIN_AGE_SPREAD_DAYS + " days, at most " + MIN_AGE_PAGE_SIZE + " per page regardless of the requested limit",
+                Match.queryEqualsIgnoreCase(MIN_AGE_QUERY),
+                (RootBehaviour) context -> {
+                    int start = Math.min(context.offset(), MIN_AGE_TOTAL);
+                    int end = Math.min(start + MIN_AGE_PAGE_SIZE, MIN_AGE_TOTAL);
+                    NewznabXmlRoot root = NewznabMockBuilder.generateResponse(NewznabMockRequest.builder()
+                            .numberOfResults(end - start)
+                            .titleBase(MIN_AGE_QUERY)
+                            .titleWords(Collections.emptyList())
+                            .offset(start)
+                            .total(MIN_AGE_TOTAL)
+                            .build());
+                    Instant now = Instant.now();
+                    long millisBetweenResults = ChronoUnit.DAYS.getDuration().multipliedBy(MIN_AGE_SPREAD_DAYS).toMillis() / MIN_AGE_TOTAL;
+                    List<NewznabXmlItem> items = root.getRssChannel().getItems();
+                    for (int i = 0; i < items.size(); i++) {
+                        int index = start + i;
+                        items.get(i).setTitle(MIN_AGE_QUERY + "-" + index);
+                        items.get(i).setPubDate(now.minus(1, ChronoUnit.MINUTES).minusMillis(index * millisBetweenResults));
+                    }
+                    return root;
+                });
     }
 
 }

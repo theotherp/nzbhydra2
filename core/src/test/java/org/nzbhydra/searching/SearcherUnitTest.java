@@ -1128,4 +1128,156 @@ public class SearcherUnitTest {
         assertThat(result.getLimit()).isEqualTo(10);
     }
 
+    // ------------------------------------------------------------------------------------------------
+    // Minimum age
+    // ------------------------------------------------------------------------------------------------
+
+    @Test
+    void shouldFindResultsOlderThanMinAgeWithoutLoadingAllYoungerResults() throws Exception {
+        //Like the indexer in #1105: 35,000 results within 10 days, 500 per page, the first one 7 days old at ~24,500
+        List<SearchResultItem> allItems = itemsSpreadOverDays(35_000, 10, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 500, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.API, 0, 100, "shouldFindResultsOlderThanMinAge");
+        searchRequest.setMinage(7);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        int firstOldEnough = firstIndexOlderThan(allItems, 7);
+        assertThat(result.getSearchResultItems()).containsExactlyElementsOf(allItems.subList(firstOldEnough, firstOldEnough + 100));
+        assertThat(requestedOffsets).hasSizeLessThanOrEqualTo(10);
+    }
+
+    @Test
+    void shouldFindResultsOlderThanMinAgeWithSmallPages() throws Exception {
+        //Many indexers return at most 100 results per page. The probes must not use up the queries allowed for a search
+        List<SearchResultItem> allItems = itemsSpreadOverDays(100_000, 10, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.API, 0, 1000, "shouldFindResultsOlderThanMinAgeWithSmallPages");
+        searchRequest.setMinage(7);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        int firstOldEnough = firstIndexOlderThan(allItems, 7);
+        assertThat(result.getSearchResultItems()).containsExactlyElementsOf(allItems.subList(firstOldEnough, firstOldEnough + 1000));
+    }
+
+    @Test
+    void shouldLoadAllResultsOlderThanMinAgeInOrder() throws Exception {
+        List<SearchResultItem> allItems = itemsSpreadOverDays(5_000, 10, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.INTERNAL, 0, 100, "shouldLoadAllResultsOlderThanMinAge");
+        searchRequest.setMinage(7);
+        searchRequest.setLoadAll(true);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        int firstOldEnough = firstIndexOlderThan(allItems, 7);
+        assertThat(result.getSearchResultItems()).containsExactlyElementsOf(allItems.subList(firstOldEnough, allItems.size()));
+        //Every page from the boundary on plus a few probes, but none of the younger pages
+        int pagesFromBoundary = (allItems.size() - firstOldEnough) / 100 + 1;
+        assertThat(requestedOffsets).hasSizeLessThanOrEqualTo(pagesFromBoundary + 8);
+    }
+
+    @Test
+    void shouldStopWhenNoResultIsOldEnough() throws Exception {
+        List<SearchResultItem> allItems = itemsSpreadOverDays(5_000, 5, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.API, 0, 100, "shouldStopWhenNoResultIsOldEnough");
+        searchRequest.setMinage(7);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        assertThat(result.getSearchResultItems()).isEmpty();
+        assertThat(result.getNumberOfRejectedResults()).isPositive();
+        assertThat(requestedOffsets).hasSizeLessThanOrEqualTo(10);
+    }
+
+    @Test
+    void shouldPageThroughResultsWhenIndexerDoesNotReturnNewestFirst() throws Exception {
+        List<SearchResultItem> allItems = new ArrayList<>(itemsSpreadOverDays(1_000, 10, indexer1));
+        java.util.Collections.shuffle(allItems, new Random(1105));
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.API, 0, 100, "shouldPageThroughUnsortedResults");
+        searchRequest.setMinage(7);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        assertThat(requestedOffsets).isEqualTo(List.of(0, 100, 200, 300, 400).subList(0, requestedOffsets.size()));
+        assertThat(result.getSearchResultItems()).hasSize(100);
+        assertThat(result.getSearchResultItems()).allSatisfy(x -> assertThat(x.getAgeInDays()).isGreaterThanOrEqualTo(7));
+    }
+
+    @Test
+    void shouldIgnoreProbesBehindTheFirstOldEnoughResult() throws Exception {
+        //The first probe in the middle already finds results old enough. They must not be returned before the ones
+        //between the boundary and the probe
+        List<SearchResultItem> allItems = itemsSpreadOverDays(2_000, 10, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 2, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.API, 0, 150, "shouldIgnoreProbesBehindBoundary");
+        searchRequest.setMinage(2);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        int firstOldEnough = firstIndexOlderThan(allItems, 2);
+        assertThat(result.getSearchResultItems()).containsExactlyElementsOf(allItems.subList(firstOldEnough, firstOldEnough + 150));
+        assertThat(requestedOffsets).contains(1050);
+    }
+
+    /**
+     * Returns results newest first, the first one a minute old and the others spread evenly over the given days.
+     */
+    private List<SearchResultItem> itemsSpreadOverDays(int count, int days, Indexer indexer) {
+        Instant now = Instant.now();
+        long millisBetweenResults = TimeUnit.DAYS.toMillis(days) / count;
+        List<SearchResultItem> items = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            items.add(item("result" + i, indexer, now.minus(1, ChronoUnit.MINUTES).minusMillis(i * millisBetweenResults)));
+        }
+        return items;
+    }
+
+    private int firstIndexOlderThan(List<SearchResultItem> items, int minAgeDays) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getAgeInDays() >= minAgeDays) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Behaves like an indexer which can't filter by minimum age: returns pages of the given results in their order and
+     * rejects the ones younger than the minimum age, like {@link Indexer#search} does.
+     */
+    private org.mockito.stubbing.Answer<IndexerSearchResult> ageSortedIndexer(Indexer indexer, List<SearchResultItem> allItems, int pageSize, int minAgeDays, List<Integer> requestedOffsets) {
+        return invocation -> {
+            int offset = invocation.getArgument(1);
+            requestedOffsets.add(offset);
+            List<SearchResultItem> page = allItems.subList(Math.min(offset, allItems.size()), Math.min(offset + pageSize, allItems.size()));
+            IndexerSearchResult result = new IndexerSearchResult(indexer, true);
+            result.rememberResultDates(page);
+            List<SearchResultItem> accepted = new ArrayList<>();
+            for (SearchResultItem item : page) {
+                if (item.getAgeInDays() >= minAgeDays) {
+                    accepted.add(item);
+                } else {
+                    result.getReasonsForRejection().add("Wrong age");
+                }
+            }
+            result.setSearchResultItems(accepted);
+            result.setOffset(offset);
+            result.setPageSize(page.size());
+            result.setTotalResults(allItems.size());
+            result.setTotalResultsKnown(true);
+            result.setHasMoreResults(allItems.size() > offset + page.size());
+            return result;
+        };
+    }
+
 }

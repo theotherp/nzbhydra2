@@ -395,7 +395,7 @@ test.describe("Search", () => {
                 "Min size",
                 "Max size",
             ]) {
-                const field = page.getByLabel(label);
+                const field = page.getByLabel(label, {exact: true});
                 await expect(field).toBeVisible();
                 expect(
                     await field.evaluate(
@@ -689,7 +689,7 @@ test.describe("Search", () => {
             await openAdvanced(page);
             await page.getByLabel("Season").fill("1");
             await page.getByLabel("Episode").fill("2");
-            await page.getByLabel("Min age").fill("10");
+            await page.getByLabel("Min age", {exact: true}).fill("10");
             await page.getByLabel("Max age").fill("100");
             await page.getByLabel("Min size").fill("500");
             await page.getByLabel("Max size").fill("8000");
@@ -785,7 +785,7 @@ test.describe("Search", () => {
     }) => {
         await openAdvanced(page);
         const advancedPanel = page.getByTestId("search-advanced-panel");
-        const minAge = page.getByLabel("Min age");
+        const minAge = page.getByLabel("Min age", {exact: true});
         const ageChip = page.getByTestId("search-chip-age");
 
         await expect(page.getByTestId("search-chips")).toBeVisible();
@@ -1087,7 +1087,7 @@ test.describe("Search", () => {
         await page.getByRole("option", {name: "Mock1"}).click();
         await page.keyboard.press("Escape");
         await page.getByTestId("search-query").fill("recent criteria");
-        await page.getByLabel("Min age").fill("2");
+        await page.getByLabel("Min age", {exact: true}).fill("2");
         await page.getByLabel("Max size").fill("50");
         const firstSearch = page.waitForResponse((response) =>
             isSearchResponse(response),
@@ -1119,7 +1119,7 @@ test.describe("Search", () => {
         // Refilling remounts the workspace; the disclosure holding the
         // refilled ranges reopens from its remembered state (FM-087).
         await openAdvanced(page);
-        await expect(page.getByLabel("Min age")).toHaveValue("2");
+        await expect(page.getByLabel("Min age", {exact: true})).toHaveValue("2");
         await expect(page.getByLabel("Max size")).toHaveValue("50");
         await page.getByTestId("recent-searches-trigger").click();
         const repeatedSearch = page.waitForResponse((response) =>

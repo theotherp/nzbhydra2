@@ -147,9 +147,9 @@ public class Searcher {
                     .flatMap(x -> x.getSearchResultItems().stream())
                     .collect(Collectors.toList());
                 newItemsFromIndexers = newItems.size();
-                //A page size of zero means the next query would use the same offset again
-                anyIndexerAdvanced = newIndexerSearchResults.stream().anyMatch(x -> x.getPageSize() > 0);
-                stalledIndexers = newIndexerSearchResults.stream().filter(x -> x.getPageSize() == 0).map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
+                //E.g. a page size of zero means the next query would use the same offset again
+                anyIndexerAdvanced = indexersToSearch.stream().anyMatch(x -> !x.isStalled());
+                stalledIndexers = indexersToSearch.stream().filter(IndexerSearchCacheEntry::isStalled).map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
                 duplicateDetector.addToGroups(searchCacheEntry.getDuplicateGroups(), newItems);
             }
 
@@ -331,13 +331,7 @@ public class Searcher {
     }
 
     private Callable<IndexerSearchResult> getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
-        int offset;
-        if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
-            offset = 0;
-        } else {
-            IndexerSearchResult indexerToSearch = Iterables.getLast(indexerSearchCacheEntry.getIndexerSearchResults());
-            offset = indexerToSearch.getOffset() + indexerToSearch.getPageSize();
-        }
+        int offset = indexerSearchCacheEntry.getNextOffset();
         int limit = LOAD_LIMIT_API;
         return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit);
     }

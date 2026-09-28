@@ -11,6 +11,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.springnative.ReflectionMarker;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 @Data
 @ReflectionMarker
 public class IndexerSearchResult {
+
+    public static final Duration SORT_ORDER_TOLERANCE = Duration.ofHours(1);
 
     private Indexer indexer;
     private boolean wasSuccessful = false;
@@ -44,6 +47,16 @@ public class IndexerSearchResult {
 
 
     private Multiset<String> reasonsForRejection = HashMultiset.create();
+    /**
+     * Dates of the newest and oldest result of the page as returned by the indexer, i.e. before any results were
+     * rejected. Null if no result had a date.
+     */
+    private Instant newestResultDate;
+    private Instant oldestResultDate;
+    /**
+     * Whether the indexer returned the results of the page newest first.
+     */
+    private boolean sortedNewestFirst = true;
 
     public IndexerSearchResult() {
     }
@@ -70,6 +83,34 @@ public class IndexerSearchResult {
             ids.add(searchResultEntity.getId());
         }
         return ids;
+    }
+
+    /**
+     * Remembers the dates of the page's results in the order the indexer returned them, before any were rejected.
+     * Small deviations in the order are tolerated because indexers may sort by a slightly different date than the one
+     * we use.
+     */
+    public void rememberResultDates(List<SearchResultItem> items) {
+        newestResultDate = null;
+        oldestResultDate = null;
+        sortedNewestFirst = true;
+        Instant previousDate = null;
+        for (SearchResultItem item : items) {
+            Instant date = item.getBestDate();
+            if (date == null) {
+                continue;
+            }
+            if (previousDate != null && date.isAfter(previousDate.plus(SORT_ORDER_TOLERANCE))) {
+                sortedNewestFirst = false;
+            }
+            previousDate = date;
+            if (newestResultDate == null || date.isAfter(newestResultDate)) {
+                newestResultDate = date;
+            }
+            if (oldestResultDate == null || date.isBefore(oldestResultDate)) {
+                oldestResultDate = date;
+            }
+        }
     }
 
     public List<SearchResultItem> getSearchResultItems() {

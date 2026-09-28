@@ -413,6 +413,28 @@ describe("SearchWorkspace", () => {
         await waitFor(() => expect(panel).not.toBeVisible());
     });
 
+    it("should offer a tooltip explaining what a minimum age costs", async () => {
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={vi.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-advanced-toggle"));
+
+        // A real, keyboard-reachable button, not a bare title attribute.
+        const affordance = screen.getByRole("button", {name: "About Min age"});
+        affordance.focus();
+        expect(affordance).toHaveFocus();
+        fireEvent.mouseOver(affordance);
+        expect(await screen.findByRole("tooltip")).toHaveTextContent(
+            "Most indexers can't leave out recent results themselves",
+        );
+    });
+
     // FM-087 rewrote this case: the season/episode pair and the additional
     // filter left the input row for the Advanced panel's Media section, so
     // the containment it asserts moved with them. What it exists to prove --

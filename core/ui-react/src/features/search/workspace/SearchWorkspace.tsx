@@ -93,6 +93,10 @@ const mediaSectionWidth = seasonEpisodeFieldWidth * 2 + 10;
 // Two range fields plus their 6px `gap: 0.75` gutter, so Age & Size wraps
 // into a 2x2 block on a wide panel and a single column on a narrow one.
 const rangeSectionWidth = rangeFieldWidth * 2 + 6;
+// Most indexers only filter by maximum age, so the core has to probe for the
+// first result old enough (#1105).
+const MIN_AGE_TOOLTIP =
+    "Most indexers can't leave out recent results themselves, so NZBHydra needs a few extra requests to find older ones. Searches with a minimum age may take a bit longer and use more of your indexer's API hits.";
 // The chips row renders whenever Advanced is open or at least one chip has
 // something to show (`advancedOpen || hasChips`; FM-146, owner revision
 // 2026-08-30 of FM-143's same-day "always rendered" rule). While Advanced is
@@ -978,6 +982,7 @@ export function SearchWorkspace({
                                     registration={register("minage", {
                                         pattern: /^\d*$/,
                                     })}
+                                    tooltip={MIN_AGE_TOOLTIP}
                                     unit="d"
                                 />
                                 <AdvancedRangeInput

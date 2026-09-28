@@ -170,6 +170,7 @@ public class ScenarioRegistry {
         scenarios.add(PagingScenarios.blub());
         scenarios.add(PagingScenarios.paging());
         scenarios.add(PagingScenarios.pagingWithTotal());
+        scenarios.add(PagingScenarios.minAgePaging());
         scenarios.add(ContentScenarios.randomAge());
         scenarios.add(ContentScenarios.limits());
         scenarios.add(ContentScenarios.limitsWithoutDates());

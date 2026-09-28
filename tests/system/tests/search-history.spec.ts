@@ -284,7 +284,7 @@ test.describe("Search history", () => {
             ["Min age", "2"],
             ["Max age", "10"],
         ]) {
-            await page.getByLabel(label).fill(value);
+            await page.getByLabel(label, {exact: true}).fill(value);
         }
         await page.getByTestId("search-query").fill(query);
         const searchResponse = page.waitForResponse((response) =>

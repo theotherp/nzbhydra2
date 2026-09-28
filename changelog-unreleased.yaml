@@ -40,3 +40,5 @@
     text: "Downloading the selected results as a ZIP file works again. See #1104"
 -   type: "fix"
     text: "Selected results are sent to the downloader in the order you selected them again. See #1106"
+-   type: "fix"
+    text: "Searches with a minimum age find older results again when there are many newer ones, e.g. 1080p releases between 7 and 10 days old. Most indexers can&apos;t leave out recent results themselves, so NZBHydra used to load them page by page and gave up before reaching the older ones. It now jumps ahead to them with a few extra requests. See #1105"

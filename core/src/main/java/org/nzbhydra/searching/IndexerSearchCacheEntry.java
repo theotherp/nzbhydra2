@@ -33,9 +33,20 @@ public class IndexerSearchCacheEntry {
      * after the list is rebuilt and re-sorted in {@link #addIndexerSearchResult}.
      */
     private final Set<SearchResultItem> poppedItems = new HashSet<>();
+    /**
+     * Only set for searches with a minimum age.
+     */
+    private MinAgeOffsetSearch minAgeOffsetSearch;
 
     public IndexerSearchCacheEntry(Indexer indexer) {
         this.indexer = indexer;
+    }
+
+    public IndexerSearchCacheEntry(Indexer indexer, Integer minAgeDays) {
+        this.indexer = indexer;
+        if (minAgeDays != null && minAgeDays > 0) {
+            minAgeOffsetSearch = new MinAgeOffsetSearch(indexer.getName(), minAgeDays);
+        }
     }
 
     public boolean isLastSuccessful() {
@@ -50,6 +61,11 @@ public class IndexerSearchCacheEntry {
     }
 
     public void addIndexerSearchResult(IndexerSearchResult newIndexerSearchResult) {
+        if (minAgeOffsetSearch != null && !minAgeOffsetSearch.pageLoaded(newIndexerSearchResult)) {
+            //Results behind the first one old enough. They would be merged before the ones in between were loaded
+            newIndexerSearchResult.setSearchResultItems(new ArrayList<>());
+            newIndexerSearchResult.getReasonsForRejection().clear();
+        }
         indexerSearchResults.add(newIndexerSearchResult);
         searchResultItems.clear();
         for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
@@ -93,7 +109,39 @@ public class IndexerSearchCacheEntry {
         if (indexerSearchResults.isEmpty()) {
             return true;
         }
-        return Iterables.getLast(indexerSearchResults).isHasMoreResults();
+        IndexerSearchResult lastResult = Iterables.getLast(indexerSearchResults);
+        if (minAgeOffsetSearch != null) {
+            return minAgeOffsetSearch.isMoreResultsAvailable(lastResult);
+        }
+        return lastResult.isHasMoreResults();
+    }
+
+    /**
+     * @return the number of queries which were only made to find the first result old enough for a minimum age
+     */
+    public int getMinAgeProbes() {
+        return minAgeOffsetSearch == null ? 0 : minAgeOffsetSearch.getProbes();
+    }
+
+    /**
+     * @return the offset with which the indexer should be queried next
+     */
+    public int getNextOffset() {
+        if (indexerSearchResults.isEmpty()) {
+            return 0;
+        }
+        IndexerSearchResult lastResult = Iterables.getLast(indexerSearchResults);
+        if (minAgeOffsetSearch != null) {
+            return minAgeOffsetSearch.getNextOffset(lastResult);
+        }
+        return lastResult.getOffset() + lastResult.getPageSize();
+    }
+
+    /**
+     * @return true if the next query would use the same offset as the last one and therefore return the same results
+     */
+    public boolean isStalled() {
+        return !indexerSearchResults.isEmpty() && getNextOffset() == Iterables.getLast(indexerSearchResults).getOffset();
     }
 
     public boolean isAllPulled() {

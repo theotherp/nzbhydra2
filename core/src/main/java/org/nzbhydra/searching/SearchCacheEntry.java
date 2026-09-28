@@ -31,13 +31,15 @@ import java.util.stream.Collectors;
 public class SearchCacheEntry {
 
     /**
-     * Maximum number of queries sent to a single indexer for one search unless all results are to be loaded.
+     * Maximum number of queries sent to a single indexer for one search unless all results are to be loaded. Queries
+     * to find the first result old enough for a minimum age are not counted.
      */
     static final int MAX_QUERIES_UNTIL_BREAK = 15;
 
     /**
      * Maximum number of queries sent to a single indexer for one load-all search. Generous because loading all results
      * legitimately needs many pages, but still a hard backstop against indexers which never stop reporting more results.
+     * Also applies to all other searches, including their queries for a minimum age.
      */
     static final int MAX_QUERIES_UNTIL_BREAK_LOAD_ALL = MAX_QUERIES_UNTIL_BREAK * 10;
 
@@ -101,14 +103,16 @@ public class SearchCacheEntry {
      */
     public List<IndexerSearchCacheEntry> getIndexersToSearch() {
         for (Indexer selectedIndexer : indexerSelectionResult.getSelectedIndexers()) {
-            indexerCacheEntries.putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer));
+            indexerCacheEntries.putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer, searchRequest.getMinage().orElse(null)));
         }
 
         List<IndexerSearchCacheEntry> indexersToSearch = new ArrayList<>();
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexerCacheEntries.values()) {
             final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
             final int maxQueries = searchRequest.isLoadAll() ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
-            if (executedSearches >= maxQueries) {
+            //Probes for a minimum age don't count because otherwise indexers with small pages would have few left
+            final int countedSearches = executedSearches - indexerSearchCacheEntry.getMinAgeProbes();
+            if (countedSearches >= maxQueries || executedSearches >= MAX_QUERIES_UNTIL_BREAK_LOAD_ALL) {
                 //Circuit breaker
                 logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, searchRequest.isLoadAll() ? "load-all " : "");
                 continue;

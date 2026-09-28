@@ -720,12 +720,12 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         // with a static border) is a stock outlined TextField since ADR-0014.
         await expectFocusedOutlinedInput(
             page,
-            page.getByLabel("Min age").locator(inputRoot),
+            page.getByLabel("Min age", {exact: true}).locator(inputRoot),
             "advanced-range-input",
         );
         await captureFocusedControl(
             page,
-            page.getByLabel("Min age").locator(inputRoot),
+            page.getByLabel("Min age", {exact: true}).locator(inputRoot),
             visualEvidencePath(
                 "F-SEARCH-FORM",
                 "keyboard-focus-advanced-range-input-desktop",
@@ -761,7 +761,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await openSearchRoute(page, "desktop");
         await page.getByTestId("search-advanced-toggle").click();
         await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
-        await page.getByLabel("Min age").fill("10");
+        await page.getByLabel("Min age", {exact: true}).fill("10");
         const chip = page.getByTestId("search-chip-age");
         await expect(chip).toBeVisible();
         // FM-149 folded the chips row into its own `Collapse`, which keeps

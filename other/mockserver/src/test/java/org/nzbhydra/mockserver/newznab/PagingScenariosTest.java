@@ -116,4 +116,29 @@ class PagingScenariosTest {
         assertThat(answer.items().get(0).getTitle()).isEqualTo("indexer1-51");
     }
 
+    @Test
+    void shouldReturnMinAgePagesNewestFirstWithAtMostOneHundredResults() throws Exception {
+        NewznabParameters parameters = params("1", PagingScenarios.MIN_AGE_QUERY);
+        parameters.setOffset(14_000);
+        parameters.setLimit(1000);
+
+        ScenarioTestSupport.Answer answer = answer(parameters);
+
+        assertThat(answer.scenarioId()).isEqualTo("paging-minage");
+        assertThat(answer.total()).isEqualTo(PagingScenarios.MIN_AGE_TOTAL);
+        assertThat(answer.items()).hasSize(PagingScenarios.MIN_AGE_PAGE_SIZE);
+        assertThat(answer.items().get(0).getTitle()).isEqualTo("minagepaging-14000");
+        assertThat(answer.items().get(0).getPubDate()).isAfter(answer.items().get(99).getPubDate());
+        //Result 14,000 of 20,000 spread over ten days is seven days old
+        assertThat(Duration.between(answer.items().get(0).getPubDate(), java.time.Instant.now()).toDays()).isEqualTo(7);
+    }
+
+    @Test
+    void shouldReturnNothingBehindTheLastMinAgePage() throws Exception {
+        NewznabParameters parameters = params("1", PagingScenarios.MIN_AGE_QUERY);
+        parameters.setOffset(PagingScenarios.MIN_AGE_TOTAL);
+
+        assertThat(answer(parameters).items()).isEmpty();
+    }
+
 }
