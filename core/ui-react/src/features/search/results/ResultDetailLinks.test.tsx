@@ -10,7 +10,8 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import type {SearchResult} from "../../../api/search";
 import {ApiTransport} from "../../../api/transport";
 import {ToastProvider} from "../../../components/toasts/ToastProvider";
-import {binsearchUrl, nfoTooltip, ResultDetailLinks} from "./ResultDetailLinks";
+import {ResultDetailLinks} from "./ResultDetailLinks";
+import {binsearchUrl, nfoTooltip} from "./resultDetailLinkHelpers";
 
 const result: SearchResult = {
     searchResultId: "42",

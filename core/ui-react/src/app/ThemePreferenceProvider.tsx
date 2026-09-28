@@ -1,8 +1,6 @@
 import {ThemeProvider} from "@mui/material/styles";
 import {
-    createContext,
     useCallback,
-    useContext,
     useEffect,
     useMemo,
     useRef,
@@ -18,6 +16,7 @@ import {
     type ThemePreferenceService,
 } from "../services/theme/themePreference";
 import {createHydraTheme, type ThemePreference} from "./theme";
+import {ThemePreferenceContext} from "./useThemePreference";
 
 /**
  * FM-154 (ADR-0049): the application's theme preference, and the MUI theme
@@ -33,13 +32,6 @@ import {createHydraTheme, type ThemePreference} from "./theme";
  * this context now also writes the server record and the local seed cache, and
  * the initial value comes from those two sources instead of from a constant.
  */
-type ThemePreferenceContextValue = {
-    preference: ThemePreference;
-    setPreference: (preference: ThemePreference) => void;
-};
-
-const ThemePreferenceContext =
-    createContext<ThemePreferenceContextValue | null>(null);
 
 /**
  * `prefers-color-scheme`, as a subscribable value rather than a one-shot read.
@@ -189,21 +181,4 @@ export function ThemePreferenceProvider({
             <ThemeProvider theme={theme}>{children}</ThemeProvider>
         </ThemePreferenceContext.Provider>
     );
-}
-
-/**
- * The current preference and the setter that changes it.
- *
- * Throws outside the provider rather than falling back to a default: a theme
- * selector that silently does nothing is worse than one that fails loudly in a
- * test.
- */
-export function useThemePreference(): ThemePreferenceContextValue {
-    const value = useContext(ThemePreferenceContext);
-    if (value === null) {
-        throw new Error(
-            "useThemePreference must be used inside a ThemePreferenceProvider",
-        );
-    }
-    return value;
 }

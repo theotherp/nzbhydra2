@@ -11,7 +11,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 
 import type {SearchResult} from "../../../api/search";
 import {stubNarrowViewport} from "../../../test/browserStubs";
-import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
+import {FILTER_COMMIT_DELAY_MS} from "./useDebouncedFilterValue";
 import {RefineSidebar} from "./RefineSidebar";
 import type {QuickFilter, ResultFilters} from "./resultTable";
 import {defaultFilters, filterResults, quickFilterKey} from "./resultTable";

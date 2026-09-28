@@ -14,8 +14,8 @@ import {
     horizontalScrollEdges,
     SCROLL_AFFORDANCE_END_TEST_ID,
     SCROLL_AFFORDANCE_START_TEST_ID,
-    TableScrollAffordance,
-} from "./TableScrollAffordance";
+} from "./tableScrollEdges";
+import {TableScrollAffordance} from "./TableScrollAffordance";
 
 describe("horizontalScrollEdges", () => {
     it("reports no edge while the content fits", () => {

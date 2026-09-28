@@ -35,6 +35,7 @@ import {
     saveOrSendTorrents,
 } from "../../../domain/downloads/actions";
 import type {Downloader} from "../../../domain/downloads/actions";
+import {bootstrapBase} from "./bootstrapBase";
 import {runSendFlow} from "./sendFlow";
 
 // The mock's primary bulk-action button (`sendToDownloader`): filled
@@ -741,19 +742,4 @@ export function DirectDownloadActions({
             {type === "nzb" ? "NZB" : "Torrent"}
         </Button>
     );
-}
-
-/**
- * The bootstrap's API base, read the same way for every transport this feature
- * builds. Exported since FM-082, which needs one shared transport for the
- * rows' `API-SEARCH-NFO` requests rather than one per row.
- */
-export function bootstrapBase(): string {
-    const value = window.__NZBHYDRA_BOOTSTRAP__;
-    return typeof value === "object" &&
-        value !== null &&
-        "baseUrl" in value &&
-        typeof value.baseUrl === "string"
-        ? value.baseUrl
-        : "/";
 }

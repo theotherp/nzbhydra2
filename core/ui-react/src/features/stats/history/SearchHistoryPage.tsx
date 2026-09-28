@@ -38,10 +38,8 @@ import {
 } from "../../../api/history/filters";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
-import {
-    CopyValueButton,
-    rowRevealsCopyButtonsOnHover,
-} from "../../../components/CopyValueButton";
+import {CopyValueButton} from "../../../components/CopyValueButton";
+import {rowRevealsCopyButtonsOnHover} from "../../../components/copyValueButtonHover";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";

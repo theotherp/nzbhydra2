@@ -25,7 +25,7 @@ import {
     type SafeConfig,
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
-import {useThemePreference} from "./ThemePreferenceProvider";
+import {useThemePreference} from "./useThemePreference";
 import {themePreferenceOptions, type ThemePreference} from "./theme";
 import {DownloaderStatusFooter} from "./status/DownloaderStatusFooter";
 import {NotificationToasts} from "./status/NotificationToasts";

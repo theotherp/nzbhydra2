@@ -4193,3 +4193,19 @@ their text and relative order are unchanged.
 - **Not verified:** the native image. `BootstrappedDataTO.userPreferences` is the first free-form `Map<String, Object>` in the Thymeleaf bootstrap; it only
   holds JSON primitives, maps and lists, but check it on the next native system-test run.
 - **Commit:** the commit adding this entry.
+
+### 2026-09-28 — Clear the standing gate warnings and the openapi.json drift (owner-directed)
+
+- **Why not a packet:** mechanical repair; no behaviour, selector or contract change. Two Sonnet subagents did the lint and OpenAPI parts, and the coordinator verified them.
+- **What changed:** `core/openapi.json` matches the code again. It adds `abortSearch` and `systemtest/genericstorage`, makes `nfo/{guid}` a string, and lists
+  the four `/api/stats` and `/api/history` endpoints as POST only, as `ExternalApiStats` maps them. The `indexerStatuses` operation-id suffixes shift as a
+  result; three regenerations were identical, and nothing outside `api/generated` references operation ids. `openapi.ts` was regenerated.
+  `settingsIndex.ts` is Prettier-formatted again (it keeps coming back in IntelliJ's import style). `decodeCharacterReferences` is no longer exported (knip).
+  The 12 `react-refresh/only-export-components` warnings are gone: the non-component exports moved unchanged into sibling modules (`useThemePreference`,
+  `copyValueButtonHover`, `useCompactRefineSurface`, `tableScrollEdges`, `loginoutAffordance`, `colorValue`, `SettingHighlight`, `bootstrapBase`,
+  `refineLabels`, `resultDetailLinkHelpers`, `useDebouncedFilterValue`). `SearchPage`'s Emby generation counter uses `+= 1` so `exhaustive-deps` sees the
+  write, and `LoginPage` uses `useWatch` in place of `watch`. `SearchWorkspace` keeps `watch` behind a justified `react-hooks/incompatible-library`
+  disable at the owner's request: `useWatch` there brings in compiler errors in its autocomplete and focus effects, which would need a behavioural rewrite.
+- **Gates:** `core/ui-react` `lint` 0 problems, `typecheck`, `format:check`, `knip`, `check:api`, `validate:migration`, `validate:focus-affordances`,
+  `test -- --run` (152 files, 2313 tests) and `build` pass; Playwright `smoke`, `session-expiry` and `search` 33/33; `git diff --check` clean.
+- **Commit:** the commit adding this entry.

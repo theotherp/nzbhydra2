@@ -8,11 +8,9 @@ import {
     type ThemePreferenceService,
 } from "../services/theme/themePreference";
 import {localStorageStore} from "../test/browserStubs";
-import {
-    ThemePreferenceProvider,
-    useThemePreference,
-} from "./ThemePreferenceProvider";
+import {ThemePreferenceProvider} from "./ThemePreferenceProvider";
 import type {ThemePreference} from "./theme";
+import {useThemePreference} from "./useThemePreference";
 
 /**
  * FM-155: the startup and write paths of `C-THEME-PREFERENCE`'s one consumer.

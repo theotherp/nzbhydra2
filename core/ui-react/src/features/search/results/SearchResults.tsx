@@ -24,7 +24,7 @@ import {
 import {ApiTransport} from "../../../api/transport";
 import {SafeConfigContext} from "../../../bootstrap";
 import {DialogContext} from "../../../components/dialogs/dialogs";
-import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
+import {useCompactRefineSurface} from "../../../components/refine/useCompactRefineSurface";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {
     configuredDownloaders,
@@ -32,7 +32,7 @@ import {
     downloadSettings,
 } from "../../../domain/downloads/actions";
 import {createServerPreferences} from "../../../services/preferences/serverPreferences";
-import {bootstrapBase} from "./DownloadActions";
+import {bootstrapBase} from "./bootstrapBase";
 import type {SearchedCategory} from "./groupEpisodesHelp";
 import {
     GROUP_EPISODES_HELP_MESSAGE,

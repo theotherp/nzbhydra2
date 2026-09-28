@@ -62,7 +62,7 @@ const CHARACTER_REFERENCE = /&(#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/gi;
  * Decoding does not make the result markup: `<` may now appear, but callers
  * render it into a text node, where it is a visible character and nothing else.
  */
-export function decodeCharacterReferences(text: string): string {
+function decodeCharacterReferences(text: string): string {
     return text.replace(CHARACTER_REFERENCE, (reference, body: string) => {
         if (!body.startsWith("#")) {
             return NAMED_CHARACTER_REFERENCES[body.toLowerCase()] ?? reference;

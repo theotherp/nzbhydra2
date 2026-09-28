@@ -27,10 +27,8 @@ import {
 } from "../../../api/history/downloads";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
-import {
-    CopyValueButton,
-    rowRevealsCopyButtonsOnHover,
-} from "../../../components/CopyValueButton";
+import {CopyValueButton} from "../../../components/CopyValueButton";
+import {rowRevealsCopyButtonsOnHover} from "../../../components/copyValueButtonHover";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
 import {externalLink} from "../../../domain/links/externalLinks";

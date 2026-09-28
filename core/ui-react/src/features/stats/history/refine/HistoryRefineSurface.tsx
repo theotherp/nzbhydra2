@@ -14,10 +14,10 @@ import {refineSectionGap} from "../../../../app/theme";
 import {RefineMultiselect} from "../../../../components/refine/RefineMultiselect";
 import {
     RefineSurface,
-    useCompactRefineSurface,
     type RefineSurfaceLabels,
     type RefineSurfaceTestIds,
 } from "../../../../components/refine/RefineSurface";
+import {useCompactRefineSurface} from "../../../../components/refine/useCompactRefineSurface";
 import {
     DATE_TIME_DISPLAY_FORMAT,
     DATE_TIME_VALUE_FORMAT,

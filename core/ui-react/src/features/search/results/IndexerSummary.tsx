@@ -21,8 +21,8 @@ import {
 import type {ReactNode, Ref} from "react";
 
 import type {SearchResponse} from "../../../api/search";
-import {useCompactRefineSurface} from "../../../components/refine/RefineSurface";
-import {bootstrapBase} from "./DownloadActions";
+import {useCompactRefineSurface} from "../../../components/refine/useCompactRefineSurface";
+import {bootstrapBase} from "./bootstrapBase";
 import {isRecord} from "./storedChoices";
 
 /**

@@ -173,6 +173,13 @@ export function SearchWorkspace({
         control,
         formState: {errors},
     } = useForm<SearchFormValues>({defaultValues: initialValues});
+    // The React Compiler skips this component because of `watch`. Switching to
+    // `useWatch` lets it analyse the component, and that exposes effects which
+    // set state synchronously and a ref read inside `register`'s onChange --
+    // the request-generation guards of the autocomplete and advanced-focus
+    // logic. Rewriting them is a behavioural change, not a lint fix, so the
+    // component stays uncompiled on purpose (owner, 2026-09-28).
+    // eslint-disable-next-line react-hooks/incompatible-library -- see above
     const selectedCategory = watch("category");
     const title = watch("title");
     // Only the fields something below actually renders. The blanket `watch()`

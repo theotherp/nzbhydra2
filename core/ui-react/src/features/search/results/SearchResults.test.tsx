@@ -20,7 +20,7 @@ import {
     stubMissingLocalStorage,
     stubNarrowViewport,
 } from "../../../test/browserStubs";
-import {FILTER_COMMIT_DELAY_MS} from "./filterControls";
+import {FILTER_COMMIT_DELAY_MS} from "./useDebouncedFilterValue";
 import {SearchResults} from "./SearchResults";
 
 const {downloadActionsResults} = vi.hoisted(() => ({

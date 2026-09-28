@@ -648,6 +648,30 @@
                 }
             }
         },
+        "/internalapi/systemtest/genericstorage": {
+            "put": {
+                "tags": ["system-test-state-reset-web"],
+                "operationId": "setGenericStorage",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/internalapi/shortcutSearch/{searchRequestId}": {
             "post": {
                 "tags": ["search-web"],
@@ -660,6 +684,36 @@
                         "schema": {
                             "type": "integer",
                             "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/internalapi/abortSearch/{searchRequestId}": {
+            "post": {
+                "tags": ["search-web"],
+                "operationId": "abortSearch",
+                "parameters": [
+                    {
+                        "name": "searchRequestId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "reason",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -5455,8 +5509,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5482,8 +5535,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5509,8 +5561,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5536,8 +5587,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5563,8 +5613,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5590,8 +5639,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5617,8 +5665,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "format": "int64"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5639,7 +5686,7 @@
         "/internalapi/indexerstatuses": {
             "get": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses",
+                "operationId": "indexerStatuses_1",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5658,7 +5705,7 @@
             },
             "put": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_2",
+                "operationId": "indexerStatuses_3",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5677,7 +5724,7 @@
             },
             "post": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_1",
+                "operationId": "indexerStatuses_2",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5696,7 +5743,7 @@
             },
             "delete": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_3",
+                "operationId": "indexerStatuses_4",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5715,7 +5762,7 @@
             },
             "options": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_6",
+                "operationId": "indexerStatuses_7",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5734,7 +5781,7 @@
             },
             "head": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_5",
+                "operationId": "indexerStatuses_6",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5753,7 +5800,7 @@
             },
             "patch": {
                 "tags": ["indexer-statuses-web"],
-                "operationId": "indexerStatuses_4",
+                "operationId": "indexerStatuses_5",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -7447,7 +7494,7 @@
             }
         },
         "/api/stats": {
-            "get": {
+            "post": {
                 "tags": ["Newznab API"],
                 "summary": "Aggregated statistics as JSON",
                 "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
@@ -7474,368 +7521,14 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_2",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_1",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_3",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "options": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_6",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "head": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_5",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "tags": ["Newznab API"],
-                "summary": "Aggregated statistics as JSON",
-                "description": "The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when \"Allow stats access via API\" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.",
-                "operationId": "apiStats_4",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiStatsRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/StatsResponse"
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         "/api/stats/indexers": {
-            "get": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_7",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_9",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
             "post": {
                 "tags": ["Newznab API"],
                 "summary": "The status and API hit limits of every configured indexer",
                 "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_8",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_10",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "options": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_13",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "head": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_12",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IndexerStatus"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "tags": ["Newznab API"],
-                "summary": "The status and API hit limits of every configured indexer",
-                "description": "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via API\" in the authentication settings.",
-                "operationId": "indexerStatuses_11",
+                "operationId": "indexerStatuses",
                 "requestBody": {
                     "content": {
                         "*/*": {
@@ -7864,7 +7557,7 @@
             }
         },
         "/api/history/searches": {
-            "get": {
+            "post": {
                 "tags": ["Newznab API"],
                 "summary": "Search history as JSON",
                 "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
@@ -7891,350 +7584,14 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_2",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_1",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_3",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "options": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_6",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "head": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_5",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "tags": ["Newznab API"],
-                "summary": "Search history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.",
-                "operationId": "apiHistorySearches_4",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageSearchEntity"
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         "/api/history/downloads": {
-            "get": {
+            "post": {
                 "tags": ["Newznab API"],
                 "summary": "Download history as JSON",
                 "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
                 "operationId": "apiHistoryDownloads",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_2",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_1",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_3",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "options": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_6",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "head": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_5",
-                "requestBody": {
-                    "content": {
-                        "*/*": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ApiHistoryRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PageFileDownloadEntity"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "tags": ["Newznab API"],
-                "summary": "Download history as JSON",
-                "description": "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires \"Allow stats access via API\" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.",
-                "operationId": "apiHistoryDownloads_4",
                 "requestBody": {
                     "content": {
                         "*/*": {

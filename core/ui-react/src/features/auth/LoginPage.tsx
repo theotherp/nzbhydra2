@@ -1,5 +1,5 @@
 import {Box, Button, Paper, Stack, TextField, Typography} from "@mui/material";
-import {useForm} from "react-hook-form";
+import {useForm, useWatch} from "react-hook-form";
 
 import {ApiTransport} from "../../api/transport";
 import {useDocumentTitle} from "../../app/documentTitle";
@@ -30,10 +30,14 @@ export function LoginPage({
 }: LoginPageProps) {
     useDocumentTitle("Login");
     const toasts = useToasts();
-    const {formState, handleSubmit, register, watch} = useForm<FormCredentials>(
-        {defaultValues: {username: "", password: ""}},
-    );
-    const [username, password] = watch(["username", "password"]);
+    const {control, formState, handleSubmit, register} =
+        useForm<FormCredentials>({
+            defaultValues: {username: "", password: ""},
+        });
+    const [username, password] = useWatch({
+        control,
+        name: ["username", "password"],
+    });
     const incomplete = username.trim() === "" || password === "";
 
     const submit = handleSubmit(async (credentials) => {

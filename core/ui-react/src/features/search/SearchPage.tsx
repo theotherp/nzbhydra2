@@ -267,7 +267,7 @@ export function SearchPage({
         return () => {
             pendingUnmountRelease.current = setTimeout(() => {
                 pendingUnmountRelease.current = null;
-                embyGeneration.current++;
+                embyGeneration.current += 1;
                 releaseSubmission();
                 // A real unmount; a StrictMode remount cleared this timeout.
                 abortRunningSearch("leftPage");
@@ -318,7 +318,8 @@ export function SearchPage({
             cancelled: false,
         };
         activeSubmission.current = submission;
-        const currentEmbyGeneration = ++embyGeneration.current;
+        embyGeneration.current += 1;
+        const currentEmbyGeneration = embyGeneration.current;
         setEmbyAvailability(undefined);
         const route = {
             ...canonicalSearch(values, catalog),

@@ -17,7 +17,7 @@ import type {DialogContext} from "../../../components/dialogs/dialogs";
 import type {ToastContext} from "../../../components/toasts/toasts";
 import {downloadSettings} from "../../../domain/downloads/actions";
 import {DownloadActions} from "./DownloadActions";
-import {REFINE_LABELS} from "./RefineSidebar";
+import {REFINE_LABELS} from "./refineLabels";
 import {
     DisplayOptionsMenu,
     RejectedResultsTrigger,

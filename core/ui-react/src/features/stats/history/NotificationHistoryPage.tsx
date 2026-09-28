@@ -18,10 +18,8 @@ import {
 } from "../../../api/history/notifications";
 import {ApiTransport} from "../../../api/transport";
 import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
-import {
-    CopyValueButton,
-    rowRevealsCopyButtonsOnHover,
-} from "../../../components/CopyValueButton";
+import {CopyValueButton} from "../../../components/CopyValueButton";
+import {rowRevealsCopyButtonsOnHover} from "../../../components/copyValueButtonHover";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
 import {SortHeader} from "../shared/SortHeader";

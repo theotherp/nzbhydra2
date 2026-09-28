@@ -10,7 +10,8 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
 import {ToastProvider} from "../../components/toasts/ToastProvider";
-import {LoginOutButton, loginoutAffordance} from "./LoginOutButton";
+import {LoginOutButton} from "./LoginOutButton";
+import {loginoutAffordance} from "./loginoutAffordance";
 
 const mockRouterNavigate = vi.fn();
 

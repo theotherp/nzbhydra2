@@ -356,6 +356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internalapi/systemtest/genericstorage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setGenericStorage"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internalapi/shortcutSearch/{searchRequestId}": {
         parameters: {
             query?: never;
@@ -366,6 +382,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["shortcutSearch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internalapi/abortSearch/{searchRequestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["abortSearch"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2565,13 +2597,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["indexerStatuses"];
-        put: operations["indexerStatuses_2"];
-        post: operations["indexerStatuses_1"];
-        delete: operations["indexerStatuses_3"];
-        options: operations["indexerStatuses_6"];
-        head: operations["indexerStatuses_5"];
-        patch: operations["indexerStatuses_4"];
+        get: operations["indexerStatuses_1"];
+        put: operations["indexerStatuses_3"];
+        post: operations["indexerStatuses_2"];
+        delete: operations["indexerStatuses_4"];
+        options: operations["indexerStatuses_7"];
+        head: operations["indexerStatuses_6"];
+        patch: operations["indexerStatuses_5"];
         trace?: never;
     };
     "/internalapi/downloader/{downloaderName}/categories": {
@@ -2709,41 +2741,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * Aggregated statistics as JSON
          * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
          */
-        get: operations["apiStats"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        put: operations["apiStats_2"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        post: operations["apiStats_1"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        delete: operations["apiStats_3"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        options: operations["apiStats_6"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        head: operations["apiStats_5"];
-        /**
-         * Aggregated statistics as JSON
-         * @description The Newznab-flavoured statistics endpoint. The body is an ApiStatsRequest with the API key and the same request the web interface sends; it is only answered when "Allow stats access via API" is enabled in the authentication settings. New integrations should use GET /externalapi/v1/stats instead, which is documented in the externalapi definition.
-         */
-        patch: operations["apiStats_4"];
+        post: operations["apiStats"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/stats/indexers": {
@@ -2753,41 +2761,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * The status and API hit limits of every configured indexer
          * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
          */
-        get: operations["indexerStatuses_7"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        put: operations["indexerStatuses_9"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        post: operations["indexerStatuses_8"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        delete: operations["indexerStatuses_10"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        options: operations["indexerStatuses_13"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        head: operations["indexerStatuses_12"];
-        /**
-         * The status and API hit limits of every configured indexer
-         * @description The body is an ApiHistoryRequest carrying the API key. Requires "Allow stats access via API" in the authentication settings.
-         */
-        patch: operations["indexerStatuses_11"];
+        post: operations["indexerStatuses"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/history/searches": {
@@ -2797,41 +2781,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * Search history as JSON
          * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
          */
-        get: operations["apiHistorySearches"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        put: operations["apiHistorySearches_2"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        post: operations["apiHistorySearches_1"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        delete: operations["apiHistorySearches_3"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        options: operations["apiHistorySearches_6"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        head: operations["apiHistorySearches_5"];
-        /**
-         * Search history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/searches instead.
-         */
-        patch: operations["apiHistorySearches_4"];
+        post: operations["apiHistorySearches"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/history/downloads": {
@@ -2841,41 +2801,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * Download history as JSON
          * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
          */
-        get: operations["apiHistoryDownloads"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        put: operations["apiHistoryDownloads_2"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        post: operations["apiHistoryDownloads_1"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        delete: operations["apiHistoryDownloads_3"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        options: operations["apiHistoryDownloads_6"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        head: operations["apiHistoryDownloads_5"];
-        /**
-         * Download history as JSON
-         * @description The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort model the web interface uses. Requires "Allow stats access via API" in the authentication settings. New integrations should use GET /externalapi/v1/history/downloads instead.
-         */
-        patch: operations["apiHistoryDownloads_4"];
+        post: operations["apiHistoryDownloads"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -5962,9 +5898,55 @@ export interface operations {
             };
         };
     };
+    setGenericStorage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     shortcutSearch: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                searchRequestId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    abortSearch: {
+        parameters: {
+            query?: {
+                reason?: string;
+            };
             header?: never;
             path: {
                 searchRequestId: number;
@@ -9595,7 +9577,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9617,7 +9599,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9639,7 +9621,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9661,7 +9643,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9683,7 +9665,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9705,7 +9687,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9727,7 +9709,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                guid: number;
+                guid: string;
             };
             cookie?: never;
         };
@@ -9740,46 +9722,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NfoResult"];
-                };
-            };
-        };
-    };
-    indexerStatuses: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IndexerStatus"][];
                 };
             };
         };
@@ -9824,6 +9766,66 @@ export interface operations {
             };
         };
     };
+    indexerStatuses_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["IndexerStatus"][];
+                };
+            };
+        };
+    };
+    indexerStatuses_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["IndexerStatus"][];
+                };
+            };
+        };
+    };
+    indexerStatuses_7: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["IndexerStatus"][];
+                };
+            };
+        };
+    };
     indexerStatuses_6: {
         parameters: {
             query?: never;
@@ -9845,26 +9847,6 @@ export interface operations {
         };
     };
     indexerStatuses_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -11182,295 +11164,7 @@ export interface operations {
             };
         };
     };
-    apiStats_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    apiStats_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    apiStats_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    apiStats_6: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    apiStats_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    apiStats_4: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiStatsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsResponse"];
-                };
-            };
-        };
-    };
-    indexerStatuses_7: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_9: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_8: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_10: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_13: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_12: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IndexerStatus"][];
-                };
-            };
-        };
-    };
-    indexerStatuses_11: {
+    indexerStatuses: {
         parameters: {
             query?: never;
             header?: never;
@@ -11518,295 +11212,7 @@ export interface operations {
             };
         };
     };
-    apiHistorySearches_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
-    apiHistorySearches_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
-    apiHistorySearches_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
-    apiHistorySearches_6: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
-    apiHistorySearches_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
-    apiHistorySearches_4: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageSearchEntity"];
-                };
-            };
-        };
-    };
     apiHistoryDownloads: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_6: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "*/*": components["schemas"]["ApiHistoryRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageFileDownloadEntity"];
-                };
-            };
-        };
-    };
-    apiHistoryDownloads_4: {
         parameters: {
             query?: never;
             header?: never;

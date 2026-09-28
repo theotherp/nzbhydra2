@@ -6,7 +6,8 @@ import {afterEach, describe, expect, it} from "vitest";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {createHydraTheme} from "../../../app/theme";
-import {ColorSetting, hexToRgb, rgbToHex} from "./ColorSetting";
+import {ColorSetting} from "./ColorSetting";
+import {hexToRgb, rgbToHex} from "./colorValue";
 import {draftFieldPath} from "./indexerSettings";
 
 type Harness = {form: UseFormReturn<ConfigValues>};
