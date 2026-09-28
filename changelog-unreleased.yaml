@@ -32,3 +32,5 @@
     text: "New setting &quot;Show indexer groups in separate section&quot; in Config &gt; Main &gt; UI. When indexer groups are configured, the search page shows a button for each group to the right of the indexer selection, so you can select a group with one click instead of going through the selection menu. The button of the currently selected group is highlighted."
 -   type: "fix"
     text: "Windows: &quot;Open web UI&quot; and &quot;Restart&quot; in the tray icon menu work more than once. See #953"
+-   type: "fix"
+    text: "Saving the config no longer undoes changes stored in the meantime, like a user&apos;s theme choice or a dismissed notice, when the config page had been open for a while."

@@ -168,6 +168,9 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
         mainConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getMain());
         newConfig.getIndexers().removeIf(Objects::isNull);
         newConfig.getIndexers().forEach(x -> indexerConfigValidator.prepareForSaving(oldBaseConfig, x));
+        // The config UI posts back the generic storage it loaded with the page. Anything written since (user preferences,
+        // show-once flags, detector state) would be lost, so the running map is kept instead - the UI never edits it
+        newConfig.setGenericStorage(oldBaseConfig.getGenericStorage());
         return newConfig;
     }
 

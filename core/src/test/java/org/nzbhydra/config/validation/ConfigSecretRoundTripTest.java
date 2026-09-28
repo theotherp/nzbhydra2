@@ -226,6 +226,24 @@ class ConfigSecretRoundTripTest {
     }
 
     @Test
+    void shouldKeepGenericStorageWrittenWhileTheConfigPageWasOpen() throws Exception {
+        liveConfig.getGenericStorage().put("themePreference-a", "\"grey\"");
+        final BaseConfig submitted = maskedViewOf(liveConfig);
+        submitted.getMain().setHost("1.2.3.4");
+        //A user changes a preference after the admin loaded the config page
+        liveConfig.getGenericStorage().put("themePreference-a", "\"bright\"");
+        liveConfig.getGenericStorage().put("themePreference-b", "\"dark\"");
+
+        final ConfigValidationResult result = configWeb.setConfig(submitted);
+
+        assertThat(result.isOk()).isTrue();
+        assertThat(liveConfig.getMain().getHost()).isEqualTo("1.2.3.4");
+        assertThat(liveConfig.getGenericStorage())
+            .containsEntry("themePreference-a", "\"bright\"")
+            .containsEntry("themePreference-b", "\"dark\"");
+    }
+
+    @Test
     void shouldResolveEverySurvivingSecretByIdentityWhenAListEntryIsRemoved() throws Exception {
         final BaseConfig submitted = maskedViewOf(liveConfig);
         //Remove the middle user and the first entry of each of the other two lists
