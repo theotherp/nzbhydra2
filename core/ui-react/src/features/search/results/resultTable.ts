@@ -158,6 +158,20 @@ export function selectionStatus(
     return selectedVisibleCount === visible.length ? "all" : "some";
 }
 
+// The selected results in the order they were selected, so a bulk send adds
+// them to the downloader in click order as legacy did (#1106). The
+// selection set keeps insertion order; filtering the loaded results instead
+// would send them in load order. Ids without a loaded result are skipped.
+export function resultsInSelectionOrder(
+    selected: ReadonlySet<string>,
+    results: SearchResult[],
+): SearchResult[] {
+    const resultsById = new Map(
+        results.map((result) => [result.searchResultId, result]),
+    );
+    return [...selected].flatMap((id) => resultsById.get(id) ?? []);
+}
+
 export function selectionAfterClick(
     selected: ReadonlySet<string>,
     visible: SearchResult[],

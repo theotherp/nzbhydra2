@@ -2,6 +2,7 @@ import {useCallback, useMemo, useRef, useState} from "react";
 
 import type {SearchResult} from "../../../api/search";
 import {
+    resultsInSelectionOrder,
     selectionAfterClick,
     selectionStatus,
     selectVisibleResults,
@@ -44,7 +45,8 @@ export function useResultSelection({
 }) {
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [lastSelectedId, setLastSelectedId] = useState<string>();
-    // The selected results themselves, for `DownloadActions`. Memoized rather
+    // The selected results themselves, for `DownloadActions`, in the order
+    // they were selected (#1106). Memoized rather
     // than filtered inline in the JSX because the window virtualizer below
     // re-renders this component on every scroll offset change: as an inline
     // expression this scanned every loaded result and handed `DownloadActions`
@@ -52,7 +54,7 @@ export function useResultSelection({
     // for a value that can only change when the selection or the loaded
     // results do.
     const selectedResults = useMemo(
-        () => results.filter((result) => selected.has(result.searchResultId)),
+        () => resultsInSelectionOrder(selected, results),
         [results, selected],
     );
     const visibleResultsRef = useRef(visibleResults);

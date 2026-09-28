@@ -20,6 +20,7 @@ import {
     quickFilterKey,
     quickFiltersFromSafeConfig,
     RECENT_RESULT_MAX_AGE_DAYS,
+    resultsInSelectionOrder,
     selectedQuickFilterGroups,
     selectionAfterClick,
     selectionStatus,
@@ -918,6 +919,30 @@ describe("result table transformations", () => {
                 true,
             ),
         ).toEqual(new Set(["one", "two", "three"]));
+    });
+
+    // #1106: a bulk send adds the results to the downloader in this order,
+    // which must be the click order, not the order the results were loaded in.
+    it("should return the selected results in the order they were selected", () => {
+        const loaded = [
+            {...results[0], searchResultId: "one"},
+            {...results[1], searchResultId: "two"},
+            {...results[0], searchResultId: "three"},
+        ];
+        let selected = selectionAfterClick(new Set(), loaded, "three", true);
+        selected = selectionAfterClick(selected, loaded, "one", true);
+        selected = selectionAfterClick(selected, loaded, "two", true);
+        expect(
+            resultsInSelectionOrder(selected, loaded).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["three", "one", "two"]);
+        // An id whose result is no longer loaded is skipped.
+        expect(
+            resultsInSelectionOrder(new Set(["gone", "two"]), loaded).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["two"]);
     });
 
     it("should summarize none/some/all selection status over only the visible rows, driving the header tri-state checkbox", () => {
