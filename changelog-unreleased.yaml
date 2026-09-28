@@ -46,3 +46,5 @@
     text: "Reloading the search page or opening a search link runs the same search again. The category&apos;s minimum and maximum size were added to it even though the original search had none. They are still filled in when you open the empty search page or change the category."
 -   type: "fix"
     text: "Lifting an access restriction (e.g. no longer restricting search) now takes effect right away. Before, users who weren&apos;t logged in kept being asked to log in until NZBHydra was restarted."
+-   type: "fix"
+    text: "When the categories can&apos;t be loaded from sabnzbd, NZBHydra no longer logs a full stack trace. The log now has one line with the reason."

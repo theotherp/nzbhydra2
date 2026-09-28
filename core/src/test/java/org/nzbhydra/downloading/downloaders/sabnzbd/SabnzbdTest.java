@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -226,6 +227,35 @@ class SabnzbdTest {
         sabnzbd.getCategories();
 
         assertThat(requestHeaders.getFirst("User-Agent")).isEqualTo("NZBHydra2");
+    }
+
+    @Test
+    void shouldThrowDownloaderExceptionWhenCategoriesCannotBeLoaded() throws Exception {
+        RestTemplate internalRestTemplate = (RestTemplate) ReflectionTestUtils.getField(sabnzbd, "restTemplate");
+
+        ClientHttpRequest clientHttpRequest = mock(ClientHttpRequest.class);
+        ClientHttpResponse clientHttpResponse = mock(ClientHttpResponse.class);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        when(clientHttpRequest.getHeaders()).thenReturn(new HttpHeaders());
+        when(clientHttpRequest.execute()).thenReturn(clientHttpResponse);
+        when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+        when(clientHttpResponse.getHeaders()).thenReturn(responseHeaders);
+        when(clientHttpResponse.getBody()).thenReturn(new ByteArrayInputStream("{}".getBytes()));
+
+        ClientHttpRequestFactory delegateFactory = mock(ClientHttpRequestFactory.class);
+        when(delegateFactory.createRequest(any(), any())).thenReturn(clientHttpRequest);
+        internalRestTemplate.setRequestFactory(delegateFactory);
+
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setUrl("http://localhost:8080/sabnzbd");
+        sabnzbd.initialize(downloaderConfig);
+
+        assertThatThrownBy(() -> sabnzbd.getCategories())
+                .isInstanceOf(DownloaderException.class)
+                .hasMessageContaining("Unable to load categories from sabnzbd")
+                .hasMessageContaining("404");
     }
 
 }

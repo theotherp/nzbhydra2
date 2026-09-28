@@ -355,10 +355,19 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<String> getCategories() {
+    public List<String> getCategories() throws DownloaderException {
         logger.debug("Loading list of categories");
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "get_cats");
-        return restTemplate.getForObject(uriBuilder.build().toUri(), CategoriesResponse.class).getCategories();
+        try {
+            CategoriesResponse response = restTemplate.getForObject(uriBuilder.build().toUri(), CategoriesResponse.class);
+            if (response == null || response.getCategories() == null) {
+                throw new DownloaderException("Unable to load categories from sabnzbd: Unable to parse response");
+            }
+            return response.getCategories();
+        } catch (RestClientException e) {
+            logger.warn("Unable to load categories from sabnzbd using URL {}: {}", downloaderConfig.getUrl(), e.getMessage());
+            throw new DownloaderException("Unable to load categories from sabnzbd: " + e.getMessage());
+        }
     }
 
 }

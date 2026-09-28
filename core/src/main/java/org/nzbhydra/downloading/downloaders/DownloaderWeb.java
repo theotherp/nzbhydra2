@@ -2,19 +2,25 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.DuplicateMovieDownloadCheckResponse;
 import org.nzbhydra.downloading.DuplicateMovieDownloadService;
+import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.DemoDataProvider;
 import org.nzbhydra.searching.DemoModeWeb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -80,13 +86,22 @@ public class DownloaderWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/downloader/{downloaderName}/categories", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<String> getCategories(@PathVariable("downloaderName") String downloaderName, Principal principal) {
+    public List<String> getCategories(@PathVariable("downloaderName") String downloaderName, Principal principal) throws DownloaderException {
         if (DemoModeWeb.isDemoModeActive(principal)) {
             logger.info("Demo mode active, returning mock downloader categories");
             return demoDataProvider.generateDownloaderCategories();
         }
         Downloader downloader = downloaderProvider.getDownloaderByName(downloaderName);
         return downloader.getCategories();
+    }
+
+    @ExceptionHandler(DownloaderException.class)
+    public ResponseEntity<ExceptionInfo> handleDownloaderException(DownloaderException ex, HttpServletRequest request) {
+        //Already logged by the downloader, no stack trace needed
+        HttpStatus status = HttpStatus.BAD_GATEWAY;
+        return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ExceptionInfo(status.value(), status.getReasonPhrase(), ex.getClass().getName(), ex.getMessage(), request.getRequestURI()));
     }
 
 

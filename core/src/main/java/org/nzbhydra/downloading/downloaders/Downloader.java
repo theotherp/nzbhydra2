@@ -281,7 +281,7 @@ public abstract class Downloader {
 
     public abstract GenericResponse checkConnection();
 
-    public abstract List<String> getCategories();
+    public abstract List<String> getCategories() throws DownloaderException;
 
     /**
      * @param link         Link to the NZB

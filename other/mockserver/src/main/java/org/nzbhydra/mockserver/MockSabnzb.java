@@ -38,7 +38,7 @@ public class MockSabnzb {
 
     private final AtomicReference<Map<String, Object>> lastAddRequest = new AtomicReference<>();
 
-    @RequestMapping(value = "/sabnzbd/api", method = {RequestMethod.POST, RequestMethod.GET})
+    @RequestMapping(value = {"/sabnzbd/api", "/sabnzb/api"}, method = {RequestMethod.POST, RequestMethod.GET})
     public ResponseEntity<Map<String, Object>> api(@RequestParam("mode") String mode,
                                                    @RequestParam(value = "apikey", required = false) String apiKey,
                                                    @RequestParam(value = "name", required = false) MultipartFile file,
