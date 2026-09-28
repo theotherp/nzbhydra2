@@ -7,7 +7,7 @@
 # Example:
 # -   type: "fix"
 #     text: "Searching no longer takes forever. See #1234"
-#
+# *Always* add features first, then notes, then fixes.
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "feature"
