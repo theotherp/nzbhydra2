@@ -107,6 +107,13 @@ public class MinAgeOffsetSearch {
         return probes;
     }
 
+    /**
+     * @return whether the first result old enough hasn't been loaded yet although the indexer may have one
+     */
+    public boolean isSearchingFirstOldEnough() {
+        return state == State.PROBING || state == State.RESUMING;
+    }
+
     public boolean isMoreResultsAvailable(IndexerSearchResult lastPage) {
         return switch (state) {
             case PROBING, RESUMING -> true;

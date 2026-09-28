@@ -115,6 +115,8 @@ const LOAD_ALL_CONFIRMATION_THRESHOLD = 500;
 // Explicit "Load N more" amounts above this ask first. Higher than the
 // "Load all" threshold because the reader chose the number themselves.
 const LOAD_AMOUNT_CONFIRMATION_THRESHOLD = 5000;
+// `SearchRequestFactory.INTERNAL_LOAD_MORE_LIMIT`.
+const LOAD_MORE_PAGE_SIZE = 1000;
 
 // FM-201: the quality column's TanStack id, and the sort a sort on it falls
 // back to when the column goes away -- the results' default, newest first,
@@ -853,8 +855,8 @@ export function SearchResults({
                 ? onLoadMore(loadAll)
                 : onLoadMore(loadAll, limit));
             // A continuation that brought nothing means the indexers have
-            // nothing more to give (or hit the per-search query limit); the
-            // server still moves its cursor, so asking again would skip.
+            // nothing more to give, or hit the per-search query or memory
+            // limit; asking again would only bring nothing again.
             if (loadAll || received === 0) {
                 setPagingExhausted(true);
             }
@@ -1038,17 +1040,19 @@ export function SearchResults({
         }
         await requestContinuation(true);
     };
+    // What the plain "Load 1000 more" loads: the server's default for a
+    // continuation without a limit (`SearchRequestFactory`).
+    const loadPageSize = LOAD_MORE_PAGE_SIZE;
     // The "Load more ▾" menu's amounts for this search: from what remains
-    // unloaded and the server's configured page, which the plain "Load more"
-    // already loads.
+    // unloaded and that page.
     const loadAmounts = useMemo(
         () =>
             loadMoreAmounts(
                 remainingResults(data),
                 !totalResultsUnknown,
-                loadLimitFromSafeConfig(effectiveSafeConfig),
+                loadPageSize,
             ),
-        [data, effectiveSafeConfig, totalResultsUnknown],
+        [data, loadPageSize, totalResultsUnknown],
     );
     // An explicit amount names its own cost, so only the largest ones ask
     // first, through the same confirmation service as "Load all results".
@@ -1376,6 +1380,7 @@ export function SearchResults({
                     refineSurfaceCompact={refineSurfaceCompact}
                     refineSurfaceShown={refineSurfaceShown}
                     loadAmounts={loadAmounts}
+                    loadPageSize={loadPageSize}
                     requestContinuation={requestContinuation}
                     requestLoadAll={requestLoadAll}
                     requestLoadAmount={requestLoadAmount}
@@ -1535,6 +1540,7 @@ export function SearchResults({
                     pagingAvailable={pagingAvailable}
                     pagingLoading={pagingLoading}
                     loadAmounts={loadAmounts}
+                    loadPageSize={loadPageSize}
                     requestContinuation={requestContinuation}
                     requestLoadAll={requestLoadAll}
                     requestLoadAmount={requestLoadAmount}
@@ -1594,24 +1600,6 @@ function coverWidthFromSafeConfig(value: unknown): number {
 }
 
 const DEFAULT_COVER_WIDTH = 100;
-
-/**
- * `searching.loadLimitInternal` (`SafeSearchingConfig.java`): how many results
- * a plain "Load more" gets. The fallback is that setting's own default.
- */
-function loadLimitFromSafeConfig(value: unknown): number {
-    const configured =
-        isRecord(value) && isRecord(value.searching)
-            ? value.searching.loadLimitInternal
-            : undefined;
-    return typeof configured === "number" &&
-        Number.isFinite(configured) &&
-        configured > 0
-        ? configured
-        : DEFAULT_LOAD_LIMIT;
-}
-
-const DEFAULT_LOAD_LIMIT = 100;
 
 /**
  * `main.resultsPageSize` (`SafeConfig.java`): the result groups per page, or

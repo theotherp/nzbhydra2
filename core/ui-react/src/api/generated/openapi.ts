@@ -4002,8 +4002,6 @@ export interface components {
             alwaysShowQuickFilterButtons?: boolean;
             customQuickFilterButtons?: string[];
             preselectQuickFilterButtons?: string[];
-            /** Format: int32 */
-            loadLimitInternal?: number;
             showQualityIndicator?: boolean;
         };
         ChangelogChangeEntry: {

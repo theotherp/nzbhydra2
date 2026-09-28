@@ -3,7 +3,6 @@ package org.nzbhydra.searching;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.config.SearchSource;
@@ -33,15 +32,14 @@ public class SearchCacheEntry {
 
     /**
      * Maximum number of queries sent to a single indexer for one search, unless {@link SearchRequest#usesLoadAllQueryCap()}
-     * was true for any of its requests and the generous load-all cap applies instead. Queries to find the first result old enough for a minimum age
+     * says the generous load-all cap applies instead. Queries to find the first result old enough for a minimum age
      * are not counted.
      */
     static final int MAX_QUERIES_UNTIL_BREAK = 15;
 
     /**
      * Maximum number of queries sent to a single indexer for one search for which {@link SearchRequest#usesLoadAllQueryCap()}
-     * is true -- either an actual load-all search, or an internal (web UI) search whose explicit limit exceeds the
-     * configured default page size (e.g. "Load 500 more"). Generous because such searches legitimately need many
+     * is true -- an actual load-all search or a web UI continuation. Generous because such searches legitimately need many
      * pages, but still a hard backstop against indexers which never stop reporting more results. Also applies to all
      * other searches, including their queries for a minimum age.
      */
@@ -60,13 +58,6 @@ public class SearchCacheEntry {
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
-    /**
-     * Whether any request for this search used the load-all query cap. Sticky because the queries are counted for the
-     * whole search: after a large load an indexer may already have used more than {@link #MAX_QUERIES_UNTIL_BREAK}
-     * queries, and a following plain "Load more" must still be able to query it.
-     */
-    @Setter(AccessLevel.NONE)
-    private boolean loadAllQueryCap;
     private Map<String, IndexerSearchCacheEntry> indexerCacheEntries = new HashMap<>();
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
     private IndexerForSearchSelection indexerSelectionResult;
@@ -117,16 +108,15 @@ public class SearchCacheEntry {
             indexerCacheEntries.putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer, searchRequest.getMinage().orElse(null)));
         }
 
-        loadAllQueryCap |= searchRequest.usesLoadAllQueryCap();
         List<IndexerSearchCacheEntry> indexersToSearch = new ArrayList<>();
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexerCacheEntries.values()) {
             final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
-            final int maxQueries = loadAllQueryCap ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
+            final int maxQueries = searchRequest.usesLoadAllQueryCap() ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
             //Probes for a minimum age don't count because otherwise indexers with small pages would have few left
             final int countedSearches = executedSearches - indexerSearchCacheEntry.getMinAgeProbes();
             if (countedSearches >= maxQueries || executedSearches >= MAX_QUERIES_UNTIL_BREAK_LOAD_ALL) {
                 //Circuit breaker
-                logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, loadAllQueryCap ? "load-all " : "");
+                logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, searchRequest.usesLoadAllQueryCap() ? "load-all " : "");
                 continue;
             }
             if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
@@ -162,10 +152,14 @@ public class SearchCacheEntry {
      * caches are empty or the indexer which just ran dry still has more results available. In the latter case the
      * caller needs to query that indexer again before merging can continue, otherwise the merged order would be wrong.
      * <p>
+     * Internal (web UI) searches don't stop there: they merge everything retrieved, because the web UI sorts the
+     * results itself and should show all it got. Their merged items are not in newest-first order then.
+     * <p>
      * For API searches only one item of every duplicate group is added, see {@link #shouldBeAdded(SearchResultItem)}.
      */
     public void mergeCachedResults() {
         final boolean removeDuplicates = searchRequest.getSource() == SearchSource.API;
+        final boolean mergeEverything = searchRequest.getSource() == SearchSource.INTERNAL;
         List<IndexerSearchCacheEntry> indexersWithCachedResults = getIndexersWithCachedResults();
         while (!indexersWithCachedResults.isEmpty()) {
             IndexerSearchCacheEntry entryWithNewestResult = indexersWithCachedResults.stream()
@@ -179,7 +173,7 @@ public class SearchCacheEntry {
             }
 
             indexersWithCachedResults = getIndexersWithCachedResults();
-            if (!entryWithNewestResult.isMoreResultsInCache() && entryWithNewestResult.isMoreResultsAvailable()) {
+            if (!mergeEverything && !entryWithNewestResult.isMoreResultsInCache() && entryWithNewestResult.isMoreResultsAvailable()) {
                 //We need to make a new search for that indexer so we need to stop here
                 break;
             }

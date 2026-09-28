@@ -481,7 +481,7 @@ Binding constraints:
 - `reachability-metadata.json` names the field; a native build must still work after whatever is removed.
 - This is a persisted-data change, so it takes a task packet with independent review, not a single-session fix.
 
-## ADR-0032 — Supersedes ADR-0031: `searching.loadLimitInternal` stays; its description is the defect (accepted 2026-08-27)
+## ADR-0032 — Supersedes ADR-0031: `searching.loadLimitInternal` stays; its description is the defect (accepted 2026-08-27, superseded by ADR-0058)
 
 Question: ADR-0031 directed removing `searching.loadLimitInternal` on the recorded ground that nothing consumes it. While
 designing the packet, that premise was found false.
@@ -990,3 +990,20 @@ uploaded, so nobody loses their options; the old keys are never written again. T
 and the mobile refine drawer's open state stays unpersisted. Consequence: a config `PUT` now keeps the running generic
 storage instead of the stale copy the form posts back, so the system-test baseline resets it through a systemtest-only
 `PUT /internalapi/systemtest/genericstorage`. Owner decided 2026-09-28.
+
+## ADR-0058 — Supersedes ADR-0032: web UI searches show everything retrieved and load more in explicit amounts (accepted 2026-09-28)
+
+`searching.loadLimitInternal` and `searching.loadAllCachedOnInternal` existed because the legacy UI could not render many
+rows: a search fetched from the indexers but showed only a page of it, and "Load more" mostly revealed results already
+in the cache. The React table is virtualized and sorts client-side, so holding results back only costs clicks. For
+internal (web UI) searches the first request now queries every indexer once and returns everything that came back
+(`Searcher`: one round, then stop -- unless nothing was accepted yet or an indexer is still bisecting for its first
+result old enough for a minimum age; then it goes on under the normal 15-query cap, because the web UI cannot continue
+a search that returned nothing). `SearchCacheEntry.mergeCachedResults` merges all retrieved results instead of
+stopping where an indexer ran dry, and the merged list keeps its insertion order rather than being re-sorted, so a
+continuation's offset always points behind everything returned before. A continuation ("Load 1000 more", or 5000 /
+10000 / 50000 from its menu, or "Load all") queries rounds until that many new results are merged and returns all of
+them; every web UI continuation uses the load-all per-indexer query cap. A continuation that brings nothing ends paging
+instead of reporting an error. API searches keep the newest-first, order-preserving paging unchanged. Both settings are
+removed from the config UI and from `SafeSearchingConfig`; the fields stay in `SearchingConfig` and `baseConfig.yml` so
+existing config files load. Owner decided 2026-09-28.

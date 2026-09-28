@@ -677,6 +677,27 @@ describe("C-CONFIG-FIELDS row anatomy", () => {
         ).toMatch(/^0(?:px)?$/);
     });
 
+    it("should reject a number above its maximum", async () => {
+        const harness = renderSetting(
+            <NumberSetting
+                label="Cover width"
+                maximum={500}
+                name="searching.coverSize"
+                required
+            />,
+            {values: {searching: {coverSize: 128}}},
+        );
+
+        fireEvent.change(
+            screen.getByTestId("config-input-searching-coverSize"),
+            {target: {value: "501"}},
+        );
+        expect(await harness.form.trigger()).toBe(false);
+        expect(
+            await screen.findByTestId("config-error-searching-coverSize"),
+        ).toHaveTextContent("Must be at most 500");
+    });
+
     it("should show a validation message and refuse to validate the form", async () => {
         const harness = renderSetting(
             <NumberSetting

@@ -10508,10 +10508,6 @@
                             "type": "string"
                         }
                     },
-                    "loadLimitInternal": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
                     "showQualityIndicator": {
                         "type": "boolean"
                     }

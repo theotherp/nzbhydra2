@@ -110,7 +110,7 @@ public class SearcherUnitTest {
 
         searchResultEntityMock.setIndexer(indexerEntity);
         searchPersister = new SearchPersister(configProviderMock, transactionTemplateMock, searchRepositoryMock, indexerSearchRepository, searchResultRepositoryMock, indexerSearchResultPersistor);
-        searcher = new Searcher(duplicateDetector, indexerPicker, applicationEventPublisherMock, configProviderMock, searchPersister);
+        searcher = new Searcher(duplicateDetector, indexerPicker, applicationEventPublisherMock, searchPersister);
 
         when(indexer1.getName()).thenReturn("indexer1");
         when(indexer1.getConfig()).thenReturn(indexerConfigMock);
@@ -134,9 +134,7 @@ public class SearcherUnitTest {
             return null;
         }).when(duplicateDetector).addToGroups(any(), any());
 
-        BaseConfig value = new BaseConfig();
-        value.getSearching().setLoadAllCachedOnInternal(false);
-        when(configProviderMock.getBaseConfig()).thenReturn(value);
+        when(configProviderMock.getBaseConfig()).thenReturn(new BaseConfig());
 
         doAnswer(invocation -> {
             invocation.getArgument(0, java.util.function.Consumer.class).accept(null);
@@ -149,7 +147,7 @@ public class SearcherUnitTest {
     void shouldFollowOffsetAndLimit() throws Exception {
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, true, 200, indexer1));
 
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 1);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 1);
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
@@ -178,7 +176,7 @@ public class SearcherUnitTest {
         indexer2results.getSearchResultItems().get(0).setPubDate(now.minus(1, ChronoUnit.MINUTES));
         when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(indexer2results);
 
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 2);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 2);
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
@@ -199,7 +197,7 @@ public class SearcherUnitTest {
         result1.setPageSize(10);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(result1, mockIndexerSearchResult(11, 10, false, 20, indexer1));
 
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 10);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 10);
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
@@ -234,7 +232,7 @@ public class SearcherUnitTest {
 
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
 
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 100);
         searchRequest.setTitle("shouldPageCorrectly");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> page1 = result.getSearchResultItems();
@@ -243,7 +241,7 @@ public class SearcherUnitTest {
         assertThat(result.getLimit()).isEqualTo(100);
         assertNewestFirst(page1);
 
-        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 100);
+        searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 100, 100);
         searchRequest.setTitle("shouldPageCorrectly");
         result = searcher.search(searchRequest);
         List<SearchResultItem> page2 = result.getSearchResultItems();
@@ -435,10 +433,9 @@ public class SearcherUnitTest {
         return indexerSearchResult;
     }
 
-    private BaseConfig configWith(boolean keepHistory, boolean loadAllCachedOnInternal) {
+    private BaseConfig configWith(boolean keepHistory) {
         BaseConfig config = new BaseConfig();
         config.getMain().setKeepHistory(keepHistory);
-        config.getSearching().setLoadAllCachedOnInternal(loadAllCachedOnInternal);
         when(configProviderMock.getBaseConfig()).thenReturn(config);
         return config;
     }
@@ -494,22 +491,72 @@ public class SearcherUnitTest {
     }
 
     @Test
-    void shouldReturnAllCachedResultsForInternalSearchesWhenLoadAllCachedOnInternalIsEnabled() throws Exception {
-        configWith(true, true);
-        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 50, false, 50, indexer1));
+    void shouldQueryEveryIndexerOnceAndReturnEverythingForTheFirstInternalRequest() throws Exception {
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 50, true, 500, indexer1));
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 10, "shouldLoadAllCachedOnInternalTrue"));
+        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 10, "shouldQueryEveryIndexerOnce"));
 
+        verify(indexer1, times(1)).search(any(), anyInt(), anyInt());
         assertThat(result.getSearchResultItems()).hasSize(50);
         assertThat(result.getLimit()).isEqualTo(50);
     }
 
     @Test
-    void shouldReturnOnlyLimitResultsForInternalSearchesWhenLoadAllCachedOnInternalIsDisabled() throws Exception {
-        configWith(true, false);
+    void shouldLoadInternalContinuationsUntilTheLimitAndReturnEverythingMergedBehindTheOffset() throws Exception {
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            return mockIndexerSearchResult(offset, 100, true, 1000, indexer1);
+        });
+        SearchResult firstPage = searcher.search(request(SearchSource.INTERNAL, 0, 1000, "shouldLoadInternalContinuations"));
+        assertThat(firstPage.getSearchResultItems()).hasSize(100);
+
+        //"Load 250 more" needs three more pages of 100 and returns all 300 of them
+        SearchResult continuation = searcher.search(request(SearchSource.INTERNAL, 100, 250, "shouldLoadInternalContinuations"));
+
+        verify(indexer1, times(4)).search(any(), anyInt(), anyInt());
+        assertThat(continuation.getSearchResultItems()).hasSize(300);
+        assertThat(continuation.getOffset()).isEqualTo(100);
+        assertThat(continuation.getLimit()).isEqualTo(300);
+    }
+
+    @Test
+    void shouldGoOnWithTheFirstInternalRequestWhileEverythingWasRejected() throws Exception {
+        IndexerSearchResult rejectedPage = new IndexerSearchResult();
+        rejectedPage.setIndexer(indexer1);
+        rejectedPage.setWasSuccessful(true);
+        rejectedPage.setHasMoreResults(true);
+        rejectedPage.setOffset(0);
+        rejectedPage.setPageSize(100);
+        rejectedPage.setTotalResults(200);
+        rejectedPage.getReasonsForRejection().add("forbiddenWord", 100);
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(rejectedPage, mockIndexerSearchResult(100, 5, false, 200, indexer1));
+
+        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 1000, "shouldGoOnWhileEverythingWasRejected"));
+
+        //Stopping after the first round would show nothing, and the web UI can't continue a search which returned nothing
+        verify(indexer1, times(2)).search(any(), anyInt(), anyInt());
+        assertThat(result.getSearchResultItems()).hasSize(5);
+    }
+
+    @Test
+    void shouldMergeEverythingForTheFirstInternalRequestEvenIfAnIndexerHasMore() throws Exception {
+        when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
+        //Indexer 1 runs dry first and has more; an API search would stop merging there to keep the order
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, true, 100, indexer1));
+        when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 10, false, 10, indexer2));
+
+        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 1000, "shouldMergeEverythingForTheFirstRequest"));
+
+        verify(indexer1, times(1)).search(any(), anyInt(), anyInt());
+        verify(indexer2, times(1)).search(any(), anyInt(), anyInt());
+        assertThat(result.getSearchResultItems()).hasSize(12);
+    }
+
+    @Test
+    void shouldReturnOnlyLimitResultsForApiSearches() throws Exception {
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 50, false, 50, indexer1));
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 10, "shouldLoadAllCachedOnInternalFalse"));
+        SearchResult result = searcher.search(request(SearchSource.API, 0, 10, "shouldReturnOnlyLimitResultsForApi"));
 
         assertThat(result.getSearchResultItems()).hasSize(10);
         assertThat(result.getLimit()).isEqualTo(10);
@@ -644,7 +691,7 @@ public class SearcherUnitTest {
         indexer2Page1.getReasonsForRejection().add("forbiddenWord");
         when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(indexer2Page1);
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 100, "shouldAggregateReasonsForRejection"));
+        SearchResult result = searcher.search(request(SearchSource.API, 0, 100, "shouldAggregateReasonsForRejection"));
 
         assertThat(result.getReasonsForRejection().count("tooOld")).isEqualTo(3);
         assertThat(result.getReasonsForRejection().count("forbiddenWord")).isEqualTo(1);
@@ -689,7 +736,7 @@ public class SearcherUnitTest {
             return mockIndexerSearchResult(offset, 100, true, 1000, indexer1);
         });
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 150, "shouldPageInsideIndexer"));
+        SearchResult result = searcher.search(request(SearchSource.API, 0, 150, "shouldPageInsideIndexer"));
 
         verify(indexer1).search(any(), eq(0), anyInt());
         verify(indexer1).search(any(), eq(100), anyInt());
@@ -703,11 +750,11 @@ public class SearcherUnitTest {
 
     @Test
     void shouldServeSecondPageFromCacheAndStartNewSearchWhenOffsetIsZeroAgain() throws Exception {
-        configWith(true, false);
+        configWith(true);
         IndexerSearchResult indexerSearchResult = mockIndexerSearchResult(0, 2, false, 2, indexer1);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(indexerSearchResult);
 
-        SearchRequest searchRequest = request(SearchSource.INTERNAL, 0, 1, "shouldServeSecondPageFromCache");
+        SearchRequest searchRequest = request(SearchSource.API, 0, 1, "shouldServeSecondPageFromCache");
         SearchResult firstPage = searcher.search(searchRequest);
         assertThat(firstPage.getSearchResultItems()).hasSize(1);
         assertThat(firstPage.getSearchResultItems().get(0).getTitle()).isEqualTo("item0");
@@ -751,7 +798,7 @@ public class SearcherUnitTest {
 
     @Test
     void shouldNotPersistHistoryWhenKeepHistoryIsFalseButStillSaveSearchResultEntities() throws Exception {
-        configWith(false, false);
+        configWith(false);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 3, false, 3, indexer1));
 
         searcher.search(request(SearchSource.INTERNAL, 0, 10, "shouldNotPersistHistory"));
@@ -765,7 +812,7 @@ public class SearcherUnitTest {
 
     @Test
     void shouldCreateOneIndexerSearchEntityPerIndexerAndFillItFromTheFirstIndexerSearchResult() {
-        configWith(true, false);
+        configWith(true);
         when(indexerSearchRepository.save(any(IndexerSearchEntity.class))).thenAnswer(invocation -> {
             IndexerSearchEntity entity = invocation.getArgument(0);
             entity.setId(42);
@@ -818,7 +865,7 @@ public class SearcherUnitTest {
 
     @Test
     void shouldMapSearchRequestToSearchEntity() {
-        configWith(true, false);
+        configWith(true);
         SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.TVSEARCH, 0, 100);
         Category category = new Category();
         category.setName("someCategory");
@@ -934,7 +981,7 @@ public class SearcherUnitTest {
 
     @Test
     void shouldSetSearchIdOfReturnedItemsToTheSearchEntityId() throws Exception {
-        configWith(true, false);
+        configWith(true);
         when(searchRepositoryMock.save(any(SearchEntity.class))).thenAnswer(invocation -> {
             SearchEntity entity = invocation.getArgument(0);
             entity.setId(7);
@@ -970,7 +1017,7 @@ public class SearcherUnitTest {
         IndexerSearchResult indexer2Page1 = mockIndexerSearchResult(0, 2, false, 2, indexer2);
         when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(indexer2Page1);
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 100, "shouldOnlyReportLastIndexerSearchResult"));
+        SearchResult result = searcher.search(request(SearchSource.API, 0, 100, "shouldOnlyReportLastIndexerSearchResult"));
 
         assertThat(result.getIndexerSearchResults()).hasSize(2);
         assertThat(result.getIndexerSearchResults()).anyMatch(x -> x == indexer1Page2);
@@ -1006,7 +1053,7 @@ public class SearcherUnitTest {
         IndexerSearchResult secondPage = mockIndexerSearchResult(100, 5, false, 200, indexer1);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(emptyPage, secondPage);
 
-        SearchResult result = searcher.search(request(SearchSource.INTERNAL, 0, 100, "shouldPageAfterOnlyRejectedResults"));
+        SearchResult result = searcher.search(request(SearchSource.API, 0, 100, "shouldPageAfterOnlyRejectedResults"));
 
         verify(indexer1).search(any(), eq(0), anyInt());
         verify(indexer1).search(any(), eq(100), anyInt());
@@ -1039,16 +1086,16 @@ public class SearcherUnitTest {
 
     @Test
     void shouldUseTheSameCacheEntryForBothPagesOfAQueryWithForbiddenWords() throws Exception {
-        configWith(true, false);
+        configWith(true);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, false, 2, indexer1));
 
-        SearchRequest firstPage = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 1);
+        SearchRequest firstPage = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 1);
         firstPage.setQuery("foo --bar");
         SearchResult firstResult = searcher.search(firstPage);
         assertThat(firstResult.getSearchResultItems()).hasSize(1);
 
         //A completely new request object for the second page, as it would be created by the web layer
-        SearchRequest secondPage = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 1, 1);
+        SearchRequest secondPage = new SearchRequest(SearchSource.API, SearchType.SEARCH, 1, 1);
         secondPage.setQuery("foo --bar");
         SearchResult secondResult = searcher.search(secondPage);
 
@@ -1093,7 +1140,7 @@ public class SearcherUnitTest {
 
     @Test
     void shouldNotCreateASecondSearchEntityForTheSecondPageWhenNoIndexerWasSelected() throws Exception {
-        configWith(true, false);
+        configWith(true);
         when(pickingResultMock.getSelectedIndexers()).thenReturn(List.of());
 
         SearchRequest searchRequest = request(SearchSource.INTERNAL, 0, 10, "shouldCacheEmptySearch");
@@ -1179,6 +1226,23 @@ public class SearcherUnitTest {
         //Every page from the boundary on plus a few probes, but none of the younger pages
         int pagesFromBoundary = (allItems.size() - firstOldEnough) / 100 + 1;
         assertThat(requestedOffsets).hasSizeLessThanOrEqualTo(pagesFromBoundary + 8);
+    }
+
+    @Test
+    void shouldFindTheFirstResultOldEnoughForTheFirstInternalRequest() throws Exception {
+        List<SearchResultItem> allItems = itemsSpreadOverDays(5_000, 10, indexer1);
+        List<Integer> requestedOffsets = new ArrayList<>();
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(ageSortedIndexer(indexer1, allItems, 100, 7, requestedOffsets));
+        SearchRequest searchRequest = request(SearchSource.INTERNAL, 0, 1000, "shouldFindFirstOldEnoughForTheWebUi");
+        searchRequest.setMinage(7);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        //The first page is too young, so the search must go on probing instead of stopping after one round
+        int firstOldEnough = firstIndexOlderThan(allItems, 7);
+        assertThat(result.getSearchResultItems()).isNotEmpty();
+        assertThat(result.getSearchResultItems().get(0)).isEqualTo(allItems.get(firstOldEnough));
+        assertThat(requestedOffsets).hasSizeLessThanOrEqualTo(10);
     }
 
     @Test

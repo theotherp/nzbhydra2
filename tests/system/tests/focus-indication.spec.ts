@@ -1482,7 +1482,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             await openSearchRoute(page, viewport);
             await page.getByTestId("search-query").fill("paged focus fixture");
             await page.getByTestId("search-submit").click();
-            const loadMore = page.getByRole("button", {name: "Load more"});
+            const loadMore = page.getByRole("button", {name: "Load 1000 more"});
             await expect(loadMore).toBeVisible();
 
             const probe = await probeFocus(page, loadMore);

@@ -129,17 +129,17 @@ export function pageOfGroups(
 }
 
 /** The round amounts "Load more ▾" can offer, smallest first. */
-const LOAD_MORE_AMOUNTS = [500, 1000, 5000, 10000, 50000];
+const LOAD_MORE_AMOUNTS = [5000, 10000, 50000];
 /**
  * With an indexer that cannot count its results the remaining count is only a
  * lower bound, so amounts up to this one are offered beyond it: they are cheap
  * and very likely available.
  */
-const UNKNOWN_TOTAL_AMOUNT_CEILING = 1000;
+const UNKNOWN_TOTAL_AMOUNT_CEILING = 5000;
 
 /**
  * The explicit amounts "Load more ▾" offers in its menu: larger than the plain
- * "Load more" (`baseStep`, `searching.loadLimitInternal`) and smaller than what
+ * "Load 1000 more" (`baseStep`) and smaller than what
  * remains -- an amount covering everything left is "Load all results", which
  * has its own button. At most the three largest that qualify.
  */

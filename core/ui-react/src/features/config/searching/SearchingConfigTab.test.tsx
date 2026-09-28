@@ -141,7 +141,14 @@ describe("F-CONFIG-SEARCHING fieldsets", () => {
         renderSearching();
 
         for (const key of Object.keys(baseSearching)) {
-            if (key === "customMappings") {
+            // `customMappings` has its own tab. The other two are still in
+            // stored configs but no longer have a control: the results page
+            // shows everything retrieved and loads more in explicit amounts.
+            if (
+                key === "customMappings" ||
+                key === "loadAllCachedOnInternal" ||
+                key === "loadLimitInternal"
+            ) {
                 continue;
             }
             expect(
@@ -170,8 +177,6 @@ describe("F-CONFIG-SEARCHING fieldsets", () => {
             "forbiddenPosters",
             "wrapApiErrors",
             "useOriginalCategories",
-            "loadAllCachedOnInternal",
-            "loadLimitInternal",
             "alwaysShowQuickFilterButtons",
             "customQuickFilterButtons",
             "preselectQuickFilterButtons",
@@ -278,22 +283,6 @@ describe("F-CONFIG-SEARCHING language list", () => {
 });
 
 describe("F-CONFIG-SEARCHING numeric limits", () => {
-    it("should reject a page size above legacy's limit of 500", async () => {
-        const harness = renderSearching();
-
-        fireEvent.change(
-            screen.getByTestId("config-input-searching-loadLimitInternal"),
-            {target: {value: "501"}},
-        );
-        await harness.form.trigger();
-
-        expect(
-            await screen.findByTestId(
-                "config-error-searching-loadLimitInternal",
-            ),
-        ).toHaveTextContent("Must be at most 500");
-    });
-
     it("should reject a duplicate size threshold with more than two decimals", async () => {
         const harness = renderSearching();
 

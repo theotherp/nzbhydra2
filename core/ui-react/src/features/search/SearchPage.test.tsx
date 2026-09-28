@@ -1299,7 +1299,7 @@ describe("SearchPage", () => {
                     hasMoreResults: true,
                 },
             ],
-            numberOfAvailableResults: 2000,
+            numberOfAvailableResults: 20000,
             numberOfProcessedResults: 1,
             offset: 0,
             limit: 1,
@@ -1328,8 +1328,8 @@ describe("SearchPage", () => {
                                         },
                                     ],
                                     offset: 1,
-                                    limit: 500,
-                                    numberOfProcessedResults: 501,
+                                    limit: 1,
+                                    numberOfProcessedResults: 1,
                                 },
                     ),
                     {headers: {"Content-Type": "application/json"}},
@@ -1346,13 +1346,87 @@ describe("SearchPage", () => {
 
         fireEvent.click(screen.getByTestId("search-submit"));
         fireEvent.click(await screen.findByTestId("results-load-more-options"));
-        fireEvent.click(screen.getByRole("menuitem", {name: "Load 500 more"}));
+        fireEvent.click(screen.getByRole("menuitem", {name: "Load 5000 more"}));
 
         expect(await screen.findByText("Second result")).toBeVisible();
         const continuation = searchRequestCalls(fetchImplementation)[1];
         expect(
             JSON.parse((continuation[1] as RequestInit).body as string),
-        ).toMatchObject({offset: 1, limit: 500, loadAll: false});
+        ).toMatchObject({offset: 1, limit: 5000, loadAll: false});
+    });
+
+    it("should end paging without an error when a continuation brings nothing", async () => {
+        const initial = {
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "one",
+                    title: "First result",
+                    indexer: "Mock",
+                    category: "All",
+                },
+            ],
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                },
+            ],
+            numberOfAvailableResults: 20000,
+            numberOfProcessedResults: 1,
+            offset: 0,
+            limit: 1,
+        };
+        let searchRequests = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            const isSearch = String(url).includes("/internalapi/search");
+            if (isSearch) {
+                searchRequests++;
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : searchRequests === 1
+                              ? initial
+                              : {
+                                    ...initial,
+                                    searchResults: [],
+                                    offset: 1,
+                                    limit: 0,
+                                    numberOfProcessedResults: 0,
+                                },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        fireEvent.click(
+            await screen.findByRole("button", {name: "Load 1000 more"}),
+        );
+
+        await vi.waitFor(() =>
+            expect(
+                screen.getByRole("button", {name: "Load 1000 more"}),
+            ).toBeDisabled(),
+        );
+        expect(
+            screen.queryByText(
+                "The server did not advance the search cache position.",
+            ),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText("First result")).toBeVisible();
     });
 
     it("should stop a non-load-all continuation that resets the paging cursor", async () => {
@@ -1411,8 +1485,8 @@ describe("SearchPage", () => {
         );
 
         fireEvent.click(screen.getByTestId("search-submit"));
-        await screen.findByRole("button", {name: "Load more"});
-        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+        await screen.findByRole("button", {name: "Load 1000 more"});
+        fireEvent.click(screen.getByRole("button", {name: "Load 1000 more"}));
 
         await screen.findByText(
             "The server did not advance the search cache position.",
@@ -1424,7 +1498,7 @@ describe("SearchPage", () => {
             offset: 1,
             loadAll: false,
         });
-        const loadMore = screen.getByRole("button", {name: "Load more"});
+        const loadMore = screen.getByRole("button", {name: "Load 1000 more"});
         const loadAll = screen.getByRole("button", {
             name: "Load all results",
         });
@@ -1511,7 +1585,9 @@ describe("SearchPage", () => {
             limit: 1,
             loadAll: true,
         });
-        expect(screen.getByRole("button", {name: "Load more"})).toBeDisabled();
+        expect(
+            screen.getByRole("button", {name: "Load 1000 more"}),
+        ).toBeDisabled();
     });
 
     it("should not repeat offset zero for an initial zero paging cursor with more results", async () => {
@@ -1551,7 +1627,7 @@ describe("SearchPage", () => {
         fireEvent.click(screen.getByTestId("search-submit"));
 
         const loadMore = await screen.findByRole("button", {
-            name: "Load more",
+            name: "Load 1000 more",
         });
         expect(screen.getByRole("status")).toHaveTextContent(
             "returned none that could be shown",
@@ -1620,7 +1696,7 @@ describe("SearchPage", () => {
         fireEvent.click(screen.getByRole("button", {name: "Load all results"}));
         await waitFor(() =>
             expect(
-                screen.getByRole("button", {name: "Load more"}),
+                screen.getByRole("button", {name: "Load 1000 more"}),
             ).toBeDisabled(),
         );
 
@@ -1628,7 +1704,7 @@ describe("SearchPage", () => {
         await waitFor(() => expect(searchRequests).toBe(3));
         await waitFor(() =>
             expect(
-                screen.getByRole("button", {name: "Load more"}),
+                screen.getByRole("button", {name: "Load 1000 more"}),
             ).toBeEnabled(),
         );
     });

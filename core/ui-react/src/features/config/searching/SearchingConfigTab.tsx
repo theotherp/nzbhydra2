@@ -213,17 +213,6 @@ export function SearchingConfigTab() {
                 />
             </ConfigFieldset>
             <ConfigFieldset label="Result display">
-                <SwitchSetting
-                    {...indexedSetting("searching.loadAllCachedOnInternal")}
-                    advanced
-                />
-                <NumberSetting
-                    {...indexedSetting("searching.loadLimitInternal")}
-                    advanced
-                    maximum={500}
-                    required
-                    unit="results per page"
-                />
                 <NumberSetting
                     {...indexedSetting("searching.coverSize")}
                     required

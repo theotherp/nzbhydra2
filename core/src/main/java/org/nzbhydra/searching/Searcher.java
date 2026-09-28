@@ -5,7 +5,6 @@ import com.google.common.collect.Iterables;
 import jakarta.annotation.PreDestroy;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
@@ -66,7 +65,6 @@ public class Searcher {
     private final DuplicateDetector duplicateDetector;
     private final IndexerForSearchSelector indexerSelector;
     private final ApplicationEventPublisher eventPublisher;
-    private final ConfigProvider configProvider;
     private final SearchPersister searchPersister;
 
     private final Set<ExecutorService> executors = Collections.synchronizedSet(new HashSet<>());
@@ -90,11 +88,10 @@ public class Searcher {
             .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
             .build();
 
-    public Searcher(DuplicateDetector duplicateDetector, IndexerForSearchSelector indexerSelector, ApplicationEventPublisher eventPublisher, ConfigProvider configProvider, SearchPersister searchPersister) {
+    public Searcher(DuplicateDetector duplicateDetector, IndexerForSearchSelector indexerSelector, ApplicationEventPublisher eventPublisher, SearchPersister searchPersister) {
         this.duplicateDetector = duplicateDetector;
         this.indexerSelector = indexerSelector;
         this.eventPublisher = eventPublisher;
-        this.configProvider = configProvider;
         this.searchPersister = searchPersister;
     }
 
@@ -105,6 +102,11 @@ public class Searcher {
 
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
+        //The web UI's first request queries every indexer once and shows everything that returned; loading more is
+        //then up to the user. Unless nothing was accepted yet or an indexer is still looking for results old enough for
+        //a minimum age: then it goes on like any search, because it would have nothing to show and the web UI can't
+        //continue a search which returned nothing
+        final boolean singleRound = searchRequest.getSource() == SearchSource.INTERNAL && searchRequest.getOffset() == 0 && !searchRequest.isLoadAll();
         searchResult.setIndexerSelectionResult(searchCacheEntry.getIndexerSelectionResult());
 
         //Register before any indexer is queried so that a shortcut request can never be lost
@@ -126,8 +128,8 @@ public class Searcher {
                 //Also for large explicit amounts like "Load 50000 more". Every accepted result ends up in the merged items (API searches may drop duplicates) so they bound memory use
                 int resultsFetched = searchCacheEntry.getSearchResultItems().size();
                 if (resultsFetched >= maxResultsLoadAll) {
-                    logger.info("Stopped loading all results after {} results to avoid running out of memory. The limit is {} results; increase the XMX value in the main config to load more", resultsFetched, maxResultsLoadAll);
-                    eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Stopped loading all results after " + resultsFetched + " results to avoid running out of memory. Increase the XMX value in the main config to load more"));
+                    logger.info("Stopped loading results after {} results to avoid running out of memory. The limit is {} results; increase the XMX value in the main config to load more", resultsFetched, maxResultsLoadAll);
+                    eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Stopped loading results after " + resultsFetched + " results to avoid running out of memory. Increase the XMX value in the main config to load more"));
                     break;
                 }
             }
@@ -170,6 +172,10 @@ public class Searcher {
                 logger.warn("Aborting search because the last round of queries returned no new results. The following indexers may report wrong result counts: {}", stalledIndexers);
                 break;
             }
+            if (singleRound && !searchCacheEntry.getSearchResultItems().isEmpty()
+                && searchCacheEntry.getIndexerCacheEntries().values().stream().noneMatch(IndexerSearchCacheEntry::isSearchingFirstOldEnough)) {
+                break;
+            }
         }
         activeSearches.remove(searchRequest.getSearchRequestId());
 
@@ -185,7 +191,11 @@ public class Searcher {
 
         List<SearchResultItem> searchResultItemsToReturn = new ArrayList<>(searchCacheEntry.getSearchResultItems());
         searchResultItemsToReturn.forEach(item -> item.setSearchId(searchCacheEntry.getSearchEntity().getId()));
-        searchResultItemsToReturn.sort(SearchResultItem.NEWEST_FIRST);
+        if (searchRequest.getSource() == SearchSource.API) {
+            //Internal searches keep the merged order, which only grows at the end, so that an offset always points
+            //behind everything returned before. The web UI sorts the results itself
+            searchResultItemsToReturn.sort(SearchResultItem.NEWEST_FIRST);
+        }
 
         spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItemsToReturn);
 
@@ -199,11 +209,9 @@ public class Searcher {
         searchResult.setOffset(offset);
         searchResult.setLimit(limit);
 
-        if (searchRequest.getSource() == SearchSource.INTERNAL
-                && offset == 0
-                && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
-            logger.debug("Will load all cached results");
-            limit = searchResultItems.size();
+        if (searchRequest.getSource() == SearchSource.INTERNAL && !searchRequest.isLoadAll()) {
+            //Everything merged behind the offset, even if more than the limit: the web UI shows all it got
+            limit = Math.max(0, searchResultItems.size() - offset);
             searchResult.setLimit(limit);
         }
 

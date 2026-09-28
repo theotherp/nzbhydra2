@@ -117,6 +117,13 @@ public class IndexerSearchCacheEntry {
     }
 
     /**
+     * @return whether this indexer is still looking for its first result old enough for a minimum age
+     */
+    public boolean isSearchingFirstOldEnough() {
+        return minAgeOffsetSearch != null && minAgeOffsetSearch.isSearchingFirstOldEnough();
+    }
+
+    /**
      * @return the number of queries which were only made to find the first result old enough for a minimum age
      */
     public int getMinAgeProbes() {

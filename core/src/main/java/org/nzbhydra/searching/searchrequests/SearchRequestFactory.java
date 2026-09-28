@@ -17,6 +17,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SearchRequestFactory {
 
+    /**
+     * How many more results an internal (web UI) continuation loads when it doesn't say, i.e. the web UI's plain
+     * "Load 1000 more". An internal search's first request ignores its limit, see {@link org.nzbhydra.searching.Searcher}.
+     */
+    public static final int INTERNAL_LOAD_MORE_LIMIT = 1000;
+
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -26,13 +32,12 @@ public class SearchRequestFactory {
     public SearchRequest getSearchRequest(SearchType searchType, SearchSource source, Category category, long searchRequestId, Integer offset, Integer limit) {
         final SearchingConfig searchingConfig = configProvider.getBaseConfig().getSearching();
         if (limit == null) {
-            limit = source == SearchSource.INTERNAL ? searchingConfig.getLoadLimitInternal() : 100;
+            limit = source == SearchSource.INTERNAL ? INTERNAL_LOAD_MORE_LIMIT : 100;
         }
         if (offset == null) {
             offset = 0;
         }
         SearchRequest searchRequest = new SearchRequest(source, searchType, offset, limit);
-        searchRequest.setLoadLimitInternal(searchingConfig.getLoadLimitInternal());
         searchRequest.setSource(source);
         searchRequest.setCategory(category);
         searchRequest.setSearchRequestId(searchRequestId);

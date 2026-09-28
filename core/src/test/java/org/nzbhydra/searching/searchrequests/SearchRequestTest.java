@@ -34,17 +34,18 @@ public class SearchRequestTest {
     }
 
     @Test
-    void shouldUseLoadAllQueryCapForInternalSearchWithLimitAboveTheDefaultInternalPageSize() {
-        testee.setLoadLimitInternal(100);
-        testee.setLimit(500);
+    void shouldUseLoadAllQueryCapForInternalContinuations() {
+        testee.setSource(SearchSource.INTERNAL);
+        testee.setOffset(100);
+        testee.setLimit(1000);
 
         assertThat(testee.usesLoadAllQueryCap()).isTrue();
     }
 
     @Test
-    void shouldNotUseLoadAllQueryCapForInternalSearchWithTheDefaultLimit() {
-        testee.setLoadLimitInternal(100);
-        testee.setLimit(100);
+    void shouldNotUseLoadAllQueryCapForTheFirstInternalRequest() {
+        testee.setSource(SearchSource.INTERNAL);
+        testee.setOffset(0);
 
         assertThat(testee.usesLoadAllQueryCap()).isFalse();
     }
@@ -52,7 +53,6 @@ public class SearchRequestTest {
     @Test
     void shouldNotUseLoadAllQueryCapForApiSearchEvenWithALargeLimit() {
         testee.setSource(SearchSource.API);
-        testee.setLoadLimitInternal(100);
         testee.setLimit(500);
 
         assertThat(testee.usesLoadAllQueryCap()).isFalse();

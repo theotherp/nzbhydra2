@@ -291,7 +291,7 @@ describe("SearchResults", () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+        fireEvent.click(screen.getByRole("button", {name: "Load 1000 more"}));
         fireEvent.click(screen.getByRole("button", {name: /Loading more/}));
         await screen.findByRole("alert");
         expect(loadMore).toHaveBeenCalledOnce();
@@ -315,7 +315,9 @@ describe("SearchResults", () => {
             screen.getByText("1 malformed result entries were not displayed."),
         ).toBeVisible();
         expect(screen.getByText(/incomplete paging information/)).toBeVisible();
-        expect(screen.getByRole("button", {name: "Load more"})).toBeDisabled();
+        expect(
+            screen.getByRole("button", {name: "Load 1000 more"}),
+        ).toBeDisabled();
 
         rerender(
             <SearchResults
@@ -337,7 +339,7 @@ describe("SearchResults", () => {
                 onLoadMore={loadMore}
             />,
         );
-        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+        fireEvent.click(screen.getByRole("button", {name: "Load 1000 more"}));
         expect(await screen.findByText("request failed")).toBeVisible();
         expect(loadMore).toHaveBeenCalledOnce();
     });
@@ -368,7 +370,7 @@ describe("SearchResults", () => {
             "returned none that could be shown",
         );
         const loadMoreButton = screen.getByRole("button", {
-            name: "Load more",
+            name: "Load 1000 more",
         });
         expect(loadMoreButton).toBeDisabled();
         fireEvent.click(loadMoreButton);
@@ -1879,7 +1881,7 @@ describe("SearchResults", () => {
         const toolbar = screen.getByTestId("results-toolbar");
         const more = within(toolbar).getByTestId("results-load-more");
         const all = within(toolbar).getByTestId("results-load-all");
-        expect(more).toHaveAccessibleName("Load more");
+        expect(more).toHaveAccessibleName("Load 1000 more");
         expect(all).toHaveAccessibleName("Load all results");
         expect(more).toBeEnabled();
         expect(all).toBeEnabled();
@@ -5764,42 +5766,34 @@ describe("SearchResults", () => {
 
         it("should offer round amounts below what remains", () => {
             renderResults(
-                <SearchResults data={pagingData(10000)} onLoadMore={vi.fn()} />,
+                <SearchResults
+                    data={pagingData(100000)}
+                    onLoadMore={vi.fn()}
+                />,
+            );
+            expect(screen.getByTestId("results-load-more")).toHaveTextContent(
+                "Load 1000 more",
             );
             expect(openAmounts()).toEqual([
-                "Load 500 more",
-                "Load 1000 more",
                 "Load 5000 more",
+                "Load 10000 more",
+                "Load 50000 more",
             ]);
         });
 
-        it("should offer amounts above the plain page from the configured load limit", () => {
-            renderResults(
-                <SafeConfigContext.Provider
-                    value={{searching: {loadLimitInternal: 1000}}}
-                >
-                    <SearchResults
-                        data={pagingData(10000)}
-                        onLoadMore={vi.fn()}
-                    />
-                </SafeConfigContext.Provider>,
-            );
-            expect(openAmounts()).toEqual(["Load 5000 more"]);
-        });
-
         it("should load the chosen amount without asking", async () => {
-            const loadMore = vi.fn().mockResolvedValue(1000);
+            const loadMore = vi.fn().mockResolvedValue(5000);
             renderResults(
                 <SearchResults
-                    data={pagingData(10000)}
+                    data={pagingData(100000)}
                     onLoadMore={loadMore}
                 />,
             );
             openAmounts();
-            fireEvent.click(screen.getByTestId("results-load-amount-1000"));
+            fireEvent.click(screen.getByTestId("results-load-amount-5000"));
 
             await vi.waitFor(() =>
-                expect(loadMore).toHaveBeenCalledWith(false, 1000),
+                expect(loadMore).toHaveBeenCalledWith(false, 5000),
             );
             expect(
                 screen.queryByTestId("results-load-amount-confirmation"),
@@ -5836,7 +5830,7 @@ describe("SearchResults", () => {
                     onLoadMore={vi.fn()}
                 />,
             );
-            expect(openAmounts()).toEqual(["Load 500 more", "Load 1000 more"]);
+            expect(openAmounts()).toEqual(["Load 5000 more"]);
         });
 
         it("should stop offering to load more after a continuation brought nothing", async () => {
@@ -5887,10 +5881,12 @@ describe("SearchResults", () => {
                 />,
             );
             openAmounts();
-            fireEvent.click(screen.getByTestId("results-load-amount-500"));
+            fireEvent.click(screen.getByTestId("results-load-amount-5000"));
 
             expect(
-                await screen.findByText("Loaded 320 of 500 requested results."),
+                await screen.findByText(
+                    "Loaded 320 of 5000 requested results.",
+                ),
             ).toBeVisible();
         });
     });

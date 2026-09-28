@@ -16,7 +16,6 @@ public class SafeSearchingConfig {
     private final boolean alwaysShowQuickFilterButtons;
     private final List<String> customQuickFilterButtons;
     private final List<String> preselectQuickFilterButtons;
-    private final int loadLimitInternal;
     private final boolean showQualityIndicator;
 
     public SafeSearchingConfig(SearchingConfig searchingConfig) {
@@ -27,7 +26,6 @@ public class SafeSearchingConfig {
         preselectQuickFilterButtons = searchingConfig.getPreselectQuickFilterButtons();
         maxAge = searchingConfig.getMaxAge().orElse(null);
         ignoreTemporarilyDisabled = searchingConfig.isIgnoreTemporarilyDisabled();
-        loadLimitInternal = searchingConfig.getLoadLimitInternal();
         showQualityIndicator = searchingConfig.isShowMovieQualityIndicator();
     }
 

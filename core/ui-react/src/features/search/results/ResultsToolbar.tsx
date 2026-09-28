@@ -97,6 +97,7 @@ export function ResultsToolbar({
     refineSurfaceCompact,
     refineSurfaceShown,
     loadAmounts,
+    loadPageSize,
     requestContinuation,
     requestLoadAll,
     requestLoadAmount,
@@ -180,6 +181,8 @@ export function ResultsToolbar({
     requestLoadAll: () => Promise<void>;
     /** The amounts "Load more ▾" offers (`loadMoreAmounts`). */
     loadAmounts: number[];
+    /** What the plain "Load N more" loads. */
+    loadPageSize: number;
     requestLoadAmount: (amount: number) => Promise<void>;
     savingSearch: boolean;
     selectAllVisible: () => void;
@@ -409,6 +412,7 @@ export function ResultsToolbar({
                         <>
                             <LoadMoreButton
                                 amounts={loadAmounts}
+                                pageSize={loadPageSize}
                                 onLoadAmount={(amount) =>
                                     void requestLoadAmount(amount)
                                 }

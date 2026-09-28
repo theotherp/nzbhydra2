@@ -266,14 +266,15 @@ test.describe("Search results", () => {
     // rows the search returned rather than 1. React's own result paging is
     // covered by "should load more and all React results from advancing cache
     // offsets" and "should stop React load-more after a non-advancing
-    // terminal cursor". `loadLimitInternal` still governs internal searches:
-    // `SearchPage.tsx` sends every internal request without a `limit`, and
-    // `SearchRequestFactory.java:26-30` substitutes this setting server-side
-    // as the fetch size, so the results view pages through whatever that
-    // fetch returned. ADR-0032 answers the question this comment used to
-    // leave open: the setting is not ignored, it governs fetch size rather
-    // than display page size, and FM-116 corrected its label and help to say
-    // so.
+    // terminal cursor". `loadLimitInternal` no longer governs internal
+    // searches: a first internal request (`SearchPage.tsx`) queries every
+    // indexer once and returns everything it got, ignoring the setting
+    // entirely; `SearchRequestFactory.java` only substitutes a limit for a
+    // continuation that does not name one, `INTERNAL_LOAD_MORE_LIMIT` (1000),
+    // which is independent of this config field. `loadLimitInternal` and
+    // `loadAllCachedOnInternal` stay readable and writable in config files,
+    // but Config > Searching's UI no longer renders either field, and the
+    // safe config no longer carries `loadLimitInternal`.
 
     test("should sort and filter deterministic results in the React shell", async ({
         page,
@@ -705,7 +706,7 @@ test.describe("Search results", () => {
         await page.getByTestId("search-submit").click();
         await expectVisibleResultTitles(page, ["Paged result one"]);
 
-        await page.getByRole("button", {name: "Load more"}).click();
+        await page.getByRole("button", {name: "Load 1000 more"}).click();
         await expectVisibleResultTitles(page, [
             "Paged result one",
             "Paged result two",
@@ -768,13 +769,13 @@ test.describe("Search results", () => {
         await page.getByTestId("search-submit").click();
         await expectVisibleResultTitles(page, ["Paged result one"]);
 
-        await page.getByRole("button", {name: "Load more"}).click();
+        await page.getByRole("button", {name: "Load 1000 more"}).click();
         await expect(
             page.getByText(
                 "The server did not advance the search cache position.",
             ),
         ).toBeVisible();
-        const loadMore = page.getByRole("button", {name: "Load more"});
+        const loadMore = page.getByRole("button", {name: "Load 1000 more"});
         const loadAll = page.getByRole("button", {name: "Load all results"});
         await expect(loadMore).toBeDisabled();
         await expect(loadAll).toBeDisabled();
@@ -801,11 +802,11 @@ test.describe("Search results", () => {
             >;
             requests.push(request);
             const limit = typeof request.limit === "number" ? request.limit : 0;
-            if (limit === 500) {
+            if (limit === 5000) {
                 // The indexer comes up short of the requested amount, which
                 // is the deterministic branch to assert: 300 results is
                 // cheap to fulfil and to render, unlike actually returning
-                // 500 rows.
+                // 5000 rows.
                 await route.fulfill({
                     json: {
                         searchResults: Array.from({length: 300}, (_, i) =>
@@ -822,7 +823,7 @@ test.describe("Search results", () => {
                         indexerLimitWarnings: [],
                         rejectedReasonsMap: {},
                         notPickedIndexersWithReason: {},
-                        numberOfAvailableResults: 6100,
+                        numberOfAvailableResults: 20100,
                         numberOfRejectedResults: 0,
                         // The server counts only this page's accepted
                         // results plus everything rejected.
@@ -850,7 +851,7 @@ test.describe("Search results", () => {
                     indexerLimitWarnings: [],
                     rejectedReasonsMap: {},
                     notPickedIndexersWithReason: {},
-                    numberOfAvailableResults: 6100,
+                    numberOfAvailableResults: 20100,
                     numberOfRejectedResults: 0,
                     numberOfProcessedResults: 100,
                     numberOfAcceptedResults: 100,
@@ -868,41 +869,40 @@ test.describe("Search results", () => {
             "100 of 100 loaded",
         );
 
-        // remaining = 6100 - 100 = 6000: 500, 1000 and 5000 all qualify
-        // (< 6000), 10000 does not, so the three offered are exactly those.
+        // remaining = 20100 - 100 = 20000: 5000 and 10000 both qualify
+        // (< 20000, and > the plain button's 1000-result step), 50000 does
+        // not, so the two offered are exactly those.
         const toolbar = page.getByTestId("results-toolbar");
         await toolbar.getByTestId("results-load-more-options").click();
         const menu = page.getByRole("menu");
         await expect(menu).toBeVisible();
-        for (const amount of [500, 1000, 5000]) {
+        for (const amount of [5000, 10000]) {
             await expect(
                 page.getByTestId(`results-load-amount-${amount}`),
             ).toHaveText(`Load ${amount} more`);
         }
-        for (const amount of [10000, 50000]) {
-            await expect(
-                page.getByTestId(`results-load-amount-${amount}`),
-            ).toHaveCount(0);
-        }
+        await expect(
+            page.getByTestId("results-load-amount-50000"),
+        ).toHaveCount(0);
 
         const requestPromise = page.waitForRequest(
             (req) =>
                 req.url().includes("/internalapi/search") &&
-                (req.postDataJSON() as Record<string, unknown>).limit === 500,
+                (req.postDataJSON() as Record<string, unknown>).limit === 5000,
         );
-        await page.getByTestId("results-load-amount-500").click();
+        await page.getByTestId("results-load-amount-5000").click();
         const continuationRequest = await requestPromise;
         expect(continuationRequest.postDataJSON()).toMatchObject({
-            limit: 500,
+            limit: 5000,
             loadAll: false,
         });
 
-        // The indexer only returned 300 of the requested 500, so the
-        // shortfall toast is the deterministic signal (rendering 500 fresh
+        // The indexer only returned 300 of the requested 5000, so the
+        // shortfall toast is the deterministic signal (rendering 5000 fresh
         // rows to count them is not).
         await expect(
             page.getByText(
-                "Loaded 300 of 500 requested results.",
+                "Loaded 300 of 5000 requested results.",
             ),
         ).toBeVisible();
         await expect(page.getByTestId("search-results-summary")).toContainText(
@@ -910,12 +910,14 @@ test.describe("Search results", () => {
         );
         expect(requests[1]).toMatchObject({
             offset: 100,
-            limit: 500,
+            limit: 5000,
             loadAll: false,
         });
 
         // Same split control, now in the phone footer, its menu opening
         // upwards -- and the page still fits without horizontal scroll.
+        // remaining is now 20100 - 400 = 19700, so 5000 and 10000 still
+        // qualify.
         await page.setViewportSize({width: 390, height: 844});
         const footer = page.getByTestId("results-paging-footer");
         await footer.scrollIntoViewIfNeeded();
@@ -924,7 +926,7 @@ test.describe("Search results", () => {
         const mobileMenu = page.getByRole("menu");
         await expect(mobileMenu).toBeVisible();
         await expect(
-            page.getByTestId("results-load-amount-1000"),
+            page.getByTestId("results-load-amount-5000"),
         ).toBeVisible();
         expect(
             await page

@@ -1101,7 +1101,7 @@ features:
     selectors:
       # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
       # (`config-setting-searching-timeout`,
-      # `config-input-searching-loadLimitInternal`, etc), and the nine
+      # `config-input-searching-coverSize`, etc), and the nine
       # fieldsets follow `config-fieldset-<lowercased label>`.
       # FM-195 moved the custom-mapping list off this tab onto its own,
       # `/config/customMappings`, whose body is `config-custom-mappings` and

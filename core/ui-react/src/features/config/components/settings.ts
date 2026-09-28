@@ -178,8 +178,8 @@ export function minimumValidator(minimum: number): SettingValidator {
 }
 
 /**
- * Legacy's `max` template option (`config-fields-service.js:1419`, the
- * Searching tab's `loadLimitInternal`). Same story as `minimumValidator`:
+ * Legacy's `max` template option (`config-fields-service.js:1419`). Same
+ * story as `minimumValidator`:
  * Formly rendered the HTML5 attribute but declared no message, so exceeding
  * the limit only produced the generic "Config invalid" growl on save.
  */

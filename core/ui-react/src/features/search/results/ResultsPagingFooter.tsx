@@ -10,6 +10,7 @@ import {LoadMoreButton} from "./LoadMoreButton";
 export function ResultsPagingFooter({
     availableResultsPhrase,
     loadAmounts,
+    loadPageSize,
     moreResultsAvailable,
     pagingAvailable,
     pagingLoading,
@@ -19,6 +20,8 @@ export function ResultsPagingFooter({
 }: {
     availableResultsPhrase: string;
     loadAmounts: number[];
+    /** What the plain "Load N more" loads. */
+    loadPageSize: number;
     moreResultsAvailable: boolean;
     pagingAvailable: boolean;
     pagingLoading: boolean;
@@ -48,6 +51,7 @@ export function ResultsPagingFooter({
             >
                 <LoadMoreButton
                     amounts={loadAmounts}
+                    pageSize={loadPageSize}
                     footer
                     onLoadAmount={(amount) => void requestLoadAmount(amount)}
                     onLoadMore={() => void requestContinuation(false)}

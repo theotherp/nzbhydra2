@@ -55,14 +55,14 @@ const results = [
 
 describe("loadMoreAmounts", () => {
     it.each([
-        [900, true, 100, [500]],
-        [9900, true, 100, [500, 1000, 5000]],
-        [500, true, 100, []],
-        [99000, true, 100, [5000, 10000, 50000]],
+        [900, true, 1000, []],
         [9900, true, 1000, [5000]],
-        [300, false, 100, [500, 1000]],
-        [undefined, false, 100, [500, 1000]],
-        [undefined, true, 100, []],
+        [99900, true, 1000, [5000, 10000, 50000]],
+        [5000, true, 1000, []],
+        [300, false, 1000, [5000]],
+        [undefined, false, 1000, [5000]],
+        [undefined, true, 1000, []],
+        [99900, true, 5000, [10000, 50000]],
     ])(
         "should offer for %s remaining (total known: %s, page %s) %j",
         (remaining, totalKnown, baseStep, expected) => {

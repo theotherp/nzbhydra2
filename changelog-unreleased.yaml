@@ -29,7 +29,7 @@
 -   type: "feature"
     text: "Search results can be shown on pages instead of one long list. Set &quot;Results per page&quot; in Config &gt; Main &gt; UI (advanced). A page never splits a group of results, and expanding a group makes its page longer. Your selection is kept when you switch pages; select all, deselect all and invert apply to the page you&apos;re looking at."
 -   type: "feature"
-    text: "&quot;Load more&quot; in the search results has a small menu with larger amounts in between one page and &quot;Load all results&quot;, like &quot;Load 500 more&quot; or &quot;Load 5000 more&quot;. The amounts offered depend on how many results are still available. If the indexers can&apos;t deliver as many as you asked for, you&apos;re told how many were loaded."
+    text: "A search in the web UI now shows everything the indexers returned for it instead of only the first 100 results; each indexer is queried once. &quot;Load 1000 more&quot; loads more, and its small menu offers larger amounts like &quot;Load 5000 more&quot; depending on how many results are still available. If fewer results arrive than you asked for, you&apos;re told how many were loaded. The settings &quot;Results fetched per request&quot; and &quot;Display all retrieved results&quot; are gone."
 -   type: "fix"
     text: "The indexer statuses page is much more compact on phones: each indexer shows its name and a colored state badge on one line and hides empty fields. The state badge also makes problem indexers easier to spot on desktop."
 -   type: "fix"

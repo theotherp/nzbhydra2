@@ -45,7 +45,8 @@ class SearchCacheEntryTest {
         when(indexer1.getName()).thenReturn("indexer1");
         when(indexer2.getName()).thenReturn("indexer2");
         when(selectionResult.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
-        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        //An API search: it keeps the normal query cap and the newest-first merge order
+        searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 100);
         searchCacheEntry = new SearchCacheEntry(searchRequest, selectionResult, new SearchEntity());
     }
 
@@ -119,21 +120,9 @@ class SearchCacheEntryTest {
     }
 
     @Test
-    void shouldStopInternalSearchWithDefaultLimitAtTheNormalQueryCap() {
-        //searchRequest from setUp() is an internal search with the default limit of 100
-        searchCacheEntry.getIndexersToSearch();
-        IndexerSearchCacheEntry indexer1Entry = searchCacheEntry.getIndexerCacheEntries().get("indexer1");
-        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK; i++) {
-            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
-        }
-
-        assertThat(searchCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
-    }
-
-    @Test
-    void shouldAllowInternalSearchWithLargeExplicitLimitUpToTheLoadAllQueryCap() {
-        //A "Load 500 more" style request: internal source, explicit limit far above the default internal page size
-        SearchRequest largeLimitRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 500);
+    void shouldAllowInternalSearchesUpToTheLoadAllQueryCap() {
+        //Every web UI request after the first was explicitly asked for, e.g. "Load 5000 more"
+        SearchRequest largeLimitRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 5000);
         SearchCacheEntry largeLimitCacheEntry = new SearchCacheEntry(largeLimitRequest, selectionResult, new SearchEntity());
         largeLimitCacheEntry.getIndexersToSearch();
         IndexerSearchCacheEntry indexer1Entry = largeLimitCacheEntry.getIndexerCacheEntries().get("indexer1");
@@ -147,22 +136,6 @@ class SearchCacheEntryTest {
             indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
         }
         assertThat(largeLimitCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
-    }
-
-    @Test
-    void shouldKeepTheLoadAllQueryCapForAPlainLoadMoreAfterALargeLoad() {
-        //"Load 5000 more" used more than the normal cap's queries; the following plain "Load more" must still query
-        SearchRequest largeLimitRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 5000);
-        SearchCacheEntry cacheEntry = new SearchCacheEntry(largeLimitRequest, selectionResult, new SearchEntity());
-        cacheEntry.getIndexersToSearch();
-        IndexerSearchCacheEntry indexer1Entry = cacheEntry.getIndexerCacheEntries().get("indexer1");
-        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK + 5; i++) {
-            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
-        }
-
-        cacheEntry.setSearchRequest(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 5000, 100));
-
-        assertThat(cacheEntry.getIndexersToSearch()).contains(indexer1Entry);
     }
 
     @Test
@@ -231,6 +204,23 @@ class SearchCacheEntryTest {
         assertThat(searchCacheEntry.getIndexersToSearch()).containsExactly(searchCacheEntry.getIndexerCacheEntries().get("indexer1"));
     }
 
+    @Test
+    void shouldMergeEverythingRetrievedForInternalSearches() {
+        SearchCacheEntry internalCacheEntry = new SearchCacheEntry(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), selectionResult, new SearchEntity());
+        internalCacheEntry.getIndexersToSearch();
+        SearchResultItem newest = item("newest", indexer1, BASE);
+        SearchResultItem older = item("older", indexer2, BASE.minus(1, ChronoUnit.DAYS));
+        SearchResultItem oldest = item("oldest", indexer2, BASE.minus(2, ChronoUnit.DAYS));
+        internalCacheEntry.getIndexerCacheEntries().get("indexer1").addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of(newest)));
+        internalCacheEntry.getIndexerCacheEntries().get("indexer2").addIndexerSearchResult(indexerSearchResult(indexer2, false, Arrays.asList(older, oldest)));
+
+        internalCacheEntry.mergeCachedResults();
+
+        //The web UI sorts itself, so nothing retrieved is held back although indexer 1 has more
+        assertThat(internalCacheEntry.getSearchResultItems()).containsExactly(newest, older, oldest);
+        assertThat(internalCacheEntry.getIndexersToSearch()).containsExactly(internalCacheEntry.getIndexerCacheEntries().get("indexer1"));
+    }
+
     // ------------------------------------------------------------------------------------------------
     // mergeCachedResults and duplicates
     // ------------------------------------------------------------------------------------------------
@@ -279,6 +269,7 @@ class SearchCacheEntryTest {
 
     @Test
     void shouldKeepAllMembersOfADuplicateGroupForInternalSearches() {
+        SearchCacheEntry searchCacheEntry = new SearchCacheEntry(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), selectionResult, new SearchEntity());
         SearchResultItem newest = item("duplicate", indexer1, BASE);
         SearchResultItem older = item("duplicate", indexer2, BASE.minus(1, ChronoUnit.DAYS));
         searchCacheEntry.getIndexersToSearch();

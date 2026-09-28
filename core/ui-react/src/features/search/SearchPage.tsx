@@ -487,9 +487,9 @@ export function SearchPage({
         setLiveUnavailable(undefined);
     };
     // `limit` is an explicit "Load N more"; without it the server loads its
-    // configured page (`searching.loadLimitInternal`). Resolves to the
-    // number of results the continuation returned, so the results page can
-    // tell when an explicit amount came up short.
+    // default of 1000. Resolves to the number of results the continuation
+    // returned, so the results page can tell when an amount came up short or
+    // when nothing more came at all.
     const loadMore = async (
         loadAll: boolean,
         limit?: number,
@@ -535,8 +535,16 @@ export function SearchPage({
         }
         const terminalLoadAllResponse =
             loadAll && next.offset === 0 && next.limit === 0;
+        // The indexers had nothing more to give: the server returns everything
+        // it merged behind the offset, which is nothing. Not an error -- the
+        // results page ends paging on it.
+        const nothingMore =
+            next.offset === offset &&
+            next.limit === 0 &&
+            next.searchResults.length === 0;
         if (
             !terminalLoadAllResponse &&
+            !nothingMore &&
             (next.offset === undefined ||
                 next.limit === undefined ||
                 next.offset + next.limit <= offset)

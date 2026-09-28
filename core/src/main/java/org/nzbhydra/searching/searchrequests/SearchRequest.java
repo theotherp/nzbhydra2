@@ -44,12 +44,6 @@ public class SearchRequest {
     @Getter
     protected int limit;
     protected boolean loadAll;
-    /**
-     * The configured {@code SearchingConfig#getLoadLimitInternal()} at the time this request was created, i.e. the
-     * default page size internal (web UI) requests get when no explicit limit is given. Used by {@link #usesLoadAllQueryCap()}
-     * to tell an explicit, larger-than-default limit (e.g. from "Load 500 more") apart from the defaulted one.
-     */
-    protected int loadLimitInternal = 100;
     protected Integer minsize = null;
     protected Integer maxsize = null;
     protected Integer minage = null;
@@ -167,13 +161,13 @@ public class SearchRequest {
 
     /**
      * Whether {@link org.nzbhydra.searching.SearchCacheEntry} should use its generous load-all query cap for this
-     * request instead of the normal, much lower one. True for actual load-all searches, and also for internal (web
-     * UI) searches whose explicit limit exceeds the configured default internal page size -- which only happens
-     * when the UI explicitly asked for more than one page's worth of results (e.g. "Load 500 more"). API searches
-     * are excluded so that API callers can't bypass the normal cap by simply requesting a large limit.
+     * request instead of the normal, much lower one. True for actual load-all searches and for internal (web UI)
+     * continuations, which were explicitly asked for, e.g. "Load 5000 more". A web UI search's first request keeps the
+     * normal cap: it usually queries every indexer once, but goes on while everything it got was rejected. API
+     * searches are excluded so that API callers can't bypass the normal cap.
      */
     public boolean usesLoadAllQueryCap() {
-        return loadAll || (source == SearchSource.INTERNAL && limit > loadLimitInternal);
+        return loadAll || (source == SearchSource.INTERNAL && offset > 0);
     }
 
     @Override

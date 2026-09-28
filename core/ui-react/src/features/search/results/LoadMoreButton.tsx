@@ -1,23 +1,26 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import {Button, ButtonGroup, Menu, MenuItem} from "@mui/material";
+import {Box, Button, Menu, MenuItem} from "@mui/material";
 import {useId, useState} from "react";
 
 /**
- * "Load more", split: the button loads the server's configured page as it
- * always did, and the caret offers the larger round amounts
+ * "Load N more", split: the button loads `pageSize` (1000, the server's
+ * default for a continuation), and the caret offers the larger round amounts
  * `loadMoreAmounts` picked for this search. Without any amount to offer the
  * caret is not rendered and the control looks like the plain button it was.
  *
- * Same split-button anatomy as "Send to downloader" (`DownloadActions`), but
- * `text` like the "Load all results" button beside it, so the row keeps one
- * button style. `footer` is the phone's full-width copy under the last card,
- * whose menu opens upwards.
+ * Two plain `text` buttons side by side, like the "Load all results" button
+ * beside them, so the row keeps one button style. Not a `ButtonGroup`: its
+ * `text` variant draws a divider the full height of the buttons, about twice
+ * the height of the text, between "Load more" and its caret (owner request).
+ * `footer` is the phone's full-width copy under the last card, whose menu
+ * opens upwards.
  */
 export function LoadMoreButton({
     amounts,
     footer = false,
     onLoadAmount,
     onLoadMore,
+    pageSize,
     pagingAvailable,
     pagingLoading,
 }: {
@@ -25,6 +28,7 @@ export function LoadMoreButton({
     footer?: boolean;
     onLoadAmount: (amount: number) => void;
     onLoadMore: () => void;
+    pageSize: number;
     pagingAvailable: boolean;
     pagingLoading: boolean;
 }) {
@@ -40,16 +44,14 @@ export function LoadMoreButton({
             size="small"
             sx={footer ? {flex: 1} : undefined}
         >
-            {pagingLoading ? "Loading more results…" : "Load more"}
+            {pagingLoading ? "Loading more results…" : `Load ${pageSize} more`}
         </Button>
     );
     return (
         <>
-            <ButtonGroup
+            <Box
                 data-testid="results-load-more-group"
-                size="small"
-                sx={footer ? {display: "flex"} : undefined}
-                variant="text"
+                sx={{display: footer ? "flex" : "inline-flex"}}
             >
                 {loadButton}
                 {/* Always the same tree, so the main button keeps its DOM
@@ -63,6 +65,7 @@ export function LoadMoreButton({
                         data-testid="results-load-more-options"
                         disabled={disabled}
                         onClick={(event) => setMenuAnchor(event.currentTarget)}
+                        size="small"
                         // The caret is an icon, not a label: the stock minimum
                         // width would make it as wide as a short word.
                         sx={{minWidth: 0, px: 0.5}}
@@ -70,7 +73,7 @@ export function LoadMoreButton({
                         <ArrowDropDownIcon fontSize="small" />
                     </Button>
                 )}
-            </ButtonGroup>
+            </Box>
             <Menu
                 anchorEl={menuAnchor}
                 id={menuId}

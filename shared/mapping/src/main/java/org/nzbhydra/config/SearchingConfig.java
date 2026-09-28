@@ -50,6 +50,8 @@ public class SearchingConfig {
     private int keepSearchResultsForDays = 3;
     private String language = "en";
     private List<String> languagesToKeep = new ArrayList<>();
+    //Both no longer used: the web UI shows everything retrieved and loads more in explicit amounts. Kept so that
+    //existing config files still load
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
     private Integer maxAge;

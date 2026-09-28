@@ -140,7 +140,7 @@ class SearcherTest {
             indexerSearchResult.setPageSize(1);
             return indexerSearchResult;
         });
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 3);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 3);
         searchRequest.setQuery("query");
 
         SearchResult searchResult = testee.search(searchRequest);
