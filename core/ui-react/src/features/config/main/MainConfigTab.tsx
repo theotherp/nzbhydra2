@@ -151,6 +151,12 @@ export function MainConfigTab({transport}: {transport: ApiTransport}) {
                     {...indexedSetting("main.showIndexerGroupsSeparately")}
                     advanced
                 />
+                <NumberSetting
+                    {...indexedSetting("main.resultsPageSize")}
+                    advanced
+                    minimum={1}
+                    unit="groups"
+                />
             </ConfigFieldset>
 
             <ConfigFieldset label="Security">

@@ -6446,6 +6446,160 @@ test.describe("Search results", () => {
             await hydra.saveConfig(restore);
         }
     });
+
+    // FM paging: `main.resultsPageSize` (`MainConfig.java`, `SafeConfig.java`)
+    // slices the title groups the results table renders into pages of that
+    // size (`SearchResults.tsx`'s `pageOfGroups`). Off by default
+    // (`baseConfig.yml`'s `resultsPageSize: null`), so `applyBaseline`'s
+    // narrow `main` overlay never touches it and it has to be restored here,
+    // not assumed to reset itself between tests the way the fields
+    // `applyBaseline` does own already do.
+    //
+    // The five deterministic `uitest` titles (`environment.ts`) at a page
+    // size of 2 give three pages -- [1,2], [3,4], [5] -- enough to exercise
+    // first/middle/last without inventing a fixture of its own.
+    test.describe("Results paging", () => {
+        test.beforeEach(async ({hydra}) => {
+            const config = await hydra.getConfig();
+            (config.main as Record<string, unknown>).resultsPageSize = 2;
+            await hydra.saveConfig(config);
+        });
+
+        test.afterEach(async ({hydra}) => {
+            const config = await hydra.getConfig();
+            (config.main as Record<string, unknown>).resultsPageSize = null;
+            await hydra.saveConfig(config);
+        });
+
+        test("should page deterministic results with matching top and bottom pagers, keep the row count within the page size, scroll back under the sticky toolbar on a page change, and reset to page 1 on sort", async ({
+            page,
+        }) => {
+            // Short enough that the five-result, two-per-page fixture still
+            // overflows the viewport, so the scroll-back assertion below
+            // proves something instead of starting and staying at
+            // `scrollY === 0`.
+            await page.setViewportSize({width: 1440, height: 600});
+            // The `beforeEach` above sets `resultsPageSize` through the raw
+            // config API, which the running page's live safe-config query
+            // (ADR-0017) never sees -- only an app-driven save invalidates
+            // it. A fresh navigation re-seeds it from the bootstrap the
+            // server now embeds with the new value.
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await searchForResult(
+                page,
+                testEnvironment.uiTestQuery,
+                testEnvironment.uiTestResultTitles[0],
+            );
+
+            const table = page.getByTestId("search-results-table");
+            const topPager = page.getByTestId("results-pager-top");
+            const bottomPager = page.getByTestId("results-pager-bottom");
+
+            await expect(table.getByTestId("search-result-row")).toHaveCount(2);
+            await expectVisibleResultTitles(
+                page,
+                testEnvironment.uiTestResultTitles.slice(0, 2),
+            );
+            await expect(topPager).toBeVisible();
+            await expect(bottomPager).toBeVisible();
+            await expect(
+                topPager.getByRole("button", {name: "Page 1"}),
+            ).toHaveAttribute("aria-current", "page");
+            await expect(
+                bottomPager.getByRole("button", {name: "Page 1"}),
+            ).toHaveAttribute("aria-current", "page");
+
+            // Scroll well past the sticky toolbar before navigating from the
+            // bottom pager, so the page-change handler has somewhere to
+            // scroll back from.
+            await page.evaluate(() =>
+                window.scrollTo(0, document.documentElement.scrollHeight),
+            );
+            const scrolledAwayY = await page.evaluate(() => window.scrollY);
+            expect(scrolledAwayY).toBeGreaterThan(0);
+
+            await bottomPager
+                .getByRole("button", {name: "Go to page 2"})
+                .click();
+            await expectVisibleResultTitles(
+                page,
+                testEnvironment.uiTestResultTitles.slice(2, 4),
+            );
+            await expect(
+                bottomPager.getByRole("button", {name: "Page 2"}),
+            ).toHaveAttribute("aria-current", "page");
+            await expect(
+                topPager.getByRole("button", {name: "Page 2"}),
+            ).toHaveAttribute("aria-current", "page");
+
+            // The page change scrolls the table's top back into view under
+            // the sticky toolbar rather than leaving the reader down at the
+            // bottom pager.
+            await expect
+                .poll(() => page.evaluate(() => window.scrollY))
+                .toBeLessThan(scrolledAwayY);
+            const toolbarBottom = await page
+                .getByTestId("results-toolbar")
+                .evaluate((element) => element.getBoundingClientRect().bottom);
+            const tableTop = await table.evaluate(
+                (element) => element.getBoundingClientRect().top,
+            );
+            expect(tableTop).toBeGreaterThanOrEqual(toolbarBottom - 1);
+            expect(tableTop).toBeLessThan(600);
+
+            // The top pager's own "Next page" advances the same state.
+            await topPager.getByRole("button", {name: "Next page"}).click();
+            await expectVisibleResultTitles(
+                page,
+                testEnvironment.uiTestResultTitles.slice(4),
+            );
+            await expect(
+                topPager.getByRole("button", {name: "Page 3"}),
+            ).toHaveAttribute("aria-current", "page");
+
+            // Sorting invalidates the current page's contents, so it resets
+            // to page 1 (`SearchResults.tsx`'s `pageResetKey`).
+            await page.getByTestId("sort-title").click();
+            await expect(
+                topPager.getByRole("button", {name: "Page 1"}),
+            ).toHaveAttribute("aria-current", "page");
+            await expect(table.getByTestId("search-result-row")).toHaveCount(2);
+        });
+
+        test("should hide the top pager and fit the bottom pager without horizontal scroll at a 390px viewport", async ({
+            page,
+        }) => {
+            await page.setViewportSize({width: 390, height: 844});
+            // See the note in the previous test: the live safe-config query
+            // only refetches after an app-driven save, so this navigates
+            // again to pick up the `beforeEach`'s raw-API change.
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await searchForResult(
+                page,
+                testEnvironment.uiTestQuery,
+                testEnvironment.uiTestResultTitles[0],
+            );
+
+            // FM-181: below 768px the compact top pager never mounts at all
+            // (`SearchResults.tsx`'s `!refineSurfaceCompact` guard); paging
+            // lives only in the bottom strip there.
+            await expect(page.getByTestId("results-pager-top")).toHaveCount(0);
+            const bottomPager = page.getByTestId("results-pager-bottom");
+            await expect(bottomPager).toBeVisible();
+
+            expect(
+                await page.evaluate(
+                    () =>
+                        document.scrollingElement !== null &&
+                        document.scrollingElement.scrollWidth <=
+                            document.scrollingElement.clientWidth,
+                ),
+            ).toBe(true);
+        });
+
+    });
 });
 
 // FM-177: the checked-in cover image every routed `artworks.thetvdb.com`

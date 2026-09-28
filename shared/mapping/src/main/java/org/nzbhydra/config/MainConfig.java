@@ -102,6 +102,7 @@ public class MainConfig {
     protected String theme;
     private boolean indexerSelectionAsCheckboxes = false;
     private boolean showIndexerGroupsSeparately = false;
+    private Integer resultsPageSize = null;
 
 
     //Database settings

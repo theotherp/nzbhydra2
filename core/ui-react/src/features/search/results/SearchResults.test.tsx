@@ -8876,6 +8876,264 @@ function displayOption(label: string): HTMLElement {
     return within(openDisplayOptions()).getByRole("checkbox", {name: label});
 }
 
+describe("SearchResults with main.resultsPageSize", () => {
+    afterEach(() => {
+        delete window.__NZBHYDRA_BOOTSTRAP__;
+        window.localStorage.clear();
+    });
+
+    // Five titles, newest first under the default age sort, plus a second
+    // release of "Title 1" that shares its title group.
+    const pagedResponse = {
+        ...response,
+        numberOfAvailableResults: 6,
+        searchResults: [1, 2, 3, 4, 5].map((index) => ({
+            searchResultId: `r${index}`,
+            title: `Title ${index}`,
+            indexer: "Mock",
+            category: "Movies",
+            epoch: 1_000 - index,
+        })),
+    };
+    const withSecondRelease = {
+        ...pagedResponse,
+        searchResults: [
+            ...pagedResponse.searchResults,
+            {
+                searchResultId: "r1b",
+                title: "Title 1",
+                indexer: "Other",
+                category: "Movies",
+                epoch: 100,
+            },
+        ],
+    };
+
+    function renderPaged(
+        data: typeof pagedResponse,
+        resultsPageSize: unknown,
+        searchRequestId = 1,
+    ) {
+        return renderResults(
+            <SafeConfigContext.Provider value={{resultsPageSize}}>
+                <SearchResults data={data} searchRequestId={searchRequestId} />
+            </SafeConfigContext.Provider>,
+        );
+    }
+
+    function rowTitles(): string[] {
+        return screen
+            .getAllByTestId("search-result-row")
+            .map(
+                (row) => within(row).getByText(/^Title \d$/).textContent ?? "",
+            );
+    }
+
+    function bottomPager(): HTMLElement {
+        return screen.getByTestId("results-pager-bottom");
+    }
+
+    it("should show one unpaged list without a page size", () => {
+        renderPaged(pagedResponse, null);
+        expect(rowTitles()).toHaveLength(5);
+        expect(screen.queryByTestId("results-pager-top")).toBeNull();
+        expect(screen.queryByTestId("results-pager-bottom")).toBeNull();
+    });
+
+    it("should ignore a page size that is not a positive whole number", () => {
+        renderPaged(pagedResponse, 0);
+        expect(rowTitles()).toHaveLength(5);
+        expect(screen.queryByTestId("results-pager-bottom")).toBeNull();
+    });
+
+    it("should hide the pager when everything fits on one page", () => {
+        renderPaged(pagedResponse, 5);
+        expect(rowTitles()).toHaveLength(5);
+        expect(screen.queryByTestId("results-pager-bottom")).toBeNull();
+    });
+
+    it("should page result groups with a pager above and below the table", () => {
+        renderPaged(pagedResponse, 2);
+        expect(rowTitles()).toEqual(["Title 1", "Title 2"]);
+        expect(screen.getByTestId("results-pager-top")).toBeVisible();
+        expect(
+            within(bottomPager()).getByRole("button", {name: "Page 1"}),
+        ).toHaveAttribute("aria-current", "page");
+
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 3"}),
+        );
+        expect(rowTitles()).toEqual(["Title 5"]);
+
+        fireEvent.click(
+            within(screen.getByTestId("results-pager-top")).getByRole(
+                "button",
+                {name: "Previous page"},
+            ),
+        );
+        expect(rowTitles()).toEqual(["Title 3", "Title 4"]);
+    });
+
+    it("should keep a group on one page and let its expansion lengthen that page", () => {
+        renderPaged(withSecondRelease, 1);
+        expect(rowTitles()).toEqual(["Title 1"]);
+        fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+        expect(rowTitles()).toEqual(["Title 1", "Title 1"]);
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 2"}),
+        );
+        expect(rowTitles()).toEqual(["Title 2"]);
+    });
+
+    it("should go back to the first page when the sort changes", () => {
+        renderPaged(pagedResponse, 2);
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 2"}),
+        );
+        expect(rowTitles()).toEqual(["Title 3", "Title 4"]);
+        fireEvent.click(screen.getByTestId("sort-title"));
+        expect(
+            within(bottomPager()).getByRole("button", {name: "Page 1"}),
+        ).toHaveAttribute("aria-current", "page");
+    });
+
+    it("should go back to the first page for a new search but not for loaded results", () => {
+        const rendered = renderPaged(pagedResponse, 2);
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 2"}),
+        );
+        const loadedMore = {
+            ...pagedResponse,
+            searchResults: [
+                ...pagedResponse.searchResults,
+                {
+                    searchResultId: "r6",
+                    title: "Title 6",
+                    indexer: "Mock",
+                    category: "Movies",
+                    epoch: 1,
+                },
+            ],
+        };
+        const rerenderPaged = (
+            data: typeof pagedResponse,
+            searchRequestId: number,
+        ) =>
+            rendered.rerender(
+                <DialogProvider>
+                    <ToastProvider>
+                        <SafeConfigContext.Provider
+                            value={{resultsPageSize: 2}}
+                        >
+                            <SearchResults
+                                data={data}
+                                searchRequestId={searchRequestId}
+                            />
+                        </SafeConfigContext.Provider>
+                    </ToastProvider>
+                </DialogProvider>,
+            );
+        rerenderPaged(loadedMore, 1);
+        expect(rowTitles()).toEqual(["Title 3", "Title 4"]);
+
+        rerenderPaged(loadedMore, 2);
+        expect(rowTitles()).toEqual(["Title 1", "Title 2"]);
+    });
+
+    it("should go back to the first page when a refine filter changes", async () => {
+        renderPaged(pagedResponse, 2);
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 3"}),
+        );
+        expect(rowTitles()).toEqual(["Title 5"]);
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "Title"},
+        });
+        await settleFilterCommits();
+        expect(rowTitles()).toEqual(["Title 1", "Title 2"]);
+    });
+
+    it("should keep a clamped page when more results are loaded", () => {
+        const rendered = renderPaged(pagedResponse, 2);
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 3"}),
+        );
+        const rerenderPaged = (data: typeof pagedResponse) =>
+            rendered.rerender(
+                <DialogProvider>
+                    <ToastProvider>
+                        <SafeConfigContext.Provider
+                            value={{resultsPageSize: 2}}
+                        >
+                            <SearchResults data={data} searchRequestId={1} />
+                        </SafeConfigContext.Provider>
+                    </ToastProvider>
+                </DialogProvider>,
+            );
+        // Four results left: page 3 no longer exists and page 2 shows.
+        rerenderPaged({
+            ...pagedResponse,
+            searchResults: pagedResponse.searchResults.slice(0, 4),
+        });
+        expect(rowTitles()).toEqual(["Title 3", "Title 4"]);
+        // Back to five: page 2 stays rather than jumping to page 3 again.
+        rerenderPaged(pagedResponse);
+        expect(rowTitles()).toEqual(["Title 3", "Title 4"]);
+    });
+
+    it("should deselect and invert on the current page only", () => {
+        renderPaged(pagedResponse, 2);
+        const [firstRow] = screen.getAllByTestId("search-result-row");
+        fireEvent.click(within(firstRow).getByRole("checkbox"));
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 2"}),
+        );
+        const headerMenu = screen.getByTestId("header-selection-menu");
+        const runMenuAction = (name: string) => {
+            fireEvent.click(
+                within(headerMenu).getByRole("button", {
+                    name: "Selection options",
+                }),
+            );
+            fireEvent.click(screen.getByRole("menuitem", {name}));
+        };
+        runMenuAction("Invert selection");
+        expect(screen.getByText(/3 selected/)).toBeVisible();
+        runMenuAction("Deselect all");
+        expect(screen.getByText(/1 selected/)).toBeVisible();
+
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 1"}),
+        );
+        const rows = screen.getAllByTestId("search-result-row");
+        expect(within(rows[0]).getByRole("checkbox")).toBeChecked();
+    });
+
+    it("should keep a selection across pages and select all on the current page only", () => {
+        renderPaged(pagedResponse, 2);
+        const [firstRow] = screen.getAllByTestId("search-result-row");
+        fireEvent.click(within(firstRow).getByRole("checkbox"));
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 2"}),
+        );
+        fireEvent.click(
+            within(screen.getByTestId("header-selection-menu")).getByRole(
+                "checkbox",
+                {name: "Select all visible results"},
+            ),
+        );
+        expect(screen.getByText(/3 selected/)).toBeVisible();
+
+        fireEvent.click(
+            within(bottomPager()).getByRole("button", {name: "Go to page 1"}),
+        );
+        const rows = screen.getAllByTestId("search-result-row");
+        expect(within(rows[0]).getByRole("checkbox")).toBeChecked();
+        expect(within(rows[1]).getByRole("checkbox")).not.toBeChecked();
+    });
+});
+
 // FM-176: the duplicate expand control is opt-in and off by default, so every
 // case that addresses it flips "Show duplicate expand controls" the way a user
 // would -- and back off again on the next call, hence the name.

@@ -70,6 +70,9 @@ public class MainConfigValidator implements ConfigValidator<MainConfig> {
         if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepHistoryForWeeks() != null && newMain.getKeepStatsForWeeks() > newMain.getKeepHistoryForWeeks()) {
             result.getErrorMessages().add("Please set the time to keep stats to a value not higher than the time to keep history.");
         }
+        if (newMain.getResultsPageSize() != null && newMain.getResultsPageSize() < 1) {
+            result.getErrorMessages().add("Results page size must be at least 1 or empty.");
+        }
 
         if (newMain.getBackupFolder() != null) {
             final File backupFolderFile;

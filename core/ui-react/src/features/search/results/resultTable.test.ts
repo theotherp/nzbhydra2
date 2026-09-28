@@ -15,6 +15,7 @@ import {
     indexerColorsFromSafeConfig,
     isRecentResult,
     kify,
+    pageOfGroups,
     preselectedQuickFilters,
     qualityIndicatorFromSafeConfig,
     quickFilterKey,
@@ -50,6 +51,63 @@ const results = [
         epoch: 1_600_000_000,
     },
 ];
+
+describe("pageOfGroups", () => {
+    const groups = ["a", "b", "c", "d", "e"].map((key) => ({
+        key,
+        duplicateGroups: [],
+    }));
+    const keys = (page: ReturnType<typeof pageOfGroups>) =>
+        page.groups.map((group) => group.key);
+
+    it("should return every group on one page without a page size", () => {
+        const page = pageOfGroups(groups, 3, undefined);
+        expect(page.groups).toBe(groups);
+        expect(page).toMatchObject({page: 1, pageCount: 1});
+    });
+
+    it("should slice the requested page and a shorter last page", () => {
+        expect(keys(pageOfGroups(groups, 2, 2))).toEqual(["c", "d"]);
+        const last = pageOfGroups(groups, 3, 2);
+        expect(keys(last)).toEqual(["e"]);
+        expect(last).toMatchObject({page: 3, pageCount: 3});
+    });
+
+    it("should clamp a page that no longer exists", () => {
+        const page = pageOfGroups(groups, 9, 2);
+        expect(keys(page)).toEqual(["e"]);
+        expect(page.page).toBe(3);
+        expect(pageOfGroups(groups, 0, 2).page).toBe(1);
+    });
+
+    it("should report one empty page for no groups", () => {
+        expect(pageOfGroups([], 2, 2)).toEqual({
+            groups: [],
+            page: 1,
+            pageCount: 1,
+        });
+    });
+});
+
+describe("selectVisibleResults on a paged list", () => {
+    const visible = [{searchResultId: "c"}, {searchResultId: "d"}].map(
+        (result) => ({...result, title: "t", indexer: "i", category: "c"}),
+    );
+    const otherPages = new Set(["a", "b"]);
+
+    it("should keep the other pages' selection for every bulk action", () => {
+        const selected = new Set(["a", "c"]);
+        expect(
+            selectVisibleResults(selected, visible, "all", otherPages),
+        ).toEqual(new Set(["a", "c", "d"]));
+        expect(
+            selectVisibleResults(selected, visible, "none", otherPages),
+        ).toEqual(new Set(["a"]));
+        expect(
+            selectVisibleResults(selected, visible, "invert", otherPages),
+        ).toEqual(new Set(["a", "d"]));
+    });
+});
 
 // FM-181: the phone toolbar's refine badge, and the single answer to "is any
 // filter active" that `refine-clear-all`'s disabled state is derived from.

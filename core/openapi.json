@@ -8598,6 +8598,10 @@
                     "showIndexerGroupsSeparately": {
                         "type": "boolean"
                     },
+                    "resultsPageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
                     "databaseCompactTime": {
                         "type": "integer",
                         "format": "int32"
@@ -10337,6 +10341,10 @@
                     },
                     "showIndexerGroupsSeparately": {
                         "type": "boolean"
+                    },
+                    "resultsPageSize": {
+                        "type": "integer",
+                        "format": "int32"
                     },
                     "indexers": {
                         "type": "array",

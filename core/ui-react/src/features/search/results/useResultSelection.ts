@@ -37,9 +37,12 @@ import {
  * on the table.
  */
 export function useResultSelection({
+    otherPageIds,
     results,
     visibleResults,
 }: {
+    /** The results on other pages, which the bulk actions leave alone. */
+    otherPageIds: ReadonlySet<string>;
     results: SearchResult[];
     visibleResults: SearchResult[];
 }) {
@@ -58,6 +61,7 @@ export function useResultSelection({
         [results, selected],
     );
     const visibleResultsRef = useRef(visibleResults);
+    const otherPageIdsRef = useRef(otherPageIds);
     // Drives the results table header's tri-state checkbox and its mobile
     // toolbar counterpart (FM-040): "all"/"some"/"none" of the currently
     // visible rows.
@@ -84,17 +88,32 @@ export function useResultSelection({
     );
     const selectAllVisible = useCallback(() => {
         setSelected((current) =>
-            selectVisibleResults(current, visibleResultsRef.current, "all"),
+            selectVisibleResults(
+                current,
+                visibleResultsRef.current,
+                "all",
+                otherPageIdsRef.current,
+            ),
         );
     }, []);
     const deselectAllVisible = useCallback(() => {
         setSelected((current) =>
-            selectVisibleResults(current, visibleResultsRef.current, "none"),
+            selectVisibleResults(
+                current,
+                visibleResultsRef.current,
+                "none",
+                otherPageIdsRef.current,
+            ),
         );
     }, []);
     const invertVisibleSelection = useCallback(() => {
         setSelected((current) =>
-            selectVisibleResults(current, visibleResultsRef.current, "invert"),
+            selectVisibleResults(
+                current,
+                visibleResultsRef.current,
+                "invert",
+                otherPageIdsRef.current,
+            ),
         );
     }, []);
 
@@ -104,6 +123,7 @@ export function useResultSelection({
         invertVisibleSelection,
         lastSelectedId,
         lastSelectedIdRef,
+        otherPageIdsRef,
         selectAllVisible,
         selected,
         selectedResults,

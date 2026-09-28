@@ -26,6 +26,8 @@
     text: "Due to popular demand: The indexer statuses view in the search results is back. It starts collapsed, remembers whether you expanded it, and can be hidden in the Display menu. While it is hidden, the number of failed indexers is still shown next to the result count. Users who may not see the indexer selection don&apos;t see it either."
 -   type: "feature"
     text: "Display options and similar choices (search results display and sorting, the stats selection, &quot;Advanced settings&quot; in the config, the open search options, the history filter column and the log view toggles) are now saved on the server for each user instead of in the browser. They follow you to other browsers and machines and no longer get lost when the browser clears its data. Without login all browsers share one set. Your current choices are taken over the first time you open a page after the update."
+-   type: "feature"
+    text: "Search results can be shown on pages instead of one long list. Set &quot;Results per page&quot; in Config &gt; Main &gt; UI (advanced). A page never splits a group of results, and expanding a group makes its page longer. Your selection is kept when you switch pages; select all, deselect all and invert apply to the page you&apos;re looking at."
 -   type: "fix"
     text: "The indexer statuses page is much more compact on phones: each indexer shows its name and a colored state badge on one line and hides empty fields. The state badge also makes problem indexers easier to spot on desktop."
 -   type: "fix"

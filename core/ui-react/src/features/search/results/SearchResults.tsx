@@ -45,6 +45,7 @@ import type {ExpandSlots} from "./ResultRow";
 import {IndexerSummary} from "./IndexerSummary";
 import {resultQualityRating, showsQualityColumn} from "./qualityBadge";
 import {ResultsAlerts} from "./ResultsAlerts";
+import {ResultsPager} from "./ResultsPager";
 import {ResultsPagingFooter} from "./ResultsPagingFooter";
 import type {VisibleRowDescriptor} from "./ResultsTable";
 import {ResultsTable} from "./ResultsTable";
@@ -65,6 +66,7 @@ import {
     duplicateGroupKey,
     filterResults,
     groupResults,
+    pageOfGroups,
     indexerColorsFromSafeConfig,
     preselectedQuickFilters,
     qualityIndicatorFromSafeConfig,
@@ -233,6 +235,9 @@ export function SearchResults({
         () => coverWidthFromSafeConfig(effectiveSafeConfig),
         [effectiveSafeConfig],
     );
+    // `main.resultsPageSize`: how many result groups one page shows. Absent
+    // (the default) keeps the single list; see `pageOfGroups`.
+    const resultsPageSize = resultsPageSizeFromSafeConfig(effectiveSafeConfig);
     // One transport for every row's `API-SEARCH-NFO` request, rather than one
     // per rendered row.
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
@@ -525,6 +530,64 @@ export function SearchResults({
             sortedResults,
         ],
     );
+    // The requested results page. Any change to what the list contains or
+    // how it is ordered -- a new search, a filter, the sort, a grouping or
+    // "hide downloaded" option -- goes back to page 1, since the old page
+    // number now points at different results. "Load more" does not: it only
+    // adds results, and `pageOfGroups` clamps the page to the new count.
+    // Adjusted during render, like the per-search filter reset above.
+    const [requestedPage, setRequestedPage] = useState(1);
+    const pageResetKey = [
+        searchRequestId,
+        filters,
+        sorting,
+        groupTitles,
+        groupEpisodes,
+        groupTorrentAndUsenet,
+        hideDownloaded,
+        resultsPageSize,
+    ];
+    const [lastPageResetKey, setLastPageResetKey] = useState(pageResetKey);
+    if (
+        pageResetKey.some(
+            (value, index) => !Object.is(value, lastPageResetKey[index]),
+        )
+    ) {
+        setLastPageResetKey(pageResetKey);
+        setRequestedPage(1);
+    }
+    const {
+        groups: pagedGroups,
+        page,
+        pageCount,
+    } = useMemo(
+        () => pageOfGroups(groups, requestedPage, resultsPageSize),
+        [groups, requestedPage, resultsPageSize],
+    );
+    // Keeps a clamped page as the requested one: when hiding downloaded
+    // results shrinks the list from three pages to two while page 3 is shown,
+    // page 2 is what the reader now sees, and a later "Load more" must not
+    // take them back to page 3.
+    if (page !== requestedPage) {
+        setRequestedPage(page);
+    }
+    // Every result on the pages not on screen, which the selection's bulk
+    // actions leave alone (`selectVisibleResults`). Empty while unpaged.
+    const otherPageIds = useMemo(() => {
+        if (pagedGroups === groups) {
+            return NO_OTHER_PAGE_IDS;
+        }
+        const onPage = new Set(pagedGroups);
+        return new Set(
+            groups
+                .filter((group) => !onPage.has(group))
+                .flatMap((group) =>
+                    group.duplicateGroups.flatMap((duplicates) =>
+                        duplicates.map((result) => result.searchResultId),
+                    ),
+                ),
+        );
+    }, [groups, pagedGroups]);
     // The expanded title groups themselves, resolved from the option and the
     // overrides above. `groups` is already memoized, so this walks the groups
     // of one render only when one of the three actually changes.
@@ -550,11 +613,11 @@ export function SearchResults({
     const visibleResults = useMemo(
         () =>
             visibleGroupedResults(
-                groups,
+                pagedGroups,
                 expandedTitles,
                 effectiveExpandedDuplicates,
             ),
-        [effectiveExpandedDuplicates, expandedTitles, groups],
+        [effectiveExpandedDuplicates, expandedTitles, pagedGroups],
     );
     // FM-150: the shape of every row the table body is about to render,
     // derived once instead of inside the JSX, because the expand-control width
@@ -563,7 +626,7 @@ export function SearchResults({
     const rowDescriptors = useMemo(
         () =>
             visibleRowDescriptors(
-                groups,
+                pagedGroups,
                 expandedTitles,
                 effectiveExpandedDuplicates,
                 showDuplicateControls,
@@ -571,7 +634,7 @@ export function SearchResults({
         [
             effectiveExpandedDuplicates,
             expandedTitles,
-            groups,
+            pagedGroups,
             showDuplicateControls,
         ],
     );
@@ -591,7 +654,9 @@ export function SearchResults({
     // whole visible row set -- selection, grouping, expansion and sorting all
     // keep operating on that full list (see `visibleResultsRef` below), so
     // scrolling a row out of the rendered window changes nothing about it
-    // except that its DOM node is gone.
+    // except that its DOM node is gone. With `main.resultsPageSize` set that
+    // set is the current page's, so select all/none/invert and shift-click
+    // ranges act on that page; a selection made on another page is kept.
     //
     // `scrollMargin` is where the `<tbody>` starts in the document; without it
     // the virtualizer would treat the page's own scroll offset as an offset
@@ -635,6 +700,7 @@ export function SearchResults({
         invertVisibleSelection,
         lastSelectedId,
         lastSelectedIdRef,
+        otherPageIdsRef,
         selectAllVisible,
         selected,
         selectedResults,
@@ -642,14 +708,16 @@ export function SearchResults({
         updateSelection,
         visibleResultsRef,
     } = useResultSelection({
+        otherPageIds,
         results: data.searchResults,
         visibleResults,
     });
-    // The two latest-value refs the hook's handlers read, written here during
+    // The latest-value refs the hook's handlers read, written here during
     // render exactly as they were before FM-192 -- see `useResultSelection`'s
     // note on why the writes did not move with them.
     visibleResultsRef.current = visibleResults;
     lastSelectedIdRef.current = lastSelectedId;
+    otherPageIdsRef.current = otherPageIds;
     const handleDownloaded = useCallback((resultId: string) => {
         setDownloadedIds((current) => new Set([...current, resultId]));
     }, []);
@@ -1134,6 +1202,29 @@ export function SearchResults({
             root.style.removeProperty("scroll-padding-top");
         };
     }, [hasResults, toolbarHeight]);
+    // A page change brings the new page's first row into view under the
+    // sticky toolbar and header -- the `scroll-padding-top` above -- when the
+    // reader has scrolled past it, which is always the case from the bottom
+    // pager and usually from the toolbar's. Never scrolls down: at the top of
+    // the page the table is already in view.
+    const changePage = useCallback(
+        (next: number) => {
+            setRequestedPage(next);
+            if (typeof window === "undefined") {
+                return;
+            }
+            const padding =
+                Number.parseFloat(
+                    document.documentElement.style.scrollPaddingTop,
+                ) || 0;
+            const target = Math.max(0, listOffset - padding);
+            if (window.scrollY > target) {
+                window.scrollTo({top: target});
+            }
+        },
+        [listOffset],
+    );
+    const pagerShown = pageCount > 1;
     // FM-162: hands every mounted row to the virtualizer for measurement.
     //
     // The usual shape -- `ref={virtualizer.measureElement}` on each rendered
@@ -1259,6 +1350,17 @@ export function SearchResults({
                     toasts={toasts}
                     toggleRefineSurface={toggleRefineSurface}
                     toolbarRef={toolbarRef}
+                    topPager={
+                        pagerShown && !refineSurfaceCompact ? (
+                            <ResultsPager
+                                compact
+                                label="Result pages"
+                                onPageChange={changePage}
+                                page={page}
+                                pageCount={pageCount}
+                            />
+                        ) : null
+                    }
                 />
             )}
             {hasResults && (
@@ -1338,6 +1440,26 @@ export function SearchResults({
                             virtualRows={virtualRows}
                         />
                     </Stack>
+                    {pagerShown && (
+                        <Stack
+                            sx={{
+                                alignItems: refineSurfaceCompact
+                                    ? "center"
+                                    : "flex-end",
+                            }}
+                        >
+                            <ResultsPager
+                                label={
+                                    refineSurfaceCompact
+                                        ? "Result pages"
+                                        : "Result pages, bottom"
+                                }
+                                onPageChange={changePage}
+                                page={page}
+                                pageCount={pageCount}
+                            />
+                        </Stack>
+                    )}
                 </>
             )}
             {/* FM-181: the phone's paging controls, under the last card
@@ -1413,9 +1535,25 @@ function coverWidthFromSafeConfig(value: unknown): number {
 
 const DEFAULT_COVER_WIDTH = 100;
 
+/**
+ * `main.resultsPageSize` (`SafeConfig.java`): the result groups per page, or
+ * `undefined` for the single unpaged list. Anything but a positive whole
+ * number means no paging -- the config validator rejects those, and a bad
+ * value is no reason to hide results.
+ */
+function resultsPageSizeFromSafeConfig(value: unknown): number | undefined {
+    const configured = isRecord(value) ? value.resultsPageSize : undefined;
+    return typeof configured === "number" &&
+        Number.isInteger(configured) &&
+        configured > 0
+        ? configured
+        : undefined;
+}
+
 // FM-176: the empty set every render with the duplicate-controls option off
 // uses, so that render's memos keep a stable dependency identity.
 const NO_EXPANDED_DUPLICATES: ReadonlySet<string> = new Set<string>();
+const NO_OTHER_PAGE_IDS: ReadonlySet<string> = new Set<string>();
 
 /**
  * Flattens the grouped results into the rows the table body actually renders,

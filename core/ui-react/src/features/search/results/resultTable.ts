@@ -102,6 +102,32 @@ export function visibleGroupedResults(
     );
 }
 
+/**
+ * `main.resultsPageSize`: the title groups of one results page. Paging slices
+ * the groups, not the rows, so a group and its duplicates never straddle two
+ * pages and expanding one lengthens its own page instead of pushing rows onto
+ * the next. `page` is clamped rather than trusted, because a filter or a
+ * "Load more" can shrink or grow the page count underneath it. No page size
+ * means no paging: every group, on a single page.
+ */
+export function pageOfGroups(
+    groups: ResultGroup[],
+    page: number,
+    pageSize: number | undefined,
+): {groups: ResultGroup[]; page: number; pageCount: number} {
+    if (pageSize === undefined) {
+        return {groups, page: 1, pageCount: 1};
+    }
+    const pageCount = Math.max(1, Math.ceil(groups.length / pageSize));
+    const clampedPage = Math.min(Math.max(page, 1), pageCount);
+    const start = (clampedPage - 1) * pageSize;
+    return {
+        groups: groups.slice(start, start + pageSize),
+        page: clampedPage,
+        pageCount,
+    };
+}
+
 export function duplicateGroupKey(
     groupKey: string,
     result: SearchResult,
@@ -120,19 +146,27 @@ function duplicateIdentity(result: SearchResult): string {
         : `hash:${result.hash}`;
 }
 
+/**
+ * Select all / deselect all / invert over the visible rows. With
+ * `main.resultsPageSize` set, `otherPageIds` holds the results of every other
+ * page, and whatever of those is selected stays selected: the actions work on
+ * the page on screen. Unpaged there are no other pages, and a selected row
+ * that is merely hidden in a collapsed group is dropped as before.
+ */
 export function selectVisibleResults(
     selected: ReadonlySet<string>,
     visible: SearchResult[],
     action: "all" | "none" | "invert",
+    otherPageIds: ReadonlySet<string> = new Set(),
 ): Set<string> {
     const visibleIds = visible.map((result) => result.searchResultId);
-    if (action === "all") {
-        return new Set(visibleIds);
+    const next = new Set([...selected].filter((id) => otherPageIds.has(id)));
+    for (const id of visibleIds) {
+        if (action === "all" || (action === "invert" && !selected.has(id))) {
+            next.add(id);
+        }
     }
-    if (action === "none") {
-        return new Set();
-    }
-    return new Set(visibleIds.filter((id) => !selected.has(id)));
+    return next;
 }
 
 // Tri-state summary of `selected` over the currently visible rows, driving

@@ -10,7 +10,13 @@ import {
     Typography,
 } from "@mui/material";
 import type {SortingState, Table} from "@tanstack/react-table";
-import type {ContextType, Dispatch, RefObject, SetStateAction} from "react";
+import type {
+    ContextType,
+    Dispatch,
+    ReactNode,
+    RefObject,
+    SetStateAction,
+} from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import type {DialogContext} from "../../../components/dialogs/dialogs";
@@ -120,6 +126,7 @@ export function ResultsToolbar({
     toasts,
     toggleRefineSurface,
     toolbarRef,
+    topPager,
 }: {
     activeFilters: number;
     availableResultsPhrase: string;
@@ -201,6 +208,8 @@ export function ResultsToolbar({
     toasts: ContextType<typeof ToastContext>;
     toggleRefineSurface: () => void;
     toolbarRef: RefObject<HTMLDivElement | null>;
+    /** The compact results pager, or `null` while nothing is paged. */
+    topPager: ReactNode;
 }) {
     // Below 768px the table's `thead` -- and so the header's tri-state
     // checkbox/caret menu -- is hidden by the responsive card layout; this
@@ -424,20 +433,26 @@ export function ResultsToolbar({
                             // desktop branch resolves to exactly the
                             // `{ml: "auto"}` it has always carried,
                             // holding its one Display button.
+                            // With results paged, the desktop cluster
+                            // holds the compact pager as well, left of
+                            // Display, and lays the two out the same way,
+                            // at the 1.5 gap the rest of the desktop row
+                            // already uses.
                             sx={{
                                 ml: "auto",
-                                ...(refineSurfaceCompact
+                                ...(refineSurfaceCompact || topPager
                                     ? {
                                           alignItems: "center",
                                           display: "flex",
                                           // Owner (2026-09-07): room
                                           // between the three touch
                                           // targets; they abutted.
-                                          gap: 1,
+                                          gap: refineSurfaceCompact ? 1 : 1.5,
                                       }
                                     : {}),
                             }}
                         >
+                            {topPager}
                             <DisplayOptionsMenu
                                 compact={refineSurfaceCompact}
                                 compactRows={compactRows}

@@ -293,6 +293,12 @@ const MAIN_ENTRIES = tabEntries("main", ({fieldset}) => {
             label: "Show indexer groups in separate section",
             path: "main.showIndexerGroupsSeparately",
         },
+        {
+            advanced: true,
+            help: "Show search results on pages of this many result groups instead of one long list. A group is a release with its duplicates, or all releases of a title while grouping by title; expanding it lengthens its own page. Leave empty to show all results in one list.",
+            label: "Results per page",
+            path: "main.resultsPageSize",
+        },
     ]);
     fieldset("Security", {}, [
         {help: "Alphanumeric only.", label: "API key", path: "main.apiKey"},

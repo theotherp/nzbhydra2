@@ -25,6 +25,7 @@ public class SafeConfig {
     private boolean disableTour;
     private boolean indexerSelectionAsCheckboxes;
     private boolean showIndexerGroupsSeparately;
+    private Integer resultsPageSize;
 
 
     private List<SafeIndexerConfig> indexers;
@@ -44,6 +45,7 @@ public class SafeConfig {
         this.disableTour = baseConfig.getMain().isDisableTour();
         this.indexerSelectionAsCheckboxes = baseConfig.getMain().isIndexerSelectionAsCheckboxes();
         this.showIndexerGroupsSeparately = baseConfig.getMain().isShowIndexerGroupsSeparately();
+        this.resultsPageSize = baseConfig.getMain().getResultsPageSize();
 
     }
 
