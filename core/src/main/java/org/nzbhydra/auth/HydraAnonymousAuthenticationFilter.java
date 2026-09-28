@@ -54,9 +54,6 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     @EventListener
     public void handleConfigChangedEvent(ConfigChangedEvent event) {
         updateAuthorities(event.getNewConfig().getAuth());
-        if (!authorities.isEmpty()) {
-            enable();
-        }
     }
 
     private void updateAuthorities(AuthConfig authConfig) {
@@ -73,9 +70,8 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
             anonymousUserRoles.add("ROLE_ADMIN");
             logger.info("Granting admin rights to anonymous users");
         }
-        if (!anonymousUserRoles.isEmpty()) {
-            anonymousUserRoles.add("ROLE_ANONYMOUS");
-        }
+        //Always granted, like Spring's own anonymous filter, which this one replaces even when every area is restricted
+        anonymousUserRoles.add("ROLE_ANONYMOUS");
         authorities = AuthorityUtils.createAuthorityList(anonymousUserRoles.toArray(new String[0]));
     }
 

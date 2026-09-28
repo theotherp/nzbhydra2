@@ -298,7 +298,7 @@ public class SecurityConfig {
                             .invalidateHttpSession(true)
                             .clearAuthentication(true))
             ;
-            enableAnonymousAccessIfConfigured(http);
+            enableAnonymousAccess(http);
 
             if (baseConfig.getAuth().isRememberUsers() && baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
                 int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
@@ -479,16 +479,14 @@ public class SecurityConfig {
         };
     }
 
-    private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
-        //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role
+    private void enableAnonymousAccess(HttpSecurity http) {
+        //The anonymous user gets the role of every area that is not restricted. The filter is installed whatever the
+        //restrictions are at startup: it reads them on each request, so a restriction lifted later in the config takes
+        //effect without a restart. Installing it only when some area was already unrestricted left Spring's default
+        //filter in place otherwise, and anonymous requests kept being refused until the next restart.
         try {
-            if (!hydraAnonymousAuthenticationFilter.getAuthorities().isEmpty()) {
-                http.anonymous(anonymous -> anonymous.authenticationFilter(hydraAnonymousAuthenticationFilter));
-
-                hydraAnonymousAuthenticationFilter.enable();
-
-            }
-
+            http.anonymous(anonymous -> anonymous.authenticationFilter(hydraAnonymousAuthenticationFilter));
+            hydraAnonymousAuthenticationFilter.enable();
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
         }

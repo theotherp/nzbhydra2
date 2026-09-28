@@ -1,12 +1,18 @@
 import {readFileSync} from "node:fs";
+
+import type {IncomingMessage} from "node:http";
 import {join} from "node:path";
 
-import {describe, expect, it} from "vitest";
+import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {
-    DEV_SHELL_ICON_LINKS,
+    BackendAuthChallenge,
     backendProxy,
+    DEV_SHELL_ICON_LINKS,
     extractBootstrapJson,
+    fetchBootstrapJson,
+    forwardedCredentials,
+    isShellNavigation,
 } from "./devBackend";
 
 function shell(script: string): string {
@@ -84,6 +90,111 @@ describe("backendProxy", () => {
         // dev` an unproxied path falls through to the SPA fallback and
         // returns `index.html` instead of image bytes.
         expect(Object.keys(backendProxy())).toContain("/cache");
+    });
+});
+
+function request(
+    url: string,
+    accept = "text/html,application/xhtml+xml",
+    method = "GET",
+): IncomingMessage {
+    return {headers: {accept}, method, url} as IncomingMessage;
+}
+
+describe("isShellNavigation", () => {
+    it("recognizes navigations to client-side routes", () => {
+        expect(isShellNavigation(request("/"))).toBe(true);
+        expect(isShellNavigation(request("/search?query=x"))).toBe(true);
+        expect(isShellNavigation(request("/config/auth"))).toBe(true);
+    });
+
+    it("leaves proxied paths, modules and background requests alone", () => {
+        expect(isShellNavigation(request("/internalapi/welcomeshown"))).toBe(
+            false,
+        );
+        expect(isShellNavigation(request("/login"))).toBe(false);
+        expect(isShellNavigation(request("/@vite/client"))).toBe(false);
+        expect(isShellNavigation(request("/src/main.tsx"))).toBe(false);
+        expect(isShellNavigation(request("/", "application/json"))).toBe(false);
+        expect(isShellNavigation(request("/", undefined, "POST"))).toBe(false);
+    });
+});
+
+describe("forwardedCredentials", () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it("forwards the browser's basic auth header and session cookie", () => {
+        vi.stubEnv("HYDRA_BACKEND_AUTH", "");
+
+        expect(
+            forwardedCredentials({
+                authorization: "Basic dXNlcjpwYXNz",
+                cookie: "JSESSIONID=abc",
+            }),
+        ).toEqual({
+            authorization: "Basic dXNlcjpwYXNz",
+            cookie: "JSESSIONID=abc",
+        });
+    });
+
+    it("prefers the configured HYDRA_BACKEND_AUTH credentials", () => {
+        vi.stubEnv("HYDRA_BACKEND_AUTH", "admin:secret");
+
+        expect(
+            forwardedCredentials({authorization: "Basic dXNlcjpwYXNz"})
+                .authorization,
+        ).toBe(`Basic ${btoa("admin:secret")}`);
+    });
+});
+
+describe("fetchBootstrapJson", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.unstubAllEnvs();
+    });
+
+    it("sends the credentials it is given to the backend shell", async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(
+                    shell(
+                        'window.__NZBHYDRA_BOOTSTRAP__ = {"username":"user"};',
+                    ),
+                ),
+            );
+        vi.stubGlobal("fetch", fetchMock);
+
+        const json = await fetchBootstrapJson({
+            authorization: "Basic dXNlcjpwYXNz",
+            cookie: "JSESSIONID=abc",
+        });
+
+        expect(json).toBe('{"username":"user"}');
+        expect(fetchMock.mock.calls[0][1].headers).toMatchObject({
+            Authorization: "Basic dXNlcjpwYXNz",
+            Cookie: "JSESSIONID=abc",
+        });
+    });
+
+    it("passes on the backend's basic auth challenge", async () => {
+        vi.stubEnv("HYDRA_BACKEND_AUTH", "");
+        vi.stubGlobal(
+            "fetch",
+            vi.fn().mockResolvedValue(
+                new Response(null, {
+                    headers: {"WWW-Authenticate": 'Basic realm="Realm"'},
+                    status: 401,
+                }),
+            ),
+        );
+
+        const error = await fetchBootstrapJson().catch((caught) => caught);
+
+        expect(error).toBeInstanceOf(BackendAuthChallenge);
+        expect(error.wwwAuthenticate).toBe('Basic realm="Realm"');
     });
 });
 

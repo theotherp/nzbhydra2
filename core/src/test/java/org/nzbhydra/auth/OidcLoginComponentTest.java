@@ -182,8 +182,11 @@ class OidcLoginComponentTest {
         Mockito.when(userDetailsManager.loadUserByUsername(anyString())).thenReturn(
             new User(OIDC_USERNAME, "irrelevant", List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
 
-        HydraAnonymousAuthenticationFilter anonymousFilter = Mockito.mock(HydraAnonymousAuthenticationFilter.class);
-        Mockito.when(anonymousFilter.getAuthorities()).thenReturn(List.of());
+        //Every area restricted, so the anonymous user has no role beyond ROLE_ANONYMOUS
+        authConfig.setRestrictSearch(true);
+        authConfig.setRestrictStats(true);
+        authConfig.setRestrictAdmin(true);
+        HydraAnonymousAuthenticationFilter anonymousFilter = new HydraAnonymousAuthenticationFilter(configProvider);
 
         GenericWebApplicationContext context = new GenericWebApplicationContext(new MockServletContext());
         context.getBeanFactory().registerSingleton("configProvider", configProvider);

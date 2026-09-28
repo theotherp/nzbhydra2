@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -300,6 +300,31 @@ class SecurityConfigTest {
         }
     }
 
+    /**
+     * Lifting a restriction in the config takes effect without a restart. The anonymous filter was only put into the
+     * chain when some area was already unrestricted at startup, so a later change was logged ("Granting basic user
+     * rights to anonymous users") but never applied: anonymous requests kept getting a 401 until the next restart.
+     */
+    @Test
+    void shouldGrantAnonymousAccessWhenARestrictionIsLiftedAtRuntime() throws Exception {
+        try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
+            MockMvc mockMvc = mockMvc(context);
+            mockMvc.perform(get("/actuator/info").header("Accept", "application/json"))
+                .andExpect(status().isUnauthorized());
+
+            BaseConfig newConfig = new BaseConfig();
+            newConfig.getAuth().setAuthType(AuthType.FORM);
+            newConfig.getAuth().setRestrictSearch(true);
+            newConfig.getAuth().setRestrictStats(true);
+            newConfig.getAuth().setRestrictAdmin(false);
+            context.getBean(HydraAnonymousAuthenticationFilter.class)
+                .handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), newConfig));
+
+            mockMvc.perform(get("/actuator/info").header("Accept", "application/json"))
+                .andExpect(status().isOk());
+        }
+    }
+
     @Test
     void shouldStillSendBrowserNavigationsToTheFormLoginPage() throws Exception {
         try (GenericWebApplicationContext context = buildContext(false, new MockServletContext(), AuthType.FORM)) {
@@ -422,8 +447,11 @@ class SecurityConfigTest {
         ConfigProvider configProvider = Mockito.mock(ConfigProvider.class);
         Mockito.when(configProvider.getBaseConfig()).thenReturn(baseConfig);
 
-        HydraAnonymousAuthenticationFilter anonymousFilter = Mockito.mock(HydraAnonymousAuthenticationFilter.class);
-        Mockito.when(anonymousFilter.getAuthorities()).thenReturn(List.of());
+        //Every area restricted, so the anonymous user starts out with no role beyond ROLE_ANONYMOUS
+        baseConfig.getAuth().setRestrictSearch(true);
+        baseConfig.getAuth().setRestrictStats(true);
+        baseConfig.getAuth().setRestrictAdmin(true);
+        HydraAnonymousAuthenticationFilter anonymousFilter = new HydraAnonymousAuthenticationFilter(configProvider);
 
         GenericWebApplicationContext context = new GenericWebApplicationContext(servletContext);
         context.getBeanFactory().registerSingleton("configProvider", configProvider);
