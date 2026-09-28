@@ -1,4 +1,6 @@
-import {Button, Stack, Typography} from "@mui/material";
+import {Box, Button, Stack, Typography} from "@mui/material";
+
+import {LoadMoreButton} from "./LoadMoreButton";
 
 /**
  * FM-192: the phone branch's paging footer, moved verbatim out of
@@ -7,18 +9,22 @@ import {Button, Stack, Typography} from "@mui/material";
  */
 export function ResultsPagingFooter({
     availableResultsPhrase,
+    loadAmounts,
     moreResultsAvailable,
     pagingAvailable,
     pagingLoading,
     requestContinuation,
     requestLoadAll,
+    requestLoadAmount,
 }: {
     availableResultsPhrase: string;
+    loadAmounts: number[];
     moreResultsAvailable: boolean;
     pagingAvailable: boolean;
     pagingLoading: boolean;
     requestContinuation: (loadAll: boolean) => Promise<void>;
     requestLoadAll: () => Promise<void>;
+    requestLoadAmount: (amount: number) => Promise<void>;
 }) {
     return (
         <Stack
@@ -30,27 +36,33 @@ export function ResultsPagingFooter({
                     {availableResultsPhrase} available
                 </Typography>
             )}
-            <Stack direction="row" sx={{gap: 1}}>
-                <Button
-                    aria-busy={pagingLoading}
-                    data-testid="results-load-more"
-                    disabled={!pagingAvailable || pagingLoading}
-                    onClick={() => void requestContinuation(false)}
-                    size="small"
-                    sx={{flex: 1}}
-                >
-                    {pagingLoading ? "Loading more results…" : "Load more"}
-                </Button>
+            {/* Two equal columns rather than `flex: 1` on both: a flex item
+                never shrinks below its content, so the split "Load more ▾"
+                and "Load all results" would come out unequal. */}
+            <Box
+                sx={{
+                    display: "grid",
+                    gap: 1,
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                }}
+            >
+                <LoadMoreButton
+                    amounts={loadAmounts}
+                    footer
+                    onLoadAmount={(amount) => void requestLoadAmount(amount)}
+                    onLoadMore={() => void requestContinuation(false)}
+                    pagingAvailable={pagingAvailable}
+                    pagingLoading={pagingLoading}
+                />
                 <Button
                     data-testid="results-load-all"
                     disabled={!pagingAvailable || pagingLoading}
                     onClick={() => void requestLoadAll()}
                     size="small"
-                    sx={{flex: 1}}
                 >
                     Load all results
                 </Button>
-            </Stack>
+            </Box>
         </Stack>
     );
 }

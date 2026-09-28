@@ -18,6 +18,7 @@ import {
 
 import {
     failedIndexerCount,
+    remainingResults,
     type SearchResponse,
     type SearchResult,
 } from "../../../api/search";
@@ -66,6 +67,7 @@ import {
     duplicateGroupKey,
     filterResults,
     groupResults,
+    loadMoreAmounts,
     pageOfGroups,
     indexerColorsFromSafeConfig,
     preselectedQuickFilters,
@@ -110,6 +112,9 @@ const ROW_OVERSCAN = 8;
 // ordinary, fast result set, so the prompt only appears once the request is
 // clearly beyond what the user could have meant by a single click.
 const LOAD_ALL_CONFIRMATION_THRESHOLD = 500;
+// Explicit "Load N more" amounts above this ask first. Higher than the
+// "Load all" threshold because the reader chose the number themselves.
+const LOAD_AMOUNT_CONFIRMATION_THRESHOLD = 5000;
 
 // FM-201: the quality column's TanStack id, and the sort a sort on it falls
 // back to when the column goes away -- the results' default, newest first,
@@ -129,7 +134,9 @@ export function SearchResults({
 }: {
     data: SearchResponse;
     episodeRequested?: boolean;
-    onLoadMore?: (loadAll: boolean) => Promise<void>;
+    // `limit` is an explicit "Load N more"; the promise may resolve to how
+    // many results the continuation returned.
+    onLoadMore?: (loadAll: boolean, limit?: number) => Promise<number | void>;
     onSaveSearch?: () => Promise<void>;
     savingSearch?: boolean;
     // FM-162: the category the search was actually submitted for, resolved
@@ -835,16 +842,34 @@ export function SearchResults({
         (hasMoreResults || hasRemainingKnownResults) &&
         !nothingAcceptedButMoreAvailable &&
         !pagingExhausted;
-    const requestContinuation = async (loadAll: boolean) => {
+    const requestContinuation = async (loadAll: boolean, limit?: number) => {
         if (!onLoadMore || pagingLoading || !pagingAvailable) {
             return;
         }
         setPagingLoading(true);
         setPagingError(undefined);
         try {
-            await onLoadMore(loadAll);
-            if (loadAll) {
+            const received = await (limit === undefined
+                ? onLoadMore(loadAll)
+                : onLoadMore(loadAll, limit));
+            // A continuation that brought nothing means the indexers have
+            // nothing more to give (or hit the per-search query limit); the
+            // server still moves its cursor, so asking again would skip.
+            if (loadAll || received === 0) {
                 setPagingExhausted(true);
+            }
+            // An explicit amount can come up short for the same reasons.
+            // Said, because fewer results than asked for otherwise reads as
+            // a bug.
+            if (
+                limit !== undefined &&
+                typeof received === "number" &&
+                received < limit
+            ) {
+                toasts?.showToast({
+                    severity: "info",
+                    message: `Loaded ${received} of ${limit} requested results.`,
+                });
             }
         } catch (error) {
             const message =
@@ -1012,6 +1037,37 @@ export function SearchResults({
             }
         }
         await requestContinuation(true);
+    };
+    // The "Load more ▾" menu's amounts for this search: from what remains
+    // unloaded and the server's configured page, which the plain "Load more"
+    // already loads.
+    const loadAmounts = useMemo(
+        () =>
+            loadMoreAmounts(
+                remainingResults(data),
+                !totalResultsUnknown,
+                loadLimitFromSafeConfig(effectiveSafeConfig),
+            ),
+        [data, effectiveSafeConfig, totalResultsUnknown],
+    );
+    // An explicit amount names its own cost, so only the largest ones ask
+    // first, through the same confirmation service as "Load all results".
+    const requestLoadAmount = async (amount: number) => {
+        if (!onLoadMore || pagingLoading || !pagingAvailable) {
+            return;
+        }
+        if (dialogs !== null && amount > LOAD_AMOUNT_CONFIRMATION_THRESHOLD) {
+            const answer = await dialogs.confirm({
+                confirmLabel: `Load ${amount} more`,
+                message: `Loading ${amount} more results can take a while and makes the results table much longer.`,
+                testId: "results-load-amount-confirmation",
+                title: `Load ${amount} more results?`,
+            });
+            if (answer !== "confirmed") {
+                return;
+            }
+        }
+        await requestContinuation(false, amount);
     };
     // FM-181: how many refine dimensions are active, for the phone toolbar's
     // badge. The same function `RefineSidebar` disables its "Clear all" on.
@@ -1319,8 +1375,10 @@ export function SearchResults({
                     pagingLoading={pagingLoading}
                     refineSurfaceCompact={refineSurfaceCompact}
                     refineSurfaceShown={refineSurfaceShown}
+                    loadAmounts={loadAmounts}
                     requestContinuation={requestContinuation}
                     requestLoadAll={requestLoadAll}
+                    requestLoadAmount={requestLoadAmount}
                     savingSearch={savingSearch}
                     selectAllVisible={selectAllVisible}
                     selected={selected}
@@ -1476,8 +1534,10 @@ export function SearchResults({
                     moreResultsAvailable={moreResultsAvailable}
                     pagingAvailable={pagingAvailable}
                     pagingLoading={pagingLoading}
+                    loadAmounts={loadAmounts}
                     requestContinuation={requestContinuation}
                     requestLoadAll={requestLoadAll}
+                    requestLoadAmount={requestLoadAmount}
                 />
             )}
         </Stack>
@@ -1534,6 +1594,24 @@ function coverWidthFromSafeConfig(value: unknown): number {
 }
 
 const DEFAULT_COVER_WIDTH = 100;
+
+/**
+ * `searching.loadLimitInternal` (`SafeSearchingConfig.java`): how many results
+ * a plain "Load more" gets. The fallback is that setting's own default.
+ */
+function loadLimitFromSafeConfig(value: unknown): number {
+    const configured =
+        isRecord(value) && isRecord(value.searching)
+            ? value.searching.loadLimitInternal
+            : undefined;
+    return typeof configured === "number" &&
+        Number.isFinite(configured) &&
+        configured > 0
+        ? configured
+        : DEFAULT_LOAD_LIMIT;
+}
+
+const DEFAULT_LOAD_LIMIT = 100;
 
 /**
  * `main.resultsPageSize` (`SafeConfig.java`): the result groups per page, or

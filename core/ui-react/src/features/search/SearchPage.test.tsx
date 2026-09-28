@@ -1281,6 +1281,80 @@ describe("SearchPage", () => {
         ).toBeVisible();
     });
 
+    it("should send an explicit Load N more amount as the continuation limit", async () => {
+        const initial = {
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "one",
+                    title: "First result",
+                    indexer: "Mock",
+                    category: "All",
+                },
+            ],
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                },
+            ],
+            numberOfAvailableResults: 2000,
+            numberOfProcessedResults: 1,
+            offset: 0,
+            limit: 1,
+        };
+        let searchRequests = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            const isSearch = String(url).includes("/internalapi/search");
+            if (isSearch) {
+                searchRequests++;
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : searchRequests === 1
+                              ? initial
+                              : {
+                                    ...initial,
+                                    searchResults: [
+                                        {
+                                            searchResultId: "two",
+                                            title: "Second result",
+                                            indexer: "Mock",
+                                            category: "All",
+                                        },
+                                    ],
+                                    offset: 1,
+                                    limit: 500,
+                                    numberOfProcessedResults: 501,
+                                },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        fireEvent.click(await screen.findByTestId("results-load-more-options"));
+        fireEvent.click(screen.getByRole("menuitem", {name: "Load 500 more"}));
+
+        expect(await screen.findByText("Second result")).toBeVisible();
+        const continuation = searchRequestCalls(fetchImplementation)[1];
+        expect(
+            JSON.parse((continuation[1] as RequestInit).body as string),
+        ).toMatchObject({offset: 1, limit: 500, loadAll: false});
+    });
+
     it("should stop a non-load-all continuation that resets the paging cursor", async () => {
         const initial = {
             ...responseEnvelope,

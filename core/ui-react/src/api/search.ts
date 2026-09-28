@@ -431,6 +431,25 @@ export function failedIndexerCount(response: SearchResponse): number {
     ).length;
 }
 
+/**
+ * How many results the indexers still hold beyond what this search has loaded:
+ * the reported total, minus what was rejected, minus the cache position the
+ * next continuation starts at (`offset + limit`, every accepted result loaded
+ * so far). `numberOfProcessedResults` cannot stand in for the latter: the
+ * server counts only the latest page's accepted results in it.
+ */
+export function remainingResults(response: SearchResponse): number | undefined {
+    if (response.offset === undefined || response.limit === undefined) {
+        return undefined;
+    }
+    return Math.max(
+        0,
+        response.numberOfAvailableResults -
+            response.numberOfRejectedResults -
+            (response.offset + response.limit),
+    );
+}
+
 export function continuationRequest(
     request: SearchRequest,
     offset: number,

@@ -3,6 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.config.SearchSource;
@@ -31,15 +32,18 @@ import java.util.stream.Collectors;
 public class SearchCacheEntry {
 
     /**
-     * Maximum number of queries sent to a single indexer for one search unless all results are to be loaded. Queries
-     * to find the first result old enough for a minimum age are not counted.
+     * Maximum number of queries sent to a single indexer for one search, unless {@link SearchRequest#usesLoadAllQueryCap()}
+     * was true for any of its requests and the generous load-all cap applies instead. Queries to find the first result old enough for a minimum age
+     * are not counted.
      */
     static final int MAX_QUERIES_UNTIL_BREAK = 15;
 
     /**
-     * Maximum number of queries sent to a single indexer for one load-all search. Generous because loading all results
-     * legitimately needs many pages, but still a hard backstop against indexers which never stop reporting more results.
-     * Also applies to all other searches, including their queries for a minimum age.
+     * Maximum number of queries sent to a single indexer for one search for which {@link SearchRequest#usesLoadAllQueryCap()}
+     * is true -- either an actual load-all search, or an internal (web UI) search whose explicit limit exceeds the
+     * configured default page size (e.g. "Load 500 more"). Generous because such searches legitimately need many
+     * pages, but still a hard backstop against indexers which never stop reporting more results. Also applies to all
+     * other searches, including their queries for a minimum age.
      */
     static final int MAX_QUERIES_UNTIL_BREAK_LOAD_ALL = MAX_QUERIES_UNTIL_BREAK * 10;
 
@@ -56,6 +60,13 @@ public class SearchCacheEntry {
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
+    /**
+     * Whether any request for this search used the load-all query cap. Sticky because the queries are counted for the
+     * whole search: after a large load an indexer may already have used more than {@link #MAX_QUERIES_UNTIL_BREAK}
+     * queries, and a following plain "Load more" must still be able to query it.
+     */
+    @Setter(AccessLevel.NONE)
+    private boolean loadAllQueryCap;
     private Map<String, IndexerSearchCacheEntry> indexerCacheEntries = new HashMap<>();
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
     private IndexerForSearchSelection indexerSelectionResult;
@@ -106,15 +117,16 @@ public class SearchCacheEntry {
             indexerCacheEntries.putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer, searchRequest.getMinage().orElse(null)));
         }
 
+        loadAllQueryCap |= searchRequest.usesLoadAllQueryCap();
         List<IndexerSearchCacheEntry> indexersToSearch = new ArrayList<>();
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexerCacheEntries.values()) {
             final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
-            final int maxQueries = searchRequest.isLoadAll() ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
+            final int maxQueries = loadAllQueryCap ? MAX_QUERIES_UNTIL_BREAK_LOAD_ALL : MAX_QUERIES_UNTIL_BREAK;
             //Probes for a minimum age don't count because otherwise indexers with small pages would have few left
             final int countedSearches = executedSearches - indexerSearchCacheEntry.getMinAgeProbes();
             if (countedSearches >= maxQueries || executedSearches >= MAX_QUERIES_UNTIL_BREAK_LOAD_ALL) {
                 //Circuit breaker
-                logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, searchRequest.isLoadAll() ? "load-all " : "");
+                logger.warn("Indexer {} executed {} queries for a {}search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches, loadAllQueryCap ? "load-all " : "");
                 continue;
             }
             if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {

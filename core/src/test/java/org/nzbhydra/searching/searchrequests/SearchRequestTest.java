@@ -26,5 +26,36 @@ public class SearchRequestTest {
         assertTrue(testee.getInternalData().getForbiddenWords().contains("three"));
     }
 
+    @Test
+    void shouldUseLoadAllQueryCapWhenLoadAllIsSet() {
+        testee.setLoadAll(true);
+
+        assertThat(testee.usesLoadAllQueryCap()).isTrue();
+    }
+
+    @Test
+    void shouldUseLoadAllQueryCapForInternalSearchWithLimitAboveTheDefaultInternalPageSize() {
+        testee.setLoadLimitInternal(100);
+        testee.setLimit(500);
+
+        assertThat(testee.usesLoadAllQueryCap()).isTrue();
+    }
+
+    @Test
+    void shouldNotUseLoadAllQueryCapForInternalSearchWithTheDefaultLimit() {
+        testee.setLoadLimitInternal(100);
+        testee.setLimit(100);
+
+        assertThat(testee.usesLoadAllQueryCap()).isFalse();
+    }
+
+    @Test
+    void shouldNotUseLoadAllQueryCapForApiSearchEvenWithALargeLimit() {
+        testee.setSource(SearchSource.API);
+        testee.setLoadLimitInternal(100);
+        testee.setLimit(500);
+
+        assertThat(testee.usesLoadAllQueryCap()).isFalse();
+    }
 
 }

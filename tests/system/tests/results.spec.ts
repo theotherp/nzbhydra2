@@ -784,6 +784,158 @@ test.describe("Search results", () => {
         expect(requests[1]).toMatchObject({offset: 1, loadAll: false});
     });
 
+    test("should offer round Load more amounts and load the requested one", async ({
+        page,
+    }) => {
+        const requests: Array<Record<string, unknown>> = [];
+        const result = (id: string) => ({
+            searchResultId: id,
+            title: `Bulk result ${id}`,
+            indexer: "Mock",
+            category: "All",
+        });
+        await page.route("**/internalapi/search", async (route) => {
+            const request = route.request().postDataJSON() as Record<
+                string,
+                unknown
+            >;
+            requests.push(request);
+            const limit = typeof request.limit === "number" ? request.limit : 0;
+            if (limit === 500) {
+                // The indexer comes up short of the requested amount, which
+                // is the deterministic branch to assert: 300 results is
+                // cheap to fulfil and to render, unlike actually returning
+                // 500 rows.
+                await route.fulfill({
+                    json: {
+                        searchResults: Array.from({length: 300}, (_, i) =>
+                            result(`bulk-${i}`),
+                        ),
+                        indexerSearchMetaDatas: [
+                            {
+                                indexerName: "Mock",
+                                wasSuccessful: true,
+                                hasMoreResults: true,
+                                totalResultsKnown: true,
+                            },
+                        ],
+                        indexerLimitWarnings: [],
+                        rejectedReasonsMap: {},
+                        notPickedIndexersWithReason: {},
+                        numberOfAvailableResults: 6100,
+                        numberOfRejectedResults: 0,
+                        // The server counts only this page's accepted
+                        // results plus everything rejected.
+                        numberOfProcessedResults: 300,
+                        numberOfAcceptedResults: 400,
+                        offset: 100,
+                        limit: 300,
+                    },
+                });
+                return;
+            }
+            await route.fulfill({
+                json: {
+                    searchResults: Array.from({length: 100}, (_, i) =>
+                        result(`initial-${i}`),
+                    ),
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: true,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 6100,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 100,
+                    numberOfAcceptedResults: 100,
+                    offset: 0,
+                    limit: 100,
+                },
+            });
+        });
+        await page.setViewportSize({width: 1440, height: 900});
+        await page.goto("/");
+        await page.getByTestId("search-query").fill("bulk paging");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-results-table")).toBeVisible();
+        await expect(page.getByTestId("search-results-summary")).toContainText(
+            "100 of 100 loaded",
+        );
+
+        // remaining = 6100 - 100 = 6000: 500, 1000 and 5000 all qualify
+        // (< 6000), 10000 does not, so the three offered are exactly those.
+        const toolbar = page.getByTestId("results-toolbar");
+        await toolbar.getByTestId("results-load-more-options").click();
+        const menu = page.getByRole("menu");
+        await expect(menu).toBeVisible();
+        for (const amount of [500, 1000, 5000]) {
+            await expect(
+                page.getByTestId(`results-load-amount-${amount}`),
+            ).toHaveText(`Load ${amount} more`);
+        }
+        for (const amount of [10000, 50000]) {
+            await expect(
+                page.getByTestId(`results-load-amount-${amount}`),
+            ).toHaveCount(0);
+        }
+
+        const requestPromise = page.waitForRequest(
+            (req) =>
+                req.url().includes("/internalapi/search") &&
+                (req.postDataJSON() as Record<string, unknown>).limit === 500,
+        );
+        await page.getByTestId("results-load-amount-500").click();
+        const continuationRequest = await requestPromise;
+        expect(continuationRequest.postDataJSON()).toMatchObject({
+            limit: 500,
+            loadAll: false,
+        });
+
+        // The indexer only returned 300 of the requested 500, so the
+        // shortfall toast is the deterministic signal (rendering 500 fresh
+        // rows to count them is not).
+        await expect(
+            page.getByText(
+                "Loaded 300 of 500 requested results.",
+            ),
+        ).toBeVisible();
+        await expect(page.getByTestId("search-results-summary")).toContainText(
+            "400 of 400 loaded",
+        );
+        expect(requests[1]).toMatchObject({
+            offset: 100,
+            limit: 500,
+            loadAll: false,
+        });
+
+        // Same split control, now in the phone footer, its menu opening
+        // upwards -- and the page still fits without horizontal scroll.
+        await page.setViewportSize({width: 390, height: 844});
+        const footer = page.getByTestId("results-paging-footer");
+        await footer.scrollIntoViewIfNeeded();
+        await expect(footer.getByTestId("results-load-more")).toBeVisible();
+        await footer.getByTestId("results-load-more-options").click();
+        const mobileMenu = page.getByRole("menu");
+        await expect(mobileMenu).toBeVisible();
+        await expect(
+            page.getByTestId("results-load-amount-1000"),
+        ).toBeVisible();
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+        await page.keyboard.press("Escape");
+    });
+
     test("should provide deterministic React results visual evidence across desktop and mobile", async ({
         page,
     }) => {
@@ -4045,9 +4197,11 @@ test.describe("Search results", () => {
         expect(footerBox.y).toBeGreaterThanOrEqual(
             lastCardBox.y + lastCardBox.height - 1,
         );
-        // Both buttons share the row equally, so neither is the small target.
+        // Both controls share the row equally, so neither is the small
+        // target. With amounts to offer, "Load more" is a split button whose
+        // half of the row includes its caret.
         const [loadMoreBox, loadAllBox] = await Promise.all([
-            footer.getByTestId("results-load-more").boundingBox(),
+            footer.getByTestId("results-load-more-group").boundingBox(),
             footer.getByTestId("results-load-all").boundingBox(),
         ]);
         expect(loadMoreBox).not.toBeNull();

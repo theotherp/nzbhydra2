@@ -118,6 +118,67 @@ class SearchCacheEntryTest {
         assertThat(searchCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
     }
 
+    @Test
+    void shouldStopInternalSearchWithDefaultLimitAtTheNormalQueryCap() {
+        //searchRequest from setUp() is an internal search with the default limit of 100
+        searchCacheEntry.getIndexersToSearch();
+        IndexerSearchCacheEntry indexer1Entry = searchCacheEntry.getIndexerCacheEntries().get("indexer1");
+        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+
+        assertThat(searchCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
+    }
+
+    @Test
+    void shouldAllowInternalSearchWithLargeExplicitLimitUpToTheLoadAllQueryCap() {
+        //A "Load 500 more" style request: internal source, explicit limit far above the default internal page size
+        SearchRequest largeLimitRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 500);
+        SearchCacheEntry largeLimitCacheEntry = new SearchCacheEntry(largeLimitRequest, selectionResult, new SearchEntity());
+        largeLimitCacheEntry.getIndexersToSearch();
+        IndexerSearchCacheEntry indexer1Entry = largeLimitCacheEntry.getIndexerCacheEntries().get("indexer1");
+        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+        //Still within the load-all cap so the indexer must still be queried
+        assertThat(largeLimitCacheEntry.getIndexersToSearch()).contains(indexer1Entry);
+
+        for (int i = SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK_LOAD_ALL; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+        assertThat(largeLimitCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
+    }
+
+    @Test
+    void shouldKeepTheLoadAllQueryCapForAPlainLoadMoreAfterALargeLoad() {
+        //"Load 5000 more" used more than the normal cap's queries; the following plain "Load more" must still query
+        SearchRequest largeLimitRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 5000);
+        SearchCacheEntry cacheEntry = new SearchCacheEntry(largeLimitRequest, selectionResult, new SearchEntity());
+        cacheEntry.getIndexersToSearch();
+        IndexerSearchCacheEntry indexer1Entry = cacheEntry.getIndexerCacheEntries().get("indexer1");
+        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK + 5; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+
+        cacheEntry.setSearchRequest(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 5000, 100));
+
+        assertThat(cacheEntry.getIndexersToSearch()).contains(indexer1Entry);
+    }
+
+    @Test
+    void shouldStopApiSearchWithLargeLimitAtTheNormalQueryCap() {
+        //API callers must not be able to bypass the normal cap by requesting a large limit
+        SearchRequest apiLargeLimitRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 500);
+        SearchCacheEntry apiCacheEntry = new SearchCacheEntry(apiLargeLimitRequest, selectionResult, new SearchEntity());
+        apiCacheEntry.getIndexersToSearch();
+        IndexerSearchCacheEntry indexer1Entry = apiCacheEntry.getIndexerCacheEntries().get("indexer1");
+        for (int i = 0; i < SearchCacheEntry.MAX_QUERIES_UNTIL_BREAK; i++) {
+            indexer1Entry.addIndexerSearchResult(indexerSearchResult(indexer1, true, List.of()));
+        }
+
+        assertThat(apiCacheEntry.getIndexersToSearch()).doesNotContain(indexer1Entry);
+    }
+
     // ------------------------------------------------------------------------------------------------
     // getIndexersWithCachedResults
     // ------------------------------------------------------------------------------------------------

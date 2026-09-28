@@ -122,8 +122,8 @@ public class Searcher {
             if (searchCacheEntry.getSearchResultItems().size() >= numberOfWantedResults && !searchRequest.isLoadAll()) {
                 break;
             }
-            if (searchRequest.isLoadAll()) {
-                //Every accepted result ends up in the merged items (API searches may drop duplicates) so they bound memory use
+            if (searchRequest.usesLoadAllQueryCap()) {
+                //Also for large explicit amounts like "Load 50000 more". Every accepted result ends up in the merged items (API searches may drop duplicates) so they bound memory use
                 int resultsFetched = searchCacheEntry.getSearchResultItems().size();
                 if (resultsFetched >= maxResultsLoadAll) {
                     logger.info("Stopped loading all results after {} results to avoid running out of memory. The limit is {} results; increase the XMX value in the main config to load more", resultsFetched, maxResultsLoadAll);

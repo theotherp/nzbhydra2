@@ -23,6 +23,7 @@ import type {DialogContext} from "../../../components/dialogs/dialogs";
 import type {ToastContext} from "../../../components/toasts/toasts";
 import {downloadSettings} from "../../../domain/downloads/actions";
 import {DownloadActions} from "./DownloadActions";
+import {LoadMoreButton} from "./LoadMoreButton";
 import {REFINE_LABELS} from "./refineLabels";
 import {
     DisplayOptionsMenu,
@@ -95,8 +96,10 @@ export function ResultsToolbar({
     pagingLoading,
     refineSurfaceCompact,
     refineSurfaceShown,
+    loadAmounts,
     requestContinuation,
     requestLoadAll,
+    requestLoadAmount,
     savingSearch,
     selectAllVisible,
     selected,
@@ -162,7 +165,7 @@ export function ResultsToolbar({
     indexerSummaryAllowed: boolean;
     invertVisibleSelection: () => void;
     moreResultsAvailable: boolean;
-    onLoadMore?: (loadAll: boolean) => Promise<void>;
+    onLoadMore?: (loadAll: boolean, limit?: number) => Promise<number | void>;
     onSaveSearch?: () => Promise<void>;
     // FM-199: re-shows and expands the indexer summary.
     onRevealIndexerSummary: () => void;
@@ -175,6 +178,9 @@ export function ResultsToolbar({
     refineSurfaceShown: boolean;
     requestContinuation: (loadAll: boolean) => Promise<void>;
     requestLoadAll: () => Promise<void>;
+    /** The amounts "Load more ▾" offers (`loadMoreAmounts`). */
+    loadAmounts: number[];
+    requestLoadAmount: (amount: number) => Promise<void>;
     savingSearch: boolean;
     selectAllVisible: () => void;
     selected: Set<string>;
@@ -401,17 +407,17 @@ export function ResultsToolbar({
                     )}
                     {!refineSurfaceCompact && onLoadMore && (
                         <>
-                            <Button
-                                aria-busy={pagingLoading}
-                                data-testid="results-load-more"
-                                disabled={!pagingAvailable || pagingLoading}
-                                onClick={() => void requestContinuation(false)}
-                                size="small"
-                            >
-                                {pagingLoading
-                                    ? "Loading more results…"
-                                    : "Load more"}
-                            </Button>
+                            <LoadMoreButton
+                                amounts={loadAmounts}
+                                onLoadAmount={(amount) =>
+                                    void requestLoadAmount(amount)
+                                }
+                                onLoadMore={() =>
+                                    void requestContinuation(false)
+                                }
+                                pagingAvailable={pagingAvailable}
+                                pagingLoading={pagingLoading}
+                            />
                             <Button
                                 data-testid="results-load-all"
                                 disabled={!pagingAvailable || pagingLoading}

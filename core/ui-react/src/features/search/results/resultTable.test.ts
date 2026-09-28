@@ -15,6 +15,7 @@ import {
     indexerColorsFromSafeConfig,
     isRecentResult,
     kify,
+    loadMoreAmounts,
     pageOfGroups,
     preselectedQuickFilters,
     qualityIndicatorFromSafeConfig,
@@ -51,6 +52,26 @@ const results = [
         epoch: 1_600_000_000,
     },
 ];
+
+describe("loadMoreAmounts", () => {
+    it.each([
+        [900, true, 100, [500]],
+        [9900, true, 100, [500, 1000, 5000]],
+        [500, true, 100, []],
+        [99000, true, 100, [5000, 10000, 50000]],
+        [9900, true, 1000, [5000]],
+        [300, false, 100, [500, 1000]],
+        [undefined, false, 100, [500, 1000]],
+        [undefined, true, 100, []],
+    ])(
+        "should offer for %s remaining (total known: %s, page %s) %j",
+        (remaining, totalKnown, baseStep, expected) => {
+            expect(loadMoreAmounts(remaining, totalKnown, baseStep)).toEqual(
+                expected,
+            );
+        },
+    );
+});
 
 describe("pageOfGroups", () => {
     const groups = ["a", "b", "c", "d", "e"].map((key) => ({

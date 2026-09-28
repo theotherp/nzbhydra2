@@ -486,7 +486,14 @@ export function SearchPage({
         setProgress(undefined);
         setLiveUnavailable(undefined);
     };
-    const loadMore = async (loadAll: boolean) => {
+    // `limit` is an explicit "Load N more"; without it the server loads its
+    // configured page (`searching.loadLimitInternal`). Resolves to the
+    // number of results the continuation returned, so the results page can
+    // tell when an explicit amount came up short.
+    const loadMore = async (
+        loadAll: boolean,
+        limit?: number,
+    ): Promise<number> => {
         if (!state.data || !state.request) {
             throw new Error("Search continuation is unavailable.");
         }
@@ -517,7 +524,7 @@ export function SearchPage({
                 continuationRequest(
                     request,
                     offset,
-                    loadAll ? remaining : undefined,
+                    loadAll ? remaining : limit,
                     loadAll,
                 ),
             );
@@ -547,6 +554,7 @@ export function SearchPage({
                   }
                 : current,
         );
+        return next.searchResults.length;
     };
     const saveSearch = async () => {
         if (!state.request || savingSearch) {

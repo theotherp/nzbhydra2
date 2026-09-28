@@ -5714,6 +5714,187 @@ describe("SearchResults", () => {
         });
     });
 
+    describe("Load more amounts", () => {
+        function pagingData(
+            numberOfAvailableResults: number,
+            totalResultsKnown = true,
+        ) {
+            return {
+                ...response,
+                pagingState: "ready" as const,
+                offset: 0,
+                limit: 100,
+                numberOfProcessedResults: 100,
+                numberOfAvailableResults,
+                searchResults: [
+                    {
+                        searchResultId: "1",
+                        title: "Result",
+                        indexer: "Mock",
+                        category: "All",
+                    },
+                ],
+                indexerSearchMetaDatas: [
+                    {
+                        indexerName: "Mock",
+                        wasSuccessful: true,
+                        hasMoreResults: true,
+                        totalResultsKnown,
+                    },
+                ],
+            };
+        }
+
+        function openAmounts(): string[] {
+            fireEvent.click(screen.getByTestId("results-load-more-options"));
+            return screen
+                .getAllByRole("menuitem")
+                .map((item) => item.textContent ?? "");
+        }
+
+        it("should offer no menu when nothing between one page and everything is left", () => {
+            renderResults(
+                <SearchResults data={pagingData(600)} onLoadMore={vi.fn()} />,
+            );
+            expect(screen.getByTestId("results-load-more")).toBeEnabled();
+            expect(
+                screen.queryByTestId("results-load-more-options"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("should offer round amounts below what remains", () => {
+            renderResults(
+                <SearchResults data={pagingData(10000)} onLoadMore={vi.fn()} />,
+            );
+            expect(openAmounts()).toEqual([
+                "Load 500 more",
+                "Load 1000 more",
+                "Load 5000 more",
+            ]);
+        });
+
+        it("should offer amounts above the plain page from the configured load limit", () => {
+            renderResults(
+                <SafeConfigContext.Provider
+                    value={{searching: {loadLimitInternal: 1000}}}
+                >
+                    <SearchResults
+                        data={pagingData(10000)}
+                        onLoadMore={vi.fn()}
+                    />
+                </SafeConfigContext.Provider>,
+            );
+            expect(openAmounts()).toEqual(["Load 5000 more"]);
+        });
+
+        it("should load the chosen amount without asking", async () => {
+            const loadMore = vi.fn().mockResolvedValue(1000);
+            renderResults(
+                <SearchResults
+                    data={pagingData(10000)}
+                    onLoadMore={loadMore}
+                />,
+            );
+            openAmounts();
+            fireEvent.click(screen.getByTestId("results-load-amount-1000"));
+
+            await vi.waitFor(() =>
+                expect(loadMore).toHaveBeenCalledWith(false, 1000),
+            );
+            expect(
+                screen.queryByTestId("results-load-amount-confirmation"),
+            ).not.toBeInTheDocument();
+            expect(screen.queryByText(/requested results/)).toBeNull();
+        });
+
+        it("should count what remains from the cache position and the rejected results", () => {
+            // 2500 loaded in pages of 100 and 100 rejected: 400 are left, so
+            // no amount between one page and "Load all" fits. The server's
+            // `numberOfProcessedResults` only counts the latest page, which
+            // would claim 2900.
+            renderResults(
+                <SearchResults
+                    data={{
+                        ...pagingData(3000),
+                        offset: 2400,
+                        limit: 100,
+                        numberOfProcessedResults: 200,
+                        numberOfRejectedResults: 100,
+                    }}
+                    onLoadMore={vi.fn()}
+                />,
+            );
+            expect(
+                screen.queryByTestId("results-load-more-options"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("should offer the cheap amounts beyond a total that is only a lower bound", () => {
+            renderResults(
+                <SearchResults
+                    data={pagingData(400, false)}
+                    onLoadMore={vi.fn()}
+                />,
+            );
+            expect(openAmounts()).toEqual(["Load 500 more", "Load 1000 more"]);
+        });
+
+        it("should stop offering to load more after a continuation brought nothing", async () => {
+            const loadMore = vi.fn().mockResolvedValue(0);
+            renderResults(
+                <SearchResults
+                    data={pagingData(10000)}
+                    onLoadMore={loadMore}
+                />,
+            );
+            fireEvent.click(screen.getByTestId("results-load-more"));
+
+            await vi.waitFor(() =>
+                expect(screen.getByTestId("results-load-more")).toBeDisabled(),
+            );
+            expect(screen.getByTestId("results-load-all")).toBeDisabled();
+        });
+
+        it("should ask before loading an amount above the confirmation threshold", async () => {
+            const loadMore = vi.fn().mockResolvedValue(10000);
+            renderResults(
+                <SearchResults
+                    data={pagingData(100000)}
+                    onLoadMore={loadMore}
+                />,
+            );
+            openAmounts();
+            fireEvent.click(screen.getByTestId("results-load-amount-10000"));
+
+            const dialog = await screen.findByTestId(
+                "results-load-amount-confirmation",
+            );
+            expect(loadMore).not.toHaveBeenCalled();
+            fireEvent.click(
+                within(dialog).getByRole("button", {name: "Load 10000 more"}),
+            );
+            await vi.waitFor(() =>
+                expect(loadMore).toHaveBeenCalledWith(false, 10000),
+            );
+        });
+
+        it("should say so when an amount comes up short", async () => {
+            const loadMore = vi.fn().mockResolvedValue(320);
+            renderResults(
+                <SearchResults
+                    data={pagingData(10000)}
+                    onLoadMore={loadMore}
+                />,
+            );
+            openAmounts();
+            fireEvent.click(screen.getByTestId("results-load-amount-500"));
+
+            expect(
+                await screen.findByText("Loaded 320 of 500 requested results."),
+            ).toBeVisible();
+        });
+    });
+
     // FM-150. The expand controls are icons in the title cell, so a row that
     // has none would otherwise start its title further left than a row that
     // has one -- the ragged left edge the owner asked to remove. Every row

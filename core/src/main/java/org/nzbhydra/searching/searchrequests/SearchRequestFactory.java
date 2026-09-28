@@ -32,6 +32,7 @@ public class SearchRequestFactory {
             offset = 0;
         }
         SearchRequest searchRequest = new SearchRequest(source, searchType, offset, limit);
+        searchRequest.setLoadLimitInternal(searchingConfig.getLoadLimitInternal());
         searchRequest.setSource(source);
         searchRequest.setCategory(category);
         searchRequest.setSearchRequestId(searchRequestId);
