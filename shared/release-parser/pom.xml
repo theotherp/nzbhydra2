@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>shared</artifactId>
-        <version>9.0.7-SNAPSHOT</version>
+        <version>9.1.0</version>
     </parent>
 
     <artifactId>release-parser</artifactId>

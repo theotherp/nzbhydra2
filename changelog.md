@@ -1,3 +1,47 @@
+### v9.1.0 (2026-09-29)
+
+**Feature** The Category and Details columns of the search results can now be hidden in the Display menu. Hiding a column also hides its filter in the Refine sidebar. Your choice is remembered.
+
+**Feature** When the movie quality indicator is enabled, the quality rating now has its own column left of the title. You can sort by it (unrated results always come last) and filter by a minimum and maximum rating in the Refine sidebar.
+
+**Feature** The quick filters that used to be built in (CAM / TS, WEB, 1080p, x265 and so on) are now regular quick filters in Config &gt; Searching, so you can change or delete them. Your existing quick filters are kept and listed after them. Put a group name in front of a filter&apos;s name, like Resolution:1080p=1080p, to show results matching any of the selected filters in that group. The search results sort quick filters by group, with ungrouped ones last.
+
+**Feature** List settings in the config (quick filters, forbidden words, user agents and so on) can be edited in place: click an entry, change it and press Enter. Escape cancels.
+
+**Feature** The browser tab now names the page you are on, e.g. &quot;NZBHydra 2 - Config - Searching&quot;, &quot;NZBHydra 2 - History - Downloads&quot; or &quot;NZBHydra 2 - Search - your query&quot;, instead of always &quot;NZBHydra 2&quot;.
+
+**Feature** New setting &quot;Show indexer groups in separate section&quot; in Config &gt; Main &gt; UI. When indexer groups are configured, the search page shows a button for each group to the right of the indexer selection, so you can select a group with one click instead of going through the selection menu. The button of the currently selected group is highlighted.
+
+**Feature** Due to popular demand: The indexer statuses view in the search results is back. It starts collapsed, remembers whether you expanded it, and can be hidden in the Display menu. While it is hidden, the number of failed indexers is still shown next to the result count. Users who may not see the indexer selection don&apos;t see it either.
+
+**Feature** Display options and similar choices (search results display and sorting, the stats selection, &quot;Advanced settings&quot; in the config, the open search options, the history filter column and the log view toggles) are now saved on the server for each user instead of in the browser. They follow you to other browsers and machines and no longer get lost when the browser clears its data. Without login all browsers share one set. Your current choices are taken over the first time you open a page after the update.
+
+**Feature** Search results can be shown on pages instead of one long list. Set &quot;Results per page&quot; in Config &gt; Main &gt; UI (advanced). A page never splits a group of results, and expanding a group makes its page longer. Your selection is kept when you switch pages; select all, deselect all and invert apply to the page you&apos;re looking at.
+
+**Feature** A search in the web UI now shows everything the indexers returned for it instead of only the first 100 results; each indexer is queried once. &quot;Load 1000 more&quot; loads more, and its small menu offers larger amounts like &quot;Load 5000 more&quot; depending on how many results are still available. If fewer results arrive than you asked for, you&apos;re told how many were loaded. The settings &quot;Results fetched per request&quot; and &quot;Display all retrieved results&quot; are gone.
+
+**Fix** The indexer statuses page is much more compact on phones: each indexer shows its name and a colored state badge on one line and hides empty fields. The state badge also makes problem indexers easier to spot on desktop.
+
+**Fix** The search history is much more compact on phones: each search shows its query first, category and time on one line with the Details and Repeat buttons, and its parameters below. About five searches now fit on a screen instead of two.
+
+**Fix** The download history is much more compact on phones: each download shows its title with the NZB button first, then its result, indexer, time and age on one line.
+
+**Fix** Windows: &quot;Open web UI&quot; and &quot;Restart&quot; in the tray icon menu work more than once. See <a href="https://github.com/theotherp/nzbhydra2/issues/953">#953</a>
+
+**Fix** Saving the config no longer undoes changes stored in the meantime, like a user&apos;s theme choice or a dismissed notice, when the config page had been open for a while.
+
+**Fix** Downloading the selected results as a ZIP file works again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1104">#1104</a>
+
+**Fix** Selected results are sent to the downloader in the order you selected them again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1106">#1106</a>
+
+**Fix** Searches with a minimum age find older results again when there are many newer ones, e.g. 1080p releases between 7 and 10 days old. Most indexers can&apos;t leave out recent results themselves, so NZBHydra used to load them page by page and gave up before reaching the older ones. It now jumps ahead to them with a few extra requests. See <a href="https://github.com/theotherp/nzbhydra2/issues/1105">#1105</a>
+
+**Fix** Reloading the search page or opening a search link runs the same search again. The category&apos;s minimum and maximum size were added to it even though the original search had none. They are still filled in when you open the empty search page or change the category.
+
+**Fix** Lifting an access restriction (e.g. no longer restricting search) now takes effect right away. Before, users who weren&apos;t logged in kept being asked to log in until NZBHydra was restarted.
+
+
+
 ### v9.0.6 (2026-09-26)
 
 **Fix** The search progress dialog now counts indexer queries instead of claiming more indexers were searched than selected. One indexer may be queried several times to load more results.
