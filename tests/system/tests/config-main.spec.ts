@@ -198,7 +198,7 @@ test.describe("Config main tab round trip", () => {
         // fieldset, then hidden again, then carried across a tab switch (which
         // unmounts the whole tab body) and a save.
         const ui = page.getByTestId("config-advanced-expander-ui");
-        await expect(ui).toHaveText("2 advanced settings hidden");
+        await expect(ui).toHaveText("3 advanced settings hidden");
         await ui.click();
         const checkboxes = page
             .getByTestId("config-setting-main-indexerSelectionAsCheckboxes")
