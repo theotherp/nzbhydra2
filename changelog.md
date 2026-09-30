@@ -1,3 +1,9 @@
+### v9.1.1 (2026-09-30)
+
+**Fix** Results returned via the API keep the same GUID and download link when the same search is repeated. Since v9.0.0 they changed with every search, so NZBGet RSS feeds downloaded known results again and Sonarr/Radarr couldn&apos;t recognize releases they had already seen. Sorry, that was a big oversight - fittingly, this fix ships as 9.1.1.
+
+
+
 ### v9.1.0 (2026-09-29)
 
 **Feature** The Category and Details columns of the search results can now be hidden in the Display menu. Hiding a column also hides its filter in the Refine sidebar. Your choice is remembered.

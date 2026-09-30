@@ -2,6 +2,12 @@
 # These are for the user and should not be too technical and focus on what changes for them.
 # Released versions only. Do not add entries by hand: write them to changelog-unreleased.yaml,
 # misc/build_and_release.py moves them here when a release is built.
+-   version: "v9.1.1"
+    date: "2026-09-30"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Results returned via the API keep the same GUID and download link when the same search is repeated. Since v9.0.0 they changed with every search, so NZBGet RSS feeds downloaded known results again and Sonarr/Radarr couldn&apos;t recognize releases they had already seen. Sorry, that was a big oversight - fittingly, this fix ships as 9.1.1."
 -   version: "v9.1.0"
     date: "2026-09-29"
     final: true
