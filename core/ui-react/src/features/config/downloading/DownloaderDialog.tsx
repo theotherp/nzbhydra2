@@ -283,10 +283,14 @@ export function DownloaderDialog({
                         {shows("iconCssClass") ? (
                             <TextSetting
                                 advanced
-                                // Legacy's help is a plain sentence containing a
-                                // bare URL, not an anchor (`formly-downloaders.js:265`),
-                                // so it stays text here too.
-                                help='Copy an icon name from https://fontawesome.com/v4.7.0/icons/ (e.g. "film")'
+                                help={[
+                                    "Copy an icon name from ",
+                                    {
+                                        href: "https://fontawesome.com/search?ic=free-collection",
+                                        text: "Font Awesome",
+                                    },
+                                    ' (e.g. "film")',
+                                ]}
                                 label="Icon CSS class"
                                 name={draftFieldPath("iconCssClass")}
                                 placeholder="Default"

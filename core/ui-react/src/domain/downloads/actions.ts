@@ -8,6 +8,7 @@ export type Downloader = {
     defaultCategory?: string | null;
     downloadType?: string;
     downloaderType?: string;
+    iconCssClass?: string | null;
 };
 export type AddFilesRequest = {
     downloaderName: string;
@@ -142,6 +143,36 @@ export function configuredDownloaders(safeConfig: unknown): Downloader[] {
             (value) => value.enabled === true && typeof value.name === "string",
         )
         .map((value) => value as Downloader);
+}
+
+const FONT_AWESOME_STYLES: Record<string, string> = {
+    fa: "fa",
+    fas: "fa",
+    "fa-solid": "fa",
+    far: "far",
+    "fa-regular": "far",
+    fab: "fab",
+    "fa-brands": "fab",
+};
+
+/**
+ * The Font Awesome 5 classes for a downloader's configured `iconCssClass`, or
+ * `null` when it has none. Legacy accepted a bare icon name ("film") as well
+ * as one with its `fa-`/`fa ` prefix, and users copy names from the Font
+ * Awesome site in whatever form it shows them ("fa-solid fa-film", "fab
+ * fa-github"), so the style token is kept when there is one and the icon name
+ * is the last remaining token. The default style is `fa`, which the v4 shims
+ * also resolve for Font Awesome 4.7 names that version 5 renamed.
+ */
+export function downloaderIconClassName(downloader: Downloader): string | null {
+    const tokens = (downloader.iconCssClass ?? "").trim().split(/\s+/);
+    const style =
+        tokens.map((token) => FONT_AWESOME_STYLES[token]).find(Boolean) ?? "fa";
+    const name = tokens
+        .filter((token) => FONT_AWESOME_STYLES[token] === undefined)
+        .pop()
+        ?.replace(/^fa-/, "");
+    return name ? `${style} fa-${name}` : null;
 }
 
 /**

@@ -9,6 +9,7 @@ import {
     categories,
     configuredDefaultCategory,
     downloadId,
+    downloaderIconClassName,
     isCompatibleWithDownloader,
     type Downloader,
 } from "../../../domain/downloads/actions";
@@ -52,6 +53,55 @@ const FALLBACK_DOWNLOADER_ICON = new URL(
 const DOWNLOADER_ICON_SIZE = 16;
 
 /**
+ * The downloader's configured Font Awesome icon when it has one, its type's
+ * mark otherwise. A name Font Awesome 5 does not know renders no glyph at all
+ * (its `::before` has no content), which would leave an empty button, so that
+ * case falls back to the type's mark as well.
+ */
+function DownloaderIcon({downloader}: {downloader: Downloader}) {
+    const className = downloaderIconClassName(downloader);
+    const [unknownGlyph, setUnknownGlyph] = useState<string>();
+    if (className !== null && unknownGlyph !== className) {
+        return (
+            <Box
+                aria-hidden="true"
+                className={className}
+                component="i"
+                data-testid="result-send-to-downloader-icon"
+                ref={(glyph: HTMLElement | null) => {
+                    if (
+                        glyph !== null &&
+                        window.getComputedStyle(glyph, "::before").content ===
+                            "none"
+                    ) {
+                        setUnknownGlyph(className);
+                    }
+                }}
+                sx={{
+                    fontSize: DOWNLOADER_ICON_SIZE,
+                    width: DOWNLOADER_ICON_SIZE,
+                    textAlign: "center",
+                }}
+            />
+        );
+    }
+    return (
+        <Box
+            // Decorative: the button's own `aria-label` is the name, so the
+            // mark must not be announced a second time.
+            alt=""
+            component="img"
+            height={DOWNLOADER_ICON_SIZE}
+            src={
+                DOWNLOADER_ICONS[downloader.downloaderType ?? ""] ??
+                FALLBACK_DOWNLOADER_ICON
+            }
+            width={DOWNLOADER_ICON_SIZE}
+        />
+    );
+}
+
+/**
  * FM-186: one "send this result to that downloader" button per enabled,
  * compatible downloader, in every result row's Actions cell -- legacy's
  * `addable-nzb`/`addable-nzbs` directives (`1982886e2`), which the React
@@ -76,9 +126,8 @@ const DOWNLOADER_ICON_SIZE = 16;
  * category `Select` -- which belongs to the selection, and below `sm` is not
  * even on screen until something is selected.
  *
- * Still not migrated, and still a gap line under `F-SEARCH-DOWNLOADS`:
- * legacy's per-downloader `iconCssClass` override (a Font Awesome class;
- * React ships no Font Awesome).
+ * A downloader's configured `iconCssClass` replaces its type's mark with that
+ * Font Awesome icon, as it did in legacy.
  */
 export function SendToDownloaderButtons({
     downloaders,
@@ -223,20 +272,7 @@ export function SendToDownloaderButtons({
                                 size="small"
                                 sx={{flexShrink: 0}}
                             >
-                                <Box
-                                    // Decorative: the button's own
-                                    // `aria-label` is the name, so the mark
-                                    // must not be announced a second time.
-                                    alt=""
-                                    component="img"
-                                    height={DOWNLOADER_ICON_SIZE}
-                                    src={
-                                        DOWNLOADER_ICONS[
-                                            downloader.downloaderType ?? ""
-                                        ] ?? FALLBACK_DOWNLOADER_ICON
-                                    }
-                                    width={DOWNLOADER_ICON_SIZE}
-                                />
+                                <DownloaderIcon downloader={downloader} />
                             </IconButton>
                         </Box>
                     </Tooltip>

@@ -9,6 +9,11 @@ import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
+// Font Awesome 5, for the icon a downloader can be configured with
+// (`iconCssClass`). The v4 shims keep Font Awesome 4.7 names legacy configs
+// hold working where version 5 renamed them.
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import "@fortawesome/fontawesome-free/css/v4-shims.min.css";
 import {CircularProgress, Container, Stack, Typography} from "@mui/material";
 import {CssBaseline} from "@mui/material";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";

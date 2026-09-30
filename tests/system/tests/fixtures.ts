@@ -92,6 +92,7 @@ type HydraApi = {
     configureSabnzbdMock(options?: {
         withNzbGet?: boolean;
         withoutDefaultCategory?: boolean;
+        iconCssClass?: string;
     }): Promise<void>;
     configureBlackHole(options: {
         nzbs?: boolean;
@@ -814,10 +815,13 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
          *   track has to fit without the icon group wrapping. Off by default,
          *   so every existing caller keeps the single-downloader downloading
          *   configuration it was written against.
+         * @param options.iconCssClass the SABnzbd downloader's configured Font
+         *   Awesome icon, which replaces its mark on the row's send button.
          */
         async configureSabnzbdMock(options?: {
             withNzbGet?: boolean;
             withoutDefaultCategory?: boolean;
+            iconCssClass?: string;
         }): Promise<void> {
             const config = await getConfig();
             const downloading = config.downloading as HydraConfig;
@@ -838,6 +842,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                     defaultCategory: options?.withoutDefaultCategory
                         ? null
                         : testEnvironment.sabnzbdMockCategory,
+                    iconCssClass: options?.iconCssClass ?? null,
                     enabled: true,
                 },
                 ...(options?.withNzbGet

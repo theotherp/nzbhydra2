@@ -763,14 +763,17 @@ features:
       - download-nzb
       - download-torrent
       - results-bulk-actions
-    parity: partial
-    gaps:
-      # 2026-09-18 (owner request): the per-row category picker gap is closed. Legacy asked whenever the downloader had no
-      # configured `defaultCategory` (`nzb-download-service.js:23-33`; the results table passed no `alwaysAsk`, so in
-      # practice every row send without a default prompted), and the React row control now does the same through
-      # `SendCategoryDialog`. A downloader *with* a configured default still sends on one click, and the bulk bar's
-      # category `Select` is untouched -- it governs the selection, and below `sm` it is not on screen until one exists.
-      - deliberate - no per-downloader icon override; legacy let a downloader configure an `iconCssClass` that replaced the row icon with that Font Awesome glyph (`addable-nzb.js`). React ships no Font Awesome, so the row icon is always the downloader type's own mark (FM-186).
+    parity: done
+    # 2026-09-18 (owner request): the per-row category picker gap is closed. Legacy asked whenever the downloader had no
+    # configured `defaultCategory` (`nzb-download-service.js:23-33`; the results table passed no `alwaysAsk`, so in
+    # practice every row send without a default prompted), and the React row control now does the same through
+    # `SendCategoryDialog`. A downloader *with* a configured default still sends on one click, and the bulk bar's
+    # category `Select` is untouched -- it governs the selection, and below `sm` it is not on screen until one exists.
+    # 2026-09-30 (owner request): the icon override gap is closed too. React now bundles Font Awesome 5
+    # (`@fortawesome/fontawesome-free` with its v4 shims, ADR-0059), and a downloader's `iconCssClass` replaces the
+    # row's send icon with that glyph, falling back to the type's mark for a name Font Awesome does not know. With
+    # both gaps closed the record is `done`.
+    gaps: []
     # 2026-08-23: `download-history route migration` removed -- that route is
     # its own record now (`F-HISTORY-DOWNLOADS`) and is migrated, so the entry
     # claimed missing capability that exists.

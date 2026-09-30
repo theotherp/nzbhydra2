@@ -3,6 +3,7 @@ import {
     addFilesRequest,
     categories,
     configuredDefaultCategory,
+    downloaderIconClassName,
     downloadId,
     downloadZip,
     historyDownloadResult,
@@ -71,6 +72,23 @@ describe("download actions", () => {
         expect(
             configuredDefaultCategory({name: "SAB", defaultCategory: "Movies"}),
         ).toBe("Movies");
+    });
+
+    it("should resolve a configured icon to Font Awesome 5 classes", () => {
+        const icon = (iconCssClass?: string | null) =>
+            downloaderIconClassName({name: "SAB", iconCssClass});
+        expect(icon(undefined)).toBeNull();
+        expect(icon(null)).toBeNull();
+        expect(icon("  ")).toBeNull();
+        // Legacy's forms: a bare name, and one with its `fa-`/`fa ` prefix.
+        expect(icon("film")).toBe("fa fa-film");
+        expect(icon("fa-film")).toBe("fa fa-film");
+        expect(icon("fa fa-film")).toBe("fa fa-film");
+        // What the Font Awesome site shows, style included.
+        expect(icon("fa-solid fa-film")).toBe("fa fa-film");
+        expect(icon("far fa-bell")).toBe("far fa-bell");
+        expect(icon("fa-brands fa-github")).toBe("fab fa-github");
+        expect(icon("fab")).toBeNull();
     });
 
     it("should send a TORBOX result only to a TORBOX downloader, and no torrent to any", () => {

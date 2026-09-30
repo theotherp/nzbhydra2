@@ -6911,6 +6911,47 @@ describe("SearchResults per-row send to downloader", () => {
         );
     });
 
+    it("should render a downloader's configured Font Awesome icon instead of its type's mark", () => {
+        bootstrapWith([{...sab, iconCssClass: "film"}, nzbget]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const [sabButton, nzbgetButton] = sendButtons();
+        const icon = within(sabButton).getByTestId(
+            "result-send-to-downloader-icon",
+        );
+        expect(icon).toHaveClass("fa", "fa-film");
+        expect(icon).toHaveAttribute("aria-hidden", "true");
+        expect(within(sabButton).queryByRole("presentation")).toBeNull();
+        expect(sabButton).toHaveAccessibleName("Send to SAB");
+        expect(
+            within(nzbgetButton).queryByTestId(
+                "result-send-to-downloader-icon",
+            ),
+        ).toBeNull();
+    });
+
+    it("should fall back to the downloader type's mark when Font Awesome has no such icon", () => {
+        const computedStyle = window.getComputedStyle.bind(window);
+        const spy = vi
+            .spyOn(window, "getComputedStyle")
+            .mockImplementation((element, pseudo) =>
+                pseudo === "::before"
+                    ? ({content: "none"} as CSSStyleDeclaration)
+                    : computedStyle(element, pseudo),
+            );
+        bootstrapWith([{...sab, iconCssClass: "no-such-icon"}]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const [sabButton] = sendButtons();
+        expect(
+            within(sabButton).queryByTestId("result-send-to-downloader-icon"),
+        ).toBeNull();
+        expect(
+            within(sabButton).getByRole("presentation", {hidden: true}),
+        ).toHaveAttribute("src", expect.stringContaining("sab"));
+        spy.mockRestore();
+    });
+
     it("should offer a TORBOX result only its TORBOX downloader, and a torrent none at all", () => {
         bootstrapWith([sab, torbox]);
         vi.stubGlobal("fetch", routedFetch("{}"));

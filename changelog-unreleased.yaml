@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "A custom icon configured for a downloader is shown again on the search results&apos; send buttons. Icons are now taken from Font Awesome 5; the downloader config links to its free icon collection."

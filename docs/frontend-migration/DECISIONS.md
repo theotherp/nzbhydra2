@@ -1007,3 +1007,11 @@ them; every web UI continuation uses the load-all per-indexer query cap. A conti
 instead of reporting an error. API searches keep the newest-first, order-preserving paging unchanged. Both settings are
 removed from the config UI and from `SafeSearchingConfig`; the fields stay in `SearchingConfig` and `baseConfig.yml` so
 existing config files load. Owner decided 2026-09-28.
+
+## ADR-0059 — Font Awesome 5 for configured downloader icons (accepted 2026-09-30)
+
+A downloader's `iconCssClass` names a Font Awesome icon that replaces its type's mark on the row's send button, as it
+did in legacy. React bundles `@fortawesome/fontawesome-free` 5.15.4 (its CSS and webfonts, plus the v4 shims so Font
+Awesome 4.7 names from older configs still resolve) for that purpose only. It is an icon font, not a component system,
+so ADR-0002 stands: every other icon remains `@mui/icons-material`, and feature code does not use Font Awesome glyphs
+of its own. The config dialog's help links to the free collection on fontawesome.com. Owner decided 2026-09-30.

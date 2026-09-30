@@ -572,6 +572,94 @@ test.describe("Downloads", () => {
     // that already exists while still answering `successful: true` with the
     // id in `addedIds`. Only reading the folder back distinguishes "written"
     // from "skipped", which is why `configureBlackHole` empties it first.
+    /**
+     * A downloader's configured `iconCssClass` replaces its type's mark with
+     * that Font Awesome 5 glyph. Asserted in a real browser because what can
+     * break is the glyph itself -- the bundled stylesheet and webfont -- which
+     * jsdom never loads. Covers a Font Awesome 5 name, a Font Awesome 4.7 name
+     * that version 5 renamed (resolved by the v4 shims), and a name Font
+     * Awesome does not know, which falls back to the type's mark.
+     */
+    test("should show a downloader's configured Font Awesome icon on its send button", async ({
+        hydra,
+        page,
+    }) => {
+        const sendButtonFor = async (iconCssClass: string) => {
+            await hydra.configureSabnzbdMock({iconCssClass});
+            // The safe config is read at bootstrap (ADR-0017), so a downloader
+            // changed through the API needs a reload to reach the rows.
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await searchForResult(
+                page,
+                testEnvironment.downloaderIntegrationQuery,
+                testEnvironment.downloaderIntegrationNzbTitle,
+            );
+            return page
+                .getByTestId("search-result-row")
+                .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle})
+                .getByRole("button", {name: "Send to Deterministic SABnzbd"});
+        };
+        const glyphOf = (icon: Locator) =>
+            icon.evaluate((element) => {
+                const before = window.getComputedStyle(element, "::before");
+                return {
+                    content: before.content,
+                    fontFamily: before.fontFamily,
+                    fontWeight: before.fontWeight,
+                };
+            });
+
+        for (const [iconCssClass, expectedClass, expectedContent] of [
+            ["film", /\bfa-film\b/, '"\uf008"'],
+            ["file-text-o", /\bfa-file-text-o\b/, '"\uf15c"'],
+        ] as const) {
+            const sendButton = await sendButtonFor(iconCssClass);
+            const icon = sendButton.getByTestId(
+                "result-send-to-downloader-icon",
+            );
+            await expect(icon).toBeVisible();
+            await expect(icon).toHaveClass(expectedClass);
+            await expect(sendButton.locator("img")).toHaveCount(0);
+            const glyph = await glyphOf(icon);
+            expect(glyph.content).toBe(expectedContent);
+            expect(glyph.fontFamily).toContain("Font Awesome 5");
+            // The webfont itself, not only the rule naming it -- at the
+            // glyph's own weight: solid icons are the 900 face, the v4 shims'
+            // outlined ones the 400 face, and only the used face loads.
+            await expect
+                .poll(() =>
+                    page.evaluate(
+                        (weight) =>
+                            document.fonts.check(
+                                `${weight} 16px "Font Awesome 5 Free"`,
+                            ),
+                        glyph.fontWeight,
+                    ),
+                )
+                .toBe(true);
+            const box = await icon.boundingBox();
+            expect(box?.width).toBeGreaterThan(0);
+            if (iconCssClass === "film") {
+                await prepareVisualEvidence(page, "desktop", async () => {
+                    await expect(icon).toBeVisible();
+                });
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-SEARCH-DOWNLOADS",
+                        "row-send-font-awesome-icon-desktop",
+                    ),
+                });
+            }
+        }
+
+        const unknown = await sendButtonFor("no-such-icon-anywhere");
+        await expect(
+            unknown.getByTestId("result-send-to-downloader-icon"),
+        ).toHaveCount(0);
+        await expect(unknown.locator("img")).toBeVisible();
+    });
+
     test("should save a torrent to the black hole from its own row", async ({
         hydra,
         page,
