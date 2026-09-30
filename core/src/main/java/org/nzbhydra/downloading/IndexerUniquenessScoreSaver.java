@@ -135,9 +135,13 @@ public class IndexerUniquenessScoreSaver {
 
     private IndexerSearchEntity getRelatedIndexerSearch(SearchResultEntity searchResultEntity) {
         if (searchResultEntity.getDownloadSearchId() == null) {
-            // Legacy IDs do not identify the originating search, so scoring them would fabricate corrected data.
-            logger.debug("Unable to determine indexer uniqueness score for result {} because the download identifier has no search context", searchResultEntity.getTitle());
-            return null;
+            // API results are identified without their search so that their GUIDs stay stable across searches.
+            // The most recent search which returned the result is almost always the one it was grabbed from.
+            logger.debug("Download identifier for result {} has no search context. Using the latest search which found it", searchResultEntity.getTitle());
+            return occurrenceRepository.findBySearchResultOrderByIndexerSearchSearchEntityTimeDesc(searchResultEntity).stream()
+                .map(IndexerSearchResultOccurrenceEntity::getIndexerSearch)
+                .findFirst()
+                .orElse(null);
         }
         return occurrenceRepository.findBySearchResultAndIndexerSearchSearchEntityId(searchResultEntity, searchResultEntity.getDownloadSearchId()).stream()
                 .map(IndexerSearchResultOccurrenceEntity::getIndexerSearch)

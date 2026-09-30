@@ -28,7 +28,6 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -89,20 +88,34 @@ public class NewznabXmlTransformerTest {
     }
 
     @Test
-    void shouldUseContextualDownloadIdentifierForApiResults() {
+    void shouldKeepGuidAndLinkStableAcrossSearches() {
+        //API clients (*arr, NZBGet RSS) recognize results they already know by GUID and link, so repeating a search must not change them
+        when(downloadUrlBuilder.getDownloadLinkForResults(42L, false, DownloadType.NZB)).thenReturn("http://127.0.0.1:5076/getnzb/api/42?apikey=apikey");
+
+        NewznabXmlItem firstItem = testee.buildRssItem(resultFromSearch(7), true);
+        NewznabXmlItem secondItem = testee.buildRssItem(resultFromSearch(8), true);
+
+        assertThat(firstItem.getRssGuid().getGuid()).isEqualTo("42");
+        assertThat(secondItem.getRssGuid().getGuid()).isEqualTo(firstItem.getRssGuid().getGuid());
+        assertThat(firstItem.getLink()).isEqualTo("http://127.0.0.1:5076/getnzb/api/42?apikey=apikey");
+        assertThat(secondItem.getLink()).isEqualTo(firstItem.getLink());
+        assertThat(guidAttribute(firstItem)).isEqualTo("42");
+        assertThat(guidAttribute(secondItem)).isEqualTo("42");
+    }
+
+    private SearchResultItem resultFromSearch(int searchId) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setSearchResultId(42L);
-        searchResultItem.setSearchId(7);
+        searchResultItem.setSearchId(searchId);
         searchResultItem.setGuid(42L);
         searchResultItem.setIndexer(indexerMock);
         searchResultItem.setCategory(new Category());
-
-        testee.buildRssItem(searchResultItem, true);
-
-        verify(downloadUrlBuilder).getDownloadLinkForResults(42L, 7, false, DownloadType.NZB);
-        assertThat(searchResultItem.getAttributes().get("guid")).isEqualTo("42.7");
+        return searchResultItem;
     }
 
+    private String guidAttribute(NewznabXmlItem item) {
+        return item.getNewznabAttributes().stream().filter(x -> x.getName().equals("guid")).map(NewznabAttribute::getValue).findFirst().orElse(null);
+    }
 
     @Test
     void shouldEmitOneLanguageAndSubsAttributePerValue() {

@@ -102,7 +102,31 @@ class IndexerUniquenessScoreSaverTest {
     }
 
     @Test
-    void shouldNotSaveScoreForLegacyDownloadIdentifier() {
+    void shouldUseLatestSearchWhenDownloadIdentifierHasNoSearchContext() {
+        SearchResultEntity matchingResult = result(matchingIndexer, "a release_name");
+
+        when(occurrenceRepository.findBySearchResultOrderByIndexerSearchSearchEntityTimeDesc(downloadedResult))
+            .thenReturn(List.of(occurrence(downloadedSearch, downloadedResult)));
+        when(indexerSearchRepository.findBySearchEntity(search)).thenReturn(List.of(downloadedSearch, matchingSearch, missingSearch));
+        when(occurrenceRepository.findByIndexerSearchSearchEntityId(search.getId())).thenReturn(List.of(
+            occurrence(downloadedSearch, downloadedResult),
+            occurrence(matchingSearch, matchingResult)
+        ));
+
+        testee.handleDownloadEvent(event(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
+
+        ArgumentCaptor<Set<IndexerUniquenessScoreEntity>> captor = ArgumentCaptor.forClass(Set.class);
+        verify(scoreRepository).saveAll(captor.capture());
+        assertThat(captor.getValue())
+            .filteredOn(IndexerUniquenessScoreEntity::isHasResult)
+            .extracting(score -> score.getIndexer().getName())
+            .containsExactlyInAnyOrder("downloaded", "matching");
+    }
+
+    @Test
+    void shouldNotSaveScoreWithoutSearchContextWhenNoSearchFoundTheResult() {
+        when(occurrenceRepository.findBySearchResultOrderByIndexerSearchSearchEntityTimeDesc(downloadedResult)).thenReturn(List.of());
+
         testee.handleDownloadEvent(event(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
 
         verify(scoreRepository, never()).saveAll(org.mockito.ArgumentMatchers.any());

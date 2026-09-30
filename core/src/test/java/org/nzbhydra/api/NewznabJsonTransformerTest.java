@@ -14,6 +14,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.indexers.Indexer;
@@ -66,5 +67,38 @@ public class NewznabJsonTransformerTest {
 
         assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("language")).map(x -> x.getAttributes().getValue())).containsExactly("English", "Japanese");
         assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("subs")).map(x -> x.getAttributes().getValue())).containsExactly("Dutch", "English", "French");
+    }
+
+    @Test
+    void shouldKeepGuidAndLinkStableAcrossSearches() {
+        //API clients (*arr, NZBGet RSS) recognize results they already know by GUID and link, so repeating a search must not change them
+        when(downloadUrlBuilder.getDownloadLinkForResults(42L, false, DownloadType.NZB)).thenReturn("http://127.0.0.1:5076/getnzb/api/42?apikey=apikey");
+
+        NewznabJsonItem firstItem = testee.buildRssItem(resultFromSearch(7), true);
+        NewznabJsonItem secondItem = testee.buildRssItem(resultFromSearch(8), true);
+
+        assertThat(firstItem.getGuid()).isEqualTo("42");
+        assertThat(secondItem.getGuid()).isEqualTo(firstItem.getGuid());
+        assertThat(secondItem.getId()).isEqualTo(firstItem.getId());
+        assertThat(firstItem.getLink()).isEqualTo("http://127.0.0.1:5076/getnzb/api/42?apikey=apikey");
+        assertThat(secondItem.getLink()).isEqualTo(firstItem.getLink());
+        assertThat(guidAttribute(firstItem)).isEqualTo("42");
+        assertThat(guidAttribute(secondItem)).isEqualTo("42");
+    }
+
+    private SearchResultItem resultFromSearch(int searchId) {
+        SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setSearchResultId(42L);
+        searchResultItem.setSearchId(searchId);
+        searchResultItem.setGuid(42L);
+        searchResultItem.setIndexer(indexerMock);
+        searchResultItem.setCategory(new Category());
+        searchResultItem.setSize(1L);
+        searchResultItem.setPubDate(java.time.Instant.now());
+        return searchResultItem;
+    }
+
+    private String guidAttribute(NewznabJsonItem item) {
+        return item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("guid")).map(x -> x.getAttributes().getValue()).findFirst().orElse(null);
     }
 }

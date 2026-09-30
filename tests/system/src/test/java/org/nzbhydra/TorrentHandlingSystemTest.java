@@ -216,7 +216,7 @@ public class TorrentHandlingSystemTest {
     }
 
     private long searchResultId(String identifier) {
-        return Long.parseLong(identifier.substring(0, identifier.indexOf('.')));
+        return Long.parseLong(identifier);
     }
 
     private Path testAccessibleBlackhole() {

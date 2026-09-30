@@ -4,7 +4,6 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
-import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
@@ -66,8 +65,10 @@ public class NewznabJsonTransformer {
 
     NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
-        String downloadIdentifier = new DownloadIdentifier(searchResultItem.getSearchResultId(), searchResultItem.getSearchId()).toString();
-        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), searchResultItem.getSearchId(), false, DownloadType.NZB);
+        //API clients (*arr, NZBGet RSS) recognize known results by GUID and link, so neither may contain the ID of the
+        //search, which changes with every request. The search context is resolved when downloading instead.
+        String downloadIdentifier = String.valueOf(searchResultItem.getSearchResultId());
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setGuid(downloadIdentifier);

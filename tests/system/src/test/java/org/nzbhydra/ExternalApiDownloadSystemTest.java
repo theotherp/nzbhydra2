@@ -71,7 +71,7 @@ public class ExternalApiDownloadSystemTest {
     @Test
     public void shouldReturnNfoForResult() {
         String identifier = searchAndGetIdentifier();
-        long guid = Long.parseLong(identifier.substring(0, identifier.indexOf('.')));
+        long guid = Long.parseLong(identifier);
 
         HydraResponse response = hydraClient.get("/internalapi/nfo/" + guid);
         Map<String, Object> nfoResult = response.as(new TypeReference<>() {
@@ -83,12 +83,27 @@ public class ExternalApiDownloadSystemTest {
         assertThat((String) nfoResult.get("content")).startsWith("NFO for NZB with ID ");
     }
 
-    private String searchAndGetIdentifier() {
+    @Test
+    public void shouldKeepGuidAndLinkStableWhenRepeatingSearch() {
+        //NZBGet feeds and Sonarr's RSS sync recognize known results by their link, so repeating a search must not change it
+        NewznabXmlItem first = searchFirstResult();
+        NewznabXmlItem second = searchFirstResult();
+
+        assertThat(second.getRssGuid().getGuid()).isEqualTo(first.getRssGuid().getGuid());
+        assertThat(second.getLink()).isEqualTo(first.getLink());
+        assertThat(second.getEnclosure().getUrl()).isEqualTo(first.getEnclosure().getUrl());
+    }
+
+    private NewznabXmlItem searchFirstResult() {
         HydraResponse response = hydraClient.get("/api", "apikey=apikey", "t=search", "q=oneresult");
         NewznabXmlRoot root = Jackson.getUnmarshal(response.body());
-        NewznabXmlItem result = root.getRssChannel().getItems().get(0);
+        return root.getRssChannel().getItems().get(0);
+    }
+
+    private String searchAndGetIdentifier() {
+        NewznabXmlItem result = searchFirstResult();
         String identifier = result.getRssGuid().getGuid();
-        assertThat(identifier).matches("-?\\d+\\.-?\\d+");
+        assertThat(identifier).matches("-?\\d+");
         return identifier;
     }
 

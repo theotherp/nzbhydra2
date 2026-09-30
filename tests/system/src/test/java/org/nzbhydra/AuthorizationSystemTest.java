@@ -156,7 +156,7 @@ public class AuthorizationSystemTest {
         NewznabXmlRoot root = Jackson.getUnmarshal(searchResponse.body());
         NewznabXmlItem result = root.getRssChannel().getItems().get(0);
         String identifier = result.getRssGuid().getGuid();
-        assertThat(identifier).matches("-?\\d+\\.-?\\d+");
+        assertThat(identifier).matches("-?\\d+");
 
         assertNewznabApiKeyError(apiRequest("t=get", "id=" + identifier));
         assertNewznabApiKeyError(apiRequest("apikey=authorization-system-wrong-api-key", "t=get", "id=" + identifier));
