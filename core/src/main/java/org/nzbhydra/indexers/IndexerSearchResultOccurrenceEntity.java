@@ -26,7 +26,7 @@ public final class IndexerSearchResultOccurrenceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "INDEXERSEARCHRESULTOCCURRENCE_SEQ")
     @SequenceGenerator(name = "INDEXERSEARCHRESULTOCCURRENCE_SEQ", sequenceName = "INDEXERSEARCHRESULTOCCURRENCE_SEQ", allocationSize = 1)
-    private int id;
+    private long id;
 
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)

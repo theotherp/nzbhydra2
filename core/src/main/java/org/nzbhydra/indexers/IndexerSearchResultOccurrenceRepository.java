@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 
-public interface IndexerSearchResultOccurrenceRepository extends JpaRepository<IndexerSearchResultOccurrenceEntity, Integer> {
+public interface IndexerSearchResultOccurrenceRepository extends JpaRepository<IndexerSearchResultOccurrenceEntity, Long> {
 
     List<IndexerSearchResultOccurrenceEntity> findBySearchResultOrderByIndexerSearchSearchEntityTimeDesc(SearchResultEntity searchResult);
 
@@ -17,9 +17,13 @@ public interface IndexerSearchResultOccurrenceRepository extends JpaRepository<I
 
     Collection<IndexerSearchResultOccurrenceEntity> findByIndexerSearchSearchEntityId(int searchId);
 
-    // H2 MERGE is atomic, unlike a preceding existence check followed by an insert.
+    // H2 MERGE is atomic, unlike a preceding existence check followed by an insert. Only inserts take a sequence value;
+    // the short form (MERGE ... KEY ... VALUES) would take one for every call and rewrite the ID of existing rows.
     @Modifying
-    @NativeQuery("MERGE INTO INDEXERSEARCHRESULTOCCURRENCE (ID, INDEXER_SEARCH_ID, SEARCH_RESULT_ID) " +
-                 "KEY (INDEXER_SEARCH_ID, SEARCH_RESULT_ID) VALUES (NEXT VALUE FOR INDEXERSEARCHRESULTOCCURRENCE_SEQ, :indexerSearchId, :searchResultId)")
+    @NativeQuery("MERGE INTO INDEXERSEARCHRESULTOCCURRENCE t " +
+                 "USING (VALUES (CAST(:indexerSearchId AS INTEGER), CAST(:searchResultId AS BIGINT))) s(INDEXER_SEARCH_ID, SEARCH_RESULT_ID) " +
+                 "ON t.INDEXER_SEARCH_ID = s.INDEXER_SEARCH_ID AND t.SEARCH_RESULT_ID = s.SEARCH_RESULT_ID " +
+                 "WHEN NOT MATCHED THEN INSERT (ID, INDEXER_SEARCH_ID, SEARCH_RESULT_ID) " +
+                 "VALUES (NEXT VALUE FOR INDEXERSEARCHRESULTOCCURRENCE_SEQ, s.INDEXER_SEARCH_ID, s.SEARCH_RESULT_ID)")
     void merge(@Param("indexerSearchId") int indexerSearchId, @Param("searchResultId") long searchResultId);
 }

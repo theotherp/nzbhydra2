@@ -13,6 +13,7 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.IndexerSearchResultOccurrenceEntity;
 import org.nzbhydra.indexers.IndexerSearchResultOccurrenceRepository;
 import org.nzbhydra.indexers.IndexerSearchResultPersistor;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
@@ -148,9 +149,45 @@ public class SearchResultPersistenceComponentTest {
     }
 
     @Test
+    public void shouldKeepTheOccurrenceIdWhenMergingAgain() {
+        IndexerSearchResult searchResult = new IndexerSearchResult();
+        persistor.persistSearchResults(indexer, items("a"), searchResult);
+        IndexerSearchEntity indexerSearch = indexerSearch();
+        persistor.persistSearchResultOccurrences(indexerSearch, searchResult.getSearchResultIds());
+        long idBefore = occurrenceRepository.findAll().get(0).getId();
+        long sequenceBefore = occurrenceSequenceBaseValue();
+
+        persistor.persistSearchResultOccurrences(indexerSearch, searchResult.getSearchResultIds());
+
+        assertThat(occurrenceRepository.count()).isEqualTo(1);
+        assertThat(occurrenceRepository.findAll().get(0).getId()).isEqualTo(idBefore);
+        assertThat(occurrenceSequenceBaseValue()).isEqualTo(sequenceBefore);
+    }
+
+    @Test
+    public void shouldStoreOccurrenceIdsBeyondIntegerRange() {
+        long sequenceBefore = occurrenceSequenceBaseValue();
+        jdbcTemplate.execute("ALTER SEQUENCE INDEXERSEARCHRESULTOCCURRENCE_SEQ RESTART WITH " + Integer.MAX_VALUE);
+        try {
+            IndexerSearchResult searchResult = new IndexerSearchResult();
+            persistor.persistSearchResults(indexer, items("a", "b"), searchResult);
+            persistor.persistSearchResultOccurrences(indexerSearch(), searchResult.getSearchResultIds());
+
+            assertThat(occurrenceRepository.findAll()).extracting(IndexerSearchResultOccurrenceEntity::getId)
+                    .containsExactlyInAnyOrder((long) Integer.MAX_VALUE, Integer.MAX_VALUE + 1L);
+        } finally {
+            jdbcTemplate.execute("ALTER SEQUENCE INDEXERSEARCHRESULTOCCURRENCE_SEQ RESTART WITH " + sequenceBefore);
+        }
+    }
+
+    @Test
     public void shouldHaveTheSequence() {
         Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME = 'SEARCHRESULT_SEQ'", Integer.class);
         assertThat(count).isEqualTo(1);
+    }
+
+    private long occurrenceSequenceBaseValue() {
+        return jdbcTemplate.queryForObject("SELECT BASE_VALUE FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME = 'INDEXERSEARCHRESULTOCCURRENCE_SEQ'", Long.class);
     }
 
     private IndexerSearchEntity indexerSearch() {
