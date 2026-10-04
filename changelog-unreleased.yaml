@@ -14,3 +14,5 @@
     text: "A custom icon configured for a downloader is shown again on the search results&apos; send buttons. Icons are now taken from Font Awesome 5; the downloader config links to its free icon collection."
 -   type: "fix"
     text: "Searches no longer fail with &quot;Numeric value out of range&quot; once the database has stored more than about two billion search result entries over its lifetime. See #1111"
+-   type: "fix"
+    text: "An indexer&apos;s results could be lost, and the indexer temporarily disabled, when it returned the same result twice in one response or when the config was saved while a search was running. See #1112"

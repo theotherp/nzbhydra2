@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -375,8 +376,8 @@ public class IndexerTest {
             }
             return invocation.getArgument(1);
         });
-        Indexer<String> firstIndexer = createIndexerWithPersistor(persistor);
-        Indexer<String> secondIndexer = createIndexerWithPersistor(persistor);
+        Indexer<String> firstIndexer = createIndexerWithPersistor(persistor, "indexer1");
+        Indexer<String> secondIndexer = createIndexerWithPersistor(persistor, "indexer2");
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             executor.submit(() -> firstIndexer.persistSearchResults(Collections.emptyList(), new IndexerSearchResult()));
@@ -392,8 +393,41 @@ public class IndexerTest {
         }
     }
 
-    private Indexer<String> createIndexerWithPersistor(IndexerSearchResultPersistor persistor) {
-        return new Indexer<>(null, null, null, null, null, null, null, null, null, null, null, null, null, null, persistor) {
+    @Test
+    void shouldShareDbLockBetweenInstancesOfTheSameIndexer() throws Exception {
+        //The instances are replaced when the config is changed while searches on the old ones may still be running. See #1112
+        CountDownLatch firstIsInsideLock = new CountDownLatch(1);
+        CountDownLatch releaseFirst = new CountDownLatch(1);
+        AtomicBoolean isFirstCall = new AtomicBoolean(true);
+        IndexerSearchResultPersistor persistor = mock(IndexerSearchResultPersistor.class);
+        when(persistor.persistSearchResults(any(), anyList(), any())).thenAnswer(invocation -> {
+            if (isFirstCall.getAndSet(false)) {
+                firstIsInsideLock.countDown();
+                releaseFirst.await(10, TimeUnit.SECONDS);
+            }
+            return invocation.getArgument(1);
+        });
+        Indexer<String> oldInstance = createIndexerWithPersistor(persistor, "indexer");
+        Indexer<String> newInstance = createIndexerWithPersistor(persistor, "indexer");
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> firstCall = executor.submit(() -> oldInstance.persistSearchResults(Collections.emptyList(), new IndexerSearchResult()));
+            assertThat(firstIsInsideLock.await(10, TimeUnit.SECONDS)).isTrue();
+
+            Future<?> secondCall = executor.submit(() -> newInstance.persistSearchResults(Collections.emptyList(), new IndexerSearchResult()));
+            assertThrows(TimeoutException.class, () -> secondCall.get(500, TimeUnit.MILLISECONDS));
+
+            releaseFirst.countDown();
+            assertThat(firstCall.get(5, TimeUnit.SECONDS)).isNotNull();
+            assertThat(secondCall.get(5, TimeUnit.SECONDS)).isNotNull();
+        } finally {
+            releaseFirst.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    private Indexer<String> createIndexerWithPersistor(IndexerSearchResultPersistor persistor, String name) {
+        Indexer<String> indexer = new Indexer<>(null, null, null, null, null, null, null, null, null, null, null, null, null, null, persistor) {
             @Override
             protected Logger getLogger() {
                 return testLogger;
@@ -423,6 +457,10 @@ public class IndexerTest {
                 return null;
             }
         };
+        IndexerConfig config = new IndexerConfig();
+        config.setName(name);
+        indexer.initialize(config, new IndexerEntity(name));
+        return indexer;
     }
 
 

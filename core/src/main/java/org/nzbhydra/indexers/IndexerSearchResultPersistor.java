@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -48,9 +49,11 @@ public class IndexerSearchResultPersistor {
                 existingIdsByHash.put(existing.getHash(), existing.getId());
             }
         }
+        //An indexer may return the same result more than once. It must only be inserted once because the hash is unique
+        Set<Long> newHashes = new HashSet<>();
         for (SearchResultItem item : searchResultItems) {
             long hash = SearchResultIdCalculator.calculateSearchResultHash(item);
-            if (!existingIdsByHash.containsKey(hash)) {
+            if (!existingIdsByHash.containsKey(hash) && newHashes.add(hash)) {
                 SearchResultEntity searchResultEntity = new SearchResultEntity();
 
                 //Set all entity relevant data

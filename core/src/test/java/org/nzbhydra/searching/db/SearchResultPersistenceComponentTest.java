@@ -149,6 +149,19 @@ public class SearchResultPersistenceComponentTest {
     }
 
     @Test
+    public void shouldStoreAResultOnlyOnceWhenTheResponseContainsItTwice() {
+        IndexerSearchResult searchResult = new IndexerSearchResult();
+        List<SearchResultItem> items = items("a", "b", "a");
+
+        persistor.persistSearchResults(indexer, items, searchResult);
+
+        assertThat(searchResultRepository.count()).isEqualTo(2);
+        assertThat(searchResult.getSearchResultEntities()).hasSize(2);
+        assertThat(searchResult.getSearchResultIds()).hasSize(2);
+        assertThat(items.get(2).getSearchResultId()).isEqualTo(items.get(0).getSearchResultId());
+    }
+
+    @Test
     public void shouldKeepTheOccurrenceIdWhenMergingAgain() {
         IndexerSearchResult searchResult = new IndexerSearchResult();
         persistor.persistSearchResults(indexer, items("a"), searchResult);

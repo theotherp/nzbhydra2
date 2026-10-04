@@ -52,7 +52,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +70,12 @@ public abstract class Indexer<T> {
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
-    private final Object dbLock = new Object();
+    /**
+     * Locks for persisting search results, one per indexer name. They must not live on the instance because
+     * {@link org.nzbhydra.searching.SearchModuleProvider#loadIndexers(List)} replaces all instances when the config is
+     * changed while searches on the old instances may still be running. See #1112
+     */
+    private static final Map<String, Object> DB_LOCKS = new ConcurrentHashMap<>();
 
     @Autowired
     protected ConfigProvider configProvider;
@@ -306,6 +313,7 @@ public abstract class Indexer<T> {
 
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        Object dbLock = config == null || getName() == null ? this : DB_LOCKS.computeIfAbsent(getName(), x -> new Object());
         synchronized (dbLock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
             searchResultPersistor.persistSearchResults(this, searchResultItems, indexerSearchResult);
         }
