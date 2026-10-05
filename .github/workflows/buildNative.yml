@@ -37,14 +37,30 @@ jobs:
             # compromise (https://github.com/tj-actions/changed-files/issues/2463). dorny/paths-filter
             # is a different, actively maintained action from the same author as dorny/test-reporter,
             # already trusted elsewhere in this repo.
-            -   name: "Detect changes affecting the native build/tests"
-                id: changed
+            # The native build may only be skipped when nothing relevant changed since the commit the
+            # reusable executable was *built from*. Comparing with the previous push instead
+            # (github.event.before) reused a stale executable whenever that push's run was cancelled or
+            # failed before uploading one -- e.g. an amended commit pushed again with --force.
+            -   name: "Find last native build"
+                id: last-build
                 if: >-
                     github.event_name == 'push' &&
                     github.event.before != '0000000000000000000000000000000000000000'
+                continue-on-error: true
+                uses: dawidd6/action-download-artifact@v6
+                with:
+                    name: ^native-build--${{ matrix.os }}--release-executable--.*$
+                    name_is_regexp: true
+                    search_artifacts: true
+                    workflow_conclusion: 'completed'
+                    dry_run: true
+
+            -   name: "Detect changes affecting the native build/tests"
+                id: changed
+                if: steps.last-build.outputs.found_artifact == 'true'
                 uses: dorny/paths-filter@v3
                 with:
-                    base: ${{ github.event.before }}
+                    base: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].workflow_run.head_sha }}
                     filters: |
                         native:
                           - 'core/src/**'
@@ -66,10 +82,14 @@ jobs:
             -   name: "Decide whether the native build and its tests are needed"
                 id: build-decision
                 shell: bash
+                env:
+                    # Raw, so it may be empty: fromJSON would fail when no last build was looked up.
+                    LAST_BUILD_ARTIFACTS: ${{ steps.last-build.outputs.artifacts }}
                 run: |
                     if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${{ steps.changed.outputs.native }}" = "false" ]; then
                       echo "should-build=false" >> "$GITHUB_OUTPUT"
-                      echo "::notice::No changes under watched paths since the previous commit -- reusing the last native build and skipping the unit/native tests."
+                      last_build_sha=$(jq -r '.[0].workflow_run.head_sha' <<< "$LAST_BUILD_ARTIFACTS")
+                      echo "::notice::No changes under watched paths since $last_build_sha, which the last native build was made from -- reusing it and skipping the unit/native tests."
                     else
                       echo "should-build=true" >> "$GITHUB_OUTPUT"
                     fi
@@ -154,15 +174,15 @@ jobs:
                 run: |
                     mvn --batch-mode "-Pnative,strictReflection" clean native:compile -DskipTests
 
+            # Exactly the artifact the change detection compared against. An exact (non-regexp) name
+            # also makes the action unpack straight into core/target; a regexp name unpacks into
+            # core/target/<artifact name>/, where nothing below looks.
             -   name: "Reuse last native build (no relevant changes)"
                 if: steps.build-decision.outputs.should-build == 'false'
-                continue-on-error: true
                 uses: dawidd6/action-download-artifact@v6
                 with:
-                    name: ^native-build--${{ matrix.os }}--release-executable--.*$
-                    name_is_regexp: true
-                    search_artifacts: true
-                    workflow_conclusion: 'completed'
+                    run_id: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].workflow_run.id }}
+                    name: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].name }}
                     path: core/target
 
             -   name: "Make reused Linux executable runnable"
