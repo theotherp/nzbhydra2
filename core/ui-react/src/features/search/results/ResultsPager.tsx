@@ -1,4 +1,10 @@
-import {Pagination, PaginationItem} from "@mui/material";
+import {
+    MenuItem,
+    Pagination,
+    PaginationItem,
+    Stack,
+    TextField,
+} from "@mui/material";
 
 /**
  * The results table's page navigation, rendered only while
@@ -12,6 +18,12 @@ import {Pagination, PaginationItem} from "@mui/material";
  * finishing a page. The phone gets the full strip only -- its sticky bar is
  * paid for in rows of results it hides (FM-181).
  *
+ * #1110: the full strip also offers a "Jump to page" select once the number
+ * run has an ellipsis, so a far page is one pick away instead of a walk
+ * through the neighbours. On a `wide` viewport the run itself shows two
+ * boundary pages and two siblings each side; the phone keeps one of each,
+ * which is what fits 390px (see below).
+ *
  * The item markup follows `HistoryPager`'s: `aria-current` on the current
  * page, which MUI does not set, and `mx: 0` on each item so the strip fits a
  * 390px viewport (see the measurements there).
@@ -22,6 +34,7 @@ export function ResultsPager({
     onPageChange,
     page,
     pageCount,
+    wide = false,
 }: {
     compact?: boolean;
     /** The navigation's accessible name; unique among the rendered pagers. */
@@ -29,11 +42,15 @@ export function ResultsPager({
     onPageChange: (page: number) => void;
     page: number;
     pageCount: number;
+    /** Whether the full strip has a desktop's width to spend on page links. */
+    wide?: boolean;
 }) {
-    return (
+    const boundaryCount = !compact && wide ? 2 : 1;
+    const siblingCount = compact ? 0 : wide ? 2 : 1;
+    const pagination = (
         <Pagination
             aria-label={label}
-            boundaryCount={1}
+            boundaryCount={boundaryCount}
             count={pageCount}
             data-testid={compact ? "results-pager-top" : "results-pager-bottom"}
             getItemAriaLabel={pagerItemLabel}
@@ -52,8 +69,41 @@ export function ResultsPager({
             )}
             showFirstButton={!compact}
             showLastButton={!compact}
-            siblingCount={compact ? 0 : 1}
+            siblingCount={siblingCount}
         />
+    );
+    // MUI lists every page, without an ellipsis, up to this many.
+    const allPagesShown = 2 * boundaryCount + 2 * siblingCount + 3;
+    if (compact || pageCount <= allPagesShown) {
+        return pagination;
+    }
+    return (
+        <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{
+                alignItems: "center",
+                flexWrap: "wrap",
+                justifyContent: "center",
+            }}
+        >
+            {pagination}
+            <TextField
+                data-testid="results-page-select"
+                label="Jump to page"
+                onChange={(event) => onPageChange(Number(event.target.value))}
+                select
+                sx={{minWidth: (theme) => theme.spacing(16)}}
+                value={page}
+            >
+                {Array.from({length: pageCount}, (_, index) => (
+                    <MenuItem key={index + 1} value={index + 1}>
+                        {index + 1}
+                    </MenuItem>
+                ))}
+            </TextField>
+        </Stack>
     );
 }
 

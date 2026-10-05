@@ -16,3 +16,7 @@
     text: "Searches no longer fail with &quot;Numeric value out of range&quot; once the database has stored more than about two billion search result entries over its lifetime. See #1111"
 -   type: "fix"
     text: "An indexer&apos;s results could be lost, and the indexer temporarily disabled, when it returned the same result twice in one response or when the config was saved while a search was running. See #1112"
+-   type: "fix"
+    text: "Changing the search results page after scrolling down now takes you back to the top of the new page instead of leaving you at its bottom. See #1110"
+-   type: "feature"
+    text: "With many result pages the page links below the results show more pages on wide screens and a &quot;Jump to page&quot; selection takes you directly to any page. See #1110"

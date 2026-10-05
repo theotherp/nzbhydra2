@@ -1267,6 +1267,14 @@ export function SearchResults({
     // reader has scrolled past it, which is always the case from the bottom
     // pager and usually from the toolbar's. Never scrolls down: at the top of
     // the page the table is already in view.
+    //
+    // #1110: the virtualizer learns about a scroll from the `scroll` event,
+    // which fires a frame later -- but the new page renders and its rows are
+    // measured in this same task. With the old, deep offset still recorded,
+    // every new row counted as "above the fold", so each estimate-to-actual
+    // correction was applied as a scroll from that old offset, putting the
+    // reader straight back at the bottom (and rendering the window for the
+    // old position). Handing it the new offset synchronously avoids both.
     const changePage = useCallback(
         (next: number) => {
             setRequestedPage(next);
@@ -1280,9 +1288,10 @@ export function SearchResults({
             const target = Math.max(0, listOffset - padding);
             if (window.scrollY > target) {
                 window.scrollTo({top: target});
+                virtualizer.scrollOffset = window.scrollY;
             }
         },
-        [listOffset],
+        [listOffset, virtualizer],
     );
     const pagerShown = pageCount > 1;
     // FM-162: hands every mounted row to the virtualizer for measurement.
@@ -1520,6 +1529,7 @@ export function SearchResults({
                                 onPageChange={changePage}
                                 page={page}
                                 pageCount={pageCount}
+                                wide={!refineSurfaceCompact}
                             />
                         </Stack>
                     )}

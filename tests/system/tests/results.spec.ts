@@ -6755,6 +6755,186 @@ test.describe("Search results", () => {
             ).toBe(true);
         });
 
+        // #1110: with a realistic page size the page change left the reader
+        // at the bottom. The scroll itself happened, but the virtualizer
+        // measured the new page's rows before it saw the scroll event, took
+        // every row for one above its stale, deep offset and "compensated"
+        // the scroll back down. The five-title fixture above is too short to
+        // show it, so this routes 200 distinct titles at 50 per page.
+        test("should keep the table top in view after a page change from the bottom of a long page", async ({
+            hydra,
+            page,
+        }) => {
+            const config = await hydra.getConfig();
+            (config.main as Record<string, unknown>).resultsPageSize = 50;
+            await hydra.saveConfig(config);
+            const now = Math.floor(Date.now() / 1_000);
+            const titles = Array.from(
+                {length: 200},
+                (_, index) =>
+                    `Long Page Result ${String(index + 1).padStart(3, "0")}`,
+            );
+            await page.route("**/internalapi/search", (route) =>
+                route.fulfill({
+                    json: {
+                        searchResults: titles.map((title, index) => ({
+                            age: `${index} days`,
+                            category: "Movies",
+                            downloadType: "NZB",
+                            epoch: now - index * 86_400,
+                            indexer: "Alpha",
+                            searchResultId: `long-page-${index}`,
+                            size: (index + 1) * 1024 * 1024,
+                            title,
+                        })),
+                        indexerLimitWarnings: [],
+                        indexerSearchMetaDatas: [
+                            {indexerName: "Alpha", wasSuccessful: true},
+                        ],
+                        notPickedIndexersWithReason: {},
+                        numberOfAvailableResults: 200,
+                        numberOfRejectedResults: 0,
+                        rejectedReasonsMap: {},
+                    },
+                }),
+            );
+            await page.setViewportSize({width: 1440, height: 800});
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("long page");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            const table = page.getByTestId("search-results-table");
+            await expect(table).toBeVisible();
+            const bottomPager = page.getByTestId("results-pager-bottom");
+
+            await page.evaluate(() =>
+                window.scrollTo(0, document.documentElement.scrollHeight),
+            );
+            // Page 1's last row is only mounted once the virtualizer has
+            // processed the scroll -- the state the reader is in, and the one
+            // that holds the deep offset the defect jumped back to.
+            await expect(
+                table.locator(
+                    `[data-testid="search-result-row"][data-result-title="${titles[49]}"]`,
+                ),
+            ).toBeInViewport();
+            // A reader pauses before paging; the virtualizer only treats the
+            // scroll as finished after its 150ms `isScrollingResetDelay`, and
+            // the defect needs that settled state. Clicking while it still
+            // counted as scrolling hid the defect.
+            await page.waitForTimeout(300);
+            const scrolledAwayY = await page.evaluate(() => window.scrollY);
+
+            await bottomPager
+                .getByRole("button", {name: "Go to page 2"})
+                .click();
+            await expect(
+                bottomPager.getByRole("button", {name: "Page 2"}),
+            ).toHaveAttribute("aria-current", "page");
+
+            // The first row of page 2 sits right under the sticky chrome and
+            // stays there once the new rows have been measured.
+            const firstRow = table.locator(
+                `[data-testid="search-result-row"][data-result-title="${titles[50]}"]`,
+            );
+            await expect(firstRow).toBeInViewport();
+            await page.waitForTimeout(500);
+            await expect(firstRow).toBeInViewport();
+            await expect(firstRow).toBeInViewport();
+            expect(await page.evaluate(() => window.scrollY)).toBeLessThan(
+                scrolledAwayY / 2,
+            );
+
+            // #1110's second half: a far page is one pick away. Four pages
+            // fit the wide run without an ellipsis, so this needs more.
+            await expect(page.getByTestId("results-page-select")).toHaveCount(0);
+        });
+
+        test("should jump to a far page through the page select", async ({
+            hydra,
+            page,
+        }) => {
+            const config = await hydra.getConfig();
+            (config.main as Record<string, unknown>).resultsPageSize = 10;
+            await hydra.saveConfig(config);
+            const titles = Array.from(
+                {length: 200},
+                (_, index) =>
+                    `Jump Page Result ${String(index + 1).padStart(3, "0")}`,
+            );
+            await page.route("**/internalapi/search", (route) =>
+                route.fulfill({
+                    json: {
+                        searchResults: titles.map((title, index) => ({
+                            age: `${index} days`,
+                            category: "Movies",
+                            downloadType: "NZB",
+                            epoch: 1_700_000_000 - index * 86_400,
+                            indexer: "Alpha",
+                            searchResultId: `jump-page-${index}`,
+                            size: (index + 1) * 1024 * 1024,
+                            title,
+                        })),
+                        indexerLimitWarnings: [],
+                        indexerSearchMetaDatas: [
+                            {indexerName: "Alpha", wasSuccessful: true},
+                        ],
+                        notPickedIndexersWithReason: {},
+                        numberOfAvailableResults: 200,
+                        numberOfRejectedResults: 0,
+                        rejectedReasonsMap: {},
+                    },
+                }),
+            );
+            await page.setViewportSize({width: 1440, height: 800});
+            await page.goto("/");
+            await dismissWelcomeDialog(page);
+            await page.getByTestId("search-query").fill("jump page");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            const bottomPager = page.getByTestId("results-pager-bottom");
+
+            // The wide run: two boundary pages, two siblings each side.
+            await expect(
+                bottomPager.getByRole("button", {name: "Go to page 2", exact: true}),
+            ).toBeVisible();
+            await expect(
+                bottomPager.getByRole("button", {name: "Go to page 19", exact: true}),
+            ).toBeVisible();
+
+            await page.getByRole("combobox", {name: "Jump to page"}).click();
+            await page.getByRole("option", {name: "14", exact: true}).click();
+            await expect(
+                bottomPager.getByRole("button", {name: "Page 14", exact: true}),
+            ).toHaveAttribute("aria-current", "page");
+            await expect(
+                page
+                    .getByTestId("search-results-table")
+                    .locator(
+                        `[data-testid="search-result-row"][data-result-title="${titles[130]}"]`,
+                    ),
+            ).toBeInViewport();
+
+            // The phone keeps one of each, and the select wraps under the
+            // strip rather than widening the page.
+            await page.setViewportSize({width: 390, height: 844});
+            await expect(page.getByTestId("results-pager-top")).toHaveCount(0);
+            await expect(
+                bottomPager.getByRole("button", {name: "Go to page 2", exact: true}),
+            ).toHaveCount(0);
+            await expect(
+                page.getByRole("combobox", {name: "Jump to page"}),
+            ).toBeVisible();
+            expect(
+                await page.evaluate(
+                    () =>
+                        document.scrollingElement !== null &&
+                        document.scrollingElement.scrollWidth <=
+                            document.scrollingElement.clientWidth,
+                ),
+            ).toBe(true);
+        });
     });
 });
 
