@@ -99,13 +99,15 @@ function fakeLiveTransport(options: {fail?: boolean} = {}) {
 function renderFooter(
     fake: ReturnType<typeof fakeLiveTransport>,
     safeConfig: Record<string, unknown> | null = enabledConfig,
+    onHeightChange: (height: number) => void = vi.fn(),
 ) {
-    return render(footer(fake, safeConfig));
+    return render(footer(fake, safeConfig, onHeightChange));
 }
 
 function footer(
     fake: ReturnType<typeof fakeLiveTransport>,
     safeConfig: Record<string, unknown> | null,
+    onHeightChange: (height: number) => void = vi.fn(),
 ) {
     return (
         <ThemeProvider theme={createHydraTheme("grey", false)}>
@@ -113,7 +115,7 @@ function footer(
                 <DownloaderStatusFooter
                     bootstrap={bootstrap}
                     liveTransport={fake.liveTransport}
-                    onHeightChange={vi.fn()}
+                    onHeightChange={onHeightChange}
                 />
             </SafeConfigContext.Provider>
         </ThemeProvider>
@@ -146,6 +148,8 @@ afterEach(() => {
     cleanup();
     setHidden(false);
     vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
 });
 
 beforeEach(() => {
@@ -457,6 +461,52 @@ describe("DownloaderStatusFooter", () => {
         expect(screen.getByTestId("downloader-status-queue")).toHaveTextContent(
             "99 in queue",
         );
+    });
+
+    it("should report its border-box height when it resizes, not the content box", async () => {
+        // The shell pads the scroll area by the reported height. The footer
+        // has vertical padding and a top border, so reporting
+        // `contentRect.height` left the last search result partly hidden
+        // underneath it (#1114).
+        let notifyResize: ResizeObserverCallback | undefined;
+        vi.stubGlobal(
+            "ResizeObserver",
+            class {
+                constructor(callback: ResizeObserverCallback) {
+                    notifyResize = callback;
+                }
+                observe() {}
+                disconnect() {}
+                unobserve() {}
+            },
+        );
+        vi.spyOn(
+            HTMLElement.prototype,
+            "getBoundingClientRect",
+        ).mockReturnValue(
+            DOMRect.fromRect({height: 37, width: 1000, x: 0, y: 0}),
+        );
+        const onHeightChange = vi.fn();
+        const fake = fakeLiveTransport();
+        renderFooter(fake, enabledConfig, onHeightChange);
+        await vi.waitFor(() =>
+            expect(fake.subscribeDownloaderStatus).toHaveBeenCalled(),
+        );
+        fake.deliver(status());
+        onHeightChange.mockClear();
+
+        act(() => {
+            notifyResize?.(
+                [
+                    {
+                        contentRect: DOMRect.fromRect({height: 28, width: 968}),
+                    } as ResizeObserverEntry,
+                ],
+                {} as ResizeObserver,
+            );
+        });
+
+        expect(onHeightChange).toHaveBeenLastCalledWith(37);
     });
 
     it("should close the subscription on unmount", async () => {

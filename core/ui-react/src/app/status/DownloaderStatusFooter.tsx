@@ -248,14 +248,16 @@ export function DownloaderStatusFooter({
             onHeightChange(0);
             return;
         }
-        onHeightChange(node.getBoundingClientRect().height);
+        // Always re-read the border box: `ResizeObserverEntry.contentRect` is
+        // the content box, which leaves out padding and borders and so left
+        // the end of the scroll area underneath the footer (#1114).
+        const measure = () =>
+            onHeightChange(node.getBoundingClientRect().height);
+        measure();
         if (typeof ResizeObserver === "undefined") {
             return;
         }
-        const observer = new ResizeObserver((entries) => {
-            const entry = entries[0];
-            onHeightChange(entry ? entry.contentRect.height : 0);
-        });
+        const observer = new ResizeObserver(() => measure());
         observer.observe(node);
         return () => observer.disconnect();
     }, [onHeightChange, shown]);
