@@ -21,6 +21,7 @@ import type {
 } from "../../api/live/downloaderStatus";
 import type {LiveSubscription} from "../../api/live/transport";
 import {useSafeConfig, type BootstrapData} from "../../bootstrap";
+import {maySeeArea} from "../../features/auth/permissions";
 import {
     advancedRateWindow,
     appendBufferedRates,
@@ -89,7 +90,11 @@ export function DownloaderStatusFooter({
     onHeightChange: (height: number) => void;
 }) {
     const theme = useTheme();
-    const visible = showsDownloaderStatus(useSafeConfig(bootstrap));
+    // The backend only serves the topic to sessions that may search, so a
+    // session that may not never subscribes in the first place.
+    const visible =
+        showsDownloaderStatus(useSafeConfig(bootstrap)) &&
+        maySeeArea(bootstrap, "search");
     const [status, setStatus] = useState<DownloaderStatus>();
     const [rates, setRates] = useState<number[]>([]);
     const containerRef = useRef<HTMLDivElement | null>(null);

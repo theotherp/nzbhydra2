@@ -100,20 +100,22 @@ function renderFooter(
     fake: ReturnType<typeof fakeLiveTransport>,
     safeConfig: Record<string, unknown> | null = enabledConfig,
     onHeightChange: (height: number) => void = vi.fn(),
+    footerBootstrap: BootstrapData = bootstrap,
 ) {
-    return render(footer(fake, safeConfig, onHeightChange));
+    return render(footer(fake, safeConfig, onHeightChange, footerBootstrap));
 }
 
 function footer(
     fake: ReturnType<typeof fakeLiveTransport>,
     safeConfig: Record<string, unknown> | null,
     onHeightChange: (height: number) => void = vi.fn(),
+    footerBootstrap: BootstrapData = bootstrap,
 ) {
     return (
         <ThemeProvider theme={createHydraTheme("grey", false)}>
             <SafeConfigContext.Provider value={safeConfig}>
                 <DownloaderStatusFooter
-                    bootstrap={bootstrap}
+                    bootstrap={footerBootstrap}
                     liveTransport={fake.liveTransport}
                     onHeightChange={onHeightChange}
                 />
@@ -185,6 +187,22 @@ describe("DownloaderStatusFooter", () => {
         });
 
         expect(fake.subscribeDownloaderStatus).not.toHaveBeenCalled();
+    });
+
+    it("should not subscribe for a session that may not search", () => {
+        const fake = fakeLiveTransport();
+        renderFooter(fake, enabledConfig, vi.fn(), {
+            ...bootstrap,
+            authConfigured: true,
+            authType: "FORM",
+            maySeeSearch: false,
+            searchRestricted: true,
+        });
+
+        expect(fake.subscribeDownloaderStatus).not.toHaveBeenCalled();
+        expect(
+            screen.queryByTestId("downloader-status-footer"),
+        ).not.toBeInTheDocument();
     });
 
     it("should render the downloading state, queue, title, and logo link", async () => {

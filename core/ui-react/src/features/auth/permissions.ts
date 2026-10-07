@@ -17,7 +17,10 @@ export const LOGIN_ROUTE = "/login";
  * with authentication switched off the backend reports every area as
  * unrestricted, so the same expression already answers "yes".
  */
-function maySeeArea(bootstrap: BootstrapData, area: ProtectedArea): boolean {
+export function maySeeArea(
+    bootstrap: BootstrapData,
+    area: ProtectedArea,
+): boolean {
     if (area === "search") {
         return !bootstrap.searchRestricted || bootstrap.maySeeSearch === true;
     }

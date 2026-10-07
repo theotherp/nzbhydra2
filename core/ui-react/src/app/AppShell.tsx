@@ -14,8 +14,14 @@ import {
 import {Link, useLocation} from "@tanstack/react-router";
 import {useCallback, useState} from "react";
 
-import {createDownloaderStatusLiveTransport} from "../api/live/downloaderStatus";
-import {createNotificationsLiveTransport} from "../api/live/notifications";
+import {
+    createDownloaderStatusLiveTransport,
+    type DownloaderStatusLiveTransport,
+} from "../api/live/downloaderStatus";
+import {
+    createNotificationsLiveTransport,
+    type NotificationsLiveTransport,
+} from "../api/live/notifications";
 import {SockJsStompLiveTransport} from "../api/live/transport";
 import {ApiTransport} from "../api/transport";
 import {
@@ -25,6 +31,7 @@ import {
     type SafeConfig,
 } from "../bootstrap";
 import {LoginOutButton} from "../features/auth/LoginOutButton";
+import {LOGIN_ROUTE} from "../features/auth/permissions";
 import {useThemePreference} from "./useThemePreference";
 import {themePreferenceOptions, type ThemePreference} from "./theme";
 import {DownloaderStatusFooter} from "./status/DownloaderStatusFooter";
@@ -89,7 +96,13 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
             notifications: createNotificationsLiveTransport(transport),
         };
     });
-    const bottomInset = footerBannerHeight + downloaderFooterHeight;
+    // The login form stands alone: a session that has not logged in yet sees
+    // none of the footers, toasts or checks, all of which carry server state.
+    const onLoginPage =
+        routeSegment(bootstrap.baseUrl, pathname) === LOGIN_ROUTE.slice(1);
+    const bottomInset = onLoginPage
+        ? 0
+        : footerBannerHeight + downloaderFooterHeight;
 
     const links = (onNavigate?: () => void, horizontal = false) => (
         <List
@@ -192,6 +205,53 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
             >
                 {children}
             </Box>
+            {!onLoginPage && (
+                <ShellFooters
+                    bootstrap={bootstrap}
+                    downloaderFooterHeight={downloaderFooterHeight}
+                    liveTransports={liveTransports}
+                    onDownloaderFooterHeightChange={
+                        handleDownloaderFooterHeightChange
+                    }
+                    onFooterBannerHeightChange={handleFooterBannerHeightChange}
+                    transport={transport}
+                />
+            )}
+            {/*
+             * FM-171 (`C-SESSION-EXPIRY`): mounted here for the same reason as
+             * the footers -- the shell is the one place that stays mounted
+             * across navigation, and this affordance has to be singular no
+             * matter how many of the page's queries failed at once.
+             */}
+            <SessionExpiredDialog />
+        </Box>
+    );
+}
+
+/**
+ * Everything the shell pins below the routed content. Kept off the login page
+ * as a whole (see `onLoginPage`).
+ */
+function ShellFooters({
+    bootstrap,
+    downloaderFooterHeight,
+    liveTransports,
+    onDownloaderFooterHeightChange,
+    onFooterBannerHeightChange,
+    transport,
+}: {
+    bootstrap: BootstrapData;
+    downloaderFooterHeight: number;
+    liveTransports: {
+        downloaderStatus: DownloaderStatusLiveTransport;
+        notifications: NotificationsLiveTransport;
+    };
+    onDownloaderFooterHeightChange: (height: number) => void;
+    onFooterBannerHeightChange: (height: number) => void;
+    transport: ApiTransport;
+}) {
+    return (
+        <>
             {/*
              * Legacy's checks footer: it rendered nothing here until a check
              * had something to say, and the shell is the one place that stays
@@ -207,7 +267,7 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
             <UpdateFooterBanners
                 bootstrap={bootstrap}
                 bottomOffset={downloaderFooterHeight}
-                onHeightChange={handleFooterBannerHeightChange}
+                onHeightChange={onFooterBannerHeightChange}
                 transport={transport}
             />
             {/*
@@ -219,21 +279,13 @@ export function AppShell({bootstrap, children, transport}: AppShellProps) {
             <DownloaderStatusFooter
                 bootstrap={bootstrap}
                 liveTransport={liveTransports.downloaderStatus}
-                onHeightChange={handleDownloaderFooterHeightChange}
+                onHeightChange={onDownloaderFooterHeightChange}
             />
             <NotificationToasts
                 bootstrap={bootstrap}
                 liveTransport={liveTransports.notifications}
             />
-            {/*
-             * FM-171 (`C-SESSION-EXPIRY`): mounted here for the same reason as
-             * everything above it -- the shell is the one place that stays
-             * mounted across navigation, and this affordance has to be
-             * singular no matter how many of the page's queries failed at
-             * once.
-             */}
-            <SessionExpiredDialog />
-        </Box>
+        </>
     );
 }
 
@@ -448,11 +500,15 @@ function isActiveNavigationItem(
     pathname: string,
     item: NavigationItem,
 ): boolean {
+    const itemSegment = item.path.split("/")[0] ?? "";
+    return routeSegment(baseUrl, pathname) === itemSegment;
+}
+
+/** The first path segment of `pathname` relative to the app's base URL. */
+function routeSegment(baseUrl: string, pathname: string): string {
     const basePath = new URL(baseUrl, window.location.origin).pathname;
     const relative = pathname.startsWith(basePath)
         ? pathname.slice(basePath.length)
         : pathname;
-    const currentSegment = relative.split("/")[0] ?? "";
-    const itemSegment = item.path.split("/")[0] ?? "";
-    return currentSegment === itemSegment;
+    return relative.split("/")[0] ?? "";
 }

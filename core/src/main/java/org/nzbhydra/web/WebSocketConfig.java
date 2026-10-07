@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -24,6 +25,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
 
     private final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+    @Autowired
+    private WebSocketAuthorizationInterceptor authorizationInterceptor;
 
     @PostConstruct
     public void init() {
@@ -64,6 +68,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/websocket")
                 .setAllowedOriginPatterns("*")
+                .addInterceptors(authorizationInterceptor)
                 .withSockJS()
                 .setClientLibraryUrl("//cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js");
     }
@@ -76,6 +81,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.taskExecutor(taskExecutor);
+        registration.interceptors(authorizationInterceptor);
     }
 
     @PreDestroy

@@ -227,6 +227,32 @@ describe("AppShell", () => {
         expect(screen.getByTestId("notification-toasts")).toBeInTheDocument();
     });
 
+    it("should show nothing but the login page on the login route", () => {
+        mockPathname = "/hydra/login";
+        mockFooterBannerHeight = 40;
+        mockDownloaderFooterHeight = 30;
+        renderShell(
+            <AppShell bootstrap={bootstrap} transport={transport}>
+                <p>Login form</p>
+            </AppShell>,
+        );
+
+        expect(screen.getByText("Login form")).toBeInTheDocument();
+        expect(screen.queryByTestId("startup-checks")).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("update-footer-banners"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("downloader-status-footer"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("notification-toasts"),
+        ).not.toBeInTheDocument();
+        expect(
+            window.getComputedStyle(screen.getByRole("main")).paddingBottom,
+        ).toBe("");
+    });
+
     it("should stack the update banners above the downloader footer and pad the main area by both", () => {
         mockFooterBannerHeight = 40;
         mockDownloaderFooterHeight = 30;
