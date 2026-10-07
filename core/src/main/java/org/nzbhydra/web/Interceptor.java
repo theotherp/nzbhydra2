@@ -15,6 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -31,27 +32,22 @@ public class Interceptor implements HandlerInterceptor {
     @Autowired
     private UserAgentMapper userAgentMapper;
 
+    private static final List<String> API_KEY_PATHS = List.of("/api", "/rss", "/torznab/api", "/getnzb/api", "/gettorrent/api");
+
     private final Set<String> skipHostnameMappingFor = new HashSet<>();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //Reset because this thread may have been reused. Most will be overwritten below but perhaps not all, e.g. username.
         SessionStorage.username.remove();
+        //originalIp and clientIp are set (and cleared) per request by the ForwardedForRecognizingFilter
         SessionStorage.IP.remove();
-        SessionStorage.originalIp.remove();
         SessionStorage.userAgent.remove();
         SessionStorage.requestUrl.remove();
         SessionStorage.outputType.remove();
 
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip != null) {
-            ip = ip.split(",")[0];
-        } else {
-            ip = request.getRemoteAddr();
-        }
+        //Forwarding headers are only trusted when sent by a proxy in the local network, see ClientIpResolver
+        String ip = ClientIpResolver.resolve(request);
         if (configProvider.getBaseConfig().getMain().getLogging().isMapIpToHost()) {
             ip = getHostFromIp(ip).orElse(ip);
         }
@@ -63,7 +59,9 @@ public class Interceptor implements HandlerInterceptor {
 
         if (request.getRemoteUser() != null) {
             SessionStorage.username.set(request.getRemoteUser());
-        } else if (request.getParameter("username") != null) {
+        } else if (request.getParameter("username") != null && isApiKeyAuthenticatedPath(request)) {
+            //Only for external tools (downloaders using links built by DownloadUrlBuilder, API clients) so that history entries can be attributed.
+            //This is unauthenticated metadata and must never be used for authorization decisions. Web/internal requests never take it from the parameter.
             SessionStorage.username.set(request.getParameter("username"));
         }
         if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername()) {
@@ -75,6 +73,20 @@ public class Interceptor implements HandlerInterceptor {
         SessionStorage.requestUrl.set(request.getRequestURI());
 
         return true;
+    }
+
+    static boolean isApiKeyAuthenticatedPath(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        if (requestUri == null) {
+            return false;
+        }
+        String path = requestUri;
+        String contextPath = request.getContextPath();
+        if (!Strings.isNullOrEmpty(contextPath) && path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length());
+        }
+        final String relativePath = path;
+        return API_KEY_PATHS.stream().anyMatch(prefix -> relativePath.equals(prefix) || relativePath.startsWith(prefix + "/"));
     }
 
     private Optional<String> getHostFromIp(String ip) {

@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -431,6 +432,8 @@ class SecurityConfigTest {
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.getAuth().getUsers().add(user);
         HydraUserDetailsManager userDetailsManager = new HydraUserDetailsManager(baseConfig);
+        //The ForwardedForRecognizingFilter sets the client IP before authentication, so the lockout check runs
+        ReflectionTestUtils.setField(userDetailsManager, "attemptService", new LoginAndAccessAttemptService());
         return buildContext(useCsrf, new MockServletContext(), authType, userDetailsManager);
     }
 

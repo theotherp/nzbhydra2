@@ -252,4 +252,14 @@ public class ExternalApiTest {
         assertThat(cache).hasSizeLessThanOrEqualTo(5);
     }
 
+
+    @Test
+    public void shouldEscapeAndUseXmlContentTypeWhenErrorHandlingItselfFails() {
+        when(configProvider.getBaseConfig()).thenThrow(new RuntimeException("config broken"));
+
+        ResponseEntity result = testee.handleUnexpectedError(new RuntimeException("<img src=x onerror=alert(1)>"));
+
+        assertThat(result.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
+        assertThat((String) result.getBody()).doesNotContain("<img").contains("&lt;img");
+    }
 }

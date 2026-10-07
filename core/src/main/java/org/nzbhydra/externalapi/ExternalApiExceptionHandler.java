@@ -2,6 +2,7 @@ package org.nzbhydra.externalapi;
 
 import jakarta.validation.ConstraintViolationException;
 import org.nzbhydra.externalapi.v1.ExternalApiError;
+import org.nzbhydra.historystats.InvalidHistoryRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,12 @@ public class ExternalApiExceptionHandler {
     public ResponseEntity<ExternalApiError> handleInvalidParameter(Exception e) {
         logger.debug("Rejecting external API request with invalid parameters: {}", e.getMessage());
         return error(HttpStatus.BAD_REQUEST, CODE_INVALID_PARAMETER, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidHistoryRequestException.class)
+    public ResponseEntity<ExternalApiError> handleInvalidHistoryRequest(InvalidHistoryRequestException e) {
+        logger.debug("Rejecting external API history request: {}", e.getReason());
+        return error(HttpStatus.BAD_REQUEST, CODE_INVALID_PARAMETER, e.getReason());
     }
 
     @ExceptionHandler(ExternalBackupNotFoundException.class)

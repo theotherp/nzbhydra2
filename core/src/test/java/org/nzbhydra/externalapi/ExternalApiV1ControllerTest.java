@@ -11,6 +11,7 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.historystats.History;
+import org.nzbhydra.historystats.InvalidHistoryRequestException;
 import org.nzbhydra.historystats.Stats;
 import org.nzbhydra.historystats.StatsResponse;
 import org.nzbhydra.historystats.stats.HistoryRequest;
@@ -228,6 +229,17 @@ class ExternalApiV1ControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
+    }
+
+    @Test
+    void shouldAnswerARejectedHistoryRequestWithBadRequest() throws Exception {
+        when(history.getHistory(any(), eq(History.SEARCH_TABLE), eq(SearchEntity.class)))
+                .thenThrow(new InvalidHistoryRequestException("Unknown filter column"));
+
+        mockMvc.perform(get("/externalapi/v1/history/searches"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"))
+                .andExpect(jsonPath("$.message").value("Unknown filter column"));
     }
 
     @Test

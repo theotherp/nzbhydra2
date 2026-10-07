@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.nzbhydra.api.IllegalAccessException;
 import org.nzbhydra.api.WrongApiKeyException;
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History;
@@ -49,6 +50,7 @@ public class ExternalApiStats {
                     + "and the same request the web interface sends; it is only answered when \"Allow stats access via "
                     + "API\" is enabled in the authentication settings. New integrations should use "
                     + "GET /externalapi/v1/stats instead, which is documented in the externalapi definition.")
+    @PublicEndpoint(reason = "External stats API; checks the API key and auth.allowApiStats itself")
     @RequestMapping(value = "/api/stats", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public StatsResponse apiStats(@RequestBody ApiStatsRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
@@ -59,6 +61,7 @@ public class ExternalApiStats {
     @Operation(summary = "The status and API hit limits of every configured indexer",
             description = "The body is an ApiHistoryRequest carrying the API key. Requires \"Allow stats access via "
                     + "API\" in the authentication settings.")
+    @PublicEndpoint(reason = "External stats API; checks the API key and auth.allowApiStats itself")
     @RequestMapping(value = "/api/stats/indexers", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<IndexerStatusesAndLimits.IndexerStatus> indexerStatuses(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
@@ -70,6 +73,7 @@ public class ExternalApiStats {
             description = "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort "
                     + "model the web interface uses. Requires \"Allow stats access via API\" in the authentication "
                     + "settings. New integrations should use GET /externalapi/v1/history/searches instead.")
+    @PublicEndpoint(reason = "External history API; checks the API key and auth.allowApiStats itself")
     @RequestMapping(value = "/api/history/searches", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<SearchEntity> apiHistorySearches(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
@@ -81,6 +85,7 @@ public class ExternalApiStats {
             description = "The body is an ApiHistoryRequest carrying the API key and the paging, filter and sort "
                     + "model the web interface uses. Requires \"Allow stats access via API\" in the authentication "
                     + "settings. New integrations should use GET /externalapi/v1/history/downloads instead.")
+    @PublicEndpoint(reason = "External history API; checks the API key and auth.allowApiStats itself")
     @RequestMapping(value = "/api/history/downloads", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<FileDownloadEntity> apiHistoryDownloads(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());

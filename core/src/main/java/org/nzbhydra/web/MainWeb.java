@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.auth.UserInfosProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -40,6 +41,7 @@ public class MainWeb {
     }
 
     //Must exist and not be protected so that redirects to "/login" have a target
+    @PublicEndpoint(reason = "Login page, the target of every redirect to log in")
     @RequestMapping(value = "/login", method = {RequestMethod.GET, RequestMethod.PUT})
     public String index2(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
@@ -73,6 +75,7 @@ public class MainWeb {
      * it renders used to be legacy's {@code index}; with that template gone it must be the React shell, or
      * logging out would resolve a template that no longer exists.
      */
+    @PublicEndpoint(reason = "Logout; only reached without auth, otherwise the security filter handles it")
     @PostMapping("/logout")
     public String logout(HttpSession session, Principal principal, HttpServletResponse response) {
         session.setAttribute("LOGGEDOUT", true);
@@ -80,6 +83,7 @@ public class MainWeb {
         return REACT_UI;
     }
 
+    @PublicEndpoint(reason = "Clears the session and basic auth credentials after logout")
     @PostMapping("/loggedout")
     public String loggedOut(HttpSession session, Principal principal, HttpServletResponse response) {
         if (Boolean.TRUE.equals(session.getAttribute("LOGGEDOUT"))) {

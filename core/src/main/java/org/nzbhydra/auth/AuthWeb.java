@@ -25,6 +25,7 @@ public class AuthWeb {
         return "index";
     }
 
+    @PublicEndpoint(reason = "Login flow: answers 401 with a basic auth challenge to anonymous users")
     @GetMapping("/internalapi/askpassword")
     public ResponseEntity<BootstrappedDataTO> askForPassword(HttpSession session, Principal principal) {
         if (SecurityContextHolder.getContext().getAuthentication() != null && !"AnonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
@@ -33,6 +34,7 @@ public class AuthWeb {
         return ResponseEntity.status(401).header("WWW-Authenticate", "Basic realm=\"Ask for password\"").body(null);
     }
 
+    @PublicEndpoint(reason = "Bootstrap and login flow: tells the UI who is logged in and what they may see")
     @GetMapping(value = "/internalapi/userinfos", produces = MediaType.APPLICATION_JSON_VALUE)
     public BootstrappedDataTO userinfos(HttpSession session, Principal principal, HttpServletRequest request) {
         return userInfos.getBootstrapData(principal, request.getContextPath());

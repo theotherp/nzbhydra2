@@ -2,7 +2,6 @@
 
 package org.nzbhydra;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,10 +16,9 @@ public class GenericStorageTest {
 
     @Test
     public void shouldPutAndGet() {
-        final String key = RandomStringUtils.randomAlphabetic(10);
-        assertThat(hydraClient.get(ENDPOINT + key).body()).isEqualTo("");
-        hydraClient.put(ENDPOINT + key, "aBody");
-        assertThat(hydraClient.get(ENDPOINT + key).body()).isEqualTo("aBody");
+        final String key = "themePreference";
+        hydraClient.put(ENDPOINT + key, "\"dark\"");
+        assertThat(hydraClient.get(ENDPOINT + key).body()).isEqualTo("\"dark\"");
     }
 
 

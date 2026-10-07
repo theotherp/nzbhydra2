@@ -14,6 +14,11 @@ public class SessionStorage {
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> originalIp =
             ThreadLocal.withInitial(() -> null);
+    /**
+     * The client IP as resolved by {@link ClientIpResolver}, never mapped to a host name. Key for blocking failed logins.
+     */
+    public static final ThreadLocal<String> clientIp =
+            ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> userAgent =
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> requestUrl =

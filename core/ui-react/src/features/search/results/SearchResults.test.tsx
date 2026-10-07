@@ -4336,7 +4336,7 @@ describe("SearchResults", () => {
                             title: "Proxied cover",
                             indexer: "Mock",
                             category: "Movies",
-                            cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                            cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw/q3Pz-_0Xs9c1kXg0Yb6tY2Vn5mJ4oPq1rS8uVwXyZ0A",
                         },
                         {
                             searchResultId: "3",
@@ -4415,7 +4415,7 @@ describe("SearchResults", () => {
             ),
         ).toHaveAttribute(
             "src",
-            "http://localhost:3000/hydra/cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+            "http://localhost:3000/hydra/cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw/q3Pz-_0Xs9c1kXg0Yb6tY2Vn5mJ4oPq1rS8uVwXyZ0A",
         );
         // A result without a cover renders neither tile nor image and
         // reserves nothing.

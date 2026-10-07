@@ -1,6 +1,5 @@
 package org.nzbhydra;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
@@ -55,10 +54,10 @@ public class StateResetSystemTest {
 
     @Test
     public void shouldClearGenericStorageAndWelcomeShown() {
-        final String globalKey = "reset-global-" + RandomStringUtils.randomAlphabetic(10);
-        final String userKey = "reset-user-" + RandomStringUtils.randomAlphabetic(10);
-        hydraClient.put(GENERIC_STORAGE_ENDPOINT + globalKey, "globalValue");
-        hydraClient.put(GENERIC_STORAGE_ENDPOINT + userKey, "userValue", "forUser=true");
+        final String globalKey = "belowJava17";
+        final String userKey = "themePreference";
+        hydraClient.put(GENERIC_STORAGE_ENDPOINT + globalKey, "false");
+        hydraClient.put(GENERIC_STORAGE_ENDPOINT + userKey, "\"dark\"", "forUser=true");
         hydraClient.put("/internalapi/welcomeshown", null);
 
         final JsonNode mutated = getConfig();
@@ -66,7 +65,7 @@ public class StateResetSystemTest {
         assertThat(mutated.get("genericStorage").size()).isPositive();
         assertThat(mutated.get("genericStorage").toString()).contains(globalKey).contains(userKey);
         assertThat(mutated.get("main").get("welcomeShown").asBoolean()).isTrue();
-        assertThat(hydraClient.get(GENERIC_STORAGE_ENDPOINT + globalKey).body()).isEqualTo("globalValue");
+        assertThat(hydraClient.get(GENERIC_STORAGE_ENDPOINT + globalKey).body()).isEqualTo("false");
 
         final JsonNode afterReset = resetAndGetConfig();
 

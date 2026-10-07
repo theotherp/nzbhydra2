@@ -62,6 +62,34 @@ describe("media API", () => {
         expect(suggestions[0].posterUrl).toBeUndefined();
     });
 
+    it("should resolve proxied posters against the application base and drop unsupported ones", async () => {
+        const proxied =
+            "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw/q3Pz-_0Xs9c1kXg0Yb6tY2Vn5mJ4oPq1rS8uVwXyZ0A";
+        const fetchImplementation = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify([
+                    {title: "Proxied", posterUrl: proxied},
+                    {title: "Absolute", posterUrl: "https://example.com/p.jpg"},
+                    {title: "Hostile", posterUrl: "javascript:alert(1)"},
+                ]),
+                {headers: {"Content-Type": "application/json"}},
+            ),
+        );
+        const suggestions = await getAutocomplete(
+            new ApiTransport(
+                "http://localhost:3000/hydra/",
+                fetchImplementation,
+            ),
+            "MOVIE",
+            "x",
+        );
+        expect(suggestions.map((suggestion) => suggestion.posterUrl)).toEqual([
+            `http://localhost:3000/hydra/${proxied}`,
+            "https://example.com/p.jpg",
+            undefined,
+        ]);
+    });
+
     it("should reject malformed autocomplete payloads", async () => {
         const transport = new ApiTransport(
             "/",

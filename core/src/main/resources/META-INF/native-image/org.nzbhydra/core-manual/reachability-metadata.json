@@ -10313,6 +10313,9 @@
       "type": "org.nzbhydra.auth.PersistentLoginsEntity_"
     },
     {
+      "type": "org.nzbhydra.auth.PublicEndpoint"
+    },
+    {
       "type": "org.nzbhydra.auth.SecurityConfig",
       "fields": [
         {

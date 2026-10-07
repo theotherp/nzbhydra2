@@ -3,6 +3,7 @@
 package org.nzbhydra.downloading.torrents;
 
 import org.nzbhydra.api.WrongApiKeyException;
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
@@ -76,6 +77,7 @@ public class TorrentHandlingWeb {
      *
      * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
      */
+    @PublicEndpoint(reason = "Torrent download links handed to external tools; checks the API key itself")
     @RequestMapping(value = "/gettorrent/api/{guid}", produces = "application/x-bittorrent")
     public ResponseEntity<Object> downloadTorrentWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException, InvalidSearchResultIdException {
         BaseConfig baseConfig = configProvider.getBaseConfig();

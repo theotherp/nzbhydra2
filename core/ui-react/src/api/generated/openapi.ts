@@ -1803,7 +1803,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/cache/{originalUrl}": {
+    "/cache/{encodedUrl}/{signature}": {
         parameters: {
             query?: never;
             header?: never;
@@ -8123,7 +8123,8 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                originalUrl: string;
+                encodedUrl: string;
+                signature: string;
             };
             cookie?: never;
         };
@@ -8135,7 +8136,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "image/jpeg": string;
+                    "*/*": string;
                 };
             };
         };

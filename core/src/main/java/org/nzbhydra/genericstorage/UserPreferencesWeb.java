@@ -5,6 +5,7 @@ import org.nzbhydra.Jackson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,11 +21,13 @@ public class UserPreferencesWeb {
     @Autowired
     private UserPreferences userPreferences;
 
+    @Secured({"ROLE_USER", "ROLE_STATS", "ROLE_ADMIN"})
     @GetMapping(value = "/internalapi/userpreferences", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> getUserPreferences(HttpServletRequest request) {
         return userPreferences.get(request.getRemoteUser());
     }
 
+    @Secured({"ROLE_USER", "ROLE_STATS", "ROLE_ADMIN"})
     @PutMapping(value = "/internalapi/userpreferences/{section}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void putUserPreferenceSection(@PathVariable String section, @RequestBody(required = false) Object value, HttpServletRequest request) {
         try {

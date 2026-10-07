@@ -291,7 +291,7 @@ describe("search API", () => {
                     // from a base-relative path.
                     searchResultId: "proxied",
                     title: "Proxied cover",
-                    cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                    cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw/q3Pz-_0Xs9c1kXg0Yb6tY2Vn5mJ4oPq1rS8uVwXyZ0A",
                 },
                 {
                     searchResultId: "absent",
@@ -316,6 +316,12 @@ describe("search API", () => {
                     cover: "data:image/svg+xml,<svg onload='alert(1)'/>",
                 },
                 {
+                    // The old unsigned shape: the backend no longer serves it.
+                    searchResultId: "unsigned",
+                    title: "Unsigned proxied cover",
+                    cover: "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw==",
+                },
+                {
                     // Neither shape: a root-relative path the transport would
                     // refuse anyway.
                     searchResultId: "root-relative",
@@ -332,11 +338,15 @@ describe("search API", () => {
             ]),
         ).toEqual([
             ["absolute", "https://artworks.thetvdb.com/banners/poster.jpg"],
-            ["proxied", "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw=="],
+            [
+                "proxied",
+                "cache/aHR0cHM6Ly9leGFtcGxlLmNvbS9wLmpwZw/q3Pz-_0Xs9c1kXg0Yb6tY2Vn5mJ4oPq1rS8uVwXyZ0A",
+            ],
             ["absent", undefined],
             ["missing", undefined],
             ["hostile", undefined],
             ["data-url", undefined],
+            ["unsigned", undefined],
             ["root-relative", undefined],
         ]);
     });

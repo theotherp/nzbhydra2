@@ -623,6 +623,9 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
      *     "screener"]`, which the *backend* applies to every later search, so
      *     `results.spec.ts`, `downloads.spec.ts` and `search.spec.ts` search
      *     the mock indexers and get nothing back at all.
+     *   - `coverSize`. `config-searching.spec.ts` sets it to 160, the width
+     *     of the cover fixture, and `results.spec.ts`'s cover lightbox test
+     *     asserts the fixture is wider than the configured size.
      *   - `customMappings` and `savedSearches`, which are lists the specs
      *     append to (`config-searching.spec.ts:207`,
      *     `search.spec.ts:114`) and then index into positionally.
@@ -711,6 +714,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         config.searching = {
             ...(config.searching as HydraConfig),
             alwaysShowQuickFilterButtons: false,
+            coverSize: (baseline.searching as HydraConfig).coverSize,
             customMappings: [],
             customQuickFilterButtons: DEFAULT_QUICK_FILTER_BUTTONS,
             forbiddenGroups: [],

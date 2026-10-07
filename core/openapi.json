@@ -3673,13 +3673,21 @@
                 }
             }
         },
-        "/cache/{originalUrl}": {
+        "/cache/{encodedUrl}/{signature}": {
             "get": {
                 "tags": ["proxy-images-web"],
                 "operationId": "proxyImage",
                 "parameters": [
                     {
-                        "name": "originalUrl",
+                        "name": "encodedUrl",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "signature",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -3691,7 +3699,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "image/jpeg": {
+                            "*/*": {
                                 "schema": {
                                     "type": "string",
                                     "format": "byte"

@@ -20,11 +20,11 @@ import java.util.Map;
  * Translates the query parameters of the three history routes into the internal
  * {@link HistoryRequest}/{@link FilterModel}/{@link SortModel} triple.
  *
- * <p>The column names are the ones {@code History.getHistory} already understands - they are the database column
- * names it interpolates into the generated SQL, which is why they appear here and nowhere in the contract classes.
+ * <p>The column names are the ones {@code History.getHistory} already understands - they are on the allow-list of
+ * database columns in {@code HistoryQueryBuilder}, which is why they appear here and nowhere in the contract classes.
  * The filter types are equally its own vocabulary: {@code freetext} is a case-insensitive {@code LIKE %...%},
  * {@code checkboxes} an {@code IN} list (used with a single value for the exact matches), and {@code time} a pair of
- * bounds that it parses with {@code PARSEDATETIME}, hence the fixed millisecond format below.
+ * bounds in the same format the web UI sends, hence the fixed millisecond format below.
  */
 @Component
 public class ExternalHistoryRequestMapper {
@@ -50,8 +50,8 @@ public class ExternalHistoryRequestMapper {
     static final String FILTER_TIME = "time";
 
     /**
-     * What {@code History.getHistory} feeds to H2's {@code PARSEDATETIME} after removing the {@code T} and the
-     * {@code Z}, so a bound has to carry exactly three fractional digits.
+     * The format the web UI sends its time bounds in ({@code Date.toISOString()}), which {@code History.getHistory}
+     * parses as a local date-time after removing the {@code Z}.
      */
     private static final DateTimeFormatter TIME_BOUND_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);

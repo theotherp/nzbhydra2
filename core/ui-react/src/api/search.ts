@@ -47,7 +47,7 @@ export type SearchResult = {
      * FM-177: the indexer's cover image for this result, in one of the two
      * shapes the backend emits (`InternalSearchResultProcessor.transformSearchResults`):
      * the indexer's own absolute `http(s)` URL, or -- with `main.proxyImages`
-     * on -- the base-relative `cache/<base64 of that URL>` path served by
+     * on -- the base-relative, signed `cache/<url>/<signature>` path served by
      * Hydra itself. Present only when the result carried a cover and the
      * value passed the boundary check below (`isSupportedCoverUrl`).
      */
@@ -347,13 +347,22 @@ const resultSchema = z.object({
 });
 
 /**
- * FM-177: the backend's proxied cover shape -- `cache/` plus the standard
- * (not URL-safe) Base64 of the indexer's own URL, which is exactly this
- * alphabet. A base-relative path with no scheme, no leading `/` and no `.`,
- * so it can neither name another origin nor climb out of the application
- * base; `ApiTransport.browserTransferUrl` re-checks the containment anyway.
+ * FM-177: the backend's proxied image shape (`ProxyImageUrlSigner`) --
+ * `cache/<url-safe Base64 of the original URL>/<url-safe Base64 of its HMAC>`,
+ * both unpadded, which is exactly this alphabet. A base-relative path with no
+ * scheme, no leading `/` and no `.`, so it can neither name another origin nor
+ * climb out of the application base; `ApiTransport.browserTransferUrl`
+ * re-checks the containment anyway.
  */
-const PROXIED_COVER_PATH = /^cache\/[A-Za-z0-9+/=]+$/;
+const PROXIED_IMAGE_PATH = /^cache\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/;
+
+/**
+ * Whether an image URL is the backend's base-relative proxied `cache/...`
+ * path, which has to be resolved against the application base before use.
+ */
+export function isProxiedImagePath(url: string): boolean {
+    return PROXIED_IMAGE_PATH.test(url);
+}
 
 /**
  * Whether a validated `SearchResult.cover` is the indexer's own absolute URL
@@ -373,7 +382,7 @@ export function isAbsoluteCoverUrl(cover: string): boolean {
 }
 
 function isSupportedCoverUrl(cover: string): boolean {
-    return isAbsoluteCoverUrl(cover) || PROXIED_COVER_PATH.test(cover);
+    return isAbsoluteCoverUrl(cover) || isProxiedImagePath(cover);
 }
 
 // FM-199: the per-indexer summary's fields. A `null`, missing or unusable

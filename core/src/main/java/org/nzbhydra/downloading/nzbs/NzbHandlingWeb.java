@@ -2,6 +2,7 @@
 
 package org.nzbhydra.downloading.nzbs;
 
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
@@ -121,6 +122,7 @@ public class NzbHandlingWeb {
      *
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
+    @PublicEndpoint(reason = "NZB download links handed to external tools; checks the API key itself")
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
     public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) {
         logger.debug("downloadNzbWithApikey guid: {}", guid);

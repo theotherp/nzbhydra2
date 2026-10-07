@@ -244,10 +244,9 @@ function filterDefinition(
 }
 
 /**
- * `History.java` interpolates a `numberRange` bound directly into the generated
- * SQL (`String.format("%s > %s", column, map.get("min"))`) rather than binding
- * it as a query parameter, so a bound that is not a plain number is dropped
- * here instead of being sent.
+ * The server (`HistoryQueryBuilder`) parses a `numberRange` bound as a number
+ * and rejects the whole request with a 400 if it is not one, so a bound that is
+ * not a plain number is dropped here instead of being sent.
  */
 function numericBound(value: string): string | undefined {
     const trimmed = value.trim();

@@ -15,10 +15,10 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DiskCache extends AbstractValueAdaptingCache {
 
@@ -27,7 +27,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
     private static final int MAX_ENTRIES = 500;
     private static final int MAX_ENTRIES_SIZE_MB = 50;
 
-    private static final Map<String, Instant> ACCESS_MAP = new HashMap<>();
+    private static final Map<String, Instant> ACCESS_MAP = new ConcurrentHashMap<>();
 
     private final File cacheDir;
     private final String name;

@@ -5,6 +5,7 @@ package org.nzbhydra.web;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.RequestDispatcher;
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.misc.StackTraceFilter;
 import org.springframework.boot.webmvc.autoconfigure.error.AbstractErrorController;
 import org.springframework.boot.webmvc.error.ErrorAttributes;
@@ -21,6 +22,7 @@ public class HydraErrorController extends AbstractErrorController implements Err
         super(errorAttributes);
     }
 
+    @PublicEndpoint(reason = "Error page; every refused or failed request may be forwarded here")
     @RequestMapping("/error")
     public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         //do something like logging

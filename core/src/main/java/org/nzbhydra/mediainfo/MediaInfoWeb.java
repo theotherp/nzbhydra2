@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.cache.ProxyImageUrlSigner;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +41,8 @@ public class MediaInfoWeb {
     private InfoProvider infoProvider;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private ProxyImageUrlSigner proxyImageUrlSigner;
 
     private final LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
         .maximumSize(100)
@@ -66,30 +68,27 @@ public class MediaInfoWeb {
                     }
                 });
 
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/autocomplete/{type}", produces = "application/json")
     public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
         try {
             List<MediaInfoTO> tos = autocompleteCache.get(new CacheKey(type, input));
-            if (configProvider.getBaseConfig().getMain().isProxyImages()) {
-                tos.stream().filter(to -> to.getPosterUrl() != null).forEach(to -> {
-                    if (!to.getPosterUrl().startsWith("cache/")) {
-                        to.setPosterUrl("cache/" + Base64.getEncoder().encodeToString(to.getPosterUrl().getBytes(StandardCharsets.UTF_8)));
-                    }
-                });
-            }
-            return tos;
+            //Don't modify the cached instances: they keep the original poster URLs
+            return tos.stream().map(this::withProxiedPosterUrl).collect(Collectors.toList());
         } catch (ExecutionException e) {
             logger.warn("Error while trying to find autocomplete data for input {}: {}", input, e.getMessage());
             return Collections.emptyList();
         }
     }
 
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/autocomplete/{type}/", produces = "application/json")
     public List<MediaInfoTO> autocompleteTrailingSlash(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
         return autocomplete(type, input);
     }
 
 
+    @Secured({"ROLE_USER", "ROLE_STATS"})
     @GetMapping(value = "/internalapi/redirectRid/{rid}", consumes = MediaType.ALL_VALUE)
     public String redirectTvRageId(@PathVariable("rid") String tvRageId, HttpServletResponse response) throws IOException {
 
@@ -117,6 +116,19 @@ public class MediaInfoWeb {
             return "TVMaze doesn't know this show and as TVRage doesn't exist anymore I can't provide you with infos on this show :-(";
         }
 
+    }
+
+    private MediaInfoTO withProxiedPosterUrl(MediaInfoTO original) {
+        MediaInfoTO to = new MediaInfoTO();
+        to.setImdbId(original.getImdbId());
+        to.setTmdbId(original.getTmdbId());
+        to.setTvmazeId(original.getTvmazeId());
+        to.setTvrageId(original.getTvrageId());
+        to.setTvdbId(original.getTvdbId());
+        to.setTitle(original.getTitle());
+        to.setYear(original.getYear());
+        to.setPosterUrl(proxyImageUrlSigner.toProxiedUrlIfEnabled(original.getPosterUrl()));
+        return to;
     }
 
     private static MediaInfoTO from(MediaInfo info) {

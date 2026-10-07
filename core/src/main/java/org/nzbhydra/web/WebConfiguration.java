@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.stats.HistoryRequestConverter;
 import org.nzbhydra.api.stats.StatsRequestConverter;
+import org.nzbhydra.auth.UnmarkedEndpointInterceptor;
 import org.nzbhydra.config.EmptyStringToNullDeserializer;
 import org.nzbhydra.config.EmptyStringToNullSerializer;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
@@ -57,6 +58,9 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private Interceptor interceptor;
+
+    @Autowired
+    private UnmarkedEndpointInterceptor unmarkedEndpointInterceptor;
 
     @Autowired
     private Jaxb2Marshaller marshaller;
@@ -148,6 +152,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptor);
+        //Deny-by-default: handlers that are neither @Secured nor @PublicEndpoint are refused (see the class)
+        registry.addInterceptor(unmarkedEndpointInterceptor);
     }
 
     @Override

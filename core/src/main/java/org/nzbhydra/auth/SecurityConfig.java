@@ -272,10 +272,6 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers("/login", "/oauth2/**", "/login/oauth2/**")
                             .permitAll()
-                            .requestMatchers("/internalapi/")
-                            .authenticated()
-                            .requestMatchers("/websocket/")
-                            .authenticated()
                             .requestMatchers("/actuator/**")
                             .hasRole("ADMIN")
                             //Only ExternalApiKeyFilter ever hands out that role here; everything else it 404s
@@ -283,8 +279,12 @@ public class SecurityConfig {
                             .hasRole("ADMIN")
                             .requestMatchers("/static/**")
                             .permitAll()
+                            //Everything else, /internalapi/** and /websocket/** included, is authorized per handler method:
+                            //@Secured (HydraGlobalMethodSecurityConfiguration), with handlers that are neither @Secured
+                            //nor @PublicEndpoint refused by UnmarkedEndpointInterceptor, and STOMP messages by
+                            //WebSocketAuthorizationInterceptor. Anonymous users must pass here because an area may be
+                            //configured as unrestricted, so .authenticated() would be wrong.
                             .anyRequest()
-//                .authenticated() //Does not include anonymous
                             .hasAnyRole("ADMIN", "ANONYMOUS", "USER"))
                     .logout(logout -> logout
                             .permitAll()

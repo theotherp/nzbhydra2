@@ -19,6 +19,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.web.ClientIpResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sockslib.client.Socks5;
@@ -48,7 +48,6 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -226,19 +225,6 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         return mainConfig.getProxyIgnoreDomains().stream().anyMatch(x -> isSameHost(x, host));
     }
 
-    private static final IpAddressMatcher[] IP_PRIVATE_RANGES = {
-            // IPv4 local and private ranges
-            new IpAddressMatcher("127.0.0.0/8"),     // Loopback (IPv4)
-            new IpAddressMatcher("10.0.0.0/8"),      // Private (Class A)
-            new IpAddressMatcher("172.16.0.0/12"),   // Private (Class B)
-            new IpAddressMatcher("192.168.0.0/16"),  // Private (Class C)
-
-            // IPv6 local and private ranges
-            new IpAddressMatcher("::1/128"),         // Loopback (IPv6)
-            new IpAddressMatcher("fc00::/7"),        // Unique Local IPv6
-            new IpAddressMatcher("fe80::/10")        // Link Local IPv6
-    };
-
     private boolean isHostInLocalNetwork(String host) {
         if (host.equalsIgnoreCase("localhost")) {
             return true;
@@ -247,7 +233,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         try {
             InetAddress byName = InetAddress.getByName(host);
             String ipAddress = byName.getHostAddress();
-            return Arrays.stream(IP_PRIVATE_RANGES).anyMatch(matcher -> matcher.matches(ipAddress));
+            return ClientIpResolver.PRIVATE_NETWORK_RANGES.stream().anyMatch(matcher -> matcher.matches(ipAddress));
         } catch (UnknownHostException e) {
             logger.error("Error analyzing host {}", host, e);
             return false;

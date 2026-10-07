@@ -2,6 +2,7 @@ package org.nzbhydra.auth;
 
 import com.google.common.base.Objects;
 import jakarta.servlet.http.HttpServletRequest;
+import org.nzbhydra.web.ClientIpResolver;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
@@ -17,16 +18,7 @@ public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
      */
     public HydraWebAuthenticationDetails(HttpServletRequest request) {
         super(request);
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip != null) {
-            ip = ip.split(",")[0];
-        } else {
-            ip = request.getRemoteAddr();
-        }
-        this.filteredIp = ip;
+        this.filteredIp = ClientIpResolver.resolve(request);
     }
 
     public String getFilteredIp() {

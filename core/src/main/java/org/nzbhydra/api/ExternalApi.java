@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.catalina.connector.ClientAbortException;
+import org.nzbhydra.auth.PublicEndpoint;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.CategoriesConfig;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.HtmlUtils;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -140,6 +142,7 @@ public class ExternalApi {
 
                     The answer is the Newznab XML (or JSON) the specification describes, including its error \
                     format; this document does not repeat it.""")
+    @PublicEndpoint(reason = "Newznab/Torznab API for external tools; checks the API key itself")
     @RequestMapping(value = {"/api", "/rss", "/torznab/api", "/torznab/api/{indexerName}", "/api/{indexerName}"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, @PathVariable(value = "indexerName", required = false) String indexerName, @PathVariable(value = "mock", required = false) String mock) throws Exception {
         int searchRequestId = random.nextInt(100000);
@@ -338,7 +341,9 @@ public class ExternalApi {
                 return ResponseEntity.status(200).body(error);
             }
         } catch (Exception e1) {
-            return ResponseEntity.status(200).body("<error code=\"900\" description=\"" + e.getMessage() + "\"");
+            return ResponseEntity.status(200)
+                    .contentType(MediaType.APPLICATION_XML)
+                    .body("<error code=\"900\" description=\"" + HtmlUtils.htmlEscape(String.valueOf(e.getMessage()), "UTF-8") + "\"/>");
         }
     }
 

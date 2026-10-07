@@ -6,6 +6,7 @@ import com.releaseparser.analyzer.QualityAnalyzer;
 import com.releaseparser.model.ReleaseInfo;
 import com.releaseparser.parser.ReleaseParser;
 import org.apache.commons.lang3.ObjectUtils;
+import org.nzbhydra.cache.ProxyImageUrlSigner;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.searching.SearchType;
@@ -27,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -36,7 +35,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -68,6 +66,8 @@ public class InternalSearchResultProcessor {
     private DownloadUrlBuilder downloadUrlBuilder;
     @Autowired
     private IndexerStatusesAndLimits indexerStatusesAndLimits;
+    @Autowired
+    private ProxyImageUrlSigner proxyImageUrlSigner;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -141,7 +141,7 @@ public class InternalSearchResultProcessor {
         return indexerSearchMetaDatas;
     }
 
-    private List<SearchResultWebTO> transformSearchResults(List<SearchResultItem> searchResultItems) {
+    List<SearchResultWebTO> transformSearchResults(List<SearchResultItem> searchResultItems) {
         List<SearchResultWebTO> transformedSearchResults = new ArrayList<>();
 
         final List<Long> guids = searchResultItems.stream().map(SearchResultItem::getGuid).collect(Collectors.toList());
@@ -157,14 +157,7 @@ public class InternalSearchResultProcessor {
                     .categorySearchType(item.getCategory().getSearchType() == null ? null : item.getCategory().getSearchType().name())
                     .comments(item.getCommentsCount())
                     .comments_link(ObjectUtils.firstNonNull(item.getCommentsLink(), item.getDetails()))
-                    .cover(
-                            item.getCover().map(originalUrl -> {
-                                        if (!baseConfig.getMain().isProxyImages()) {
-                                            return originalUrl;
-                                        }
-                                        return "cache/" + Base64.getEncoder().encodeToString(originalUrl.getBytes(StandardCharsets.UTF_8));
-                                    }
-                            ).orElse(null))
+                    .cover(item.getCover().map(proxyImageUrlSigner::toProxiedUrlIfEnabled).orElse(null))
                     .details_link(item.getDetails())
                     .downloadType(item.getDownloadType().name())
                     .files(item.getFiles())
@@ -178,12 +171,8 @@ public class InternalSearchResultProcessor {
                     .indexerscore(item.getIndexer().getConfig().getScore())
                     .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), item.getSearchId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
-                    .poster(item.getPoster().map(originalUrl -> {
-                        if (!baseConfig.getMain().isProxyImages()) {
-                            return originalUrl;
-                        }
-                        return "cache/" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-                    }).orElse(null))
+                    //The poster is the usenet uploader, not an image
+                    .poster(item.getPoster().orElse(null))
                     .searchResultId(item.getSearchResultId().toString())
                     .downloadId(new DownloadIdentifier(item.getSearchResultId(), item.getSearchId()).toString())
                     .size(item.getSize())

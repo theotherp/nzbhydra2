@@ -11509,6 +11509,10 @@
   "name":"org.nzbhydra.auth.PersistentLoginsEntity_"
 },
 {
+  "name":"org.nzbhydra.auth.PublicEndpoint",
+  "queryAllDeclaredMethods":true
+},
+{
   "name":"org.nzbhydra.auth.SecurityConfig",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,

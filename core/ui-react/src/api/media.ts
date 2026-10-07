@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+import {isAbsoluteCoverUrl, isProxiedImagePath} from "./search";
 import {ApiTransport} from "./transport";
 
 export type MediaSuggestion = {
@@ -70,7 +71,32 @@ export async function getAutocomplete(
     if (!parsed.success) {
         throw new MalformedAutocompleteResponseError();
     }
-    return parsed.data;
+    return parsed.data.map((suggestion) => ({
+        ...suggestion,
+        posterUrl: resolvePosterUrl(transport, suggestion.posterUrl),
+    }));
+}
+
+/**
+ * The poster is either the provider's absolute `http(s)` URL or -- with
+ * `main.proxyImages` on -- the backend's base-relative proxied `cache/...`
+ * path, which is resolved against the application base here so the `<img>`
+ * does not depend on the current route's depth. Anything else is dropped.
+ */
+function resolvePosterUrl(
+    transport: ApiTransport,
+    posterUrl: string | undefined,
+): string | undefined {
+    if (posterUrl === undefined) {
+        return undefined;
+    }
+    if (isAbsoluteCoverUrl(posterUrl)) {
+        return posterUrl;
+    }
+    if (isProxiedImagePath(posterUrl)) {
+        return transport.browserTransferUrl(posterUrl);
+    }
+    return undefined;
 }
 
 export async function getEmbyAvailability(
