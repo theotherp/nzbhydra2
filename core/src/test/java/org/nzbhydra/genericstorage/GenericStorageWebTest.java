@@ -41,17 +41,29 @@ class GenericStorageWebTest {
     @InjectMocks
     private GenericStorageWeb testee;
 
+    private static final String NATIVE_BUILD_PROPERTY = "HYDRA_NATIVE_BUILD";
+
     private final BaseConfig baseConfig = new BaseConfig();
+    private String previousNativeBuildProperty;
 
     @BeforeEach
     void setUp() {
         lenient().when(configProvider.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getAuth().setAuthType(AuthType.BASIC);
+        //The native build workflow exports HYDRA_NATIVE_BUILD=true for its unit test step as well, and with it the
+        //auth NONE bypass is off (as in HydraGlobalMethodSecurityConfiguration). These tests cover the JVM behaviour.
+        previousNativeBuildProperty = System.getProperty(NATIVE_BUILD_PROPERTY);
+        System.setProperty(NATIVE_BUILD_PROPERTY, "false");
     }
 
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+        if (previousNativeBuildProperty == null) {
+            System.clearProperty(NATIVE_BUILD_PROPERTY);
+        } else {
+            System.setProperty(NATIVE_BUILD_PROPERTY, previousNativeBuildProperty);
+        }
     }
 
     private static void authenticateWith(String... roles) {
