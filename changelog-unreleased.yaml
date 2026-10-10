@@ -26,3 +26,5 @@
     text: "With access restricted, users who aren&apos;t logged in could still receive the downloader status, search progress and notifications. They now only go to users allowed to search (downloader status, search progress) or to admins (notifications). The login page also no longer shows the downloader status or any other footer."
 -   type: "fix"
     text: "Fixed multiple security issues related to authentication and credentials. I try to fix these where I find them but I still recommend that if you expose NZBHydra to the internet you should leave the first barrier of entry to the reverse proxy."
+-   type: "fix"
+    text: "Searches could take very long with a large download history because checking which results you already downloaded scanned the whole history. That check is fast again."

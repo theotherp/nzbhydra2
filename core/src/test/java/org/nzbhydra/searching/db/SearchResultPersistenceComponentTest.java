@@ -7,6 +7,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -197,6 +198,24 @@ public class SearchResultPersistenceComponentTest {
     public void shouldHaveTheSequence() {
         Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME = 'SEARCHRESULT_SEQ'", Integer.class);
         assertThat(count).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldFindDownloadsByResultHashWithoutReturningOtherDownloads() {
+        persistor.persistSearchResults(indexer, items("downloaded", "not-downloaded"), new IndexerSearchResult());
+        SearchResultEntity downloadedResult = searchResultRepository.findAll().stream()
+            .filter(x -> x.getTitle().equals("title downloaded"))
+            .findFirst().orElseThrow();
+        SearchResultEntity otherResult = searchResultRepository.findAll().stream()
+            .filter(x -> x.getTitle().equals("title not-downloaded"))
+            .findFirst().orElseThrow();
+        FileDownloadEntity download = new FileDownloadEntity();
+        download.setSearchResult(downloadedResult);
+        downloadRepository.saveAndFlush(download);
+
+        assertThat(downloadRepository.findBySearchResult_HashIn(List.of(downloadedResult.getHash(), otherResult.getHash())))
+            .extracting(FileDownloadEntity::getId).containsExactly(download.getId());
+        assertThat(downloadRepository.findBySearchResult_HashIn(List.of(otherResult.getHash()))).isEmpty();
     }
 
     private long occurrenceSequenceBaseValue() {
