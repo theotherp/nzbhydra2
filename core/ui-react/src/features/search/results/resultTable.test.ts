@@ -725,7 +725,8 @@ describe("result table transformations", () => {
     // every member already in a group for each further member. This pins the
     // output the rewrite has to keep identical: a group of more than two
     // members, in the order the results arrived, with the groups themselves in
-    // first-seen order and each duplicate bucket in arrival order too.
+    // first-seen order and each duplicate bucket in arrival order too (all
+    // members share one indexer score here).
     it("should keep every member of a multi-member group in arrival order, groups in first-seen order", () => {
         const grouped = groupResults(
             [
@@ -755,6 +756,81 @@ describe("result table transformations", () => {
             ["title:alpha", [["a1", "a2", "a3", "a5"], ["a4"]]],
             ["title:beta", [["b1", "b2"]]],
         ]);
+    });
+
+    // A collapsed duplicate bucket shows the result from the indexer with the
+    // highest priority (`indexerscore`), as the AngularJS UI did, whatever the
+    // sort. Equal scores keep the sorted order, and buckets and title groups
+    // are placed by the position of the result they lead with.
+    it("should lead each duplicate bucket with the highest indexer score", () => {
+        const grouped = groupResults(
+            [
+                {
+                    ...results[0],
+                    searchResultId: "b1",
+                    title: "Beta",
+                    hash: 3,
+                    indexerscore: 0,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "a1",
+                    title: "Alpha",
+                    hash: 1,
+                    indexerscore: 1,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "a2",
+                    title: "Alpha",
+                    hash: 2,
+                    indexerscore: 0,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "a3",
+                    title: "Alpha",
+                    hash: 1,
+                    indexerscore: 5,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "a4",
+                    title: "Alpha",
+                    hash: 1,
+                    indexerscore: 5,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "b2",
+                    title: "Beta",
+                    hash: 3,
+                    indexerscore: 2,
+                },
+            ],
+            {
+                groupTorrentAndUsenet: true,
+                groupEpisodes: false,
+                groupTitles: true,
+                episodeRequested: false,
+            },
+        );
+        expect(
+            grouped.map((group) => [
+                group.key,
+                group.duplicateGroups.map((duplicates) =>
+                    duplicates.map((result) => result.searchResultId),
+                ),
+            ]),
+        ).toEqual([
+            ["title:alpha", [["a2"], ["a3", "a4", "a1"]]],
+            ["title:beta", [["b2", "b1"]]],
+        ]);
+        expect(
+            visibleGroupedResults(grouped, new Set(), new Set()).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["a2", "b2"]);
     });
 
     // Owner (2026-09-18): "Group same titles" gates what was unconditional
