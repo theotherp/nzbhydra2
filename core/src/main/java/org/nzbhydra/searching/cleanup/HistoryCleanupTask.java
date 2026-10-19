@@ -16,22 +16,15 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
 @DependsOnDatabaseInitialization
 public class HistoryCleanupTask {
-
-    private enum ASC_DESC {
-        ASC,
-        DESC
-    }
 
     @Autowired
     private ConfigProvider configProvider;
@@ -42,54 +35,46 @@ public class HistoryCleanupTask {
 
     private static final long HOUR = 1000 * 60 * 60;
 
+    //All entries are selected by their time, not by their ID. The IDs are not ordered by time: entries from before V2 have
+    //positive IDs while the sequences of V2 started with values which were narrowed to negative int IDs.
     @HydraTask(configId = "deleteOldHistory", name = "Delete old history entries", interval = HOUR)
     public void deleteOldResults() {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getMain().getKeepHistoryForWeeks();
+        Integer keepHistoryForWeeks = configProvider.getBaseConfig().getMain().getKeepHistoryForWeeks();
         Integer keepStatsForWeeks = configProvider.getBaseConfig().getMain().getKeepStatsForWeeks();
         boolean keepHistory = configProvider.getBaseConfig().getMain().isKeepHistory();
-        boolean doDelete = keepSearchResultsForWeeks != null || keepStatsForWeeks != null || !keepHistory;
-        if (!doDelete) {
+
+        //Both cutoffs are determined once so that all statements select the same entries
+        Instant now = Instant.now();
+        Instant deleteHistoryOlderThan;
+        if (!keepHistory) {
+            deleteHistoryOlderThan = now;
+        } else if (keepHistoryForWeeks != null) {
+            deleteHistoryOlderThan = now.minus(keepHistoryForWeeks * 7L, ChronoUnit.DAYS);
+        } else {
+            deleteHistoryOlderThan = null;
+        }
+        Instant deleteStatsOlderThan = keepStatsForWeeks != null ? now.minus(keepStatsForWeeks * 7L, ChronoUnit.DAYS) : deleteHistoryOlderThan;
+
+        if (deleteHistoryOlderThan == null && deleteStatsOlderThan == null) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No value set to determine how long history entries should be kept");
             return;
         }
 
         try (Connection connection = dataSource.getConnection()) {
-            Optional<Integer> optionalHighestId;
-            Instant deleteOlderThanHistory;
-            if (keepHistory) {
-                int keepDays = keepSearchResultsForWeeks * 7;
-                logger.info("Starting deletion of old history entries older than {} days", keepDays);
-                deleteOlderThanHistory = Instant.now().minus(keepDays, ChronoUnit.DAYS);
-                optionalHighestId = getIdBefore(deleteOlderThanHistory, "SEARCH", ASC_DESC.DESC, connection);
-            } else {
-                optionalHighestId = Optional.of(Integer.MAX_VALUE);
-                deleteOlderThanHistory = Instant.now();
+            if (deleteHistoryOlderThan != null) {
+                logger.info("Starting deletion of old history entries older than {}", deleteHistoryOlderThan);
+                deleteOldIdentifiers(deleteHistoryOlderThan, connection);
+                deleteOldIndexerSearches(deleteHistoryOlderThan, connection);
             }
 
-            if (optionalHighestId.isPresent()) {
-                int highestId = optionalHighestId.get();
-                logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Will delete all entries for search IDs lower than {}", highestId);
-                deleteOldIdentifiers(highestId, connection);
-
-                deleteOldIndexerSearches(highestId, connection);
+            if (deleteStatsOlderThan != null) {
+                deleteOldIndexerApiAccesses(deleteStatsOlderThan, connection);
             }
 
-            Instant deleteOlderThanStats;
-            if (keepStatsForWeeks != null) {
-                deleteOlderThanStats = Instant.now().minus(keepStatsForWeeks * 7, ChronoUnit.DAYS);
-            } else {
-                deleteOlderThanStats = deleteOlderThanHistory;
-            }
-            deleteOldIndexerApiAccesses(deleteOlderThanStats, connection);
-
-            if (optionalHighestId.isPresent()) {
-                deleteOldSearches(optionalHighestId.get(), connection);
-            }
-
-            optionalHighestId = getIdBefore(deleteOlderThanHistory, "INDEXERNZBDOWNLOAD", ASC_DESC.DESC, connection);
-            if (optionalHighestId.isPresent()) {
-                deleteOldDownloads(optionalHighestId.get(), connection);
+            if (deleteHistoryOlderThan != null) {
+                deleteOldSearches(deleteHistoryOlderThan, connection);
+                deleteOldDownloads(deleteHistoryOlderThan, connection);
             }
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);
@@ -98,52 +83,32 @@ public class HistoryCleanupTask {
         logger.debug(LoggingMarkers.PERFORMANCE, "Cleanup of history took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
-    public void deleteOldIndexerSearches(Integer searchId, Connection connection) {
+    public void deleteOldIndexerSearches(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer searches");
-        deleteOldEntries(searchId, "delete from INDEXERSEARCH where SEARCH_ENTITY_ID < ? and rownum() < 10000", "Deleted {} indexer searches from database", connection);
+        deleteOldEntries("delete from INDEXERSEARCH where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} indexer searches from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldIdentifiers(Integer searchId, Connection connection) {
+    public void deleteOldIdentifiers(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old identifiers");
-        deleteOldEntries(searchId, "delete from SEARCH_IDENTIFIERS where SEARCH_ENTITY_ID < ? and rownum() < 10000", "Deleted {} search identifiers from database", connection);
-        //Find the lowest searchIdentifierKey. All value pairs referencing a lower ID than that can be deleted
-        int identifierId;
-        try (PreparedStatement statement = connection.prepareStatement("select IDENTIFIERS_ID from SEARCH_IDENTIFIERS order by IDENTIFIERS_ID asc limit 1;")) {
-            ResultSet resultSet = statement.executeQuery();
-            if (!resultSet.next()) {
-                logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No older identifiers to delete");
-                return;
-            }
-            identifierId = resultSet.getInt(1);
-
-        } catch (SQLException e) {
-            logger.error("Error while executing SQL", e);
-            return;
-        }
-
+        deleteOldEntries("delete from SEARCH_IDENTIFIERS where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} search identifiers from database", connection, deleteOlderThan);
+        //Key value pairs are only referenced by SEARCH_IDENTIFIERS
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old identifier key value pairs");
-        deleteOldEntries(identifierId, "delete from IDENTIFIER_KEY_VALUE_PAIR where ID < ? and rownum() < 10000", "Deleted {} identifier key value pairs from database", connection);
+        deleteOldEntries("delete from IDENTIFIER_KEY_VALUE_PAIR p where not exists (select 1 from SEARCH_IDENTIFIERS s where s.IDENTIFIERS_ID = p.ID) and rownum() < 10000", "Deleted {} identifier key value pairs from database", connection);
     }
 
     public void deleteOldIndexerApiAccesses(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer API accesses");
-        Optional<Integer> optionalId = getIdBefore(deleteOlderThan, "INDEXERAPIACCESS", ASC_DESC.DESC, connection);
-        if (optionalId.isEmpty()) {
-            logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No older indexer API accesses to delete");
-            return;
-        }
-
-        deleteOldEntries(optionalId.get(), "delete from INDEXERAPIACCESS where ID < ? and rownum() < 10000", "Deleted {} indexer API accesses from database", connection);
+        deleteOldEntries("delete from INDEXERAPIACCESS where TIME < ? and rownum() < 10000", "Deleted {} indexer API accesses from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldSearches(Integer searchId, Connection connection) {
+    public void deleteOldSearches(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old searches");
-        deleteOldEntries(searchId, "delete from SEARCH where ID < ? and rownum() < 10000", "Deleted {} searches from database", connection);
+        deleteOldEntries("delete from SEARCH where TIME < ? and rownum() < 10000", "Deleted {} searches from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldDownloads(Integer downloadId, Connection connection) {
+    public void deleteOldDownloads(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old downloads");
-        deleteOldEntries(downloadId, "delete from indexernzbdownload where id < ? ", "Deleted {} downloads from database", connection);
+        deleteOldEntries("delete from INDEXERNZBDOWNLOAD where TIME < ? and rownum() < 10000", "Deleted {} downloads from database", connection, deleteOlderThan);
         try (PreparedStatement statement = connection.prepareStatement("delete from INDEXERNZBDOWNLOAD where SEARCH_RESULT_ID is null")) {
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -151,29 +116,15 @@ public class HistoryCleanupTask {
         }
     }
 
-    @SuppressWarnings("SqlResolve")
-    private Optional<Integer> getIdBefore(Instant deleteOlderThan, final String tableName, ASC_DESC ascDesc, Connection connection) {
-        try (PreparedStatement statement = connection.prepareStatement("select t.id from " + tableName + " t where t.time < ? order by id " + ascDesc + " limit 1")) {
-            statement.setTimestamp(1, new Timestamp(deleteOlderThan.toEpochMilli()));
-            ResultSet resultSet = statement.executeQuery();
-            if (!resultSet.next()) {
-                logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Did not find any entry in table {} older than {}", tableName, deleteOlderThan);
-                return Optional.empty();
-            }
-            return Optional.of(resultSet.getInt(1));
-        } catch (SQLException e) {
-            logger.error("Error while executing SQL", e);
-            return Optional.empty();
-        }
-    }
-
-    public void deleteOldEntries(int lowerThan, String sql, String loggerMessage, Connection connection) {
+    public void deleteOldEntries(String sql, String loggerMessage, Connection connection, Instant... deleteOlderThan) {
         try {
             int deletedEntities = 0;
             int lastDeletedEntities;
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 do {
-                    statement.setInt(1, lowerThan);
+                    for (int i = 0; i < deleteOlderThan.length; i++) {
+                        statement.setTimestamp(i + 1, Timestamp.from(deleteOlderThan[i]));
+                    }
                     lastDeletedEntities = statement.executeUpdate();
                     deletedEntities += lastDeletedEntities;
                     //Commit and sleep a bit to release locks and give the rest of the program time to read or write from or to db

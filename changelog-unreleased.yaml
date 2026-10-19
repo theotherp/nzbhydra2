@@ -32,3 +32,5 @@
     text: "When duplicates are collapsed, the result from the indexer with the highest priority is shown again, regardless of how the results are sorted."
 -   type: "fix"
     text: "Search and download history and stats are no longer deleted every hour when the database still contains an entry from before v5. See #873 and #915."
+-   type: "fix"
+    text: "The history cleanup now picks old entries by their time. Recent history that was created before this release is no longer deleted on the first cleanup either. Setting only &quot;Keep stats for&quot; no longer breaks the cleanup. See #873"
