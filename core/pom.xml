@@ -478,6 +478,14 @@
             <groupId>ch.qos.logback.access</groupId>
             <artifactId>logback-access-common</artifactId>
             <version>${logback-access.version}</version>
+            <exclusions>
+                <!-- Servlet 6.0 API. tomcat-embed-core provides the 6.1 API it implements; with both on the classpath
+                     HttpServletResponse could come from the 6.0 jar and sendRedirect(String) threw AbstractMethodError -->
+                <exclusion>
+                    <groupId>jakarta.servlet</groupId>
+                    <artifactId>jakarta.servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--  todo spring Only supports Spring 2.x      -->
         <!--        <dependency>-->
