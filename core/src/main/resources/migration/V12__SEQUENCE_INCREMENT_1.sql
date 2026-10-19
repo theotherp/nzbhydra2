@@ -1,0 +1,19 @@
+-- The entities generate their IDs with allocationSize = 1, so Hibernate fetches one sequence value per row and uses it
+-- as is. V2 created the sequences with an increment of 50, so every row used up 50 values and the INTEGER ID columns
+-- would overflow after about 43 million rows instead of about 2 billion.
+--
+-- The current value of each sequence is kept, only the step changes. SEARCHRESULT_SEQ keeps its increment of 50
+-- because SearchResultEntity uses the pooled optimizer with allocationSize = 50.
+ALTER SEQUENCE IDENTIFIER_KEY_VALUE_PAIR_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXER_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERAPIACCESS_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERAPIACCESS_SHORT_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERLIMIT_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERNZBDOWNLOAD_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERSEARCH_SEQ INCREMENT BY 1;
+ALTER SEQUENCE INDEXERUNIQUENESSSCORE_SEQ INCREMENT BY 1;
+ALTER SEQUENCE MOVIEINFO_SEQ INCREMENT BY 1;
+ALTER SEQUENCE NOTIFICATION_SEQ INCREMENT BY 1;
+ALTER SEQUENCE SEARCH_SEQ INCREMENT BY 1;
+ALTER SEQUENCE SHOWNNEWS_SEQ INCREMENT BY 1;
+ALTER SEQUENCE TVINFO_SEQ INCREMENT BY 1;
