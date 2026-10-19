@@ -119,7 +119,7 @@ class HistoryCleanupTaskTest {
         try (Statement statement = connection.createStatement()) {
             statement.execute("INSERT INTO INDEXER (ID, NAME) VALUES (1, 'indexer')");
             for (int id : new int[]{OLD_ID, NEW_ID}) {
-                String time = id == OLD_ID ? "TIMESTAMP '2023-02-02 16:32:11'" : "CURRENT_TIMESTAMP";
+                String time = id == OLD_ID ? "TIMESTAMP '2023-02-02 16:32:11'" : "DATEADD('MINUTE', -1, CURRENT_TIMESTAMP)";
                 statement.execute("INSERT INTO SEARCH (ID, TIME) VALUES (" + id + ", " + time + ")");
                 statement.execute("INSERT INTO INDEXERSEARCH (ID, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (" + id + ", 1, " + id + ")");
                 statement.execute("INSERT INTO IDENTIFIER_KEY_VALUE_PAIR (ID, IDENTIFIER_KEY, IDENTIFIER_VALUE) VALUES (" + id + ", 'IMDB', 'tt" + id + "')");
