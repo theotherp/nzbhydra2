@@ -209,6 +209,7 @@ describe("search API", () => {
                     searchResultId: "grouped",
                     title: "Example.Show.S01E02",
                     hash: 123,
+                    indexerscore: 3,
                     downloadType: "TORRENT",
                     showtitle: "Example Show",
                     season: "1",
@@ -218,6 +219,7 @@ describe("search API", () => {
                     searchResultId: "without-grouping-metadata",
                     title: "Ordinary result",
                     hash: null,
+                    indexerscore: null,
                     downloadType: null,
                     showtitle: null,
                     season: null,
@@ -228,6 +230,7 @@ describe("search API", () => {
         expect(response.searchResults).toEqual([
             expect.objectContaining({
                 hash: 123,
+                indexerscore: 3,
                 downloadType: "TORRENT",
                 showtitle: "Example Show",
                 season: "1",
@@ -235,6 +238,7 @@ describe("search API", () => {
             }),
             expect.objectContaining({
                 hash: undefined,
+                indexerscore: undefined,
                 downloadType: undefined,
                 showtitle: undefined,
                 season: undefined,

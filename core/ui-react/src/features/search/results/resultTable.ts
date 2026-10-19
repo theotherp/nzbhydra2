@@ -66,19 +66,48 @@ export function groupResults(
             group.push(result);
         }
     }
-    return [...titleGroups.entries()].map(([key, groupedResults]) => {
-        const duplicates = new Map<string, SearchResult[]>();
-        for (const result of groupedResults) {
-            const duplicateKey = duplicateIdentity(result);
-            const duplicateGroup = duplicates.get(duplicateKey);
-            if (duplicateGroup === undefined) {
-                duplicates.set(duplicateKey, [result]);
-            } else {
-                duplicateGroup.push(result);
+    // Each duplicate bucket leads with its highest-priority indexer's result
+    // (`indexerscore`), as the AngularJS UI did: that result is the one a
+    // collapsed bucket shows. Equal scores keep the sorted order. A bucket is
+    // then placed by its leading result's position in `results`, and a title
+    // group by its first bucket's, so the row on screen is where the sort puts
+    // it.
+    const position = new Map<SearchResult, number>();
+    results.forEach((result, index) => position.set(result, index));
+    const leadPosition = (duplicates: SearchResult[]) =>
+        position.get(duplicates[0]) ?? 0;
+    return [...titleGroups.entries()]
+        .map(([key, groupedResults]) => {
+            const duplicates = new Map<string, SearchResult[]>();
+            for (const result of groupedResults) {
+                const duplicateKey = duplicateIdentity(result);
+                const duplicateGroup = duplicates.get(duplicateKey);
+                if (duplicateGroup === undefined) {
+                    duplicates.set(duplicateKey, [result]);
+                } else {
+                    duplicateGroup.push(result);
+                }
             }
-        }
-        return {key, duplicateGroups: [...duplicates.values()]};
-    });
+            const duplicateGroups = [...duplicates.values()]
+                .map(byIndexerScore)
+                .sort((a, b) => leadPosition(a) - leadPosition(b));
+            return {key, duplicateGroups};
+        })
+        .sort(
+            (a, b) =>
+                leadPosition(a.duplicateGroups[0]) -
+                leadPosition(b.duplicateGroups[0]),
+        );
+}
+
+// Highest `indexerscore` (the indexer's configured priority) first; stable, so
+// equal scores keep their order.
+function byIndexerScore(duplicates: SearchResult[]): SearchResult[] {
+    return duplicates.length < 2
+        ? duplicates
+        : [...duplicates].sort(
+              (a, b) => (b.indexerscore ?? 0) - (a.indexerscore ?? 0),
+          );
 }
 
 export function visibleGroupedResults(

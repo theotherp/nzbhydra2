@@ -53,6 +53,11 @@ export type SearchResult = {
      */
     cover?: string;
     hash?: number;
+    /**
+     * The result's indexer's configured priority (`IndexerConfig.score`).
+     * Decides which result a collapsed duplicate group shows.
+     */
+    indexerscore?: number;
     downloadType?: string;
     showtitle?: string;
     season?: string;
@@ -284,6 +289,12 @@ const resultSchema = z.object({
         .number()
         .finite()
         .nullish()
+        .transform((value) => value ?? undefined),
+    indexerscore: z
+        .number()
+        .finite()
+        .nullish()
+        .catch(undefined)
         .transform((value) => value ?? undefined),
     // FM-177 (ADR-0003): the cover is an indexer-supplied string that ends up
     // in an `<img src>`, so it is checked here rather than at the render site,
