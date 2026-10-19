@@ -30,3 +30,5 @@
     text: "Searches could take very long with a large download history because checking which results you already downloaded scanned the whole history. That check is fast again."
 -   type: "fix"
     text: "When duplicates are collapsed, the result from the indexer with the highest priority is shown again, regardless of how the results are sorted."
+-   type: "fix"
+    text: "Search and download history and stats are no longer deleted every hour when the database still contains an entry from before v5. See #873 and #915."
