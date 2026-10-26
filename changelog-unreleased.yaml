@@ -36,3 +36,5 @@
     text: "The history cleanup now picks old entries by their time. Recent history that was created before this release is no longer deleted on the first cleanup either. Setting only &quot;Keep stats for&quot; no longer breaks the cleanup. See #873"
 -   type: "fix"
     text: "Torrent results sent to Torbox as files are accepted again. They were uploaded with the extension .nzb. Thanks to aethernet404"
+-   type: "fix"
+    text: "Indexers only enabled for API searches are no longer shown and selected in the indexer selection of the search page. They were skipped by those searches anyway."

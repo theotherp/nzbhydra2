@@ -2,6 +2,7 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -25,7 +26,9 @@ public class SafeIndexerConfig {
         this.name = indexerConfig.getName();
         this.preselect = indexerConfig.isPreselect();
         this.categories = indexerConfig.getEnabledCategories();
-        this.showOnSearch = indexerConfig.isEligibleForInternalSearch();
+        // An indexer only enabled for API searches is skipped by web UI searches anyway, so don't offer it there
+        this.showOnSearch = indexerConfig.isEligibleForInternalSearch()
+                            && SearchSource.INTERNAL.meets(indexerConfig.getEnabledForSearchSource());
         this.groupNames = indexerConfig.getGroupNames();
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
         this.searchModuleType = indexerConfig.getSearchModuleType().name();
