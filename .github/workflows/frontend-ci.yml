@@ -45,6 +45,9 @@ jobs:
       - name: Publish test report
         if: always()
         uses: ctrf-io/github-test-reporter@v1
+          # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+          # results must not fail the build.
+        continue-on-error: true
         with:
           report-path: 'core/ui-react/ctrf/*.json'
           title: 'React Unit Tests'

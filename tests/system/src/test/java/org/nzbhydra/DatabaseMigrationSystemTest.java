@@ -1,5 +1,6 @@
 package org.nzbhydra;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
@@ -38,6 +39,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +50,10 @@ import static org.awaitility.Awaitility.await;
  * {@code instanceData/h2v2Migration}: a data folder the previous code base (H2 2.1, database header {@code format:2})
  * wrote, seeded by {@link org.nzbhydra.migration.MigrationFixtureTool}. Starting it makes the core migrate the
  * database to H2 2.4 ({@code format:3}) and run the Flyway migration that moves the search result primary key from
- * the hash to a sequence. This class proves that what the fixture recorded in {@code expectations.json} survived.
+ * the hash to a sequence. This class proves that what the fixture recorded in {@code expectations.json} survived and
+ * that every Flyway migration newer than the fixture passes its checks in the hand-maintained
+ * {@code flywayExpectations.json}; {@code MigrationFixtureFlywayExpectationsTest} in core fails when a new migration
+ * script has none.
  *
  * <p>Tagged {@code migration} and excluded from the normal suite by default (tests/system/pom.xml): it needs its own
  * instance, and it deliberately does not carry {@link SystemTest}, whose baseline would overwrite the indexers the
@@ -67,6 +72,8 @@ import static org.awaitility.Awaitility.await;
 public class DatabaseMigrationSystemTest {
 
     private static final String FIXTURE = "h2v2Migration";
+    private static final String MIGRATION_SCRIPTS = "core/src/main/resources/migration";
+    private static final Pattern MIGRATION_SCRIPT = Pattern.compile("V(\\d+)__.*\\.sql", Pattern.CASE_INSENSITIVE);
     private static final Pattern MIGRATION_LOG_LINE = Pattern.compile("(?i)(migrat(ing|ed)\\b.*(database|h2)|(database|h2).*migrat(ing|ed)\\b)");
 
     @Autowired
@@ -81,6 +88,7 @@ public class DatabaseMigrationSystemTest {
 
     private Path dataFolder;
     private JsonNode expectations;
+    private JsonNode flywayExpectations;
     private String apiKey;
 
     @BeforeAll
@@ -98,6 +106,9 @@ public class DatabaseMigrationSystemTest {
         assertThat(expectationsFile).isRegularFile();
         expectations = Jackson.JSON_MAPPER.readTree(Files.readString(expectationsFile));
         apiKey = expectations.path("apiKey").asString();
+        Path flywayExpectationsFile = instanceData.toPath().resolve(FIXTURE).resolve("flywayExpectations.json");
+        assertThat(flywayExpectationsFile).isRegularFile();
+        flywayExpectations = Jackson.JSON_MAPPER.readTree(Files.readString(flywayExpectationsFile));
 
         hydraClient.awaitHealthy();
     }
@@ -137,6 +148,40 @@ public class DatabaseMigrationSystemTest {
 
     @Test
     @Order(3)
+    public void shouldHaveAppliedEveryFlywayMigration() throws IOException {
+        List<List<String>> history = executeSqlQuery("SELECT \"version\", \"success\" FROM \"flyway_schema_history\" WHERE \"version\" IS NOT NULL ORDER BY \"installed_rank\"");
+        assertThat(history).withFailMessage("A Flyway migration did not succeed: " + history)
+            .allMatch(row -> "TRUE".equals(row.get(1)));
+        List<Integer> appliedVersions = history.stream().map(row -> Integer.parseInt(row.get(0))).toList();
+        assertThat(appliedVersions).containsExactlyElementsOf(migrationScriptVersions());
+    }
+
+    /**
+     * Runs the checks in {@code flywayExpectations.json} for every migration newer than the fixture. They must run
+     * before {@link #shouldPersistNewSearchesAfterTheMigration()} adds rows and uses up sequence values.
+     */
+    @Test
+    @Order(4)
+    public void shouldPassTheChecksOfEveryFlywayMigrationNewerThanTheFixture() {
+        SoftAssertions softly = new SoftAssertions();
+        flywayExpectations.path("migrations").properties().forEach(migration -> {
+            for (JsonNode check : migration.getValue()) {
+                List<List<String>> expectedRows = new ArrayList<>();
+                for (JsonNode row : check.path("expectedRows")) {
+                    List<String> values = new ArrayList<>();
+                    row.forEach(value -> values.add(value.isNull() ? null : value.asString()));
+                    expectedRows.add(values);
+                }
+                softly.assertThat(executeSqlQuery(check.path("sql").asString()))
+                    .as("V%s: %s", migration.getKey(), check.path("description").asString())
+                    .isEqualTo(expectedRows);
+            }
+        });
+        softly.assertAll();
+    }
+
+    @Test
+    @Order(5)
     public void shouldKeepTheSearchHistory() {
         HydraPage<SearchEntityTO> page = searchHistory();
         JsonNode searches = expectations.path("searches");
@@ -156,7 +201,7 @@ public class DatabaseMigrationSystemTest {
     }
 
     @Test
-    @Order(4)
+    @Order(6)
     public void shouldKeepTheDownloadHistory() {
         HydraPage<FileDownloadEntityTO> page = hydraClient.post("/internalapi/history/downloads", newestFirst())
             .as(new TypeReference<>() {
@@ -179,7 +224,7 @@ public class DatabaseMigrationSystemTest {
     }
 
     @Test
-    @Order(5)
+    @Order(7)
     public void shouldKeepIndexersAndConfig() {
         BaseConfig config = configManager.getCurrentConfig();
         List<String> indexerNames = config.getIndexers().stream().map(IndexerConfig::getName).toList();
@@ -192,7 +237,7 @@ public class DatabaseMigrationSystemTest {
     }
 
     @Test
-    @Order(6)
+    @Order(8)
     public void shouldKeepIndexerApiAccessStats() {
         StatsRequest request = new StatsRequest();
         request.setAfter(Instant.parse(expectations.path("createdAt").asString()).minus(Duration.ofDays(1)));
@@ -217,7 +262,7 @@ public class DatabaseMigrationSystemTest {
      * the hash to the new id and kept every result a download references.
      */
     @Test
-    @Order(7)
+    @Order(9)
     public void shouldStillServeDownloadsByTheirOldIds() {
         for (JsonNode download : expectations.path("downloads")) {
             String guid = download.path("guid").asString();
@@ -243,7 +288,7 @@ public class DatabaseMigrationSystemTest {
     }
 
     @Test
-    @Order(8)
+    @Order(10)
     public void shouldPersistNewSearchesAfterTheMigration() {
         int before = searchHistory().getTotalElements();
         String query = "migrationAfterUpgrade";
@@ -269,6 +314,64 @@ public class DatabaseMigrationSystemTest {
     @Test
     @Disabled("The 1.4 fixture needs a second instance the CI job does not start yet; see the method comment")
     public void shouldMigrateFromV1() {
+    }
+
+    /**
+     * The rows of the query's result without the header, as {@code CSVWRITE} writes them: every value quoted, SQL
+     * NULL as an empty unquoted value.
+     */
+    private List<List<String>> executeSqlQuery(String sql) {
+        GenericResponse response = hydraClient.post("/internalapi/debuginfos/executesqlquery", sql).as(GenericResponse.class);
+        assertThat(response.isSuccessful()).withFailMessage("Query failed: %s\n%s", sql, response.getMessage()).isTrue();
+        List<List<String>> rows = new ArrayList<>();
+        for (String line : response.getMessage().split("\r?\n")) {
+            if (line.isEmpty()) {
+                continue;
+            }
+            List<String> values = new ArrayList<>();
+            int position = 0;
+            while (position <= line.length()) {
+                if (position < line.length() && line.charAt(position) == '"') {
+                    StringBuilder value = new StringBuilder();
+                    position++;
+                    while (position < line.length()) {
+                        if (line.charAt(position) == '"') {
+                            if (position + 1 < line.length() && line.charAt(position + 1) == '"') {
+                                value.append('"');
+                                position += 2;
+                                continue;
+                            }
+                            position++;
+                            break;
+                        }
+                        value.append(line.charAt(position++));
+                    }
+                    values.add(value.toString());
+                } else {
+                    values.add(null);
+                }
+                // Skip the separator after the value
+                position++;
+            }
+            rows.add(values);
+        }
+        return rows.isEmpty() ? rows : rows.subList(1, rows.size());
+    }
+
+    /**
+     * The versions of the migration scripts of the code base under test, in ascending order.
+     */
+    private static List<Integer> migrationScriptVersions() throws IOException {
+        File migrationFolder = DirectoryTreeUpTraversal.walkUpDirectoryTreeUntilFound(
+            file -> file.isDirectory() && new File(file, MIGRATION_SCRIPTS).isDirectory(), new File(System.getProperty("user.dir")));
+        assertThat(migrationFolder).withFailMessage("No " + MIGRATION_SCRIPTS + " found above " + System.getProperty("user.dir")).isNotNull();
+        try (var files = Files.list(migrationFolder.toPath().resolve(MIGRATION_SCRIPTS))) {
+            return files.map(path -> MIGRATION_SCRIPT.matcher(path.getFileName().toString()))
+                .filter(Matcher::matches)
+                .map(matcher -> Integer.parseInt(matcher.group(1)))
+                .sorted()
+                .toList();
+        }
     }
 
     private HydraPage<SearchEntityTO> searchHistory() {

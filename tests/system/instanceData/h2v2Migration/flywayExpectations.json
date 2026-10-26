@@ -1,0 +1,178 @@
+{
+    "_comment": [
+        "Hand-maintained, unlike expectations.json which MigrationFixtureTool writes. The fixture database is at Flyway",
+        "version fixtureFlywayVersion; every newer migration in core/src/main/resources/migration runs when",
+        "DatabaseMigrationSystemTest starts the core with it and needs at least one check here, which",
+        "MigrationFixtureFlywayExpectationsTest (core) enforces. Each check runs its SQL through",
+        "/internalapi/debuginfos/executesqlquery against the migrated H2 2.4 database before the test makes any new",
+        "searches, and compares the rows (without the header, null for SQL NULL) with expectedRows."
+    ],
+    "fixtureFlywayVersion": 3,
+    "migrations": {
+        "4": [
+            {
+                "description": "INDEXERUNIQUENESSSCORE got the observation columns",
+                "sql": "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'INDEXERUNIQUENESSSCORE' AND COLUMN_NAME IN ('OBSERVATION_ID', 'RECORDED_AT', 'DATA_VERSION') ORDER BY COLUMN_NAME",
+                "expectedRows": [
+                    ["DATA_VERSION", "INTEGER", null],
+                    ["OBSERVATION_ID", "CHARACTER VARYING", "255"],
+                    ["RECORDED_AT", "TIMESTAMP", null]
+                ]
+            },
+            {
+                "description": "The legacy uniqueness score rows were kept",
+                "sql": "SELECT COUNT(*) FROM INDEXERUNIQUENESSSCORE WHERE OBSERVATION_ID IS NULL",
+                "expectedRows": [["6"]]
+            },
+            {
+                "description": "INDEXERSEARCHRESULTOCCURRENCE and its indexes exist",
+                "sql": "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE TABLE_SCHEMA = 'PUBLIC' AND INDEX_NAME IN ('ISRO_INDEXERSEARCH_RESULT_INDEX', 'ISRO_SEARCH_RESULT_INDEX', 'IUS_OBSERVATION_INDEXER_INDEX') ORDER BY INDEX_NAME",
+                "expectedRows": [
+                    ["ISRO_INDEXERSEARCH_RESULT_INDEX"],
+                    ["ISRO_SEARCH_RESULT_INDEX"],
+                    ["IUS_OBSERVATION_INDEXER_INDEX"]
+                ]
+            },
+            {
+                "description": "The occurrence sequence exists",
+                "sql": "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA = 'PUBLIC' AND SEQUENCE_NAME = 'INDEXERSEARCHRESULTOCCURRENCE_SEQ'",
+                "expectedRows": [["INDEXERSEARCHRESULTOCCURRENCE_SEQ"]]
+            }
+        ],
+        "5": [
+            {
+                "description": "INDEXERSEARCH got ERROR_MESSAGE",
+                "sql": "SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'INDEXERSEARCH' AND COLUMN_NAME = 'ERROR_MESSAGE'",
+                "expectedRows": [["CHARACTER VARYING", "2048"]]
+            }
+        ],
+        "6": [
+            {
+                "description": "INDEXERSEARCH got RESPONSE_TIME",
+                "sql": "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'INDEXERSEARCH' AND COLUMN_NAME = 'RESPONSE_TIME'",
+                "expectedRows": [["BIGINT"]]
+            }
+        ],
+        "7": [
+            {
+                "description": "SEARCH got the age and size criteria, empty for the existing searches",
+                "sql": "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'SEARCH' AND COLUMN_NAME IN ('MIN_AGE', 'MAX_AGE', 'MIN_SIZE', 'MAX_SIZE') ORDER BY COLUMN_NAME",
+                "expectedRows": [
+                    ["MAX_AGE", "INTEGER"],
+                    ["MAX_SIZE", "INTEGER"],
+                    ["MIN_AGE", "INTEGER"],
+                    ["MIN_SIZE", "INTEGER"]
+                ]
+            },
+            {
+                "description": "The existing searches have no criteria",
+                "sql": "SELECT COUNT(*) FROM SEARCH WHERE MIN_AGE IS NOT NULL OR MAX_AGE IS NOT NULL OR MIN_SIZE IS NOT NULL OR MAX_SIZE IS NOT NULL",
+                "expectedRows": [["0"]]
+            },
+            {
+                "description": "SEARCH_SELECTED_INDEXERS exists",
+                "sql": "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'SEARCH_SELECTED_INDEXERS' ORDER BY COLUMN_NAME",
+                "expectedRows": [
+                    ["SEARCH_ENTITY_ID", "INTEGER"],
+                    ["SELECTED_INDEXERS", "CHARACTER VARYING"]
+                ]
+            }
+        ],
+        "8": [
+            {
+                "description": "Only the 3 of the fixture's 50 search results a download references were kept",
+                "sql": "SELECT COUNT(*) FROM SEARCHRESULT",
+                "expectedRows": [["3"]]
+            },
+            {
+                "description": "The downloads reference the new sequential IDs and the old IDs became the hashes",
+                "sql": "SELECT r.HASH, r.TITLE, i.NAME FROM INDEXERNZBDOWNLOAD d JOIN SEARCHRESULT r ON r.ID = d.SEARCH_RESULT_ID JOIN INDEXER i ON i.ID = r.INDEXER_ID ORDER BY r.HASH",
+                "expectedRows": [
+                    ["-9207762472092143412", "indexer10", "Mock2"],
+                    ["-5463928757633704595", "indexer1-20", "Mock1"],
+                    ["1603975515107388353", "indexer1", "Mock1"]
+                ]
+            },
+            {
+                "description": "SEARCHRESULT has its indexes",
+                "sql": "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'SEARCHRESULT' AND INDEX_NAME IN ('SEARCHRESULT_HASH_INDEX', 'SEARCHRESULT_FIRST_FOUND_INDEX', 'UKFTFA80663URIMM78EPNXHYOM_INDEX_C') ORDER BY INDEX_NAME",
+                "expectedRows": [
+                    ["SEARCHRESULT_FIRST_FOUND_INDEX"],
+                    ["SEARCHRESULT_HASH_INDEX"],
+                    ["UKFTFA80663URIMM78EPNXHYOM_INDEX_C"]
+                ]
+            },
+            {
+                "description": "The foreign keys from and to SEARCHRESULT were recreated",
+                "sql": "SELECT CONSTRAINT_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = 'PUBLIC' AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME IN ('FKR5G21PDW3HHS1SEFVJY30TGMI', 'FKR5G21PDW3HHS1SEFKHD3HBDGL', 'ISRO_SEARCH_RESULT_FK') ORDER BY CONSTRAINT_NAME",
+                "expectedRows": [
+                    ["FKR5G21PDW3HHS1SEFKHD3HBDGL", "INDEXERNZBDOWNLOAD"],
+                    ["FKR5G21PDW3HHS1SEFVJY30TGMI", "SEARCHRESULT"],
+                    ["ISRO_SEARCH_RESULT_FK", "INDEXERSEARCHRESULTOCCURRENCE"]
+                ]
+            }
+        ],
+        "9": [
+            {
+                "description": "No download with a user name is recorded as API (the fixture has no such download, so this only checks the end state)",
+                "sql": "SELECT ACCESS_SOURCE, USERNAME, COUNT(*) FROM INDEXERNZBDOWNLOAD GROUP BY ACCESS_SOURCE, USERNAME ORDER BY ACCESS_SOURCE",
+                "expectedRows": [
+                    ["API", null, "2"],
+                    ["INTERNAL", null, "1"]
+                ]
+            }
+        ],
+        "10": [
+            {
+                "description": "INDEXERSEARCHRESULTOCCURRENCE.ID is BIGINT",
+                "sql": "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_NAME = 'INDEXERSEARCHRESULTOCCURRENCE' AND COLUMN_NAME = 'ID'",
+                "expectedRows": [["BIGINT"]]
+            }
+        ],
+        "11": [
+            {
+                "description": "The sequences V2 started at 30000000000 restarted at 50, as the fixture's tables only have negative IDs",
+                "sql": "SELECT SEQUENCE_NAME, BASE_VALUE FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA = 'PUBLIC' AND SEQUENCE_NAME IN ('IDENTIFIER_KEY_VALUE_PAIR_SEQ', 'INDEXER_SEQ', 'INDEXERAPIACCESS_SEQ', 'INDEXERAPIACCESS_SHORT_SEQ', 'INDEXERLIMIT_SEQ', 'INDEXERNZBDOWNLOAD_SEQ', 'INDEXERSEARCH_SEQ', 'INDEXERUNIQUENESSSCORE_SEQ', 'MOVIEINFO_SEQ', 'NOTIFICATION_SEQ', 'SEARCH_SEQ', 'SHOWNNEWS_SEQ', 'TVINFO_SEQ') ORDER BY SEQUENCE_NAME",
+                "expectedRows": [
+                    ["IDENTIFIER_KEY_VALUE_PAIR_SEQ", "50"],
+                    ["INDEXERAPIACCESS_SEQ", "50"],
+                    ["INDEXERAPIACCESS_SHORT_SEQ", "50"],
+                    ["INDEXERLIMIT_SEQ", "50"],
+                    ["INDEXERNZBDOWNLOAD_SEQ", "50"],
+                    ["INDEXERSEARCH_SEQ", "50"],
+                    ["INDEXERUNIQUENESSSCORE_SEQ", "50"],
+                    ["INDEXER_SEQ", "50"],
+                    ["MOVIEINFO_SEQ", "50"],
+                    ["NOTIFICATION_SEQ", "50"],
+                    ["SEARCH_SEQ", "50"],
+                    ["SHOWNNEWS_SEQ", "50"],
+                    ["TVINFO_SEQ", "50"]
+                ]
+            }
+        ],
+        "12": [
+            {
+                "description": "Every sequence steps by 1 except SEARCHRESULT_SEQ, which keeps 50 for the pooled optimizer",
+                "sql": "SELECT SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA = 'PUBLIC' ORDER BY SEQUENCE_NAME",
+                "expectedRows": [
+                    ["HIBERNATE_SEQUENCE", "1"],
+                    ["IDENTIFIER_KEY_VALUE_PAIR_SEQ", "1"],
+                    ["INDEXERAPIACCESS_SEQ", "1"],
+                    ["INDEXERAPIACCESS_SHORT_SEQ", "1"],
+                    ["INDEXERLIMIT_SEQ", "1"],
+                    ["INDEXERNZBDOWNLOAD_SEQ", "1"],
+                    ["INDEXERSEARCHRESULTOCCURRENCE_SEQ", "1"],
+                    ["INDEXERSEARCH_SEQ", "1"],
+                    ["INDEXERUNIQUENESSSCORE_SEQ", "1"],
+                    ["INDEXER_SEQ", "1"],
+                    ["MOVIEINFO_SEQ", "1"],
+                    ["NOTIFICATION_SEQ", "1"],
+                    ["SEARCHRESULT_SEQ", "50"],
+                    ["SEARCH_SEQ", "1"],
+                    ["SHOWNNEWS_SEQ", "1"],
+                    ["TVINFO_SEQ", "1"]
+                ]
+            }
+        ]
+    }
+}

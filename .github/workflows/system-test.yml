@@ -188,6 +188,9 @@ jobs:
       - name: "Publish CTRF test report"
         if: always()
         uses: ctrf-io/github-test-reporter@v1
+          # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+          # results must not fail the build.
+        continue-on-error: true
         with:
           report-path: 'ctrf/*.json'
           title: 'System Tests - Linux Native Core'
@@ -495,6 +498,9 @@ jobs:
       - name: "Publish CTRF test report"
         if: always()
         uses: ctrf-io/github-test-reporter@v1
+          # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+          # results must not fail the build.
+        continue-on-error: true
         with:
           report-path: 'ctrf/*.json'
           title: 'System Tests - Linux JVM Core (coverage)'
@@ -665,6 +671,9 @@ jobs:
           -   name: "Publish CTRF test report"
               if: always()
               uses: ctrf-io/github-test-reporter@v1
+              # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+              # results must not fail the build.
+              continue-on-error: true
               with:
                   report-path: 'ctrf/*.json'
                   title: 'Database Migration Test - Linux JVM Core'
@@ -830,6 +839,9 @@ jobs:
           -   name: "Publish CTRF test report"
               if: always()
               uses: ctrf-io/github-test-reporter@v1
+              # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+              # results must not fail the build.
+              continue-on-error: true
               with:
                   report-path: 'ctrf/*.json'
                   title: 'Database Migration Test - Linux Native Core'
@@ -960,6 +972,9 @@ jobs:
       - name: "Publish CTRF test report"
         if: always()
         uses: ctrf-io/github-test-reporter@v1
+          # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
+          # results must not fail the build.
+        continue-on-error: true
         with:
           report-path: 'ctrf/*.json'
           title: 'System Tests - Windows Native Core'
