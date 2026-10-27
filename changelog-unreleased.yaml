@@ -11,6 +11,8 @@
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "fix"
+    text: "Search results without a size, grabs/seeders or age are sorted to the bottom again, whichever direction you sort that column in. See #1113"
+-   type: "fix"
     text: "Download links of torrent results returned as JSON now work for magnet links. They used to point to the NZB download, which canDownload links of torrent results returned as JSON work for magnet links again. They pointed to the NZB download, which can&apos;t handle magnets.apos;t handle magnets."
 -   type: "fix"
     text: "Torrent results returned as JSON retain their infohash, seeder counts and other attributes, so API clients can identify and filter them correctly."

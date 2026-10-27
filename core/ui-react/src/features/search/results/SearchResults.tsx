@@ -488,21 +488,26 @@ export function SearchResults({
             {accessorKey: "title", header: "Title"},
             {accessorKey: "indexer", header: "Indexer"},
             {accessorKey: "category", header: "Category"},
+            // Results an indexer reports no size, grabs/seeders or date for
+            // sort after the others in both directions (#1113).
             {
                 accessorKey: "size",
                 header: "Size",
                 cell: (context) => context.getValue<number | undefined>() ?? "",
+                sortUndefined: "last",
             },
             {
                 id: "grabs",
                 accessorFn: (result) => result.seeders ?? result.grabs,
                 header: "Details",
                 cell: (context) => context.getValue<number | undefined>() ?? "",
+                sortUndefined: "last",
             },
             {
                 accessorKey: "epoch",
                 header: "Age",
                 cell: (context) => context.row.original.age ?? "",
+                sortUndefined: "last",
             },
         ],
         [],

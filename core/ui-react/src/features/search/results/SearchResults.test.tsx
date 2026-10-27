@@ -8438,6 +8438,66 @@ describe("SearchResults quality badge", () => {
     );
 });
 
+// #1113: a result without a size, grabs/seeders or date sorts after the
+// others whichever way the column is sorted.
+describe("SearchResults blank value sorting", () => {
+    afterEach(() => {
+        cleanup();
+        window.localStorage.clear();
+    });
+
+    const result = (
+        id: string,
+        values: {size?: number; grabs?: number; epoch?: number},
+    ) => ({
+        searchResultId: id,
+        title: `Release ${id}`,
+        indexer: "One",
+        category: "Movies",
+        age: values.epoch === undefined ? undefined : "1d",
+        ...values,
+    });
+    const blankData = {
+        ...response,
+        numberOfAvailableResults: 3,
+        searchResults: [
+            result("blank", {}),
+            result("small", {size: 100, grabs: 1, epoch: 100}),
+            result("large", {size: 300, grabs: 9, epoch: 300}),
+        ],
+    };
+
+    function rowIds(): string[] {
+        return screen
+            .getAllByTestId("search-result-row")
+            .map((row) => row.getAttribute("data-result-id") ?? "");
+    }
+
+    it.each(["size", "grabs", "epoch"])(
+        "should sort results with a blank %s last in both directions",
+        (column) => {
+            seedChoices(
+                JSON.stringify({
+                    showDetailsColumn: true,
+                    sorting: [{id: column, desc: true}],
+                }),
+            );
+            const first = renderResults(<SearchResults data={blankData} />);
+            expect(rowIds()).toEqual(["large", "small", "blank"]);
+            first.unmount();
+
+            seedChoices(
+                JSON.stringify({
+                    showDetailsColumn: true,
+                    sorting: [{id: column, desc: false}],
+                }),
+            );
+            renderResults(<SearchResults data={blankData} />);
+            expect(rowIds()).toEqual(["small", "large", "blank"]);
+        },
+    );
+});
+
 // FM-201 (owner request, 2026-09-27): the badge in its own sortable column
 // left of Title, with a "Quality rating" range in the refine surface, while
 // the quality indicator is on and some loaded result is rated.
