@@ -86,6 +86,25 @@ public class NewznabJsonTransformerTest {
         assertThat(guidAttribute(secondItem)).isEqualTo("42");
     }
 
+    @Test
+    void shouldKeepTorrentAttributesInJson() {
+        SearchResultItem result = resultFromSearch(7);
+        result.getAttributes().put("infohash", "0123456789abcdef0123456789abcdef01234567");
+        result.getAttributes().put("seeders", "5");
+        result.getAttributes().put("peers", "9");
+        result.getAttributes().put("downloadvolumefactor", "0");
+
+        NewznabJsonItem item = testee.buildRssItem(result, false);
+
+        assertThat(item.getAttr().stream().map(x -> x.getAttributes().getName()))
+                .contains("infohash", "seeders", "peers", "downloadvolumefactor");
+        assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("infohash")).map(x -> x.getAttributes().getValue()))
+                .containsExactly("0123456789abcdef0123456789abcdef01234567");
+        assertThat(item.getAttr().stream().filter(x -> x.getAttributes().getName().equals("seeders")).map(x -> x.getAttributes().getValue()))
+                .containsExactly("5");
+        assertThat(item.getEnclosure().getAttributes().getType()).isEqualTo("application/x-bittorrent");
+    }
+
     private SearchResultItem resultFromSearch(int searchId) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setSearchResultId(42L);
