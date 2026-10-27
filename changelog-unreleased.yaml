@@ -11,6 +11,8 @@
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "fix"
+    text: "Download links of torrent results returned as JSON now work for magnet links. They used to point to the NZB download, which canDownload links of torrent results returned as JSON work for magnet links again. They pointed to the NZB download, which can&apos;t handle magnets.apos;t handle magnets."
+-   type: "fix"
     text: "Torrent results returned as JSON retain their infohash, seeder counts and other attributes, so API clients can identify and filter them correctly."
 -   type: "fix"
     text: "A custom icon configured for a downloader is shown again on the search results&apos; send buttons. Icons are now taken from Font Awesome 5; the downloader config links to its free icon collection."

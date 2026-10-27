@@ -105,6 +105,17 @@ public class NewznabJsonTransformerTest {
         assertThat(item.getEnclosure().getAttributes().getType()).isEqualTo("application/x-bittorrent");
     }
 
+    @Test
+    void shouldLinkTorrentResultsToTorrentDownload() {
+        //The NZB download endpoint can't handle magnet links, so torrent results must point to the torrent endpoint
+        when(downloadUrlBuilder.getDownloadLinkForResults(42L, false, DownloadType.TORRENT)).thenReturn("http://127.0.0.1:5076/gettorrent/api/42?apikey=apikey");
+
+        NewznabJsonItem item = testee.buildRssItem(resultFromSearch(7), false);
+
+        assertThat(item.getLink()).isEqualTo("http://127.0.0.1:5076/gettorrent/api/42?apikey=apikey");
+        assertThat(item.getEnclosure().getAttributes().getUrl()).isEqualTo("http://127.0.0.1:5076/gettorrent/api/42?apikey=apikey");
+    }
+
     private SearchResultItem resultFromSearch(int searchId) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setSearchResultId(42L);

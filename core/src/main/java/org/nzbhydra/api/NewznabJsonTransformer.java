@@ -68,7 +68,7 @@ public class NewznabJsonTransformer {
         //API clients (*arr, NZBGet RSS) recognize known results by GUID and link, so neither may contain the ID of the
         //search, which changes with every request. The search context is resolved when downloading instead.
         String downloadIdentifier = String.valueOf(searchResultItem.getSearchResultId());
-        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setGuid(downloadIdentifier);
