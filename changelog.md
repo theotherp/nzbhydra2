@@ -1,3 +1,43 @@
+### v9.2.0 (2026-10-28)
+
+**Note** Updated the list of certificate authorities NZBHydra2 trusts for HTTPS connections. It no longer trusts the roots affected by the eMudhra key compromise (see https://openjdk.org/emudhra) and some expired ones, and it now knows newer roots, e.g. by Amazon, Google and Let&apos;s Encrypt. If an indexer stops working because of an SSL error you can put its certificate in the &quot;certificates&quot; folder in your data folder.
+
+**Fix** Search results without a size, grabs/seeders or age are sorted to the bottom again, whichever direction you sort that column in. See <a href="https://github.com/theotherp/nzbhydra2/issues/1113">#1113</a>
+
+**Fix** Download links of torrent results returned as JSON now work for magnet links. They used to point to the NZB download, which canDownload links of torrent results returned as JSON work for magnet links again. They pointed to the NZB download, which can&apos;t handle magnets.apos;t handle magnets.
+
+**Fix** Torrent results returned as JSON retain their infohash, seeder counts and other attributes, so API clients can identify and filter them correctly.
+
+**Fix** A custom icon configured for a downloader is shown again on the search results&apos; send buttons. Icons are now taken from Font Awesome 5; the downloader config links to its free icon collection.
+
+**Fix** Searches no longer fail with &quot;Numeric value out of range&quot; once the database has stored more than about two billion search result entries over its lifetime. Probably not something that would ever happen to you but who knows, I've learned not to underestimate how many indexers some of you have configured or how many searches you do. See <a href="https://github.com/theotherp/nzbhydra2/issues/1111">#1111</a>
+
+**Fix** An indexer&apos;s results could be lost, and the indexer temporarily disabled, when it returned the same result twice in one response or when the config was saved while a search was running. See <a href="https://github.com/theotherp/nzbhydra2/issues/1112">#1112</a>
+
+**Fix** Changing the search results page after scrolling down now takes you back to the top of the new page instead of leaving you at its bottom. See <a href="https://github.com/theotherp/nzbhydra2/issues/1110">#1110</a>
+
+**Feature** With many result pages the page links below the results show more pages on wide screens and a &quot;Jump to page&quot; selection takes you directly to any page. See <a href="https://github.com/theotherp/nzbhydra2/issues/1110">#1110</a>
+
+**Fix** The last search result on a page is no longer partly hidden behind the downloader status bar at the bottom. See <a href="https://github.com/theotherp/nzbhydra2/issues/1114">#1114</a>
+
+**Fix** With access restricted, users who aren&apos;t logged in could still receive the downloader status, search progress and notifications. They now only go to users allowed to search (downloader status, search progress) or to admins (notifications). The login page also no longer shows the downloader status or any other footer.
+
+**Fix** Fixed multiple security issues related to authentication and credentials. I try to fix these where I find them but I still recommend that if you expose NZBHydra to the internet you should leave the first barrier of entry to the reverse proxy.
+
+**Fix** Searches could take very long with a large download history because checking which results you already downloaded scanned the whole history. That check is fast again.
+
+**Fix** When duplicates are collapsed, the result from the indexer with the highest priority is shown again, regardless of how the results are sorted.
+
+**Fix** Search and download history and stats are no longer deleted every hour when the database still contains an entry from before v5. See <a href="https://github.com/theotherp/nzbhydra2/issues/873">#873</a> and <a href="https://github.com/theotherp/nzbhydra2/issues/915">#915</a>.
+
+**Fix** The history cleanup now picks old entries by their time. Recent history that was created before this release is no longer deleted on the first cleanup either. Setting only &quot;Keep stats for&quot; no longer breaks the cleanup. See <a href="https://github.com/theotherp/nzbhydra2/issues/873">#873</a>
+
+**Fix** Torrent results sent to Torbox as files are accepted again. They were uploaded with the extension .nzb. Thanks to aethernet404
+
+**Fix** Indexers only enabled for API searches are no longer shown and selected in the indexer selection of the search page. They were skipped by those searches anyway.
+
+
+
 ### v9.1.1 (2026-09-30)
 
 **Fix** Results returned via the API keep the same GUID and download link when the same search is repeated. Since v9.0.0 they changed with every search, so NZBGet RSS feeds downloaded known results again and Sonarr/Radarr couldn&apos;t recognize releases they had already seen. Sorry, that was a big oversight - fittingly, this fix ships as 9.1.1.
