@@ -10,6 +10,8 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "note"
+    text: "Updated the list of certificate authorities NZBHydra2 trusts for HTTPS connections. It no longer trusts the roots affected by the eMudhra key compromise (see https://openjdk.org/emudhra) and some expired ones, and it now knows newer roots, e.g. by Amazon, Google and Let&apos;s Encrypt. If an indexer stops working because of an SSL error you can put its certificate in the &quot;certificates&quot; folder in your data folder."
 -   type: "fix"
     text: "Search results without a size, grabs/seeders or age are sorted to the bottom again, whichever direction you sort that column in. See #1113"
 -   type: "fix"
