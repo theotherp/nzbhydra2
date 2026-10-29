@@ -50,6 +50,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         }
     }
 
+    //
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         final String sentInternalApiKey = request.getParameterValues(INTERNAL_API_KEY_PARAMETER) == null ? null : request.getParameterValues(INTERNAL_API_KEY_PARAMETER)[0];
