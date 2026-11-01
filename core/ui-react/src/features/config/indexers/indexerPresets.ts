@@ -155,6 +155,7 @@ export const NEWZNAB_PRESETS: readonly IndexerPreset[] = [
             "You can find out the IDs by browsing https://treasure-maps.com/rss.",
         ],
     },
+    hostPreset("SearchNZB", "https://api.searchnzb.com"),
     hostPreset("spotweb.com", "https://spotweb.me"),
     hostPreset("Tabula-Rasa", "https://www.tabula-rasa.pw/api/v1/"),
     specialPreset("Binsearch", "BINSEARCH", "https://binsearch.info"),
