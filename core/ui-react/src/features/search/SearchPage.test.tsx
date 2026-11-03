@@ -1113,6 +1113,43 @@ describe("SearchPage", () => {
         });
     });
 
+    it("should auto-execute a hand-written query link without indexers using the default preselection", async () => {
+        router.search = {query: "mp3", category: "All"};
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "mp3",
+            category: "All",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+        expect(router.navigate).toHaveBeenCalledWith({
+            to: "/",
+            search: {query: "mp3", category: "All", indexers: "Configured"},
+        });
+    });
+
     it("should auto-execute a history repeat with no recorded selected indexers using the default preselection", async () => {
         router.search = {
             repeat: "history",

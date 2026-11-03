@@ -41,8 +41,10 @@ export function valuesFromSearch(
             : "";
     // A URL that records an executed search reproduces it exactly: an absent
     // size bound means the search had none, so the category preset only
-    // prefills a form that is not already describing a search.
-    const preset = hasExecutableCriteria(search)
+    // prefills a form that is not already describing a search. A link that
+    // only names a query (no `indexers`) was not written by a submit, so the
+    // preset still applies to it.
+    const preset = recordsExecutedSearch(search)
         ? undefined
         : catalog.enableCategorySizes &&
             category === catalog.defaultCategory.name
@@ -77,7 +79,10 @@ export function valuesFromSearch(
 }
 
 // A `search` route object represents a real, executable search — not just a
-// prefill hint — in either of two cases: it carries `indexers`
+// prefill hint — in any of three cases: it names something to search for (a
+// query, title or identifier, as a hand-written or bookmarked link like
+// `?query=mp3&category=All` does), in which case the category's preselected
+// indexers apply when it names none; it carries `indexers`
 // (`canonicalSearch` always writes this once indexers are selected, which
 // only happens by actually submitting the form; the "submit" button is
 // disabled otherwise), or it carries the Search History repeat marker
@@ -92,18 +97,36 @@ export function valuesFromSearch(
 // remain usable with default indexers for entries that lack it). Without the
 // marker, such a repeat would silently downgrade to a non-executing prefill
 // instead of auto-running as it did before this trigger existed. Route
-// search states that carry neither signal — e.g. a bare category default,
-// or fields a test/page sets to prefill without submitting — are left
-// alone, so a partial prefill URL doesn't fire a premature, incomplete
-// request.
+// search states that carry none of these signals — e.g. a bare category
+// default, or only a season or episode — are left alone, so a partial
+// prefill URL doesn't fire a premature, incomplete request.
 export function hasExecutableCriteria(
     search: Record<string, unknown>,
 ): boolean {
+    return (
+        recordsExecutedSearch(search) ||
+        searchTermFields.some(
+            (name) => typeof search[name] === "string" && search[name] !== "",
+        )
+    );
+}
+
+function recordsExecutedSearch(search: Record<string, unknown>): boolean {
     return (
         (typeof search.indexers === "string" && search.indexers !== "") ||
         search.repeat === "history"
     );
 }
+
+const searchTermFields = [
+    "query",
+    "title",
+    "imdbId",
+    "tmdbId",
+    "tvdbId",
+    "tvmazeId",
+    "tvrageId",
+];
 
 function indexersFromSearch(
     search: Record<string, unknown>,

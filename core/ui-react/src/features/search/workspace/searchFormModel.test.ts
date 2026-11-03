@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
-import {valuesFromSearch} from "./searchFormModel";
+import {hasExecutableCriteria, valuesFromSearch} from "./searchFormModel";
 
 const catalog = createCategoryCatalog({
     categoriesConfig: {
@@ -94,5 +94,24 @@ describe("valuesFromSearch size presets", () => {
             presetCatalog,
         );
         expect([values.minsize, values.maxsize]).toEqual(["100", ""]);
+    });
+});
+
+describe("hasExecutableCriteria", () => {
+    it("should treat a query, title or identifier as a search to run", () => {
+        expect(hasExecutableCriteria({query: "mp3", category: "All"})).toBe(
+            true,
+        );
+        expect(hasExecutableCriteria({title: "Movie"})).toBe(true);
+        expect(hasExecutableCriteria({imdbId: "tt123"})).toBe(true);
+        expect(hasExecutableCriteria({indexers: "mock1"})).toBe(true);
+        expect(hasExecutableCriteria({repeat: "history"})).toBe(true);
+    });
+
+    it("should leave a prefill without a search term alone", () => {
+        expect(hasExecutableCriteria({})).toBe(false);
+        expect(hasExecutableCriteria({category: "All"})).toBe(false);
+        expect(hasExecutableCriteria({episode: "3", season: "1"})).toBe(false);
+        expect(hasExecutableCriteria({query: ""})).toBe(false);
     });
 });

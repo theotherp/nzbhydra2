@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "A search link that has a query but no indexers (e.g. <code>?query=mp3&amp;category=All</code>) now runs the search with the category&apos;s preselected indexers instead of only filling in the form."
