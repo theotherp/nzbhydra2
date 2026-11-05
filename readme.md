@@ -46,6 +46,7 @@ appropriate way:
   * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
 * Docker: You can choose between images by [hotio](https://hotio.dev/containers/nzbhydra2/) and [binhex's](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one
   by [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2).
+* Easypanel: [Easypanel](https://easypanel.io) is a self-hosted Docker deployment platform, and NZBHydra2 has a one-click deployment template there: [![Deploy on Easypanel][easypanel-btn]][easypanel-deploy]
 
 After a while your browser should open to http://127.0.0.1:5076.
 
@@ -110,3 +111,6 @@ To all testers, bug reporters, donators, all around awesome people; especially j
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+
+[easypanel-btn]: https://easypanel.io/img/deploy-on-easypanel-40.svg
+[easypanel-deploy]: https://easypanel.io/templates/nzbhydra2
