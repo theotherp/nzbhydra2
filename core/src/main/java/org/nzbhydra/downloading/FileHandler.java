@@ -86,6 +86,7 @@ public class FileHandler {
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
 
     private static final int MAX_REDIRECTS = 5;
+    private static final String DNZB_HEADER_PREFIX = "X-DNZB-";
     private static final long ONE_HOUR = 1000L * 60 * 60;
     /**
      * Zip files created for downloads by the user. Cleaned up regularly so the set can't grow without bounds.
@@ -178,10 +179,10 @@ public class FileHandler {
             logger.warn("Unable to download magnet link as file");
             return DownloadResult.createErrorResult("Unable to download magnet link as file");
         }
-        byte[] fileContent;
+        DownloadedFile downloadedFile;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            fileContent = downloadFile(result);
+            downloadedFile = downloadFile(result);
         } catch (DownloadException e) {
             //LATER get status code and use that
             logger.error("Error while downloading NZB from URL {}: Status code: {}. Message: {}", result.getLink(), e.getStatus(), e.getMessage());
@@ -207,7 +208,9 @@ public class FileHandler {
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         publishEvents(result, downloadEntity);
 
-        return DownloadResult.createSuccessfulDownloadResult(result.getTitle(), fileContent, downloadEntity);
+        final DownloadResult downloadResult = DownloadResult.createSuccessfulDownloadResult(result.getTitle(), downloadedFile.content(), downloadEntity);
+        downloadResult.setPassthroughHeaders(downloadedFile.passthroughHeaders());
+        return downloadResult;
     }
 
     @Transactional
@@ -445,11 +448,11 @@ public class FileHandler {
     }
 
 
-    protected byte[] downloadFile(SearchResultEntity result) throws MagnetLinkRedirectException, DownloadException {
+    protected DownloadedFile downloadFile(SearchResultEntity result) throws MagnetLinkRedirectException, DownloadException {
         return downloadFile(result, result.getLink(), 0);
     }
 
-    private byte[] downloadFile(SearchResultEntity result, String url, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
+    private DownloadedFile downloadFile(SearchResultEntity result, String url, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         IndexerConfig indexerConfig = indexerByName.getConfig();
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
@@ -473,14 +476,34 @@ public class FileHandler {
             if (body == null) {
                 throw new DownloadException(url, 500, "NZB downloaded is empty");
             }
-            return body.bytes();
+            return new DownloadedFile(body.bytes(), getPassthroughHeaders(response));
         } catch (IOException e) {
             logger.error("Error downloading result", e);
             throw new DownloadException(url, 500, "IOException: " + e.getMessage());
         }
     }
 
-    private byte[] handleRedirect(SearchResultEntity result, String url, Response response, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
+    /**
+     * Collects the indexer's X-DNZB-* headers (e.g. X-DNZB-Failure) so they can be forwarded to the downloader when the NZB is proxied.
+     * SABnzbd and NZBGet use them, among other things, to fetch an alternative NZB when a download fails.
+     */
+    private static Map<String, String> getPassthroughHeaders(Response response) {
+        final Map<String, String> headers = new LinkedHashMap<>();
+        for (String name : response.headers().names()) {
+            if (name.regionMatches(true, 0, DNZB_HEADER_PREFIX, 0, DNZB_HEADER_PREFIX.length())) {
+                final String value = response.header(name);
+                if (value != null) {
+                    headers.put(name, value);
+                }
+            }
+        }
+        return headers;
+    }
+
+    protected record DownloadedFile(byte[] content, Map<String, String> passthroughHeaders) {
+    }
+
+    private DownloadedFile handleRedirect(SearchResultEntity result, String url, Response response, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
         String locationHeader = response.header("location");
         if (locationHeader != null) {
             if (locationHeader.startsWith("magnet:")) {

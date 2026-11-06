@@ -52,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -275,6 +276,33 @@ class FileHandlerTest {
     }
 
     @Test
+    void shouldCollectOnlyDnzbHeadersFromIndexerResponse() throws Exception {
+        SearchResultEntity searchResult = newSearchResult("http://127.0.0.1/nzb");
+        mockHttp(request -> buildResponse(request, 200, null, "nzbcontent".getBytes()).newBuilder()
+                .header("X-DNZB-Failure", "http://127.0.0.1/failure")
+                .header("x-dnzb-name", "Some.Name")
+                .header("Set-Cookie", "session=secret")
+                .build());
+
+        final FileHandler.DownloadedFile downloadedFile = testee.downloadFile(searchResult);
+
+        assertThat(downloadedFile.passthroughHeaders())
+                .containsOnly(Map.entry("X-DNZB-Failure", "http://127.0.0.1/failure"), Map.entry("x-dnzb-name", "Some.Name"));
+    }
+
+    @Test
+    void shouldForwardDnzbHeadersOfIndexerWhenProxying() throws Exception {
+        SearchResultEntity searchResult = newSearchResult("http://127.0.0.1/nzb");
+        FileHandler spy = spy(testee);
+        doReturn(new FileHandler.DownloadedFile("nzbcontent".getBytes(), Map.of("X-DNZB-Failure", "http://127.0.0.1/failure")))
+                .when(spy).downloadFile(any());
+
+        DownloadResult result = spy.handleContentDownload(SearchSource.INTERNAL, searchResult);
+
+        assertThat(result.getAsResponseEntity().getHeaders().get("X-DNZB-Failure")).containsExactly("http://127.0.0.1/failure");
+    }
+
+    @Test
     void shouldAbortAfterTooManyRedirects() {
         SearchResultEntity searchResult = newSearchResult("http://127.0.0.1/nzb");
         AtomicInteger callCount = new AtomicInteger();
@@ -300,7 +328,7 @@ class FileHandlerTest {
             return buildResponse(request, 200, null, "nzbcontent".getBytes());
         });
 
-        final byte[] bytes = testee.downloadFile(searchResult);
+        final byte[] bytes = testee.downloadFile(searchResult).content();
 
         assertThat(new String(bytes)).isEqualTo("nzbcontent");
         assertThat(searchResult.getLink())
@@ -320,7 +348,7 @@ class FileHandlerTest {
             return buildResponse(request, 200, null, "nzbcontent".getBytes());
         });
 
-        final byte[] bytes = testee.downloadFile(searchResult);
+        final byte[] bytes = testee.downloadFile(searchResult).content();
 
         assertThat(new String(bytes)).isEqualTo("nzbcontent");
         assertThat(requestedUrls)

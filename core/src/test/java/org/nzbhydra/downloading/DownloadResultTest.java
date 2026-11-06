@@ -7,6 +7,8 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.springframework.http.HttpHeaders;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DownloadResultTest {
@@ -24,6 +26,22 @@ public class DownloadResultTest {
         searchResultEntity.setDownloadType(DownloadType.TORRENT);
         testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
         assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=\"title.torrent\"");
+    }
+
+    @Test
+    void shouldAddPassthroughHeadersToProxiedResponse() {
+        SearchResultEntity searchResultEntity = new SearchResultEntity();
+        searchResultEntity.setDownloadType(DownloadType.NZB);
+        FileDownloadEntity nzbDownloadEntity = new FileDownloadEntity();
+        nzbDownloadEntity.setSearchResult(searchResultEntity);
+
+        DownloadResult testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
+        testee.setPassthroughHeaders(Map.of("X-DNZB-Failure", "http://127.0.0.1/failure", "X-DNZB-Name", "Some.Name"));
+
+        HttpHeaders headers = testee.getAsResponseEntity().getHeaders();
+        assertThat(headers.get("X-DNZB-Failure")).containsExactly("http://127.0.0.1/failure");
+        assertThat(headers.get("X-DNZB-Name")).containsExactly("Some.Name");
+        assertThat(headers.get(HttpHeaders.CONTENT_TYPE)).containsExactly("application/x-nzb");
     }
 
     @Test

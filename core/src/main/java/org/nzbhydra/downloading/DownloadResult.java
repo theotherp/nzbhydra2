@@ -16,6 +16,8 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,10 @@ public class DownloadResult {
     private String error;
     private FileDownloadEntity downloadEntity;
     private HttpStatusCode statusCode;
+    /**
+     * Headers of the indexer's response which are forwarded unchanged when the file is proxied (X-DNZB-*).
+     */
+    private Map<String, String> passthroughHeaders = Collections.emptyMap();
 
     private static final Pattern URL_PARAM_PATTERN = Pattern.compile("dn=([^&$]+)");
 
@@ -88,6 +94,7 @@ public class DownloadResult {
             response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
             HttpHeaders headers = new HttpHeaders();
+            passthroughHeaders.forEach(headers::add);
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName().replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
             if (downloadEntity.getSearchResult().getDownloadType() == DownloadType.TORRENT) {
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/x-bittorrent");
