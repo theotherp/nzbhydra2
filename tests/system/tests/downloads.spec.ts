@@ -54,7 +54,7 @@ test.describe("Downloads", () => {
     // browser" -- are gone with the legacy shell. Both drove legacy-only
     // affordances (its per-row `send-to-downloader` button and its
     // `.sabnzbd-success` marker; React sends through the bulk-actions bar and
-    // marks the row with a "Downloaded" chip), and neither behaviour loses an
+    // marks the row with a downloaded checkmark), and neither behaviour loses an
     // assertion: every request-body, response-body, SABnzbd-recording and
     // downloaded-file claim they made is now made by the two React tests
     // below, which were extended with exactly those assertions rather than
@@ -142,7 +142,7 @@ test.describe("Downloads", () => {
         // FM-128: legacy's per-row send marked the row with
         // `.sabnzbd-success`, and until FM-128 nothing in this file claimed a
         // React equivalent -- the comment that stood here asserted there was
-        // none. There is: the bulk send raises the row's "Downloaded" chip and
+        // none. There is: the bulk send raises the row's downloaded checkmark and
         // drops the row from the selection. It never fired, because the shared
         // download-action response schema bounded `addedIds` by
         // `Number.MAX_SAFE_INTEGER` while the backend sends 64-bit ids, so
@@ -151,7 +151,7 @@ test.describe("Downloads", () => {
         // state here -- not just the response body and the SABnzbd recording
         // below -- is what makes that class of failure visible: both are
         // server-side facts that stayed green throughout.
-        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         await expect(
             resultRow.getByRole("checkbox", {
                 name: `Select ${testEnvironment.downloaderIntegrationNzbTitle}`,
@@ -163,7 +163,7 @@ test.describe("Downloads", () => {
         // where the same row sits checked and chip-less after an identical,
         // server-side-successful send.
         await prepareVisualEvidence(page, "desktop", async () => {
-            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+            await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         });
         await page.screenshot({
             path: visualEvidencePath(
@@ -172,7 +172,7 @@ test.describe("Downloads", () => {
             ),
         });
 
-        // The chip belongs to the row, not to the selection that produced it,
+        // The checkmark belongs to the row, not to the selection that produced it,
         // so re-grouping the table must not drop it: grouped and ungrouped
         // display modes render through the same `ResultRow`.
         await page.getByTestId("display-options-toggle").click();
@@ -180,7 +180,7 @@ test.describe("Downloads", () => {
             .getByRole("checkbox", {name: "Group torrent and Usenet results"})
             .check();
         await page.keyboard.press("Escape");
-        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
 
         const recording = await hydra.getSabnzbdRecording();
         expect(recording.method).toBe("POST");
@@ -212,7 +212,7 @@ test.describe("Downloads", () => {
     // `addable-nzb` icon, which React never had. It makes the bulk case's
     // claims again rather than trusting that "it is the same flow": the
     // request body, the response body, the SABnzbd recording and the row's
-    // own `Downloaded` chip are what prove the row control reaches the real
+    // own downloaded checkmark are what prove the row control reaches the real
     // downloader with a resolved category, and they are exactly what would
     // stay green if the shared flow were wired up wrongly for one caller.
     test("should send a single result to SABnzbd from its own row", async ({
@@ -298,15 +298,27 @@ test.describe("Downloads", () => {
         expect(addBody.invalidIds).toEqual([]);
         expect(addBody.missedIds).toEqual([]);
         // Legacy marked the row's own icon `-success` only when the response
-        // named this result's id; React's equivalent is the row's chip
-        // (ADR-0006), raised by the same test.
-        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        // named this result's id; React's equivalent is the row's checkmark
+        // (ADR-0006), raised by the same test. The checkmark covers the send
+        // button only while the pointer is off it, and the click left the
+        // pointer on it, so move away first.
+        await page.mouse.move(0, 0);
+        const downloadedMark = resultRow.getByRole("img", {name: "Downloaded"});
+        await expect(downloadedMark).toBeVisible();
         await expect(
             page.getByText("Sent to Deterministic SABnzbd."),
         ).toBeVisible();
+        // Hovering the checkmark shows the send button again for a re-send;
+        // leaving puts the checkmark back. The checkmark takes no pointer
+        // events, so the pointer is really over the button beneath it.
+        await sendButton.hover();
+        await expect(downloadedMark).toHaveCount(0);
+        await expect(sendButton).toHaveCSS("opacity", "1");
+        await page.mouse.move(0, 0);
+        await expect(downloadedMark).toBeVisible();
         // Visual Gate (FM-186): the row after a successful send from it.
         await prepareVisualEvidence(page, "desktop", async () => {
-            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+            await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         });
         await page.screenshot({
             path: visualEvidencePath(
@@ -752,11 +764,11 @@ test.describe("Downloads", () => {
         expect(saveBody.addedIds).toHaveLength(1);
         expect(saveBody.missedIds).toEqual([]);
         expect(saveBody.invalidIds).toEqual([]);
-        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         await expect(page.getByText("Saved or sent torrent.")).toBeVisible();
         // Visual Gate (FM-187): the torrent row after a successful save.
         await prepareVisualEvidence(page, "desktop", async () => {
-            await expect(resultRow.getByText("Downloaded")).toBeVisible();
+            await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         });
         await page.screenshot({
             path: visualEvidencePath(
@@ -833,7 +845,7 @@ test.describe("Downloads", () => {
         expect(saveBody.addedIds).toHaveLength(1);
         expect(saveBody.missedIds).toEqual([]);
         expect(saveBody.invalidIds).toEqual([]);
-        await expect(resultRow.getByText("Downloaded")).toBeVisible();
+        await expect(resultRow.getByRole("img", {name: "Downloaded"})).toBeVisible();
         await expect(page.getByText("Saved NZB to black hole.")).toBeVisible();
 
         const written = await readdir(

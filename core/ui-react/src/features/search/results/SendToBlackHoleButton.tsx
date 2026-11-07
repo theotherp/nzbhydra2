@@ -35,7 +35,7 @@ import {
  * slot is reserved (`blackHoleSlot` in `resultTable.ts`) exactly when some
  * loaded row renders the button.
  *
- * The reporting is FM-186's: the row's `Downloaded` chip (ADR-0006) plus a
+ * The reporting is FM-186's: the row's downloaded checkmark (ADR-0006) plus a
  * success toast only when the response's `addedIds` actually names this
  * result, an error toast otherwise. Legacy only checked `successful` here and
  * so marked a skipped file as downloaded; the id test is strictly the better

@@ -1537,14 +1537,20 @@ describe("SearchResults", () => {
             screen.getByText(title).closest("tr") as HTMLElement;
         await vi.waitFor(() => {
             expect(
-                within(rowFor("Added first")).getByText("Downloaded"),
+                within(rowFor("Added first")).getByRole("img", {
+                    name: "Downloaded",
+                }),
             ).toBeVisible();
         });
         expect(
-            within(rowFor("Added second")).getByText("Downloaded"),
+            within(rowFor("Added second")).getByRole("img", {
+                name: "Downloaded",
+            }),
         ).toBeVisible();
         expect(
-            within(rowFor("Not added")).queryByText("Downloaded"),
+            within(rowFor("Not added")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
         expect(
             screen.getByRole("checkbox", {name: "Select Added first"}),
@@ -2308,9 +2314,11 @@ describe("SearchResults", () => {
                 }}
             />,
         );
-        expect(screen.queryByText("Downloaded")).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("img", {name: "Downloaded"}),
+        ).not.toBeInTheDocument();
         fireEvent.click(screen.getByTestId("download-nzb"));
-        expect(screen.getByText("Downloaded")).toBeVisible();
+        expect(screen.getByRole("img", {name: "Downloaded"})).toBeVisible();
     });
 
     it("should preserve state and avoid sending when duplicate confirmation is cancelled", async () => {
@@ -3872,11 +3880,15 @@ describe("SearchResults", () => {
 
             // Persisted only: the chip renders on mount, with no send.
             expect(
-                within(rowFor("Persisted only")).getByText("Downloaded"),
+                within(rowFor("Persisted only")).getByRole("img", {
+                    name: "Downloaded",
+                }),
             ).toBeVisible();
             // Neither: no chip until something happens.
             expect(
-                within(rowFor("Neither")).queryByText("Downloaded"),
+                within(rowFor("Neither")).queryByRole("img", {
+                    name: "Downloaded",
+                }),
             ).not.toBeInTheDocument();
 
             // Session send only: unchanged FM-186 behaviour -- the chip
@@ -3885,14 +3897,18 @@ describe("SearchResults", () => {
                 within(rowFor("Session send only")).getByTestId("download-nzb"),
             );
             expect(
-                within(rowFor("Session send only")).getByText("Downloaded"),
+                within(rowFor("Session send only")).getByRole("img", {
+                    name: "Downloaded",
+                }),
             ).toBeVisible();
 
             // Both: a session send on a row that already carries
             // `downloadedAt` still renders exactly one chip.
             fireEvent.click(within(rowFor("Both")).getByTestId("download-nzb"));
             expect(
-                within(rowFor("Both")).getAllByText("Downloaded"),
+                within(rowFor("Both")).getAllByRole("img", {
+                    name: "Downloaded",
+                }),
             ).toHaveLength(1);
         });
 
@@ -3937,7 +3953,9 @@ describe("SearchResults", () => {
             ).not.toBeInTheDocument();
             const remaining = screen.getByTestId("search-result-row");
             expect(remaining).toHaveTextContent("Sent this session");
-            expect(within(remaining).getByText("Downloaded")).toBeVisible();
+            expect(
+                within(remaining).getByRole("img", {name: "Downloaded"}),
+            ).toBeVisible();
         });
     });
 
@@ -6906,9 +6924,199 @@ describe("SearchResults per-row send to downloader", () => {
             download.compareDocumentPosition(buttons[0]) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
-        expect(buttons[0].closest("span")?.parentElement).toBe(
-            download.parentElement,
+        expect(download.parentElement).toContainElement(buttons[0]);
+        // Icons only: no stray text (such as a `//` comment that slipped into
+        // JSX) may render in the Actions cell.
+        expect(download.closest("td")?.textContent).toBe("");
+    });
+
+    // Owner request (2026-11-07): a downloaded row's mark is one checkmark
+    // over the downloader icons, not a chip that makes the row taller. Hover
+    // over the checkmark-and-icons area reveals the icons for a re-send, moving
+    // between them keeps them shown, and leaving the area covers them again.
+    it("should cover a downloaded row's send buttons with one checkmark except while the pointer is over them", () => {
+        bootstrapWith([sab, nzbget]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(
+            <SearchResults
+                data={{
+                    ...downloadActionResponse("NZB"),
+                    searchResults: downloadActionResponse(
+                        "NZB",
+                    ).searchResults.map((result) => ({
+                        ...result,
+                        downloadedAt: "2026-11-07T00:00:00Z",
+                    })),
+                }}
+            />,
         );
+        const row = screen.getByTestId("search-result-row");
+        expect(
+            within(row).getAllByRole("img", {name: "Downloaded"}),
+        ).toHaveLength(1);
+        const [first, second] = sendButtons();
+        expect(first).not.toBeVisible();
+        expect(second).not.toBeVisible();
+        const group = first.closest("span")?.parentElement
+            ?.parentElement as HTMLElement;
+        fireEvent.mouseEnter(group);
+        expect(
+            within(row).queryByRole("img", {name: "Downloaded"}),
+        ).not.toBeInTheDocument();
+        expect(first).toBeVisible();
+        expect(second).toBeVisible();
+        // From one icon to the next stays inside the group.
+        fireEvent.mouseOut(first, {relatedTarget: second});
+        fireEvent.mouseOver(second, {relatedTarget: first});
+        expect(first).toBeVisible();
+        expect(second).toBeVisible();
+        fireEvent.mouseLeave(group);
+        expect(first).not.toBeVisible();
+        expect(second).not.toBeVisible();
+        expect(
+            within(row).getAllByRole("img", {name: "Downloaded"}),
+        ).toHaveLength(1);
+    });
+
+    it("should keep a re-sent row's buttons shown while hovered and cover them with the checkmark once the pointer leaves", async () => {
+        bootstrapWith([sabWithCategory]);
+        vi.stubGlobal(
+            "fetch",
+            routedFetch(
+                '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+            ),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...downloadActionResponse("NZB"),
+                    searchResults: downloadActionResponse(
+                        "NZB",
+                    ).searchResults.map((result) => ({
+                        ...result,
+                        downloadedAt: "2026-11-07T00:00:00Z",
+                    })),
+                }}
+            />,
+        );
+        const row = screen.getByTestId("search-result-row");
+        const [button] = sendButtons();
+        const group = button.closest("span")?.parentElement
+            ?.parentElement as HTMLElement;
+        fireEvent.mouseEnter(group);
+        expect(button).toBeVisible();
+        fireEvent.click(button);
+        expect(await screen.findByText("Sent to SAB.")).toBeVisible();
+        expect(button).toBeVisible();
+        fireEvent.mouseLeave(group);
+        expect(
+            within(row).getByRole("img", {name: "Downloaded"}),
+        ).toBeVisible();
+        expect(button).not.toBeVisible();
+    });
+
+    it("should cover a downloaded row's send buttons again when the pointer leaves after clicking one", () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(
+            <SearchResults
+                data={{
+                    ...downloadActionResponse("NZB"),
+                    searchResults: downloadActionResponse(
+                        "NZB",
+                    ).searchResults.map((result) => ({
+                        ...result,
+                        downloadedAt: "2026-11-07T00:00:00Z",
+                    })),
+                }}
+            />,
+        );
+        const [button] = sendButtons();
+        const group = button.closest("span")?.parentElement
+            ?.parentElement as HTMLElement;
+        fireEvent.mouseEnter(group);
+        // What a browser does on a click: press, focus the button, release.
+        fireEvent.mouseDown(button);
+        act(() => button.focus());
+        fireEvent.mouseUp(button);
+        fireEvent.mouseLeave(group);
+        expect(button).toHaveFocus();
+        expect(button).not.toBeVisible();
+    });
+
+    it("should cover a downloaded row's send buttons again after its category dialog is cancelled with the mouse", async () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal(
+            "fetch",
+            routedFetch(
+                '{"successful":true,"addedIds":[1],"missedIds":[],"invalidIds":[]}',
+            ),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...downloadActionResponse("NZB"),
+                    searchResults: downloadActionResponse(
+                        "NZB",
+                    ).searchResults.map((result) => ({
+                        ...result,
+                        downloadedAt: "2026-11-07T00:00:00Z",
+                    })),
+                }}
+            />,
+        );
+        const [button] = sendButtons();
+        const group = button.closest("span")?.parentElement
+            ?.parentElement as HTMLElement;
+        fireEvent.mouseEnter(group);
+        fireEvent.mouseDown(button);
+        act(() => button.focus());
+        fireEvent.mouseUp(button);
+        fireEvent.click(button);
+        const dialog = await screen.findByTestId("send-category-dialog");
+        // The pointer moves from the button onto the dialog's Cancel...
+        const cancel = within(dialog).getByRole("button", {name: "Cancel"});
+        fireEvent.mouseOut(button, {relatedTarget: cancel});
+        fireEvent.mouseOver(cancel, {relatedTarget: button});
+        // ...and clicks it, after which MUI restores focus to the button.
+        fireEvent.mouseDown(cancel);
+        fireEvent.mouseUp(cancel);
+        fireEvent.click(cancel);
+        await vi.waitFor(() =>
+            expect(screen.queryByTestId("send-category-dialog")).toBeNull(),
+        );
+        act(() => button.focus());
+        expect(button).not.toBeVisible();
+        expect(
+            within(screen.getByTestId("search-result-row")).getByRole("img", {
+                name: "Downloaded",
+            }),
+        ).toBeVisible();
+    });
+
+    it("should reveal a downloaded row's covered send buttons while one has keyboard focus", () => {
+        bootstrapWith([sab]);
+        vi.stubGlobal("fetch", routedFetch("{}"));
+        renderResults(
+            <SearchResults
+                data={{
+                    ...downloadActionResponse("NZB"),
+                    searchResults: downloadActionResponse(
+                        "NZB",
+                    ).searchResults.map((result) => ({
+                        ...result,
+                        downloadedAt: "2026-11-07T00:00:00Z",
+                    })),
+                }}
+            />,
+        );
+        const [button] = sendButtons();
+        expect(button).not.toBeVisible();
+        fireEvent.keyDown(document.body, {key: "Tab"});
+        act(() => button.focus());
+        expect(button).toBeVisible();
+        act(() => button.blur());
+        expect(button).not.toBeVisible();
     });
 
     it("should render a downloader's configured Font Awesome icon instead of its type's mark", () => {
@@ -7050,7 +7258,9 @@ describe("SearchResults per-row send to downloader", () => {
         expect(requestCategory(probeInit)).toBeNull();
         const row = screen.getByTestId("search-result-row");
         await vi.waitFor(() =>
-            expect(within(row).getByText("Downloaded")).toBeVisible(),
+            expect(
+                within(row).getByRole("img", {name: "Downloaded"}),
+            ).toBeVisible(),
         );
         expect(await screen.findByText("Sent to SAB.")).toBeVisible();
     });
@@ -7216,9 +7426,9 @@ describe("SearchResults per-row send to downloader", () => {
             ),
         ).toBe(false);
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7268,9 +7478,9 @@ describe("SearchResults per-row send to downloader", () => {
             ),
         ).toBe(false);
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7288,9 +7498,9 @@ describe("SearchResults per-row send to downloader", () => {
             await screen.findByText("Downloader rejected the NZB."),
         ).toBeVisible();
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7311,9 +7521,9 @@ describe("SearchResults per-row send to downloader", () => {
             await screen.findByText("The download action failed."),
         ).toBeVisible();
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 });
@@ -7476,9 +7686,9 @@ describe("SearchResults per-row send to black hole", () => {
         // shape.
         expect(JSON.parse(String(init.body))).toEqual(["1"]);
         expect(
-            within(screen.getByTestId("search-result-row")).getByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).getByRole("img", {
+                name: "Downloaded",
+            }),
         ).toBeVisible();
     });
 
@@ -7501,12 +7711,16 @@ describe("SearchResults per-row send to black hole", () => {
         expect(init.method).toBe("PUT");
         expect(JSON.parse(String(init.body))).toEqual(["2"]);
         expect(
-            within(rowFor("TORRENT result")).getByText("Downloaded"),
+            within(rowFor("TORRENT result")).getByRole("img", {
+                name: "Downloaded",
+            }),
         ).toBeVisible();
         // The NZB row beside it is untouched -- only the sent result is
         // marked.
         expect(
-            within(rowFor("NZB result")).queryByText("Downloaded"),
+            within(rowFor("NZB result")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7524,9 +7738,9 @@ describe("SearchResults per-row send to black hole", () => {
             await screen.findByText("The black hole folder does not exist."),
         ).toBeVisible();
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7548,9 +7762,9 @@ describe("SearchResults per-row send to black hole", () => {
             await screen.findByText("The download action failed."),
         ).toBeVisible();
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 
@@ -7566,9 +7780,9 @@ describe("SearchResults per-row send to black hole", () => {
             await screen.findByText("Unable to complete the download action."),
         ).toBeVisible();
         expect(
-            within(screen.getByTestId("search-result-row")).queryByText(
-                "Downloaded",
-            ),
+            within(screen.getByTestId("search-result-row")).queryByRole("img", {
+                name: "Downloaded",
+            }),
         ).not.toBeInTheDocument();
     });
 

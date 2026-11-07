@@ -417,7 +417,7 @@ test.describe("Search results", () => {
 
         const downloadedRow = rows.filter({hasText: "Downloaded Release"});
         await expect(
-            downloadedRow.getByText("Downloaded", {exact: true}),
+            downloadedRow.getByRole("img", {name: "Downloaded"}),
         ).toBeVisible();
 
         await openDisplayOptions(page);
@@ -1107,22 +1107,21 @@ test.describe("Search results", () => {
                 // open in a disposable tab instead of downloading" case the
                 // packet restores, so no `"download"` event ever fires. Wait
                 // for the popup instead and close it, the same disposal a real
-                // error tab gets; the `Downloaded` chip below is driven by the
+                // error tab gets; the downloaded checkmark below is driven by the
                 // anchor's own `onClick`, independent of what the popup loads.
                 const [popup] = await Promise.all([
                     page.waitForEvent("popup"),
                     directDownload.click(),
                 ]);
                 await popup.close();
-                const downloadedChip = page
+                // The mark is a checkmark glyph now (owner request
+                // 2026-11-07), not a labelled chip, so there is no text left
+                // that could be clipped -- being shown is the whole check.
+                const downloadedMark = page
                     .getByTestId("search-result-row")
                     .first()
-                    .getByText("Downloaded");
-                await expect(downloadedChip).toBeVisible();
-                const chipNotClipped = await downloadedChip.evaluate(
-                    (element) => element.scrollWidth <= element.clientWidth + 1,
-                );
-                expect(chipNotClipped).toBe(true);
+                    .getByRole("img", {name: "Downloaded"});
+                await expect(downloadedMark).toBeVisible();
             } else {
                 const cellDisplay = await directDownload
                     .locator("xpath=ancestor::td[1]")

@@ -4209,3 +4209,22 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `lint` 0 problems, `typecheck`, `format:check`, `knip`, `check:api`, `validate:migration`, `validate:focus-affordances`,
   `test -- --run` (152 files, 2313 tests) and `build` pass; Playwright `smoke`, `session-expiry` and `search` 33/33; `git diff --check` clean.
 - **Commit:** the commit adding this entry.
+
+### 2026-11-07 — Mark downloaded result rows with a checkmark over the downloader icons (owner request, #1115)
+
+- **Why not a packet:** UX polish of the existing downloaded indicator, confined to the row's Actions cell (`SendToDownloaderButtons`, `ResultRow`); no
+  contract, API or `data-testid` change. The "Downloaded" chip, which wrapped and made the row taller, is now one green checkmark centred over the
+  downloader icons (accessible name "Downloaded"). While the pointer is over the checkmark or the icons it reveals, or keyboard focus is in them,
+  the icons are shown; leaving brings the checkmark back. Focus counts only after a key press, so neither a clicked icon nor the focus MUI restores
+  when the category dialog is cancelled keeps them revealed; that dialog renders outside the hover/focus span, since React bubbles portal events
+  through it. With no compatible downloader the checkmark is shown alone. Tests now find the mark with
+  `getByRole("img", {name: "Downloaded"})` where they used to match the chip's text.
+- **Paths:** `core/ui-react/src/features/search/results/{SendToDownloaderButtons,ResultRow,SendToBlackHoleButton,SearchResults.test}.tsx`,
+  `tests/system/tests/{downloads,results}.spec.ts`, `changelog-unreleased.yaml`.
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (153 files, 2384 tests),
+  `build`, `check:api`, `validate:migration`, `validate:focus-affordances`, `knip` pass; Playwright `downloads.spec.ts` + `results.spec.ts` 62/62
+  (`run_gui_systemtest.py --runtime local`); `tests/system` `npx tsc --noEmit` clean; `git diff --check` clean.
+- **Visual Gate:** `tests/system/visual-evidence/F-SEARCH-DOWNLOADS/row-send-downloaded-row-desktop.png` and `bulk-send-downloaded-row-desktop.png`.
+- **Note:** with no downloader and no black hole configured, the Actions track (`actionsTrackWidth(0)`) has no spare slot, so the checkmark alone can
+  still wrap below the icons in that configuration. It is narrower than the chip was, but the row can still grow there.
+- **Commit:** the commit adding this entry.

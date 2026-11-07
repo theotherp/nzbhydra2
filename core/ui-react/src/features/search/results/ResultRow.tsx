@@ -596,9 +596,10 @@ export const ResultRow = memo(function ResultRow({
                 {/* FM-150: a row at every breakpoint. This stack used to
                     switch to `column` at `sm` and up, which is what put the
                     download on a line of its own no matter how much room the
-                    cell had. `flexWrap` stays on for the "Downloaded" chip --
-                    the one item here that is not an icon -- which may still
-                    drop below the icons in a narrow Actions column. */}
+                    cell had. `flexWrap` stays on so the icon group can still
+                    drop to a second line in a narrow Actions column. The
+                    downloaded state is no longer a chip here but a checkmark
+                    over the downloader icons (`SendToDownloaderButtons`). */}
                 <Stack
                     direction="row"
                     sx={{
@@ -654,6 +655,7 @@ export const ResultRow = memo(function ResultRow({
                             one slot per downloader to hold them
                             (`actionsTrackWidth` in `resultTable.ts`). */}
                         <SendToDownloaderButtons
+                            downloaded={downloaded}
                             downloaders={downloaders}
                             onDownloaded={() =>
                                 onDownloaded(result.searchResultId)
@@ -677,14 +679,6 @@ export const ResultRow = memo(function ResultRow({
                             transport={transport}
                         />
                     </Stack>
-                    {downloaded && (
-                        <Chip
-                            color="success"
-                            label="Downloaded"
-                            size="small"
-                            variant="outlined"
-                        />
-                    )}
                 </Stack>
             </TableCell>
         </TableRow>
@@ -697,7 +691,7 @@ export const ResultRow = memo(function ResultRow({
  * the stock component for a coloured, labelled pill -- no bespoke `Box`
  * needed here, unlike `CoverThumbnail` below. Colour is chosen by severity
  * (`qualityBadgeSeverity`), never a literal: high/medium/low map onto
- * `success`/`warning`/`error`, the same palette roles the "Downloaded" chip
+ * `success`/`warning`/`error`, the same palette roles the downloaded checkmark
  * above already draws from.
  */
 function QualityBadge({

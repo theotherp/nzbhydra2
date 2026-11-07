@@ -1,3 +1,4 @@
+import CheckIcon from "@mui/icons-material/Check";
 import {Box, IconButton, Tooltip} from "@mui/material";
 import {useContext, useState} from "react";
 
@@ -102,6 +103,38 @@ function DownloaderIcon({downloader}: {downloader: Downloader}) {
 }
 
 /**
+ * Whether the most recent input was a key press rather than a pointer press,
+ * so a focus can be told apart as keyboard focus. `:focus-visible` would say
+ * the same for a direct focus, but not reliably for the focus MUI restores to
+ * the button when a dialog closes. One pair of capture listeners for the whole
+ * page, registered when this module loads.
+ */
+let lastInputWasKeyboard = false;
+if (typeof document !== "undefined") {
+    document.addEventListener(
+        "keydown",
+        () => {
+            lastInputWasKeyboard = true;
+        },
+        true,
+    );
+    document.addEventListener(
+        "pointerdown",
+        () => {
+            lastInputWasKeyboard = false;
+        },
+        true,
+    );
+    document.addEventListener(
+        "mousedown",
+        () => {
+            lastInputWasKeyboard = false;
+        },
+        true,
+    );
+}
+
+/**
  * FM-186: one "send this result to that downloader" button per enabled,
  * compatible downloader, in every result row's Actions cell -- legacy's
  * `addable-nzb`/`addable-nzbs` directives (`1982886e2`), which the React
@@ -113,7 +146,7 @@ function DownloaderIcon({downloader}: {downloader: Downloader}) {
  * differs the way legacy's did: legacy's per-row control marked the row
  * `-success` only when the response's `addedIds` actually contained this
  * result's id, and `growl.error`ed the response message otherwise; here that
- * same test raises the row's `Downloaded` chip (ADR-0006's React equivalent of
+ * same test raises the row's downloaded checkmark (ADR-0006's React equivalent of
  * the `-success` icon variant) or an error toast.
  *
  * Owner request (2026-09-18): the category is asked for again, exactly when
@@ -130,11 +163,21 @@ function DownloaderIcon({downloader}: {downloader: Downloader}) {
  * Font Awesome icon, as it did in legacy.
  */
 export function SendToDownloaderButtons({
+    downloaded,
     downloaders,
     onDownloaded,
     result,
     transport,
 }: {
+    /**
+     * Whether the row was downloaded. Owner request (2026-11-07): a downloaded
+     * row shows a green checkmark in place of these buttons instead of the
+     * old "Downloaded" chip, which wrapped onto a second line and made the row
+     * taller. While the pointer is over the checkmark or the buttons it
+     * reveals (or focus is in them), the buttons are shown for a re-send;
+     * leaving brings the checkmark back.
+     */
+    downloaded: boolean;
     /**
      * The enabled downloaders, as one stable reference resolved by the parent
      * (like `indexerColors`) -- never the safe config itself, which would cost
@@ -158,11 +201,14 @@ export function SendToDownloaderButtons({
         categories: string[];
         downloader: Downloader;
     }>();
+    const [hovered, setHovered] = useState(false);
+    const [focused, setFocused] = useState(false);
     const compatible = downloaders.filter((downloader) =>
         isCompatibleWithDownloader(result, downloader),
     );
     if (compatible.length === 0 || dialogs === null || toasts === null) {
-        return null;
+        // No button to put the checkmark over: the checkmark alone marks it.
+        return downloaded ? <DownloadedMark /> : null;
     }
     /**
      * Legacy's rule (`nzb-download-service.js:23-33`): a downloader with a
@@ -238,46 +284,119 @@ export function SendToDownloaderButtons({
             setSendingTo(undefined);
         }
     };
+    const covered = downloaded && !hovered && !focused;
     return (
         <>
-            {compatible.map((downloader) => {
-                const label = `Send to ${downloader.name}`;
-                const busy = sendingTo === downloader.name;
-                return (
-                    <Tooltip
-                        // Repeats the accessible name verbatim, like the
-                        // direct-download icon beside it, so the visible and
-                        // the announced label never diverge.
-                        key={downloader.name}
-                        title={label}
-                    >
-                        {/* The span is MUI's documented wrapper for a tooltip
+            {/* The buttons stay mounted (and focusable) under the checkmark,
+                only transparent, so the slot keeps its width and a keyboard
+                user tabbing into one reveals them through `onFocus`. Hover
+                and focus are tracked on this span, not on the checkmark, so
+                the buttons stay shown while the pointer moves from the
+                checkmark onto them. The span is the flex item of the row's
+                non-wrapping icon group in place of the buttons' own spans,
+                with that group's gap between them. */}
+            <Box
+                component="span"
+                onBlur={(event) => {
+                    // Only when focus leaves the group, not when it moves between
+                    // its buttons.
+                    if (
+                        !(event.relatedTarget instanceof Node) ||
+                        !event.currentTarget.contains(event.relatedTarget)
+                    ) {
+                        setFocused(false);
+                    }
+                }}
+                onFocus={() => {
+                    // Keyboard focus only: a mouse click focuses the button too,
+                    // and so does the focus MUI restores when the category dialog
+                    // closes after a click on Cancel. Neither may keep the buttons
+                    // shown once the pointer has left.
+                    if (lastInputWasKeyboard) {
+                        setFocused(true);
+                    }
+                }}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                sx={{
+                    display: "inline-flex",
+                    flexShrink: 0,
+                    gap: 0.5,
+                    position: "relative",
+                }}
+            >
+                <Box
+                    component="span"
+                    sx={{
+                        display: "inline-flex",
+                        gap: 0.5,
+                        opacity: covered ? 0 : 1,
+                    }}
+                >
+                    {compatible.map((downloader) => {
+                        const label = `Send to ${downloader.name}`;
+                        const busy = sendingTo === downloader.name;
+                        return (
+                            <Tooltip
+                                // Repeats the accessible name verbatim, like the
+                                // direct-download icon beside it, so the visible and
+                                // the announced label never diverge.
+                                key={downloader.name}
+                                title={label}
+                            >
+                                {/* The span is MUI's documented wrapper for a tooltip
                             whose child can be disabled -- a disabled button
                             fires no pointer events, so without it the tooltip
                             would neither open nor be reachable while a send is
                             in flight. It carries the `flexShrink: 0` because
                             it, not the button, is the flex item of the row's
                             non-wrapping icon group (see `ResultRow`). */}
-                        <Box
-                            component="span"
-                            sx={{display: "inline-flex", flexShrink: 0}}
-                        >
-                            <IconButton
-                                aria-busy={busy ? "true" : undefined}
-                                aria-label={label}
-                                data-downloader={downloader.name}
-                                data-testid="result-send-to-downloader"
-                                disabled={busy}
-                                onClick={() => void start(downloader)}
-                                size="small"
-                                sx={{flexShrink: 0}}
-                            >
-                                <DownloaderIcon downloader={downloader} />
-                            </IconButton>
-                        </Box>
-                    </Tooltip>
-                );
-            })}
+                                <Box
+                                    component="span"
+                                    sx={{display: "inline-flex", flexShrink: 0}}
+                                >
+                                    <IconButton
+                                        aria-busy={busy ? "true" : undefined}
+                                        aria-label={label}
+                                        data-downloader={downloader.name}
+                                        data-testid="result-send-to-downloader"
+                                        disabled={busy}
+                                        onClick={() => void start(downloader)}
+                                        size="small"
+                                        sx={{flexShrink: 0}}
+                                    >
+                                        <DownloaderIcon
+                                            downloader={downloader}
+                                        />
+                                    </IconButton>
+                                </Box>
+                            </Tooltip>
+                        );
+                    })}
+                </Box>
+                {covered && (
+                    // One checkmark centred over all the buttons, however many
+                    // there are. It takes no pointer events, so the hover lands on
+                    // the wrapper and a click on the buttons beneath.
+                    <Box
+                        component="span"
+                        sx={{
+                            alignItems: "center",
+                            display: "flex",
+                            inset: 0,
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                            position: "absolute",
+                        }}
+                    >
+                        <DownloadedMark />
+                    </Box>
+                )}
+            </Box>
+            {/* Outside the hover/focus span on purpose: React bubbles events
+                from a portal through the component tree, so a dialog inside
+                it would count the pointer and focus on the dialog as being on
+                the buttons, and they would stay shown after it closes. */}
             {picking !== undefined && (
                 <SendCategoryDialog
                     categories={picking.categories}
@@ -292,5 +411,15 @@ export function SendToDownloaderButtons({
                 />
             )}
         </>
+    );
+}
+
+/**
+ * The downloaded marker. `titleAccess` gives the glyph `role="img"` and the
+ * accessible name "Downloaded", the name the old chip carried as its text.
+ */
+function DownloadedMark() {
+    return (
+        <CheckIcon color="success" fontSize="small" titleAccess="Downloaded" />
     );
 }
