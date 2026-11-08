@@ -1,10 +1,20 @@
+### v9.3.0 (2026-11-08)
+
+**Fix** A search link that has a query but no indexers (e.g. <code>?query=mp3&amp;category=All</code>) now runs the search with the category&apos;s preselected indexers instead of only filling in the form.
+
+**Fix** When NZBs are proxied, the indexer&apos;s X-DNZB-* headers (e.g. X-DNZB-Failure) are now passed on to the downloader. This makes SABnzbd&apos;s &quot;Use alternative NZB when download fails&quot; and NZBGet&apos;s FailureLink extension work with NZBHydra2.
+
+**Feature** Already downloaded search results are now marked with a green checkmark in place of the downloader icons instead of a &quot;Downloaded&quot; badge, so the row no longer gets taller. Hover over the checkmark to show the downloader icons and send the result again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1115">#1115</a>
+
+
+
 ### v9.2.0 (2026-10-28)
 
 **Note** Updated the list of certificate authorities NZBHydra2 trusts for HTTPS connections. It no longer trusts the roots affected by the eMudhra key compromise (see https://openjdk.org/emudhra) and some expired ones, and it now knows newer roots, e.g. by Amazon, Google and Let&apos;s Encrypt. If an indexer stops working because of an SSL error you can put its certificate in the &quot;certificates&quot; folder in your data folder.
 
 **Fix** Search results without a size, grabs/seeders or age are sorted to the bottom again, whichever direction you sort that column in. See <a href="https://github.com/theotherp/nzbhydra2/issues/1113">#1113</a>
 
-**Fix** Download links of torrent results returned as JSON now work for magnet links. They used to point to the NZB download, which canDownload links of torrent results returned as JSON work for magnet links again. They pointed to the NZB download, which can&apos;t handle magnets.apos;t handle magnets.
+**Fix** Download links of torrent results returned as JSON now work for magnet links. They used to point to the NZB download, which can&apos;t handle magnets.
 
 **Fix** Torrent results returned as JSON retain their infohash, seeder counts and other attributes, so API clients can identify and filter them correctly.
 

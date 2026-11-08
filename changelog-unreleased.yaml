@@ -10,9 +10,3 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
--   type: "fix"
-    text: "A search link that has a query but no indexers (e.g. <code>?query=mp3&amp;category=All</code>) now runs the search with the category&apos;s preselected indexers instead of only filling in the form."
--   type: "fix"
-    text: "When NZBs are proxied, the indexer&apos;s X-DNZB-* headers (e.g. X-DNZB-Failure) are now passed on to the downloader. This makes SABnzbd&apos;s &quot;Use alternative NZB when download fails&quot; and NZBGet&apos;s FailureLink extension work with NZBHydra2."
--   type: "feature"
-    text: "Already downloaded search results are now marked with a green checkmark in place of the downloader icons instead of a &quot;Downloaded&quot; badge, so the row no longer gets taller. Hover over the checkmark to show the downloader icons and send the result again. See #1115"
