@@ -787,34 +787,24 @@ def _build_linux_amd64(ctx: BuildContext, log_file: Path) -> str | None:
 
 
 def _build_linux_arm64(ctx: BuildContext, log_file: Path) -> str | None:
-    """Build Linux arm64 executable. Returns error message or None on success."""
+    """Build Linux arm64 executable on a GitHub-hosted arm64 runner. Returns error message or None on success.
+
+    build_arm64_on_github.py pushes a snapshot of the working tree to a temporary release-arm64/<version> branch,
+    waits for buildArm64Release.yml, downloads the executable and checks that it reports ctx.version.
+    """
     from copy import copy
 
     build_ctx = copy(ctx)
     build_ctx.log_file = log_file
 
     try:
-        # Build with 20 minute timeout
         run_shell_command(
             build_ctx,
-            "./misc/buildLinuxCore/arm64/buildLinuxCore.sh",
-            "Building Linux arm64 executable",
-            timeout_seconds=1200,  # 20 minutes
+            # exec, so a timeout terminates the script itself (which then deletes its branch), not just sh
+            f"exec python3 misc/build_arm64_on_github.py --version {ctx.version}",
+            "Building Linux arm64 executable on GitHub",
+            timeout_seconds=75 * 60,  # the script itself gives up on the run after 60 minutes
         )
-
-        # Verify version on remote machine
-        if ctx.dry_run.should_execute_local():
-            result = run_shell_command(
-                build_ctx,
-                "./misc/buildLinuxCore/arm64/getVersion.sh",
-                "Verifying Linux arm64 version",
-            )
-            if result:
-                actual_version = result.stdout.strip()
-                if actual_version != ctx.version:
-                    return f"Linux arm64 version mismatch: expected {ctx.version}, got {actual_version}"
-                console.print(f"  [green]✓[/green] Linux arm64 version verified: {actual_version}")
-
         return None
     except Exception as e:
         return f"Linux arm64 build failed: {e}"

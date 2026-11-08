@@ -1,0 +1,100 @@
+#@formatter:off
+# Builds the linux arm64 core executable for a release on a GitHub-hosted arm64 runner.
+#
+# misc/build_arm64_on_github.py snapshots the release working tree into a temporary commit, pushes it to
+# release-arm64/<version>, waits for this workflow, downloads the "linux-arm64-core" artifact and deletes the branch
+# again. The build runs in the same AlmaLinux 8 image the arm64 build VM used (misc/buildLinuxCore/arm64/dockerfile),
+# so the executable keeps its glibc 2.28 baseline.
+name: Release arm64 executable
+
+on:
+    push:
+        branches:
+            - 'release-arm64/**'
+
+permissions:
+    contents: read
+
+# A re-push of the same release branch replaces the run instead of building twice
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-24.04-arm
+        timeout-minutes: 60
+        steps:
+            -   uses: actions/checkout@v7
+
+            -   name: Log free memory and disk
+                run: |
+                    free -h
+                    df -h /
+
+            -   name: Cache Maven repository
+                uses: actions/cache@v6
+                with:
+                    path: ~/.m2/repository
+                    key: arm64-release-m2-${{ hashFiles('**/pom.xml') }}
+                    restore-keys: arm64-release-m2-
+
+            -   name: Drop cached nzbhydra artifacts
+                # The build VM did the same before every build: only third-party dependencies are worth caching
+                run: rm -rf ~/.m2/repository/org/nzbhydra*
+
+            -   name: Download GraalVM
+                # Into the docker build context, for the dockerfile's COPY. gh goes through the API asset endpoint;
+                # the direct release download URL of graalvm-ce-builds answered 504.
+                working-directory: misc/buildLinuxCore/arm64
+                env:
+                    GH_TOKEN: ${{ github.token }}
+                run: |
+                    tag=$(sed -n 's/^ARG GRAALVM_TAG=//p' dockerfile)
+                    file=$(sed -n 's/^ARG GRAALVM_FILE=//p' dockerfile)
+                    gh release download "$tag" --repo graalvm/graalvm-ce-builds --pattern "$file" --pattern "$file.sha256"
+                    echo "$(cat "$file.sha256")  $file" | sha256sum -c -
+
+            -   name: Download GraalVM reachability metadata
+                # native-maven-plugin downloads it from the same kind of direct release URL on every build; hand it a
+                # copy fetched through the API instead (see graalvm.metadata.url in core/pom.xml)
+                env:
+                    GH_TOKEN: ${{ github.token }}
+                run: |
+                    version=$(sed -n 's:.*<graalvm.metadata.version>\(.*\)</graalvm.metadata.version>.*:\1:p' core/pom.xml)
+                    gh release download "$version" --repo oracle/graalvm-reachability-metadata --pattern "graalvm-reachability-metadata-$version.zip" --output graalvm-reachability-metadata.zip
+                    unzip -tq graalvm-reachability-metadata.zip
+
+            -   name: Build image
+                run: docker build -t hydrabuild misc/buildLinuxCore/arm64
+
+            -   name: Build executable
+                # buildInContainer.sh builds core, checks the glibc baseline and compresses the executable with upx
+                run: |
+                    mkdir -p ~/.m2/repository
+                    docker run --rm -v "$PWD:/nzbhydra2:rw" -v "$HOME/.m2/repository:/root/.m2/repository:rw" \
+                        -e MAVEN_ARGS="-Dgraalvm.metadata.url=file:///nzbhydra2/graalvm-reachability-metadata.zip" hydrabuild:latest
+                    df -h /
+
+            -   name: Read version
+                # bash, not the default sh: it runs with pipefail, so a crashing executable fails the step
+                shell: bash
+                # Inside the build image, so the executable runs against the glibc it was linked for. The image exports
+                # HYDRA_NATIVE_BUILD, which makes the executable start in native test mode; the system property overrides it.
+                run: |
+                    docker run --rm -v "$PWD:/nzbhydra2:ro" --entrypoint /nzbhydra2/core/target/core hydrabuild:latest \
+                        -DHYDRA_NATIVE_BUILD=false --version | tr -d '\r' | tail -n1 > core/target/version.txt
+                    test -s core/target/version.txt || { echo "::error::The executable printed no version"; exit 1; }
+                    echo "Executable version: $(cat core/target/version.txt)" | tee -a "$GITHUB_STEP_SUMMARY"
+
+            -   name: Upload executable
+                uses: actions/upload-artifact@v7
+                with:
+                    name: linux-arm64-core
+                    retention-days: 7
+                    # Already compressed by upx
+                    compression-level: 0
+                    if-no-files-found: error
+                    path: |
+                        core/target/core
+                        core/target/version.txt

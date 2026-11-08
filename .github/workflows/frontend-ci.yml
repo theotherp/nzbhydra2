@@ -2,6 +2,9 @@ name: Frontend CI
 
 on:
   push:
+    # Temporary release-build branches (buildArm64Release.yml) only build the arm64 executable.
+    branches-ignore:
+      - 'release-arm64/**'
   pull_request:
 
 jobs:

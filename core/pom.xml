@@ -17,6 +17,10 @@
         <version.roaster>2.28.0.Final</version.roaster>
         <native-maven-plugin.xmx>8</native-maven-plugin.xmx>
         <graalvm.sdk.version>25.0.0</graalvm.sdk.version>
+        <!--GraalVM reachability metadata repository. The URL is native-maven-plugin's own default; buildArm64Release.yml
+        overrides it with a copy downloaded through the GitHub API, because GitHub answered 504 for the direct URL-->
+        <graalvm.metadata.version>1.0.7</graalvm.metadata.version>
+        <graalvm.metadata.url>https://github.com/oracle/graalvm-reachability-metadata/releases/download/${graalvm.metadata.version}/graalvm-reachability-metadata-${graalvm.metadata.version}.zip</graalvm.metadata.url>
     </properties>
 
 
@@ -675,7 +679,8 @@
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
                                     <enabled>true</enabled>
-                                    <version>1.0.7</version>
+                                    <version>${graalvm.metadata.version}</version>
+                                    <url>${graalvm.metadata.url}</url>
                                 </metadataRepository>
                                 <requiredVersion>25</requiredVersion>
                             </configuration>
@@ -764,7 +769,8 @@
                             <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                             <metadataRepository>
                                 <enabled>true</enabled>
-                                <version>1.0.7</version>
+                                <version>${graalvm.metadata.version}</version>
+                                <url>${graalvm.metadata.url}</url>
                             </metadataRepository>
                             <requiredVersion>25</requiredVersion>
                         </configuration>

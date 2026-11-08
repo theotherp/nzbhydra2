@@ -10,6 +10,10 @@ RUN dnf install -y dnf-plugins-core && dnf config-manager --set-enabled powertoo
        gcc gcc-c++ make libatomic glibc-devel zlib-devel zlib-static libstdc++-static binutils ca-certificates \
     && dnf clean all
 
+# The downloads below come from GitHub release assets and other CDNs, which occasionally stall (wget exit code 4 on a
+# GitHub runner). Time out stalled reads and retry; wget resumes a partial download on retry.
+RUN printf 'tries = 5\nretry_connrefused = on\nwaitretry = 10\ntimeout = 60\n' >> /etc/wgetrc
+
 # Maven. archive.apache.org keeps old versions, dlcdn.apache.org only the newest
 ARG MAVEN_VERSION=3.9.9
 RUN wget -nv https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz -P /tmp \
@@ -21,8 +25,11 @@ ENV MAVEN_HOME=/opt/maven
 # native-maven-plugin refuses GraalVM builds older than the newest release of the JDK line, so use the newest 25.x tag
 ARG GRAALVM_TAG=graal-25.3.4.1
 ARG GRAALVM_FILE=graalvm-community-jdk-25i3-25.0.4.1_linux-aarch64_bin.tar.gz
-RUN wget -nv https://github.com/graalvm/graalvm-ce-builds/releases/download/${GRAALVM_TAG}/${GRAALVM_FILE} -P /tmp \
-    && mkdir -p /opt/graalvm && tar xzf /tmp/graalvm-community-*.tar.gz -C /opt/graalvm --strip-components=1 && rm /tmp/graalvm-community-*.tar.gz
+# Downloaded and checksum-verified into the build context by buildArm64Release.yml (gh release download), which
+# reads the two ARGs above: the direct release download URL of graalvm-ce-builds answered 504 from GitHub's edge
+# while the API asset endpoint gh uses worked.
+COPY ${GRAALVM_FILE} /tmp/
+RUN mkdir -p /opt/graalvm && tar xzf /tmp/${GRAALVM_FILE} -C /opt/graalvm --strip-components=1 && rm /tmp/${GRAALVM_FILE}
 ENV JAVA_HOME=/opt/graalvm
 
 # Node for the React UI build (see engines in core/ui-react/package.json)

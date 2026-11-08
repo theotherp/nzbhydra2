@@ -9,8 +9,8 @@ Usage:
     python3 docker/beta/build.py --force-core-build
     python3 docker/beta/build.py --skip-core-build
 
-The amd64 core is built locally via buildCore.sh, the arm64 core on the remote
-build VM via misc/buildLinuxCore/arm64/buildLinuxCore.sh (needs remote.env).
+The amd64 core is built locally via buildCore.sh, the arm64 core on a GitHub
+arm64 runner via misc/build_arm64_on_github.py (needs an authenticated gh CLI).
 
 Publishing pushes ghcr.io/theotherp/hydra-beta:latest and :<version> for amd64
 and :latest-arm64 and :<version>-arm64 for arm64. If not already logged in to
@@ -47,6 +47,8 @@ class Arch:
     core_binary: Path
     build_cmd: list
     tag_suffix: str
+    # Append --version <project version> to build_cmd
+    pass_version: bool = False
 
 
 AMD64 = Arch(
@@ -60,8 +62,9 @@ ARM64 = Arch(
     name="arm64",
     platform="linux/arm64",
     core_binary=REPO_ROOT / "releases" / "linux-arm64-release" / "include" / "executables" / "core",
-    build_cmd=["bash", str(REPO_ROOT / "misc" / "buildLinuxCore" / "arm64" / "buildLinuxCore.sh")],
+    build_cmd=["python3", str(REPO_ROOT / "misc" / "build_arm64_on_github.py")],
     tag_suffix="-arm64",
+    pass_version=True,
 )
 
 
@@ -109,7 +112,8 @@ def core_build_needed(arch: Arch) -> bool:
 
 def build_core(arch: Arch):
     print(f"Building {arch.name} core native binary (this takes a while)")
-    run(arch.build_cmd, cwd=REPO_ROOT)
+    cmd = arch.build_cmd + (["--version", get_version()] if arch.pass_version else [])
+    run(cmd, cwd=REPO_ROOT)
     if not arch.core_binary.is_file():
         sys.exit(f"{arch.name} core build finished but {arch.core_binary} does not exist")
 

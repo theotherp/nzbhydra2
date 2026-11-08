@@ -2,6 +2,9 @@ name: system-test
 
 on:
   push:
+    # Temporary release-build branches (buildArm64Release.yml) only build the arm64 executable.
+    branches-ignore:
+      - 'release-arm64/**'
   workflow_dispatch:
 
 concurrency:
