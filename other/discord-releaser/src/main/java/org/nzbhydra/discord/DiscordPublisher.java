@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -66,28 +70,70 @@ public class DiscordPublisher {
             System.out.println("Not sending message because of dry run");
             return;
         }
-        JDA jda = JDABuilder.createDefault(discordToken).build().awaitReady();
+        // No automatic retry of a timed-out request: the first attempt may have been posted already, which is how the
+        // 9.3.0 announcement ended up in the channel twice. ReleasePoster retries only after checking the channel.
+        JDA jda = JDABuilder.createDefault(discordToken).setRequestTimeoutRetry(false).build().awaitReady();
+        int exitCode = 0;
         try {
             final List<TextChannel> channels = jda.getTextChannels().stream().filter(x -> x.getName().equals("releases")).toList();
             if (channels.isEmpty()) {
                 throw new RuntimeException("Found no channel named 'releases'");
             }
+            ReleasePoster poster = ReleasePoster.withDefaults();
             for (TextChannel channel : channels) {
-                try {
-                    for (String part : messageParts) {
-                        channel.sendMessage(part).complete();
-                    }
-                    System.out.println("Sent message to channel " + channel.getName() + " in guild " + channel.getGuild().getName());
-                } catch (Exception e) {
-                    throw new RuntimeException("If permissions are missing even though the bot should have them set the permissions in the channel manually for the bot", e);
-                }
+                poster.post(new JdaChannel(channel, jda.getSelfUser().getIdLong()), messageParts);
+                System.out.println("Announcement is in channel " + channel.getName() + " in guild " + channel.getGuild().getName());
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            exitCode = 1;
         } finally {
             //shutdown() only closes gracefully once all queued requests are done, which may never happen
             jda.shutdownNow();
         }
         //JDA keeps non-daemon threads alive even after shutdown, which would keep the JVM running forever
-        System.exit(0);
+        System.exit(exitCode);
+    }
+
+    static boolean isPermissionError(Throwable e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof InsufficientPermissionException) {
+                return true;
+            }
+            if (cause instanceof ErrorResponseException errorResponse
+                    && (errorResponse.getErrorResponse() == ErrorResponse.MISSING_PERMISSIONS
+                    || errorResponse.getErrorResponse() == ErrorResponse.MISSING_ACCESS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@link ReleasePoster.Channel} backed by a JDA text channel.
+     */
+    private record JdaChannel(TextChannel channel, long selfUserId) implements ReleasePoster.Channel {
+
+        //The most messages Discord returns in one history request
+        private static final int HISTORY_SIZE = 100;
+
+        @Override
+        public String name() {
+            return channel.getName();
+        }
+
+        @Override
+        public List<String> recentOwnMessages() {
+            return channel.getHistory().retrievePast(HISTORY_SIZE).complete().stream()
+                    .filter(message -> message.getAuthor().getIdLong() == selfUserId)
+                    .map(Message::getContentRaw)
+                    .toList();
+        }
+
+        @Override
+        public void send(String content) {
+            channel.sendMessage(content).complete();
+        }
     }
 
 
