@@ -17,8 +17,8 @@
         <version.roaster>2.28.0.Final</version.roaster>
         <native-maven-plugin.xmx>8</native-maven-plugin.xmx>
         <graalvm.sdk.version>25.0.0</graalvm.sdk.version>
-        <!--GraalVM reachability metadata repository. The URL is native-maven-plugin's own default; buildArm64Release.yml
-        overrides it with a copy downloaded through the GitHub API, because GitHub answered 504 for the direct URL-->
+        <!--GraalVM reachability metadata repository. The URL is native-maven-plugin's own default, which the plugin
+        downloads on every native build; the localReachabilityMetadata profile below replaces it with a local copy-->
         <graalvm.metadata.version>1.0.7</graalvm.metadata.version>
         <graalvm.metadata.url>https://github.com/oracle/graalvm-reachability-metadata/releases/download/${graalvm.metadata.version}/graalvm-reachability-metadata-${graalvm.metadata.version}.zip</graalvm.metadata.url>
     </properties>
@@ -612,6 +612,20 @@
 
 
     <profiles>
+        <profile>
+            <!--GitHub intermittently answers 504 / times out for the direct release URL of the metadata zip, while the
+            API asset endpoint works. The release script (build_and_release.py) and buildArm64Release.yml download it
+            with "gh release download" into core/, and every native build then reads that copy instead.-->
+            <id>localReachabilityMetadata</id>
+            <activation>
+                <file>
+                    <exists>${basedir}/graalvm-reachability-metadata.zip</exists>
+                </file>
+            </activation>
+            <properties>
+                <graalvm.metadata.url>${project.baseUri}graalvm-reachability-metadata.zip</graalvm.metadata.url>
+            </properties>
+        </profile>
         <profile>
             <id>dev</id>
             <dependencies>

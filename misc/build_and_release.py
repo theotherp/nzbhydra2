@@ -810,9 +810,46 @@ def _build_linux_arm64(ctx: BuildContext, log_file: Path) -> str | None:
         return f"Linux arm64 build failed: {e}"
 
 
+REACHABILITY_METADATA_ZIP = PROJECT_ROOT / "core" / "graalvm-reachability-metadata.zip"
+
+
+def _download_reachability_metadata(ctx: BuildContext) -> None:
+    """Put the GraalVM reachability metadata zip where core/pom.xml's localReachabilityMetadata profile finds it.
+
+    native-maven-plugin otherwise downloads it from a direct GitHub release URL on every native build, and GitHub
+    intermittently answers 504 / times out for that URL; gh goes through the API asset endpoint. The local amd64 build
+    mounts the working tree and build_windows_vm.py copies untracked files, so both builds see the file. The arm64
+    workflow downloads its own copy.
+    """
+    pom = (PROJECT_ROOT / "core" / "pom.xml").read_text(encoding="utf-8")
+    match = re.search(r"<graalvm\.metadata\.version>([^<]+)</graalvm\.metadata\.version>", pom)
+    if not match:
+        raise RuntimeError("graalvm.metadata.version not found in core/pom.xml")
+    version = match.group(1)
+    run_command(
+        ctx,
+        [
+            "gh", "release", "download", version,
+            "--repo", "oracle/graalvm-reachability-metadata",
+            "--pattern", f"graalvm-reachability-metadata-{version}.zip",
+            "--output", str(REACHABILITY_METADATA_ZIP),
+            "--clobber",
+        ],
+        f"Downloading GraalVM reachability metadata {version}",
+    )
+
+
 @step("build_native_executables", "Build native executables (Windows + Linux amd64 + Linux arm64 in parallel)")
 def build_native_executables(ctx: BuildContext) -> None:
     """Build Windows and Linux executables in parallel (3 concurrent builds)."""
+    _download_reachability_metadata(ctx)
+    try:
+        _build_native_executables(ctx)
+    finally:
+        REACHABILITY_METADATA_ZIP.unlink(missing_ok=True)
+
+
+def _build_native_executables(ctx: BuildContext) -> None:
     # Create separate log files for parallel builds
     log_dir = ctx.log_file.parent
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

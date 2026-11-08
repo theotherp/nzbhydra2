@@ -56,14 +56,14 @@ jobs:
                     echo "$(cat "$file.sha256")  $file" | sha256sum -c -
 
             -   name: Download GraalVM reachability metadata
-                # native-maven-plugin downloads it from the same kind of direct release URL on every build; hand it a
-                # copy fetched through the API instead (see graalvm.metadata.url in core/pom.xml)
+                # native-maven-plugin downloads it from the same kind of direct release URL on every build. A copy in
+                # core/ activates core/pom.xml's localReachabilityMetadata profile, which makes the build read it instead.
                 env:
                     GH_TOKEN: ${{ github.token }}
                 run: |
                     version=$(sed -n 's:.*<graalvm.metadata.version>\(.*\)</graalvm.metadata.version>.*:\1:p' core/pom.xml)
-                    gh release download "$version" --repo oracle/graalvm-reachability-metadata --pattern "graalvm-reachability-metadata-$version.zip" --output graalvm-reachability-metadata.zip
-                    unzip -tq graalvm-reachability-metadata.zip
+                    gh release download "$version" --repo oracle/graalvm-reachability-metadata --pattern "graalvm-reachability-metadata-$version.zip" --output core/graalvm-reachability-metadata.zip
+                    unzip -tq core/graalvm-reachability-metadata.zip
 
             -   name: Build image
                 run: docker build -t hydrabuild misc/buildLinuxCore/arm64
@@ -72,8 +72,7 @@ jobs:
                 # buildInContainer.sh builds core, checks the glibc baseline and compresses the executable with upx
                 run: |
                     mkdir -p ~/.m2/repository
-                    docker run --rm -v "$PWD:/nzbhydra2:rw" -v "$HOME/.m2/repository:/root/.m2/repository:rw" \
-                        -e MAVEN_ARGS="-Dgraalvm.metadata.url=file:///nzbhydra2/graalvm-reachability-metadata.zip" hydrabuild:latest
+                    docker run --rm -v "$PWD:/nzbhydra2:rw" -v "$HOME/.m2/repository:/root/.m2/repository:rw" hydrabuild:latest
                     df -h /
 
             -   name: Read version
