@@ -1704,6 +1704,72 @@ describe("SearchResults", () => {
         expect(request.category).toBe("Deterministic Category");
     });
 
+    // #1121: SABnzbd's add-only NZB key rejects `get_cats` but accepts the
+    // add. With a configured default the bulk send needs no list, so it stays
+    // available and transmits that default, as the per-row buttons already do.
+    it("should send selected results with the configured default when the category list fails to load", async () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {
+                    downloaders: [
+                        {
+                            name: "SAB",
+                            enabled: true,
+                            defaultCategory: "Use no category",
+                        },
+                    ],
+                },
+            },
+        };
+        const fetchImplementation = vi.fn(
+            // `init` is read back below to check the add request's category.
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (url: RequestInfo | URL, _init?: RequestInit) => {
+                const target = String(url);
+                if (target.includes("/categories")) {
+                    return Promise.resolve(
+                        new Response("API Key Incorrect", {status: 403}),
+                    );
+                }
+                if (target.includes("checkDuplicateMovieDownload")) {
+                    return Promise.resolve(
+                        jsonResponse({reasonRequired: false}),
+                    );
+                }
+                return Promise.resolve(
+                    jsonResponse({successful: true, addedIds: [1]}),
+                );
+            },
+        );
+        vi.stubGlobal("fetch", fetchImplementation);
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        expect(
+            await screen.findByText(
+                "Unable to load downloader categories. Selected results are sent with the configured default category.",
+            ),
+        ).toBeVisible();
+        fireEvent.click(
+            screen.getByRole("checkbox", {name: "Select NZB result"}),
+        );
+        const sendButton = screen.getByRole("button", {
+            name: "Send selected to downloader",
+        });
+        expect(sendButton).toBeEnabled();
+        fireEvent.click(sendButton);
+        await vi.waitFor(() =>
+            expect(
+                fetchImplementation.mock.calls.some(([url]) =>
+                    String(url).endsWith("addNzbs"),
+                ),
+            ).toBe(true),
+        );
+        const addCall = fetchImplementation.mock.calls.find(([url]) =>
+            String(url).endsWith("addNzbs"),
+        );
+        expect(requestCategory(addCall?.[1] ?? {})).toBe("Use no category");
+    });
+
     // A category-load failure must not lose the configured default: the list
     // was never the authority, so the select keeps showing what a send would
     // transmit rather than reading as "Use downloader default".
@@ -1726,7 +1792,7 @@ describe("SearchResults", () => {
         renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
         expect(
             await screen.findByText(
-                "Unable to load downloader categories. Choose another downloader or try again.",
+                "Unable to load downloader categories. Selected results are sent with the configured default category.",
             ),
         ).toBeVisible();
         expect(categorySelect()).toHaveTextContent("Deterministic Category");

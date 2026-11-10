@@ -143,7 +143,7 @@ export function DownloadActions({
     const [downloaderCategories, setDownloaderCategories] = useState<string[]>(
         [],
     );
-    const [categoryError, setCategoryError] = useState<string>();
+    const [categoryLoadFailed, setCategoryLoadFailed] = useState(false);
     const [category, setCategory] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
     // FM-181: the compact row's two menus. Declared unconditionally, like
@@ -172,7 +172,7 @@ export function DownloadActions({
         if (downloaderName === undefined) {
             return;
         }
-        setCategoryError(undefined);
+        setCategoryLoadFailed(false);
         // FM-114: the selection starts on the downloader's configured
         // `defaultCategory`, set here rather than inside the `.then` because
         // the fetched list is not what decides it. Legacy's
@@ -189,11 +189,22 @@ export function DownloadActions({
             })
             .catch(() => {
                 setDownloaderCategories([]);
-                setCategoryError(
-                    "Unable to load downloader categories. Choose another downloader or try again.",
-                );
+                setCategoryLoadFailed(true);
             });
     }, [downloaderDefault, downloaderName, transport]);
+    // #1121: a failed category fetch blocks the send only when there is no
+    // configured default to fall back on -- the same rule the per-row buttons
+    // follow (`SendToDownloaderButtons`' `start`). SABnzbd's add-only NZB key
+    // rejects `get_cats` but accepts the add itself, so with a default the
+    // send needs no list at all.
+    const sendBlockedByCategories =
+        categoryLoadFailed && downloaderDefault === null;
+    const categoryError = !categoryLoadFailed
+        ? undefined
+        : sendBlockedByCategories
+          ? "Unable to load downloader categories. Choose another downloader or try again."
+          : "Unable to load downloader categories. Selected results are sent with the configured default category.";
+    const categoryAlertSeverity = sendBlockedByCategories ? "error" : "warning";
     // The configured default when the fetched list does not offer it; the
     // extra option the select renders for it (see below).
     const outOfListDefault =
@@ -241,7 +252,7 @@ export function DownloadActions({
                 message: "No downloader is available.",
             });
         }
-        if (categoryError) {
+        if (sendBlockedByCategories) {
             return;
         }
         const sendableResults = results.filter((result) =>
@@ -340,7 +351,7 @@ export function DownloadActions({
         }, "Prepared NZB ZIP download.");
     if (compact) {
         const sendDisabled =
-            busy || Boolean(categoryError) || results.length === 0;
+            busy || sendBlockedByCategories || results.length === 0;
         const closeSendMenu = () => setSendMenuAnchor(null);
         const closeMoreMenu = () => setMoreMenuAnchor(null);
         // The category options the desktop `Select` renders, in its order:
@@ -386,7 +397,9 @@ export function DownloadActions({
                     </Alert>
                 )}
                 {categoryError && (
-                    <Alert severity="error">{categoryError}</Alert>
+                    <Alert severity={categoryAlertSeverity}>
+                        {categoryError}
+                    </Alert>
                 )}
                 {downloaders.length > 0 && (
                     <ButtonGroup
@@ -607,7 +620,7 @@ export function DownloadActions({
                 <Button
                     data-testid="send-to-downloader"
                     disabled={
-                        busy || Boolean(categoryError) || results.length === 0
+                        busy || sendBlockedByCategories || results.length === 0
                     }
                     onClick={send}
                     size="small"
@@ -622,7 +635,9 @@ export function DownloadActions({
                     No downloader is configured for selected-result sends.
                 </Alert>
             )}
-            {categoryError && <Alert severity="error">{categoryError}</Alert>}
+            {categoryError && (
+                <Alert severity={categoryAlertSeverity}>{categoryError}</Alert>
+            )}
             {showZip && (
                 <Button
                     disabled={busy || selectedNzbs.length === 0}

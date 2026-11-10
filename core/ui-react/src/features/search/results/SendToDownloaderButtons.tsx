@@ -232,8 +232,9 @@ export function SendToDownloaderButtons({
                 downloader,
             });
         } catch {
-            // The bulk bar refuses to send at all when this list cannot be
-            // loaded (its send button is disabled behind `categoryError`);
+            // Only a downloader without a configured default gets here, and
+            // the bulk bar refuses such a send too when this list cannot be
+            // loaded (its button is disabled behind `sendBlockedByCategories`);
             // sending a guessed category from here instead would be the very
             // thing this picker exists to stop.
             toasts.showToast({
