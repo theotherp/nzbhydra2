@@ -47,6 +47,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component("torboxdownloader")
@@ -68,6 +69,7 @@ public class Torbox extends Downloader {
 
     private static final String HOST = "torbox.app";
     private static final String BASE_URL = "https://torbox.app";
+    private static final Set<String> FINISHED_STATES = Set.of("failed", "completed", "cached", "expired");
     private static final String BASE_API_URL = "https://api.torbox.app/v1/api";
     public static final Duration CACHE_TIME = Duration.ofSeconds(5);
 
@@ -272,7 +274,7 @@ public class Torbox extends Downloader {
     public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
         return getDownloaderEntries()
                 .stream()
-                .filter(x -> "failed".equals(x.getStatus()) || "completed".equals(x.getStatus()) || "cached".equals(x.getStatus()))
+            .filter(x -> x.getStatus() != null && FINISHED_STATES.contains(x.getStatus()))
                 .toList();
     }
 
@@ -280,7 +282,7 @@ public class Torbox extends Downloader {
     public List<DownloaderEntry> getQueue(@Nullable Instant earliestDownload) throws DownloaderException {
         return getDownloaderEntries()
                 .stream()
-                .filter(x -> !"failed".equals(x.getStatus()) && !"completed".equals(x.getStatus()) && !"cached".equals(x.getStatus()))
+            .filter(x -> x.getStatus() == null || !FINISHED_STATES.contains(x.getStatus()))
                 .toList();
     }
 
@@ -329,7 +331,9 @@ public class Torbox extends Downloader {
             if (response.getStatusCode().is2xxSuccessful()) {
                 lastUpdate = Instant.now();
                 lastTorboxDownloads.clear();
-                lastTorboxDownloads.addAll(body.getData());
+                if (body != null && body.getData() != null) {
+                    lastTorboxDownloads.addAll(body.getData());
+                }
                 return lastTorboxDownloads;
             }
             log.error("Loading usenet list from torbox failed. Error: {}. Details:\n{}", body.getError(), body.getDetail());
@@ -346,7 +350,8 @@ public class Torbox extends Downloader {
             return FileDownloadStatus.NONE;
         }
         switch (entry.getStatus()) {
-            case "completed", "cached" -> {
+            //Expired downloads were finished but their files have since been removed by torbox
+            case "completed", "cached", "expired" -> {
                 return FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL;
             }
             case "failed" -> {

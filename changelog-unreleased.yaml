@@ -10,3 +10,7 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "TorBox: The download queue and status no longer fail to load when TorBox doesn&apos;t send some values for older downloads."
+-   type: "fix"
+    text: "TorBox: Expired downloads are shown as finished instead of staying in the downloader queue forever."
