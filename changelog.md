@@ -1,3 +1,15 @@
+### v9.3.1 (2026-11-11)
+
+**Fix** TorBox: The download queue and status no longer fail to load when TorBox doesn&apos;t send some values for older downloads.
+
+**Fix** TorBox: Expired downloads are shown as finished instead of staying in the downloader queue forever.
+
+**Fix** &quot;Send selected to downloader&quot; now works when the downloader&apos;s categories can&apos;t be loaded but a default category is configured, e.g. when SABnzbd is set up with its add-only NZB key. See <a href="https://github.com/theotherp/nzbhydra2/issues/1121">#1121</a>
+
+**Fix** API searches no longer fail with a database error when a program like AIOStreams requests several pages of the same search at once.
+
+
+
 ### v9.3.0 (2026-11-08)
 
 **Fix** A search link that has a query but no indexers (e.g. <code>?query=mp3&amp;category=All</code>) now runs the search with the category&apos;s preselected indexers instead of only filling in the form.

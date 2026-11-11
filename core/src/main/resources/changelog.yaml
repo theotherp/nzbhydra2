@@ -2,6 +2,18 @@
 # These are for the user and should not be too technical and focus on what changes for them.
 # Released versions only. Do not add entries by hand: write them to changelog-unreleased.yaml,
 # misc/build_and_release.py moves them here when a release is built.
+-   version: "v9.3.1"
+    date: "2026-11-11"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "TorBox: The download queue and status no longer fail to load when TorBox doesn&apos;t send some values for older downloads."
+      -   type: "fix"
+          text: "TorBox: Expired downloads are shown as finished instead of staying in the downloader queue forever."
+      -   type: "fix"
+          text: "&quot;Send selected to downloader&quot; now works when the downloader&apos;s categories can&apos;t be loaded but a default category is configured, e.g. when SABnzbd is set up with its add-only NZB key. See #1121"
+      -   type: "fix"
+          text: "API searches no longer fail with a database error when a program like AIOStreams requests several pages of the same search at once."
 -   version: "v9.3.0"
     date: "2026-11-08"
     final: true
