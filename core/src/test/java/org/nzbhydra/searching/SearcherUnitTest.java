@@ -42,6 +42,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -942,6 +944,48 @@ public class SearcherUnitTest {
             releaseIndexer.countDown();
             searchThread.join(5_000);
         }
+    }
+
+    @Test
+    void shouldContinueTheSameSearchOnlyOnceWhenPagesAreRequestedConcurrently() throws Exception {
+        //API clients like AIOStreams request several pages of the same search at once. They share one cache entry and
+        //must not both query and persist the same indexer page: that persisted the same occurrences twice and failed
+        //with a unique key violation
+        AtomicInteger callsForSecondPage = new AtomicInteger();
+        CountDownLatch secondPageRequested = new CountDownLatch(1);
+        CountDownLatch releaseSecondPage = new CountDownLatch(1);
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            if (offset > 0) {
+                callsForSecondPage.incrementAndGet();
+                secondPageRequested.countDown();
+                releaseSecondPage.await(10, TimeUnit.SECONDS);
+            }
+            return mockIndexerSearchResult(offset, 100, true, 1000, indexer1);
+        });
+        searcher.search(request(SearchSource.API, 0, 100, "shouldSearchOnceForConcurrentPages"));
+
+        List<SearchResult> results = Collections.synchronizedList(new ArrayList<>());
+        Thread first = new Thread(() -> results.add(searcher.search(request(SearchSource.API, 100, 100, "shouldSearchOnceForConcurrentPages"))));
+        Thread second = new Thread(() -> results.add(searcher.search(request(SearchSource.API, 100, 100, "shouldSearchOnceForConcurrentPages"))));
+        first.start();
+        try {
+            assertThat(secondPageRequested.await(10, TimeUnit.SECONDS)).isTrue();
+            second.start();
+            //Either the second request waits for the first one or it queries the indexer itself
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (second.getState() != Thread.State.BLOCKED && callsForSecondPage.get() < 2 && System.nanoTime() < deadline) {
+                Thread.onSpinWait();
+            }
+        } finally {
+            releaseSecondPage.countDown();
+            first.join(10_000);
+            second.join(10_000);
+        }
+
+        assertThat(callsForSecondPage.get()).isEqualTo(1);
+        verify(indexerSearchResultPersistor, times(2)).persistSearchResultOccurrences(any(), any());
+        assertThat(results).hasSize(2).allSatisfy(x -> assertThat(x.getSearchResultItems()).hasSize(100));
     }
 
     @Test

@@ -100,6 +100,23 @@ public class Searcher {
         eventPublisher.publishEvent(new SearchEvent(searchRequest));
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
+        //Register before any indexer is queried so that a shortcut request can never be lost
+        ActiveSearch activeSearch = new ActiveSearch();
+        if (searchRequest.isShortcut()) {
+            activeSearch.shortcutRequested = true;
+        }
+        activeSearches.put(searchRequest.getSearchRequestId(), activeSearch);
+
+        //API clients may request several pages of the same search at once. Those requests share the cache entry, which
+        //is not thread safe, and would query and persist the same indexer pages twice. The second request waits and
+        //then mostly finds its results in the cache
+        synchronized (searchCacheEntry) {
+            searchCacheEntry.setSearchRequest(searchRequest);
+            return search(searchRequest, searchCacheEntry, activeSearch, stopwatch);
+        }
+    }
+
+    private SearchResult search(SearchRequest searchRequest, SearchCacheEntry searchCacheEntry, ActiveSearch activeSearch, Stopwatch stopwatch) {
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
         //The web UI's first request queries every indexer once and shows everything that returned; loading more is
@@ -108,13 +125,6 @@ public class Searcher {
         //continue a search which returned nothing
         final boolean singleRound = searchRequest.getSource() == SearchSource.INTERNAL && searchRequest.getOffset() == 0 && !searchRequest.isLoadAll();
         searchResult.setIndexerSelectionResult(searchCacheEntry.getIndexerSelectionResult());
-
-        //Register before any indexer is queried so that a shortcut request can never be lost
-        ActiveSearch activeSearch = new ActiveSearch();
-        if (searchRequest.isShortcut()) {
-            activeSearch.shortcutRequested = true;
-        }
-        activeSearches.put(searchRequest.getSearchRequestId(), activeSearch);
 
         while (!shutdownRequested && !activeSearch.shortcutRequested) {
             List<IndexerSearchCacheEntry> indexersToSearch = searchCacheEntry.getIndexersToSearch();
