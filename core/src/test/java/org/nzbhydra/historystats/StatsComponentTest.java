@@ -2,7 +2,6 @@ package org.nzbhydra.historystats;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -38,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -278,6 +279,10 @@ public class StatsComponentTest {
         assertThat((int) shares.get(1).getShare()).isEqualTo(33);
     }
 
+    private static Instant timeOnDayInSystemZone(int hour, int minute, int second) {
+        return LocalDateTime.of(2017, 3, 31, hour, minute, second).atZone(ZoneId.systemDefault()).toInstant();
+    }
+
     protected SearchResultEntity getSearchResultEntity(IndexerEntity indexer1, String title) {
         SearchResultEntity searchResultEntity1 = new SearchResultEntity();
         searchResultEntity1.setIndexer(indexer1);
@@ -286,18 +291,18 @@ public class StatsComponentTest {
         return searchResultEntity1;
     }
 
-    //Doesn't run on CircleCI for some reason
     @Test
-    @Disabled
     void shouldCalculateSearchesPerHourOfDay() throws Exception {
+        //The database query groups by the hour in the JVM's time zone, so the times must be built in that zone.
+        //Fixed epoch seconds only matched the expected hours in CET/CEST, which is why this test failed on CI.
         SearchEntity search12 = new SearchEntity();
-        search12.setTime(Instant.ofEpochSecond(1490955803L));
+        search12.setTime(timeOnDayInSystemZone(12, 23, 23));
         SearchEntity search16a = new SearchEntity();
-        search16a.setTime(Instant.ofEpochSecond(1490971572L));
+        search16a.setTime(timeOnDayInSystemZone(16, 46, 12));
         SearchEntity search16b = new SearchEntity();
-        search16b.setTime(Instant.ofEpochSecond(1490971572L));
+        search16b.setTime(timeOnDayInSystemZone(16, 46, 12));
         SearchEntity search23 = new SearchEntity();
-        search23.setTime(Instant.ofEpochSecond(1490996779L));
+        search23.setTime(timeOnDayInSystemZone(23, 46, 19));
         searchRepository.saveAll(Arrays.asList(search12, search16a, search16b, search23));
 
         List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS), true));

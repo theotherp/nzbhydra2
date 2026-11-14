@@ -13,7 +13,7 @@ import java.net.URI;
 
 @SpringBootTest(classes = NzbHydra.class)
 @AutoConfigureDataJpa
-@Disabled //Only run when needed, we don't want any access to internet from build
+@Disabled("Needs internet access to the sites under test; only run manually when needed")
 public class SslTest {
 
     //Just test that some sites can be visited that used to cause troubles because of SNI

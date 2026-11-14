@@ -14,7 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-@Disabled //Only of OkHTTP bug report, call methods separately. See https://github.com/square/okhttp/issues/3573
+@Disabled("Manual reproduction for an OkHttp bug report; needs internet access, call the methods one at a time") //See https://github.com/square/okhttp/issues/3573
 public class OkHttpHandshakeAlert {
     private final String HOST_DOES_NOT_WORK_WITHOUT_SNI = "https://binsearch.info";
     private final String HOST_DOES_NOT_WORK_WITH_SNI = "https://nzbgeek.info";

@@ -1,7 +1,8 @@
 package org.nzbhydra.config;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.downloading.DownloadType;
@@ -38,8 +39,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(classes = NzbHydra.class)
-@Disabled("Works only locally for some reason") //https://github.com/theotherp/nzbhydra2/actions/runs/19800247988/job/56726483125
 public class ConfigWebTest {
+
+    private static final String NATIVE_BUILD_PROPERTY = "HYDRA_NATIVE_BUILD";
+    private static String previousNativeBuildProperty;
 
     @Autowired
     private ConfigWeb configWeb;
@@ -76,6 +79,25 @@ public class ConfigWebTest {
 
     private IndexerConfig indexerConfig1;
     private IndexerConfig indexerConfig2;
+
+    @BeforeAll
+    static void disableNativeBuildMode() {
+        //The native build workflow exports HYDRA_NATIVE_BUILD=true for its unit test step as well. With it the auth NONE
+        //bypass in HydraGlobalMethodSecurityConfiguration is off and the @Secured ConfigWeb.setConfig threw
+        //AuthenticationCredentialsNotFoundException, which is why this test only worked locally
+        //(https://github.com/theotherp/nzbhydra2/actions/runs/19800247988/job/56726483125). These tests cover the JVM behaviour.
+        previousNativeBuildProperty = System.getProperty(NATIVE_BUILD_PROPERTY);
+        System.setProperty(NATIVE_BUILD_PROPERTY, "false");
+    }
+
+    @AfterAll
+    static void restoreNativeBuildMode() {
+        if (previousNativeBuildProperty == null) {
+            System.clearProperty(NATIVE_BUILD_PROPERTY);
+        } else {
+            System.setProperty(NATIVE_BUILD_PROPERTY, previousNativeBuildProperty);
+        }
+    }
 
     @BeforeEach
     public void setUp() {

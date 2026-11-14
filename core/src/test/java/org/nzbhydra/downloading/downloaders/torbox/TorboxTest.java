@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = NzbHydra.class)
-@Disabled
+@Disabled("Needs network access to the Torbox API, an API key in the TORBOX_API_KEY system property and a local NZB file under c:\\temp")
 class TorboxTest {
 
     @Autowired

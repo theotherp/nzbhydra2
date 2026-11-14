@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
 public class Experiments {
 
     @Test
-    @Disabled
+    @Disabled("Manual experiment: sends requests to a NZBHydra2 instance running on 127.0.0.1:5076")
     void bla() throws IOException, InterruptedException {
         for (int i = 0; i < 1000; i++) {
             Call call = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=blade%20runner").build());
@@ -41,7 +41,7 @@ public class Experiments {
 
 
     @Test
-    @Disabled
+    @Disabled("Manual experiment: prints YAML for inspection and asserts nothing")
     void createSimpleYaml() throws IOException, InterruptedException {
         ObjectMapper objectMapper = new YAMLMapper();
 
@@ -57,7 +57,7 @@ public class Experiments {
     }
 
     @Test
-    @Disabled
+    @Disabled("Manual experiment: prints YAML for inspection and asserts nothing")
     void createTestYaml() throws IOException, InterruptedException {
         ObjectMapper objectMapper = new YAMLMapper();
 
@@ -72,7 +72,7 @@ public class Experiments {
     }
 
     @Test
-    @Disabled
+    @Disabled("Manual stress test: sends requests to a NZBHydra2 instance running on 127.0.0.1:5076")
     void stressTest() throws Exception {
 
         OkHttpClient client = new OkHttpClient.Builder()

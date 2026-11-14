@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest(classes = NzbHydra.class)
 @AutoConfigureDataJpa
 //@DataJpaTest
-@Disabled
+@Disabled("Manual benchmark for parallel saves: it asserts nothing and only prints timings")
 public class ThreadedTest {
 
     @Autowired
