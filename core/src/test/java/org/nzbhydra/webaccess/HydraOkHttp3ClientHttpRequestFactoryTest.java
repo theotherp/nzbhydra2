@@ -1,6 +1,7 @@
 package org.nzbhydra.webaccess;
 
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -11,12 +12,15 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ProxyType;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory.SockProxySocketFactory;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -140,6 +144,60 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         final OkHttpClient clientAfterConfigChange = testee.getOkHttpClient(host);
         assertThat(clientAfterConfigChange).isNotSameAs(clientBeforeConfigChange);
         assertThat(clientAfterConfigChange.proxy().address()).isEqualTo(new InetSocketAddress("proxyhost", 1234));
+    }
+
+    @Test
+    void shouldDeriveAllClientsFromOneBaseClient() {
+        final OkHttpClient base = testee.getBaseClient();
+        final List<OkHttpClient> clients = List.of(
+                testee.getOkHttpClient("www.google.de"),
+                testee.getOkHttpClient("www.google.de", 5),
+                testee.getOkHttpClient("www.yahoo.com", 7));
+
+        baseConfig.getMain().setProxyType(ProxyType.HTTP);
+        baseConfig.getMain().setProxyHost("proxyhost");
+        baseConfig.getMain().setProxyPort(1234);
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+        final OkHttpClient clientAfterConfigChange = testee.getOkHttpClient("www.google.de");
+
+        assertThat(testee.getBaseClient()).isSameAs(base);
+        for (OkHttpClient client : clients) {
+            assertThat(client.dispatcher()).isSameAs(base.dispatcher());
+            assertThat(client.connectionPool()).isSameAs(base.connectionPool());
+        }
+        assertThat(clientAfterConfigChange.dispatcher()).isSameAs(base.dispatcher());
+        assertThat(clientAfterConfigChange.connectionPool()).isSameAs(base.connectionPool());
+        assertThat(clientAfterConfigChange.proxy().address()).isEqualTo(new InetSocketAddress("proxyhost", 1234));
+    }
+
+    @Test
+    void shouldKeepTimeoutsPerHostAndTimeout() {
+        ReflectionTestUtils.setField(testee, "timeout", 10);
+
+        final OkHttpClient defaultClient = testee.getOkHttpClient("www.google.de");
+        final OkHttpClient clientWithTimeout = testee.getOkHttpClient("www.google.de", 3);
+
+        assertThat(defaultClient.readTimeoutMillis()).isEqualTo(10_000);
+        assertThat(clientWithTimeout.readTimeoutMillis()).isEqualTo(3_000);
+        assertThat(clientWithTimeout.connectTimeoutMillis()).isEqualTo(3_000);
+        assertThat(clientWithTimeout.writeTimeoutMillis()).isEqualTo(3_000);
+        assertThat(testee.getBaseClient().readTimeoutMillis()).isEqualTo(10_000);
+    }
+
+    @Test
+    void shouldAddHttpLoggingInterceptorOnlyWhileMarkerIsEnabled() {
+        final String host = "www.somedomain.com";
+        assertThat(testee.getOkHttpClient(host).interceptors()).noneMatch(HttpLoggingInterceptor.class::isInstance);
+
+        baseConfig.getMain().getLogging().getMarkersToLog().add(LoggingMarkers.HTTP.getName());
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+        assertThat(testee.getOkHttpClient(host).interceptors()).hasSize(1).allMatch(HttpLoggingInterceptor.class::isInstance);
+        assertThat(testee.getOkHttpClient("www.otherdomain.com", 5).interceptors()).hasSize(1).allMatch(HttpLoggingInterceptor.class::isInstance);
+
+        baseConfig.getMain().getLogging().getMarkersToLog().remove(LoggingMarkers.HTTP.getName());
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+        assertThat(testee.getOkHttpClient(host).interceptors()).noneMatch(HttpLoggingInterceptor.class::isInstance);
+        assertThat(testee.getBaseClient().interceptors()).isEmpty();
     }
 
 

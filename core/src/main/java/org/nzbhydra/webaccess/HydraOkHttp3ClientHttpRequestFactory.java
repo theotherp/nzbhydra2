@@ -70,6 +70,13 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private Ssl ssl;
 
     private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
+    /**
+     * All clients are derived from this one with {@link OkHttpClient#newBuilder()}, so they share its dispatcher and
+     * connection pool, and building a client does not set up a new default SSL socket factory and trust manager.
+     * It only holds settings which never change at runtime; everything that depends on the config is set on the
+     * derived builder.
+     */
+    private volatile OkHttpClient baseClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
     private SocketFactory sockProxySocketFactory;
 
@@ -190,7 +197,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     }
 
     protected Builder getBaseBuilder() {
-        Builder builder = new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
+        Builder builder = getBaseClient().newBuilder();
         if (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTP.getName())) {
             try {
                 if (httpLoggingInterceptor == null) {
@@ -207,6 +214,20 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         }
 
         return builder;
+    }
+
+    OkHttpClient getBaseClient() {
+        OkHttpClient client = baseClient;
+        if (client == null) {
+            synchronized (this) {
+                client = baseClient;
+                if (client == null) {
+                    client = new OkHttpClient.Builder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS).build();
+                    baseClient = client;
+                }
+            }
+        }
+        return client;
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {
