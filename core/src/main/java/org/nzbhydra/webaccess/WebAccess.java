@@ -1,6 +1,7 @@
 package org.nzbhydra.webaccess;
 
 import com.google.common.base.Stopwatch;
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,8 +23,10 @@ import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,7 +53,22 @@ public class WebAccess {
     public String callUrl(String url, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder().url(url);
 
-        return callUrl(url, headers, timeout, builder);
+        return callUrl(url, headers, timeout, null, builder);
+    }
+
+    /**
+     * Like {@link #callUrl(String, Map, int)}, but the whole call - connecting, writing the request and reading the
+     * complete response body - must finish within {@code callTimeout}. The connect, read and write timeouts only bound
+     * single steps, so a server sending its response slowly enough can outlive all of them. Only this call is
+     * affected, the shared client keeps no call timeout.
+     *
+     * @throws java.io.InterruptedIOException (but not a {@link SocketTimeoutException}) if the call timeout fired or
+     *                                        the calling thread was interrupted while the response body was read
+     */
+    public String callUrl(String url, Map<String, String> headers, int timeout, Duration callTimeout) throws IOException {
+        Builder builder = new Builder().url(url);
+
+        return callUrl(url, headers, timeout, callTimeout, builder);
     }
 
     public String postToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
@@ -58,7 +76,7 @@ public class WebAccess {
                 .url(url)
                 .post(RequestBody.create(content, mediaContent));
 
-        return callUrl(url, headers, timeout, builder);
+        return callUrl(url, headers, timeout, null, builder);
     }
 
     public String putToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
@@ -66,7 +84,7 @@ public class WebAccess {
                 .url(url)
                 .put(RequestBody.create(content, mediaContent));
 
-        return callUrl(url, headers, timeout, builder);
+        return callUrl(url, headers, timeout, null, builder);
     }
 
     public String deleteToUrl(String url, Map<String, String> headers, int timeout) throws IOException {
@@ -74,10 +92,10 @@ public class WebAccess {
                 .url(url)
                 .delete();
 
-        return callUrl(url, headers, timeout, builder);
+        return callUrl(url, headers, timeout, null, builder);
     }
 
-    private String callUrl(String url, Map<String, String> headers, int timeout, Builder builder) throws IOException {
+    private String callUrl(String url, Map<String, String> headers, int timeout, Duration callTimeout, Builder builder) throws IOException {
         for (Entry<String, String> entry : headers.entrySet()) {
             builder.addHeader(entry.getKey(), entry.getValue());
         }
@@ -87,11 +105,21 @@ public class WebAccess {
         OkHttpClient client = requestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
 
 
+        Call call = client.newCall(request);
+        if (callTimeout != null) {
+            call.timeout().timeout(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
         String bodyAsString;
-        try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
+        try (Response response = call.execute(); ResponseBody body = response.body()) {
             try {
                 bodyAsString = body == null ? null : body.string();
             } catch (IOException e) {
+                if (callTimeout != null && e instanceof InterruptedIOException && !(e instanceof SocketTimeoutException)) {
+                    //The call timeout fired or the thread was interrupted: the body is incomplete and must not be
+                    //returned as if the server had sent none
+                    throw e;
+                }
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
