@@ -26,8 +26,9 @@ public class DiskCache extends AbstractValueAdaptingCache {
 
     private static final int MAX_ENTRIES = 500;
     private static final int MAX_ENTRIES_SIZE_MB = 50;
+    private static final long MAX_ENTRIES_SIZE_BYTES = MAX_ENTRIES_SIZE_MB * 1024L * 1024L;
 
-    private static final Map<String, Instant> ACCESS_MAP = new ConcurrentHashMap<>();
+    private final Map<String, Instant> accessMap = new ConcurrentHashMap<>();
 
     private final File cacheDir;
     private final String name;
@@ -42,7 +43,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
         File[] existingFiles = cacheDir.listFiles();
         if (existingFiles != null) {
             for (File file : existingFiles) {
-                ACCESS_MAP.putIfAbsent(file.getName(), Instant.ofEpochMilli(file.lastModified()));
+                accessMap.putIfAbsent(file.getName(), Instant.ofEpochMilli(file.lastModified()));
             }
         }
     }
@@ -62,7 +63,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
     public <T> T get(Object key, Callable<T> valueLoader) {
         if (key instanceof String keyString) {
             String cacheKey = sanitizeKey(keyString);
-            ACCESS_MAP.put(cacheKey, Instant.now());
+            accessMap.put(cacheKey, Instant.now());
             File keyFile = buildKeyFile(keyString);
             if (keyFile.exists()) {
                 return (T) Files.readAllBytes(keyFile.toPath());
@@ -86,7 +87,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
         if ((key instanceof String keyString) && (value instanceof byte[] valueBytes)) {
             logger.debug(LoggingMarkers.DISK_CACHE, "Writing entry with key {} and size {}", keyString, valueBytes.length);
             Files.write(buildKeyFile(keyString).toPath(), valueBytes);
-            ACCESS_MAP.put(sanitizeKey(keyString), Instant.now());
+            accessMap.put(sanitizeKey(keyString), Instant.now());
         } else {
             throw new RuntimeException("Illegal type for key " + key.getClass() + " and/or value " + value.getClass());
         }
@@ -94,36 +95,57 @@ public class DiskCache extends AbstractValueAdaptingCache {
     }
 
     private void cleanAfterPut() {
-        while (ACCESS_MAP.size() > MAX_ENTRIES) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "{} entries in cache - exceeds limit of {}", ACCESS_MAP.size(), MAX_ENTRIES);
+        while (accessMap.size() > MAX_ENTRIES) {
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "{} entries in cache - exceeds limit of {}", accessMap.size(), MAX_ENTRIES);
             deleteOldestEntry();
         }
-        while (getCacheSizeInMb() > MAX_ENTRIES_SIZE_MB) {
+        long cacheSizeInBytes = getCacheSizeInBytes();
+        while (cacheSizeInBytes > MAX_ENTRIES_SIZE_BYTES) {
             logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Cache takes up too much space (more than {})", MAX_ENTRIES_SIZE_MB);
-            deleteOldestEntry();
+            long freedBytes = deleteOldestEntry();
+            if (freedBytes < 0) {
+                logger.debug(LoggingMarkers.DISK_CACHE, "Unable to delete any more entries from cache");
+                break;
+            }
+            cacheSizeInBytes -= freedBytes;
         }
     }
 
-    private double getCacheSizeInMb() {
+    private long getCacheSizeInBytes() {
         File[] files = cacheDir.listFiles();
         if (files == null) {
             return 0;
         }
-        return Arrays.stream(files).mapToDouble(File::length).sum() / (1024 * 1024);
+        return Arrays.stream(files).mapToLong(File::length).sum();
     }
 
-    private void deleteOldestEntry() {
-        Optional<Map.Entry<String, Instant>> oldestEntry = ACCESS_MAP.entrySet().stream().min(Map.Entry.comparingByValue());
+    /**
+     * Deletes the least recently accessed entry or, if no access data is known, the oldest file in the cache dir.
+     *
+     * @return the number of bytes freed on disk, or -1 if nothing could be removed
+     */
+    private long deleteOldestEntry() {
+        Optional<Map.Entry<String, Instant>> oldestEntry = accessMap.entrySet().stream().min(Map.Entry.comparingByValue());
         if (oldestEntry.isPresent()) {
             logger.debug(LoggingMarkers.DISK_CACHE, "Removing oldest entry {}", oldestEntry.get());
-            ACCESS_MAP.remove(oldestEntry.get().getKey());
-            FileUtils.deleteQuietly(new File(cacheDir, oldestEntry.get().getKey()));
-        } else {
-            File[] files = cacheDir.listFiles();
-            if (files != null) {
-                Arrays.stream(files).min(Comparator.comparingLong(File::lastModified)).ifPresent(FileUtils::deleteQuietly);
-            }
+            accessMap.remove(oldestEntry.get().getKey());
+            return deleteFile(new File(cacheDir, oldestEntry.get().getKey()));
         }
+        File[] files = cacheDir.listFiles();
+        if (files == null) {
+            return -1;
+        }
+        Optional<File> oldestFile = Arrays.stream(files).min(Comparator.comparingLong(File::lastModified));
+        if (oldestFile.isEmpty()) {
+            return -1;
+        }
+        long length = oldestFile.get().length();
+        return FileUtils.deleteQuietly(oldestFile.get()) ? length : -1;
+    }
+
+    private long deleteFile(File file) {
+        long length = file.length();
+        return FileUtils.deleteQuietly(file) ? length : 0;
     }
 
     private String sanitizeKey(String keyString) {
@@ -141,7 +163,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
             File keyFile = buildKeyFile(keyString);
             if (keyFile.exists()) {
                 logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Evicting entry {}", keyString);
-                ACCESS_MAP.remove(sanitizeKey(keyString));
+                accessMap.remove(sanitizeKey(keyString));
                 FileUtils.deleteQuietly(keyFile);
             } else {
                 logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Can't evict not existing entry {}", keyString);
@@ -157,7 +179,7 @@ public class DiskCache extends AbstractValueAdaptingCache {
         }
         logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Clearing cache");
         FileUtils.cleanDirectory(cacheDir);
-        ACCESS_MAP.clear();
+        accessMap.clear();
     }
 
     @Override

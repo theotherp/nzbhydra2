@@ -3,11 +3,9 @@
 package org.nzbhydra.cache;
 
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -20,23 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DiskCacheTest {
 
+    @TempDir
     File file;
-
-    @BeforeEach
-    @SneakyThrows
-    public void setUp() {
-        clearAccessMap();
-        file = Files.createTempDirectory("test").toFile();
-    }
-
-    @AfterEach
-    @SneakyThrows
-    public void tearDown() {
-        if (file != null) {
-            FileUtils.deleteQuietly(file);
-        }
-        clearAccessMap();
-    }
 
     @Test
     @SneakyThrows
@@ -97,7 +80,6 @@ class DiskCacheTest {
         byte[] value = "hello".getBytes(StandardCharsets.UTF_8);
         diskCache.put("show.name.jpg", value);
 
-        clearAccessMap();
         DiskCache restartedCache = new DiskCache(file, "name");
         for (int i = 1; i <= 500; i++) {
             restartedCache.put("key" + i, value);
@@ -119,7 +101,7 @@ class DiskCacheTest {
         writeFile("new-file", 20_000_000, Instant.now().minusSeconds(1));
 
         DiskCache diskCache = new DiskCache(file, "name");
-        clearAccessMap();
+        getAccessMap(diskCache).clear();
 
         diskCache.put("fresh-key", "small".getBytes(StandardCharsets.UTF_8));
 
@@ -130,17 +112,39 @@ class DiskCacheTest {
         assertThat(new File(file, "new-file")).exists();
     }
 
+    @Test
     @SneakyThrows
-    private void clearAccessMap() {
-        getAccessMap().clear();
+    void shouldDeleteAsManyOldEntriesAsNeededWhenCacheIsOversized() {
+        DiskCache diskCache = new DiskCache(file, "name");
+        for (int i = 1; i <= 4; i++) {
+            diskCache.put("small" + i, new byte[1_000_000]);
+        }
+        diskCache.put("large", new byte[48 * 1024 * 1024]);
+
+        assertThat(diskCache.lookup("small1")).as("Oldest entry should be deleted").isNull();
+        assertThat(diskCache.lookup("small2")).as("Second oldest entry should be deleted").isNull();
+        assertThat(diskCache.lookup("small3")).as("Cache should stop deleting once below the limit").isNotNull();
+        assertThat(diskCache.lookup("small4")).isNotNull();
+        assertThat(diskCache.lookup("large")).isNotNull();
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldKeepAccessDataSeparatePerInstance(@TempDir File otherDir) {
+        DiskCache diskCache = new DiskCache(file, "name");
+        DiskCache otherCache = new DiskCache(otherDir, "other");
+        diskCache.put("key", "hello".getBytes(StandardCharsets.UTF_8));
+
+        assertThat(getAccessMap(diskCache)).containsOnlyKeys("key");
+        assertThat(getAccessMap(otherCache)).isEmpty();
     }
 
     @SuppressWarnings("unchecked")
     @SneakyThrows
-    private Map<String, Instant> getAccessMap() {
-        Field field = DiskCache.class.getDeclaredField("ACCESS_MAP");
+    private Map<String, Instant> getAccessMap(DiskCache diskCache) {
+        Field field = DiskCache.class.getDeclaredField("accessMap");
         field.setAccessible(true);
-        return (Map<String, Instant>) field.get(null);
+        return (Map<String, Instant>) field.get(diskCache);
     }
 
     @SneakyThrows
