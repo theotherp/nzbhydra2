@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +43,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -320,25 +325,113 @@ public class SearchResultAcceptorTest {
     @Test
     void shouldCheckRegexes() {
         item.setTitle("aabccd");
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", ""));
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "a+b", ""));
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", ""));
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "a+b", "c+d"));
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "", "c+d"));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "", new HashMap<>()));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "a+b", "", new HashMap<>()));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "", new HashMap<>()));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "a+b", "c+d", new HashMap<>()));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "", "c+d", new HashMap<>()));
 
         item.setTitle("My.favorite.Show.s01e03.720p.HDTV.mkv");
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "720p.HDTV", ""));
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "SDTV"));
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "", "720p.HDTV"));
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "Show", "720p.HDTV"));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "720p.HDTV", "", new HashMap<>()));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "SDTV", new HashMap<>()));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "", "720p.HDTV", new HashMap<>()));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "Show", "720p.HDTV", new HashMap<>()));
 
         item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.mkv");
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "\\.(SDTV|CAM)\\."));
-        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "", "\\.(SDTV|CAM)\\.", new HashMap<>()));
+        assertIsAccepted(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", "", new HashMap<>()));
         item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.avi");
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", "", new HashMap<>()));
         item.setTitle("My.movie.about.mkv.avi");
-        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "\\.mkv$", ""));
+        assertIsRejected(testee.checkRegexes(item, HashMultiset.create(), "\\.mkv$", "", new HashMap<>()));
+    }
+
+    @Test
+    void shouldCompileRegexOnceAndReuseItForSeveralItems() {
+        Map<String, Pattern> regexCache = new HashMap<>();
+        SearchResultItem matchingItem = new SearchResultItem();
+        matchingItem.setTitle("My.favorite.Show.s01e03.720P.HDTV.mkv");
+        SearchResultItem otherItem = new SearchResultItem();
+        otherItem.setTitle("My.favorite.Show.s01e03.1080p.WEB.mkv");
+        HashMultiset<String> reasonsForRejection = HashMultiset.create();
+
+        assertThat(testee.checkRegexes(matchingItem, reasonsForRejection, "720p", "", regexCache)).isTrue();
+        Pattern compiledPattern = regexCache.get("720p");
+        assertThat(testee.checkRegexes(otherItem, reasonsForRejection, "720p", "", regexCache)).isFalse();
+
+        assertThat(regexCache).containsOnlyKeys("720p");
+        assertThat(regexCache.get("720p")).isSameAs(compiledPattern);
+        assertThat(compiledPattern.flags()).isEqualTo(Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        assertThat(reasonsForRejection.count("Required regex doesn't match")).isEqualTo(1);
+    }
+
+    @Test
+    void shouldApplyConfiguredRegexToEveryItemOfOneRun() {
+        Indexer<?> indexerMock = prepareForAcceptanceRun();
+        when(searchingConfig.getApplyRestrictions()).thenReturn(SearchSourceRestriction.BOTH);
+        when(searchingConfig.getForbiddenRegex()).thenReturn(Optional.of("\\.cam\\."));
+        Category regexCategory = new Category("regex");
+        regexCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+        regexCategory.setApplyRestrictionsType(SearchSourceRestriction.BOTH);
+        regexCategory.setRequiredRegex("720p");
+        List<SearchResultItem> items = List.of(
+            fillItem(new SearchResultItem(), "Show.s01e01.720p.CAM.mkv", indexerMock, regexCategory),
+            fillItem(new SearchResultItem(), "Show.s01e02.720p.HDTV.mkv", indexerMock, regexCategory),
+            fillItem(new SearchResultItem(), "Show.s01e03.1080p.HDTV.mkv", indexerMock, regexCategory),
+            fillItem(new SearchResultItem(), "Show.s01e04.720p.WEB.mkv", indexerMock, regexCategory)
+        );
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+
+        SearchResultAcceptor.AcceptorResult result = testee.acceptResults(items, request, indexerConfig);
+
+        assertThat(result.getAcceptedResults()).extracting(SearchResultItem::getTitle)
+            .containsExactly("Show.s01e02.720p.HDTV.mkv", "Show.s01e04.720p.WEB.mkv");
+        assertThat(result.getReasonsForRejection().count("Forbidden regex matches")).isEqualTo(1);
+        assertThat(result.getReasonsForRejection().count("Required regex doesn't match")).isEqualTo(1);
+    }
+
+    @Test
+    void shouldStillFailOnInvalidRegex() {
+        Indexer<?> indexerMock = prepareForAcceptanceRun();
+        when(searchingConfig.getApplyRestrictions()).thenReturn(SearchSourceRestriction.BOTH);
+        when(searchingConfig.getRequiredRegex()).thenReturn(Optional.of("(unclosed"));
+        Category regexCategory = new Category("regex");
+        regexCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+        regexCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+        List<SearchResultItem> items = List.of(fillItem(new SearchResultItem(), "Show.s01e01.720p.mkv", indexerMock, regexCategory));
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+
+        assertThatThrownBy(() -> testee.acceptResults(items, request, indexerConfig)).isInstanceOf(PatternSyntaxException.class);
+    }
+
+    @Test
+    void shouldKeepTheIndexersOrderOfAcceptedResults() {
+        Indexer<?> indexerMock = prepareForAcceptanceRun();
+        when(searchingConfig.getApplyRestrictions()).thenReturn(SearchSourceRestriction.NONE);
+        Category orderCategory = new Category("order");
+        orderCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+        orderCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+        List<SearchResultItem> items = new ArrayList<>();
+        List<String> expectedTitles = new ArrayList<>();
+        for (int i = 50; i > 0; i--) {
+            String title = "result number " + i;
+            items.add(fillItem(new SearchResultItem(), title, indexerMock, orderCategory));
+            expectedTitles.add(title);
+        }
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+
+        SearchResultAcceptor.AcceptorResult result = testee.acceptResults(items, request, indexerConfig);
+
+        assertThat(result.getAcceptedResults()).extracting(SearchResultItem::getTitle).containsExactlyElementsOf(expectedTitles);
+    }
+
+    private Indexer<?> prepareForAcceptanceRun() {
+        when(searchingConfig.getLanguagesToKeep()).thenReturn(Collections.emptyList());
+        when(indexerConfig.getEnabledCategories()).thenReturn(Collections.emptyList());
+        when(indexerConfig.getName()).thenReturn("indexer");
+        Indexer<?> indexerMock = mock(Newznab.class);
+        when(indexerMock.getConfig()).thenReturn(indexerConfig);
+        return indexerMock;
     }
 
     @Test

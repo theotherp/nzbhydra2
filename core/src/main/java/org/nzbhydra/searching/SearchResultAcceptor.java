@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,9 +60,12 @@ public class SearchResultAcceptor {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         //Cache of title words per acceptance run; must stay local so concurrent runs on this singleton don't interfere
         Map<String, List<String>> titleWordCache = new HashMap<>();
+        //Regexes compiled once per acceptance run instead of once per item; local for the same reason as the title word cache
+        Map<String, Pattern> regexCache = new HashMap<>();
         List<SearchResultItem> acceptedResults = new ArrayList<>();
         Multiset<String> reasonsForRejection = HashMultiset.create();
-        HashSet<SearchResultItem> itemsWithoutActualDuplicates = new HashSet<>(items);
+        //Linked to keep the order the indexer returned the results in
+        Set<SearchResultItem> itemsWithoutActualDuplicates = new LinkedHashSet<>(items);
         if (itemsWithoutActualDuplicates.size() < items.size()) {
             int removedDuplicates = items.size() - itemsWithoutActualDuplicates.size();
             logger.warn("Removed {} actual duplicates from the results returned by {}. This is likely an error in their code base", removedDuplicates, indexerConfig.getName());
@@ -115,7 +119,7 @@ public class SearchResultAcceptor {
             //Globally configured
             boolean applyWordAndRegexRestrictions = baseConfig.getSearching().getApplyRestrictions() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), baseConfig.getSearching().getApplyRestrictions().name());
             if (applyWordAndRegexRestrictions) {
-                if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null))) {
+                if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null), regexCache)) {
                     continue;
                 }
                 if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item, "searching config", titleWordCache)) {
@@ -129,7 +133,7 @@ public class SearchResultAcceptor {
             //Per category
             applyWordAndRegexRestrictions = item.getCategory().getApplyRestrictionsType() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getApplyRestrictionsType().name());
             if (applyWordAndRegexRestrictions) {
-                if (!checkRegexes(item, reasonsForRejection, item.getCategory().getRequiredRegex().orElse(null), item.getCategory().getForbiddenRegex().orElse(null))) {
+                if (!checkRegexes(item, reasonsForRejection, item.getCategory().getRequiredRegex().orElse(null), item.getCategory().getForbiddenRegex().orElse(null), regexCache)) {
                     continue;
                 }
                 if (!checkRequiredWords(reasonsForRejection, item.getCategory().getRequiredWords(), item, "category", titleWordCache)) {
@@ -265,9 +269,9 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex) {
+    protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex, Map<String, Pattern> regexCache) {
         if (!Strings.isNullOrEmpty(requiredRegex)) {
-            Pattern requiredPattern = Pattern.compile(requiredRegex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Pattern requiredPattern = getPattern(requiredRegex, regexCache);
             if (!requiredPattern.matcher(item.getTitle()).find()) {
                 logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required regex in {}", item.getTitle());
                 reasonsForRejection.add("Required regex doesn't match");
@@ -275,7 +279,7 @@ public class SearchResultAcceptor {
             }
         }
         if (!Strings.isNullOrEmpty(forbiddenRegex)) {
-            Pattern forbiddenPattern = Pattern.compile(forbiddenRegex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            Pattern forbiddenPattern = getPattern(forbiddenRegex, regexCache);
             if (forbiddenPattern.matcher(item.getTitle()).find()) {
                 logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden regex in {}", item.getTitle());
                 reasonsForRejection.add("Forbidden regex matches");
@@ -286,13 +290,21 @@ public class SearchResultAcceptor {
         return true;
     }
 
+    /**
+     * An invalid regex throws a {@link java.util.regex.PatternSyntaxException} just like compiling it directly; nothing is cached for it.
+     */
+    private static Pattern getPattern(String regex, Map<String, Pattern> regexCache) {
+        return regexCache.computeIfAbsent(regex, x -> Pattern.compile(x, Pattern.CASE_INSENSITIVE | Pattern.DOTALL));
+    }
+
     protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item, String source, Map<String, List<String>> titleWordCache) {
         if (!requiredWords.isEmpty()) {
             List<String> titleWords = getTitleWords(item, titleWordCache);
+            String lowerCaseTitle = item.getTitle().toLowerCase();
             boolean allPresent = true;
             for (String requiredWord : requiredWords) {
                 if (requiredWord.contains(".") || requiredWord.contains("-")) {
-                    if (!item.getTitle().toLowerCase().contains(requiredWord.toLowerCase())) {
+                    if (!lowerCaseTitle.contains(requiredWord.toLowerCase())) {
                         logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required word {} (from {}) in the title {}", requiredWord, source, item.getTitle());
                         allPresent = false;
                         break;
@@ -326,9 +338,13 @@ public class SearchResultAcceptor {
     }
 
     protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item, String source, Map<String, List<String>> titleWordCache) {
+        if (forbiddenWords.isEmpty()) {
+            return true;
+        }
+        String lowerCaseTitle = item.getTitle().toLowerCase();
         for (String forbiddenWord : forbiddenWords) {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".")) {
-                if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
+                if (lowerCaseTitle.contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
                     logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} (from {}) in title {}", forbiddenWord, source, item.getTitle());
                     return false;
