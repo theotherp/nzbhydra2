@@ -113,7 +113,7 @@ public class SearchCacheEntry {
      * missing per-indexer entries for all selected indexers on the way.
      */
     public List<IndexerSearchCacheEntry> getIndexersToSearch() {
-        for (Indexer selectedIndexer : indexerSelectionResult.getSelectedIndexers()) {
+        for (Indexer<?> selectedIndexer : indexerSelectionResult.getSelectedIndexers()) {
             indexerCacheEntries.putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer, searchRequest.getMinage().orElse(null)));
         }
 

@@ -83,7 +83,7 @@ public class Stats {
 
         ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
 
-        List<Future> futures = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
 
 
         if (statsRequest.isAvgResponseTimes()) {
@@ -164,7 +164,7 @@ public class Stats {
             executor.shutdownNow();
             logger.error("Aborted stats generation because it took longer than {} seconds. Please restart", TIMEOUT);
         } else {
-            for (Future future : futures) {
+            for (Future<?> future : futures) {
                 try {
                     future.get();
                 } catch (ExecutionException e) {

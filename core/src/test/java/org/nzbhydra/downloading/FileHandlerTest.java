@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
@@ -373,7 +374,7 @@ class FileHandlerTest {
     private void mockHttp(java.util.function.Function<Request, Response> responseProvider) {
         final Indexer<?> indexer = mock(Indexer.class);
         when(indexer.getConfig()).thenReturn(new IndexerConfig());
-        when(searchModuleProvider.getIndexerByName(anyString())).thenReturn(indexer);
+        Mockito.<Indexer<?>>when(searchModuleProvider.getIndexerByName(anyString())).thenReturn(indexer);
         final OkHttpClient client = mock(OkHttpClient.class);
         when(clientHttpRequestFactory.getOkHttpClient(anyString(), any())).thenReturn(client);
         when(client.newCall(any())).thenAnswer(inv -> {

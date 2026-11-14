@@ -110,7 +110,7 @@ class SearchModuleProviderTest {
     void shouldReturnDefensiveCopyOfIndexers() {
         testee.loadIndexers(indexerConfigs);
 
-        List<Indexer> indexers = testee.getIndexers();
+        List<Indexer<?>> indexers = testee.getIndexers();
         indexers.clear();
 
         assertThat(testee.getIndexers()).hasSize(INDEXER_COUNT);
