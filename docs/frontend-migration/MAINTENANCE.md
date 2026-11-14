@@ -4228,3 +4228,17 @@ their text and relative order are unchanged.
 - **Note:** with no downloader and no black hole configured, the Actions track (`actionsTrackWidth(0)`) has no spare slot, so the checkmark alone can
   still wrap below the icons in that configuration. It is narrower than the chip was, but the row can still grow there.
 - **Commit:** the commit adding this entry.
+
+### 2026-11-15 — Ship only the woff2 Font Awesome files
+
+- **Why not a packet:** packaging only, no behavior, contract or `data-testid` touched. `App.tsx` imported the package's `all.min.css`, whose
+  `@font-face` rules list eot, woff2, woff, ttf and svg sources, so the build copied all 15 font files. It now imports the package's
+  `fontawesome.min.css` (icon class rules) plus a local `fontAwesomeFonts.css` holding the rules of the package's `solid.css`, `regular.css`
+  and `brands.css` with woff2 sources only. The v4 shims and the full icon set stay.
+- **Paths:** `core/ui-react/src/App.tsx`, new `core/ui-react/src/fontAwesomeFonts.css`.
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (2385 tests), `build`, `validate:production-assets`, `check:api`,
+  `validate:migration`, `knip` pass; `git diff --check` clean. `dist/assets` went from 6,092,588 to 3,330,610 bytes; the three woff2 files
+  keep their content hashes and the built `index.css` holds the same three font families and the icon rules.
+- **Note:** no screenshot strip. The emitted CSS rules are the package's own minus the unused font sources, so nothing renders differently in a
+  browser that loads woff2; this was checked in the built CSS, not in a browser.
+- **Commit:** `c948bab62`
