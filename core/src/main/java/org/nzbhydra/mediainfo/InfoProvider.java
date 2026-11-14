@@ -2,6 +2,7 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Striped;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.mediainfo.MediaIdType;
@@ -15,9 +16,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 import static org.nzbhydra.config.mediainfo.MediaIdType.*;
@@ -47,10 +48,16 @@ public class InfoProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(InfoProvider.class);
 
-    private final Map<Integer, MediaInfo> mediaInfoMap = ExpiringMap.builder()
+    private final Map<MediaInfoKey, MediaInfo> mediaInfoMap = ExpiringMap.builder()
             .expiration(5, TimeUnit.MINUTES)
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .build();
+    private final Striped<Lock> conversionLocks = Striped.lock(64);
+    /**
+     * Different IDs of the same show or movie are converted in parallel. This lock serializes re-checking the
+     * database and saving, so two of them can't both insert a row for the same show or movie.
+     */
+    private final Object saveLock = new Object();
 
     @Autowired
     protected TmdbHandler tmdbHandler;
@@ -89,16 +96,44 @@ public class InfoProvider {
     }
 
 
-    @Cacheable(cacheNames = "infos", sync = true, cacheManager = "genericCacheManager")
-    //sync=true is currently apparently not supported by Caffeine. synchronizing by method is good enough because we'll likely rarely hit this method concurrently with different parameters
-    public synchronized MediaInfo convert(String value, MediaIdType fromType) throws InfoProviderException {
+    /**
+     * Converts the given ID to a {@link MediaInfo}. Results are cached in {@link #mediaInfoMap} for five minutes after
+     * the last access. Lookups for the same ID are serialized so only one of them calls TMDB or TVMaze; lookups for
+     * different IDs run in parallel. Failed lookups are not cached.
+     * <p>
+     * Not annotated with {@code @Cacheable}: {@link #convert(Map)} calls this method on {@code this}, which bypasses
+     * the Spring cache proxy, so {@link #mediaInfoMap} is the cache that applies on every call path.
+     */
+    public MediaInfo convert(String value, MediaIdType fromType) throws InfoProviderException {
         if (value == null) {
             throw new InfoProviderException("Unable to convert IDType " + fromType + " with null value");
         }
-        final int hash = Objects.hash(value, fromType);
-        if (mediaInfoMap.containsKey(hash)) {
-            return mediaInfoMap.get(hash);
+        final MediaInfoKey key = new MediaInfoKey(value, fromType);
+        MediaInfo cached = mediaInfoMap.get(key);
+        if (cached != null) {
+            return cached;
         }
+        final Lock lock = conversionLockFor(key);
+        lock.lock();
+        try {
+            //Another thread may have converted the same ID while we were waiting for the lock
+            cached = mediaInfoMap.get(key);
+            if (cached != null) {
+                return cached;
+            }
+            MediaInfo info = loadMediaInfo(value, fromType);
+            mediaInfoMap.put(key, info);
+            return info;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    Lock conversionLockFor(MediaInfoKey key) {
+        return conversionLocks.get(key);
+    }
+
+    private MediaInfo loadMediaInfo(String value, MediaIdType fromType) throws InfoProviderException {
         logger.debug("Conversion of {} ID {} requested", fromType, value);
         try {
             MediaInfo info;
@@ -129,7 +164,10 @@ public class InfoProvider {
                             info.setImdbId(value);
                         }
                         movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                        movieInfoRepository.save(movieInfo);
+                        MovieInfo existing = saveMovieInfoIfNew(movieInfo);
+                        if (existing != null) {
+                            info = new MediaInfo(existing);
+                        }
                     }
                     break;
                 case TVMAZE:
@@ -155,19 +193,75 @@ public class InfoProvider {
                         TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
                         info = new MediaInfo(result);
                         tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getImdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                        tvInfoRepository.save(tvInfo);
+                        TvInfo existing = saveTvInfoIfNew(tvInfo);
+                        if (existing != null) {
+                            info = new MediaInfo(existing);
+                        }
                     }
                     break;
                 default:
                     throw new IllegalArgumentException("Wrong IdType");
             }
             logger.debug("Conversion successful: {}", info);
-            mediaInfoMap.put(hash, info);
             return info;
         } catch (Exception e) {
             logger.error("Error while converting {} {}", fromType, value, e);
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
+        }
+    }
+
+    /**
+     * Saves the movie info unless the database already contains a row with its TMDB or IMDB ID, which happens when
+     * another ID of the same movie was converted concurrently.
+     *
+     * @return the existing row, or null if the given info was saved
+     */
+    private MovieInfo saveMovieInfoIfNew(MovieInfo movieInfo) {
+        synchronized (saveLock) {
+            MovieInfo existing = null;
+            if (movieInfo.getTmdbId().isPresent()) {
+                existing = movieInfoRepository.findByTmdbId(movieInfo.getTmdbId().get());
+            }
+            if (existing == null && movieInfo.getImdbId().isPresent()) {
+                existing = movieInfoRepository.findByImdbId(movieInfo.getImdbId().get());
+            }
+            if (existing != null) {
+                logger.debug("Movie info was saved concurrently, using existing entry {}", existing);
+                return existing;
+            }
+            movieInfoRepository.save(movieInfo);
+            return null;
+        }
+    }
+
+    /**
+     * Saves the TV info unless the database already contains a row with one of its IDs, which happens when another ID
+     * of the same show was converted concurrently.
+     *
+     * @return the existing row, or null if the given info was saved
+     */
+    private TvInfo saveTvInfoIfNew(TvInfo tvInfo) {
+        synchronized (saveLock) {
+            TvInfo existing = null;
+            if (tvInfo.getTvdbId().isPresent()) {
+                existing = tvInfoRepository.findByTvdbId(tvInfo.getTvdbId().get());
+            }
+            if (existing == null && tvInfo.getTvmazeId().isPresent()) {
+                existing = tvInfoRepository.findByTvmazeId(tvInfo.getTvmazeId().get());
+            }
+            if (existing == null && tvInfo.getTvrageId().isPresent()) {
+                existing = tvInfoRepository.findByTvrageId(tvInfo.getTvrageId().get());
+            }
+            if (existing == null && tvInfo.getImdbId().isPresent()) {
+                existing = tvInfoRepository.findByImdbId(tvInfo.getImdbId().get());
+            }
+            if (existing != null) {
+                logger.debug("TV info was saved concurrently, using existing entry {}", existing);
+                return existing;
+            }
+            tvInfoRepository.save(tvInfo);
+            return null;
         }
     }
 
@@ -214,5 +308,15 @@ public class InfoProvider {
         }
     }
 
+    record MediaInfoKey(String value, MediaIdType fromType) {
+
+        /**
+         * Uses the enum's name instead of its identity hash code so a key maps to the same lock stripe in every JVM run.
+         */
+        @Override
+        public int hashCode() {
+            return 31 * value.hashCode() + (fromType == null ? 0 : fromType.name().hashCode());
+        }
+    }
 
 }
