@@ -37,7 +37,7 @@ public class SystemControl {
             logger.warn("Not shutting down because property hydradontshutdown is set");
             return;
         }
-        new Thread(() -> {
+        Thread exitThread = new Thread(() -> {
             try {
                 Path controlIdFilePath = new File(NzbHydra.getDataFolder(), "control.id").toPath();
                 logger.debug("Writing control ID {} to {}", returnCode, controlIdFilePath);
@@ -54,7 +54,11 @@ public class SystemControl {
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
             }
-        }).start();
+        });
+        //A thread started from a request thread would be a daemon. Once closing the context has ended the last non-daemon thread
+        //the JVM would exit on its own with code 0 before System.exit is reached and the wrapper would not restart
+        exitThread.setDaemon(false);
+        exitThread.start();
     }
 
     public void exitWithReturnCode(final int returnCode) {
