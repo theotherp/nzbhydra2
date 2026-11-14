@@ -64,4 +64,62 @@ public class SensitiveDataRemovingPatternLayoutEncoderTest {
         assertThat(result).isEqualTo(darrUrlField3.replace("http://host.docker.internal:5076/torznab", "<url>"));
     }
 
+    @Test
+    void shouldLeaveLineWithNothingToRedactUnchanged() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        String line = "2026-11-14 12:00:00.000  INFO --- [main] o.n.s.Searcher : Searching for \"abc\" in 3 indexers";
+        assertThat(encoder.removeSensitiveData(line)).isEqualTo(line);
+    }
+
+    @Test
+    void shouldRedactQueryParametersCaseInsensitivelyAndWithColon() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        assertThat(encoder.removeSensitiveData("https://www.indexer.com/api?APIKEY=12345678&t=search"))
+                .isEqualTo("https://www.indexer.com/api?APIKEY=<APIKEY>&t=search");
+        assertThat(encoder.removeSensitiveData("Password:secret123 used"))
+                .isEqualTo("Password:<Password> used");
+        assertThat(encoder.removeSensitiveData("https://www.indexer.com/getnzb?r=abcdef&id=1"))
+                .isEqualTo("https://www.indexer.com/getnzb?r=<r>&id=1");
+    }
+
+    @Test
+    void shouldRedactArrApiKeyWithoutLabel() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        final String darrApiKeyField = """
+                "name" : "apiKey",
+                    "value" : "12345678"\
+                """;
+        assertThat(encoder.removeSensitiveData(darrApiKeyField)).isEqualTo(darrApiKeyField.replace("12345678", "<apikey>"));
+    }
+
+    @Test
+    void shouldRedactArrApiKeyAndBaseUrlInSameLine() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        final String fields = """
+                [{"name": "baseUrl", "value": "http://127.0.0.1:5076"}, {"name": "apiKey", "value": "12345678"}]""";
+        assertThat(encoder.removeSensitiveData(fields))
+                .isEqualTo(fields.replace("http://127.0.0.1:5076", "<url>").replace("12345678", "<apikey>"));
+    }
+
+    @Test
+    void shouldLeaveOtherArrFieldsUnchanged() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        final String field = """
+                "name": "categories",
+                     "value": "2000,5000",""";
+        assertThat(encoder.removeSensitiveData(field)).isEqualTo(field);
+    }
+
+    @Test
+    void shouldNotRedactWhenDisabled() {
+        SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
+        SensitiveDataRemovingPatternLayoutEncoder.setDisabled(true);
+        try {
+            String line = "https://www.indexer.com/api?apikey=12345678";
+            assertThat(encoder.removeSensitiveData(line)).isEqualTo(line);
+        } finally {
+            SensitiveDataRemovingPatternLayoutEncoder.setDisabled(false);
+        }
+    }
+
 }
