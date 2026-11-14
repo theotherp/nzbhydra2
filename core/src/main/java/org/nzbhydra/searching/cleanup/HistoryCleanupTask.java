@@ -61,64 +61,70 @@ public class HistoryCleanupTask {
             return;
         }
 
+        int deletedEntities = 0;
         try (Connection connection = dataSource.getConnection()) {
             if (deleteHistoryOlderThan != null) {
-                logger.info("Starting deletion of old history entries older than {}", deleteHistoryOlderThan);
-                deleteOldIdentifiers(deleteHistoryOlderThan, connection);
-                deleteOldIndexerSearches(deleteHistoryOlderThan, connection);
+                logger.debug("Starting deletion of old history entries older than {}", deleteHistoryOlderThan);
+                deletedEntities += deleteOldIdentifiers(deleteHistoryOlderThan, connection);
+                deletedEntities += deleteOldIndexerSearches(deleteHistoryOlderThan, connection);
             }
 
             if (deleteStatsOlderThan != null) {
-                deleteOldIndexerApiAccesses(deleteStatsOlderThan, connection);
+                deletedEntities += deleteOldIndexerApiAccesses(deleteStatsOlderThan, connection);
             }
 
             if (deleteHistoryOlderThan != null) {
-                deleteOldSearches(deleteHistoryOlderThan, connection);
-                deleteOldDownloads(deleteHistoryOlderThan, connection);
+                deletedEntities += deleteOldSearches(deleteHistoryOlderThan, connection);
+                deletedEntities += deleteOldDownloads(deleteHistoryOlderThan, connection);
             }
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);
         }
-        logger.info("Deletion of old history entries finished");
+        if (deletedEntities > 0) {
+            logger.info("Deleted {} old history entries", deletedEntities);
+        } else {
+            logger.debug("Deletion of old history entries finished, nothing to delete");
+        }
         logger.debug(LoggingMarkers.PERFORMANCE, "Cleanup of history took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
-    public void deleteOldIndexerSearches(Instant deleteOlderThan, Connection connection) {
+    public int deleteOldIndexerSearches(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer searches");
-        deleteOldEntries("delete from INDEXERSEARCH where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} indexer searches from database", connection, deleteOlderThan);
+        return deleteOldEntries("delete from INDEXERSEARCH where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} indexer searches from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldIdentifiers(Instant deleteOlderThan, Connection connection) {
+    public int deleteOldIdentifiers(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old identifiers");
-        deleteOldEntries("delete from SEARCH_IDENTIFIERS where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} search identifiers from database", connection, deleteOlderThan);
+        int deleted = deleteOldEntries("delete from SEARCH_IDENTIFIERS where SEARCH_ENTITY_ID in (select ID from SEARCH where TIME < ?) and rownum() < 10000", "Deleted {} search identifiers from database", connection, deleteOlderThan);
         //Key value pairs are only referenced by SEARCH_IDENTIFIERS
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old identifier key value pairs");
-        deleteOldEntries("delete from IDENTIFIER_KEY_VALUE_PAIR p where not exists (select 1 from SEARCH_IDENTIFIERS s where s.IDENTIFIERS_ID = p.ID) and rownum() < 10000", "Deleted {} identifier key value pairs from database", connection);
+        return deleted + deleteOldEntries("delete from IDENTIFIER_KEY_VALUE_PAIR p where not exists (select 1 from SEARCH_IDENTIFIERS s where s.IDENTIFIERS_ID = p.ID) and rownum() < 10000", "Deleted {} identifier key value pairs from database", connection);
     }
 
-    public void deleteOldIndexerApiAccesses(Instant deleteOlderThan, Connection connection) {
+    public int deleteOldIndexerApiAccesses(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer API accesses");
-        deleteOldEntries("delete from INDEXERAPIACCESS where TIME < ? and rownum() < 10000", "Deleted {} indexer API accesses from database", connection, deleteOlderThan);
+        return deleteOldEntries("delete from INDEXERAPIACCESS where TIME < ? and rownum() < 10000", "Deleted {} indexer API accesses from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldSearches(Instant deleteOlderThan, Connection connection) {
+    public int deleteOldSearches(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old searches");
-        deleteOldEntries("delete from SEARCH where TIME < ? and rownum() < 10000", "Deleted {} searches from database", connection, deleteOlderThan);
+        return deleteOldEntries("delete from SEARCH where TIME < ? and rownum() < 10000", "Deleted {} searches from database", connection, deleteOlderThan);
     }
 
-    public void deleteOldDownloads(Instant deleteOlderThan, Connection connection) {
+    public int deleteOldDownloads(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old downloads");
-        deleteOldEntries("delete from INDEXERNZBDOWNLOAD where TIME < ? and rownum() < 10000", "Deleted {} downloads from database", connection, deleteOlderThan);
+        int deleted = deleteOldEntries("delete from INDEXERNZBDOWNLOAD where TIME < ? and rownum() < 10000", "Deleted {} downloads from database", connection, deleteOlderThan);
         try (PreparedStatement statement = connection.prepareStatement("delete from INDEXERNZBDOWNLOAD where SEARCH_RESULT_ID is null")) {
-            statement.executeUpdate();
+            deleted += statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);
         }
+        return deleted;
     }
 
-    public void deleteOldEntries(String sql, String loggerMessage, Connection connection, Instant... deleteOlderThan) {
+    public int deleteOldEntries(String sql, String loggerMessage, Connection connection, Instant... deleteOlderThan) {
+        int deletedEntities = 0;
         try {
-            int deletedEntities = 0;
             int lastDeletedEntities;
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 do {
@@ -136,6 +142,7 @@ public class HistoryCleanupTask {
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);
         }
+        return deletedEntities;
     }
 
 }

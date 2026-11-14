@@ -16253,7 +16253,7 @@
           "name": "configProvider"
         },
         {
-          "name": "entityManager"
+          "name": "dataSource"
         }
       ],
       "methods": [
@@ -16263,6 +16263,14 @@
         },
         {
           "name": "deleteOldResults",
+          "parameterTypes": []
+        },
+        {
+          "name": "handleShutdown",
+          "parameterTypes": ["org.nzbhydra.ShutdownEvent"]
+        },
+        {
+          "name": "onShutdown",
           "parameterTypes": []
         }
       ]

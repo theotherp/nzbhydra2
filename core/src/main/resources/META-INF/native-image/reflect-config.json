@@ -17801,6 +17801,14 @@
       {
           "name": "deleteOldResults",
           "parameterTypes": []
+      },
+      {
+          "name": "handleShutdown",
+          "parameterTypes": ["org.nzbhydra.ShutdownEvent"]
+      },
+      {
+          "name": "onShutdown",
+          "parameterTypes": []
       }
   ]
 },
@@ -70121,7 +70129,7 @@
     "allPublicMethods": true,
     "fields": [
       {
-        "name": "entityManager"
+        "name": "dataSource"
       },
       {
         "name": "configProvider"
@@ -70130,6 +70138,14 @@
     "methods": [
       {
         "name": "deleteOldResults",
+        "parameterTypes": []
+      },
+      {
+        "name": "handleShutdown",
+        "parameterTypes": ["org.nzbhydra.ShutdownEvent"]
+      },
+      {
+        "name": "onShutdown",
         "parameterTypes": []
       }
     ],
