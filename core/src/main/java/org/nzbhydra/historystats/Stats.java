@@ -273,11 +273,9 @@ public class Stats {
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
         final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).toList()).stream().map(Indexer::getName).collect(Collectors.toSet());
 
-        List<IndexerUniquenessScoreEntity> scoreEntities = uniquenessScoreEntityRepository.findAll().stream()
-                // Versions 1 and 2 lack exact download context and are intentionally not comparable to corrected observations.
-                .filter(score -> score.getDataVersion() != null && score.getDataVersion() >= 3)
-                .filter(score -> isWithinScoreDateRange(score, statsRequest))
-                .toList();
+        // Versions 1 and 2 lack exact download context and are intentionally not comparable to corrected observations.
+        List<IndexerUniquenessScoreEntity> scoreEntities = uniquenessScoreEntityRepository.findCorrectedObservationsRecordedBetween(
+                statsRequest.getAfter(), statsRequest.getBefore());
         List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, scoreEntities);
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerUniquenessScores;
@@ -327,11 +325,6 @@ public class Stats {
 
     private Integer toPercent(double numerator, long denominator) {
         return denominator == 0 ? null : (int) (100D * numerator / denominator);
-    }
-
-    private boolean isWithinScoreDateRange(IndexerUniquenessScoreEntity score, StatsRequest statsRequest) {
-        return (statsRequest.getAfter() == null || !score.getRecordedAt().isBefore(statsRequest.getAfter()))
-               && (statsRequest.getBefore() == null || !score.getRecordedAt().isAfter(statsRequest.getBefore()));
     }
 
 

@@ -394,5 +394,97 @@ public class StatsComponentTest {
         assertThat(score.getAverageUniquenessScore()).isNull();
     }
 
+    @Test
+    void shouldFilterUniquenessScoresByDataVersionAndInclusiveDateRangeInDatabase() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(SCORE_RANGE_START, SCORE_RANGE_END)))
+                .containsExactlyInAnyOrder("atStart", "atEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldLeaveUniquenessScoreRangeOpenWhenAfterIsNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(null, SCORE_RANGE_END)))
+                .containsExactlyInAnyOrder("beforeStart", "atStart", "atEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldLeaveUniquenessScoreRangeOpenWhenBeforeIsNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(SCORE_RANGE_START, null)))
+                .containsExactlyInAnyOrder("atStart", "atEnd", "afterEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldReturnAllCorrectedUniquenessScoresWhenBothBoundsAreNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(null, null)))
+                .containsExactlyInAnyOrder("beforeStart", "atStart", "atEnd", "afterEnd", "inside", "insideVersion4", "withoutTimestamp");
+    }
+
+    @Test
+    void shouldCalculateIndexerScoresOnlyFromCorrectedObservationsInRange() {
+        saveUniquenessScoresAroundRange();
+
+        List<IndexerScore> scores = stats.indexerScores(new StatsRequest(SCORE_RANGE_START, SCORE_RANGE_END, false));
+
+        assertThat(scores).hasSize(1);
+        assertThat(scores.get(0).getIndexerName()).isEqualTo("indexer1");
+        assertThat(scores.get(0).getInvolvedSearches()).isEqualTo(4);
+        assertThat(scores.get(0).getCorrectedObservations()).isEqualTo(4);
+        assertThat(scores.get(0).getLegacyObservations()).isZero();
+    }
+
+    @Test
+    void shouldExcludeUniquenessScoreRecordedWithinTheMillisecondBeforeASubMillisecondAfterBound() {
+        saveUniquenessScoresAroundRange();
+
+        // atStart lies before this bound by less than a millisecond, so it must not be counted.
+        List<IndexerScore> scores = stats.indexerScores(new StatsRequest(SCORE_RANGE_START.plusNanos(1), SCORE_RANGE_END.plusNanos(999_999), false));
+
+        assertThat(scores).hasSize(1);
+        assertThat(scores.get(0).getInvolvedSearches()).isEqualTo(3);
+    }
+
+    private static final Instant SCORE_RANGE_START = Instant.parse("2026-03-10T12:00:00.123Z");
+    private static final Instant SCORE_RANGE_END = SCORE_RANGE_START.plus(1, ChronoUnit.HOURS);
+
+    /**
+     * Saves one corrected (version 3) observation on each side of and on each bound of [SCORE_RANGE_START, SCORE_RANGE_END],
+     * one with version 4 and one without timestamp, plus legacy observations (version null, 1 and 2) inside the range.
+     * The observation ID names the row.
+     */
+    private void saveUniquenessScoresAroundRange() {
+        Instant inside = SCORE_RANGE_START.plus(30, ChronoUnit.MINUTES);
+        uniquenessScoreRepository.saveAll(Arrays.asList(
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "beforeStart", SCORE_RANGE_START.minusMillis(1), 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "atStart", SCORE_RANGE_START, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "atEnd", SCORE_RANGE_END, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "afterEnd", SCORE_RANGE_END.plusMillis(1), 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "inside", inside, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "insideVersion4", inside, 4),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "withoutTimestamp", null, 3),
+                legacyUniquenessScore("versionNull", inside, null),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "version1", inside, 1),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "version2", inside, 2)
+        ));
+    }
+
+    private IndexerUniquenessScoreEntity legacyUniquenessScore(String observationId, Instant recordedAt, Integer dataVersion) {
+        IndexerUniquenessScoreEntity entity = new IndexerUniquenessScoreEntity(indexer1, 2, 1, true);
+        entity.setObservationId(observationId);
+        entity.setRecordedAt(recordedAt);
+        entity.setDataVersion(dataVersion);
+        return entity;
+    }
+
+    private static List<String> observationIds(List<IndexerUniquenessScoreEntity> entities) {
+        return entities.stream().map(IndexerUniquenessScoreEntity::getObservationId).toList();
+    }
+
 
 }
