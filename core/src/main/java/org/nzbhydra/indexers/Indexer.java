@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
@@ -40,7 +39,6 @@ import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -109,7 +107,13 @@ public abstract class Indexer<T> {
 
     protected IndexerEntity indexer;
     protected IndexerConfig config;
-    private Pattern cleanupPattern;
+    /**
+     * Pattern built from {@code searching.removeTrailing}. {@code null} means not built yet, an empty optional means
+     * there is nothing to remove. Built lazily by {@link #cleanUpTitle(String)} which runs on several search threads.
+     * Config changes don't need to reset it because {@link org.nzbhydra.searching.SearchModuleProvider#loadIndexers(List)}
+     * replaces all instances.
+     */
+    private volatile Optional<Pattern> cleanupPattern;
 
     protected AutowireCapableBeanFactory beanFactory;
 
@@ -139,14 +143,10 @@ public abstract class Indexer<T> {
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+        this.cleanupPattern = null;
         if (queryGenerator == null) {
             logger.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
         }
-    }
-
-    @EventListener
-    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        cleanupPattern = null;
     }
 
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
@@ -457,24 +457,31 @@ public abstract class Indexer<T> {
         }
         title = title.trim().replace("&", "");
 
-        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).toList();
-        if (removeTrailing.isEmpty()) {
+        Optional<Pattern> pattern = cleanupPattern;
+        if (pattern == null) {
+            pattern = buildCleanupPattern();
+            cleanupPattern = pattern;
+        }
+        if (pattern.isEmpty()) {
             return title;
         }
 
-        //Tests need to reset pattern or something
-
-        if (cleanupPattern == null) {
-            String allPattern = "^(?<keep>.*)(" + removeTrailing.stream().map(x -> x.replace("*", "WILDCARDXXX").replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$").collect(Collectors.joining("|")) + ")";
-            cleanupPattern = Pattern.compile(allPattern, Pattern.CASE_INSENSITIVE);
-        }
-        Matcher matcher = cleanupPattern.matcher(title);
+        Matcher matcher = pattern.get().matcher(title);
         while (matcher.matches()) {
             title = matcher.replaceAll("$1").trim();
-            matcher = cleanupPattern.matcher(title);
+            matcher = pattern.get().matcher(title);
         }
 
         return title;
+    }
+
+    private Optional<Pattern> buildCleanupPattern() {
+        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).toList();
+        if (removeTrailing.isEmpty()) {
+            return Optional.empty();
+        }
+        String allPattern = "^(?<keep>.*)(" + removeTrailing.stream().map(x -> x.replace("*", "WILDCARDXXX").replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$").collect(Collectors.joining("|")) + ")";
+        return Optional.of(Pattern.compile(allPattern, Pattern.CASE_INSENSITIVE));
     }
 
 

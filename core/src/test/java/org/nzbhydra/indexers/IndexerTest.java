@@ -301,43 +301,67 @@ public class IndexerTest {
         String result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         result = testee.cleanUpTitle("abc trailing1 trailing2 def");
         assertThat(result).isEqualTo("abc trailing1 trailing2 def");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         result = testee.cleanUpTitle("abc");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         result = testee.cleanUpTitle("abc");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
         result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated"));
         result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated******"));
         result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated]");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated] def");
         assertThat(result).isEqualTo("abc [obfuscated] def");
+    }
+
+    @Test
+    void shouldApplyChangedRemoveTrailingAfterReload() {
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+
+        //The pattern is built once per instance, so the live instance keeps its state until indexers are reloaded
+        baseConfig.getSearching().setRemoveTrailing(List.of("trailing1"));
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+
+        //SearchModuleProvider.loadIndexers initializes the indexers with the new config
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc");
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc trailing2");
+
+        baseConfig.getSearching().setRemoveTrailing(List.of("trailing2"));
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc");
+
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc trailing2");
     }
 
     @Test
