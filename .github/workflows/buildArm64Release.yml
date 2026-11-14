@@ -25,23 +25,14 @@ jobs:
         runs-on: ubuntu-24.04-arm
         timeout-minutes: 60
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@v7.0.1
+                with:
+                    persist-credentials: false
 
             -   name: Log free memory and disk
                 run: |
                     free -h
                     df -h /
-
-            -   name: Cache Maven repository
-                uses: actions/cache@v6
-                with:
-                    path: ~/.m2/repository
-                    key: arm64-release-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: arm64-release-m2-
-
-            -   name: Drop cached nzbhydra artifacts
-                # The build VM did the same before every build: only third-party dependencies are worth caching
-                run: rm -rf ~/.m2/repository/org/nzbhydra*
 
             -   name: Download GraalVM
                 # Into the docker build context, for the dockerfile's COPY. gh goes through the API asset endpoint;
@@ -87,7 +78,7 @@ jobs:
                     echo "Executable version: $(cat core/target/version.txt)" | tee -a "$GITHUB_STEP_SUMMARY"
 
             -   name: Upload executable
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@v7.0.2
                 with:
                     name: linux-arm64-core
                     retention-days: 7

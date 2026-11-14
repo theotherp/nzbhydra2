@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Updates action tags in the workflows together with .github/workflows/actions.lock
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Don't pick up a release until it has been public for a week, so a compromised tag has time to be noticed
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"

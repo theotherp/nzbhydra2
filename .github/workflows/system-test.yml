@@ -18,22 +18,27 @@ jobs:
       packages: write
       pull-requests: write
       actions: read
-    uses: ./.github/workflows/buildNative.yml
+    uses: $/.github/workflows/buildNative.yml
   buildMockserver:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         name: "Check out source"
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
 
       - name: "Login to GitHub Container Registry"
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -85,21 +90,23 @@ jobs:
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - run: echo Running test core with port 5076
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         name: "Check out source"
+        with:
+          persist-credentials: false
 
       - name: Set artifact timestamp
         run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
 
       - name: Set up Node 20
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: '20'
           cache: 'npm'
@@ -127,7 +134,7 @@ jobs:
       -   name: "Login to GitHub Container Registry"
           # Anonymous pulls share a rate limit with every other anonymous client on the runner's network; the
           # linuxserver images are popular enough to exhaust it (toomanyrequests).
-          uses: docker/login-action@v4
+          uses: docker/login-action@v4.8.0
           with:
               registry: ghcr.io
               username: ${{ github.actor }}
@@ -190,7 +197,7 @@ jobs:
 
       - name: "Publish CTRF test report"
         if: always()
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@v1.3.2
           # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
           # results must not fail the build.
         continue-on-error: true
@@ -214,7 +221,7 @@ jobs:
 
       - name: "Upload Playwright artifacts"
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: system-test--linux-native--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
@@ -283,7 +290,7 @@ jobs:
           echo "No unwanted strings found in logs"
 
       - name: "Upload data folder artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
           name: system-test--linux-native--core--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
@@ -293,7 +300,7 @@ jobs:
               !/tmp/hydra/**/rememberMe.key
 
       - name: "Upload test logs artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
           name: system-test--linux-native--core--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -302,14 +309,14 @@ jobs:
             tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
           name: system-test--linux-native--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v1.9.1
         if: always()
         continue-on-error: true
         with:
@@ -353,10 +360,11 @@ jobs:
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         name: "Check out source"
         with:
           fetch-depth: 15
+          persist-credentials: false
 
       - name: Set artifact timestamp
         run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
@@ -366,7 +374,7 @@ jobs:
         if: >-
           github.event_name == 'push' &&
           github.event.before != '0000000000000000000000000000000000000000'
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v3.0.4
         with:
           base: ${{ github.event.before }}
           filters: |
@@ -393,22 +401,24 @@ jobs:
         id: build-decision
         shell: bash
         run: |
-          if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${{ steps.changed.outputs.jvm-system-tests }}" = "false" ]; then
+          if [ "${{ steps.changed.outcome }}" = "success" ] && [ "${STEPS_CHANGED_OUTPUTS_JVM_SYSTEM_TESTS}" = "false" ]; then
             echo "should-run=false" >> "$GITHUB_OUTPUT"
             echo "::notice::No changes under watched paths since the previous commit -- skipping the JVM system tests before Playwright."
           else
             echo "should-run=true" >> "$GITHUB_OUTPUT"
           fi
+        env:
+          STEPS_CHANGED_OUTPUTS_JVM_SYSTEM_TESTS: ${{ steps.changed.outputs.jvm-system-tests }}
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
 
       - name: Set up Node 20
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: '20'
           cache: 'npm'
@@ -441,7 +451,7 @@ jobs:
       -   name: "Login to GitHub Container Registry"
           # Anonymous pulls share a rate limit with every other anonymous client on the runner's network; the
           # linuxserver images are popular enough to exhaust it (toomanyrequests).
-          uses: docker/login-action@v4
+          uses: docker/login-action@v4.8.0
           with:
               registry: ghcr.io
               username: ${{ github.actor }}
@@ -500,7 +510,7 @@ jobs:
 
       - name: "Publish CTRF test report"
         if: always()
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@v1.3.2
           # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
           # results must not fail the build.
         continue-on-error: true
@@ -521,7 +531,7 @@ jobs:
 
       - name: "Upload Playwright artifacts"
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: system-test--linux-jvm-coverage--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
@@ -547,7 +557,7 @@ jobs:
 
       - name: "Upload JVM system test coverage"
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: system-test--linux-jvm-coverage--core--coverage-report--${{ env.ARTIFACT_TIMESTAMP }}
           path: core/target/site/jacoco/**
@@ -559,7 +569,7 @@ jobs:
 
       - name: "Upload JVM coverage logs"
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: system-test--linux-jvm-coverage--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: jvm-system-coverage-docker.log
@@ -596,21 +606,23 @@ jobs:
           MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
           COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration.yaml
       steps:
-          -   uses: actions/checkout@v7
+          -   uses: actions/checkout@v7.0.1
               name: "Check out source"
+              with:
+                  persist-credentials: false
 
           -   name: Set artifact timestamp
               run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
           -   name: Set up JDK 17
-              uses: actions/setup-java@v6
+              uses: actions/setup-java@v6.3.0
               with:
                   java-version: '17'
                   distribution: 'temurin'
                   cache: 'maven'
 
           -   name: Set up Node 20
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@v7.1.0
               with:
                   node-version: '20'
 
@@ -632,7 +644,7 @@ jobs:
               run: docker network create systemtest
 
           -   name: "Login to GitHub Container Registry"
-              uses: docker/login-action@v4
+              uses: docker/login-action@v4.8.0
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
@@ -673,7 +685,7 @@ jobs:
 
           -   name: "Publish CTRF test report"
               if: always()
-              uses: ctrf-io/github-test-reporter@v1
+              uses: ctrf-io/github-test-reporter@v1.3.2
               # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
               # results must not fail the build.
               continue-on-error: true
@@ -703,7 +715,7 @@ jobs:
               run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
 
           -   name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--jvm--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
@@ -713,7 +725,7 @@ jobs:
                       !/tmp/hydraMigration/**/rememberMe.key
 
           -   name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--jvm--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -722,7 +734,7 @@ jobs:
                       tests/**/target/surefire-reports/**
 
           -   name: "Upload docker logs artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--jvm--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -764,21 +776,23 @@ jobs:
           MIGRATION_DATA_FOLDER: /tmp/hydraMigration/defaultDataFolder
           COMPOSE_FILES: -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-migration-native.yaml
       steps:
-          -   uses: actions/checkout@v7
+          -   uses: actions/checkout@v7.0.1
               name: "Check out source"
+              with:
+                  persist-credentials: false
 
           -   name: Set artifact timestamp
               run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
           -   name: Set up JDK 17
-              uses: actions/setup-java@v6
+              uses: actions/setup-java@v6.3.0
               with:
                   java-version: '17'
                   distribution: 'temurin'
                   cache: 'maven'
 
           -   name: Set up Node 20
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@v7.1.0
               with:
                   node-version: '20'
 
@@ -800,7 +814,7 @@ jobs:
               run: docker network create systemtest
 
           -   name: "Login to GitHub Container Registry"
-              uses: docker/login-action@v4
+              uses: docker/login-action@v4.8.0
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
@@ -841,7 +855,7 @@ jobs:
 
           -   name: "Publish CTRF test report"
               if: always()
-              uses: ctrf-io/github-test-reporter@v1
+              uses: ctrf-io/github-test-reporter@v1.3.2
               # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
               # results must not fail the build.
               continue-on-error: true
@@ -871,7 +885,7 @@ jobs:
               run: docker compose $COMPOSE_FILES logs --no-color > migration-test-docker.log
 
           -   name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--native--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
@@ -881,7 +895,7 @@ jobs:
                       !/tmp/hydraMigration/**/rememberMe.key
 
           -   name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--native--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -890,7 +904,7 @@ jobs:
                       tests/**/target/surefire-reports/**
 
           -   name: "Upload docker logs artifact"
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v7.0.2
               if: always()
               with:
                   name: system-test--migration--native--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -913,7 +927,9 @@ jobs:
       nzbhydra.name: windows
     steps:
       - name: "Check out source"
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set artifact timestamp
         shell: pwsh
@@ -922,7 +938,7 @@ jobs:
       - name: "Download windows artifact from current workflow"
         id: "downloadArtifactThisBuild"
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.3.0
         with:
           pattern: native-build--windows-latest--release-executable--*
           path: ./
@@ -930,7 +946,7 @@ jobs:
 
       - name: "Check if core.exe was downloaded"
         id: checkCoreExe
-        uses: andstor/file-existence-action@v3
+        uses: andstor/file-existence-action@v3.1.0
         with:
           files: core.exe
 
@@ -946,7 +962,7 @@ jobs:
           path: .
 
       - name: "Set up JDK 17"
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -974,7 +990,7 @@ jobs:
 
       - name: "Publish CTRF test report"
         if: always()
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@v1.3.2
           # Only reports; the test steps fail the job themselves. A GitHub API error while fetching previous
           # results must not fail the build.
         continue-on-error: true
@@ -1037,7 +1053,7 @@ jobs:
           Write-Host "No unwanted strings found in logs"
 
       - name: "Upload data folder artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         continue-on-error: true
         with:
@@ -1045,7 +1061,7 @@ jobs:
           path: misc/.windows-systemtest-runs
 
       - name: "Upload test logs artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
           name: system-test--windows-native--restore-supervision--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
@@ -1054,14 +1070,14 @@ jobs:
             tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
           name: system-test--windows-native--restore-supervision--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/*.log
 
       - name: "Create test Report"
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v1.9.1
         if: always()
         continue-on-error: true
         with:

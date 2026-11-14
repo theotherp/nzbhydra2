@@ -1,0 +1,37 @@
+name: Lint
+
+on:
+  push:
+    # Temporary release-build branches (buildArm64Release.yml) only build the arm64 executable.
+    branches-ignore:
+      - 'release-arm64/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: j178/prek-action@v3.1.0
+
+  # Fails when .github/workflows/actions.lock is out of sync with the
+  # workflows or a locked pin no longer verifies upstream.
+  lockfile:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - run: gh extension install github/gh-actions-lock --pin v0.4.1
+      - run: gh actions-lock --verify
