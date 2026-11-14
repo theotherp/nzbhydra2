@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
 @Getter
@@ -55,6 +56,14 @@ public class SearchCacheEntry {
         Comparator.comparingInt((SearchResultItem x) -> x.getIndexerScore() == null ? 0 : x.getIndexerScore())
             .reversed()
             .thenComparing(SearchResultItem.NEWEST_FIRST);
+
+    /**
+     * Orders indexer cache entries by their next cached item, newest first. Entries whose next items have the same date
+     * are ordered by their position in {@link #indexerCacheEntries}, so the one iterated first wins.
+     */
+    private static final Comparator<MergeCandidate> NEWEST_HEAD_FIRST =
+        Comparator.comparing((MergeCandidate x) -> x.entry().peek(), SearchResultItem.NEWEST_FIRST)
+            .thenComparingInt(MergeCandidate::position);
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
@@ -160,11 +169,18 @@ public class SearchCacheEntry {
     public void mergeCachedResults() {
         final boolean removeDuplicates = searchRequest.getSource() == SearchSource.API;
         final boolean mergeEverything = searchRequest.getSource() == SearchSource.INTERNAL;
-        List<IndexerSearchCacheEntry> indexersWithCachedResults = getIndexersWithCachedResults();
-        while (!indexersWithCachedResults.isEmpty()) {
-            IndexerSearchCacheEntry entryWithNewestResult = indexersWithCachedResults.stream()
-                .min(Comparator.comparing(IndexerSearchCacheEntry::peek, SearchResultItem.NEWEST_FIRST))
-                .orElseThrow();
+        //Only the polled entry changes while merging, so the heads of all queued entries stay valid
+        PriorityQueue<MergeCandidate> candidates = new PriorityQueue<>(NEWEST_HEAD_FIRST);
+        int position = 0;
+        for (IndexerSearchCacheEntry indexerSearchCacheEntry : indexerCacheEntries.values()) {
+            if (indexerSearchCacheEntry.isMoreResultsInCache()) {
+                candidates.add(new MergeCandidate(indexerSearchCacheEntry, position));
+            }
+            position++;
+        }
+        while (!candidates.isEmpty()) {
+            MergeCandidate candidate = candidates.poll();
+            IndexerSearchCacheEntry entryWithNewestResult = candidate.entry();
             SearchResultItem item = entryWithNewestResult.pop();
             if (!removeDuplicates || shouldBeAdded(item)) {
                 searchResultItems.add(item);
@@ -172,7 +188,9 @@ public class SearchCacheEntry {
                 numberOfRemovedDuplicates++;
             }
 
-            indexersWithCachedResults = getIndexersWithCachedResults();
+            if (entryWithNewestResult.isMoreResultsInCache()) {
+                candidates.add(candidate);
+            }
             if (!mergeEverything && !entryWithNewestResult.isMoreResultsInCache() && entryWithNewestResult.isMoreResultsAvailable()) {
                 //We need to make a new search for that indexer so we need to stop here
                 break;
@@ -214,6 +232,13 @@ public class SearchCacheEntry {
     private boolean isConsumed(SearchResultItem item) {
         IndexerSearchCacheEntry indexerSearchCacheEntry = indexerCacheEntries.get(item.getIndexer().getName());
         return indexerSearchCacheEntry != null && indexerSearchCacheEntry.isPopped(item);
+    }
+
+    /**
+     * An indexer cache entry taking part in {@link #mergeCachedResults()} and its position in the iteration order of
+     * {@link #indexerCacheEntries}.
+     */
+    private record MergeCandidate(IndexerSearchCacheEntry entry, int position) {
     }
 
     /**

@@ -19,7 +19,9 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -35,6 +37,8 @@ class SearchCacheEntryTest {
     @Mock
     private Indexer indexer2;
     @Mock
+    private Indexer indexer3;
+    @Mock
     private IndexerForSearchSelection selectionResult;
 
     private SearchRequest searchRequest;
@@ -44,6 +48,7 @@ class SearchCacheEntryTest {
     void setUp() {
         when(indexer1.getName()).thenReturn("indexer1");
         when(indexer2.getName()).thenReturn("indexer2");
+        when(indexer3.getName()).thenReturn("indexer3");
         when(selectionResult.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
         //An API search: it keeps the normal query cap and the newest-first merge order
         searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 100);
@@ -219,6 +224,105 @@ class SearchCacheEntryTest {
         //The web UI sorts itself, so nothing retrieved is held back although indexer 1 has more
         assertThat(internalCacheEntry.getSearchResultItems()).containsExactly(newest, older, oldest);
         assertThat(internalCacheEntry.getIndexersToSearch()).containsExactly(internalCacheEntry.getIndexerCacheEntries().get("indexer1"));
+    }
+
+    private IndexerSearchCacheEntry cacheEntryWith(Indexer indexer, boolean hasMoreResults, SearchResultItem... items) {
+        IndexerSearchCacheEntry entry = new IndexerSearchCacheEntry(indexer);
+        entry.addIndexerSearchResult(indexerSearchResult(indexer, hasMoreResults, Arrays.asList(items)));
+        return entry;
+    }
+
+    /**
+     * Replaces the indexer cache entries with the given ones, keeping their order as the map's iteration order.
+     */
+    private void setIndexerCacheEntriesInOrder(SearchCacheEntry cacheEntry, IndexerSearchCacheEntry... entries) {
+        Map<String, IndexerSearchCacheEntry> orderedEntries = new LinkedHashMap<>();
+        for (IndexerSearchCacheEntry entry : entries) {
+            orderedEntries.put(entry.getIndexer().getName(), entry);
+        }
+        cacheEntry.setIndexerCacheEntries(orderedEntries);
+    }
+
+    @Test
+    void shouldMergeThreeIndexersWithInterleavedDatesNewestFirst() {
+        SearchResultItem a1 = item("a1", indexer1, BASE);
+        SearchResultItem a2 = item("a2", indexer1, BASE.minus(3, ChronoUnit.HOURS));
+        SearchResultItem a3 = item("a3", indexer1, BASE.minus(7, ChronoUnit.HOURS));
+        SearchResultItem b1 = item("b1", indexer2, BASE.minus(1, ChronoUnit.HOURS));
+        SearchResultItem b2 = item("b2", indexer2, BASE.minus(5, ChronoUnit.HOURS));
+        SearchResultItem b3 = item("b3", indexer2, BASE.minus(6, ChronoUnit.HOURS));
+        SearchResultItem c1 = item("c1", indexer3, BASE.minus(2, ChronoUnit.HOURS));
+        SearchResultItem c2 = item("c2", indexer3, BASE.minus(4, ChronoUnit.HOURS));
+        SearchResultItem c3 = item("c3", indexer3, BASE.minus(8, ChronoUnit.HOURS));
+        //Items are handed over unsorted, the indexer cache entries sort them newest first
+        setIndexerCacheEntriesInOrder(searchCacheEntry,
+            cacheEntryWith(indexer1, false, a3, a1, a2),
+            cacheEntryWith(indexer2, false, b2, b3, b1),
+            cacheEntryWith(indexer3, false, c3, c2, c1));
+
+        searchCacheEntry.mergeCachedResults();
+
+        assertThat(searchCacheEntry.getSearchResultItems()).containsExactly(a1, b1, c1, a2, c2, b2, b3, a3, c3);
+        assertThat(searchCacheEntry.getIndexersWithCachedResults()).isEmpty();
+    }
+
+    @Test
+    void shouldResolveTiesBetweenIndexersByTheIterationOrderOfTheirCacheEntries() {
+        Instant t0 = BASE;
+        Instant t1 = BASE.minus(1, ChronoUnit.HOURS);
+        Instant t2 = BASE.minus(2, ChronoUnit.HOURS);
+        SearchResultItem a1 = item("a1", indexer1, t0);
+        SearchResultItem a2 = item("a2", indexer1, t2);
+        SearchResultItem aNoDate = item("aNoDate", indexer1, null);
+        SearchResultItem b1 = item("b1", indexer2, t0);
+        SearchResultItem b2 = item("b2", indexer2, t0);
+        SearchResultItem b3 = item("b3", indexer2, t1);
+        SearchResultItem bNoDate = item("bNoDate", indexer2, null);
+        SearchResultItem c1 = item("c1", indexer3, t1);
+        SearchResultItem c2 = item("c2", indexer3, t2);
+
+        //Order indexer3, indexer1, indexer2: on equal dates the entry which comes first in that order wins
+        setIndexerCacheEntriesInOrder(searchCacheEntry,
+            cacheEntryWith(indexer3, false, c1, c2),
+            cacheEntryWith(indexer1, false, a1, a2, aNoDate),
+            cacheEntryWith(indexer2, false, b1, b2, b3, bNoDate));
+        searchCacheEntry.mergeCachedResults();
+        assertThat(searchCacheEntry.getSearchResultItems()).containsExactly(a1, b1, b2, c1, b3, c2, a2, aNoDate, bNoDate);
+
+        //Same items, reversed order of the entries
+        SearchCacheEntry reversed = new SearchCacheEntry(searchRequest, selectionResult, new SearchEntity());
+        setIndexerCacheEntriesInOrder(reversed,
+            cacheEntryWith(indexer2, false, b1, b2, b3, bNoDate),
+            cacheEntryWith(indexer1, false, a1, a2, aNoDate),
+            cacheEntryWith(indexer3, false, c1, c2));
+        reversed.mergeCachedResults();
+        assertThat(reversed.getSearchResultItems()).containsExactly(b1, b2, a1, b3, c1, a2, c2, bNoDate, aNoDate);
+    }
+
+    @Test
+    void shouldStopMergingWhenOneOfThreeIndexersRanDryAndContinueAfterItWasQueriedAgain() {
+        SearchResultItem a1 = item("a1", indexer1, BASE);
+        SearchResultItem a2 = item("a2", indexer1, BASE.minus(6, ChronoUnit.HOURS));
+        SearchResultItem b1 = item("b1", indexer2, BASE.minus(1, ChronoUnit.HOURS));
+        SearchResultItem b2 = item("b2", indexer2, BASE.minus(3, ChronoUnit.HOURS));
+        SearchResultItem c1 = item("c1", indexer3, BASE.minus(2, ChronoUnit.HOURS));
+        IndexerSearchCacheEntry indexer1Entry = cacheEntryWith(indexer1, false, a1, a2);
+        IndexerSearchCacheEntry indexer2Entry = cacheEntryWith(indexer2, true, b1);
+        //Indexer 3 runs dry first in the second merge but has no more results, so it must not stop the merge
+        IndexerSearchCacheEntry indexer3Entry = cacheEntryWith(indexer3, false, c1);
+        setIndexerCacheEntriesInOrder(searchCacheEntry, indexer1Entry, indexer2Entry, indexer3Entry);
+
+        searchCacheEntry.mergeCachedResults();
+
+        //Indexer 2 ran dry but might deliver items newer than c1, so merging stops although others have cached items
+        assertThat(searchCacheEntry.getSearchResultItems()).containsExactly(a1, b1);
+        assertThat(searchCacheEntry.getIndexersWithCachedResults()).containsExactly(indexer1Entry, indexer3Entry);
+
+        indexer2Entry.addIndexerSearchResult(indexerSearchResult(indexer2, false, List.of(b2)));
+        searchCacheEntry.mergeCachedResults();
+
+        assertThat(searchCacheEntry.getSearchResultItems()).containsExactly(a1, b1, c1, b2, a2);
+        assertThat(searchCacheEntry.getIndexersWithCachedResults()).isEmpty();
     }
 
     // ------------------------------------------------------------------------------------------------
