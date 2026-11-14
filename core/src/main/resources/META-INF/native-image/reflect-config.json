@@ -14746,6 +14746,10 @@
           "parameterTypes": []
       },
       {
+          "name": "stopMetricsLogging",
+          "parameterTypes": []
+      },
+      {
           "name": "logThreadDump",
           "parameterTypes": []
       }
@@ -36437,6 +36441,10 @@
       },
       {
         "name": "logMetrics",
+        "parameterTypes": []
+      },
+      {
+        "name": "stopMetricsLogging",
         "parameterTypes": []
       }
     ],
