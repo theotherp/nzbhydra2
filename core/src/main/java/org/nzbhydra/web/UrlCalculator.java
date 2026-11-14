@@ -5,8 +5,6 @@ package org.nzbhydra.web;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import jakarta.servlet.http.HttpServletRequest;
-import net.jodah.expiringmap.ExpirationPolicy;
-import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -26,14 +24,13 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Component
 public class UrlCalculator {
 
     static final Logger logger = LoggerFactory.getLogger(UrlCalculator.class);
+    static final String BUILDER_ATTRIBUTE = UrlCalculator.class.getName() + ".requestBasedUriBuilder";
     private UriComponentsBuilder baseBuilder;
 
     @Value("${main.host}")
@@ -45,15 +42,23 @@ public class UrlCalculator {
     @Autowired
     private ConfigurableEnvironment environment;
 
-    private final Map<HttpServletRequest, UriComponentsBuilder> builderCache = ExpiringMap.builder()
-            .maxSize(50)
-            .expirationPolicy(ExpirationPolicy.ACCESSED)
-            .expiration(1, TimeUnit.MINUTES)
-            .entryLoader(request -> buildLocalBaseUriBuilder((HttpServletRequest) request))
-            .build();
-
+    /**
+     * Returns a builder for the base URL as seen by the current request. The calculated builder is stored as an
+     * attribute of the request so that it lives exactly as long as the request. The attribute also remembers the
+     * request object it was built from: wrappers like the one of the {@code ForwardedHeaderFilter} share the
+     * attributes of the request they wrap but report a different scheme, port or context path.
+     */
     public UriComponentsBuilder getRequestBasedUriBuilder() {
-        return builderCache.get(getCurrentRequest()).cloneBuilder();
+        HttpServletRequest request = getCurrentRequest();
+        if (request.getAttribute(BUILDER_ATTRIBUTE) instanceof CachedBuilder cached && cached.request() == request) {
+            return cached.builder().cloneBuilder();
+        }
+        UriComponentsBuilder builder = buildLocalBaseUriBuilder(request);
+        request.setAttribute(BUILDER_ATTRIBUTE, new CachedBuilder(request, builder));
+        return builder.cloneBuilder();
+    }
+
+    private record CachedBuilder(HttpServletRequest request, UriComponentsBuilder builder) {
     }
 
     protected HttpServletRequest getCurrentRequest() {
