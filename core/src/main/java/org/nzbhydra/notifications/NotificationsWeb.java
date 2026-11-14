@@ -25,16 +25,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @RestController
 public class NotificationsWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
-    private static final int INTERVAL = 1000;
+    /**
+     * How often the unread notifications are checked while at least one tab is subscribed. A new notification reaches
+     * an open tab within this time. Every open tab acknowledges each notification as soon as it receives it, so unread
+     * notifications only remain when no tab received them, and these are sent again on every check.
+     */
+    static final long INTERVAL_MILLIS = 5000;
+    /**
+     * The delay before the unread notifications are sent for a new subscription. {@link SessionSubscribeEvent} is
+     * published while the broker may not have registered the subscription yet (the inbound channel is asynchronous),
+     * so sending right away could miss the new tab.
+     */
+    static final long SUBSCRIBE_SEND_DELAY_MILLIS = 1000;
     private static final String TOPIC = "/topic/notifications";
     static final Set<NotificationEvent> NOTIFICATION_EVENTS = Sets.newHashSet(
         new DownloadNotificationEvent(),
@@ -54,7 +65,7 @@ public class NotificationsWeb {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduler = createScheduler();
     private ScheduledFuture<?> scheduledFuture;
 
     // Use thread-safe set since subscribe/disconnect events can come from different threads
@@ -63,8 +74,31 @@ public class NotificationsWeb {
     // Lock for synchronizing scheduler operations
     private final Object schedulerLock = new Object();
 
+    /**
+     * A single thread scheduler that drops the delayed sends for new subscribers on shutdown, so they cannot run
+     * against a database that is being closed.
+     */
+    private static ScheduledExecutorService createScheduler() {
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        return executor;
+    }
+
+    /**
+     * Must be called while holding schedulerLock.
+     */
     private void scheduleNotificationSending() {
-        scheduledFuture = scheduler.scheduleAtFixedRate(this::sendNewNotificationsCatchingErrors, 0, INTERVAL, TimeUnit.MILLISECONDS);
+        scheduledFuture = scheduler.scheduleAtFixedRate(this::sendNewNotificationsCatchingErrors, INTERVAL_MILLIS, INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Sends the unread notifications once for a tab that just subscribed, so it does not wait for the next regular
+     * check. Runs on the scheduler thread, so it never overlaps with a regular check. Must be called while holding
+     * schedulerLock.
+     */
+    private void scheduleSendingForNewSubscriber() {
+        scheduler.schedule(this::sendAllUnreadNotificationsCatchingErrors, SUBSCRIBE_SEND_DELAY_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -79,12 +113,30 @@ public class NotificationsWeb {
         }
     }
 
+    void sendAllUnreadNotificationsCatchingErrors() {
+        try {
+            sendUnreadNotifications();
+        } catch (Exception e) {
+            logger.error("Error while retrieving or sending unread notifications", e);
+        }
+    }
+
     private void sendNewNotifications() {
-        final List<NotificationEntity> newNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
-        if (newNotifications.isEmpty()) {
+        sendUnreadNotifications();
+    }
+
+    /**
+     * Sends all unread notifications, if there are any. They are sent again on every check until a tab acknowledged
+     * them, so a tab that missed a send (for example because its subscription was not registered yet when the send
+     * for it ran) still gets them.
+     */
+    private void sendUnreadNotifications() {
+        final List<NotificationEntity> unreadNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
+        if (unreadNotifications.isEmpty()) {
             return;
         }
-        messagingTemplate.convertAndSend(TOPIC, newNotifications);
+        logger.debug(LoggingMarkers.NOTIFICATIONS, "Sending {} unread notifications", unreadNotifications.size());
+        messagingTemplate.convertAndSend(TOPIC, unreadNotifications);
     }
 
     @MessageMapping("/markNotificationRead")
@@ -123,12 +175,18 @@ public class NotificationsWeb {
             logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered new connection with session ID {}", simpSessionId);
 
             synchronized (schedulerLock) {
+                if (scheduler.isShutdown()) {
+                    // Shutting down. Scheduling would throw a RejectedExecutionException out of this listener.
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Ignoring subscription {} during shutdown", simpSessionId);
+                    return;
+                }
                 boolean wasEmpty = connectedSessionIds.isEmpty();
                 connectedSessionIds.add(simpSessionId);
                 if (wasEmpty && scheduledFuture == null) {
                     logger.debug(LoggingMarkers.NOTIFICATIONS, "Scheduling notification update {}", simpSessionId);
                     scheduleNotificationSending();
                 }
+                scheduleSendingForNewSubscriber();
             }
         }
     }
@@ -167,8 +225,10 @@ public class NotificationsWeb {
                 scheduledFuture.cancel(true);
                 scheduledFuture = null;
             }
+            // Inside the lock, so a subscribe either schedules before this or sees the scheduler shut down.
+            // Pending sends for new subscribers are dropped, see createScheduler.
+            scheduler.shutdown();
         }
-        scheduler.shutdown();
     }
 
 
