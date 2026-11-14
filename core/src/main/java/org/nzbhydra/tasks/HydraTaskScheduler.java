@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingSingleton, BeanFactoryAware {
@@ -81,6 +82,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     @Override
     public void afterSingletonsInstantiated() {
         scheduler = beanFactory.getBean(HydraTaskConfiguration.SCHEDULER_BEAN_NAME, ThreadPoolTaskScheduler.class);
+        scheduler.setRemoveOnCancelPolicy(true);
         scheduleTasks();
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(5);
@@ -107,19 +109,29 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         };
         if (runNow && !shutdownRequested) {
             scheduler.execute(runnable);
-            scheduler.setRemoveOnCancelPolicy(true);
         }
-        ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
+        ScheduledFuture scheduledTask = scheduler.schedule(runnable, createTrigger(task, runNow));
+        taskSchedules.put(task.name(), scheduledTask);
+    }
+
+    /**
+     * Creates a trigger that schedules the task one interval after the last completion. If the task was just started
+     * directly ({@code runNow}) only the first evaluation counts that start as the last execution; later evaluations use
+     * the completion time from the trigger context.
+     */
+    Trigger createTrigger(HydraTask task, boolean runNow) {
+        AtomicBoolean firstEvaluation = new AtomicBoolean(true);
+        return new Trigger() {
             @Override
             public Instant nextExecution(TriggerContext triggerContext) {
-                Instant lastCompletionTime = runNow ? Instant.now() : triggerContext.lastCompletion();
+                boolean useNow = firstEvaluation.getAndSet(false) && runNow;
+                Instant lastCompletionTime = useNow ? Instant.now() : triggerContext.lastCompletion();
                 Instant nextExecutionTime = lastCompletionTime != null ? lastCompletionTime : Instant.now();
-                nextExecutionTime = nextExecutionTime.plusMillis((int) getIntervalForTask(task));
+                nextExecutionTime = nextExecutionTime.plusMillis(getIntervalForTask(task));
                 taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime, nextExecutionTime));
                 return nextExecutionTime;
             }
-        });
-        taskSchedules.put(task.name(), scheduledTask);
+        };
     }
 
     private long getIntervalForTask(HydraTask task) {
