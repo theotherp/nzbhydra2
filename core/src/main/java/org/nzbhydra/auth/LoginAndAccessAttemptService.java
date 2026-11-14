@@ -1,8 +1,7 @@
 package org.nzbhydra.auth;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.net.InetAddresses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +19,11 @@ public class LoginAndAccessAttemptService {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginAndAccessAttemptService.class);
     private final int MAX_ATTEMPTS = 5;
-    private final LoadingCache<String, Integer> attemptsCache;
+    //Only accessFailed adds entries. Reads must not, or every client IP would get an entry for a day
+    private final Cache<String, Integer> attemptsCache;
 
     public LoginAndAccessAttemptService() {
-        attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<>() {
-            @Override
-            public Integer load(String key) throws Exception {
-                return 0;
-            }
-        });
+        attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build();
     }
 
     public void accessSucceeded(String ipOrHost) {
@@ -47,7 +42,7 @@ public class LoginAndAccessAttemptService {
                 logger.warn("Unable to log failed login by empty IP/host");
                 return;
             }
-            int attempts = attemptsCache.getUnchecked(key);
+            int attempts = getAttempts(key);
             attempts++;
             attemptsCache.put(key, attempts);
             logger.warn("{} failed access attempts from IP/host {} in the last 24 hours. Will block access after {} failed attempts", attempts, key, MAX_ATTEMPTS);
@@ -59,7 +54,7 @@ public class LoginAndAccessAttemptService {
         if (key == null) {
             return false;
         }
-        return attemptsCache.getUnchecked(key) >= MAX_ATTEMPTS;
+        return getAttempts(key) >= MAX_ATTEMPTS;
     }
 
     public boolean wasUnsuccessfulBefore(String ipOrHost) {
@@ -68,7 +63,12 @@ public class LoginAndAccessAttemptService {
             logger.warn("Unable to determine unsuccessul login by empty IP/host. Will assume this access is OK");
             return true;
         }
-        return attemptsCache.getUnchecked(key) > 0;
+        return getAttempts(key) > 0;
+    }
+
+    private int getAttempts(String key) {
+        Integer attempts = attemptsCache.getIfPresent(key);
+        return attempts == null ? 0 : attempts;
     }
 
     /**

@@ -1,9 +1,12 @@
 package org.nzbhydra.auth;
 
+import com.google.common.cache.Cache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 class LoginAndAccessAttemptServiceTest {
 
@@ -74,5 +77,63 @@ class LoginAndAccessAttemptServiceTest {
     @Test
     void shouldNotBlockUnknownIp() {
         assertThat(testee.isBlocked(null)).isFalse();
+    }
+
+    @Test
+    void shouldNotCreateEntriesOnReads() {
+        testee.isBlocked("203.0.113.7");
+        testee.wasUnsuccessfulBefore("203.0.113.8");
+        testee.isBlocked("2001:db8:1:2::1");
+
+        assertThat(getAttemptsCache().size()).isZero();
+        assertThat(testee.isBlocked("203.0.113.7")).isFalse();
+        assertThat(testee.wasUnsuccessfulBefore("203.0.113.8")).isFalse();
+    }
+
+    @Test
+    void shouldStoreOnlyFailedKeys() {
+        testee.isBlocked("203.0.113.9");
+        testee.accessFailed("203.0.113.7");
+        testee.accessFailed("203.0.113.7");
+
+        assertThat(getAttemptsCache().asMap()).containsExactly(entry("203.0.113.7", 2));
+    }
+
+    @Test
+    void shouldKeepCountingFailuresWithReadsInBetween() {
+        for (int i = 0; i < 4; i++) {
+            assertThat(testee.isBlocked("203.0.113.7")).isFalse();
+            testee.accessFailed("203.0.113.7");
+            assertThat(testee.wasUnsuccessfulBefore("203.0.113.7")).isTrue();
+        }
+        assertThat(testee.isBlocked("203.0.113.7")).isFalse();
+
+        testee.accessFailed("203.0.113.7");
+
+        assertThat(testee.isBlocked("203.0.113.7")).isTrue();
+        assertThat(testee.isBlocked("203.0.113.7")).isTrue();
+        assertThat(testee.wasUnsuccessfulBefore("203.0.113.7")).isTrue();
+        assertThat(getAttemptsCache().getIfPresent("203.0.113.7")).isEqualTo(5);
+    }
+
+    @Test
+    void shouldStayBlockedAndKeepCountingAfterFurtherFailures() {
+        failFiveTimes("203.0.113.7");
+
+        testee.accessFailed("203.0.113.7");
+
+        assertThat(testee.isBlocked("203.0.113.7")).isTrue();
+        assertThat(getAttemptsCache().getIfPresent("203.0.113.7")).isEqualTo(6);
+    }
+
+    @Test
+    void shouldTreatUnknownIpAsUnsuccessfulBefore() {
+        assertThat(testee.wasUnsuccessfulBefore(null)).isTrue();
+        assertThat(getAttemptsCache().size()).isZero();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Cache<String, Integer> getAttemptsCache() {
+        return (Cache<String, Integer>) ReflectionTestUtils.getField(testee, "attemptsCache");
     }
 }
