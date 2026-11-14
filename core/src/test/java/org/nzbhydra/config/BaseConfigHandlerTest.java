@@ -14,6 +14,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,6 +68,24 @@ class BaseConfigHandlerTest {
         testee.onShutdown();
 
         verify(configReaderWriterMock, times(1)).save(any(BaseConfig.class));
+    }
+
+    @Test
+    @Timeout(5)
+    void shouldCancelDelayedSaveTimerOnShutdown() {
+        Timer timer = new Timer("delayedConfigSaveTest", true);
+        ReflectionTestUtils.setField(testee, "delayedSaveTimer", timer);
+
+        testee.onShutdown();
+
+        //Scheduling on a cancelled timer is rejected
+        assertThatThrownBy(() -> timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+            }
+        }, 1000))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("cancelled");
     }
 
     @Test

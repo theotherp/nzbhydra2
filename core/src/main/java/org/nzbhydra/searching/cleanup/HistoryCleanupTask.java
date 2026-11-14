@@ -137,7 +137,8 @@ public class HistoryCleanupTask {
                     connection.commit();
                     Sleep.sleep(20);
                     logger.debug(LoggingMarkers.HISTORY_CLEANUP, loggerMessage, deletedEntities);
-                } while (lastDeletedEntities > 0);
+                    //Sleep keeps the interrupt flag set, stop instead of deleting on without pauses
+                } while (lastDeletedEntities > 0 && !Thread.currentThread().isInterrupted());
             }
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);

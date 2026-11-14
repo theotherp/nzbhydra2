@@ -67048,6 +67048,9 @@
       },
       {
         "name": "downloadRepository"
+      },
+      {
+        "name": "transactionTemplate"
       }
     ],
     "methods": [

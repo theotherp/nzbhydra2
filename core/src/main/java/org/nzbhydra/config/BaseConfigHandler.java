@@ -33,6 +33,8 @@ public class BaseConfigHandler {
 
     private BaseConfig toSave;
 
+    private Timer delayedSaveTimer;
+
     private TimerTask delayedSaveTimerTask;
 
     public boolean initialized = false;
@@ -69,7 +71,7 @@ public class BaseConfigHandler {
                     saveToSave();
                 }
             };
-            Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
+            delayedSaveTimer = new Timer("delayedConfigSave", false);
             delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
         }
         initialized = true;
@@ -128,6 +130,10 @@ public class BaseConfigHandler {
         saveToSave();
         if (delayedSaveTimerTask != null) {
             delayedSaveTimerTask.cancel();
+        }
+        //The timer thread is not a daemon, so it must be cancelled or it keeps the JVM alive
+        if (delayedSaveTimer != null) {
+            delayedSaveTimer.cancel();
         }
     }
 

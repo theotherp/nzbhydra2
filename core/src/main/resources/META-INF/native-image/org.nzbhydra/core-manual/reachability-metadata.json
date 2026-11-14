@@ -13607,6 +13607,9 @@
         },
         {
           "name": "downloaderProvider"
+        },
+        {
+          "name": "transactionTemplate"
         }
       ],
       "methods": [
