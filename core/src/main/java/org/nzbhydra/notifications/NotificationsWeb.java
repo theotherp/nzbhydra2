@@ -89,7 +89,7 @@ public class NotificationsWeb {
      * Must be called while holding schedulerLock.
      */
     private void scheduleNotificationSending() {
-        scheduledFuture = scheduler.scheduleAtFixedRate(this::sendNewNotificationsCatchingErrors, INTERVAL_MILLIS, INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+        scheduledFuture = scheduler.scheduleAtFixedRate(this::sendUnreadNotificationsCatchingErrors, INTERVAL_MILLIS, INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -98,31 +98,19 @@ public class NotificationsWeb {
      * schedulerLock.
      */
     private void scheduleSendingForNewSubscriber() {
-        scheduler.schedule(this::sendAllUnreadNotificationsCatchingErrors, SUBSCRIBE_SEND_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+        scheduler.schedule(this::sendUnreadNotificationsCatchingErrors, SUBSCRIBE_SEND_DELAY_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Any exception escaping a scheduled task cancels all its further executions, which would stop all notifications
      * until the next reconnect, so all errors are caught and logged here.
      */
-    void sendNewNotificationsCatchingErrors() {
-        try {
-            sendNewNotifications();
-        } catch (Exception e) {
-            logger.error("Error while retrieving or sending new notifications", e);
-        }
-    }
-
-    void sendAllUnreadNotificationsCatchingErrors() {
+    void sendUnreadNotificationsCatchingErrors() {
         try {
             sendUnreadNotifications();
         } catch (Exception e) {
             logger.error("Error while retrieving or sending unread notifications", e);
         }
-    }
-
-    private void sendNewNotifications() {
-        sendUnreadNotifications();
     }
 
     /**

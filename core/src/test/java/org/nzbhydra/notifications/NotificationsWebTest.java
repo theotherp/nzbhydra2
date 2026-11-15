@@ -161,8 +161,8 @@ class NotificationsWebTest {
             .thenReturn(List.of(entity));
 
         // When the pusher body runs twice
-        testee.sendNewNotificationsCatchingErrors();
-        testee.sendNewNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
 
         // Then the exception did not escape (which would cancel all further executions) and the second tick still sent
         verify(messagingTemplate, times(1)).convertAndSend(eq(TOPIC), any(Object.class));
@@ -187,7 +187,7 @@ class NotificationsWebTest {
 
         // When the pusher body runs for each of these states
         for (int i = 0; i < 5; i++) {
-            testee.sendNewNotificationsCatchingErrors();
+            testee.sendUnreadNotificationsCatchingErrors();
         }
 
         // Then every check that found unread notifications sent all of them, and no empty list was sent
@@ -207,11 +207,11 @@ class NotificationsWebTest {
 
         // When the send for a new subscriber runs (and the tab misses it because the broker had not registered its
         // subscription yet, so the notification stays unread)
-        testee.sendAllUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
         verify(messagingTemplate, times(1)).convertAndSend(TOPIC, List.of(notification(1)));
 
         // Then the next regular check sends it again, so the tab still gets it
-        testee.sendNewNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
         verify(messagingTemplate, times(2)).convertAndSend(TOPIC, List.of(notification(1)));
     }
 
@@ -219,7 +219,7 @@ class NotificationsWebTest {
     void shouldNotSendAnEmptyListToANewSubscriber() {
         when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc()).thenReturn(List.of());
 
-        testee.sendAllUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
 
         verify(messagingTemplate, never()).convertAndSend(eq(TOPIC), any(Object.class));
     }
@@ -233,8 +233,8 @@ class NotificationsWebTest {
             .when(messagingTemplate).convertAndSend(eq(TOPIC), any(Object.class));
 
         // When the pusher body runs twice
-        testee.sendNewNotificationsCatchingErrors();
-        testee.sendNewNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
 
         // Then the notification is not lost
         verify(messagingTemplate, times(2)).convertAndSend(TOPIC, List.of(notification(1)));
