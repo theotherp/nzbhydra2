@@ -309,15 +309,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             } else {
                 proxy = new Socks5(new InetSocketAddress(host, port));
             }
-            //sockslib's SocksSocket.close() does nothing (its null check is inverted), so OkHttp could neither close
-            //the connection nor cancel a running call, e.g. when the call timeout fires. Close the proxy socket ourselves
-            Socket proxySocket = proxy.createProxySocket();
-            return new SocksSocket(proxy, proxySocket) {
-                @Override
-                public synchronized void close() throws IOException {
-                    proxySocket.close();
-                }
-            };
+            return new SocksSocket(proxy, proxy.createProxySocket());
         }
 
         public Socket createSocket(String host, int port) {
