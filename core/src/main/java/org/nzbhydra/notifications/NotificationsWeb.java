@@ -67,6 +67,8 @@ public class NotificationsWeb {
 
     private final ScheduledExecutorService scheduler = createScheduler();
     private ScheduledFuture<?> scheduledFuture;
+    // The send for new subscribers that has not run yet. Guarded by schedulerLock.
+    private ScheduledFuture<?> pendingSubscribeSend;
 
     // Use thread-safe set since subscribe/disconnect events can come from different threads
     private final Set<String> connectedSessionIds = ConcurrentHashMap.newKeySet();
@@ -94,11 +96,15 @@ public class NotificationsWeb {
 
     /**
      * Sends the unread notifications once for a tab that just subscribed, so it does not wait for the next regular
-     * check. Runs on the scheduler thread, so it never overlaps with a regular check. Must be called while holding
-     * schedulerLock.
+     * check. Runs on the scheduler thread, so it never overlaps with a regular check. A send goes to all tabs, so
+     * tabs subscribing while one is pending share it; a send per tab would show every unread notification once per
+     * tab in each of them. Must be called while holding schedulerLock.
      */
     private void scheduleSendingForNewSubscriber() {
-        scheduler.schedule(this::sendUnreadNotificationsCatchingErrors, SUBSCRIBE_SEND_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+        if (pendingSubscribeSend != null && !pendingSubscribeSend.isDone()) {
+            return;
+        }
+        pendingSubscribeSend = scheduler.schedule(this::sendUnreadNotificationsCatchingErrors, SUBSCRIBE_SEND_DELAY_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     /**

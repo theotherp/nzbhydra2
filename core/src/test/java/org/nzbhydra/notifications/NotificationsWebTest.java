@@ -241,16 +241,38 @@ class NotificationsWebTest {
     }
 
     @Test
-    void shouldScheduleASendForEveryNewSubscriberAndCheckAtTheInterval() {
+    void shouldScheduleOneSendForSubscribersArrivingTogetherAndCheckAtTheInterval() {
         final ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        final ScheduledFuture<?> pendingSend = mock(ScheduledFuture.class);
         when(scheduler.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
             .thenAnswer(invocation -> mock(ScheduledFuture.class));
+        when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> pendingSend);
         replaceScheduler(scheduler);
 
+        // When two tabs subscribe before the send for the first one ran
         testee.onClientSubscribe(subscribeEvent("session-1"));
         testee.onClientSubscribe(subscribeEvent("session-2"));
 
+        // Then they share one send, a second one would show every unread notification twice in both tabs
         verify(scheduler, times(1)).scheduleAtFixedRate(any(Runnable.class), eq(NotificationsWeb.INTERVAL_MILLIS), eq(NotificationsWeb.INTERVAL_MILLIS), eq(TimeUnit.MILLISECONDS));
+        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(NotificationsWeb.SUBSCRIBE_SEND_DELAY_MILLIS), eq(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void shouldScheduleANewSendForASubscriberArrivingAfterTheLastSendRan() {
+        final ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        final ScheduledFuture<?> pendingSend = mock(ScheduledFuture.class);
+        when(scheduler.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
+            .thenAnswer(invocation -> mock(ScheduledFuture.class));
+        when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> pendingSend);
+        replaceScheduler(scheduler);
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+
+        // When the send for the first tab ran before the second one subscribes
+        when(pendingSend.isDone()).thenReturn(true);
+        testee.onClientSubscribe(subscribeEvent("session-2"));
+
+        // Then the second tab gets its own send
         verify(scheduler, times(2)).schedule(any(Runnable.class), eq(NotificationsWeb.SUBSCRIBE_SEND_DELAY_MILLIS), eq(TimeUnit.MILLISECONDS));
     }
 
