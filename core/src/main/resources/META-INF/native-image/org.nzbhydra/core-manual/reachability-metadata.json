@@ -13608,17 +13608,6 @@
       ]
     },
     {
-      "type": "org.nzbhydra.downloading.DownloadStatusUpdater$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ]
-    },
-    {
       "type": "org.nzbhydra.downloading.DownloaderType"
     },
     {
@@ -16242,17 +16231,6 @@
         {
           "name": "onShutdown",
           "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.nzbhydra.searching.cleanup.OldResultsCleanupTask$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },

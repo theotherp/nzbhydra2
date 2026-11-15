@@ -14849,25 +14849,6 @@
         ]
     },
     {
-        "name": "org.nzbhydra.downloading.DownloadStatusUpdater$$SpringCGLIB$$0",
-        "fields": [
-            {
-                "name": "CGLIB$CALLBACK_FILTER"
-            },
-            {
-                "name": "CGLIB$FACTORY_DATA"
-            }
-        ],
-        "methods": [
-            {
-                "name": "CGLIB$SET_THREAD_CALLBACKS",
-                "parameterTypes": [
-                    "org.springframework.cglib.proxy.Callback[]"
-                ]
-            }
-        ]
-    },
-    {
         "name": "org.nzbhydra.downloading.DownloaderType",
         "allDeclaredFields": true,
         "queryAllDeclaredMethods": true
@@ -17414,18 +17395,6 @@
           "parameterTypes": []
       }
   ]
-},
-{
-  "name":"org.nzbhydra.searching.cleanup.OldResultsCleanupTask$$SpringCGLIB$$0",
-  "fields": [
-      {
-          "name": "CGLIB$CALLBACK_FILTER"
-      },
-      {
-          "name": "CGLIB$FACTORY_DATA"
-      }
-  ],
-  "methods":[{"name":"CGLIB$SET_THREAD_CALLBACKS","parameterTypes":["org.springframework.cglib.proxy.Callback[]"] }]
 },
 {
   "name":"org.nzbhydra.searching.cleanup.ShortIndexerApiAccessCleanup",
@@ -44105,12 +44074,6 @@
     "allDeclaredConstructors": true
   },
   {
-    "name": "org.nzbhydra.downloading.DownloadStatusUpdater$$SpringCGLIB$$0",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
     "name": "org.nzbhydra.api.CategoryConverter",
     "allDeclaredConstructors": true,
     "allDeclaredFields": true,
@@ -60391,12 +60354,6 @@
         "parameterTypes": []
       }
     ]
-  },
-  {
-    "name": "org.nzbhydra.searching.cleanup.OldResultsCleanupTask$$SpringCGLIB$$0",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
   },
   {
     "name": "org.nzbhydra.springconfig.AppConfig$$SpringCGLIB$$0",
