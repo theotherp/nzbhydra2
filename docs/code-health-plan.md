@@ -18,7 +18,7 @@ uninitialised indexer for every config change event. `InfoProvider` keys a cache
 
 The frontend went through the FM migration with its own review gates, so I left it mostly alone. One packaging task is listed.
 
-Things I looked at and would leave: the Hikari and Tomcat pool sizes, the H2 settings covered by the September growth analysis in `misc/h2growth`, the `Searcher` per-round executor, the unhashed `index.js` entry which `vite.config.ts`
+Things I looked at and would leave: the Hikari and Tomcat pool sizes, the H2 settings covered by the September growth analysis, the `Searcher` per-round executor, the unhashed `index.js` entry which `vite.config.ts`
 explains.
 
 ## How to use this document
@@ -266,7 +266,7 @@ Do this:
 - Replace `not in` with `not exists`. `NOT IN` with a subquery is slow in H2 and wrong if the subquery ever returns null.
 - Bind the cutoff as a parameter. The string replace of `:epochSecond` is not needed.
 
-I did not measure this. Before changing it, load a copy of a large database or generate one with the tooling in `misc/h2growth` and time the current statement. If it finishes in well under a second with a million rows, only do the
+I did not measure this. Before changing it, load a copy of a large database and time the current statement. If it finishes in well under a second with a million rows, only do the
 `not exists` change.
 
 `HistoryCleanupTask` also logs "Starting deletion of old history entries" at info every hour. Lower it to debug unless rows were deleted.
@@ -427,4 +427,4 @@ This changes no behaviour and saves no RAM at runtime. It only makes the downloa
 
 - Replace the per-round executor in `Searcher.queryIndexers` with a shared pool. Cancelling a search relies on `shutdownNow` and on interrupting those threads. A shared pool makes that harder to get right for a small saving.
 - Stream indexer responses into JAXB without the intermediate string. It would halve peak memory per response, but the error path needs the raw text for the parse excerpt and for ADR-0019.
-- Touch H2 settings or primary key generation. `misc/h2growth` already measured those in September.
+- Touch H2 settings or primary key generation. The September growth analysis already measured those.
