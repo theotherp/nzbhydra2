@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -72,6 +73,13 @@ class HydraTaskSchedulerTest {
         assertThat(testee.getTasks()).hasSize(1);
         assertThat(testee.getTasks().get(0).getLastExecutionTime()).isEqualTo(lastCompletion);
         assertThat(testee.getTasks().get(0).getNextExecutionTime()).isEqualTo(lastCompletion.plusMillis(INTERVAL));
+    }
+
+    @Test
+    void shouldRejectUnknownTaskName() {
+        assertThatThrownBy(() -> testee.runNow("No such task"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("No such task");
     }
 
     @Test

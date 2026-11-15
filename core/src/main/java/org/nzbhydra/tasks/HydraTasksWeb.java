@@ -4,12 +4,14 @@ package org.nzbhydra.tasks;
 
 import org.nzbhydra.tasks.HydraTaskScheduler.TaskInformation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,7 +30,11 @@ public class HydraTasksWeb {
     @PutMapping("/internalapi/tasks/{taskName}")
     @Secured({"ROLE_ADMIN"})
     public List<TaskInformation> runTask(@PathVariable String taskName) {
-        hydraTaskScheduler.runNow(taskName);
+        try {
+            hydraTaskScheduler.runNow(taskName);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
         return getTasks();
     }
 

@@ -76,7 +76,7 @@ public class Searcher {
             .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .build();
-    private boolean shutdownRequested = false;
+    private volatile boolean shutdownRequested = false;
 
     /**
      * Maps a search request's identifying data to its cache entry

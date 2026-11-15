@@ -31,9 +31,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -55,10 +53,10 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     @Autowired
     private ConfigurableEnvironment environment;
 
-    private final Map<String, TaskRuntimeInformation> runtimeInformationMap = new HashMap<>();
+    private final ConcurrentMap<String, TaskRuntimeInformation> runtimeInformationMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
-    private final Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
-    private boolean shutdownRequested;
+    private final ConcurrentMap<String, ScheduledFuture<?>> taskSchedules = new ConcurrentHashMap<>();
+    private volatile boolean shutdownRequested;
 
     @EventListener
     public void handleShutdown(ShutdownEvent shutdownEvent) {
@@ -110,7 +108,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         if (runNow && !shutdownRequested) {
             scheduler.execute(runnable);
         }
-        ScheduledFuture scheduledTask = scheduler.schedule(runnable, createTrigger(task, runNow));
+        ScheduledFuture<?> scheduledTask = scheduler.schedule(runnable, createTrigger(task, runNow));
         taskSchedules.put(task.name(), scheduledTask);
     }
 
@@ -151,10 +149,14 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     public void runNow(String taskName) {
+        TaskRuntimeInformation runtimeInformation = runtimeInformationMap.get(taskName);
+        ScheduledFuture<?> scheduledFuture = taskSchedules.get(taskName);
+        if (runtimeInformation == null || scheduledFuture == null) {
+            throw new IllegalArgumentException("Unknown task \"" + taskName + "\"");
+        }
         logger.info("Running task \"{}\" now", taskName);
-        ScheduledFuture scheduledFuture = taskSchedules.get(taskName);
         scheduledFuture.cancel(false);
-        scheduleTask(runtimeInformationMap.get(taskName), true);
+        scheduleTask(runtimeInformation, true);
     }
 
     @Override
