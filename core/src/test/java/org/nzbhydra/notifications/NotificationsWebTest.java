@@ -168,6 +168,21 @@ class NotificationsWebTest {
         verify(messagingTemplate, times(1)).convertAndSend(eq(TOPIC), any(Object.class));
     }
 
+    @Test
+    void shouldKeepSendingNotificationsAfterAnErrorWasThrownOnOneTick() {
+        // Given a repository that throws an Error once and then returns a notification
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc())
+            .thenThrow(new StackOverflowError("Some error while retrieving the notifications"))
+            .thenReturn(List.of(new NotificationEntity()));
+
+        // When the pusher body runs twice
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+
+        // Then the Error did not escape (which would cancel all further executions) and the second tick still sent
+        verify(messagingTemplate, times(1)).convertAndSend(eq(TOPIC), any(Object.class));
+    }
+
     private static NotificationEntity notification(int id) {
         final NotificationEntity entity = new NotificationEntity();
         entity.setId(id);

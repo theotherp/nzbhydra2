@@ -108,13 +108,13 @@ public class NotificationsWeb {
     }
 
     /**
-     * Any exception escaping a scheduled task cancels all its further executions, which would stop all notifications
-     * until the next reconnect, so all errors are caught and logged here.
+     * Anything thrown out of a scheduled task cancels all its further executions, which would stop all notifications
+     * until the last tab disconnects and a new one subscribes, so exceptions and errors are caught and logged here.
      */
     void sendUnreadNotificationsCatchingErrors() {
         try {
             sendUnreadNotifications();
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             logger.error("Error while retrieving or sending unread notifications", e);
         }
     }
