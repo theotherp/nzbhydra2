@@ -3,11 +3,11 @@ package org.nzbhydra.downloading.downloaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
@@ -39,13 +39,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@MockitoSettings(strictness = Strictness.LENIENT)
+@ExtendWith(MockitoExtension.class)
 class DownloaderWebSocketTest {
 
     private static final String TOPIC = "/topic/downloaderStatus";
@@ -70,7 +71,8 @@ class DownloaderWebSocketTest {
         replacedScheduler = (ScheduledExecutorService) ReflectionTestUtils.getField(testee, "scheduler");
         scheduler = mock(ScheduledExecutorService.class);
         scheduledFuture = mock(ScheduledFuture.class);
-        when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> scheduledFuture);
+        //Not every test schedules a poll
+        lenient().when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> scheduledFuture);
         ReflectionTestUtils.setField(testee, "scheduler", scheduler);
         setNow(NOW);
     }
@@ -399,7 +401,6 @@ class DownloaderWebSocketTest {
 
     @Test
     void shouldNotRescheduleAPollThatWasRunningWhenTheLastSubscriberDisconnected() {
-        when(downloaderStatusRetrieval.getStatus()).thenReturn(status(DownloaderStatus.State.IDLE));
         testee.onClientSubscribe(subscribeEvent("session-1"));
         final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(scheduler).schedule(runnableCaptor.capture(), eq(0L), eq(TimeUnit.MILLISECONDS));
@@ -417,7 +418,6 @@ class DownloaderWebSocketTest {
 
     @Test
     void shouldNotRescheduleAPollThatWasRunningWhenPollingWasRestarted() {
-        when(downloaderStatusRetrieval.getStatus()).thenReturn(status(DownloaderStatus.State.IDLE));
         testee.onClientSubscribe(subscribeEvent("session-1"));
         final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(scheduler).schedule(runnableCaptor.capture(), eq(0L), eq(TimeUnit.MILLISECONDS));
@@ -449,7 +449,6 @@ class DownloaderWebSocketTest {
 
     @Test
     void shouldStopPollingOnShutdown() {
-        when(downloaderStatusRetrieval.getStatus()).thenReturn(status(DownloaderStatus.State.IDLE));
         testee.onClientSubscribe(subscribeEvent("session-1"));
         final ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(scheduler).schedule(runnableCaptor.capture(), eq(0L), eq(TimeUnit.MILLISECONDS));
