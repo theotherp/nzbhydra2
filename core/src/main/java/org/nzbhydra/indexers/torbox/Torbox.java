@@ -4,7 +4,6 @@ package org.nzbhydra.indexers.torbox;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 import org.javers.common.collections.Lists;
@@ -49,8 +48,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -76,11 +73,12 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 //        ID_TYPE_MAP.put(MediaIdType.TVDB, "tvdb_id");
     }
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private final QueryGenerator queryGenerator;
+    private final TorboxSearchExecutor searchExecutor;
 
-    public Torbox(QueryGenerator queryGenerator) {
+    public Torbox(QueryGenerator queryGenerator, TorboxSearchExecutor searchExecutor) {
         this.queryGenerator = queryGenerator;
+        this.searchExecutor = searchExecutor;
     }
 
 
@@ -142,8 +140,8 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
         searchRequestIdConverter.convertSearchIdsIfNeeded(searchRequest, config);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Future<TorboxSearchResponse> usenetFuture = executorService.submit(() -> buildAndCall(searchRequest, TorboxResultType.USENET));
-        Future<TorboxSearchResponse> torrentFuture = executorService.submit(() -> buildAndCall(searchRequest, TorboxResultType.TORRENT));
+        Future<TorboxSearchResponse> usenetFuture = searchExecutor.submit(() -> buildAndCall(searchRequest, TorboxResultType.USENET));
+        Future<TorboxSearchResponse> torrentFuture = searchExecutor.submit(() -> buildAndCall(searchRequest, TorboxResultType.TORRENT));
 
         Optional<TorboxSearchResponse> usenetResponse = getResultWithTimeout(usenetFuture);
         Optional<TorboxSearchResponse> torrentResponse = getResultWithTimeout(torrentFuture);
@@ -235,11 +233,6 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
             log.error("Error searching torbox", e);
             return Optional.empty();
         }
-    }
-
-    @PreDestroy
-    public void tearDown() {
-        executorService.shutdownNow();
     }
 
     @Component

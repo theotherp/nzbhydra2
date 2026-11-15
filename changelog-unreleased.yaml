@@ -14,3 +14,5 @@
     text: "Do you sometimes look in the changelog of a game or app and it just says \"Multiple improvements in stability and bug fixes\" and you think, \"Give me details!\"? Well, this is one of those."
 -   type: "fix"
     text: "Unexpected API errors are now answered in JSON when the calling tool asked for JSON output. A details request with an invalid ID gets a proper &quot;invalid ID&quot; error."
+-   type: "fix"
+    text: "If you use a Torbox indexer, NZBHydra2 no longer keeps two extra threads running for every config save that followed a Torbox search."

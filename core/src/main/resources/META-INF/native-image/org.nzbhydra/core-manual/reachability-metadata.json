@@ -14951,6 +14951,15 @@
       ]
     },
     {
+      "type": "org.nzbhydra.indexers.torbox.TorboxSearchExecutor",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "org.nzbhydra.indexers.torznab.Torznab"
     },
     {
@@ -27802,6 +27811,9 @@
     },
     {
       "glob": "org/nzbhydra/indexers/torbox/Torbox.class"
+    },
+    {
+      "glob": "org/nzbhydra/indexers/torbox/TorboxSearchExecutor.class"
     },
     {
       "glob": "org/nzbhydra/indexers/torznab/Torznab$NewznabHandlingStrategy.class"
