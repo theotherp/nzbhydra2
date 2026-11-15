@@ -16,3 +16,5 @@
     text: "Unexpected API errors are now answered in JSON when the calling tool asked for JSON output. A details request with an invalid ID gets a proper &quot;invalid ID&quot; error."
 -   type: "fix"
     text: "If you use a Torbox indexer, NZBHydra2 no longer keeps two extra threads running for every config save that followed a Torbox search."
+-   type: "fix"
+    text: "When a server stopped sending in the middle of a response, NZBHydra2 now reports the timeout or dropped connection instead of a confusing parsing error."

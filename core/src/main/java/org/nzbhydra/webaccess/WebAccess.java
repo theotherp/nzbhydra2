@@ -115,11 +115,17 @@ public class WebAccess {
             try {
                 bodyAsString = body == null ? null : body.string();
             } catch (IOException e) {
+                if (response.isSuccessful()) {
+                    //A read timeout or a dropped connection in the middle of the body. The body is incomplete and must
+                    //not be returned as if the server had sent none. A SocketTimeoutException is wrapped by the outer catch
+                    throw e;
+                }
                 if (callTimeout != null && e instanceof InterruptedIOException && !(e instanceof SocketTimeoutException)) {
                     //The call timeout fired or the thread was interrupted: the body is incomplete and must not be
                     //returned as if the server had sent none
                     throw e;
                 }
+                //For an error response the status code is what matters, the body is optional
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
