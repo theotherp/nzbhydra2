@@ -177,11 +177,14 @@ public class DownloaderWebSocket {
         }
     }
 
-    private boolean consumeFastPollRequest() {
+    /**
+     * Does not clear {@code pollSoonRequested}, that is left to {@link #scheduleNextPoll}. The delay determined from an
+     * offline status ignores the request, so clearing it here would drop a request made while that poll was running,
+     * for example by a config change correcting the downloader's address.
+     */
+    private boolean isFastPollRequested() {
         synchronized (schedulerLock) {
-            final boolean fastPollRequested = pollSoonRequested || clock.instant().isBefore(fastPollUntil);
-            pollSoonRequested = false;
-            return fastPollRequested;
+            return pollSoonRequested || clock.instant().isBefore(fastPollUntil);
         }
     }
 
@@ -197,10 +200,10 @@ public class DownloaderWebSocket {
             newStatus = downloaderStatusRetrieval.getStatus();
         } catch (Exception e) {
             logger.error("Error while retrieving the downloader status", e);
-            return nextPollDelayMillis(DownloaderStatus.State.OFFLINE, consumeFastPollRequest());
+            return nextPollDelayMillis(DownloaderStatus.State.OFFLINE, isFastPollRequested());
         }
         // Determined before sending because the status sent tells the frontend whether another one follows soon
-        final long delay = nextPollDelayMillis(newStatus.getState(), consumeFastPollRequest());
+        final long delay = nextPollDelayMillis(newStatus.getState(), isFastPollRequested());
         try {
             sendStatusUpdate(newStatus, delay > FAST_INTERVAL_MILLIS);
         } catch (Exception e) {

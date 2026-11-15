@@ -362,6 +362,22 @@ class DownloaderWebSocketTest {
     }
 
     @Test
+    void shouldPollSoonAfterAConfigChangeWhileAnOfflinePollIsRunning() {
+        when(downloaderStatusRetrieval.getStatus()).thenReturn(status(DownloaderStatus.State.OFFLINE));
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+        // The scheduled poll is due, i.e. running
+        when(scheduledFuture.getDelay(TimeUnit.MILLISECONDS)).thenReturn(0L);
+
+        // The user corrects the downloader settings while the poll waits for the unreachable downloader
+        testee.handleNewConfig(configChangedEvent(true));
+
+        // The new settings are tried right away instead of after the failed interval
+        assertThat(runScheduledPollAndGetNextDelay()).isEqualTo(DownloaderWebSocket.FAST_INTERVAL_MILLIS);
+        // But only once
+        assertThat(runScheduledPollAndGetNextDelay()).isEqualTo(DownloaderWebSocket.FAILED_INTERVAL_MILLIS);
+    }
+
+    @Test
     void shouldNotStartPollingForADownloadWithoutSubscribers() {
         testee.onFileDownload(new FileDownloadEvent(null, null));
 
