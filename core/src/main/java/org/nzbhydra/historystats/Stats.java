@@ -1,6 +1,7 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -58,6 +59,7 @@ public class Stats {
 
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
     private static final int TIMEOUT = 120;
+    static final String STATS_THREAD_NAME_PREFIX = "stats-calculation-";
 
     @Autowired
     private SearchModuleProvider searchModuleProvider;
@@ -81,8 +83,22 @@ public class Stats {
         statsResponse.setAfter(statsRequest.getAfter());
         statsResponse.setBefore(statsRequest.getBefore());
 
-        ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
+        //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
+        ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat(STATS_THREAD_NAME_PREFIX + "%d").build());
+        try {
+            calculateStats(statsRequest, statsResponse, executor);
+        } finally {
+            executor.shutdownNow();
+        }
 
+        statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
+        statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
+
+        logger.info("Stats calculation took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return statsResponse;
+    }
+
+    private void calculateStats(StatsRequest statsRequest, StatsResponse statsResponse, ExecutorService executor) throws InterruptedException {
         List<Future<?>> futures = new ArrayList<>();
 
 
@@ -161,24 +177,16 @@ public class Stats {
         executor.shutdown();
         boolean wasCompleted = executor.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         if (!wasCompleted) {
-            executor.shutdownNow();
             logger.error("Aborted stats generation because it took longer than {} seconds. Please restart", TIMEOUT);
-        } else {
-            for (Future<?> future : futures) {
-                try {
-                    future.get();
-                } catch (ExecutionException e) {
-                    logger.error("Error during calculation of stats", e.getCause());
-                }
-            }
-
+            return;
         }
-
-        statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
-        statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
-
-        logger.info("Stats calculation took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        return statsResponse;
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+                logger.error("Error during calculation of stats", e.getCause());
+            }
+        }
     }
 
 
