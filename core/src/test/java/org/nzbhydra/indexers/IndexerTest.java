@@ -206,6 +206,46 @@ public class IndexerTest {
     }
 
     @Test
+    void shouldNotSaveConfigWhenHandlingSuccessForHealthyIndexer() {
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setLastError(null);
+        indexerConfig.setDisabledUntil(null);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledAt(null);
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        verify(baseConfigHandler, never()).save(anyBoolean());
+    }
+
+    @Test
+    void shouldSaveConfigOnceWhenHandlingSuccessForDisabledIndexer() {
+        indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfig.setLastError("some error");
+        indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
+        indexerConfig.setDisabledLevel(1);
+        indexerConfig.setDisabledAt(Instant.now());
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        verify(baseConfigHandler, times(1)).save(false);
+    }
+
+    @Test
+    void shouldSaveConfigWhenHandlingSuccessForIndexerWithOnlyLastErrorSet() {
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setLastError("some error");
+        indexerConfig.setDisabledUntil(null);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledAt(null);
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        assertThat(indexerConfig.getLastError()).isNull();
+        verify(baseConfigHandler, times(1)).save(false);
+    }
+
+    @Test
     void handleFailure() throws Exception {
         indexerConfig.setState(IndexerConfig.State.ENABLED);
         indexerConfig.setDisabledLevel(0);

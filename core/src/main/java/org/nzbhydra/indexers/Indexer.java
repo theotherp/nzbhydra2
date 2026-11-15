@@ -330,12 +330,20 @@ public abstract class Indexer<T> {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
             eventPublisher.publishEvent(new IndexerReenabledNotificationEvent(getConfig().getName(), getConfig().getDisabledAt()));
         }
-        getConfig().setState(IndexerConfig.State.ENABLED);
-        getConfig().setLastError(null);
-        getConfig().setDisabledUntil(null);
-        getConfig().setDisabledLevel(0);
-        getConfig().setDisabledAt(null);
-        baseConfigHandler.save(false);
+        //Only save if anything changed, otherwise the config file would be rewritten after every successful call
+        boolean configChanged = getConfig().getState() != IndexerConfig.State.ENABLED
+            || getConfig().getLastError() != null
+            || getConfig().getDisabledUntil() != null
+            || getConfig().getDisabledLevel() != 0
+            || getConfig().getDisabledAt() != null;
+        if (configChanged) {
+            getConfig().setState(IndexerConfig.State.ENABLED);
+            getConfig().setLastError(null);
+            getConfig().setDisabledUntil(null);
+            getConfig().setDisabledLevel(0);
+            getConfig().setDisabledAt(null);
+            baseConfigHandler.save(false);
+        }
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
