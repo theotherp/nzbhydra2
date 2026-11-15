@@ -76,6 +76,15 @@ public abstract class Indexer<T> {
      */
     private static final Map<String, Object> DB_LOCKS = new ConcurrentHashMap<>();
 
+    /**
+     * Set by {@link #buildSearchUrlAndCall(SearchRequest, int, Integer)} while the indexer is called. A successful call
+     * then doesn't save its API access right away but leaves it here, so that it is saved once, after the response was
+     * processed. Otherwise a response that fails to be processed would be saved twice and count twice against the
+     * indexer's API limit. Thread local because the indexer-specific {@link #getAndStoreResultToDatabase(URI, IndexerApiAccessType)}
+     * sits between the two and the same instance is used by concurrent searches.
+     */
+    private static final ThreadLocal<PendingApiAccess> PENDING_SEARCH_ACCESS = new ThreadLocal<>();
+
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -188,13 +197,19 @@ public abstract class Indexer<T> {
             if (e.getCause() instanceof InterruptedException) {
                 debug("Hydra was shut down, ignoring InterruptedException");
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            } else if (e.getCause() instanceof IndexerAccessException accessException) {
+                //E.g. Binsearch and NzbKing call the indexer through Failsafe which wraps the checked exception
+                handleIndexerAccessException(accessException, IndexerApiAccessType.SEARCH);
+                indexerSearchResult = new IndexerSearchResult(this, accessException.getMessage());
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName(), getName()));
             } else {
+                //Probably a bug in Hydra and not the indexer's fault, so don't disable it
                 error("Unexpected error while searching", e);
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName(), getName()));
                 try {
-                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
+                    saveApiAccess(IndexerApiAccessType.SEARCH, null, IndexerAccessResult.HYDRA_ERROR, true); //Save as success, it's our fault
                 } catch (Exception e1) {
-                    error("Error while handling indexer failure. API access was not saved to database", e1);
+                    error("Error while saving API access to database", e1);
                 }
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
@@ -220,8 +235,46 @@ public abstract class Indexer<T> {
         Stopwatch stopwatch = Stopwatch.createStarted();
         info("Calling {}", url.toString());
 
-        response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
-        return processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+        PendingApiAccess pendingAccess = new PendingApiAccess();
+        PENDING_SEARCH_ACCESS.set(pendingAccess);
+        try {
+            response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
+        } catch (Throwable e) {
+            //The indexer-specific code may throw after the call was made, e.g. for a newznab error response. Save the call as before
+            savePendingApiAccess(pendingAccess);
+            throw e;
+        } finally {
+            PENDING_SEARCH_ACCESS.remove();
+        }
+
+        IndexerSearchResult indexerSearchResult;
+        try {
+            indexerSearchResult = processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+        } catch (Throwable e) {
+            if (!(e instanceof Exception) || e.getCause() instanceof InterruptedException) {
+                //search() doesn't save an API access for these, so save the call that was made
+                savePendingApiAccess(pendingAccess);
+            }
+            //Otherwise search() saves the call as HYDRA_ERROR. Saving it here, too, would count it twice
+            throw e;
+        }
+        savePendingApiAccess(pendingAccess);
+        return indexerSearchResult;
+    }
+
+    private void savePendingApiAccess(PendingApiAccess pendingAccess) {
+        if (pendingAccess.isSet()) {
+            saveApiAccess(pendingAccess.accessType, pendingAccess.responseTime, IndexerAccessResult.SUCCESSFUL, true);
+        }
+    }
+
+    private static class PendingApiAccess {
+        private IndexerApiAccessType accessType;
+        private Long responseTime;
+
+        private boolean isSet() {
+            return accessType != null;
+        }
     }
 
     protected IndexerSearchResult processSearchResponse(SearchRequest searchRequest, int offset, Integer limit, Stopwatch stopwatch, T response) throws IndexerParsingException {
@@ -325,6 +378,11 @@ public abstract class Indexer<T> {
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
+        reenableAfterSuccessfulCall();
+        saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
+    }
+
+    private void reenableAfterSuccessfulCall() {
         //New state can only be enabled; if the user had disabled the indexer it wouldn't've been called
         if (getConfig().getDisabledLevel() > 0) {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
@@ -344,7 +402,6 @@ public abstract class Indexer<T> {
             getConfig().setDisabledAt(null);
             baseConfigHandler.save(false);
         }
-        saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
@@ -436,7 +493,15 @@ public abstract class Indexer<T> {
 
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
-        handleSuccess(apiAccessType, responseTime);
+        PendingApiAccess pendingAccess = PENDING_SEARCH_ACCESS.get();
+        if (pendingAccess != null && !pendingAccess.isSet() && apiAccessType == IndexerApiAccessType.SEARCH) {
+            //Saved by buildSearchUrlAndCall once the response was processed
+            reenableAfterSuccessfulCall();
+            pendingAccess.accessType = apiAccessType;
+            pendingAccess.responseTime = responseTime;
+        } else {
+            handleSuccess(apiAccessType, responseTime);
+        }
         return result;
     }
 

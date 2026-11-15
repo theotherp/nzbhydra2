@@ -18,3 +18,5 @@
     text: "If you use a Torbox indexer, NZBHydra2 no longer keeps two extra threads running for every config save that followed a Torbox search."
 -   type: "fix"
     text: "When a server stopped sending in the middle of a response, NZBHydra2 now reports the timeout or dropped connection instead of a confusing parsing error."
+-   type: "fix"
+    text: "An error in NZBHydra2&apos;s own handling of search results no longer disables the indexer. A search response that could not be read no longer counts twice against the indexer&apos;s API limit."
