@@ -23,12 +23,6 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public class NativeHintsTest {
 
-    private static final Set<String> IGNORED_CLASSES = Set.of(
-            "org.nzbhydra.Experiments.MainClass.SubEntry.SubSubentry",
-            "org.nzbhydra.Experiments.MainClass.SubEntry",
-            "org.nzbhydra.Experiments.MainClass"
-    );
-
     @Test
     public void shouldEnsureAllDataAnnotatedClassesAreMarked() throws Exception {
         final Collection<File> javaFiles = FileUtils.listFiles(new File(""), new String[]{"java"}, true);
@@ -65,9 +59,6 @@ public class NativeHintsTest {
     }
 
     private static void addIfMarkerIsMissing(Set<String> classesWithMissingReflectionMarker, JavaSource source) {
-        if (IGNORED_CLASSES.contains(source.getCanonicalName())) {
-            return;
-        }
         if (source.hasAnnotation(Data.class) && !source.hasAnnotation(ReflectionMarker.class)) {
             classesWithMissingReflectionMarker.add(source.getCanonicalName());
         }

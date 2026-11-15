@@ -97,28 +97,6 @@ public class NzbKingTest {
         assertThat(item.getGroup().get()).isEqualTo("a.b.multimedia");
     }
 
-
-//    @Test
-//    void shouldRecognizeIfSingleResultPage() throws Exception {
-//        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-//        String html = Resources.toString(Resources.getResource(NzbKingTest.class, "/org/nzbhydra/mapping/binsearch_singlepage.html"), Charsets.UTF_8);
-//        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
-//        List<SearchResultItem> items = new ArrayList<>();
-//        for (int i = 0; i < 4; i++) {
-//            SearchResultItem searchResultItem = new SearchResultItem();
-//            searchResultItem.setPubDate(Instant.now());
-//            items.add(searchResultItem);
-//        }
-//        indexerSearchResult.setSearchResultItems(items);
-//        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
-//        assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
-//        assertThat(indexerSearchResult.getPageSize()).isEqualTo(100);
-//        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(4);
-//        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
-//        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
-//    }
-
-
     @Test
     void shouldRecognizeIfMoreResultsAvailable() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
@@ -160,19 +138,6 @@ public class NzbKingTest {
             testee.buildSearchUrl(searchRequest, 0, 100);
         });
     }
-
-//    @Test
-//    void shouldGetAndParseNfo() throws Exception {
-//        String nfoHtml = Resources.toString(Resources.getResource(NzbKingTest.class, "/org/nzbhydra/mapping/binsearch_nfo.html"), Charsets.UTF_8);
-//        testee = spy(testee);
-//        doReturn(nfoHtml).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());
-//
-//        NfoResult nfoResult = testee.getNfo("1234");
-//
-//        assertThat(nfoResult.isHasNfo()).isEqualTo(true);
-//        assertThat(nfoResult.getContent()).isEqualTo("nfocontent");
-//        assertThat(uriCaptor.getValue().toString()).isEqualTo("https://www.binsearch.info/viewNFO.php?oid=1234");
-//    }
 
     @Test
     void shouldRetryOn503() throws Exception {

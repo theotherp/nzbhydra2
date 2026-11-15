@@ -57,7 +57,6 @@ import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.MultiValueMap;
@@ -296,64 +295,6 @@ public class NewznabTest {
         assertThat(params).hasSize(1);
         assertThat(params.get("imdbid").get(0)).isEqualTo("12345");
         verify(infoProviderMock, never()).convert(anyString(), any(MediaIdType.class));
-    }
-
-    //    @Test
-    // TODO Move to QueryGeneratorTest
-    public void shouldGenerateQueryIfNecessaryAndAllowed() throws Exception {
-        testee.config = new IndexerConfig();
-        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
-        testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Collections.singletonList(MediaIdType.IMDB));
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
-        when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
-        MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.setTitle("someMovie");
-        when(infoProviderMock.convert("imdbId", MediaIdType.IMDB)).thenReturn(mediaInfo);
-
-
-    }
-
-    // TODO Move to QueryGeneratorTest
-//    @Test
-    public void shouldGenerateQueryIfFallbackRequested() throws Exception {
-        testee.config = new IndexerConfig();
-        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
-        testee.config.setHost("http://www.indexer.com");
-        testee.config.setName("indexer");
-        testee.config.setSupportedSearchIds(Arrays.asList(MediaIdType.TVDB));
-        testee.config.setSupportedSearchTypes(Arrays.asList(ActionAttribute.TVSEARCH, ActionAttribute.SEARCH));
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.TVSEARCH, 0, 100);
-        searchRequest.getInternalData().setFallbackStateByIndexer("indexer", FallbackState.REQUESTED);
-        searchRequest.getIdentifiers().put(MediaIdType.TVDB, "tvdbId");
-        when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
-        MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.setTitle("someShow");
-        when(infoProviderMock.convert("tvdbId", MediaIdType.TVDB)).thenReturn(mediaInfo);
-
-        assertThat(testee.generateQueryIfApplicable(searchRequest, "")).isEqualTo("someShow");
-
-        //Don't add season/episode for fallback queries
-        searchRequest.getInternalData().setFallbackStateByIndexer("indexer", FallbackState.REQUESTED);
-        searchRequest.setSeason(1);
-        searchRequest.setEpisode("1");
-        assertThat(testee.generateQueryIfApplicable(searchRequest, "")).isEqualTo("someShow");
-    }
-
-    // TODO Move to QueryGeneratorTest
-//    @Test
-    public void shouldGenerateQueryIfBookSearchTypeNotSupported() throws Exception {
-        testee.config = new IndexerConfig();
-        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
-        testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Collections.emptyList());
-        testee.config.setSupportedSearchTypes(Collections.emptyList());
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.BOOK, 0, 100);
-        searchRequest.setAuthor("author");
-        searchRequest.setTitle("title");
-
-        assertEquals(UriComponentsBuilder.fromUriString("http://www.indexer.com/api?t=search&extended=1&q=title author").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
