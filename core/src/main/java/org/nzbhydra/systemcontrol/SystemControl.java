@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.IntConsumer;
 
 @Component
 public class SystemControl {
@@ -31,6 +32,10 @@ public class SystemControl {
     private ConfigurableEnvironment environment;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    /**
+     * Closes the context and ends the JVM. Replaced in tests, which can't let the JVM exit.
+     */
+    IntConsumer contextCloserAndExiter = SystemControl::closeContextAndExit;
 
     public void exitWithReturnCode(final int returnCode, boolean forceShutdown) {
         if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false")) && !forceShutdown) {
@@ -49,8 +54,7 @@ public class SystemControl {
                 //Wait just enough for the request to be completed
                 Thread.sleep(300);
                 applicationEventPublisher.publishEvent(new ShutdownEvent());
-                ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-                System.exit(returnCode);
+                contextCloserAndExiter.accept(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
             }
@@ -63,5 +67,10 @@ public class SystemControl {
 
     public void exitWithReturnCode(final int returnCode) {
         exitWithReturnCode(returnCode, false);
+    }
+
+    private static void closeContextAndExit(int returnCode) {
+        ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
+        System.exit(returnCode);
     }
 }
