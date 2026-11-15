@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -112,16 +111,6 @@ public class FileHandler {
         return getFileByResult(accessType, accessSource, searchResult);
     }
 
-    @Transactional
-    public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
-        SearchResultEntity result = getResultFromGuid(guid, accessSource);
-        String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
-        logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
-
-
-        return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
-    }
-
     @NotNull
     private SearchResultEntity getResultFromGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
@@ -132,7 +121,11 @@ public class FileHandler {
         return optionalResult.get();
     }
 
-    @Transactional
+    /**
+     * Not transactional on purpose: the download from the indexer can take long and must not hold a database
+     * connection. The history rows are written by the repositories in their own short transactions. The same goes
+     * for {@link #handleContentDownload} and {@link #handleRedirect}, which other beans call directly.
+     */
     public DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result) {
         fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(configProvider.getIndexerByName(result.getIndexer().getName()), fileDownloadAccessType, result);
         return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
@@ -173,7 +166,6 @@ public class FileHandler {
         }
     }
 
-    @Transactional
     public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result) throws MagnetLinkRedirectException {
         if (result.getLink().contains("magnet:")) {
             logger.warn("Unable to download magnet link as file");
@@ -213,7 +205,6 @@ public class FileHandler {
         return downloadResult;
     }
 
-    @Transactional
     public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result, String actualUrl) {
         logger.debug("Redirecting to {}", result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);

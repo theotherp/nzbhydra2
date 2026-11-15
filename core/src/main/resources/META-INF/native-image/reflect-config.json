@@ -39498,14 +39498,6 @@
           "org.nzbhydra.config.SearchSource",
           "org.nzbhydra.searching.db.SearchResultEntity"
         ]
-      },
-      {
-        "name": "getFileByGuid",
-        "parameterTypes": [
-          "long",
-          "org.nzbhydra.config.downloading.FileDownloadAccessType",
-          "org.nzbhydra.config.SearchSource"
-        ]
       }
     ],
     "queriedMethods": [
