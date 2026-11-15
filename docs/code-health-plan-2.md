@@ -290,6 +290,61 @@ Add a unit test for `SystemControl` that calls `exitWithReturnCode` from a daemo
 task.
 Do it per class when the class is touched anyway, starting with `DownloaderWebSocketTest`, where the reviewer asked for it. Do not do all 57 in one go.
 
+### Results of segment C
+
+- **C1.** Measured on `031ff550c` with the command above: 1261 unit tests, 64.9% of lines in `core` covered (10730 of
+  16542). Unit tests only; the system tests are not counted. The ten classes with the most uncovered lines, nested
+  classes included:
+
+  | Class                       | Missed | Covered | Worth a task?                                                     |
+  |-----------------------------|-------:|--------:|-------------------------------------------------------------------|
+  | `DebugInfosProvider`        |    218 |     20% | No. Collects files and system details for a zip.                  |
+  | `Stats`                     |    143 |     62% | Yes, C8.                                                          |
+  | `DemoDataProvider`          |    140 |     12% | No. Demo mode only.                                               |
+  | `UpdateManager`             |    137 |     41% | Not now, see below.                                               |
+  | `NzbHydra`                  |    135 |     23% | No. Startup and `main`; the system tests run it.                  |
+  | `FileHandler`               |    123 |     57% | Yes, C6.                                                          |
+  | `DebugInfosWeb`             |    120 |      2% | No. Thin endpoints.                                               |
+  | `ReversedLinesFileReader`   |    116 |      0% | Done in C3.                                                       |
+  | `Newznab`                   |    109 |     73% | No. Well covered; the gaps are `getDetails` and rare attributes.  |
+  | `NzbGet` (and `Sabnzbd`, 95)|     99 |     45% | Yes, C7.                                                          |
+
+  `LogContentProvider` (98 missed) was next and is covered by C3. `UpdateManager`'s gaps are `installUpdate`, the
+  asset lookup and the changelog history. They download and replace the program, which a unit test can only mock away,
+  and the update system test exercises them; I would leave them. After segment C the suite has 1346 tests and covers
+  65.9%.
+- **C2.** `MinAgeOffsetSearchTest` drives the bisection against a fake indexer and checks that every old enough result
+  is kept exactly once, for boundaries on and between page edges, an indexer that reports more results than it has, one
+  that does not sort newest first, one with nothing old enough and failed pages. No bug found.
+- **C3.** `ReversedLinesFileReaderTest`, `LogContentProviderTest` and `StoredRecordMatcherTest`. The reader had two
+  bugs, both fixed: in a file without a trailing newline it dropped the first empty line it met, and reading again
+  after the start of the file threw a `NullPointerException`. Neither showed in the log viewer, whose JSON log ends in a
+  newline and has no empty lines. `StoredRecordMatcher` matches its documented rules; no bug found.
+  `LogContentProvider.rotate`, `clear` and `getCurrentLogfile` need a logback context and stay untested.
+- **C4.** `SystemControl` closes the context and exits through an `IntConsumer` that `SystemControlTest` replaces. The
+  test fails when `setDaemon(false)` is removed.
+- **C5.** `DownloaderWebSocketTest` runs with strict stubs. Three tests stubbed a status retrieval their poll never
+  reaches. 56 classes remain lenient.
+
+### C6. Unit tests for the download path in `FileHandler`
+
+`getFileByResult` (the download of a single NZB, 22 lines) and most of `getNzbsAsFiles` (the multi-download zip) are not
+covered. D1 moves the transaction boundaries in exactly these methods, so write the tests first: they are the safety net
+for D1. Cover a successful download with its history row, a failed download, a redirect to a magnet link and a zip of
+several results where one fails.
+
+### C7. Unit tests for the downloader clients
+
+`Sabnzbd` and `NzbGet` have tests, but `checkConnection`, `getQueue`, `getHistory` and adding by link are not covered
+in either. These parse the downloaders' JSON, which changes between their versions. Record a queue, history and error
+response of each with MockWebServer and assert the mapped `DownloaderEntry` and status values.
+
+### C8. Unit tests for the remaining statistics
+
+`Stats.successfulDownloadsPerIndexer`, `downloadsOrSearchesPerUserOrIp`, `userAgentSearchShares` and
+`userAgentDownloadShares` are not run by any test, and `calculateStats` only partly. They are native SQL queries, so a
+mock does not help; extend `StatsComponentTest` with seeded rows in H2 and assert the computed shares.
+
 ## Segment D. Structure
 
 ### D1. Keep database transactions out of network calls
