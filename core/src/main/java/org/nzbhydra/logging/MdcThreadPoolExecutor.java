@@ -101,7 +101,7 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
         return new Runnable() {
             @Override
             public void run() {
-                Map previous = MDC.getCopyOfContextMap();
+                Map<String, String> previous = MDC.getCopyOfContextMap();
                 if (context == null) {
                     MDC.clear();
                 } else {

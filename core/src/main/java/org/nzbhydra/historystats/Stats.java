@@ -221,7 +221,7 @@ public class Stats {
 
         Query query = entityManager.createNativeQuery(sqlQueryByIndexer);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
@@ -252,7 +252,7 @@ public class Stats {
             "ORDER BY avg ASC";
 
         Query query = entityManager.createNativeQuery(sql);
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigDecimal) ((Object[]) x)[1]).longValue()).average();
 
@@ -357,7 +357,7 @@ public class Stats {
         Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
         Query query = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
         //query = query.setParameter("indexerIds", indexerIdsToInclude);
-        List results = query.getResultList();
+        List<?> results = query.getResultList();
         for (Object resultObject : results) {
             Object[] array = (Object[]) resultObject;
             Integer indexerId = (Integer) array[0];
@@ -679,7 +679,7 @@ public class Stats {
             GROUP BY steps
             ORDER BY steps ASC""";
         Query query = entityManager.createNativeQuery(sql);
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         List<DownloadPerAge> results = new ArrayList<>();
         Map<Integer, Integer> agesAndCountsMap = new HashMap<>();
         for (Object o : resultList) {

@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 @Component
 public class ExternalTools {
 
-    private static final TypeReference<List<Map>> LIST_TYPE_REFERENCE = new TypeReference<>() {
+    private static final TypeReference<List<Map<?, ?>>> LIST_TYPE_REFERENCE = new TypeReference<>() {
     };
 
     private enum BackendType {
@@ -242,7 +242,7 @@ public class ExternalTools {
             handleXdarrError(addRequest, e);
             return true;
         }
-        final Map statusMap = Jackson.JSON_MAPPER.readValue(body, Map.class);
+        final Map<?, ?> statusMap = Jackson.JSON_MAPPER.readValue(body, Map.class);
         if (!statusMap.containsKey("version")) {
             messages.add("Error: no version found in external tool response");
             throw new IOException("Error: no version found in external tool response");
@@ -385,7 +385,7 @@ public class ExternalTools {
             } else if (response.startsWith("[")) {
                 throw new WebAccessException("If you configured " + addRequest.getExternalTool().name() + " to use an URL base make sure to add it in the URL.");
             }
-            final Map requestResponse = Jackson.JSON_MAPPER.readValue(response, Map.class);
+            final Map<?, ?> requestResponse = Jackson.JSON_MAPPER.readValue(response, Map.class);
             messages.add((existingEntry.isPresent() ? "Updated existing entry \"" : "Configured \"") + nameInXdarr + "\"");
         } catch (WebAccessException e) {
             handleXdarrError(addRequest, e);
@@ -466,7 +466,7 @@ public class ExternalTools {
         logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received error response: {}", e.getBody());
 
         if (e.getBody() != null && e.getBody().trim().startsWith("[")) {
-            final List<Map> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
+            final List<Map<?, ?>> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
             if (!requestResponse.isEmpty() && requestResponse.get(0).containsKey("errorMessage")) {
                 final String errorMessage = (String) requestResponse.get(0).get("errorMessage");
                 messages.add("Error: " + errorMessage);

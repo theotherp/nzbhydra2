@@ -436,7 +436,7 @@ public class FileHandler {
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
         SearchResultEntity result = optionalResult.get();
-        Indexer indexer = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
+        Indexer<?> indexer = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         return indexer.getNfo(result.getIndexerGuid());
     }
 
@@ -453,7 +453,7 @@ public class FileHandler {
     }
 
     private DownloadedFile downloadFile(SearchResultEntity result, String url, int redirectCount) throws MagnetLinkRedirectException, DownloadException {
-        Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
+        Indexer<?> indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         IndexerConfig indexerConfig = indexerByName.getConfig();
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         Request.Builder requestBuilder = new Request.Builder().url(url);

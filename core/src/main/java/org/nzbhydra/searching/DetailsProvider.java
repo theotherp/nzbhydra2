@@ -27,7 +27,7 @@ public class DetailsProvider {
         if (searchResult.isEmpty()) {
             return null;
         }
-        Indexer indexer = searchModuleProvider.getIndexerByName(searchResult.get().getIndexer().getName());
+        Indexer<?> indexer = searchModuleProvider.getIndexerByName(searchResult.get().getIndexer().getName());
         try {
             return indexer.getDetails(searchResult.get().getIndexerGuid(), resultId);
         } catch (IndexerAccessException e) {

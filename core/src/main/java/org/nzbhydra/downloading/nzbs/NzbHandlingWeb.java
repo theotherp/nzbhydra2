@@ -124,7 +124,7 @@ public class NzbHandlingWeb {
      */
     @PublicEndpoint(reason = "NZB download links handed to external tools; checks the API key itself")
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) {
+    public ResponseEntity<?> downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) {
         logger.debug("downloadNzbWithApikey guid: {}", guid);
 
         BaseConfig baseConfig = configProvider.getBaseConfig();

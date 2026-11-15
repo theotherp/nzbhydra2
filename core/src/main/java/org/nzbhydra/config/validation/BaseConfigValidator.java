@@ -39,7 +39,7 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
     @Autowired
     private IndexerConfigValidator indexerConfigValidator;
     @Autowired
-    private List<ConfigValidator> configValidatorList;
+    private List<ConfigValidator<?>> configValidatorList;
     @Autowired
     private SensitiveDataConfigValidator sensitiveDataConfigValidator;
 
@@ -60,7 +60,7 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
         ));
         configs.addAll(newConfig.getIndexers());
         for (Object config : configs) {
-            final ConfigValidator validator = configValidatorList.stream().filter(x -> x.doesValidate(config.getClass())).findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") final ConfigValidator<Object> validator = (ConfigValidator<Object>) configValidatorList.stream().filter(x -> x.doesValidate(config.getClass())).findFirst().orElseThrow();
             final ConfigValidationResult result = validator.validateConfig(oldBaseConfig, newBaseConfig, config);
             configValidationResult.getErrorMessages().addAll(result.getErrorMessages());
             configValidationResult.getWarningMessages().addAll(result.getWarningMessages());

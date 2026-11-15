@@ -52,7 +52,7 @@ public class SearchModuleProvider {
     private final Map<String, Integer> apiHitsToStoreInitially = new ConcurrentHashMap<>();
 
     @Autowired
-    private List<IndexerHandlingStrategy> indexerHandlingStrategies;
+    private List<IndexerHandlingStrategy<?>> indexerHandlingStrategies;
 
 
 
@@ -88,7 +88,7 @@ public class SearchModuleProvider {
         final Map<String, Indexer<?>> newInstances = new HashMap<>();
         for (IndexerConfig config : indexers) {
             try {
-                Optional<IndexerHandlingStrategy> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
+                Optional<IndexerHandlingStrategy<?>> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
                 if (optionalStrategy.isEmpty()) {
                     logger.error("Unable to find implementation for indexer type {} and host {}", config.getSearchModuleType(), config.getHost());
                     continue;

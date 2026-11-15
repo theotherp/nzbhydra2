@@ -245,7 +245,7 @@ public class BackupAndRestore {
             final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s';".formatted(tempPath));
             //If the database is corrupted this command will back it up without exception
             entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
-            final List resultList = nativeQuery.getResultList();
+            final List<?> resultList = nativeQuery.getResultList();
             logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
         } catch (Exception e) {
             logger.info("Deleting invalid backup file {}", targetFile);

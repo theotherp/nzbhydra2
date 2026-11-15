@@ -65,7 +65,7 @@ public class ConfigWeb {
     @PutMapping(value = "/internalapi/config", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
         for (PropertySource<?> source : environment.getPropertySources()) {
-            Set propertyNames = new HashSet();
+            Set<?> propertyNames = new HashSet<>();
             if (source.getSource() instanceof Properties) {
                 propertyNames = ((Properties) source.getSource()).stringPropertyNames();
             } else if (source.getSource() instanceof LinkedHashMap) {

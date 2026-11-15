@@ -577,7 +577,7 @@ public abstract class Indexer<T> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Indexer that = (Indexer) o;
+        Indexer<?> that = (Indexer<?>) o;
         return Objects.equal(indexer.getName(), that.indexer.getName());
     }
 

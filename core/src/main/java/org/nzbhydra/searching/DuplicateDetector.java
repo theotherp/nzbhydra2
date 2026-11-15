@@ -70,7 +70,7 @@ public class DuplicateDetector {
 
     public DuplicateDetectionResult detectDuplicates(Set<SearchResultItem> results) {
         Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> DuplicateGroups.normalizeTitle(x.getTitle())));
-        Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
+        Multiset<Indexer<?>> countUniqueResultsPerIndexer = HashMultiset.create();
         List<LinkedHashSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 
         //In each list of searchResults with the same title we want to find the duplicates

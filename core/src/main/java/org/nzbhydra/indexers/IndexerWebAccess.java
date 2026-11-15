@@ -58,7 +58,7 @@ public class IndexerWebAccess {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(URI uri, IndexerConfig indexerConfig, Class responseType) throws IndexerAccessException {
+    public <T> T get(URI uri, IndexerConfig indexerConfig, Class<?> responseType) throws IndexerAccessException {
         int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
         if (userAgent.equals("NZBHydra2")) {
@@ -96,7 +96,7 @@ public class IndexerWebAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T callAndParse(URI uri, Map<String, String> headers, int timeout, Duration callTimeout, Class responseType) throws IOException, HydraUnmarshallingFailureException {
+    private <T> T callAndParse(URI uri, Map<String, String> headers, int timeout, Duration callTimeout, Class<?> responseType) throws IOException, HydraUnmarshallingFailureException {
         String response = webAccess.callUrl(uri.toString(), headers, timeout, callTimeout);
         if (responseType == String.class) {
             return (T) response;

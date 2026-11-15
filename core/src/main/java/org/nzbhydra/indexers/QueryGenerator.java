@@ -40,7 +40,7 @@ public class QueryGenerator {
     @Autowired
     private InfoProvider infoProvider;
 
-    public synchronized String generateQueryIfApplicable(SearchRequest searchRequest, String query, Indexer indexer) throws IndexerSearchAbortedException {
+    public synchronized String generateQueryIfApplicable(SearchRequest searchRequest, String query, Indexer<?> indexer) throws IndexerSearchAbortedException {
         if (searchRequest.getQuery().isPresent()) {
             return searchRequest.getQuery().get();
         }

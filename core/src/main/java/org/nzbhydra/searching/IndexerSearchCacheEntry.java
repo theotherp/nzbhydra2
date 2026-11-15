@@ -18,7 +18,7 @@ import java.util.Set;
 @ReflectionMarker
 public class IndexerSearchCacheEntry {
 
-    private Indexer indexer;
+    private Indexer<?> indexer;
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
     private IndexerSearchEntity indexerSearchEntity;
     private List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
@@ -38,11 +38,11 @@ public class IndexerSearchCacheEntry {
      */
     private MinAgeOffsetSearch minAgeOffsetSearch;
 
-    public IndexerSearchCacheEntry(Indexer indexer) {
+    public IndexerSearchCacheEntry(Indexer<?> indexer) {
         this.indexer = indexer;
     }
 
-    public IndexerSearchCacheEntry(Indexer indexer, Integer minAgeDays) {
+    public IndexerSearchCacheEntry(Indexer<?> indexer, Integer minAgeDays) {
         this.indexer = indexer;
         if (minAgeDays != null && minAgeDays > 0) {
             minAgeOffsetSearch = new MinAgeOffsetSearch(indexer.getName(), minAgeDays);

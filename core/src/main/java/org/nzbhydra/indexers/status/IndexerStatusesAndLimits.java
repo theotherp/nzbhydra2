@@ -226,7 +226,7 @@ public class IndexerStatusesAndLimits {
             Query query = entityManager.createNativeQuery(sqlString);
             query.setParameter("indexerId", indexerEntity.getId());
 
-            List resultList = query.getResultList();
+            List<?> resultList = query.getResultList();
             countApiHits = 0;
             countDownloads = 0;
             earliestApiHit = null;

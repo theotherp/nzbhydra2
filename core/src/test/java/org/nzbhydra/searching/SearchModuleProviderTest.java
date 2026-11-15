@@ -57,7 +57,7 @@ class SearchModuleProviderTest {
     @Mock
     private IndexerInstantiator indexerInstantiator;
     @Mock
-    private IndexerHandlingStrategy<Indexer> indexerHandlingStrategy;
+    private IndexerHandlingStrategy<Indexer<?>> indexerHandlingStrategy;
 
     @InjectMocks
     private SearchModuleProvider testee;

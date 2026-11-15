@@ -334,7 +334,7 @@ public class ExternalApi {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity handleUnexpectedError(Exception e, HttpServletRequest request) {
+    public ResponseEntity<?> handleUnexpectedError(Exception e, HttpServletRequest request) {
         if (e instanceof ClientAbortException || Throwables.getCausalChain(e).stream().anyMatch(x -> x instanceof ClientAbortException)) {
             logger.warn("Calling tool closed the connection before getting the results");
             return null; //Can't return anything because the connection is closed, obviously
