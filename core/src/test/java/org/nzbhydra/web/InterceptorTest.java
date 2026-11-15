@@ -1,5 +1,7 @@
 package org.nzbhydra.web;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +15,12 @@ import org.nzbhydra.misc.UserAgentMapper;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InterceptorTest {
@@ -122,5 +129,38 @@ class InterceptorTest {
         testee.preHandle(request, new MockHttpServletResponse(), new Object());
 
         assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+    }
+
+    @Test
+    void shouldLookUpHostOncePerIpAndOnlyWaitForItOnTheFirstRequest() throws Exception {
+        when(configProvider.getBaseConfig().getMain().getLogging().isMapIpToHost()).thenReturn(true);
+        CountDownLatch lookupMayFinish = new CountDownLatch(1);
+        AtomicInteger lookups = new AtomicInteger();
+        testee.hostLookup = ip -> {
+            lookups.incrementAndGet();
+            Uninterruptibles.awaitUninterruptibly(lookupMayFinish);
+            return "phone.lan";
+        };
+        MockHttpServletRequest request = request("/", null, null);
+        request.setRemoteAddr("10.8.0.2");
+
+        testee.preHandle(request, new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("10.8.0.2");
+
+        Stopwatch whileLookupIsPending = Stopwatch.createStarted();
+        testee.preHandle(request, new MockHttpServletResponse(), new Object());
+        assertThat(whileLookupIsPending.elapsed()).isLessThan(Duration.ofMillis(250));
+        assertThat(SessionStorage.IP.get()).isEqualTo("10.8.0.2");
+
+        lookupMayFinish.countDown();
+        Stopwatch untilLookupFinished = Stopwatch.createStarted();
+        do {
+            testee.preHandle(request, new MockHttpServletResponse(), new Object());
+        } while (!"phone.lan".equals(SessionStorage.IP.get()) && untilLookupFinished.elapsed().getSeconds() < 5);
+        assertThat(SessionStorage.IP.get()).isEqualTo("phone.lan");
+
+        testee.preHandle(request, new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("phone.lan");
+        assertThat(lookups).hasValue(1);
     }
 }

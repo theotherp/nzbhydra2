@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "With &quot;Map hosts&quot; enabled, every request from a client whose IP can&apos;t be resolved to a host name (e.g. over a VPN) was delayed by half a second. Now only the first request waits."
