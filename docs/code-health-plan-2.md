@@ -231,6 +231,25 @@ If either can be scripted against the mock server, add it as a system test.
 F1 of the first plan was checked in the built CSS only. Add a Playwright assertion to an existing spec, with a downloader icon configured, that `document.fonts.check('900 1em "Font Awesome 5 Free"')` is true and that the icon element has
 a non-zero width. The suite passed against the new build, which makes a breakage unlikely but does not prove the glyphs render.
 
+### Results of segment B
+
+- **B1 and B2.** `NativeMetadataTest` checks the metadata against the code. `reflect-config.json` is in
+  `META-INF/native-image/`, not under `core-manual`. The test found 300 stale entries, almost all in
+  `reflect-config.json`, and they were removed with the CGLIB entries named above. A local native build passed all 108
+  Java system tests. The lifecycle check suggested under "Limit" was left out: Spring AOT registers the init, destroy and
+  `@EventListener` methods of beans itself.
+- **Native folder browser.** The local runner used to start the native core from `core/target`, where the build also
+  leaves `libawt.so`. With that library present, the folder browser loads AWT, and AWT's `JNI_OnLoad` aborts the
+  process because `java.awt.GraphicsEnvironment` is not registered for JNI. Released builds ship the executable alone and
+  are not affected. The runner now starts a copy. If AWT is ever shipped or wanted, the JNI metadata needs that class.
+- **B3.** Checked against a JVM instance with a logging SOCKS5 proxy and the mock server. A search goes through the
+  proxy. A hanging indexer is cut off at its timeout, its connection is closed, and three such searches left no thread
+  behind. Cancelling a search ends it at once with the other indexers' results and leaves the hanging indexer enabled;
+  its call still ends at the timeout. `SearchCancelSystemTest` covers the cancel. The SOCKS part stays manual because
+  the CI setup has no proxy.
+- **B4.** Nothing to add. `downloads.spec.ts` (the Font Awesome test at line 595) already checks
+  `document.fonts.check` and the icon's width.
+
 ## Segment C. Test coverage
 
 ### C1. Measure coverage once and record the gaps
