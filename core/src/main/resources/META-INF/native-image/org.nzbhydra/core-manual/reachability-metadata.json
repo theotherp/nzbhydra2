@@ -10266,16 +10266,6 @@
         {
           "name": "configProvider"
         }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "methodSecurityMetadataSource",
-          "parameterTypes": []
-        }
       ]
     },
     {
@@ -10380,9 +10370,6 @@
       "fields": [
         {
           "name": "configProvider"
-        },
-        {
-          "name": "hydraUserDetailsManager"
         }
       ],
       "methods": [
@@ -10549,15 +10536,7 @@
       "type": "org.nzbhydra.cache.ImageCacheConfig$1"
     },
     {
-      "type": "org.nzbhydra.cache.ProxyImagesWeb",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory"
-          ]
-        }
-      ]
+      "type": "org.nzbhydra.cache.ProxyImagesWeb"
     },
     {
       "type": "org.nzbhydra.cache.ProxyImagesWeb$$SpringCGLIB$$0",
@@ -13444,9 +13423,6 @@
       "type": "org.nzbhydra.database.DatabaseCompactOnShutdown",
       "fields": [
         {
-          "name": "configProvider"
-        },
-        {
           "name": "jdbcTemplate"
         }
       ],
@@ -16203,38 +16179,16 @@
       "type": "org.nzbhydra.searching.Searcher",
       "fields": [
         {
-          "name": "configProvider"
-        },
-        {
           "name": "duplicateDetector"
         },
         {
           "name": "eventPublisher"
         },
         {
-          "name": "indexerSearchRepository"
-        },
-        {
-          "name": "indexerSearchResultPersistor"
-        },
-        {
           "name": "indexerSelector"
-        },
-        {
-          "name": "searchRepository"
-        },
-        {
-          "name": "searchResultRepository"
-        },
-        {
-          "name": "transactionTemplate"
         }
       ],
       "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
         {
           "name": "onShutdown",
           "parameterTypes": []
@@ -16399,15 +16353,6 @@
     },
     {
       "type": "org.nzbhydra.searching.db.SearchResultRepository"
-    },
-    {
-      "type": "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
     },
     {
       "type": "org.nzbhydra.searching.db.package-info"
@@ -16810,15 +16755,7 @@
       ]
     },
     {
-      "type": "org.nzbhydra.web.HydraErrorController",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.boot.web.servlet.error.ErrorAttributes"
-          ]
-        }
-      ]
+      "type": "org.nzbhydra.web.HydraErrorController"
     },
     {
       "type": "org.nzbhydra.web.Interceptor",
@@ -16840,9 +16777,6 @@
     {
       "type": "org.nzbhydra.web.MainWeb",
       "fields": [
-        {
-          "name": "configProvider"
-        },
         {
           "name": "environment"
         },
@@ -16934,18 +16868,6 @@
         {
           "name": "filterRegistrationBean",
           "parameterTypes": []
-        },
-        {
-          "name": "marshaller",
-          "parameterTypes": []
-        },
-        {
-          "name": "requestMappingHandlerMapping",
-          "parameterTypes": [
-            "org.springframework.web.accept.ContentNegotiationManager",
-            "org.springframework.format.support.FormattingConversionService",
-            "org.springframework.web.servlet.resource.ResourceUrlProvider"
-          ]
         }
       ]
     },
