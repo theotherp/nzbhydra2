@@ -146,6 +146,10 @@ public class ReversedLinesFileReader implements Closeable {
      * @throws IOException if an I/O error occurs
      */
     public String readLine() throws IOException {
+        if (currentFilePart == null) {
+            // the start of the file was reached before
+            return null;
+        }
 
         String line = null;
         try {
@@ -168,6 +172,8 @@ public class ReversedLinesFileReader implements Closeable {
             trailingNewlineOfFileSkipped = true;
             line = readLine();
         }
+        // only the last line of the file may be the empty one after a trailing newline, later empty lines are content
+        trailingNewlineOfFileSkipped = true;
 
         return line;
     }
