@@ -339,7 +339,9 @@ jobs:
                 run: |
                      cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                      cd ./docker/nativeTest/
-                     docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t "ghcr.io/theotherp/hydradocker:${GITHUB_REF_NAME}" -t ghcr.io/theotherp/hydradocker:${{ github.sha }} . --label "version=${GITHUB_REF_NAME}" --label "sha=${{ github.sha }}"
+                     # Branch names like dependabot/github_actions/... contain characters a Docker tag may not hold
+                     ref_tag="$(printf '%s' "${GITHUB_REF_NAME}" | tr -c 'A-Za-z0-9_.-' '-' | sed 's/^[.-]/_/' | cut -c1-128)"
+                     docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t "ghcr.io/theotherp/hydradocker:${ref_tag}" -t ghcr.io/theotherp/hydradocker:${{ github.sha }} . --label "version=${GITHUB_REF_NAME}" --label "sha=${{ github.sha }}"
                      push_with_retry() {
                          local image="$1"
                          for attempt in 1 2 3; do
