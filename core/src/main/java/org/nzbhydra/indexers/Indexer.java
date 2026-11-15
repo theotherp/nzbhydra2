@@ -3,6 +3,8 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -33,7 +35,6 @@ import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +59,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 @SuppressWarnings({"TypeParameterHidesVisibleType", "StringConcatenationArgumentToLogCall"})
 @Reflective
 @Component
 public abstract class Indexer<T> {
 
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 5, 15, 30, 60, 3 * 60);
-    private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
@@ -106,6 +107,7 @@ public abstract class Indexer<T> {
 
 
     protected IndexerEntity indexer;
+    @Getter
     protected IndexerConfig config;
     /**
      * Pattern built from {@code searching.removeTrailing}. {@code null} means not built yet, an empty optional means
@@ -145,7 +147,7 @@ public abstract class Indexer<T> {
         this.config = config;
         this.cleanupPattern = null;
         if (queryGenerator == null) {
-            logger.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
+            log.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
         }
     }
 
@@ -440,10 +442,6 @@ public abstract class Indexer<T> {
 
     public String getName() {
         return config.getName();
-    }
-
-    public IndexerConfig getConfig() {
-        return config;
     }
 
     public IndexerEntity getIndexerEntity() {
