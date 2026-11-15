@@ -315,6 +315,19 @@ class DownloaderWebSocketTest {
     }
 
     @Test
+    void shouldNeverFlagOrResendAnUnchangedStatusWithoutDownloader() {
+        // No downloader could be determined, so the status carries neither a type nor a rate history
+        when(downloaderStatusRetrieval.getStatus()).thenAnswer(invocation -> new DownloaderStatus());
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+
+        assertThat(runScheduledPollAndGetNextDelay()).isEqualTo(DownloaderWebSocket.IDLE_INTERVAL_MILLIS);
+        runScheduledPollAndGetNextDelay();
+
+        // Flagged, it would make the footer fill its graph with the placeholder rate of such a status
+        assertThat(sentLastUpdateForNowFlags()).containsExactly(false);
+    }
+
+    @Test
     void shouldNotPollAfterShutdown() {
         testee.onShutdown();
         // The mocked scheduler does not know it was shut down

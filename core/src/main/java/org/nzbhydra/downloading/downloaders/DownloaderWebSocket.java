@@ -220,8 +220,9 @@ public class DownloaderWebSocket {
      * at about one point per second between statuses. A status of an idle or paused downloader is therefore flagged
      * when the next poll is further away than the fast interval. Without that, the graph of a finished download would
      * only move every {@link #IDLE_INTERVAL_MILLIS}. Downloading statuses are never flagged, they follow every
-     * second. Offline statuses are never flagged either: they carry no rate history, so the footer would fill the
-     * graph with the placeholder rate of such a status; it ignores offline statuses otherwise.
+     * second. Offline statuses and statuses without a downloader type (no downloader enabled or none could be
+     * chosen) are never flagged either: they carry no rate history, so the footer would fill the graph with the
+     * placeholder rate of such a status; it ignores them otherwise.
      * <p>
      * SABnzbd, NZBGet and Torbox add a rate sample to their history on every poll and the history is part of the
      * status, so their consecutive statuses practically always differ and every poll sends one. Only a status with the
@@ -237,7 +238,7 @@ public class DownloaderWebSocket {
             send(newStatus);
             return;
         }
-        final boolean mayFlag = state != DownloaderStatus.State.OFFLINE;
+        final boolean mayFlag = state != DownloaderStatus.State.OFFLINE && newStatus.getDownloaderType() != null;
         newStatus.setLastUpdateForNow(mayFlag && noUpdateSoon);
         if (!hasSameDataAsLastSent(newStatus)) {
             //Send update because data has changed
