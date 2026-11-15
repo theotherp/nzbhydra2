@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Longs;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,7 +82,7 @@ public class ExternalApi {
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
     @Value("${nzbhydra.dev.noApiKey:false}")
-    private final boolean noApiKeyNeeded = false;
+    private boolean noApiKeyNeeded;
 
     @Autowired
     protected Searcher searcher;
@@ -106,7 +107,7 @@ public class ExternalApi {
     protected Clock clock = Clock.systemUTC();
     private final Random random = new Random();
 
-    private final ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
     //When enabled search results will be mocked instead of indexers actually being searched. Only for configuration of external tools
     private static boolean inMockingMode;
@@ -174,7 +175,14 @@ public class ExternalApi {
             return capsGenerator.getCaps(params.getO(), searchType);
         }
         if (params.getT() == ActionAttribute.DETAILS) {
-            DetailsResult details = detailsProvider.getDetails(Long.valueOf(params.getId()));
+            if (Strings.isNullOrEmpty(params.getId())) {
+                throw new MissingParameterException("Missing ID/GUID");
+            }
+            Long searchResultId = Longs.tryParse(params.getId());
+            if (searchResultId == null) {
+                return errorResponse(params.getO(), "300", "Invalid or outdated search result ID");
+            }
+            DetailsResult details = detailsProvider.getDetails(searchResultId);
             NewznabResponse response;
 
             List<SearchResultItem> searchResultItems = Collections.singletonList(details.getSearchResultItem());
@@ -237,7 +245,7 @@ public class ExternalApi {
         cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
 
         CacheEntryValue cacheEntryValue;
-        int cacheKey = params.cacheKey(searchType);
+        String cacheKey = params.cacheKey(searchType);
         if (cache.containsKey(cacheKey)) {
             cacheEntryValue = cache.get(cacheKey);
             int cachetime = params.getCachetime() == null ? configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().get() : params.getCachetime();
@@ -254,7 +262,7 @@ public class ExternalApi {
         }
         //Remove oldest entry when max size is reached
         while (cache.size() >= MAX_CACHE_SIZE) {
-            Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().min(Comparator.comparing(o -> o.getValue().getLastUpdate()));
+            Optional<Entry<String, CacheEntryValue>> keyToEvict = cache.entrySet().stream().min(Comparator.comparing(o -> o.getValue().getLastUpdate()));
             if (keyToEvict.isEmpty()) {
                 break;
             }
@@ -326,19 +334,22 @@ public class ExternalApi {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity handleUnexpectedError(Exception e) {
+    public ResponseEntity handleUnexpectedError(Exception e, HttpServletRequest request) {
         if (e instanceof ClientAbortException || Throwables.getCausalChain(e).stream().anyMatch(x -> x instanceof ClientAbortException)) {
             logger.warn("Calling tool closed the connection before getting the results");
             return null; //Can't return anything because the connection is closed, obviously
         }
+        OutputType outputType = "json".equalsIgnoreCase(request.getParameter("o")) ? OutputType.JSON : OutputType.XML;
         try {
             logger.error("Unexpected error while handling API request", e);
             if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
                 logger.debug("Wrapping error in empty search result");
+                if (outputType == OutputType.JSON) {
+                    return ResponseEntity.status(200).body(newznabJsonTransformer.transformToRoot(Collections.emptyList(), 0, 0, false));
+                }
                 return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, false));
             } else {
-                NewznabXmlError error = new NewznabXmlError("900", e.getMessage());
-                return ResponseEntity.status(200).body(error);
+                return errorResponse(outputType, "900", e.getMessage());
             }
         } catch (Exception e1) {
             return ResponseEntity.status(200)

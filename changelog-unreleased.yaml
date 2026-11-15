@@ -12,3 +12,5 @@
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "fix"
     text: "Do you sometimes look in the changelog of a game or app and it just says \"Multiple improvements in stability and bug fixes\" and you think, \"Give me details!\"? Well, this is one of those."
+-   type: "fix"
+    text: "Unexpected API errors are now answered in JSON when the calling tool asked for JSON output. A details request with an invalid ID gets a proper &quot;invalid ID&quot; error."

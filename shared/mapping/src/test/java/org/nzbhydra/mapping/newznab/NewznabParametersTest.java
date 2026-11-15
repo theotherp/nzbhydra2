@@ -24,5 +24,16 @@ public class NewznabParametersTest {
         assertNotEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.TORZNAB));
     }
 
+    @Test
+    public void shouldUseDifferentCacheKeysForSearchesWithSameHashCode() {
+        NewznabParameters first = new NewznabParameters();
+        first.setQ("Aa");
+        NewznabParameters second = new NewznabParameters();
+        second.setQ("BB");
+        assertThat(first.toString().hashCode()).isEqualTo(second.toString().hashCode());
+
+        assertNotEquals(first.cacheKey(NewznabResponse.SearchType.NEWZNAB), second.cacheKey(NewznabResponse.SearchType.NEWZNAB));
+    }
+
 
 }
