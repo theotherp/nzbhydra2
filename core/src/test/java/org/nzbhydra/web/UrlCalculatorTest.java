@@ -162,7 +162,10 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/");
         HttpServletRequest request = forwardedRequest("localhost", 80, "/nzbhydra2", "localhost", "https", null);
 
-        assertUri(testee.buildLocalBaseUriBuilder(request), "https", "localhost", 443, "/nzbhydra2");
+        UriComponentsBuilder builder = testee.buildLocalBaseUriBuilder(request);
+
+        assertUri(builder, "https", "localhost", -1, "/nzbhydra2");
+        assertThat(builder.toUriString()).isEqualTo("https://localhost/nzbhydra2");
     }
 
     @Test
@@ -170,7 +173,26 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/");
         HttpServletRequest request = forwardedRequest("localhost", 80, "", "localhost", "http", null);
 
-        assertUri(testee.buildLocalBaseUriBuilder(request), "http", "localhost", 80, "");
+        UriComponentsBuilder builder = testee.buildLocalBaseUriBuilder(request);
+
+        assertUri(builder, "http", "localhost", -1, "");
+        assertThat(builder.toUriString()).isEqualTo("http://localhost");
+    }
+
+    @Test
+    void shouldLeaveOutDefaultPortGivenInHostHeader() throws Exception {
+        prepareConfig(false, false, "/");
+        HttpServletRequest request = forwardedRequest("localhost:443", 80, "/nzbhydra2", "localhost:443", "https", null);
+
+        assertThat(testee.buildLocalBaseUriBuilder(request).toUriString()).isEqualTo("https://localhost/nzbhydra2");
+    }
+
+    @Test
+    void shouldKeepPortWhichIsTheDefaultOfTheOtherScheme() throws Exception {
+        prepareConfig(false, false, "/");
+        HttpServletRequest request = forwardedRequest("localhost:80", 80, "/nzbhydra2", "localhost:80", "https", null);
+
+        assertThat(testee.buildLocalBaseUriBuilder(request).toUriString()).isEqualTo("https://localhost:80/nzbhydra2");
     }
 
     @Test

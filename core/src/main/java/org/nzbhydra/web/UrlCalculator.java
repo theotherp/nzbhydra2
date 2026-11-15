@@ -103,6 +103,13 @@ public class UrlCalculator {
             logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} ", port);
         }
 
+        if (isDefaultPort(scheme, port)) {
+            //A proxy forwarding the scheme but no port makes the request report the scheme's default port. Writing
+            //it out would give URLs like https://host:443/ which mean the same but don't match what the user entered
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Leaving out port {} because it's the default for {}", port, scheme);
+            port = -1;
+        }
+
         path = request.getContextPath();
         if (!Strings.isNullOrEmpty(path)) {
             logger.debug(LoggingMarkers.URL_CALCULATION, "Using context path {} as path", path);
@@ -115,6 +122,10 @@ public class UrlCalculator {
                 .host(host)
                 .port(port)
                 .path(path);
+    }
+
+    private static boolean isDefaultPort(String scheme, int port) {
+        return ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
     }
 
     /**
