@@ -2,6 +2,8 @@
 
 package org.nzbhydra.webaccess;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import jakarta.annotation.PostConstruct;
 import joptsimple.internal.Strings;
 import okhttp3.ConnectionPool;
@@ -48,8 +50,6 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +80,17 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private HttpLoggingInterceptor httpLoggingInterceptor;
     private SocketFactory sockProxySocketFactory;
 
-    private final Map<Pair<String, Integer>, OkHttpClient> clientCache = Collections.synchronizedMap(new HashMap<>());
+    /**
+     * Downloads follow redirects to hosts that can change from call to call, so the cache must not grow without bound.
+     * Evicting a client is cheap because all clients share the base client's connection pool and dispatcher. Guava
+     * instead of Caffeine because Caffeine's size-bounded caches load generated classes by reflection, which the
+     * native image would need metadata for.
+     */
+    static final int MAX_CACHED_CLIENTS = 300;
+
+    private final Cache<Pair<String, Integer>, OkHttpClient> clientCache = CacheBuilder.newBuilder()
+            .maximumSize(MAX_CACHED_CLIENTS)
+            .build();
 
     @PostConstruct
     public void init() {
@@ -93,7 +103,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         MainConfig mainConfig = event.getNewConfig().getMain();
         sockProxySocketFactory = new SockProxySocketFactory(mainConfig.getProxyHost(), mainConfig.getProxyPort(), mainConfig.getProxyUsername(), mainConfig.getProxyPassword());
         //Cached clients were built from the old config (proxy, proxy ignore list, SSL verification, ...) and must be rebuilt
-        clientCache.clear();
+        clientCache.invalidateAll();
     }
 
 
@@ -167,16 +177,22 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     }
 
     public OkHttpClient getOkHttpClient(String host, Integer timeout) {
-        return clientCache.computeIfAbsent(Pair.of(host, timeout), pair -> {
-            final Builder clientBuilder = getOkHttpClientBuilder(host);
-            if (timeout == null) {
-                return clientBuilder.build();
-            }
-            return clientBuilder
-                    .readTimeout(timeout, TimeUnit.SECONDS)
-                    .connectTimeout(timeout, TimeUnit.SECONDS)
-                    .writeTimeout(timeout, TimeUnit.SECONDS).build();
-        });
+        return clientCache.asMap().computeIfAbsent(Pair.of(host, timeout), key -> buildOkHttpClient(host, timeout));
+    }
+
+    private OkHttpClient buildOkHttpClient(String host, Integer timeout) {
+        final Builder clientBuilder = getOkHttpClientBuilder(host);
+        if (timeout == null) {
+            return clientBuilder.build();
+        }
+        return clientBuilder
+                .readTimeout(timeout, TimeUnit.SECONDS)
+                .connectTimeout(timeout, TimeUnit.SECONDS)
+                .writeTimeout(timeout, TimeUnit.SECONDS).build();
+    }
+
+    long getNumberOfCachedClients() {
+        return clientCache.size();
     }
 
     void configureBuilderForSsl(Builder builder, String host) {

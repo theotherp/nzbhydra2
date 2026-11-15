@@ -130,6 +130,15 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     }
 
     @Test
+    void shouldBoundNumberOfCachedClients() {
+        for (int i = 0; i < HydraOkHttp3ClientHttpRequestFactory.MAX_CACHED_CLIENTS + 50; i++) {
+            testee.getOkHttpClient("redirect-target-" + i + ".example.com");
+        }
+
+        assertThat(testee.getNumberOfCachedClients()).isLessThanOrEqualTo(HydraOkHttp3ClientHttpRequestFactory.MAX_CACHED_CLIENTS);
+    }
+
+    @Test
     void shouldRebuildCachedClientsAfterConfigChange() {
         final String host = "www.somedomain.com";
         baseConfig.getMain().setProxyType(ProxyType.NONE);
