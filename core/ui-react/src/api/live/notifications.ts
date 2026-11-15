@@ -50,8 +50,8 @@ const SEVERITIES: Record<string, NotificationSeverity> = {
 /**
  * Legacy's `showUnreadNotifications` switch. An unknown message type produces
  * no toast there (the switch has no default) and produces none here either,
- * while still being acknowledged — otherwise it would be redelivered every
- * second forever.
+ * while still being acknowledged — otherwise it would be redelivered on every
+ * check (every five seconds) forever.
  */
 export function notificationSeverity(
     messageType: string | null,

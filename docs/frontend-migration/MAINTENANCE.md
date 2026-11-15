@@ -4242,3 +4242,13 @@ their text and relative order are unchanged.
 - **Note:** no screenshot strip. The emitted CSS rules are the package's own minus the unused font sources, so nothing renders differently in a
   browser that loads woff2; this was checked in the built CSS, not in a browser.
 - **Commit:** `c948bab62`
+
+### 2026-11-15 — Correct two comments about live-update timing
+
+- **Why not a packet:** comments only. Since `1a246d97a` the server flags a downloader status as `lastUpdateForNow` when its next poll is more
+  than a second away, not when two statuses were identical, and resends unread notifications every five seconds, not every second.
+  `DownloaderStatusFooter.tsx` and `api/live/notifications.ts` still described the old timing.
+- **Paths:** `core/ui-react/src/app/status/DownloaderStatusFooter.tsx`, `core/ui-react/src/api/live/notifications.ts`.
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `validate:migration` pass; `git diff --check` clean. No test, build or
+  API check run: no code changed.
+- **Commit:** the commit adding this entry.
