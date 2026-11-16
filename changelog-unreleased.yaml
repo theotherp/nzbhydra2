@@ -20,3 +20,5 @@
     text: "When a server stopped sending in the middle of a response, NZBHydra2 now reports the timeout or dropped connection instead of a confusing parsing error."
 -   type: "fix"
     text: "An error in NZBHydra2&apos;s own handling of search results no longer disables the indexer. A search response that could not be read no longer counts twice against the indexer&apos;s API limit."
+-   type: "fix"
+    text: "Configuring Sonarr 5 under External tools no longer fails with &quot;unsupported Sonarr version&quot;. Future major versions of Sonarr and Radarr are no longer rejected either."

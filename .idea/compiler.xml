@@ -49,16 +49,6 @@
         </processorPath>
         <module name="system" />
       </profile>
-      <profile name="Annotation profile for sockslib" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="sockslib" />
-      </profile>
       <profile name="Annotation profile for nzbhydra2" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -66,6 +56,10 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
+        <module name="sockslib" />
+        <module name="github-release-plugin" />
+        <module name="discordreleaser" />
+        <module name="h2legacy" />
         <module name="mockserver" />
       </profile>
     </annotationProcessing>
@@ -79,7 +73,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="core" options="-parameters" />
+      <module name="core" options="-parameters -Xlint:rawtypes" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
       <module name="h2legacy" options="" />

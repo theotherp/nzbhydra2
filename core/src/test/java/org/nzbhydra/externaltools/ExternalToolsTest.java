@@ -11,10 +11,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
 
@@ -25,14 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.endsWith;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class ExternalToolsTest {
 
@@ -92,6 +86,19 @@ public class ExternalToolsTest {
 
     }
 
+    @Test
+    void shouldAcceptMajorVersionsFromThreeOn() {
+        assertThat(ExternalTools.isAtLeastMajorVersion("3.0.10.1567", 3)).isTrue();
+        assertThat(ExternalTools.isAtLeastMajorVersion("4.0.14.2939", 3)).isTrue();
+        assertThat(ExternalTools.isAtLeastMajorVersion("5.0.0.2941", 3)).isTrue();
+        assertThat(ExternalTools.isAtLeastMajorVersion("10.0.0.1234", 3)).isTrue();
+
+        assertThat(ExternalTools.isAtLeastMajorVersion("2.0.0.5344", 3)).isFalse();
+        assertThat(ExternalTools.isAtLeastMajorVersion("", 3)).isFalse();
+        assertThat(ExternalTools.isAtLeastMajorVersion("develop", 3)).isFalse();
+        assertThat(ExternalTools.isAtLeastMajorVersion(null, 3)).isFalse();
+    }
+
     /**
      * FM-070. `minimumSeeders` and `categories` are the two free-text fields
      * NZBHydra itself parses as numbers before writing them into the *arr
@@ -130,6 +137,25 @@ public class ExternalToolsTest {
                 postedBodies.add(invocation.getArgument(2));
                 return "{}";
             });
+        }
+
+        @Test
+        void shouldConfigureSonarr5() throws Exception {
+            when(webAccessMock.callUrl(endsWith("/system/status"), anyMap())).thenReturn("{\"version\": \"5.0.0.2941\"}");
+
+            assertThat(testee.addNzbhydraAsIndexer(torrentAddRequest())).isTrue();
+
+            assertThat(postedBodies).hasSize(1);
+        }
+
+        @Test
+        void shouldRefuseSonarr2() throws Exception {
+            when(webAccessMock.callUrl(endsWith("/system/status"), anyMap())).thenReturn("{\"version\": \"2.0.0.5344\"}");
+
+            assertThat(testee.addNzbhydraAsIndexer(torrentAddRequest())).isFalse();
+
+            assertThat(testee.getMessages()).contains("Error: unsupported Sonarr version 2.0.0.5344");
+            assertThat(postedBodies).isEmpty();
         }
 
         @Test

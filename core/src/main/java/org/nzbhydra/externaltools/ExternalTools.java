@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import okhttp3.MediaType;
 import org.nzbhydra.Jackson;
@@ -67,6 +68,7 @@ public class ExternalTools {
      */
     private static final Set<String> FIELDS_DEFAULTED_ONLY_ON_CREATION = Set.of("multiLanguages", "requiredFlags", "animeStandardFormatSearch");
 
+    @Getter
     private final List<String> messages = new ArrayList<>();
     private final Map<IndexerConfig, Integer> indexerPrioritiesMapped = new HashMap<>();
     /**
@@ -248,23 +250,26 @@ public class ExternalTools {
             throw new IOException("Error: no version found in external tool response");
         }
         String version = (String) statusMap.get("version");
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr) {
-            if (version == null || (!version.startsWith("3") && !version.startsWith("4"))) {
-                messages.add("Error: unsupported Sonarr version " + version);
-                throw new IOException("Error: unsupported Sonarr version " + version);
-            }
-        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {
-            //For some reason some radarr builds return 10.xxx instead of 3.xxx
-            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("5") && !version.startsWith("6") && !version.startsWith("7") && !version.startsWith("10"))) {
-                messages.add("Error: unsupported Radarr version " + version);
-                throw new IOException("Error: unsupported Radarr version " + version);
-            }
+        final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
+        //Sonarr and Radarr serve the v3 API used here from major version 3 on (newer majors keep it), so only older versions are refused.
+        //Some Radarr builds report 10.x, which this also accepts.
+        if ((externalTool == AddRequest.ExternalTool.Sonarr || externalTool == AddRequest.ExternalTool.Radarr) && !isAtLeastMajorVersion(version, 3)) {
+            messages.add("Error: unsupported " + externalTool + " version " + version);
+            throw new IOException("Error: unsupported " + externalTool + " version " + version);
         }
         return false;
     }
 
-    public List<String> getMessages() {
-        return messages;
+    static boolean isAtLeastMajorVersion(String version, int minimumMajor) {
+        if (version == null) {
+            return false;
+        }
+        final String major = version.trim().split("\\.", 2)[0];
+        try {
+            return Integer.parseInt(major) >= minimumMajor;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private void executeConfigurationRequest(AddRequest addRequest, BackendType backendType, IndexerConfig indexer) throws IOException {
