@@ -17,10 +17,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,25 +40,35 @@ public class SearchModuleProvider {
     @Autowired
     private IndexerInstantiator indexerInstantiator;
 
-    private final Map<String, Indexer> searchModuleInstances = new HashMap<>();
-    private final Map<String, Integer> apiHitsToStoreInitially = new HashMap<>();
+    /**
+     * Replaced as a whole by {@link #loadIndexers(List)} once the new map is complete, so readers never see a partially
+     * loaded set of indexers. Readers must read the field once per call. A {@link HashMap} is kept inside so the
+     * iteration order callers see stays the same as before.
+     */
+    private volatile Map<String, Indexer<?>> searchModuleInstances = Collections.emptyMap();
+    /**
+     * Written by caps check threads (possibly several in parallel) and read by {@link #loadIndexers(List)}.
+     */
+    private final Map<String, Integer> apiHitsToStoreInitially = new ConcurrentHashMap<>();
 
     @Autowired
-    private List<IndexerHandlingStrategy> indexerHandlingStrategies;
+    private List<IndexerHandlingStrategy<?>> indexerHandlingStrategies;
 
 
 
-    public List<Indexer> getIndexers() {
+    public List<Indexer<?>> getIndexers() {
         return new ArrayList<>(searchModuleInstances.values());
     }
 
-    public List<Indexer> getEnabledIndexers() {
-        return searchModuleInstances.values().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED).collect(Collectors.toList());
+    public List<Indexer<?>> getEnabledIndexers() {
+        final Map<String, Indexer<?>> instances = searchModuleInstances;
+        return instances.values().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED).collect(Collectors.toList());
     }
 
-    public Indexer getIndexerByName(String indexerName) {
-        if (searchModuleInstances.containsKey(indexerName)) {
-            return searchModuleInstances.get(indexerName);
+    public Indexer<?> getIndexerByName(String indexerName) {
+        final Map<String, Indexer<?>> instances = searchModuleInstances;
+        if (instances.containsKey(indexerName)) {
+            return instances.get(indexerName);
         } else {
             throw new RuntimeException("Unable to find indexer with name " + indexerName);
         }
@@ -73,16 +85,16 @@ public class SearchModuleProvider {
             return;
         }
         logger.info("Loading indexers");
-        searchModuleInstances.clear();
+        final Map<String, Indexer<?>> newInstances = new HashMap<>();
         for (IndexerConfig config : indexers) {
             try {
-                Optional<IndexerHandlingStrategy> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
+                Optional<IndexerHandlingStrategy<?>> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
                 if (optionalStrategy.isEmpty()) {
                     logger.error("Unable to find implementation for indexer type {} and host {}", config.getSearchModuleType(), config.getHost());
                     continue;
                 }
 
-                Indexer searchModule = indexerInstantiator.instantiateIndexer(optionalStrategy.get().getName());
+                Indexer<?> searchModule = indexerInstantiator.instantiateIndexer(optionalStrategy.get().getName());
                 logger.info("Initializing indexer {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
@@ -93,10 +105,10 @@ public class SearchModuleProvider {
                     indexerEntity = indexerRepository.save(indexerEntity);
                     logger.info("Now {} indexers in database", indexerRepository.count());
                 }
-                if (apiHitsToStoreInitially.containsKey(config.getName())) {
+                final Integer apiHitsToStore = apiHitsToStoreInitially.remove(config.getName());
+                if (apiHitsToStore != null) {
                     IndexerEntity finalIndexerEntity = indexerEntity;
-                    shortRepository.saveAll(IntStream.range(0, apiHitsToStoreInitially.get(config.getName())).mapToObj(x -> new IndexerApiAccessEntityShort(finalIndexerEntity, true, IndexerApiAccessType.SEARCH)).collect(Collectors.toList()));
-                    apiHitsToStoreInitially.remove(config.getName());
+                    shortRepository.saveAll(IntStream.range(0, apiHitsToStore).mapToObj(x -> new IndexerApiAccessEntityShort(finalIndexerEntity, true, IndexerApiAccessType.SEARCH)).collect(Collectors.toList()));
                 }
 
                 IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexerEntity);
@@ -106,20 +118,21 @@ public class SearchModuleProvider {
                 }
 
                 searchModule.initialize(config, indexerEntity);
-                searchModuleInstances.put(config.getName(), searchModule);
+                newInstances.put(config.getName(), searchModule);
             } catch (Exception e) {
                 logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType(), e);
             }
         }
+        searchModuleInstances = Collections.unmodifiableMap(newInstances);
         logger.info("Finished initializing active indexers");
         List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).toList();
 
-        if (searchModuleInstances.isEmpty()) {
+        if (newInstances.isEmpty()) {
             logger.warn("No indexers configured");
         }
     }
 
     public void registerApiHitLimits(String indexerName, int hits) {
-        apiHitsToStoreInitially.put(indexerName, apiHitsToStoreInitially.getOrDefault(indexerName, 0) + hits);
+        apiHitsToStoreInitially.merge(indexerName, hits, Integer::sum);
     }
 }

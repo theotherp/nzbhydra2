@@ -40,7 +40,7 @@ public class ConfigReaderWriter {
 
     public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<>() {
     };
-    private final RetryPolicy saveRetryPolicy = RetryPolicy.builder().withDelay(Duration.ofMillis(1000)).withMaxRetries(3).handle(IOException.class).build();
+    private final RetryPolicy<Object> saveRetryPolicy = RetryPolicy.<Object>builder().withDelay(Duration.ofMillis(1000)).withMaxRetries(3).handle(IOException.class).build();
     private final SensitiveDataHandler sensitiveDataHandler = new SensitiveDataHandler();
 
 

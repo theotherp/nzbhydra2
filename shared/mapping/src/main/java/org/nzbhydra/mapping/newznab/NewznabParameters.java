@@ -168,7 +168,7 @@ public class NewznabParameters {
         return Objects.hashCode(apikey, t, q, cat, rid, tvdbid, tvmazeid, traktId, imdbid, tmdbid, season, ep, author, title, offset, limit, minage, maxage, minsize, maxsize, id, raw, o, cachetime, genre, attrs, extended, password);
     }
 
-    public int cacheKey(NewznabResponse.SearchType searchType) {
-        return Objects.hashCode(toString() + searchType);
+    public String cacheKey(NewznabResponse.SearchType searchType) {
+        return toString() + searchType;
     }
 }

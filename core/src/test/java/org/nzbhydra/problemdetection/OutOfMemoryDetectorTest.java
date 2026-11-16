@@ -2,7 +2,6 @@
 
 package org.nzbhydra.problemdetection;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -16,6 +15,7 @@ import org.nzbhydra.logging.LogContentProvider;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -36,19 +36,12 @@ public class OutOfMemoryDetectorTest {
     private OutOfMemoryDetector testee = new OutOfMemoryDetector();
 
 
-    @Disabled //Fails on Pipeline
     @Test
     void executeCheck() throws Exception {
-
-
+        //The fixture must not end with .log because core/.gitignore ignores *.log, which kept the original logWithOom.log out of the repository
         final Path tempFile = Files.createTempFile("nzbhydra", ".log");
-        try {
-            tempFile.toFile().delete();
-            Files.copy(getClass().getResourceAsStream("logWithOom.log"), tempFile);
-        } catch (Exception e) {
-            //May happen on pipeline
-            return;
-        }
+        tempFile.toFile().deleteOnExit();
+        Files.copy(getClass().getResourceAsStream("logWithOom.txt"), tempFile, StandardCopyOption.REPLACE_EXISTING);
 
         when(logContentProviderMock.getCurrentLogfile(false)).thenReturn(tempFile.toFile());
 

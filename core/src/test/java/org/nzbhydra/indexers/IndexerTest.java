@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
+import dev.failsafe.FailsafeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +25,7 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
@@ -206,6 +208,46 @@ public class IndexerTest {
     }
 
     @Test
+    void shouldNotSaveConfigWhenHandlingSuccessForHealthyIndexer() {
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setLastError(null);
+        indexerConfig.setDisabledUntil(null);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledAt(null);
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        verify(baseConfigHandler, never()).save(anyBoolean());
+    }
+
+    @Test
+    void shouldSaveConfigOnceWhenHandlingSuccessForDisabledIndexer() {
+        indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfig.setLastError("some error");
+        indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
+        indexerConfig.setDisabledLevel(1);
+        indexerConfig.setDisabledAt(Instant.now());
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        verify(baseConfigHandler, times(1)).save(false);
+    }
+
+    @Test
+    void shouldSaveConfigWhenHandlingSuccessForIndexerWithOnlyLastErrorSet() {
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setLastError("some error");
+        indexerConfig.setDisabledUntil(null);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledAt(null);
+
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
+
+        assertThat(indexerConfig.getLastError()).isNull();
+        verify(baseConfigHandler, times(1)).save(false);
+    }
+
+    @Test
     void handleFailure() throws Exception {
         indexerConfig.setState(IndexerConfig.State.ENABLED);
         indexerConfig.setDisabledLevel(0);
@@ -279,6 +321,149 @@ public class IndexerTest {
     }
 
     @Test
+    void shouldNotDisableIndexerWhenProcessingResultsThrowsUnexpectedException() throws Exception {
+        callWebAccessWhenSearching("result");
+        doThrow(new NullPointerException("bug in result processing")).when(testee).getSearchResultItems(any(), any());
+
+        IndexerSearchResult result = testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(result.isWasSuccessful()).isFalse();
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        assertThat(indexerConfig.getDisabledLevel()).isEqualTo(0);
+        assertThat(indexerConfig.getDisabledUntil()).isNull();
+        verify(testee, never()).handleFailure(any(), any(), any(), any(), any());
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.HYDRA_ERROR);
+        verify(shortRepositoryMock, times(1)).save(any());
+    }
+
+    @Test
+    void shouldRecordOneApiAccessWhenParsingResponseFails() throws Exception {
+        callWebAccessWhenSearching("result");
+        doAnswer(invocation -> {
+            throw new IndexerParsingException("Unable to find result table");
+        }).when(testee).getSearchResultItems(any(), any());
+
+        IndexerSearchResult result = testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(result.isWasSuccessful()).isFalse();
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        verify(testee, never()).handleFailure(any(), any(), any(), any(), any());
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.HYDRA_ERROR);
+        verify(shortRepositoryMock, times(1)).save(any());
+    }
+
+    @Test
+    void shouldRecordOneSuccessfulApiAccessForSuccessfulSearch() throws Exception {
+        callWebAccessWhenSearching("result");
+
+        IndexerSearchResult result = testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(result.isWasSuccessful()).isTrue();
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.SUCCESSFUL);
+        verify(shortRepositoryMock, times(1)).save(any());
+    }
+
+    @Test
+    void shouldReenableIndexerWhenCallSucceedsButProcessingFails() throws Exception {
+        indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfig.setDisabledLevel(2);
+        indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
+        callWebAccessWhenSearching("result");
+        doThrow(new NullPointerException("bug in result processing")).when(testee).getSearchResultItems(any(), any());
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        assertThat(indexerConfig.getDisabledLevel()).isEqualTo(0);
+        verify(testee, never()).handleFailure(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldStillDisableIndexerWhenIndexerIsUnreachable() throws Exception {
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenThrow(new IndexerUnreachableException("Connection with indexer timed out"));
+        callWebAccessWhenSearching(null);
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        verify(testee).handleFailure("Connection with indexer timed out", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR);
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        assertThat(indexerConfig.getDisabledLevel()).isEqualTo(1);
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.CONNECTION_ERROR);
+    }
+
+    @Test
+    void shouldStillDisableIndexerWhenRetryPolicyWrapsConnectionError() throws Exception {
+        //Binsearch and NzbKing call the indexer through Failsafe, which wraps the checked IndexerAccessException
+        IndexerUnreachableException connectionError = new IndexerUnreachableException("Connection with indexer timed out");
+        doThrow(new FailsafeException(connectionError)).when(testee).getAndStoreResultToDatabase(any(URI.class), any(IndexerApiAccessType.class));
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        verify(testee).handleFailure("Connection with indexer timed out", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR);
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.CONNECTION_ERROR);
+    }
+
+    @Test
+    void shouldStillDisableIndexerWhenIndexerReturnsErrorAfterTheCall() throws Exception {
+        //Newznab records the call and then throws when the response is an error response
+        doAnswer(invocation -> {
+            testee.getAndStoreResultToDatabase(invocation.getArgument(0), String.class, invocation.getArgument(1));
+            throw new IndexerErrorCodeException(new NewznabXmlError("900", "errorMessage"));
+        }).when(testee).getAndStoreResultToDatabase(any(URI.class), any(IndexerApiAccessType.class));
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn("error response");
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        verify(testee).handleFailure(any(), eq(false), eq(IndexerApiAccessType.SEARCH), isNull(), eq(IndexerAccessResult.API_ERROR));
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        assertThat(savedApiAccessResults()).contains(IndexerAccessResult.API_ERROR);
+    }
+
+    @Test
+    void shouldNotRecordApiAccessOrDisableIndexerWhenCallIsInterrupted() throws Exception {
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenThrow(new RuntimeException("Unexpected error while accessing indexer", new InterruptedException("Indexer call was interrupted")));
+        callWebAccessWhenSearching(null);
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        verify(testee, never()).handleFailure(any(), any(), any(), any(), any());
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        verify(shortRepositoryMock, never()).save(any());
+    }
+
+    @Test
+    void shouldRecordSuccessfulCallWhenSearchIsInterruptedWhileProcessingResults() throws Exception {
+        callWebAccessWhenSearching("result");
+        doThrow(new RuntimeException("Interrupted", new InterruptedException())).when(testee).getSearchResultItems(any(), any());
+
+        testee.search(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        verify(testee, never()).handleFailure(any(), any(), any(), any(), any());
+        assertThat(savedApiAccessResults()).containsExactly(IndexerAccessResult.SUCCESSFUL);
+        verify(shortRepositoryMock, times(1)).save(any());
+    }
+
+    /**
+     * Lets the search call the (mocked) web access through the real {@link Indexer#getAndStoreResultToDatabase(URI, Class, IndexerApiAccessType)}
+     * which records the API access like the actual indexer implementations do.
+     */
+    @SuppressWarnings("unchecked")
+    private void callWebAccessWhenSearching(String response) throws Exception {
+        if (response != null) {
+            when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(response);
+        }
+        doAnswer(invocation -> testee.getAndStoreResultToDatabase(invocation.getArgument(0), String.class, invocation.getArgument(1)))
+            .when(testee).getAndStoreResultToDatabase(any(URI.class), any(IndexerApiAccessType.class));
+    }
+
+    private List<IndexerAccessResult> savedApiAccessResults() {
+        ArgumentCaptor<IndexerApiAccessEntity> captor = ArgumentCaptor.forClass(IndexerApiAccessEntity.class);
+        verify(indexerApiAccessRepositoryMock, atLeast(0)).save(captor.capture());
+        return captor.getAllValues().stream().map(IndexerApiAccessEntity::getResult).collect(Collectors.toList());
+    }
+
+    @Test
     void shouldUseFallback() throws Exception {
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
@@ -301,43 +486,67 @@ public class IndexerTest {
         String result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         result = testee.cleanUpTitle("abc trailing1 trailing2 def");
         assertThat(result).isEqualTo("abc trailing1 trailing2 def");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         result = testee.cleanUpTitle("abc");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         result = testee.cleanUpTitle("abc");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
         result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated"));
         result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated******"));
         result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated]");
         assertThat(result).isEqualTo("abc");
 
-        testee.handleNewConfig(null);
+        testee.initialize(indexerConfig, indexerEntityMock);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated] def");
         assertThat(result).isEqualTo("abc [obfuscated] def");
+    }
+
+    @Test
+    void shouldApplyChangedRemoveTrailingAfterReload() {
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+
+        //The pattern is built once per instance, so the live instance keeps its state until indexers are reloaded
+        baseConfig.getSearching().setRemoveTrailing(List.of("trailing1"));
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+
+        //SearchModuleProvider.loadIndexers initializes the indexers with the new config
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc");
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc trailing2");
+
+        baseConfig.getSearching().setRemoveTrailing(List.of("trailing2"));
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing1")).isEqualTo("abc trailing1");
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc");
+
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        testee.initialize(indexerConfig, indexerEntityMock);
+        assertThat(testee.cleanUpTitle("abc trailing2")).isEqualTo("abc trailing2");
     }
 
     @Test

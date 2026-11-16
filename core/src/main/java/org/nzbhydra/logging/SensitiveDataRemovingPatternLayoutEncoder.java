@@ -4,8 +4,20 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEncoder {
+
+    private static final Pattern QUERY_PARAMETER_PATTERN = Pattern.compile("(?i)(r|username|apikey|password)(=|:|%3D)([^&\\s]{2,})");
+    //Format in requests to and responses from *arr:
+    /*
+    "name": "apiKey",
+    "label": "API Key",
+    "value": "apikey",
+    */
+    private static final Pattern ARR_API_KEY_PATTERN = Pattern.compile("(\"name\" ?: ?\"apiKey\",(\\s*\"label\": ?\".*\",)?\\s*\"value\" ?: \")([^\"\\s*]*)");
+    private static final Pattern ARR_BASE_URL_PATTERN = Pattern.compile("(\"name\" ?: ?\"baseUrl\",(\\s*\"label\": ?\".*\",)?\\s*\"value\" ?: \")([^\"\\s*]*)");
+    private static final String JSON_NAME_MARKER = "\"name\"";
 
     private static volatile boolean disabled = false;
 
@@ -45,16 +57,13 @@ public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEnco
         if (disabled) {
             return txt;
         }
-        return txt.replaceAll("(?i)(r|username|apikey|password)(=|:|%3D)([^&\\s]{2,})", "$1$2<$1>")
-                //Format in requests to and responses from *arr:
-                /*
-                "name": "apiKey",
-                "label": "API Key",
-                "value": "apikey",
-                */
-                .replaceAll("(\"name\" ?: ?\"apiKey\",(\\s*\"label\": ?\".*\",)?\\s*\"value\" ?: \")([^\"\\s*]*)", "$1<apikey>")
-                .replaceAll("(\"name\" ?: ?\"baseUrl\",(\\s*\"label\": ?\".*\",)?\\s*\"value\" ?: \")([^\"\\s*]*)", "$1<url>")
-                ;
+        txt = QUERY_PARAMETER_PATTERN.matcher(txt).replaceAll("$1$2<$1>");
+        //Both *arr patterns start with the literal "name", so lines without it can't match
+        if (!txt.contains(JSON_NAME_MARKER)) {
+            return txt;
+        }
+        txt = ARR_API_KEY_PATTERN.matcher(txt).replaceAll("$1<apikey>");
+        return ARR_BASE_URL_PATTERN.matcher(txt).replaceAll("$1<url>");
     }
 
 

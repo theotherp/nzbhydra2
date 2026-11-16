@@ -329,7 +329,7 @@ public class DebugInfosWeb {
 
     @Secured({"ROLE_ADMIN"})
     @GetMapping("/internalapi/debuginfos/setLoggingConfig")
-    public ResponseEntity setLoggingConfig(@RequestParam(required = false) String markersToEnable) {
+    public ResponseEntity<?> setLoggingConfig(@RequestParam(required = false) String markersToEnable) {
         configProvider.getBaseConfig().getMain().getLogging().setLogfilelevel("DEBUG");
         if (markersToEnable != null) {
             configProvider.getBaseConfig().getMain().getLogging().setMarkersToLog(Arrays.asList(markersToEnable.split(",")));

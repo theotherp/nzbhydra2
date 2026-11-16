@@ -55,8 +55,8 @@ public class TmdbHandler {
         String url = "%s/search/movie?query=%s&year=%s&api_key=%s".formatted(tmdbApiBaseUrl, title, year == null ? "null" : year, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
-            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
-            List<Map> list = (List<Map>) map.get("results");
+            final Map<?, ?> map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            List<Map<?, ?>> list = (List<Map<?, ?>>) map.get("results");
             return list.stream()
                 .limit(10)
                 .map(x -> {
@@ -75,8 +75,8 @@ public class TmdbHandler {
         String url = "%s/find/%s?external_source=imdb_id&api_key=%s".formatted(tmdbApiBaseUrl, correctImdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
-            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
-            final List<Map> list = (List<Map>) map.get("movie_results");
+            final Map<?, ?> map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            final List<Map<?, ?>> list = (List<Map<?, ?>>) map.get("movie_results");
             TmdbSearchResult result = new TmdbSearchResult();
             if (list.isEmpty()) {
                 throw new InfoProviderException(String.format("TMDB query for IMDB ID %s returned no searchResults", imdbId));
@@ -94,7 +94,7 @@ public class TmdbHandler {
         String url = "%s/movie/%s?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
-            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            final Map<?, ?> map = Jackson.JSON_MAPPER.readValue(json, Map.class);
             TmdbSearchResult result = new TmdbSearchResult();
             fillFromMap(map, result);
             result.setImdbId(getImdbId(tmdbId));
@@ -105,7 +105,7 @@ public class TmdbHandler {
 
     }
 
-    private static void fillFromMap(Map map, TmdbSearchResult result) {
+    private static void fillFromMap(Map<?, ?> map, TmdbSearchResult result) {
         result.setTmdbId(String.valueOf(map.get("id")));
         result.setYear(map.get("release_date") != null ? LocalDate.parse(map.get("release_date").toString()).getYear() : null);
         result.setTitle(String.valueOf(map.get("title")));
@@ -116,7 +116,7 @@ public class TmdbHandler {
         String url = "%s/movie/%s/external_ids?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
-            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            final Map<?, ?> map = Jackson.JSON_MAPPER.readValue(json, Map.class);
             return Optional.ofNullable(map.get("imdb_id")).map(x -> String.valueOf(map.get("imdb_id"))).orElse(null);
         } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with ID " + tmdbId, e);

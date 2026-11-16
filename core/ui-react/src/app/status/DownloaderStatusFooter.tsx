@@ -127,9 +127,9 @@ export function DownloaderStatusFooter({
     const applyStatus = useCallback(
         (next: DownloaderStatus) => {
             if (next.lastUpdateForNow && intervalRef.current === null) {
-                // The server has told us it will send nothing new for a while
-                // because the last two statuses were identical; keep the graph
-                // moving with the last known rate instead of freezing it.
+                // The server has told us its next status is more than a second
+                // away, because the downloader is idle or paused; keep the
+                // graph moving with the last known rate instead of freezing it.
                 intervalRef.current = window.setInterval(() => {
                     const rate = latestStatusRef.current?.lastDownloadRate ?? 0;
                     const advanced = advancedRateWindow(ratesRef.current, rate);

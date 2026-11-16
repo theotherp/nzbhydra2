@@ -11072,13 +11072,6 @@
       {
           "name": "isSuccessful",
           "parameterTypes": []
-      },
-      {
-          "name": "<init>",
-          "parameterTypes": [
-              "java.lang.Boolean",
-              "java.lang.String"
-          ]
       }
   ]
 },
@@ -11113,14 +11106,6 @@
       },
       {
           "name": "destroy",
-          "parameterTypes": []
-      },
-      {
-          "name": "getCacheManager",
-          "parameterTypes": []
-      },
-      {
-          "name": "loadBaseConfig",
           "parameterTypes": []
       },
       {
@@ -11197,12 +11182,6 @@
                     "org.nzbhydra.mapping.newznab.NewznabParameters",
                     "java.lang.String",
                     "java.lang.String"
-                ]
-            },
-            {
-                "name": "handler",
-                "parameterTypes": [
-                    "org.nzbhydra.api.ExternalApiException"
                 ]
             }
         ]
@@ -11345,17 +11324,7 @@
 {
   "name":"org.nzbhydra.auth.HydraGlobalMethodSecurityConfiguration",
   "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "methods": [
-      {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
-          "name": "methodSecurityMetadataSource",
-          "parameterTypes": []
-      }
-  ]
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"org.nzbhydra.auth.HydraGlobalMethodSecurityConfiguration$$SpringCGLIB$$0",
@@ -11520,12 +11489,6 @@
       {
           "name": "<init>",
           "parameterTypes": []
-      },
-      {
-          "name": "authManager",
-          "parameterTypes": [
-              "org.springframework.security.config.annotation.web.builders.HttpSecurity"
-          ]
       },
       {
           "name": "defaultHttpFirewall",
@@ -13420,13 +13383,6 @@
             {
                 "name": "<init>",
                 "parameterTypes": []
-            },
-            {
-                "name": "deserialize",
-                "parameterTypes": [
-                    "com.fasterxml.jackson.core.JsonParser",
-                    "com.fasterxml.jackson.databind.DeserializationContext"
-                ]
             }
         ]
     },
@@ -13440,14 +13396,6 @@
       {
           "name": "<init>",
           "parameterTypes": []
-      },
-      {
-          "name": "serialize",
-          "parameterTypes": [
-              "java.lang.Object",
-              "com.fasterxml.jackson.core.JsonGenerator",
-              "com.fasterxml.jackson.databind.SerializerProvider"
-          ]
       }
   ]
 },
@@ -14746,6 +14694,10 @@
           "parameterTypes": []
       },
       {
+          "name": "stopMetricsLogging",
+          "parameterTypes": []
+      },
+      {
           "name": "logThreadDump",
           "parameterTypes": []
       }
@@ -14897,25 +14849,6 @@
         ]
     },
     {
-        "name": "org.nzbhydra.downloading.DownloadStatusUpdater$$SpringCGLIB$$0",
-        "fields": [
-            {
-                "name": "CGLIB$CALLBACK_FILTER"
-            },
-            {
-                "name": "CGLIB$FACTORY_DATA"
-            }
-        ],
-        "methods": [
-            {
-                "name": "CGLIB$SET_THREAD_CALLBACKS",
-                "parameterTypes": [
-                    "org.springframework.cglib.proxy.Callback[]"
-                ]
-            }
-        ]
-    },
-    {
         "name": "org.nzbhydra.downloading.DownloaderType",
         "allDeclaredFields": true,
         "queryAllDeclaredMethods": true
@@ -14972,29 +14905,6 @@
           "parameterTypes": []
       },
       {
-          "name": "getDownloadLinkForResults",
-          "parameterTypes": [
-              "java.lang.Long",
-              "boolean",
-              "org.nzbhydra.searching.dtoseventsenums.SearchResultItem$DownloadType"
-          ]
-      },
-      {
-          "name": "getDownloadLinkForSendingToDownloader",
-          "parameterTypes": [
-              "java.lang.Long",
-              "boolean",
-              "org.nzbhydra.searching.dtoseventsenums.SearchResultItem$DownloadType"
-          ]
-      },
-      {
-          "name": "getFileByGuid",
-          "parameterTypes": [
-              "long",
-              "org.nzbhydra.searching.searchrequests.SearchSource"
-          ]
-      },
-      {
           "name": "getFilesAsZip",
           "parameterTypes": [
               "java.util.List"
@@ -15003,12 +14913,6 @@
       {
           "name": "getTemporaryZipFiles",
           "parameterTypes": []
-      },
-      {
-          "name": "saveNzbsToBlackhole",
-          "parameterTypes": [
-              "java.util.Set"
-          ]
       }
   ]
 },
@@ -15198,10 +15102,6 @@
                 "parameterTypes": []
             },
             {
-                "name": "getDownloadingTitleRemainingSizeFormatted",
-                "parameterTypes": []
-            },
-            {
                 "name": "getDownloadingTitleRemainingTimeFormatted",
                 "parameterTypes": []
             },
@@ -15273,12 +15173,6 @@
                 "parameterTypes": []
             },
             {
-                "name": "addNzb",
-                "parameterTypes": [
-                    "org.nzbhydra.downloading.AddFilesRequest"
-                ]
-            },
-            {
                 "name": "checkConnection",
                 "parameterTypes": [
                     "org.nzbhydra.config.downloading.DownloaderConfig"
@@ -15348,37 +15242,7 @@
                 "parameterTypes": []
             },
             {
-                "name": "setCache_art",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setCache_max",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setCache_size",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setCategories",
-                "parameterTypes": [
-                    "java.util.List"
-                ]
-            },
-            {
                 "name": "setDiskspace1",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setDiskspace1_norm",
                 "parameterTypes": [
                     "java.lang.String"
                 ]
@@ -15390,79 +15254,7 @@
                 ]
             },
             {
-                "name": "setDiskspace2_norm",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setDiskspacetotal1",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setDiskspacetotal2",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setEta",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setFinish",
-                "parameterTypes": [
-                    "java.lang.Long"
-                ]
-            },
-            {
-                "name": "setFinishaction",
-                "parameterTypes": [
-                    "java.lang.Object"
-                ]
-            },
-            {
-                "name": "setHave_quota",
-                "parameterTypes": [
-                    "java.lang.Boolean"
-                ]
-            },
-            {
-                "name": "setHave_warnings",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
                 "name": "setKbpersec",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setLeft_quota",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setLimit",
-                "parameterTypes": [
-                    "java.lang.Integer"
-                ]
-            },
-            {
-                "name": "setLoadavg",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setMb",
                 "parameterTypes": [
                     "java.lang.String"
                 ]
@@ -15474,105 +15266,15 @@
                 ]
             },
             {
-                "name": "setNoofslots",
-                "parameterTypes": [
-                    "java.lang.Integer"
-                ]
-            },
-            {
-                "name": "setNoofslots_total",
-                "parameterTypes": [
-                    "java.lang.Integer"
-                ]
-            },
-            {
-                "name": "setPause_int",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
                 "name": "setPaused",
                 "parameterTypes": [
                     "java.lang.Boolean"
                 ]
             },
             {
-                "name": "setPaused_all",
-                "parameterTypes": [
-                    "java.lang.Boolean"
-                ]
-            },
-            {
-                "name": "setQueue_details",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setQuota",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setRating_enable",
-                "parameterTypes": [
-                    "java.lang.Boolean"
-                ]
-            },
-            {
-                "name": "setRefresh_rate",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setScripts",
-                "parameterTypes": [
-                    "java.util.List"
-                ]
-            },
-            {
-                "name": "setSize",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setSizeleft",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
                 "name": "setSlots",
                 "parameterTypes": [
                     "java.util.List"
-                ]
-            },
-            {
-                "name": "setSpeed",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setSpeedlimit",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setSpeedlimit_abs",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setStart",
-                "parameterTypes": [
-                    "java.lang.Integer"
                 ]
             },
             {
@@ -15583,12 +15285,6 @@
             },
             {
                 "name": "setTimeleft",
-                "parameterTypes": [
-                    "java.lang.String"
-                ]
-            },
-            {
-                "name": "setVersion",
                 "parameterTypes": [
                     "java.lang.String"
                 ]
@@ -15631,19 +15327,6 @@
                 "parameterTypes": []
             },
             {
-                "name": "downloadNzbInternal",
-                "parameterTypes": [
-                    "long"
-                ]
-            },
-            {
-                "name": "downloadNzbWithApikey",
-                "parameterTypes": [
-                    "long",
-                    "java.lang.String"
-                ]
-            },
-            {
                 "name": "downloadNzbZip",
                 "parameterTypes": [
                     "java.lang.String"
@@ -15653,12 +15336,6 @@
                 "name": "getNzbZipData",
                 "parameterTypes": [
                     "java.util.List"
-                ]
-            },
-            {
-                "name": "saveNzbsToBlackhole",
-                "parameterTypes": [
-                    "java.util.Set"
                 ]
             }
         ]
@@ -15860,29 +15537,7 @@
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-    "methods": [
-        {
-            "name": "<init>",
-            "parameterTypes": [
-                "org.nzbhydra.config.ConfigProvider",
-                "org.nzbhydra.indexers.IndexerRepository",
-                "org.nzbhydra.searching.db.SearchResultRepository",
-                "org.nzbhydra.indexers.IndexerApiAccessRepository",
-                "org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository",
-                "org.nzbhydra.indexers.status.IndexerLimitRepository",
-                "org.nzbhydra.indexers.IndexerWebAccess",
-                "org.nzbhydra.searching.SearchResultAcceptor",
-                "org.nzbhydra.searching.CategoryProvider",
-                "org.nzbhydra.mediainfo.InfoProvider",
-                "org.springframework.context.ApplicationEventPublisher",
-                "org.nzbhydra.indexers.QueryGenerator",
-                "org.nzbhydra.searching.CustomQueryAndTitleMappingHandler",
-                "org.springframework.oxm.Unmarshaller",
-                "org.nzbhydra.config.BaseConfigHandler"
-            ]
-        }
-    ]
+  "queryAllDeclaredConstructors":true
 },
 {
   "name":"org.nzbhydra.indexers.DevIndexer$$SpringCGLIB$$0",
@@ -15924,29 +15579,7 @@
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-    "methods": [
-        {
-            "name": "<init>",
-            "parameterTypes": [
-                "org.nzbhydra.config.ConfigProvider",
-                "org.nzbhydra.indexers.IndexerRepository",
-                "org.nzbhydra.searching.db.SearchResultRepository",
-                "org.nzbhydra.indexers.IndexerApiAccessRepository",
-                "org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository",
-                "org.nzbhydra.indexers.status.IndexerLimitRepository",
-                "org.nzbhydra.indexers.IndexerWebAccess",
-                "org.nzbhydra.searching.SearchResultAcceptor",
-                "org.nzbhydra.searching.CategoryProvider",
-                "org.nzbhydra.mediainfo.InfoProvider",
-                "org.springframework.context.ApplicationEventPublisher",
-                "org.nzbhydra.indexers.QueryGenerator",
-                "org.nzbhydra.searching.CustomQueryAndTitleMappingHandler",
-                "org.springframework.oxm.Unmarshaller",
-                "org.nzbhydra.config.BaseConfigHandler"
-            ]
-        }
-    ]
+  "queryAllDeclaredConstructors":true
 },
     {
         "name": "org.nzbhydra.indexers.DogNzb$$SpringCGLIB$$0",
@@ -16035,12 +15668,6 @@
           "parameterTypes": [
               "java.lang.Object",
               "org.nzbhydra.searching.searchrequests.SearchRequest"
-          ]
-      },
-      {
-          "name": "handleNewConfig",
-          "parameterTypes": [
-              "org.nzbhydra.config.ConfigChangedEvent"
           ]
       },
       {
@@ -16334,10 +15961,6 @@
               "int",
               "java.lang.Integer"
           ]
-      },
-      {
-          "name": "getIdToCategory",
-          "parameterTypes": []
       },
       {
           "name": "getIndexerStatusRepository",
@@ -16937,13 +16560,6 @@
             {
                 "name": "<init>",
                 "parameterTypes": []
-            },
-            {
-                "name": "deserialize",
-                "parameterTypes": [
-                    "com.fasterxml.jackson.core.JsonParser",
-                    "com.fasterxml.jackson.databind.DeserializationContext"
-                ]
             }
         ]
     },
@@ -16957,14 +16573,6 @@
       {
           "name": "<init>",
           "parameterTypes": []
-      },
-      {
-          "name": "serialize",
-          "parameterTypes": [
-              "java.lang.Object",
-              "com.fasterxml.jackson.core.JsonGenerator",
-              "com.fasterxml.jackson.databind.SerializerProvider"
-          ]
       }
   ]
 },
@@ -17100,23 +16708,6 @@
 },
 {
   "name":"org.nzbhydra.mapping.newznab.xml.package-info"
-},
-{
-  "name":"org.nzbhydra.mediainfo.CustomTmdb",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods": [
-      {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
-          "name": "initWithApiKey",
-          "parameterTypes": []
-      }
-  ]
 },
 {
   "name":"org.nzbhydra.mediainfo.InfoProvider",
@@ -17383,9 +16974,6 @@
           ]
       }
   ]
-},
-{
-  "name":"org.nzbhydra.notifications.NotificationEntity$MessageType"
 },
 {
   "name":"org.nzbhydra.notifications.NotificationEntity_"
@@ -17761,10 +17349,6 @@
   "queryAllDeclaredConstructors":true,
   "methods": [
       {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
           "name": "onShutdown",
           "parameterTypes": []
       }
@@ -17801,20 +17385,16 @@
       {
           "name": "deleteOldResults",
           "parameterTypes": []
-      }
-  ]
-},
-{
-  "name":"org.nzbhydra.searching.cleanup.OldResultsCleanupTask$$SpringCGLIB$$0",
-  "fields": [
-      {
-          "name": "CGLIB$CALLBACK_FILTER"
       },
       {
-          "name": "CGLIB$FACTORY_DATA"
+          "name": "handleShutdown",
+          "parameterTypes": ["org.nzbhydra.ShutdownEvent"]
+      },
+      {
+          "name": "onShutdown",
+          "parameterTypes": []
       }
-  ],
-  "methods":[{"name":"CGLIB$SET_THREAD_CALLBACKS","parameterTypes":["org.springframework.cglib.proxy.Callback[]"] }]
+  ]
 },
 {
   "name":"org.nzbhydra.searching.cleanup.ShortIndexerApiAccessCleanup",
@@ -17956,10 +17536,6 @@
           "parameterTypes": []
       },
       {
-          "name": "getIndexerSearchEntity",
-          "parameterTypes": []
-      },
-      {
           "name": "getLink",
           "parameterTypes": []
       },
@@ -17979,12 +17555,6 @@
           "name": "setDetails",
           "parameterTypes": [
               "java.lang.String"
-          ]
-      },
-      {
-          "name": "setDownloadType",
-          "parameterTypes": [
-              "org.nzbhydra.searching.dtoseventsenums.SearchResultItem$DownloadType"
           ]
       },
       {
@@ -18009,12 +17579,6 @@
           "name": "setIndexerGuid",
           "parameterTypes": [
               "java.lang.String"
-          ]
-      },
-      {
-          "name": "setIndexerSearchEntity",
-          "parameterTypes": [
-              "org.nzbhydra.indexers.IndexerSearchEntity"
           ]
       },
       {
@@ -18058,18 +17622,11 @@
         "queryAllDeclaredMethods": true,
         "queryAllPublicMethods": true
     },
-    {
-  "name":"org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
 {
   "name":"org.nzbhydra.searching.dtoseventsenums.SearchResultItem",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
-},
-{
-  "name":"org.nzbhydra.searching.dtoseventsenums.SearchResultItem$DownloadType"
 },
     {
         "name": "org.nzbhydra.searching.searchrequests.SearchRequestFactory",
@@ -18083,9 +17640,6 @@
                 "parameterTypes": []
             }
         ]
-    },
-    {
-        "name": "org.nzbhydra.searching.searchrequests.SearchSource"
     },
     {
         "name": "org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity",
@@ -18424,15 +17978,7 @@
         "allDeclaredFields": true,
         "queryAllDeclaredMethods": true,
         "queryAllPublicMethods": true,
-        "queryAllDeclaredConstructors": true,
-        "methods": [
-            {
-                "name": "<init>",
-                "parameterTypes": [
-                    "org.springframework.boot.web.servlet.error.ErrorAttributes"
-                ]
-            }
-        ]
+        "queryAllDeclaredConstructors": true
     },
 {
   "name":"org.nzbhydra.web.Interceptor",
@@ -18508,18 +18054,6 @@
       {
           "name": "filterRegistrationBean",
           "parameterTypes": []
-      },
-      {
-          "name": "marshaller",
-          "parameterTypes": []
-      },
-      {
-          "name": "requestMappingHandlerMapping",
-          "parameterTypes": [
-              "org.springframework.web.accept.ContentNegotiationManager",
-              "org.springframework.format.support.FormattingConversionService",
-              "org.springframework.web.servlet.resource.ResourceUrlProvider"
-          ]
       }
   ]
 },
@@ -36342,9 +35876,6 @@
         "name": "transactionManager"
       },
       {
-        "name": "searchResultRepository"
-      },
-      {
         "name": "indexerSearchRepository"
       },
       {
@@ -36429,6 +35960,10 @@
       },
       {
         "name": "logMetrics",
+        "parameterTypes": []
+      },
+      {
+        "name": "stopMetricsLogging",
         "parameterTypes": []
       }
     ],
@@ -36878,12 +36413,6 @@
         ]
       },
       {
-        "name": "setDownloadingTitleRemainingTimeFormatted",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "equals",
         "parameterTypes": [
           "java.lang.Object"
@@ -36894,12 +36423,6 @@
         "parameterTypes": []
       },
       {
-        "name": "setDownloadingTitleRemainingSizeFormatted",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "getLastDownloadRate",
         "parameterTypes": []
       },
@@ -36907,12 +36430,6 @@
         "name": "setLastDownloadRate",
         "parameterTypes": [
           "java.lang.Long"
-        ]
-      },
-      {
-        "name": "setDownloadRateFormatted",
-        "parameterTypes": [
-          "java.lang.String"
         ]
       },
       {
@@ -36968,12 +36485,6 @@
         "parameterTypes": []
       },
       {
-        "name": "setRemainingTimeFormatted",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "toString",
         "parameterTypes": []
       },
@@ -37014,12 +36525,6 @@
         ]
       },
       {
-        "name": "setRemainingSizeFormatted",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "setDownloaderType",
         "parameterTypes": [
           "org.nzbhydra.downloading.DownloaderType"
@@ -37030,10 +36535,6 @@
         "parameterTypes": [
           "java.util.List"
         ]
-      },
-      {
-        "name": "getDownloadingTitleRemainingSizeFormatted",
-        "parameterTypes": []
       },
       {
         "name": "setDownloadingTitle",
@@ -39997,14 +39498,6 @@
           "org.nzbhydra.config.SearchSource",
           "org.nzbhydra.searching.db.SearchResultEntity"
         ]
-      },
-      {
-        "name": "getFileByGuid",
-        "parameterTypes": [
-          "long",
-          "org.nzbhydra.config.downloading.FileDownloadAccessType",
-          "org.nzbhydra.config.SearchSource"
-        ]
       }
     ],
     "queriedMethods": [
@@ -41160,12 +40653,6 @@
       {
         "name": "configProvider"
       }
-    ],
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
     ]
   },
   {
@@ -41300,12 +40787,6 @@
       {
         "name": "defaultHttpFirewall",
         "parameterTypes": []
-      },
-      {
-        "name": "authManager",
-        "parameterTypes": [
-          "org.springframework.security.config.annotation.web.builders.HttpSecurity"
-        ]
       },
       {
         "name": "filterChain",
@@ -42036,10 +41517,6 @@
         "parameterTypes": []
       },
       {
-        "name": "extractForbiddenWords",
-        "parameterTypes": []
-      },
-      {
         "name": "getLimit",
         "parameterTypes": []
       },
@@ -42239,12 +41716,6 @@
         ]
       },
       {
-        "name": "setStatusCode",
-        "parameterTypes": [
-          "org.springframework.http.HttpStatus"
-        ]
-      },
-      {
         "name": "createErrorResult",
         "parameterTypes": [
           "java.lang.String"
@@ -42253,14 +41724,6 @@
       {
         "name": "getContent",
         "parameterTypes": []
-      },
-      {
-        "name": "createErrorResult",
-        "parameterTypes": [
-          "java.lang.String",
-          "org.springframework.http.HttpStatus",
-          "org.nzbhydra.downloading.FileDownloadEntity"
-        ]
       },
       {
         "name": "setUrl",
@@ -43073,29 +42536,7 @@
   },
   {
     "name": "org.nzbhydra.indexers.DogNzb",
-    "allPublicMethods": true,
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": [
-          "org.nzbhydra.config.ConfigProvider",
-          "org.nzbhydra.indexers.IndexerRepository",
-          "org.nzbhydra.searching.db.SearchResultRepository",
-          "org.nzbhydra.indexers.IndexerApiAccessRepository",
-          "org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository",
-          "org.nzbhydra.indexers.status.IndexerLimitRepository",
-          "org.nzbhydra.indexers.IndexerWebAccess",
-          "org.nzbhydra.searching.SearchResultAcceptor",
-          "org.nzbhydra.searching.CategoryProvider",
-          "org.nzbhydra.mediainfo.InfoProvider",
-          "org.springframework.context.ApplicationEventPublisher",
-          "org.nzbhydra.indexers.QueryGenerator",
-          "org.nzbhydra.searching.CustomQueryAndTitleMappingHandler",
-          "org.springframework.oxm.Unmarshaller",
-          "org.nzbhydra.config.BaseConfigHandler"
-        ]
-      }
-    ]
+    "allPublicMethods": true
   },
   {
     "name": "org.nzbhydra.fortests.NewznabItemData",
@@ -43229,14 +42670,6 @@
       {
         "name": "isRadarr",
         "parameterTypes": []
-      },
-      {
-        "name": "isV2",
-        "parameterTypes": []
-      },
-      {
-        "name": "isV3",
-        "parameterTypes": []
       }
     ]
   },
@@ -43328,10 +42761,6 @@
         "parameterTypes": []
       },
       {
-        "name": "getLoadLimitInternal",
-        "parameterTypes": []
-      },
-      {
         "name": "getPreselectQuickFilterButtons",
         "parameterTypes": []
       },
@@ -43410,34 +42839,6 @@
     "allPublicConstructors": true,
     "methods": [
       {
-        "name": "setBytes",
-        "parameterTypes": [
-          "java.lang.Long"
-        ]
-      },
-      {
-        "name": "setId",
-        "parameterTypes": [
-          "java.lang.Long"
-        ]
-      },
-      {
-        "name": "getCategory",
-        "parameterTypes": []
-      },
-      {
-        "name": "setReport",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setAction_line",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "setNzo_id",
         "parameterTypes": [
           "java.lang.String"
@@ -43448,51 +42849,7 @@
         "parameterTypes": []
       },
       {
-        "name": "getMd5sum",
-        "parameterTypes": []
-      },
-      {
-        "name": "getUrl_info",
-        "parameterTypes": []
-      },
-      {
-        "name": "getDownload_time",
-        "parameterTypes": []
-      },
-      {
         "name": "getCompleted",
-        "parameterTypes": []
-      },
-      {
-        "name": "setPostproc_time",
-        "parameterTypes": [
-          "java.lang.Long"
-        ]
-      },
-      {
-        "name": "setScript_line",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getSize",
-        "parameterTypes": []
-      },
-      {
-        "name": "setStorage",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setCompleteness",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "getHas_rating",
         "parameterTypes": []
       },
       {
@@ -43512,78 +42869,18 @@
         ]
       },
       {
-        "name": "setHas_rating",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
-      },
-      {
-        "name": "getFail_message",
-        "parameterTypes": []
-      },
-      {
-        "name": "getCompleteness",
-        "parameterTypes": []
-      },
-      {
-        "name": "getNzb_name",
-        "parameterTypes": []
-      },
-      {
         "name": "setStatus",
         "parameterTypes": [
           "java.lang.String"
         ]
       },
       {
-        "name": "getId",
-        "parameterTypes": []
-      },
-      {
-        "name": "setUrl",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setScript_log",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getShow_details",
-        "parameterTypes": []
-      },
-      {
-        "name": "getPp",
-        "parameterTypes": []
-      },
-      {
         "name": "toString",
-        "parameterTypes": []
-      },
-      {
-        "name": "getLoaded",
-        "parameterTypes": []
-      },
-      {
-        "name": "getBytes",
         "parameterTypes": []
       },
       {
         "name": "getNzo_id",
         "parameterTypes": []
-      },
-      {
-        "name": "getScript_line",
-        "parameterTypes": []
-      },
-      {
-        "name": "setPassword",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       },
       {
         "name": "equals",
@@ -43592,98 +42889,10 @@
         ]
       },
       {
-        "name": "setCategory",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getStorage",
-        "parameterTypes": []
-      },
-      {
-        "name": "setDownload_time",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "getAction_line",
-        "parameterTypes": []
-      },
-      {
-        "name": "setShow_details",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getSeries",
-        "parameterTypes": []
-      },
-      {
-        "name": "setPath",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getPassword",
-        "parameterTypes": []
-      },
-      {
-        "name": "setPp",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setSize",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getMeta",
-        "parameterTypes": []
-      },
-      {
         "name": "setCompleted",
         "parameterTypes": [
           "java.lang.Long"
         ]
-      },
-      {
-        "name": "getScript_log",
-        "parameterTypes": []
-      },
-      {
-        "name": "getPath",
-        "parameterTypes": []
-      },
-      {
-        "name": "setFail_message",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getUrl",
-        "parameterTypes": []
-      },
-      {
-        "name": "setRetry",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "getStage_log",
-        "parameterTypes": []
-      },
-      {
-        "name": "getScript",
-        "parameterTypes": []
       },
       {
         "name": "canEqual",
@@ -43692,72 +42901,12 @@
         ]
       },
       {
-        "name": "getPostproc_time",
-        "parameterTypes": []
-      },
-      {
-        "name": "setStage_log",
-        "parameterTypes": [
-          "java.util.List"
-        ]
-      },
-      {
-        "name": "setSeries",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "hashCode",
-        "parameterTypes": []
-      },
-      {
-        "name": "setMd5sum",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setUrl_info",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setNzb_name",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getReport",
         "parameterTypes": []
       },
       {
         "name": "getName",
         "parameterTypes": []
-      },
-      {
-        "name": "setMeta",
-        "parameterTypes": [
-          "java.lang.Object"
-        ]
-      },
-      {
-        "name": "getRetry",
-        "parameterTypes": []
-      },
-      {
-        "name": "setScript",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setLoaded",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
       }
     ]
   },
@@ -44833,12 +43982,6 @@
         "parameterTypes": []
       },
       {
-        "name": "setBoolean",
-        "parameterTypes": [
-          "boolean"
-        ]
-      },
-      {
         "name": "getFilterType",
         "parameterTypes": []
       },
@@ -44867,10 +44010,6 @@
         "parameterTypes": [
           "java.lang.Object"
         ]
-      },
-      {
-        "name": "isBoolean",
-        "parameterTypes": []
       }
     ]
   },
@@ -44924,12 +44063,6 @@
   },
   {
     "name": "org.springframework.boot.context.config.StandardConfigDataLoader",
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "org.nzbhydra.downloading.DownloadStatusUpdater$$SpringCGLIB$$0",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
     "allDeclaredConstructors": true
   },
   {
@@ -46404,12 +45537,6 @@
         ]
       },
       {
-        "name": "search",
-        "parameterTypes": [
-          "org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters"
-        ]
-      },
-      {
         "name": "handleIndexerSelectionEvent",
         "parameterTypes": [
           "org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent"
@@ -46931,10 +46058,6 @@
       },
       {
         "name": "filterRegistrationBean",
-        "parameterTypes": []
-      },
-      {
-        "name": "marshaller",
         "parameterTypes": []
       }
     ]
@@ -48020,10 +47143,6 @@
     "allPublicConstructors": true,
     "methods": [
       {
-        "name": "getAvg_age",
-        "parameterTypes": []
-      },
-      {
         "name": "setMbleft",
         "parameterTypes": [
           "java.lang.String"
@@ -48034,91 +47153,21 @@
         "parameterTypes": []
       },
       {
-        "name": "setMb",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getSizeleft",
-        "parameterTypes": []
-      },
-      {
-        "name": "setPassword",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getSize",
-        "parameterTypes": []
-      },
-      {
-        "name": "setIndex",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
         "name": "setFilename",
         "parameterTypes": [
           "java.lang.String"
         ]
       },
       {
-        "name": "getIndex",
-        "parameterTypes": []
-      },
-      {
-        "name": "getUnpackopts",
-        "parameterTypes": []
-      },
-      {
         "name": "getMbleft",
         "parameterTypes": []
-      },
-      {
-        "name": "setPriority",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       },
       {
         "name": "getFilename",
         "parameterTypes": []
       },
       {
-        "name": "getHas_rating",
-        "parameterTypes": []
-      },
-      {
-        "name": "setUnpackopts",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "hashCode",
-        "parameterTypes": []
-      },
-      {
-        "name": "setEta",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setSizeleft",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getEta",
-        "parameterTypes": []
-      },
-      {
-        "name": "getMbmissing",
         "parameterTypes": []
       },
       {
@@ -48142,22 +47191,6 @@
         ]
       },
       {
-        "name": "setHas_rating",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
-      },
-      {
-        "name": "getScript",
-        "parameterTypes": []
-      },
-      {
-        "name": "setMbmissing",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "setStatus",
         "parameterTypes": [
           "java.lang.String"
@@ -48168,43 +47201,7 @@
         "parameterTypes": []
       },
       {
-        "name": "setScript",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setCat",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setAvg_age",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getPassword",
-        "parameterTypes": []
-      },
-      {
-        "name": "setSize",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "getPercentage",
-        "parameterTypes": []
-      },
-      {
-        "name": "getPriority",
-        "parameterTypes": []
-      },
-      {
-        "name": "getMb",
         "parameterTypes": []
       },
       {
@@ -48224,10 +47221,6 @@
         "parameterTypes": [
           "java.lang.String"
         ]
-      },
-      {
-        "name": "getCat",
-        "parameterTypes": []
       }
     ]
   },
@@ -48244,12 +47237,6 @@
       {
         "name": "getIndexerScores",
         "parameterTypes": []
-      },
-      {
-        "name": "setNumberOfEnabledIndexers",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "setUserAgentDownloadShares",
@@ -48346,12 +47333,6 @@
       {
         "name": "getSuccessfulDownloadsPerIndexer",
         "parameterTypes": []
-      },
-      {
-        "name": "setNumberOfConfiguredIndexers",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "getUserAgentSearchShares",
@@ -48831,14 +47812,6 @@
           "java.lang.Exception"
         ]
       }
-    ],
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": [
-          "org.springframework.boot.web.servlet.error.ErrorAttributes"
-        ]
-      }
     ]
   },
   {
@@ -49167,20 +48140,8 @@
         ]
       },
       {
-        "name": "addNzb",
-        "parameterTypes": [
-          "org.nzbhydra.downloading.AddFilesRequest"
-        ]
-      },
-      {
         "name": "getStatus",
         "parameterTypes": []
-      },
-      {
-        "name": "getCategories",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       }
     ],
     "queriedMethods": [
@@ -49856,25 +48817,11 @@
     "allDeclaredConstructors": true,
     "methods": [
       {
-        "name": "setMatch",
-        "parameterTypes": [
-          "boolean"
-        ]
-      },
-      {
-        "name": "getError",
-        "parameterTypes": []
-      },
-      {
         "name": "hashCode",
         "parameterTypes": []
       },
       {
         "name": "toString",
-        "parameterTypes": []
-      },
-      {
-        "name": "isMatch",
         "parameterTypes": []
       },
       {
@@ -49888,10 +48835,6 @@
         "parameterTypes": [
           "java.lang.Object"
         ]
-      },
-      {
-        "name": "getOutput",
-        "parameterTypes": []
       }
     ]
   },
@@ -52386,29 +51329,7 @@
   },
   {
     "name": "org.nzbhydra.indexers.DevIndexer",
-    "allPublicMethods": true,
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": [
-          "org.nzbhydra.config.ConfigProvider",
-          "org.nzbhydra.indexers.IndexerRepository",
-          "org.nzbhydra.searching.db.SearchResultRepository",
-          "org.nzbhydra.indexers.IndexerApiAccessRepository",
-          "org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository",
-          "org.nzbhydra.indexers.status.IndexerLimitRepository",
-          "org.nzbhydra.indexers.IndexerWebAccess",
-          "org.nzbhydra.searching.SearchResultAcceptor",
-          "org.nzbhydra.searching.CategoryProvider",
-          "org.nzbhydra.mediainfo.InfoProvider",
-          "org.springframework.context.ApplicationEventPublisher",
-          "org.nzbhydra.indexers.QueryGenerator",
-          "org.nzbhydra.searching.CustomQueryAndTitleMappingHandler",
-          "org.springframework.oxm.Unmarshaller",
-          "org.nzbhydra.config.BaseConfigHandler"
-        ]
-      }
-    ]
+    "allPublicMethods": true
   },
   {
     "name": "org.springframework.boot.actuate.autoconfigure.metrics.integration.IntegrationMetricsAutoConfiguration",
@@ -53628,44 +52549,10 @@
         ]
       },
       {
-        "name": "getHave_warnings",
-        "parameterTypes": []
-      },
-      {
-        "name": "setQuota",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "setKbpersec",
         "parameterTypes": [
           "java.lang.String"
         ]
-      },
-      {
-        "name": "getStart",
-        "parameterTypes": []
-      },
-      {
-        "name": "setSize",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setDiskspacetotal2",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getLeft_quota",
-        "parameterTypes": []
-      },
-      {
-        "name": "getSizeleft",
-        "parameterTypes": []
       },
       {
         "name": "toString",
@@ -53674,30 +52561,6 @@
       {
         "name": "getKbpersec",
         "parameterTypes": []
-      },
-      {
-        "name": "setNoofslots",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "setEta",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setRating_enable",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
-      },
-      {
-        "name": "setLoadavg",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       },
       {
         "name": "setDiskspace1",
@@ -53710,74 +52573,10 @@
         "parameterTypes": []
       },
       {
-        "name": "setScripts",
-        "parameterTypes": [
-          "java.util.List"
-        ]
-      },
-      {
-        "name": "setFinish",
-        "parameterTypes": [
-          "java.lang.Long"
-        ]
-      },
-      {
-        "name": "setPaused_all",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
-      },
-      {
-        "name": "getQuota",
-        "parameterTypes": []
-      },
-      {
-        "name": "setQueue_details",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setPause_int",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getRating_enable",
-        "parameterTypes": []
-      },
-      {
         "name": "setMbleft",
         "parameterTypes": [
           "java.lang.String"
         ]
-      },
-      {
-        "name": "getSpeed",
-        "parameterTypes": []
-      },
-      {
-        "name": "getQueue_details",
-        "parameterTypes": []
-      },
-      {
-        "name": "getSize",
-        "parameterTypes": []
-      },
-      {
-        "name": "setSizeleft",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getCache_size",
-        "parameterTypes": []
-      },
-      {
-        "name": "getDiskspace2_norm",
-        "parameterTypes": []
       },
       {
         "name": "setDiskspace2",
@@ -53790,54 +52589,14 @@
         "parameterTypes": []
       },
       {
-        "name": "setVersion",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setCache_max",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getLoadavg",
-        "parameterTypes": []
-      },
-      {
         "name": "setPaused",
         "parameterTypes": [
           "java.lang.Boolean"
         ]
       },
       {
-        "name": "setCache_art",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getRefresh_rate",
-        "parameterTypes": []
-      },
-      {
         "name": "getMbleft",
         "parameterTypes": []
-      },
-      {
-        "name": "getSpeedlimit_abs",
-        "parameterTypes": []
-      },
-      {
-        "name": "getPause_int",
-        "parameterTypes": []
-      },
-      {
-        "name": "setMb",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       },
       {
         "name": "setTimeleft",
@@ -53846,98 +52605,12 @@
         ]
       },
       {
-        "name": "getNoofslots",
-        "parameterTypes": []
-      },
-      {
-        "name": "setLeft_quota",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getCategories",
-        "parameterTypes": []
-      },
-      {
-        "name": "setFinishaction",
-        "parameterTypes": [
-          "java.lang.Object"
-        ]
-      },
-      {
-        "name": "getNoofslots_total",
-        "parameterTypes": []
-      },
-      {
-        "name": "getDiskspacetotal2",
-        "parameterTypes": []
-      },
-      {
         "name": "getStatus",
-        "parameterTypes": []
-      },
-      {
-        "name": "setSpeedlimit_abs",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getLimit",
-        "parameterTypes": []
-      },
-      {
-        "name": "getCache_art",
-        "parameterTypes": []
-      },
-      {
-        "name": "getSpeedlimit",
         "parameterTypes": []
       },
       {
         "name": "getDiskspace2",
         "parameterTypes": []
-      },
-      {
-        "name": "getCache_max",
-        "parameterTypes": []
-      },
-      {
-        "name": "setHave_warnings",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getScripts",
-        "parameterTypes": []
-      },
-      {
-        "name": "setStart",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "getEta",
-        "parameterTypes": []
-      },
-      {
-        "name": "setSpeed",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getMb",
-        "parameterTypes": []
-      },
-      {
-        "name": "setRefresh_rate",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       },
       {
         "name": "canEqual",
@@ -53946,69 +52619,11 @@
         ]
       },
       {
-        "name": "getPaused_all",
-        "parameterTypes": []
-      },
-      {
-        "name": "setLimit",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
         "name": "hashCode",
         "parameterTypes": []
       },
       {
-        "name": "setDiskspace2_norm",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "getHave_quota",
-        "parameterTypes": []
-      },
-      {
-        "name": "getFinishaction",
-        "parameterTypes": []
-      },
-      {
-        "name": "setNoofslots_total",
-        "parameterTypes": [
-          "java.lang.Integer"
-        ]
-      },
-      {
-        "name": "getFinish",
-        "parameterTypes": []
-      },
-      {
-        "name": "setCategories",
-        "parameterTypes": [
-          "java.util.List"
-        ]
-      },
-      {
-        "name": "setSpeedlimit",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
         "name": "setStatus",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setHave_quota",
-        "parameterTypes": [
-          "java.lang.Boolean"
-        ]
-      },
-      {
-        "name": "setCache_size",
         "parameterTypes": [
           "java.lang.String"
         ]
@@ -54026,30 +52641,6 @@
       {
         "name": "getPaused",
         "parameterTypes": []
-      },
-      {
-        "name": "getDiskspace1_norm",
-        "parameterTypes": []
-      },
-      {
-        "name": "getVersion",
-        "parameterTypes": []
-      },
-      {
-        "name": "getDiskspacetotal1",
-        "parameterTypes": []
-      },
-      {
-        "name": "setDiskspace1_norm",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setDiskspacetotal1",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
       }
     ]
   },
@@ -55178,10 +53769,6 @@
         "parameterTypes": []
       },
       {
-        "name": "shutdown",
-        "parameterTypes": []
-      },
-      {
         "name": "ping",
         "parameterTypes": []
       }
@@ -55867,74 +54454,6 @@
     ]
   },
   {
-    "name": "org.nzbhydra.downloading.torrents.SaveOrSendTorrentsResponse",
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allDeclaredConstructors": true,
-    "methods": [
-      {
-        "name": "getMissedIds",
-        "parameterTypes": []
-      },
-      {
-        "name": "setMissedIds",
-        "parameterTypes": [
-          "java.util.Collection"
-        ]
-      },
-      {
-        "name": "setSuccessful",
-        "parameterTypes": [
-          "boolean"
-        ]
-      },
-      {
-        "name": "setMessage",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "equals",
-        "parameterTypes": [
-          "java.lang.Object"
-        ]
-      },
-      {
-        "name": "getAddedIds",
-        "parameterTypes": []
-      },
-      {
-        "name": "toString",
-        "parameterTypes": []
-      },
-      {
-        "name": "getMessage",
-        "parameterTypes": []
-      },
-      {
-        "name": "canEqual",
-        "parameterTypes": [
-          "java.lang.Object"
-        ]
-      },
-      {
-        "name": "hashCode",
-        "parameterTypes": []
-      },
-      {
-        "name": "isSuccessful",
-        "parameterTypes": []
-      },
-      {
-        "name": "setAddedIds",
-        "parameterTypes": [
-          "java.util.Collection"
-        ]
-      }
-    ]
-  },
-  {
     "name": "org.springframework.boot.autoconfigure.web.ServerProperties$Netty",
     "methods": [
       {
@@ -56298,12 +54817,6 @@
       {
         "name": "getKey",
         "parameterTypes": []
-      },
-      {
-        "name": "setCount",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "getCount",
@@ -57563,30 +56076,10 @@
     "allDeclaredConstructors": true,
     "methods": [
       {
-        "name": "setExampleInput",
-        "parameterTypes": [
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "setCustomQueryAndTitleMapping",
-        "parameterTypes": [
-          "org.nzbhydra.config.searching.CustomQueryAndTitleMapping"
-        ]
-      },
-      {
-        "name": "getCustomQueryAndTitleMapping",
-        "parameterTypes": []
-      },
-      {
         "name": "canEqual",
         "parameterTypes": [
           "java.lang.Object"
         ]
-      },
-      {
-        "name": "getExampleInput",
-        "parameterTypes": []
       },
       {
         "name": "hashCode",
@@ -57704,12 +56197,6 @@
         "parameterTypes": []
       },
       {
-        "name": "setCount",
-        "parameterTypes": [
-          "int"
-        ]
-      },
-      {
         "name": "setUserAgent",
         "parameterTypes": [
           "java.lang.String"
@@ -57785,18 +56272,6 @@
           "org.nzbhydra.mapping.newznab.NewznabParameters",
           "java.lang.String",
           "java.lang.String"
-        ]
-      },
-      {
-        "name": "handler",
-        "parameterTypes": [
-          "org.nzbhydra.api.ExternalApiException"
-        ]
-      },
-      {
-        "name": "handleUnexpectedError",
-        "parameterTypes": [
-          "java.lang.Exception"
         ]
       }
     ],
@@ -60996,9 +59471,6 @@
     "name": "org.nzbhydra.web.MainWeb",
     "fields": [
       {
-        "name": "configProvider"
-      },
-      {
         "name": "environment"
       },
       {
@@ -61019,14 +59491,6 @@
         "parameterTypes": [
           "jakarta.servlet.http.HttpSession",
           "java.security.Principal"
-        ]
-      },
-      {
-        "name": "index",
-        "parameterTypes": [
-          "jakarta.servlet.http.HttpSession",
-          "java.security.Principal",
-          "jakarta.servlet.http.HttpServletResponse"
         ]
       },
       {
@@ -61884,12 +60348,6 @@
     ]
   },
   {
-    "name": "org.nzbhydra.searching.cleanup.OldResultsCleanupTask$$SpringCGLIB$$0",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
     "name": "org.nzbhydra.springconfig.AppConfig$$SpringCGLIB$$0",
     "allDeclaredFields": true,
     "allDeclaredMethods": true,
@@ -62744,12 +61202,6 @@
       {
         "name": "hashCode",
         "parameterTypes": []
-      },
-      {
-        "name": "setSortMode",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "getSortMode",
@@ -64037,22 +62489,10 @@
     "allPublicMethods": true,
     "fields": [
       {
-        "name": "indexerSearchRepository"
-      },
-      {
-        "name": "searchRepository"
-      },
-      {
-        "name": "configProvider"
-      },
-      {
         "name": "duplicateDetector"
       },
       {
         "name": "indexerSelector"
-      },
-      {
-        "name": "searchResultRepository"
       },
       {
         "name": "eventPublisher"
@@ -64067,12 +62507,6 @@
       },
       {
         "name": "onShutdown",
-        "parameterTypes": []
-      }
-    ],
-    "queriedMethods": [
-      {
-        "name": "<init>",
         "parameterTypes": []
       }
     ]
@@ -64353,37 +62787,6 @@
         "name": "getNzbZipData",
         "parameterTypes": [
           "java.util.List"
-        ]
-      },
-      {
-        "name": "downloadNzbInternal",
-        "parameterTypes": [
-          "long"
-        ]
-      },
-      {
-        "name": "downloadNzbWithApikey",
-        "parameterTypes": [
-          "long",
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "saveNzbsToBlackhole",
-        "parameterTypes": [
-          "java.util.Set"
-        ]
-      },
-      {
-        "name": "downloadNzbForUsers",
-        "parameterTypes": [
-          "long"
-        ]
-      },
-      {
-        "name": "getNfo",
-        "parameterTypes": [
-          "long"
         ]
       }
     ],
@@ -65984,33 +64387,6 @@
         "name": "torrentHandler"
       }
     ],
-    "methods": [
-      {
-        "name": "downloadTorrentForUsers",
-        "parameterTypes": [
-          "long"
-        ]
-      },
-      {
-        "name": "downloadTorrentWithApikey",
-        "parameterTypes": [
-          "long",
-          "java.lang.String"
-        ]
-      },
-      {
-        "name": "saveOrSendTorrents",
-        "parameterTypes": [
-          "java.lang.Long"
-        ]
-      },
-      {
-        "name": "downloadTorrentInternal",
-        "parameterTypes": [
-          "long"
-        ]
-      }
-    ],
     "queriedMethods": [
       {
         "name": "<init>",
@@ -66458,14 +64834,6 @@
       },
       {
         "name": "searchResultRepository"
-      }
-    ],
-    "methods": [
-      {
-        "name": "details",
-        "parameterTypes": [
-          "long"
-        ]
       }
     ],
     "queriedMethods": [
@@ -67040,6 +65408,9 @@
       },
       {
         "name": "downloadRepository"
+      },
+      {
+        "name": "transactionTemplate"
       }
     ],
     "methods": [
@@ -67078,10 +65449,6 @@
           },
           {
               "name": "checkForScheduledRestart",
-              "parameterTypes": []
-          },
-          {
-              "name": "init",
               "parameterTypes": []
           }
       ]
@@ -68620,10 +66987,6 @@
       {
         "name": "<init>",
         "parameterTypes": []
-      },
-      {
-        "name": "getCacheManager",
-        "parameterTypes": []
       }
     ]
   },
@@ -68778,9 +67141,6 @@
       },
       {
         "name": "fileSystemBrowser"
-      },
-      {
-        "name": "indexerRepository"
       },
       {
         "name": "urlCalculator"
@@ -70121,7 +68481,7 @@
     "allPublicMethods": true,
     "fields": [
       {
-        "name": "entityManager"
+        "name": "dataSource"
       },
       {
         "name": "configProvider"
@@ -70130,6 +68490,14 @@
     "methods": [
       {
         "name": "deleteOldResults",
+        "parameterTypes": []
+      },
+      {
+        "name": "handleShutdown",
+        "parameterTypes": ["org.nzbhydra.ShutdownEvent"]
+      },
+      {
+        "name": "onShutdown",
         "parameterTypes": []
       }
     ],
@@ -72832,13 +71200,6 @@
           "jakarta.servlet.http.HttpSession",
           "java.security.Principal"
         ]
-      },
-      {
-        "name": "userinfos",
-        "parameterTypes": [
-          "jakarta.servlet.http.HttpSession",
-          "java.security.Principal"
-        ]
       }
     ],
     "queriedMethods": [
@@ -73198,20 +71559,8 @@
         ]
       },
       {
-        "name": "setCountAll",
-        "parameterTypes": [
-          "int"
-        ]
-      },
-      {
         "name": "hashCode",
         "parameterTypes": []
-      },
-      {
-        "name": "setCountSuccessful",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "getCountAll",
@@ -73220,12 +71569,6 @@
       {
         "name": "getCountSuccessful",
         "parameterTypes": []
-      },
-      {
-        "name": "setCountError",
-        "parameterTypes": [
-          "int"
-        ]
       },
       {
         "name": "canEqual",
@@ -74447,12 +72790,6 @@
   {
     "name": "org.nzbhydra.indexers.Indexer",
     "methods": [
-      {
-        "name": "handleNewConfig",
-        "parameterTypes": [
-          "org.nzbhydra.config.ConfigChangedEvent"
-        ]
-      },
       {
         "name": "persistSearchResults",
         "parameterTypes": [

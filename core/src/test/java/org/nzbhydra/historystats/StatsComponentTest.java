@@ -2,7 +2,6 @@ package org.nzbhydra.historystats;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -38,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -278,6 +279,10 @@ public class StatsComponentTest {
         assertThat((int) shares.get(1).getShare()).isEqualTo(33);
     }
 
+    private static Instant timeOnDayInSystemZone(int hour, int minute, int second) {
+        return LocalDateTime.of(2017, 3, 31, hour, minute, second).atZone(ZoneId.systemDefault()).toInstant();
+    }
+
     protected SearchResultEntity getSearchResultEntity(IndexerEntity indexer1, String title) {
         SearchResultEntity searchResultEntity1 = new SearchResultEntity();
         searchResultEntity1.setIndexer(indexer1);
@@ -286,18 +291,18 @@ public class StatsComponentTest {
         return searchResultEntity1;
     }
 
-    //Doesn't run on CircleCI for some reason
     @Test
-    @Disabled
     void shouldCalculateSearchesPerHourOfDay() throws Exception {
+        //The database query groups by the hour in the JVM's time zone, so the times must be built in that zone.
+        //Fixed epoch seconds only matched the expected hours in CET/CEST, which is why this test failed on CI.
         SearchEntity search12 = new SearchEntity();
-        search12.setTime(Instant.ofEpochSecond(1490955803L));
+        search12.setTime(timeOnDayInSystemZone(12, 23, 23));
         SearchEntity search16a = new SearchEntity();
-        search16a.setTime(Instant.ofEpochSecond(1490971572L));
+        search16a.setTime(timeOnDayInSystemZone(16, 46, 12));
         SearchEntity search16b = new SearchEntity();
-        search16b.setTime(Instant.ofEpochSecond(1490971572L));
+        search16b.setTime(timeOnDayInSystemZone(16, 46, 12));
         SearchEntity search23 = new SearchEntity();
-        search23.setTime(Instant.ofEpochSecond(1490996779L));
+        search23.setTime(timeOnDayInSystemZone(23, 46, 19));
         searchRepository.saveAll(Arrays.asList(search12, search16a, search16b, search23));
 
         List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS), true));
@@ -392,6 +397,98 @@ public class StatsComponentTest {
         assertThat(score.getInvolvedSearches()).isEqualTo(2);
         // averageUniquenessScore should be null since no entries with results
         assertThat(score.getAverageUniquenessScore()).isNull();
+    }
+
+    @Test
+    void shouldFilterUniquenessScoresByDataVersionAndInclusiveDateRangeInDatabase() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(SCORE_RANGE_START, SCORE_RANGE_END)))
+                .containsExactlyInAnyOrder("atStart", "atEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldLeaveUniquenessScoreRangeOpenWhenAfterIsNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(null, SCORE_RANGE_END)))
+                .containsExactlyInAnyOrder("beforeStart", "atStart", "atEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldLeaveUniquenessScoreRangeOpenWhenBeforeIsNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(SCORE_RANGE_START, null)))
+                .containsExactlyInAnyOrder("atStart", "atEnd", "afterEnd", "inside", "insideVersion4");
+    }
+
+    @Test
+    void shouldReturnAllCorrectedUniquenessScoresWhenBothBoundsAreNull() {
+        saveUniquenessScoresAroundRange();
+
+        assertThat(observationIds(uniquenessScoreRepository.findCorrectedObservationsRecordedBetween(null, null)))
+                .containsExactlyInAnyOrder("beforeStart", "atStart", "atEnd", "afterEnd", "inside", "insideVersion4", "withoutTimestamp");
+    }
+
+    @Test
+    void shouldCalculateIndexerScoresOnlyFromCorrectedObservationsInRange() {
+        saveUniquenessScoresAroundRange();
+
+        List<IndexerScore> scores = stats.indexerScores(new StatsRequest(SCORE_RANGE_START, SCORE_RANGE_END, false));
+
+        assertThat(scores).hasSize(1);
+        assertThat(scores.get(0).getIndexerName()).isEqualTo("indexer1");
+        assertThat(scores.get(0).getInvolvedSearches()).isEqualTo(4);
+        assertThat(scores.get(0).getCorrectedObservations()).isEqualTo(4);
+        assertThat(scores.get(0).getLegacyObservations()).isZero();
+    }
+
+    @Test
+    void shouldExcludeUniquenessScoreRecordedWithinTheMillisecondBeforeASubMillisecondAfterBound() {
+        saveUniquenessScoresAroundRange();
+
+        // atStart lies before this bound by less than a millisecond, so it must not be counted.
+        List<IndexerScore> scores = stats.indexerScores(new StatsRequest(SCORE_RANGE_START.plusNanos(1), SCORE_RANGE_END.plusNanos(999_999), false));
+
+        assertThat(scores).hasSize(1);
+        assertThat(scores.get(0).getInvolvedSearches()).isEqualTo(3);
+    }
+
+    private static final Instant SCORE_RANGE_START = Instant.parse("2026-03-10T12:00:00.123Z");
+    private static final Instant SCORE_RANGE_END = SCORE_RANGE_START.plus(1, ChronoUnit.HOURS);
+
+    /**
+     * Saves one corrected (version 3) observation on each side of and on each bound of [SCORE_RANGE_START, SCORE_RANGE_END],
+     * one with version 4 and one without timestamp, plus legacy observations (version null, 1 and 2) inside the range.
+     * The observation ID names the row.
+     */
+    private void saveUniquenessScoresAroundRange() {
+        Instant inside = SCORE_RANGE_START.plus(30, ChronoUnit.MINUTES);
+        uniquenessScoreRepository.saveAll(Arrays.asList(
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "beforeStart", SCORE_RANGE_START.minusMillis(1), 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "atStart", SCORE_RANGE_START, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "atEnd", SCORE_RANGE_END, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "afterEnd", SCORE_RANGE_END.plusMillis(1), 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "inside", inside, 3),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "insideVersion4", inside, 4),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "withoutTimestamp", null, 3),
+                legacyUniquenessScore("versionNull", inside, null),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "version1", inside, 1),
+                new IndexerUniquenessScoreEntity(indexer1, 2, 1, true, "version2", inside, 2)
+        ));
+    }
+
+    private IndexerUniquenessScoreEntity legacyUniquenessScore(String observationId, Instant recordedAt, Integer dataVersion) {
+        IndexerUniquenessScoreEntity entity = new IndexerUniquenessScoreEntity(indexer1, 2, 1, true);
+        entity.setObservationId(observationId);
+        entity.setRecordedAt(recordedAt);
+        entity.setDataVersion(dataVersion);
+        return entity;
+    }
+
+    private static List<String> observationIds(List<IndexerUniquenessScoreEntity> entities) {
+        return entities.stream().map(IndexerUniquenessScoreEntity::getObservationId).toList();
     }
 
 

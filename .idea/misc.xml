@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="CidrRootsConfiguration">
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/misc/.gui-systemtest-runs" />
+      <file path="$PROJECT_DIR$/misc/.migration-test-runs" />
+      <file path="$PROJECT_DIR$/misc/.systemtest-history" />
+      <file path="$PROJECT_DIR$/misc/.systemtest-runs" />
+    </excludeRoots>
+  </component>
   <component name="ClientPropertiesManager">
     <properties class="javax.swing.AbstractButton">
       <property name="hideActionText" class="java.lang.Boolean" />

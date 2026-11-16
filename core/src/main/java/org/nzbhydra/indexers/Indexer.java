@@ -3,8 +3,9 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
@@ -34,13 +35,11 @@ import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -60,13 +59,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 @SuppressWarnings({"TypeParameterHidesVisibleType", "StringConcatenationArgumentToLogCall"})
 @Reflective
 @Component
 public abstract class Indexer<T> {
 
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 5, 15, 30, 60, 3 * 60);
-    private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
@@ -76,6 +75,15 @@ public abstract class Indexer<T> {
      * changed while searches on the old instances may still be running. See #1112
      */
     private static final Map<String, Object> DB_LOCKS = new ConcurrentHashMap<>();
+
+    /**
+     * Set by {@link #buildSearchUrlAndCall(SearchRequest, int, Integer)} while the indexer is called. A successful call
+     * then doesn't save its API access right away but leaves it here, so that it is saved once, after the response was
+     * processed. Otherwise a response that fails to be processed would be saved twice and count twice against the
+     * indexer's API limit. Thread local because the indexer-specific {@link #getAndStoreResultToDatabase(URI, IndexerApiAccessType)}
+     * sits between the two and the same instance is used by concurrent searches.
+     */
+    private static final ThreadLocal<PendingApiAccess> PENDING_SEARCH_ACCESS = new ThreadLocal<>();
 
     @Autowired
     protected ConfigProvider configProvider;
@@ -108,8 +116,15 @@ public abstract class Indexer<T> {
 
 
     protected IndexerEntity indexer;
+    @Getter
     protected IndexerConfig config;
-    private Pattern cleanupPattern;
+    /**
+     * Pattern built from {@code searching.removeTrailing}. {@code null} means not built yet, an empty optional means
+     * there is nothing to remove. Built lazily by {@link #cleanUpTitle(String)} which runs on several search threads.
+     * Config changes don't need to reset it because {@link org.nzbhydra.searching.SearchModuleProvider#loadIndexers(List)}
+     * replaces all instances.
+     */
+    private volatile Optional<Pattern> cleanupPattern;
 
     protected AutowireCapableBeanFactory beanFactory;
 
@@ -139,14 +154,10 @@ public abstract class Indexer<T> {
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+        this.cleanupPattern = null;
         if (queryGenerator == null) {
-            logger.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
+            log.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
         }
-    }
-
-    @EventListener
-    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        cleanupPattern = null;
     }
 
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
@@ -186,13 +197,19 @@ public abstract class Indexer<T> {
             if (e.getCause() instanceof InterruptedException) {
                 debug("Hydra was shut down, ignoring InterruptedException");
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            } else if (e.getCause() instanceof IndexerAccessException accessException) {
+                //E.g. Binsearch and NzbKing call the indexer through Failsafe which wraps the checked exception
+                handleIndexerAccessException(accessException, IndexerApiAccessType.SEARCH);
+                indexerSearchResult = new IndexerSearchResult(this, accessException.getMessage());
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName(), getName()));
             } else {
+                //Probably a bug in Hydra and not the indexer's fault, so don't disable it
                 error("Unexpected error while searching", e);
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName(), getName()));
                 try {
-                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
+                    saveApiAccess(IndexerApiAccessType.SEARCH, null, IndexerAccessResult.HYDRA_ERROR, true); //Save as success, it's our fault
                 } catch (Exception e1) {
-                    error("Error while handling indexer failure. API access was not saved to database", e1);
+                    error("Error while saving API access to database", e1);
                 }
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
@@ -218,8 +235,46 @@ public abstract class Indexer<T> {
         Stopwatch stopwatch = Stopwatch.createStarted();
         info("Calling {}", url.toString());
 
-        response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
-        return processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+        PendingApiAccess pendingAccess = new PendingApiAccess();
+        PENDING_SEARCH_ACCESS.set(pendingAccess);
+        try {
+            response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
+        } catch (Throwable e) {
+            //The indexer-specific code may throw after the call was made, e.g. for a newznab error response. Save the call as before
+            savePendingApiAccess(pendingAccess);
+            throw e;
+        } finally {
+            PENDING_SEARCH_ACCESS.remove();
+        }
+
+        IndexerSearchResult indexerSearchResult;
+        try {
+            indexerSearchResult = processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+        } catch (Throwable e) {
+            if (!(e instanceof Exception) || e.getCause() instanceof InterruptedException) {
+                //search() doesn't save an API access for these, so save the call that was made
+                savePendingApiAccess(pendingAccess);
+            }
+            //Otherwise search() saves the call as HYDRA_ERROR. Saving it here, too, would count it twice
+            throw e;
+        }
+        savePendingApiAccess(pendingAccess);
+        return indexerSearchResult;
+    }
+
+    private void savePendingApiAccess(PendingApiAccess pendingAccess) {
+        if (pendingAccess.isSet()) {
+            saveApiAccess(pendingAccess.accessType, pendingAccess.responseTime, IndexerAccessResult.SUCCESSFUL, true);
+        }
+    }
+
+    private static class PendingApiAccess {
+        private IndexerApiAccessType accessType;
+        private Long responseTime;
+
+        private boolean isSet() {
+            return accessType != null;
+        }
     }
 
     protected IndexerSearchResult processSearchResponse(SearchRequest searchRequest, int offset, Integer limit, Stopwatch stopwatch, T response) throws IndexerParsingException {
@@ -323,18 +378,30 @@ public abstract class Indexer<T> {
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
+        reenableAfterSuccessfulCall();
+        saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
+    }
+
+    private void reenableAfterSuccessfulCall() {
         //New state can only be enabled; if the user had disabled the indexer it wouldn't've been called
         if (getConfig().getDisabledLevel() > 0) {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
             eventPublisher.publishEvent(new IndexerReenabledNotificationEvent(getConfig().getName(), getConfig().getDisabledAt()));
         }
-        getConfig().setState(IndexerConfig.State.ENABLED);
-        getConfig().setLastError(null);
-        getConfig().setDisabledUntil(null);
-        getConfig().setDisabledLevel(0);
-        getConfig().setDisabledAt(null);
-        baseConfigHandler.save(false);
-        saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
+        //Only save if anything changed, otherwise the config file would be rewritten after every successful call
+        boolean configChanged = getConfig().getState() != IndexerConfig.State.ENABLED
+            || getConfig().getLastError() != null
+            || getConfig().getDisabledUntil() != null
+            || getConfig().getDisabledLevel() != 0
+            || getConfig().getDisabledAt() != null;
+        if (configChanged) {
+            getConfig().setState(IndexerConfig.State.ENABLED);
+            getConfig().setLastError(null);
+            getConfig().setDisabledUntil(null);
+            getConfig().setDisabledLevel(0);
+            getConfig().setDisabledAt(null);
+            baseConfigHandler.save(false);
+        }
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
@@ -426,7 +493,15 @@ public abstract class Indexer<T> {
 
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
-        handleSuccess(apiAccessType, responseTime);
+        PendingApiAccess pendingAccess = PENDING_SEARCH_ACCESS.get();
+        if (pendingAccess != null && !pendingAccess.isSet() && apiAccessType == IndexerApiAccessType.SEARCH) {
+            //Saved by buildSearchUrlAndCall once the response was processed
+            reenableAfterSuccessfulCall();
+            pendingAccess.accessType = apiAccessType;
+            pendingAccess.responseTime = responseTime;
+        } else {
+            handleSuccess(apiAccessType, responseTime);
+        }
         return result;
     }
 
@@ -442,10 +517,6 @@ public abstract class Indexer<T> {
         return config.getName();
     }
 
-    public IndexerConfig getConfig() {
-        return config;
-    }
-
     public IndexerEntity getIndexerEntity() {
         return indexer;
     }
@@ -457,24 +528,31 @@ public abstract class Indexer<T> {
         }
         title = title.trim().replace("&", "");
 
-        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).toList();
-        if (removeTrailing.isEmpty()) {
+        Optional<Pattern> pattern = cleanupPattern;
+        if (pattern == null) {
+            pattern = buildCleanupPattern();
+            cleanupPattern = pattern;
+        }
+        if (pattern.isEmpty()) {
             return title;
         }
 
-        //Tests need to reset pattern or something
-
-        if (cleanupPattern == null) {
-            String allPattern = "^(?<keep>.*)(" + removeTrailing.stream().map(x -> x.replace("*", "WILDCARDXXX").replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$").collect(Collectors.joining("|")) + ")";
-            cleanupPattern = Pattern.compile(allPattern, Pattern.CASE_INSENSITIVE);
-        }
-        Matcher matcher = cleanupPattern.matcher(title);
+        Matcher matcher = pattern.get().matcher(title);
         while (matcher.matches()) {
             title = matcher.replaceAll("$1").trim();
-            matcher = cleanupPattern.matcher(title);
+            matcher = pattern.get().matcher(title);
         }
 
         return title;
+    }
+
+    private Optional<Pattern> buildCleanupPattern() {
+        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).toList();
+        if (removeTrailing.isEmpty()) {
+            return Optional.empty();
+        }
+        String allPattern = "^(?<keep>.*)(" + removeTrailing.stream().map(x -> x.replace("*", "WILDCARDXXX").replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$").collect(Collectors.joining("|")) + ")";
+        return Optional.of(Pattern.compile(allPattern, Pattern.CASE_INSENSITIVE));
     }
 
 
@@ -499,7 +577,7 @@ public abstract class Indexer<T> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Indexer that = (Indexer) o;
+        Indexer<?> that = (Indexer<?>) o;
         return Objects.equal(indexer.getName(), that.indexer.getName());
     }
 

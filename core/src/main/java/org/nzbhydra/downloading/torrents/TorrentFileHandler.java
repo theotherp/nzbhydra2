@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import uriSchemeHandler.CouldNotOpenUriSchemeHandler;
 import uriSchemeHandler.URISchemeHandler;
 
@@ -46,7 +45,6 @@ public class TorrentFileHandler {
     @Autowired
     private SearchResultRepository searchResultRepository;
 
-    @Transactional
     public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         //Get result. if link contains magnet: return redirect to magnet URI. otherwise return file
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(guid);
@@ -67,7 +65,6 @@ public class TorrentFileHandler {
         }
     }
 
-    @Transactional
     public DownloadResult getTorrentByGuid(String identifier, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(identifier, accessSource == SearchSource.INTERNAL);
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findByHash(downloadIdentifier.searchResultId());

@@ -28,6 +28,8 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,7 +50,20 @@ public class IndexerStatusesAndLimits {
     private SearchModuleProvider searchModuleProvider;
 
     public List<IndexerStatus> getSortedStatuses() {
+        return getSortedStatuses(x -> true);
+    }
+
+    /**
+     * Like {@link #getSortedStatuses()} but only loads the statuses of the indexers with the given names. Statuses
+     * are returned in the same relative order. The limits are only queried from the database for those indexers.
+     */
+    public List<IndexerStatus> getSortedStatuses(Set<String> indexerNames) {
+        return getSortedStatuses(x -> indexerNames.contains(x.getName()));
+    }
+
+    private List<IndexerStatus> getSortedStatuses(Predicate<IndexerConfig> filter) {
         return configProvider.getBaseConfig().getIndexers().stream()
+            .filter(filter)
             .sorted(
                 Comparator.comparing(IndexerConfig::getState)
                     .thenComparing(o -> o.getName().toLowerCase())
@@ -211,7 +226,7 @@ public class IndexerStatusesAndLimits {
             Query query = entityManager.createNativeQuery(sqlString);
             query.setParameter("indexerId", indexerEntity.getId());
 
-            List resultList = query.getResultList();
+            List<?> resultList = query.getResultList();
             countApiHits = 0;
             countDownloads = 0;
             earliestApiHit = null;

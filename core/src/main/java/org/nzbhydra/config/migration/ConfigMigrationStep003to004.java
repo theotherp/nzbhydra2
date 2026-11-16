@@ -20,7 +20,7 @@ public class ConfigMigrationStep003to004 implements ConfigMigrationStep {
     @Override
     public Map<String, Object> migrate(Map<String, Object> toMigrate) {
         Map<String, Object> auth = getFromMap(toMigrate, "auth");
-        List<Map> users = (List<Map>) auth.get("users");
+        List<Map<String, Object>> users = (List<Map<String, Object>>) auth.get("users");
 
         for (Map<String, Object> user: users) {
             if (user.get("password") != null) {

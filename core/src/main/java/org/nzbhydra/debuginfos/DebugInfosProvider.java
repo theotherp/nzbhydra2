@@ -1,6 +1,7 @@
 package org.nzbhydra.debuginfos;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
@@ -104,7 +105,9 @@ public class DebugInfosProvider {
     private String datasourceUrl;
 
     private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
+    //Only accessed by the metrics executor's single thread
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
+    private ScheduledExecutorService metricsExecutor;
     @Autowired
     private TempFileProvider tempFileProvider;
     @Autowired
@@ -117,13 +120,12 @@ public class DebugInfosProvider {
             if (!configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.PERFORMANCE.getName())) {
                 return;
             }
-            final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            metricsExecutor = Executors.newSingleThreadScheduledExecutor();
 
             //The metrics endpoint is not available immediately after startup
-            scheduledExecutorService.schedule(() -> {
+            metricsExecutor.schedule(() -> {
                 logger.debug(LoggingMarkers.PERFORMANCE, "Will log performance metrics every {} seconds", LOG_METRICS_EVERY_SECONDS);
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(() -> {
+                metricsExecutor.scheduleAtFixedRate(() -> {
                     try {
                         final String cpuMetric = "process.cpu.usage";
                         String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, Collections.emptyList()).getMeasurements().get(0).getValue());
@@ -138,55 +140,23 @@ public class DebugInfosProvider {
                     } catch (Exception e) {
                         logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
                     }
-                    ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-                    final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
-
                 }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
 
                 int cpuCount = metricsEndpoint.metric("system.cpu.count", null).getMeasurements().get(0).getValue().intValue();
                 ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
                 final double[] previousUptime = {getUpTimeInMiliseconds()};
-                ScheduledExecutorService executor2 = Executors.newScheduledThreadPool(1);
 
-                executor2.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        final double upTime = getUpTimeInMiliseconds();
-                        double elapsedTime = upTime - previousUptime[0];
+                metricsExecutor.scheduleAtFixedRate(() -> {
+                    final double upTime = getUpTimeInMiliseconds();
+                    double elapsedTime = upTime - previousUptime[0];
 
-                        final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
-                        TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
-                        for (ThreadInfo threadInfo : threadInfos) {
-                            final String threadName = threadInfo.getThreadName();
-                            final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
-                            if (!lastThreadCpuTimes.containsKey(threadName)) {
-                                lastThreadCpuTimes.put(threadName, threadCpuTime);
-                                continue;
-                            }
-                            final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
-                            long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
-                            if (elapsedThreadCpuTime < 0) {
-                                //Not sure why but this happens with some threads
-                                continue;
-                            }
-                            float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
-                            if (cpuUsage < 0) {
-                                cpuUsage = 0;
-                            }
-                            if (cpuUsage > 5F) {
-                                logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
-                            }
-                            timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
-
-                            lastThreadCpuTimes.put(threadName, threadCpuTime);
-                        }
-                        timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
-                        previousUptime[0] = upTime;
-                        if (timeAndThreadCpuUsagesList.size() == 50) {
-                            timeAndThreadCpuUsagesList.remove(0);
-                        }
+                    final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+                    List<Pair<String, Long>> threadCpuTimes = new ArrayList<>();
+                    for (ThreadInfo threadInfo : threadInfos) {
+                        threadCpuTimes.add(Pair.of(threadInfo.getThreadName(), threadMxBean.getThreadCpuTime(threadInfo.getThreadId())));
                     }
-
+                    recordThreadCpuUsages(threadCpuTimes, elapsedTime, cpuCount);
+                    previousUptime[0] = upTime;
                 }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
             }, 5, TimeUnit.SECONDS);
 
@@ -196,8 +166,62 @@ public class DebugInfosProvider {
 
     }
 
+    @PreDestroy
+    public void stopMetricsLogging() {
+        if (metricsExecutor != null) {
+            metricsExecutor.shutdownNow();
+        }
+    }
+
+    /**
+     * Computes the CPU usage per thread since the last call and appends it to the chart data.
+     *
+     * @param threadCpuTimes pairs of thread name and the thread's total CPU time in nanoseconds, for all live threads
+     * @param elapsedTime    milliseconds since the last call
+     * @param cpuCount       number of available CPUs
+     */
+    void recordThreadCpuUsages(List<Pair<String, Long>> threadCpuTimes, double elapsedTime, int cpuCount) {
+        TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
+        for (Pair<String, Long> threadNameAndCpuTime : threadCpuTimes) {
+            final String threadName = threadNameAndCpuTime.getLeft();
+            final long threadCpuTime = threadNameAndCpuTime.getRight();
+            if (!lastThreadCpuTimes.containsKey(threadName)) {
+                lastThreadCpuTimes.put(threadName, threadCpuTime);
+                continue;
+            }
+            final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
+            long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
+            if (elapsedThreadCpuTime < 0) {
+                //Not sure why but this happens with some threads
+                continue;
+            }
+            float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
+            if (cpuUsage < 0) {
+                cpuUsage = 0;
+            }
+            if (cpuUsage > 5F) {
+                logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
+            }
+            timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
+
+            lastThreadCpuTimes.put(threadName, threadCpuTime);
+        }
+        //Forget threads that have ended so that numbered pool thread names don't accumulate
+        Set<String> liveThreadNames = threadCpuTimes.stream().map(Pair::getLeft).collect(Collectors.toSet());
+        lastThreadCpuTimes.keySet().retainAll(liveThreadNames);
+
+        synchronized (timeAndThreadCpuUsagesList) {
+            timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
+            if (timeAndThreadCpuUsagesList.size() == 50) {
+                timeAndThreadCpuUsagesList.remove(0);
+            }
+        }
+    }
+
     public List<TimeAndThreadCpuUsages> getThreadCpuUsageChartData() {
-        return timeAndThreadCpuUsagesList;
+        synchronized (timeAndThreadCpuUsagesList) {
+            return new ArrayList<>(timeAndThreadCpuUsagesList);
+        }
     }
 
     public static Pair<String, String> getVersionAndBuildTimestamp() {

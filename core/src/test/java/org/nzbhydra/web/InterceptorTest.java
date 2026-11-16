@@ -4,14 +4,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Answers;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +41,7 @@ class InterceptorTest {
     void tearDown() {
         SessionStorage.username.remove();
         SessionStorage.IP.remove();
+        testee.shutdownHostLookupExecutor();
     }
 
     private MockHttpServletRequest request(String uri, String remoteUser, String usernameParam) {
@@ -122,5 +129,94 @@ class InterceptorTest {
         testee.preHandle(request, new MockHttpServletResponse(), new Object());
 
         assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+    }
+
+    @Test
+    void shouldLookUpHostOnlyOnceForSameIp() throws Exception {
+        enableMapIpToHost();
+        AtomicInteger lookups = new AtomicInteger();
+        testee.hostNameLookup = ip -> {
+            lookups.incrementAndGet();
+            return Optional.of("client.example.org");
+        };
+
+        testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("client.example.org");
+        testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("client.example.org");
+
+        assertThat(lookups.get()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldCacheUnknownHost() throws Exception {
+        enableMapIpToHost();
+        AtomicInteger lookups = new AtomicInteger();
+        testee.hostNameLookup = ip -> {
+            lookups.incrementAndGet();
+            return Optional.empty();
+        };
+
+        testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+        testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+        assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+
+        assertThat(lookups.get()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldFallBackToIpWithinCapAndCacheTimedOutLookup() throws Exception {
+        enableMapIpToHost();
+        AtomicInteger lookups = new AtomicInteger();
+        CountDownLatch release = new CountDownLatch(1);
+        testee.hostNameLookup = ip -> {
+            lookups.incrementAndGet();
+            try {
+                release.await(30, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return Optional.of("client.example.org");
+        };
+
+        try {
+            long start = System.nanoTime();
+            testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+            long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+            assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+            //The cap is 500ms; the bound is generous so a busy build machine doesn't make this flaky
+            assertThat(elapsedMillis).isLessThan(5000);
+
+            testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+            assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+            assertThat(lookups.get()).isEqualTo(1);
+        } finally {
+            release.countDown();
+        }
+    }
+
+    @Test
+    void shouldNotLookUpHostWhenMappingDisabled() throws Exception {
+        AtomicInteger lookups = new AtomicInteger();
+        testee.hostNameLookup = ip -> {
+            lookups.incrementAndGet();
+            return Optional.of("client.example.org");
+        };
+
+        testee.preHandle(requestFromIp("203.0.113.7"), new MockHttpServletResponse(), new Object());
+
+        assertThat(SessionStorage.IP.get()).isEqualTo("203.0.113.7");
+        assertThat(lookups.get()).isZero();
+    }
+
+    private void enableMapIpToHost() {
+        Mockito.when(configProvider.getBaseConfig().getMain().getLogging().isMapIpToHost()).thenReturn(true);
+    }
+
+    private MockHttpServletRequest requestFromIp(String ip) {
+        MockHttpServletRequest request = request("/", null, null);
+        request.setRemoteAddr(ip);
+        return request;
     }
 }

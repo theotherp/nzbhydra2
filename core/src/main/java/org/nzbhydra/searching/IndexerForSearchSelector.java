@@ -80,23 +80,23 @@ public class IndexerForSearchSelector {
     protected Clock clock = Clock.systemUTC();
 
     private SearchRequest searchRequest;
-    protected Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
+    protected Map<Indexer<?>, String> notSelectedIndersWithReason = new HashMap<>();
 
 
     public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
         this.searchRequest = searchRequest;
         //Check any indexer that's not disabled by the user. If it's disabled by the system it will be deselected with a proper message later
-        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).toList();
+        List<Indexer<?>> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).toList();
         if (eligibleIndexers.isEmpty()) {
             logger.warn("You don't have any enabled indexers");
             return new IndexerForSearchSelection();
         }
 
-        List<Indexer> selectedIndexers = new ArrayList<>();
+        List<Indexer<?>> selectedIndexers = new ArrayList<>();
         logger.debug("Picking indexers out of " + eligibleIndexers.size());
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        for (Indexer indexer : eligibleIndexers) {
+        for (Indexer<?> indexer : eligibleIndexers) {
             if (!checkInternalAndNotEvenShown(indexer)) {
                 continue;
             }
@@ -154,7 +154,7 @@ public class IndexerForSearchSelector {
         return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
     }
 
-    protected boolean checkIndexerConfigComplete(Indexer indexer) {
+    protected boolean checkIndexerConfigComplete(Indexer<?> indexer) {
         if (!indexer.getConfig().isConfigComplete()) {
             String message = "Not using " + indexer.getName() + " because configuration is not complete. Please open it in the GUI and complete the config. Call the caps check manually to make sure everything is checked.";
             return handleIndexerNotSelected(indexer, message, "Configuration incomplete");
@@ -162,7 +162,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkBinsearchNotSupported(Indexer indexer) {
+    protected boolean checkBinsearchNotSupported(Indexer<?> indexer) {
         if (indexer.getConfig().getSearchModuleType() == SearchModuleType.BINSEARCH) {
             String message = "Not using " + indexer.getName() + " because Binsearch is currently not supported";
             return handleIndexerNotSelected(indexer, message, "Binsearch currently not supported");
@@ -170,7 +170,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkSearchId(Indexer indexer) {
+    protected boolean checkSearchId(Indexer<?> indexer) {
         boolean needToSearchById = !searchRequest.getIdentifiers().isEmpty() && searchRequest.getQuery().isEmpty();
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
@@ -184,7 +184,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkSearchType(Indexer indexer) {
+    protected boolean checkSearchType(Indexer<?> indexer) {
         boolean audioOrBookSearch = searchRequest.getSearchType() == SearchType.BOOK || searchRequest.getSearchType() == SearchType.MUSIC;
         if (audioOrBookSearch) {
             boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
@@ -197,7 +197,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkLoadLimiting(Indexer indexer) {
+    protected boolean checkLoadLimiting(Indexer<?> indexer) {
         boolean preventedByLoadLimiting = indexer.getConfig().getLoadLimitOnRandom().isPresent() && random.nextInt(indexer.getConfig().getLoadLimitOnRandom().get()) + 1 != 1;
         if (preventedByLoadLimiting) {
             boolean loadLimitIgnoredForInternalSearch = configProvider.getBaseConfig().getSearching().isIgnoreLoadLimitingForInternalSearches() && searchRequest.getSource() == SearchSource.INTERNAL;
@@ -217,7 +217,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkDisabledForCategory(Indexer indexer) {
+    protected boolean checkDisabledForCategory(Indexer<?> indexer) {
         if (searchRequest.getCategory().getSubtype().equals(Subtype.ALL)) {
             return true;
         }
@@ -229,7 +229,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkIndexerStatus(Indexer indexer) {
+    protected boolean checkIndexerStatus(Indexer<?> indexer) {
         if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
             if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(clock.instant())) {
                 return true;
@@ -244,7 +244,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkIndexerSelected(Indexer indexer) {
+    protected boolean checkIndexerSelected(Indexer<?> indexer) {
         if (searchRequest.getIndexers().isEmpty()) {
             return true;
         }
@@ -265,7 +265,7 @@ public class IndexerForSearchSelector {
      * If an indexer was not shown an the search page (for any reason) it should not be used but also no message should be
      * logged or shown to the user. It doesn't make sense to log "Indexer is incomplete" to the user when he didn't have a chance to even select it
      */
-    protected boolean checkInternalAndNotEvenShown(Indexer indexer) {
+    protected boolean checkInternalAndNotEvenShown(Indexer<?> indexer) {
         if (searchRequest.getSource() == SearchSource.API) {
             return true;
         }
@@ -273,7 +273,7 @@ public class IndexerForSearchSelector {
         return indexer.getConfig().isEligibleForInternalSearch();
     }
 
-    protected boolean checkIndexerHitLimit(Indexer indexer) {
+    protected boolean checkIndexerHitLimit(Indexer<?> indexer) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         IndexerConfig indexerConfig = indexer.getConfig();
         if (indexerConfig.getHitLimit().isEmpty() && indexerConfig.getDownloadLimit().isEmpty()) {
@@ -309,13 +309,13 @@ public class IndexerForSearchSelector {
     /**
      * @return true if more than x hits where made in the last x seconds, false if everything is OK or the indexer isn't know to have such a limit
      */
-    private boolean checkTooManyFrequentHits(Indexer indexer) {
+    private boolean checkTooManyFrequentHits(Indexer<?> indexer) {
         if (!indexer.getConfig().getHost().equalsIgnoreCase("omgwtfnzbs.org")) {
             return true;
         }
         final int limitHits = 300;
         final int timespanSeconds = 300;
-        final List recentHitsFromShortHistory = getRecentHitsFromShortHistory(indexer, IndexerApiAccessType.SEARCH, limitHits);
+        final List<?> recentHitsFromShortHistory = getRecentHitsFromShortHistory(indexer, IndexerApiAccessType.SEARCH, limitHits);
         if (recentHitsFromShortHistory.isEmpty()) {
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No recent hits found", indexer.getName());
             return true;
@@ -336,7 +336,7 @@ public class IndexerForSearchSelector {
      *
      * @return false if limit not exceeded, true if exceeded
      */
-    private boolean checkIfLimitIsExceeded(Indexer indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
+    private boolean checkIfLimitIsExceeded(Indexer<?> indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             final LimitState limitState = determineLimitState(indexer, indexerConfig, comparisonTime, accessType, limit, type);
@@ -350,7 +350,7 @@ public class IndexerForSearchSelector {
      * Determines whether the given limit is currently exceeded. Only reads state and logs, the indexer selection itself
      * is left to {@link #applyLimitState(Indexer, IndexerConfig, LimitState, int, String)}.
      */
-    private LimitState determineLimitState(Indexer indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
+    private LimitState determineLimitState(Indexer<?> indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
         final Stopwatch stopwatch = Stopwatch.createStarted();
 
         //First check if there's usable info in the indexer_status table
@@ -385,7 +385,7 @@ public class IndexerForSearchSelector {
         }
 
         //Check from API short term storage for other indexers
-        final List resultList = getRecentHitsFromShortHistory(indexer, accessType, limit);
+        final List<?> resultList = getRecentHitsFromShortHistory(indexer, accessType, limit);
 
         //currentHits is only the last x results where x is the limit. Only if the oldest is newer than the comparison time (reset time or -24 hours in case of rolling window) is the limit actually reached
         final int currentHits;
@@ -435,7 +435,7 @@ public class IndexerForSearchSelector {
      *
      * @return false if limit not exceeded, true if exceeded
      */
-    private boolean applyLimitState(Indexer indexer, IndexerConfig indexerConfig, LimitState limitState, int limit, final String type) {
+    private boolean applyLimitState(Indexer<?> indexer, IndexerConfig indexerConfig, LimitState limitState, int limit, final String type) {
         if (limitState.nextPossibleAccess() != null) {
             final String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, limitState.nextPossibleAccess());
             handleIndexerNotSelected(indexer, message, type + " limit reached");
@@ -472,7 +472,7 @@ public class IndexerForSearchSelector {
         }
     }
 
-    private List getRecentHitsFromShortHistory(Indexer indexer, IndexerApiAccessType accessType, int limit) {
+    private List<?> getRecentHitsFromShortHistory(Indexer<?> indexer, IndexerApiAccessType accessType, int limit) {
         final String whereApiAccessType;
         if (accessType == IndexerApiAccessType.NZB) {
             whereApiAccessType = "x.API_ACCESS_TYPE = 'NZB'";
@@ -482,7 +482,7 @@ public class IndexerForSearchSelector {
         Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND (" + whereApiAccessType + ") ORDER BY TIME DESC LIMIT (:hitLimit)");
         query.setParameter("indexerId", indexer.getIndexerEntity().getId());
         query.setParameter("hitLimit", limit);
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         return resultList;
     }
 
@@ -502,7 +502,7 @@ public class IndexerForSearchSelector {
         return nextPossibleHit;
     }
 
-    protected boolean checkSearchSource(Indexer indexer) {
+    protected boolean checkSearchSource(Indexer<?> indexer) {
         boolean wrongSearchSource = !searchRequest.meets(indexer.getConfig().getEnabledForSearchSource());
         if (wrongSearchSource) {
             String message = String.format("Not using %s because the search source is %s but the indexer is only enabled for %s searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
@@ -511,7 +511,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkTorznabOnlyUsedForTorrentOrInternalSearches(Indexer indexer) {
+    protected boolean checkTorznabOnlyUsedForTorrentOrInternalSearches(Indexer<?> indexer) {
         if (searchRequest.getDownloadType() == DownloadType.TORRENT && indexer.getConfig().getSearchModuleType() != SearchModuleType.TORZNAB) {
             String message = String.format("Not using %s because a torrent search is requested", indexer.getName());
             return handleIndexerNotSelected(indexer, message, "No torrent search");
@@ -523,7 +523,7 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkSchedule(Indexer indexer) {
+    protected boolean checkSchedule(Indexer<?> indexer) {
         if (!indexer.getConfig().getSchedule().isEmpty() && indexer.getConfig().getSchedule().stream().noneMatch(this::isInTime)) {
             String message = String.format("Not using %s because the current time is out of its schedule", indexer.getName());
             return handleIndexerNotSelected(indexer, message, "Out of schedule");
@@ -589,7 +589,7 @@ public class IndexerForSearchSelector {
         return val >= Math.min(a, b) && val <= Math.max(a, b);
     }
 
-    private boolean handleIndexerNotSelected(Indexer indexer, String message, String reason) {
+    private boolean handleIndexerNotSelected(Indexer<?> indexer, String message, String reason) {
         notSelectedIndersWithReason.put(indexer, reason);
         if (!Strings.isNullOrEmpty(message)) {
             logger.info(message);
@@ -603,10 +603,10 @@ public class IndexerForSearchSelector {
     @ReflectionMarker
     @NoArgsConstructor
     public static class IndexerForSearchSelection {
-        private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
-        private List<Indexer> selectedIndexers = new ArrayList<>();
+        private Map<Indexer<?>, String> notPickedIndexersWithReason = new HashMap<>();
+        private List<Indexer<?>> selectedIndexers = new ArrayList<>();
 
-        public IndexerForSearchSelection(Map<Indexer, String> notPickedIndexersWithReason, List<Indexer> selectedIndexers) {
+        public IndexerForSearchSelection(Map<Indexer<?>, String> notPickedIndexersWithReason, List<Indexer<?>> selectedIndexers) {
             this.notPickedIndexersWithReason = notPickedIndexersWithReason;
             this.selectedIndexers = selectedIndexers;
         }

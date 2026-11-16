@@ -178,9 +178,14 @@ public class SocksSocket extends Socket {
     public void connect(String host, int port) throws SocksException, IOException {
         this.remoteServerHost = checkNotNull(host, "Argument [host] may not be null");
         this.remoteServerPort = checkNotNull(port, "Argument [port] may not be null");
-        proxy.buildConnection();
-        initProxyChain();
-        proxy.requestConnect(remoteServerHost, remoteServerPort);
+        try {
+            proxy.buildConnection();
+            initProxyChain();
+            proxy.requestConnect(remoteServerHost, remoteServerPort);
+        } catch (IOException | RuntimeException e) {
+            closeAfterFailedConnect(e);
+            throw e;
+        }
     }
 
 
@@ -197,19 +202,33 @@ public class SocksSocket extends Socket {
             throw new IllegalArgumentException("Unsupported address type");
         }
 
-        if (((InetSocketAddress) endpoint).getHostName().contains("127.0.0.1")) {
-            Socket socket = new Socket();
-            socket.connect(endpoint);
+        try {
+            if (((InetSocketAddress) endpoint).getHostName().contains("127.0.0.1")) {
+                // Only checks that the target is reachable; the connection itself goes through the proxy
+                try (Socket socket = new Socket()) {
+                    socket.connect(endpoint, timeout);
+                }
+            }
+
+            remoteServerHost = ((InetSocketAddress) endpoint).getHostName();
+            remoteServerPort = ((InetSocketAddress) endpoint).getPort();
+
+            proxy.getProxySocket().setSoTimeout(timeout);
+            proxy.buildConnection();
+            initProxyChain();
+            proxy.requestConnect(endpoint);
+        } catch (IOException | RuntimeException e) {
+            closeAfterFailedConnect(e);
+            throw e;
         }
+    }
 
-        remoteServerHost = ((InetSocketAddress) endpoint).getHostName();
-        remoteServerPort = ((InetSocketAddress) endpoint).getPort();
-
-        proxy.getProxySocket().setSoTimeout(timeout);
-        proxy.buildConnection();
-        initProxyChain();
-        proxy.requestConnect(endpoint);
-
+    private void closeAfterFailedConnect(Exception cause) {
+        try {
+            close();
+        } catch (IOException e) {
+            cause.addSuppressed(e);
+        }
     }
 
     @Override
@@ -363,9 +382,9 @@ public class SocksSocket extends Socket {
 
     @Override
     public synchronized void close() throws IOException {
-        if (proxy == null) {
+        // The proxy socket stays set so that isClosed() and the other getters keep working after closing
+        if (proxy != null && proxy.getProxySocket() != null) {
             proxy.getProxySocket().close();
-            proxy.setProxySocket(null);
         }
     }
 

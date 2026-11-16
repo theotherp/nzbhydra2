@@ -117,7 +117,7 @@ public class Sabnzbd extends Downloader {
     }
 
 
-    private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
+    private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity<?> httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {
             URI url = urlBuilder.build().encode().toUri();
             ResponseEntity<AddNzbResponse> response = restTemplate.exchange(url, httpMethod, httpEntity, AddNzbResponse.class);

@@ -3,17 +3,22 @@
 package org.nzbhydra.downloading.downloaders;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@Disabled
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class DownloaderTest {
 
     @Mock
@@ -36,14 +41,23 @@ public class DownloaderTest {
     private SearchResultEntity searchResultEntityMock;
     @Mock
     private DownloaderEntry downloaderEntry;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+    @Mock
+    private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
+    @Mock
+    private ConfigProvider configProvider;
+    @Mock
+    private DownloadUrlBuilder downloadUrlBuilder;
 
-    private Downloader testee = Mockito.mock(Downloader.class, Mockito.CALLS_REAL_METHODS);
+    private Downloader testee;
 
     @BeforeEach
     public void setUp() throws Exception {
-
-        testee.fileHandler = nzbHandler;
-        testee.searchResultRepository = searchResultRepository;
+        //Use the constructor so that field initializers (e.g. guidExternalIds) run
+        testee = Mockito.mock(Downloader.class, Mockito.withSettings()
+                .useConstructor(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder)
+                .defaultAnswer(Mockito.CALLS_REAL_METHODS));
         testee.downloaderConfig = new DownloaderConfig();
 
         when(downloadEntityMock.getSearchResult()).thenReturn(searchResultEntityMock);
@@ -70,7 +84,7 @@ public class DownloaderTest {
     void shouldSkipDownloadEntriesWithUnparsableStatus() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(null);
-        when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
+        doReturn(true).when(testee).isDownloadMatchingDownloaderEntry(any(), any());
 
         testee.checkForStatusUpdates(Collections.singletonList(downloadEntityMock), StatusCheckType.HISTORY);
 
@@ -81,7 +95,7 @@ public class DownloaderTest {
     void shouldSetNewStatusIfUpdates() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
-        when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
+        doReturn(true).when(testee).isDownloadMatchingDownloaderEntry(any(), any());
 
         testee.checkForStatusUpdates(Collections.singletonList(downloadEntityMock), StatusCheckType.HISTORY);
 
@@ -92,7 +106,7 @@ public class DownloaderTest {
     void shouldSkipNewStatusIfNotUpdates() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NONE);
-        when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
+        doReturn(true).when(testee).isDownloadMatchingDownloaderEntry(any(), any());
 
         testee.checkForStatusUpdates(Collections.singletonList(downloadEntityMock), StatusCheckType.HISTORY);
 
@@ -102,6 +116,9 @@ public class DownloaderTest {
     @Test
     void shouldSetExternalIdIfNotSetBefore() throws Exception {
         when(downloaderEntry.getNzbId()).thenReturn("nzbId");
+        //Matched by title because the download has no external ID yet
+        when(searchResultEntityMock.getTitle()).thenReturn("title");
+        when(downloaderEntry.getNzbName()).thenReturn("title");
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NZB_ADDED);
         when(testee.getQueue(any())).thenReturn(Collections.singletonList(downloaderEntry));
 

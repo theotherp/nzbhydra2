@@ -1,0 +1,12 @@
+2018-11-09 00:17:40 database: opening /nzbhydra2/data/database/nzbhydra
+2018-11-09 00:17:46 database: close
+java.lang.OutOfMemoryError: Java heap space
+	at java.util.Arrays.copyOf(Arrays.java:3332)
+	at java.lang.AbstractStringBuilder.ensureCapacityInternal(AbstractStringBuilder.java:124)
+Exception in thread "scheduling-1" java.lang.OutOfMemoryError: Java heap space
+2018-11-09 00:17:52 database: opening /nzbhydra2/data/database/nzbhydra
+2018-11-09 11:11:40 database: flush
+2018-11-09 11:11:46 database: close
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+	at java.util.HashMap.resize(HashMap.java:704)
+2018-11-09 11:12:01 database: opening /nzbhydra2/data/database/nzbhydra

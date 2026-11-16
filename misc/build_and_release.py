@@ -680,7 +680,9 @@ def build_core_jar(ctx: BuildContext) -> None:
             "mvn",
             "-q",
             "-pl",
-            "org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,org.nzbhydra:core",
+            # sockslib is patched in this repository; build it from source instead of trusting ~/.m2
+            "org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,"
+            "org.nzbhydra:other,org.nzbhydra:sockslib,org.nzbhydra:core",
             "clean",
             "install",
             "-B",

@@ -64,6 +64,16 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs combine.children="append">
+                        <!-- Shows raw types as warnings. No -Werror: the sun.misc.Unsafe warnings in DevEndpoint cannot be suppressed. -->
+                        <arg>-Xlint:rawtypes</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.2</version>
@@ -520,7 +530,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>sockslib</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>

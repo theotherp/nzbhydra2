@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.releaseparser.analyzer.QualityAnalyzer;
 import com.releaseparser.model.ReleaseInfo;
@@ -35,11 +36,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -52,6 +53,7 @@ public class InternalSearchResultProcessor {
     private static final Logger logger = LoggerFactory.getLogger(InternalSearchResultProcessor.class);
     private static final ReleaseParser releaseParser = new ReleaseParser();
     private static final QualityAnalyzer qualityAnalyzer = new QualityAnalyzer();
+    static final int DOWNLOAD_LOOKUP_CHUNK_SIZE = 1000;
 
     @Autowired
     private FileHandler nzbHandler;
@@ -99,10 +101,7 @@ public class InternalSearchResultProcessor {
                 .collect(Collectors.toSet());
 
         List<String> warnings = new ArrayList<>();
-        for (IndexerStatusesAndLimits.IndexerStatus status : indexerStatusesAndLimits.getSortedStatuses()) {
-            if (!searchedIndexerNames.contains(status.getIndexer())) {
-                continue;
-            }
+        for (IndexerStatusesAndLimits.IndexerStatus status : indexerStatusesAndLimits.getSortedStatuses(searchedIndexerNames)) {
             addLimitWarning(warnings, status.getIndexer(), status.getApiHitLimit(), status.getApiHits(),
                     baseConfig.getNotificationConfig().getIndexerHitLimitWarningThreshold(), "API hits");
             addLimitWarning(warnings, status.getIndexer(), status.getDownloadHitLimit(), status.getDownloadHits(),
@@ -144,8 +143,7 @@ public class InternalSearchResultProcessor {
     List<SearchResultWebTO> transformSearchResults(List<SearchResultItem> searchResultItems) {
         List<SearchResultWebTO> transformedSearchResults = new ArrayList<>();
 
-        final List<Long> guids = searchResultItems.stream().map(SearchResultItem::getGuid).collect(Collectors.toList());
-        final Collection<FileDownloadEntity> alreadyDownloaded = fileDownloadRepository.findBySearchResult_HashIn(guids);
+        final Map<Long, FileDownloadEntity> downloadsBySearchResultHash = findDownloadsBySearchResultHash(searchResultItems);
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(0);
@@ -203,9 +201,9 @@ public class InternalSearchResultProcessor {
                 }
             }
 
-            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getHash() == item.getSearchResultId()).findFirst();
-            if (matchingDownload.isPresent()) {
-                builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.get().getTime(), ZoneId.of("UTC"))));
+            final FileDownloadEntity matchingDownload = downloadsBySearchResultHash.get(item.getSearchResultId());
+            if (matchingDownload != null) {
+                builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.getTime(), ZoneId.of("UTC"))));
             }
 
             // Add quality analysis for movie results if enabled
@@ -238,6 +236,21 @@ public class InternalSearchResultProcessor {
 
         transformedSearchResults.sort(Comparator.comparingLong(SearchResultWebTO::getEpoch).reversed());
         return transformedSearchResults;
+    }
+
+    /**
+     * Loads the downloads of the given results in chunks so that a large result list doesn't produce a huge IN clause.
+     * When several downloads exist for one search result the first one returned by the database wins, as before.
+     */
+    private Map<Long, FileDownloadEntity> findDownloadsBySearchResultHash(List<SearchResultItem> searchResultItems) {
+        final List<Long> guids = searchResultItems.stream().map(SearchResultItem::getGuid).collect(Collectors.toList());
+        final Map<Long, FileDownloadEntity> downloadsBySearchResultHash = new HashMap<>();
+        for (List<Long> chunk : Lists.partition(guids, DOWNLOAD_LOOKUP_CHUNK_SIZE)) {
+            for (FileDownloadEntity download : fileDownloadRepository.findBySearchResult_HashIn(chunk)) {
+                downloadsBySearchResultHash.putIfAbsent(download.getSearchResult().getHash(), download);
+            }
+        }
+        return downloadsBySearchResultHash;
     }
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");

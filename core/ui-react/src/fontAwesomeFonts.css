@@ -1,0 +1,52 @@
+/*
+ * Font faces for Font Awesome 5 Free, woff2 only.
+ *
+ * The package's `all.min.css` lists eot, woff2, woff, ttf and svg sources, and
+ * the build copies every file a stylesheet references, which added about 3 MB
+ * of fonts no supported browser loads. These rules are the ones from the
+ * package's `solid.css`, `regular.css` and `brands.css` with the other sources
+ * removed. The icon class rules come from the package's `fontawesome.min.css`,
+ * imported next to this file in `App.tsx`.
+ */
+@font-face {
+    font-family: "Font Awesome 5 Free";
+    font-style: normal;
+    font-weight: 900;
+    font-display: block;
+    src: url("@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2")
+        format("woff2");
+}
+
+.fa,
+.fas {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: "Font Awesome 5 Free";
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2")
+        format("woff2");
+}
+
+.far {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Font Awesome 5 Brands";
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2")
+        format("woff2");
+}
+
+.fab {
+    font-family: "Font Awesome 5 Brands";
+    font-weight: 400;
+}

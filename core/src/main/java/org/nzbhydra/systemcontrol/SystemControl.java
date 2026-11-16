@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.IntConsumer;
 
 @Component
 public class SystemControl {
@@ -31,13 +32,17 @@ public class SystemControl {
     private ConfigurableEnvironment environment;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    /**
+     * Closes the context and ends the JVM. Replaced in tests, which can't let the JVM exit.
+     */
+    IntConsumer contextCloserAndExiter = SystemControl::closeContextAndExit;
 
     public void exitWithReturnCode(final int returnCode, boolean forceShutdown) {
         if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false")) && !forceShutdown) {
             logger.warn("Not shutting down because property hydradontshutdown is set");
             return;
         }
-        new Thread(() -> {
+        Thread exitThread = new Thread(() -> {
             try {
                 Path controlIdFilePath = new File(NzbHydra.getDataFolder(), "control.id").toPath();
                 logger.debug("Writing control ID {} to {}", returnCode, controlIdFilePath);
@@ -49,15 +54,23 @@ public class SystemControl {
                 //Wait just enough for the request to be completed
                 Thread.sleep(300);
                 applicationEventPublisher.publishEvent(new ShutdownEvent());
-                ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-                System.exit(returnCode);
+                contextCloserAndExiter.accept(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
             }
-        }).start();
+        });
+        //A thread started from a request thread would be a daemon. Once closing the context has ended the last non-daemon thread
+        //the JVM would exit on its own with code 0 before System.exit is reached and the wrapper would not restart
+        exitThread.setDaemon(false);
+        exitThread.start();
     }
 
     public void exitWithReturnCode(final int returnCode) {
         exitWithReturnCode(returnCode, false);
+    }
+
+    private static void closeContextAndExit(int returnCode) {
+        ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
+        System.exit(returnCode);
     }
 }

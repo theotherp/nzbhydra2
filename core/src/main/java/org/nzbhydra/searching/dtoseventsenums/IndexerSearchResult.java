@@ -25,7 +25,7 @@ public class IndexerSearchResult {
 
     public static final Duration SORT_ORDER_TOLERANCE = Duration.ofHours(1);
 
-    private Indexer indexer;
+    private Indexer<?> indexer;
     private boolean wasSuccessful = false;
     private String errorMessage;
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
@@ -61,13 +61,13 @@ public class IndexerSearchResult {
     public IndexerSearchResult() {
     }
 
-    public IndexerSearchResult(Indexer indexer, boolean wasSuccessful) {
+    public IndexerSearchResult(Indexer<?> indexer, boolean wasSuccessful) {
         this.wasSuccessful = wasSuccessful;
         this.indexer = indexer;
         this.time = Instant.now();
     }
 
-    public IndexerSearchResult(Indexer indexer, String errorMessage) {
+    public IndexerSearchResult(Indexer<?> indexer, String errorMessage) {
         this.wasSuccessful = false;
         this.indexer = indexer;
         this.time = Instant.now();

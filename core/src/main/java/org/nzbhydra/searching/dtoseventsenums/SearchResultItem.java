@@ -55,7 +55,7 @@ public class SearchResultItem  {
     private Long guid;
     private HasNfo hasNfo = HasNfo.MAYBE;
     @NotNull
-    private Indexer indexer;
+    private Indexer<?> indexer;
     @NotNull
     private String indexerGuid;
     @NotNull

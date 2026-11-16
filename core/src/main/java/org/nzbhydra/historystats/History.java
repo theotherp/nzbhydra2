@@ -73,7 +73,7 @@ public class History {
             countQuery.setParameter(entry.getKey(), entry.getValue());
         }
 
-        List resultList = selectQuery.getResultList();
+        List<T> resultList = selectQuery.getResultList();
         SortModel sortModel = requestData.getSortModel();
         Pageable pageable;
         if (sortModel == null || sortModel.getColumn() == null) {

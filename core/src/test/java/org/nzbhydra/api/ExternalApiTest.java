@@ -33,6 +33,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import javax.xml.transform.stream.StreamResult;
@@ -221,6 +222,48 @@ public class ExternalApiTest {
     }
 
 
+    @Test
+    void shouldReturnInvalidIdErrorForNonNumericDetailsId() throws Exception {
+        NewznabParameters parameters = new NewznabParameters();
+        parameters.setApikey("apikey");
+        parameters.setT(ActionAttribute.DETAILS);
+        parameters.setId("notanumber");
+        parameters.setO(OutputType.JSON);
+
+        ResponseEntity<?> responseEntity = testee.api(parameters, null, null);
+
+        NewznabJsonError error = (NewznabJsonError) responseEntity.getBody();
+        assertThat(error.getCode()).isEqualTo("300");
+        assertThat(error.getDescription()).isEqualTo("Invalid or outdated search result ID");
+    }
+
+    @Test
+    void shouldAnswerUnexpectedErrorAsJsonWhenJsonWasRequested() {
+        baseConfig.getSearching().setWrapApiErrors(false);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("o", "json");
+
+        ResponseEntity result = testee.handleUnexpectedError(new RuntimeException("something broke"), request);
+
+        assertThat(result.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
+        NewznabJsonError error = (NewznabJsonError) result.getBody();
+        assertThat(error.getCode()).isEqualTo("900");
+        assertThat(error.getDescription()).isEqualTo("something broke");
+    }
+
+    @Test
+    void shouldWrapUnexpectedErrorInEmptyJsonResultWhenJsonWasRequested() {
+        baseConfig.getSearching().setWrapApiErrors(true);
+        NewznabJsonRoot emptyRoot = new NewznabJsonRoot();
+        when(newznabJsonTransformerMock.transformToRoot(any(), anyInt(), anyInt(), anyBoolean())).thenReturn(emptyRoot);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("o", "json");
+
+        ResponseEntity result = testee.handleUnexpectedError(new RuntimeException("something broke"), request);
+
+        assertThat(result.getBody()).isSameAs(emptyRoot);
+    }
+
     protected NewznabParameters getNewznabParameters(String q1) {
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ(q1);
@@ -239,12 +282,12 @@ public class ExternalApiTest {
         Field cacheField = ExternalApi.class.getDeclaredField("cache");
         cacheField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        Map<Integer, Object> cache = (Map<Integer, Object>) cacheField.get(testee);
+        Map<String, Object> cache = (Map<String, Object>) cacheField.get(testee);
         assertThat(cache).hasSize(5);
         //Simulate two concurrent puts having pushed the cache beyond its maximum size
         Object anyEntry = cache.values().iterator().next();
-        cache.put(1000001, anyEntry);
-        cache.put(1000002, anyEntry);
+        cache.put("raced1", anyEntry);
+        cache.put("raced2", anyEntry);
         assertThat(cache).hasSize(7);
 
         testee.api(getNewznabParameters("q6"), null, null);
@@ -257,7 +300,7 @@ public class ExternalApiTest {
     public void shouldEscapeAndUseXmlContentTypeWhenErrorHandlingItselfFails() {
         when(configProvider.getBaseConfig()).thenThrow(new RuntimeException("config broken"));
 
-        ResponseEntity result = testee.handleUnexpectedError(new RuntimeException("<img src=x onerror=alert(1)>"));
+        ResponseEntity result = testee.handleUnexpectedError(new RuntimeException("<img src=x onerror=alert(1)>"), new MockHttpServletRequest());
 
         assertThat(result.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
         assertThat((String) result.getBody()).doesNotContain("<img").contains("&lt;img");

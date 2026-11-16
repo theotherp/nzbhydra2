@@ -54,7 +54,7 @@ public class IndexerInstantiator {
     @Autowired
     private BeanFactory beanFactory;
 
-    public Indexer instantiateIndexer(String name) {
+    public Indexer<?> instantiateIndexer(String name) {
         switch (name.toUpperCase()) {
             case "ANIZB" -> {
                 return beanFactory.getBean("anizb", Anizb.class);

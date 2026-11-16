@@ -25,7 +25,7 @@ public class DuplicateDetectionResult {
     /**
      * For each indexer the number of results which were only found by this indexer
      */
-    private Multiset<Indexer> uniqueResultsPerIndexer;
+    private Multiset<Indexer<?>> uniqueResultsPerIndexer;
 
     private int numberOfDuplicates;
 

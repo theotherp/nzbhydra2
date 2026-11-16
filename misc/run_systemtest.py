@@ -897,8 +897,14 @@ def run_locked(args: argparse.Namespace, graalvm_environment: dict[str, str]) ->
                 run_dir / "core.log",
             )
         else:
+            # Run a copy alone in its own folder, the way it ships. The native build leaves libawt.so and other JDK
+            # libraries next to the executable. With them present the folder browser loads AWT, whose JNI_OnLoad
+            # aborts the process because java.awt.GraphicsEnvironment is not registered for JNI.
+            staged_core_exe = run_dir / "bin" / source_core_exe.name
+            staged_core_exe.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_core_exe, staged_core_exe)
             core_service = start_native_core(
-                source_core_exe,
+                staged_core_exe,
                 data_dir,
                 hosts_file,
                 core_environment,

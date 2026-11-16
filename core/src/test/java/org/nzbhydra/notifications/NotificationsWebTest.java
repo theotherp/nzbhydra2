@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -160,11 +161,160 @@ class NotificationsWebTest {
             .thenReturn(List.of(entity));
 
         // When the pusher body runs twice
-        testee.sendNewNotificationsCatchingErrors();
-        testee.sendNewNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
 
         // Then the exception did not escape (which would cancel all further executions) and the second tick still sent
         verify(messagingTemplate, times(1)).convertAndSend(eq(TOPIC), any(Object.class));
+    }
+
+    @Test
+    void shouldKeepSendingNotificationsAfterAnErrorWasThrownOnOneTick() {
+        // Given a repository that throws an Error once and then returns a notification
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc())
+            .thenThrow(new StackOverflowError("Some error while retrieving the notifications"))
+            .thenReturn(List.of(new NotificationEntity()));
+
+        // When the pusher body runs twice
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+
+        // Then the Error did not escape (which would cancel all further executions) and the second tick still sent
+        verify(messagingTemplate, times(1)).convertAndSend(eq(TOPIC), any(Object.class));
+    }
+
+    private static NotificationEntity notification(int id) {
+        final NotificationEntity entity = new NotificationEntity();
+        entity.setId(id);
+        return entity;
+    }
+
+    @Test
+    void shouldSendAllUnreadNotificationsOnEveryCheckAndNothingWhenNoneAreUnread() {
+        // Given unread notifications that change between checks: one appears, stays unread, a second one appears,
+        // then the first one is marked read, then the second one too
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc())
+            .thenReturn(List.of(notification(1)))
+            .thenReturn(List.of(notification(1)))
+            .thenReturn(List.of(notification(2), notification(1)))
+            .thenReturn(List.of(notification(2)))
+            .thenReturn(List.of());
+
+        // When the pusher body runs for each of these states
+        for (int i = 0; i < 5; i++) {
+            testee.sendUnreadNotificationsCatchingErrors();
+        }
+
+        // Then every check that found unread notifications sent all of them, and no empty list was sent
+        final ArgumentCaptor<Object> sentCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(messagingTemplate, times(4)).convertAndSend(eq(TOPIC), sentCaptor.capture());
+        assertThat(sentCaptor.getAllValues()).containsExactly(
+            List.of(notification(1)),
+            List.of(notification(1)),
+            List.of(notification(2), notification(1)),
+            List.of(notification(2)));
+    }
+
+    @Test
+    void shouldSendAgainOnTheNextCheckWhenTheSendForANewSubscriberWasMissed() {
+        // Given an unread notification
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc()).thenReturn(List.of(notification(1)));
+
+        // When the send for a new subscriber runs (and the tab misses it because the broker had not registered its
+        // subscription yet, so the notification stays unread)
+        testee.sendUnreadNotificationsCatchingErrors();
+        verify(messagingTemplate, times(1)).convertAndSend(TOPIC, List.of(notification(1)));
+
+        // Then the next regular check sends it again, so the tab still gets it
+        testee.sendUnreadNotificationsCatchingErrors();
+        verify(messagingTemplate, times(2)).convertAndSend(TOPIC, List.of(notification(1)));
+    }
+
+    @Test
+    void shouldNotSendAnEmptyListToANewSubscriber() {
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc()).thenReturn(List.of());
+
+        testee.sendUnreadNotificationsCatchingErrors();
+
+        verify(messagingTemplate, never()).convertAndSend(eq(TOPIC), any(Object.class));
+    }
+
+    @Test
+    void shouldRetrySendingANotificationWhoseSendFailed() {
+        // Given a send that fails once
+        when(notificationRepository.findAllByDisplayedFalseOrderByTimeDesc()).thenReturn(List.of(notification(1)));
+        doThrow(new RuntimeException("Some error while sending"))
+            .doNothing()
+            .when(messagingTemplate).convertAndSend(eq(TOPIC), any(Object.class));
+
+        // When the pusher body runs twice
+        testee.sendUnreadNotificationsCatchingErrors();
+        testee.sendUnreadNotificationsCatchingErrors();
+
+        // Then the notification is not lost
+        verify(messagingTemplate, times(2)).convertAndSend(TOPIC, List.of(notification(1)));
+    }
+
+    @Test
+    void shouldScheduleOneSendForSubscribersArrivingTogetherAndCheckAtTheInterval() {
+        final ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        final ScheduledFuture<?> pendingSend = mock(ScheduledFuture.class);
+        when(scheduler.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
+            .thenAnswer(invocation -> mock(ScheduledFuture.class));
+        when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> pendingSend);
+        replaceScheduler(scheduler);
+
+        // When two tabs subscribe before the send for the first one ran
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+        testee.onClientSubscribe(subscribeEvent("session-2"));
+
+        // Then they share one send, a second one would show every unread notification twice in both tabs
+        verify(scheduler, times(1)).scheduleAtFixedRate(any(Runnable.class), eq(NotificationsWeb.INTERVAL_MILLIS), eq(NotificationsWeb.INTERVAL_MILLIS), eq(TimeUnit.MILLISECONDS));
+        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(NotificationsWeb.SUBSCRIBE_SEND_DELAY_MILLIS), eq(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void shouldScheduleANewSendForASubscriberArrivingAfterTheLastSendRan() {
+        final ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        final ScheduledFuture<?> pendingSend = mock(ScheduledFuture.class);
+        when(scheduler.scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
+            .thenAnswer(invocation -> mock(ScheduledFuture.class));
+        when(scheduler.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class))).thenAnswer(invocation -> pendingSend);
+        replaceScheduler(scheduler);
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+
+        // When the send for the first tab ran before the second one subscribes
+        when(pendingSend.isDone()).thenReturn(true);
+        testee.onClientSubscribe(subscribeEvent("session-2"));
+
+        // Then the second tab gets its own send
+        verify(scheduler, times(2)).schedule(any(Runnable.class), eq(NotificationsWeb.SUBSCRIBE_SEND_DELAY_MILLIS), eq(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void shouldIgnoreASubscribeAfterShutdown() {
+        // Given a shut down controller
+        testee.onShutdown();
+
+        // When a tab subscribes, then no RejectedExecutionException escapes the listener
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+
+        // And nothing is sent
+        verify(notificationRepository, never()).findAllByDisplayedFalseOrderByTimeDesc();
+    }
+
+    @Test
+    void shouldDropThePendingSendForANewSubscriberOnShutdown() throws Exception {
+        // Given a subscribe whose delayed send has not run yet
+        testee.onClientSubscribe(subscribeEvent("session-1"));
+
+        // When the controller shuts down before the send is due
+        testee.onShutdown();
+
+        // Then the scheduler terminates without running the send, which would hit a closing database
+        final ScheduledExecutorService scheduler = (ScheduledExecutorService) ReflectionTestUtils.getField(testee, "scheduler");
+        assertThat(scheduler.awaitTermination(500, TimeUnit.MILLISECONDS)).isTrue();
+        verify(notificationRepository, never()).findAllByDisplayedFalseOrderByTimeDesc();
     }
 
     @Test

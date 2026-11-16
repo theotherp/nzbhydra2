@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -31,9 +31,10 @@ public class DownloadStatusUpdater {
     private static final long TEN_MINUTES_MS = 1000 * 60 * 10;
     private static final int MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES = 6 * 60 * 60; //No download should last longer than 6 hours
 
-    protected Instant lastDownload = Instant.now();
-    protected boolean queueCheckEnabled = true;
-    protected boolean historyCheckEnabled = true;
+    //Written by event listener threads and read by the task scheduler thread
+    protected volatile Instant lastDownload = Instant.now();
+    protected volatile boolean queueCheckEnabled = true;
+    protected volatile boolean historyCheckEnabled = true;
 
     protected static final Logger logger = LoggerFactory.getLogger(DownloadStatusUpdater.class);
 
@@ -47,9 +48,10 @@ public class DownloadStatusUpdater {
     protected FileDownloadRepository downloadRepository;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @HydraTask(configId = "downloadHistoryCheck", name = "Download history check", interval = TEN_MINUTES_MS)
-    @Transactional
     public void checkHistoryStatus() {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Running download history  check");
         if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
@@ -70,7 +72,6 @@ public class DownloadStatusUpdater {
     }
 
     @HydraTask(configId = "downloadQueueCheck", name = "Download queue check", interval = TEN_SECONDS_MS)
-    @Transactional
     public void checkQueueStatus() {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Running download queue check");
         if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
@@ -111,6 +112,11 @@ public class DownloadStatusUpdater {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Not executing {} status update because last download was {}", statusCheckType, lastDownload);
             return;
         }
+        //Only open a transaction once the cheap checks above have passed
+        transactionTemplate.executeWithoutResult(status -> updateStatuses(nzbDownloadStatuses, maxAgeDownloadEntitiesInSeconds, statusCheckType));
+    }
+
+    private void updateStatuses(List<FileDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
         List<FileDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
             if (statusCheckType == StatusCheckType.QUEUE) {

@@ -1,6 +1,7 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -58,6 +59,7 @@ public class Stats {
 
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
     private static final int TIMEOUT = 120;
+    static final String STATS_THREAD_NAME_PREFIX = "stats-calculation-";
 
     @Autowired
     private SearchModuleProvider searchModuleProvider;
@@ -81,9 +83,23 @@ public class Stats {
         statsResponse.setAfter(statsRequest.getAfter());
         statsResponse.setBefore(statsRequest.getBefore());
 
-        ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
+        //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
+        ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat(STATS_THREAD_NAME_PREFIX + "%d").build());
+        try {
+            calculateStats(statsRequest, statsResponse, executor);
+        } finally {
+            executor.shutdownNow();
+        }
 
-        List<Future> futures = new ArrayList<>();
+        statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
+        statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
+
+        logger.info("Stats calculation took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return statsResponse;
+    }
+
+    private void calculateStats(StatsRequest statsRequest, StatsResponse statsResponse, ExecutorService executor) throws InterruptedException {
+        List<Future<?>> futures = new ArrayList<>();
 
 
         if (statsRequest.isAvgResponseTimes()) {
@@ -161,24 +177,16 @@ public class Stats {
         executor.shutdown();
         boolean wasCompleted = executor.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         if (!wasCompleted) {
-            executor.shutdownNow();
             logger.error("Aborted stats generation because it took longer than {} seconds. Please restart", TIMEOUT);
-        } else {
-            for (Future future : futures) {
-                try {
-                    future.get();
-                } catch (ExecutionException e) {
-                    logger.error("Error during calculation of stats", e.getCause());
-                }
-            }
-
+            return;
         }
-
-        statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
-        statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
-
-        logger.info("Stats calculation took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        return statsResponse;
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+                logger.error("Error during calculation of stats", e.getCause());
+            }
+        }
     }
 
 
@@ -213,7 +221,7 @@ public class Stats {
 
         Query query = entityManager.createNativeQuery(sqlQueryByIndexer);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
@@ -244,7 +252,7 @@ public class Stats {
             "ORDER BY avg ASC";
 
         Query query = entityManager.createNativeQuery(sql);
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigDecimal) ((Object[]) x)[1]).longValue()).average();
 
@@ -273,11 +281,9 @@ public class Stats {
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
         final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).toList()).stream().map(Indexer::getName).collect(Collectors.toSet());
 
-        List<IndexerUniquenessScoreEntity> scoreEntities = uniquenessScoreEntityRepository.findAll().stream()
-                // Versions 1 and 2 lack exact download context and are intentionally not comparable to corrected observations.
-                .filter(score -> score.getDataVersion() != null && score.getDataVersion() >= 3)
-                .filter(score -> isWithinScoreDateRange(score, statsRequest))
-                .toList();
+        // Versions 1 and 2 lack exact download context and are intentionally not comparable to corrected observations.
+        List<IndexerUniquenessScoreEntity> scoreEntities = uniquenessScoreEntityRepository.findCorrectedObservationsRecordedBetween(
+                statsRequest.getAfter(), statsRequest.getBefore());
         List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, scoreEntities);
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerUniquenessScores;
@@ -329,11 +335,6 @@ public class Stats {
         return denominator == 0 ? null : (int) (100D * numerator / denominator);
     }
 
-    private boolean isWithinScoreDateRange(IndexerUniquenessScoreEntity score, StatsRequest statsRequest) {
-        return (statsRequest.getAfter() == null || !score.getRecordedAt().isBefore(statsRequest.getAfter()))
-               && (statsRequest.getBefore() == null || !score.getRecordedAt().isAfter(statsRequest.getBefore()));
-    }
-
 
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -356,7 +357,7 @@ public class Stats {
         Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
         Query query = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
         //query = query.setParameter("indexerIds", indexerIdsToInclude);
-        List results = query.getResultList();
+        List<?> results = query.getResultList();
         for (Object resultObject : results) {
             Object[] array = (Object[]) resultObject;
             Integer indexerId = (Integer) array[0];
@@ -678,7 +679,7 @@ public class Stats {
             GROUP BY steps
             ORDER BY steps ASC""";
         Query query = entityManager.createNativeQuery(sql);
-        List resultList = query.getResultList();
+        List<?> resultList = query.getResultList();
         List<DownloadPerAge> results = new ArrayList<>();
         Map<Integer, Integer> agesAndCountsMap = new HashMap<>();
         for (Object o : resultList) {

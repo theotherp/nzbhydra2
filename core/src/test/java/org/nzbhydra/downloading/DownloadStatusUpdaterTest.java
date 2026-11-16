@@ -14,10 +14,13 @@ import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
 import org.nzbhydra.downloading.downloaders.DownloaderProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,6 +39,8 @@ public class DownloadStatusUpdaterTest {
     private Downloader downloaderMock;
     @Mock
     private ConfigProvider configProvider;
+    @Mock
+    private TransactionTemplate transactionTemplate;
 
     @InjectMocks
     private DownloadStatusUpdater testee;
@@ -46,6 +51,11 @@ public class DownloadStatusUpdaterTest {
         when(downloaderProvider.getAllDownloaders()).thenReturn(Collections.singletonList(downloaderMock));
         when(downloaderMock.isEnabled()).thenReturn(true);
         when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
+        doAnswer(invocation -> {
+            Consumer<TransactionStatus> callback = invocation.getArgument(0);
+            callback.accept(null);
+            return null;
+        }).when(transactionTemplate).executeWithoutResult(any());
     }
 
     @Test
@@ -54,6 +64,7 @@ public class DownloadStatusUpdaterTest {
         testee.lastDownload = Instant.now();
         testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.QUEUE);
         verifyNoMoreInteractions(downloadRepository);
+        verifyNoInteractions(transactionTemplate);
     }
 
     @Test
@@ -62,6 +73,20 @@ public class DownloadStatusUpdaterTest {
         testee.lastDownload = Instant.ofEpochSecond(1L);
         testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
         verifyNoMoreInteractions(downloadRepository);
+        verifyNoInteractions(transactionTemplate);
+    }
+
+    @Test
+    void shouldNotOpenTransactionWhenStatusUpdatesAreDisabledInConfig() {
+        BaseConfig baseConfig = new BaseConfig();
+        baseConfig.getDownloading().setUpdateStatuses(false);
+        when(configProvider.getBaseConfig()).thenReturn(baseConfig);
+
+        testee.checkQueueStatus();
+        testee.checkHistoryStatus();
+
+        verifyNoInteractions(transactionTemplate);
+        verifyNoInteractions(downloadRepository);
     }
 
     @Test
@@ -89,6 +114,7 @@ public class DownloadStatusUpdaterTest {
 
         verify(downloaderMock).checkForStatusUpdates(downloadsWaitingForUpdate, StatusCheckType.HISTORY);
         verify(downloadRepository).saveAll(downloadsReturnedFromDownloader);
+        verify(transactionTemplate).executeWithoutResult(any());
     }
 
     @Test
