@@ -144,6 +144,59 @@ public class DuplicateDetectorTest {
     }
 
 
+    @Test
+    void shouldAllowADayOfAgeDifferenceWhenAnAgeIsImprecise() {
+        Instant now = Instant.now();
+        SearchResultItem precise = new SearchResultItem();
+        setValues(precise, "1", "poster", "group", now);
+        SearchResultItem imprecise = new SearchResultItem();
+        setValues(imprecise, "2", "poster", "group", now.plus(20, ChronoUnit.HOURS));
+
+        assertThat(testee.testForDuplicateAge(precise, imprecise, 2F)).isFalse();
+
+        imprecise.setAgePrecise(false);
+        assertThat(testee.testForDuplicateAge(precise, imprecise, 2F)).isTrue();
+
+        imprecise.setPubDate(now.plus(30, ChronoUnit.HOURS));
+        assertThat(testee.testForDuplicateAge(precise, imprecise, 2F)).isFalse();
+    }
+
+    @Test
+    void shouldGroupAResultWithRoundedSizeAndAgeWithTheExactOnes() {
+        //NZBKing shows "1GB" and "436d" for a release other indexers report with 1.47GB and the exact posting time
+        Instant postTime = Instant.now().minus(436, ChronoUnit.DAYS).minus(15, ChronoUnit.HOURS);
+        long gib = 1024L * 1024 * 1024;
+        SearchResultItem newznab = new SearchResultItem();
+        setValues(newznab, "usenetCrawler", null, null, postTime);
+        newznab.setSize((long) (1.47 * gib));
+        SearchResultItem nzbKing = new SearchResultItem();
+        setValues(nzbKing, "NZBKing", "poster", "alt.binaries.test", Instant.now().minus(436, ChronoUnit.DAYS));
+        nzbKing.setAgePrecise(false);
+        nzbKing.setSize(gib);
+
+        assertThat(testee.detectDuplicates(Sets.newHashSet(newznab, nzbKing)).getDuplicateGroups()).hasSize(2);
+
+        nzbKing.setSizePrecision(gib);
+        DuplicateDetectionResult result = testee.detectDuplicates(Sets.newHashSet(newznab, nzbKing));
+        assertThat(result.getDuplicateGroups()).hasSize(1);
+        assertThat(result.getDuplicateGroups().get(0)).containsExactlyInAnyOrder(newznab, nzbKing);
+    }
+
+    @Test
+    void shouldNotGroupAResultWithRoundedSizeOutsideItsPrecision() {
+        long gib = 1024L * 1024 * 1024;
+        Instant now = Instant.now();
+        SearchResultItem exact = new SearchResultItem();
+        setValues(exact, "1", "poster", "group", now);
+        exact.setSize((long) (2.2 * gib));
+        SearchResultItem rounded = new SearchResultItem();
+        setValues(rounded, "2", "poster", "group", now);
+        rounded.setSize(gib);
+        rounded.setSizePrecision(gib);
+
+        assertThat(testee.detectDuplicates(Sets.newHashSet(exact, rounded)).getDuplicateGroups()).hasSize(2);
+    }
+
     // ------------------------------------------------------------------------------------------------
     // addToGroups
     // ------------------------------------------------------------------------------------------------

@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "Results from NZBKing and Binsearch are now recognized as duplicates of the same release from other indexers. NZBKing only shows rounded sizes and both only show the age in days, which kept them apart, so a NZBKing result could lead a title group instead of the result from the indexer with the higher priority."

@@ -31,6 +31,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @Component
 public class DuplicateDetector {
 
+    private static final float IMPRECISE_AGE_THRESHOLD_HOURS = 24F;
+
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDetector.class);
 
     @Autowired
@@ -179,6 +181,10 @@ public class DuplicateDetector {
             logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no usenet date and no pub date");
             return false;
         }
+        if (isAgeImprecise(result1) || isAgeImprecise(result2)) {
+            //Indexers like NZBKing or Binsearch only report the age in days ("436d"), so the date may be off by up to a day
+            duplicateAgeThreshold = Math.max(duplicateAgeThreshold, IMPRECISE_AGE_THRESHOLD_HOURS);
+        }
         boolean isSameAge = Math.abs(date1.getEpochSecond() - date2.getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
         logger.debug(LoggingMarkers.DUPLICATES, "Same age: {}", isSameAge);
         return isSameAge;
@@ -191,9 +197,15 @@ public class DuplicateDetector {
         long sizeDifference = Math.abs(result1.getSize() - result2.getSize());
         float sizeAverage = (result1.getSize() + result2.getSize()) / 2F;
         float sizeDiffPercent = Math.abs(sizeDifference / sizeAverage) * 100;
-        boolean sameSize = sizeDiffPercent <= duplicateSizeDifference;
+        //A size the indexer reported rounded (e.g. "1GB" for 1.47GB) can't be compared by percentage, only within its precision
+        long sizePrecision = Math.max(Objects.requireNonNullElse(result1.getSizePrecision(), 0L), Objects.requireNonNullElse(result2.getSizePrecision(), 0L));
+        boolean sameSize = sizeDiffPercent <= duplicateSizeDifference || sizeDifference <= sizePrecision;
         logger.debug(LoggingMarkers.DUPLICATES, "Same size: {}", sameSize);
         return sameSize;
+    }
+
+    private static boolean isAgeImprecise(SearchResultItem result) {
+        return result.getUsenetDate().isEmpty() && !result.isAgePrecise();
     }
 
 

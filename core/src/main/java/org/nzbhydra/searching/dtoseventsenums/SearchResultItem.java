@@ -77,6 +77,11 @@ public class SearchResultItem  {
     private Integer searchId;
     private Integer seeders;
     private Long size;
+    /**
+     * The granularity in bytes with which the indexer reported {@link #size}, e.g. 1 GiB when it only showed "1GB".
+     * Null when the size is exact. Duplicate detection accepts a size difference of up to this much.
+     */
+    private Long sizePrecision;
     private String source;
     /**
      * The individual subtitle languages found in the indexer's "subs" attribute(s), split and deduplicated the same

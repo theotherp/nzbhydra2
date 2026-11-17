@@ -90,6 +90,7 @@ public class NzbKingTest {
         assertThat(item.getLink()).isEqualTo("https://www.nzbking.com/nzb:669923f04e4d6b10f89f50fb");
         assertThat(item.getDetails()).isEqualTo("https://www.nzbking.com/details:669923f04e4d6b10f89f50fb");
         assertThat(item.getSize()).isEqualTo(30064771072L);
+        assertThat(item.getSizePrecision()).as("The size is shown without decimals (\"28GB\")").isEqualTo(1024L * 1024 * 1024);
         assertThat(item.getIndexerGuid()).isEqualTo("669923f04e4d6b10f89f50fb");
         assertThat(item.getPubDate().getEpochSecond()).isEqualTo(1705750028L);
         assertThat(item.isAgePrecise()).isEqualTo(false);

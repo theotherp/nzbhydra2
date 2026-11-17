@@ -169,14 +169,17 @@ public class NzbKing extends Indexer<String> {
     private boolean findSize(SearchResultItem item, String partsAndSize) {
         Matcher sizeMatcher = SIZE_PATTERN.matcher(partsAndSize);
         if (sizeMatcher.find()) {
-            Float size = Float.parseFloat(sizeMatcher.group("size"));
-            String unit = sizeMatcher.group("unit");
-            switch (unit) {
-                case "GB" -> size = size * 1024 * 1024 * 1024;
-                case "MB" -> size = size * 1024 * 1024;
-                case "KB" -> size = size * 1024;
-            }
-            item.setSize(size.longValue());
+            String sizeString = sizeMatcher.group("size");
+            long unitBytes = switch (sizeMatcher.group("unit").toUpperCase()) {
+                case "GB" -> 1024L * 1024 * 1024;
+                case "MB" -> 1024L * 1024;
+                case "KB" -> 1024L;
+                default -> 1L;
+            };
+            item.setSize((long) (Float.parseFloat(sizeString) * unitBytes));
+            //NZBKing shows sizes with few or no decimals ("1GB" for 1.47GB), so the size is only precise to the last shown digit
+            int decimals = sizeString.contains(".") ? sizeString.length() - sizeString.indexOf('.') - 1 : 0;
+            item.setSizePrecision(Math.max(1L, (long) (unitBytes / Math.pow(10, decimals))));
             return true;
         } else {
             return false;
