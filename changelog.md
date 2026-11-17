@@ -1,3 +1,19 @@
+### v9.3.2 (2026-11-17)
+
+**Fix** Do you sometimes look in the changelog of a game or app and it just says "Multiple improvements in stability and bug fixes" and you think, "Give me details!"? Well, this is one of those.
+
+**Fix** Unexpected API errors are now answered in JSON when the calling tool asked for JSON output. A details request with an invalid ID gets a proper &quot;invalid ID&quot; error.
+
+**Fix** If you use a Torbox indexer, NZBHydra2 no longer keeps two extra threads running for every config save that followed a Torbox search.
+
+**Fix** When a server stopped sending in the middle of a response, NZBHydra2 now reports the timeout or dropped connection instead of a confusing parsing error.
+
+**Fix** An error in NZBHydra2&apos;s own handling of search results no longer disables the indexer. A search response that could not be read no longer counts twice against the indexer&apos;s API limit.
+
+**Fix** Configuring Sonarr 5 under External tools no longer fails with &quot;unsupported Sonarr version&quot;. Future major versions of Sonarr and Radarr are no longer rejected either.
+
+
+
 ### v9.3.1 (2026-11-11)
 
 **Fix** TorBox: The download queue and status no longer fail to load when TorBox doesn&apos;t send some values for older downloads.

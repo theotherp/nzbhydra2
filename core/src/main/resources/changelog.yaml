@@ -2,6 +2,22 @@
 # These are for the user and should not be too technical and focus on what changes for them.
 # Released versions only. Do not add entries by hand: write them to changelog-unreleased.yaml,
 # misc/build_and_release.py moves them here when a release is built.
+-   version: "v9.3.2"
+    date: "2026-11-17"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Do you sometimes look in the changelog of a game or app and it just says \"Multiple improvements in stability and bug fixes\" and you think, \"Give me details!\"? Well, this is one of those."
+      -   type: "fix"
+          text: "Unexpected API errors are now answered in JSON when the calling tool asked for JSON output. A details request with an invalid ID gets a proper &quot;invalid ID&quot; error."
+      -   type: "fix"
+          text: "If you use a Torbox indexer, NZBHydra2 no longer keeps two extra threads running for every config save that followed a Torbox search."
+      -   type: "fix"
+          text: "When a server stopped sending in the middle of a response, NZBHydra2 now reports the timeout or dropped connection instead of a confusing parsing error."
+      -   type: "fix"
+          text: "An error in NZBHydra2&apos;s own handling of search results no longer disables the indexer. A search response that could not be read no longer counts twice against the indexer&apos;s API limit."
+      -   type: "fix"
+          text: "Configuring Sonarr 5 under External tools no longer fails with &quot;unsupported Sonarr version&quot;. Future major versions of Sonarr and Radarr are no longer rejected either."
 -   version: "v9.3.1"
     date: "2026-11-11"
     final: true
