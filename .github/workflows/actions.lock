@@ -21,6 +21,9 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
         - 'ctrf-io/github-test-reporter@v1.3.2'
+    '.github/workflows/gowrapper.yml':
+        - 'actions/checkout@v7.0.1'
+        - 'actions/setup-go@v7.0.0'
     '.github/workflows/lint.yml':
         - 'actions/checkout@v7.0.1'
         - 'j178/prek-action@v3.1.0'
@@ -50,6 +53,11 @@ dependencies:
         commit: 'sha1-d3f86a106a0bac45b974a628896c90dbdf5c8093'
         owner_id: 44036562
         repo_id: 192626254
+    'actions/setup-go@v7.0.0':
+        ref: 'v7.0.0'
+        commit: 'sha1-b7ad1dad31e06c5925ef5d2fc7ad053ef454303e'
+        owner_id: 44036562
+        repo_id: 192624594
     'actions/setup-java@v6.3.0':
         ref: 'v6.3.0'
         commit: 'sha1-d1374f8ac74474200d16ef8ecee22c7ae7a51880'

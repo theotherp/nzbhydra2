@@ -181,6 +181,11 @@ func doUpdate() {
 	}
 	Logf(logrus.DebugLevel, "updateZip: %s", updateZip)
 
+	oldJarFile := ""
+	if releaseType == GENERIC {
+		oldJarFile = findJarFile(libFolder)
+	}
+
 	r, err := zip.OpenReader(updateZip)
 	LogFatalIfError(err)
 
@@ -209,25 +214,10 @@ func doUpdate() {
 	LogFatalIfError(err)
 
 	if releaseType == GENERIC {
-		files, err := os.ReadDir(libFolder)
-		LogFatalIfError(err)
-
-		var jarFiles []string
-		for _, f := range files {
-			if strings.HasSuffix(f.Name(), ".jar") {
-				jarFiles = append(jarFiles, f.Name())
-			}
-		}
-		jarFile := findJarFile(libFolder)
-		if len(jarFiles) == 2 {
-			err = os.Remove(jarFile)
-			LogFatalIfError(err)
-		} else if len(jarFiles) == 1 {
-			if jarFiles[0] == filepath.Base(jarFile) {
-				Log(logrus.InfoLevel, "New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
-			}
-		} else {
-			Logf(logrus.InfoLevel, "Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(jarFiles))
+		//Keeps the newest JAR file, which is the one just extracted, and deletes the old one
+		newJarFile := findJarFile(libFolder)
+		if newJarFile == oldJarFile {
+			Log(logrus.InfoLevel, "New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
 		}
 	}
 	Log(logrus.DebugLevel, "Removing update folder ", updateFolder)
@@ -381,29 +371,13 @@ func handleUnexpectedExit() {
 
 func startupLoop() {
 	releaseType := determineReleaseType()
-	if releaseType == GENERIC {
-		*argsJavaExecutable = "java"
-	} else {
-		*argsJavaExecutable = "core.exe"
-	}
-
-	arguments := buildMainProcessArgs()
-
-	javaArguments := buildJavaArguments(releaseType)
-	if releaseType == NATIVE {
-		arguments = slices.Concat(javaArguments, arguments)
-	} else {
-		libFolder := filepath.Join(basePath, "lib")
-		jarFile := findJarFile(libFolder)
-		jarFile = filepath.Join(libFolder, jarFile)
-		Logf(logrus.DebugLevel, "Using JAR file %s", jarFile)
-		arguments = slices.Concat(javaArguments, []string{"-jar", jarFile}, arguments)
-	}
+	executable := determineExecutable(releaseType)
 
 	doStart = true
 	for doStart {
 		doStart = false
-		exitCode := runMainProcess(*argsJavaExecutable, arguments)
+		//Built for every start: an update replaces the JAR file and a restart must be passed on to the main process
+		exitCode := runMainProcess(executable, buildCommandLine(releaseType))
 		if terminatedByWrapper {
 			Log(logrus.InfoLevel, "NZBHydra main process was terminated by wrapper")
 			Exit(0)
@@ -440,6 +414,27 @@ func startupLoop() {
 	}
 }
 
+// determineExecutable returns the java executable given with -java for the generic release and the bundled
+// executable for the native one.
+func determineExecutable(releaseType ReleaseType) string {
+	if releaseType == NATIVE {
+		return "core.exe"
+	}
+	return *argsJavaExecutable
+}
+
+func buildCommandLine(releaseType ReleaseType) []string {
+	arguments := buildMainProcessArgs()
+	javaArguments := buildJavaArguments(releaseType)
+	if releaseType == NATIVE {
+		return slices.Concat(javaArguments, arguments)
+	}
+	libFolder := filepath.Join(basePath, "lib")
+	jarFile := filepath.Join(libFolder, findJarFile(libFolder))
+	Logf(logrus.DebugLevel, "Using JAR file %s", jarFile)
+	return slices.Concat(javaArguments, []string{"-jar", jarFile}, arguments)
+}
+
 func buildJavaArguments(releaseType ReleaseType) []string {
 	xmx, logGc, customVmOptions := determineXmxAndLogGc()
 	if releaseType == "generic" {
@@ -464,6 +459,10 @@ func buildJavaArguments(releaseType ReleaseType) []string {
 	if releaseType == GENERIC {
 		javaArguments = append(javaArguments, "-XX:+HeapDumpOnOutOfMemoryError")
 		javaArguments = append(javaArguments, "-XX:HeapDumpPath="+filepath.Join(dataFolder, "logs"))
+		// Work around CVE-2026-114938 ("Java4Shell"): the AVX-512 Base64 decode intrinsic of HotSpot writes out of bounds
+		// for crafted input, which reaches it before login via the basic auth header and the remember-me cookie.
+		// Appended after the custom VM options so that it wins. The flag is HotSpot's, so native images don't get it.
+		javaArguments = append(javaArguments, "-XX:-UseBASE64Intrinsics")
 	}
 	if logGc && releaseType == GENERIC {
 		gcLogFilename := filepath.Join(dataFolder, "logs", "gclog-"+time.Now().Format("2006-01-02_15-04-05")+".log")
@@ -500,8 +499,9 @@ func buildMainProcessArgs() []string {
 	} else {
 		arguments = append(arguments, unknownArgs...)
 
-		if restarted && !slices.Contains(arguments, "--restarted") {
-			arguments = append(arguments, "--restarted")
+		//NzbHydra checks for exactly this argument, without dashes, to not open the browser again
+		if restarted && !slices.Contains(arguments, "restarted") {
+			arguments = append(arguments, "restarted")
 		}
 		if (*noBrowser) && !slices.Contains(arguments, "--nobrowser") {
 			arguments = append(arguments, "--nobrowser")
@@ -537,11 +537,8 @@ func runMainProcess(executable string, arguments []string) int {
 	stdout, _ := mainProcess.StdoutPipe()
 	mainProcess.Stderr = mainProcess.Stdout
 	done := make(chan struct{})
-	scanner := bufio.NewScanner(stdout)
 	go func() {
-		for scanner.Scan() {
-			line := scanner.Text()
-
+		readOutputLines(stdout, func(line string) {
 			if !*argsQuiet {
 				println(line)
 			}
@@ -550,8 +547,7 @@ func runMainProcess(executable string, arguments []string) int {
 			if len(consoleLines) > 250 {
 				consoleLines = consoleLines[1:]
 			}
-		}
-
+		})
 		close(done)
 	}()
 
@@ -570,6 +566,24 @@ func runMainProcess(executable string, arguments []string) int {
 		return exitCode
 	}
 	return 0
+}
+
+// readOutputLines passes every line of the output to handleLine until the output ends. Lines may be of any length: the
+// output must be read to its end, or the main process blocks as soon as the pipe is full.
+func readOutputLines(output io.Reader, handleLine func(string)) {
+	reader := bufio.NewReader(output)
+	for {
+		line, err := reader.ReadString('\n')
+		if line != "" {
+			handleLine(strings.TrimRight(line, "\r\n"))
+		}
+		if err != nil {
+			if err != io.EOF {
+				Logf(logrus.ErrorLevel, "Error reading output of main process: %v", err)
+			}
+			return
+		}
+	}
 }
 
 func checkLogLine(line string) {

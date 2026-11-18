@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -80,5 +83,48 @@ class DatabaseStatisticsTest {
         ));
 
         assertThatCode(() -> testee.logStatisticsOnStartup()).doesNotThrowAnyException();
+    }
+
+    private void returnVersions(long currentVersion, long oldestVersion) {
+        when(jdbcTemplate.queryForList(contains("INFORMATION_SCHEMA.SETTINGS"))).thenReturn(List.of(
+            row("info.CURRENT_VERSION", String.valueOf(currentVersion)),
+            row("info.OLDEST_VERS_TO_KEEP", String.valueOf(oldestVersion)),
+            row("info.FILL_RATE", "50")
+        ));
+    }
+
+    @Test
+    void shouldWarnWithActiveSessionsWhenOldestVersionIsPinned() {
+        Instant start = Instant.parse("2026-11-18T10:00:00Z");
+        when(jdbcTemplate.queryForList(contains("INFORMATION_SCHEMA.SESSIONS"))).thenReturn(List.of());
+        returnVersions(1000, 1000);
+        testee.sample(start);
+        returnVersions(2000, 1000);
+
+        VersionPinningTracker.Status status = testee.sample(start.plus(Duration.ofMinutes(6)));
+
+        assertThat(status.state()).isEqualTo(VersionPinningTracker.State.PINNED_WARN);
+        assertThat(status.versionsBehind()).isEqualTo(1000);
+        verify(jdbcTemplate).queryForList(contains("INFORMATION_SCHEMA.SESSIONS"));
+    }
+
+    @Test
+    void shouldNotQuerySessionsWhileOldestVersionAdvances() {
+        Instant start = Instant.parse("2026-11-18T10:00:00Z");
+        returnVersions(1000, 1000);
+        testee.sample(start);
+        returnVersions(2000, 1999);
+
+        VersionPinningTracker.Status status = testee.sample(start.plus(Duration.ofMinutes(6)));
+
+        assertThat(status.state()).isEqualTo(VersionPinningTracker.State.NOT_PINNED);
+        verify(jdbcTemplate, never()).queryForList(contains("INFORMATION_SCHEMA.SESSIONS"));
+    }
+
+    @Test
+    void shouldSkipSampleWithoutVersionStatistics() {
+        when(jdbcTemplate.queryForList(anyString())).thenReturn(List.of(row("info.FILL_RATE", "50")));
+
+        assertThat(testee.sample(Instant.now())).isNull();
     }
 }

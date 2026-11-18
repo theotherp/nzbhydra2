@@ -1,0 +1,42 @@
+name: Go wrapper tests
+
+on:
+    push:
+        paths:
+            - 'other/gowrapper/**'
+            - '.github/workflows/gowrapper.yml'
+    pull_request:
+        paths:
+            - 'other/gowrapper/**'
+            - '.github/workflows/gowrapper.yml'
+    workflow_dispatch:
+
+jobs:
+    test:
+        name: Go wrapper unit tests
+        # The wrapper only builds for Windows (syscall.SysProcAttr.HideWindow)
+        runs-on: windows-latest
+        permissions:
+            contents: read
+        defaults:
+            run:
+                working-directory: other/gowrapper/base
+        steps:
+            -   name: Check out source
+                uses: actions/checkout@v7.0.1
+                with:
+                    persist-credentials: false
+
+            -   name: Set up Go
+                uses: actions/setup-go@v7.0.0
+                with:
+                    go-version-file: other/gowrapper/base/go.mod
+                    cache-dependency-path: other/gowrapper/base/go.sum
+
+            -   name: Vet
+                run: go vet ./...
+
+            # The skipped tests start real NZBHydra releases unpacked from fixtures under d:\NZBHydra\nzbhydra2\gowrappertest,
+            # which only exist on the maintainer's machine
+            -   name: Run unit tests
+                run: go test -v -skip '^(TestNative|TestGeneric|TestUpdate|TestRestore|TestHandleUnexpectedError)$' ./...

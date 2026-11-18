@@ -3,7 +3,6 @@ package base
 import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -22,8 +21,7 @@ func Logf(logLevel logrus.Level, format string, args ...interface{}) {
 }
 
 func Fatal(args ...interface{}) {
-	fileLogger.Fatal(args...)
-	consoleLogger.Fatal(args...)
+	Log(logrus.FatalLevel, args...)
 	fileLogger.Exit(1)
 }
 
@@ -36,9 +34,11 @@ func LogFile(logLevel logrus.Level, args ...interface{}) {
 	fileLogger.Log(logLevel, args...)
 }
 
+// LogFatalIfError logs the error to the wrapper log and the console and exits. log.Fatal would only print to stderr,
+// which the tray wrapper doesn't have, and skip the exit function that removes the tray icon.
 func LogFatalIfError(err error) {
 	if err != nil {
-		log.Fatal(err)
+		Fatal(err)
 	}
 }
 func LogFatalMsgIfError(err error, message string) {

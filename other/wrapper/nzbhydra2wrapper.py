@@ -425,6 +425,10 @@ def startup():
     if releaseType == "generic":
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
+        # Work around CVE-2026-114938 ("Java4Shell"): the AVX-512 Base64 decode intrinsic of HotSpot writes out of bounds
+        # for crafted input, which reaches it before login via the basic auth header and the remember-me cookie.
+        # Appended after the custom VM options so that it wins. The flag is HotSpot's, so native images don't get it.
+        java_arguments.append("-XX:-UseBASE64Intrinsics")
     if logGc:
         if releaseType == "generic":
             java_arguments.extend(gcArguments)
