@@ -14,9 +14,9 @@ RUN dnf install -y dnf-plugins-core && dnf config-manager --set-enabled powertoo
 # GitHub runner). Time out stalled reads and retry; wget resumes a partial download on retry.
 RUN printf 'tries = 5\nretry_connrefused = on\nwaitretry = 10\ntimeout = 60\n' >> /etc/wgetrc
 
-# Maven. archive.apache.org keeps old versions, dlcdn.apache.org only the newest
+# Maven from Maven Central: keeps every version and is CDN-backed (archive.apache.org was unreachable from GitHub runners)
 ARG MAVEN_VERSION=3.9.9
-RUN wget -nv https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz -P /tmp \
+RUN wget -nv https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.tar.gz -P /tmp \
     && tar xf /tmp/apache-maven-*.tar.gz -C /opt && ln -s /opt/apache-maven-${MAVEN_VERSION} /opt/maven && rm /tmp/apache-maven-*.tar.gz
 ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven

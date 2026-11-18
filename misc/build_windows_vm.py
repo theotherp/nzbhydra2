@@ -105,7 +105,17 @@ $actualVersion = & '.\\core\\target\\core.exe' -version
 if ($LASTEXITCODE -ne 0) {{ exit $LASTEXITCODE }}
 if ($actualVersion -ne '{version}') {{ throw "Windows version mismatch: expected {version}, got $actualVersion" }}
 Remove-Item -Force '{REMOTE_ARTIFACT_ARCHIVE}' -ErrorAction SilentlyContinue
-Compress-Archive -Path '.\\core\\target\\core.exe', '.\\core\\target\\*.dll' -DestinationPath '{REMOTE_ARTIFACT_ARCHIVE}'
+# The fresh core.exe can stay locked for a while (Defender scan, exiting -version process)
+for ($attempt = 1; ; $attempt++) {{
+    try {{
+        Compress-Archive -Path '.\\core\\target\\core.exe', '.\\core\\target\\*.dll' -DestinationPath '{REMOTE_ARTIFACT_ARCHIVE}' -Force
+        break
+    }} catch {{
+        if ($attempt -ge 12) {{ throw }}
+        Write-Output "core.exe still locked, retrying in 10s (attempt $attempt)"
+        Start-Sleep -Seconds 10
+    }}
+}}
 Write-Output "Windows version verified: $actualVersion"
 """,
     )
