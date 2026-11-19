@@ -1087,8 +1087,11 @@ def list_steps() -> None:
     console.print(table)
 
 
-def reset_build_changes() -> None:
-    """Reset all changes made by the build process (changelog, pom.xml files, wrapperHashes2.json)."""
+def reset_build_changes() -> list[str]:
+    """Reset all changes made by the build process (changelog, pom.xml files, wrapperHashes2.json).
+
+    Returns the files that were actually reset.
+    """
     console.print("[yellow]Resetting build changes...[/yellow]")
 
     files_to_reset = [
@@ -1138,6 +1141,26 @@ def reset_build_changes() -> None:
             console.print(f"  - {f}")
     else:
         console.print("[dim]No modified files found to reset.[/dim]")
+    return files_reset
+
+
+def restart_step_after_reset(completed_steps: list[str], failed_step: str, files_reset: list[str]) -> str:
+    """Return the step a failed build has to restart from once reset_build_changes() has run.
+
+    Before the release commit the reset reverts what promote_changelog, set_release_version and the
+    steps after them wrote (changelog promotion, release version in the poms), so restarting at the
+    failed step would build the SNAPSHOT version. Those steps have to run again.
+    """
+    if files_reset and "git_commit" not in completed_steps:
+        return "promote_changelog"
+    return failed_step
+
+
+def steps_completed_before(completed_steps: list[str], step_name: str) -> list[str]:
+    """Return the completed steps that come before step_name in the step order."""
+    names = [s.name for s in STEPS]
+    cutoff = names.index(step_name)
+    return [s for s in completed_steps if s in names and names.index(s) < cutoff]
 
 
 def run_build(
@@ -1194,8 +1217,9 @@ def run_build(
         transient=True,
     ) as progress:
         for i, step in enumerate(steps_to_run, 1):
-            # Skip if already completed (unless we're starting from a specific step)
-            if skip_completed and not start_from and ctx.is_completed(step.name):
+            # Skip if already completed (unless we're starting from a specific step). The tokens are only kept
+            # in memory, so load_tokens always runs again
+            if skip_completed and not start_from and ctx.is_completed(step.name) and step.function is not load_tokens:
                 console.print(f"[dim]({i}/{total_steps}) Skipping {step.name} (already completed)[/dim]")
                 continue
 
@@ -1220,15 +1244,22 @@ def run_build(
                 console.print(f"\n[red]✗ Step '{step.name}' failed: {e}[/red]")
                 console.print(f"[dim]Check log file for details: {ctx.log_file}[/dim]")
 
-                # Automatically reset build changes if we've passed the commit_maven_versions step
+                # Automatically reset build changes if we've passed the promote_changelog step
+                restart_step = step.name
                 if ctx.is_completed("promote_changelog"):
                     console.print(f"\n[yellow]Automatically resetting build changes...[/yellow]")
-                    reset_build_changes()
+                    files_reset = reset_build_changes()
+                    restart_step = restart_step_after_reset(ctx.completed_steps, step.name, files_reset)
+                    if restart_step != step.name:
+                        # The reset undid these steps, so --resume must not skip them
+                        ctx.completed_steps = steps_completed_before(ctx.completed_steps, restart_step)
+                        ctx.save_state()
+                        console.print(f"[yellow]The reset reverted the release version and changelog, so the build has to restart at {restart_step}.[/yellow]")
 
-                console.print(f"\n[yellow]To resume from this step, run:[/yellow]")
+                console.print(f"\n[yellow]To resume, run:[/yellow]")
                 console.print(f"  python build_and_release.py --resume")
-                console.print(f"\n[yellow]Or to restart this step:[/yellow]")
-                console.print(f"  python build_and_release.py --start-from {step.name} --version {ctx.version} --next-version {ctx.next_version}")
+                console.print(f"\n[yellow]Or to restart explicitly:[/yellow]")
+                console.print(f"  python build_and_release.py --start-from {restart_step} --version {ctx.version} --next-version {ctx.next_version}")
                 raise SystemExit(1) from e
 
     # Success!
