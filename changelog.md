@@ -1,3 +1,15 @@
+### v9.3.3 (2026-11-19)
+
+**Fix** Results from NZBKing and Binsearch are now recognized as duplicates of the same release from other indexers. NZBKing only shows rounded sizes and both only show the age in days, which kept them apart, so a NZBKing result could lead a title group instead of the result from the indexer with the higher priority.
+
+**Note** The wrappers now starts Java with -XX:-UseBASE64Intrinsics, which protects against the Java4Shell vulnerability (CVE-2026-114938) on CPUs with AVX-512 even before your Java is updated. This concerns the generic release that runs with your own Java installation, not the Linux and Windows executables. Please update Java as soon as possible.
+
+**Fix** While we're at it, fixed several problems of the Windows wrappers (NZBHydra2.exe and NZBHydra2 Console.exe)
+
+**Fix** The recent searches dropdown now opens quickly even with a long search history.
+
+
+
 ### v9.3.2 (2026-11-17)
 
 **Fix** Do you sometimes look in the changelog of a game or app and it just says "Multiple improvements in stability and bug fixes" and you think, "Give me details!"? Well, this is one of those.
