@@ -23,6 +23,7 @@ import org.nzbhydra.searching.db.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -194,6 +195,20 @@ class HistoryComponentTest {
 
         assertThat(page.getContent()).extracting(SearchEntity::getQuery).containsExactly("alpha");
         assertThat(page.getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldReturnNewestInternalSearchesForSearchHistory() {
+        searchRepository.save(search("delta", "TV", SearchSource.INTERNAL, "alice", "1.1.1.1", "Firefox", 2));
+        searchRepository.save(search("echo", "TV", SearchSource.INTERNAL, "bob", "2.2.2.2", "Firefox", 1));
+        searchRepository.save(search("foxtrot", "TV", SearchSource.INTERNAL, "alice", "1.1.1.1", "Firefox", 3));
+
+        assertThat(searchRepository.findForUserSearchHistory(PageRequest.of(0, 3)))
+            .extracting(SearchEntity::getQuery)
+            .containsExactly("echo", "delta", "foxtrot");
+        assertThat(searchRepository.findForUserSearchHistory("alice", PageRequest.of(0, 10)))
+            .extracting(SearchEntity::getQuery)
+            .containsExactly("delta", "foxtrot", "alpha");
     }
 
     @Test

@@ -2,23 +2,10 @@ import {Box} from "@mui/material";
 import {useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
-import {
-    ChipsSetting,
-    ConfigFieldset,
-    MultiSelectSetting,
-    NumberSetting,
-    SelectSetting,
-    SwitchSetting,
-    TextSetting,
-} from "../components";
+import {ChipsSetting, ConfigFieldset, MultiSelectSetting, NumberSetting, SelectSetting, SwitchSetting, TextSetting,} from "../components";
 import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {languageOptions} from "./languages";
-import {
-    APPLY_RESTRICTIONS_OPTIONS,
-    percentValidator,
-    preselectQuickFilterOptions,
-    SEARCH_SOURCE_OPTIONS,
-} from "./searchingSettings";
+import {APPLY_RESTRICTIONS_OPTIONS, percentValidator, preselectQuickFilterOptions, SEARCH_SOURCE_OPTIONS,} from "./searchingSettings";
 
 /**
  * `F-CONFIG-SEARCHING`: the Searching configuration tab — every field of
@@ -286,10 +273,7 @@ export function SearchingConfigTab() {
                 <NumberSetting
                     {...indexedSetting("searching.historyForSearching")}
                     required
-                    // Legacy's tooltip names the affordance with an inline
-                    // glyphicon `<span>` (`config-fields-service.js:1585`);
-                    // `tooltip` is plain text, so the icon is named instead.
-                    tooltip="The number of recent searches shown in the search bar dropdown (the clock icon)."
+                    tooltip="The number of searches shown in the Recent searches dropdown of the search form."
                 />
                 <NumberSetting
                     {...indexedSetting("searching.globalCacheTimeMinutes")}

@@ -41,6 +41,11 @@ public class History {
     public static final String DOWNLOAD_TABLE = "INDEXERNZBDOWNLOAD x left join SEARCHRESULT s on x.SEARCH_RESULT_ID = s.ID LEFT JOIN INDEXER i ON s.INDEXER_ID = i.ID";
     public static final String SEARCH_TABLE = "SEARCH x";
     public static final String NOTIFICATION_TABLE = "NOTIFICATION x";
+    /**
+     * The search history is fetched with this many rows per search to show, so there are still enough after removing
+     * repeated searches.
+     */
+    static final int SEARCH_HISTORY_FETCH_FACTOR = 4;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -99,18 +104,23 @@ public class History {
             //Auth is configured but the caller is not logged in: never show the searches of other users
             return new ArrayList<>();
         }
+        int limit = configProvider.getBaseConfig().getSearching().getHistoryForSearching();
+        if (limit <= 0) {
+            return new ArrayList<>();
+        }
+        PageRequest pageRequest = PageRequest.of(0, (int) Math.min((long) limit * SEARCH_HISTORY_FETCH_FACTOR, Integer.MAX_VALUE));
         //Without auth everybody is anonymous and it's effectively a single-user installation, so all searches are shown
-        Page<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(PageRequest.of(0, 100)) : searchRepository.findForUserSearchHistory(currentUserName, PageRequest.of(0, 100));
+        List<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(pageRequest) : searchRepository.findForUserSearchHistory(currentUserName, pageRequest);
         List<SearchEntity> entities = new ArrayList<>();
         Set<Integer> contained = new HashSet<>();
-        for (SearchEntity searchEntity : history.getContent()) {
+        for (SearchEntity searchEntity : history) {
             int hash = searchEntity.getComparingHash();
             if (contained.contains(hash)) {
                 continue;
             }
             contained.add(hash);
             entities.add(searchEntity);
-            if (entities.size() == configProvider.getBaseConfig().getSearching().getHistoryForSearching()) {
+            if (entities.size() == limit) {
                 break;
             }
         }

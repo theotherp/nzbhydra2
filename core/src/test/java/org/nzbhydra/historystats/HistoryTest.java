@@ -46,10 +46,6 @@ class HistoryTest {
         org.nzbhydra.web.SessionStorage.username.remove();
     }
 
-    private static org.springframework.data.domain.Page<SearchEntity> pageOf(SearchEntity... entities) {
-        return new org.springframework.data.domain.PageImpl<>(List.of(entities));
-    }
-
     @Test
     void shouldReturnNoSearchHistoryForAnonymousUserWhenAuthIsConfigured() {
         when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(true);
@@ -64,7 +60,7 @@ class HistoryTest {
         when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(false);
         when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(10);
         SearchEntity search = new SearchEntity();
-        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(pageOf(search));
+        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of(search));
 
         assertThat(testee.getHistoryForSearching()).containsExactly(search);
     }
@@ -77,7 +73,7 @@ class HistoryTest {
             when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(false);
             when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(10);
             SearchEntity search = new SearchEntity();
-            when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(pageOf(search));
+            when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of(search));
 
             assertThat(testee.getHistoryForSearching()).containsExactly(search);
         } finally {
@@ -90,11 +86,49 @@ class HistoryTest {
     }
 
     @Test
+    void shouldFetchSearchHistoryRowsInProportionToTheConfiguredLimit() {
+        when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(false);
+        when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(10);
+        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of());
+
+        testee.getHistoryForSearching();
+
+        org.mockito.Mockito.verify(searchRepository).findForUserSearchHistory(org.springframework.data.domain.PageRequest.of(0, 10 * History.SEARCH_HISTORY_FETCH_FACTOR));
+    }
+
+    @Test
+    void shouldStopAtTheConfiguredLimitAfterRemovingRepeatedSearches() {
+        when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(false);
+        when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(2);
+        SearchEntity first = new SearchEntity();
+        first.setQuery("a");
+        SearchEntity repeated = new SearchEntity();
+        repeated.setQuery("a");
+        SearchEntity second = new SearchEntity();
+        second.setQuery("b");
+        SearchEntity third = new SearchEntity();
+        third.setQuery("c");
+        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of(first, repeated, second, third));
+
+        assertThat(testee.getHistoryForSearching()).containsExactly(first, second);
+    }
+
+    @Test
+    void shouldReturnNoSearchHistoryWhenLimitIsZero() {
+        when(configProvider.getBaseConfig().getAuth().isAuthConfigured()).thenReturn(false);
+        when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(0);
+
+        assertThat(testee.getHistoryForSearching()).isEmpty();
+
+        verifyNoInteractions(searchRepository);
+    }
+
+    @Test
     void shouldReturnOnlyOwnSearchesForLoggedInUser() {
         org.nzbhydra.web.SessionStorage.username.set("alice");
         when(configProvider.getBaseConfig().getSearching().getHistoryForSearching()).thenReturn(10);
         SearchEntity search = new SearchEntity();
-        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.eq("alice"), org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(pageOf(search));
+        when(searchRepository.findForUserSearchHistory(org.mockito.ArgumentMatchers.eq("alice"), org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class))).thenReturn(List.of(search));
 
         assertThat(testee.getHistoryForSearching()).containsExactly(search);
         org.mockito.Mockito.verify(searchRepository, org.mockito.Mockito.never()).findForUserSearchHistory(org.mockito.ArgumentMatchers.any(org.springframework.data.domain.Pageable.class));
