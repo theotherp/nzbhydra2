@@ -10,3 +10,5 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "fix"
+    text: "The first category (Anime by default) was missing from an indexer&apos;s category selection."

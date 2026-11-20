@@ -7,8 +7,8 @@ import {
     CUSTOM_NEWZNAB_PRESET,
     CUSTOM_TORZNAB_PRESET,
     isAddingAllowed,
-    NEWZNAB_PRESETS,
     newIndexerDraft,
+    NEWZNAB_PRESETS,
     SPECIAL_PRESETS,
     TORZNAB_PRESETS,
 } from "./indexerPresets";
@@ -738,14 +738,15 @@ describe("indexer form rules", () => {
 });
 
 describe("indexerCategoryOptions", () => {
-    it("drops the first (all) category, as CategoriesService.getWithoutAll does", () => {
+    it("offers every configured category, the first one included", () => {
         expect(
             indexerCategoryOptions([
-                {name: "All"},
+                {name: "Anime"},
                 {name: "Movies"},
                 {name: "TV"},
             ]),
         ).toEqual([
+            {label: "Anime", value: "Anime"},
             {label: "Movies", value: "Movies"},
             {label: "TV", value: "TV"},
         ]);

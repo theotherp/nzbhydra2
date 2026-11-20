@@ -1,12 +1,5 @@
-import type {
-    IndexerCapsCheckResult,
-    IndexerValues,
-} from "../../../api/config/indexers";
-import type {
-    ConfigFieldPath,
-    SettingOption,
-    SettingValidator,
-} from "../components";
+import type {IndexerCapsCheckResult, IndexerValues,} from "../../../api/config/indexers";
+import type {ConfigFieldPath, SettingOption, SettingValidator,} from "../components";
 
 /**
  * `F-CONFIG-INDEXERS`' vocabulary-independent data and rules: legacy's ordering,
@@ -609,12 +602,15 @@ export const SEARCH_SOURCE_OPTIONS: readonly SettingOption[] = [
 
 /**
  * `CategoriesService.getWithoutAll()` (`categories-service.js:28-31`): every
- * configured category except the first, which is the "all" catch-all. Read from
- * the *form's* categories rather than the saved ones, so a category added on
- * the Categories tab is selectable here before the config is saved.
+ * configured category. The legacy service dropped the first entry because the
+ * *safe* config prepends the "All" catch-all (`SafeCategoriesConfig`); the
+ * form's `categoriesConfig.categories` never contains it, so nothing is dropped
+ * here. Read from the form's categories rather than the saved ones, so a
+ * category added on the Categories tab is selectable here before the config is
+ * saved.
  */
 export function indexerCategoryOptions(categories: unknown): SettingOption[] {
-    return (Array.isArray(categories) ? categories.slice(1) : [])
+    return (Array.isArray(categories) ? categories : [])
         .map((category) => indexerText(asIndexer(category).name))
         .filter((name) => name !== "")
         .map((name) => ({label: name, value: name}));
