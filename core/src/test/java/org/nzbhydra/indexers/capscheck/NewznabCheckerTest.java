@@ -24,6 +24,7 @@ import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
@@ -302,6 +303,33 @@ public class NewznabCheckerTest {
         assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchIds()).doesNotContain(IMDB);
         assertThat(checkCapsRespone.isAllCapsChecked()).isTrue();
         verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
+    }
+
+    @Test
+    void shouldTreatUnknownFunctionErrorAsUnsupportedSearchType() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&imdbid=0944947"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
+        NewznabXmlError unknownFunction = new NewznabXmlError("202", "Unknown function: movie");
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=24428"), indexerConfig))
+            .thenReturn(unknownFunction);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
+            .thenReturn(unknownFunction);
+
+        CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
+
+        assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchIds()).containsExactly(TVDB);
+        assertThat(checkCapsRespone.getIndexerConfig().getSupportedSearchTypes()).containsExactly(ActionAttribute.TVSEARCH);
+        assertThat(checkCapsRespone.isAllCapsChecked()).isTrue();
+        assertThat(checkCapsRespone.isConfigComplete()).isTrue();
     }
 
 

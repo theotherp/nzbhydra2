@@ -12,3 +12,5 @@
 # a release is built. Never add them to changelog.yaml by hand.
 -   type: "fix"
     text: "The first category (Anime by default) was missing from an indexer&apos;s category selection."
+-   type: "fix"
+    text: "Caps check no longer reports &quot;incomplete&quot; when an indexer replies &quot;Unknown function&quot; for a search type it doesn&apos;t support (like aninzb.moe)."

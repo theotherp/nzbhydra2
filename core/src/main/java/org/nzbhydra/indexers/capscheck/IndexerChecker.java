@@ -490,14 +490,14 @@ public class IndexerChecker {
             boolean notSupported = false;
             if (e.getCause() instanceof IndexerWebAccess.HydraUnmarshallingFailureException) {
                 String indexerResponse = ((IndexerWebAccess.HydraUnmarshallingFailureException) e.getCause()).getResponse();
-                if (indexerResponse != null && indexerResponse.toLowerCase().contains("function not available")) {
+                if (indexerResponse != null && (indexerResponse.toLowerCase().contains("function not available") || indexerResponse.toLowerCase().contains("unknown function"))) {
                     notSupported = true;
                 }
             } else if (e.getCause() instanceof final WebAccessException webAccessException) {
                 //ADR-0019 removed the response body from the exception message, so both markers must be read off the
                 //body here; the message check below only still covers the parse-failure path.
                 final String body = webAccessException.getBody() == null ? null : webAccessException.getBody().toLowerCase();
-                notSupported = body != null && (body.contains("function not available") || body.contains("incorrect parameter"));
+                notSupported = body != null && (body.contains("function not available") || body.contains("unknown function") || body.contains("incorrect parameter"));
             }
             if (e.getMessage() != null && e.getMessage().contains("Incorrect parameter")) {
                 notSupported = true;
@@ -511,7 +511,13 @@ public class IndexerChecker {
 
         if (response instanceof NewznabXmlError error) {
             String errorDescription = error.getDescription();
-            if (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query")) {
+            if (errorDescription != null && errorDescription.toLowerCase().contains("unknown function")) {
+                //Some indexers (e.g. aninzb) reply "Unknown function: movie" when they don't support a search type at all
+                logger.info("Indexer {} doesn't support the search type {}: {}", request.indexerConfig.getName(), request.getTMode(), errorDescription);
+                eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Doesn't support search type " + request.getTMode()));
+                return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
+            }
+            if (errorDescription != null && (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query"))) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getIdType());
                 eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Doesn't support " + request.getIdType()));
                 return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
