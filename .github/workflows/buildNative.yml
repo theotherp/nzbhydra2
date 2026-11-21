@@ -48,7 +48,7 @@ jobs:
                     github.event_name == 'push' &&
                     github.event.before != '0000000000000000000000000000000000000000'
                 continue-on-error: true
-                uses: dawidd6/action-download-artifact@v6
+                uses: dawidd6/action-download-artifact@v28
                 with:
                     name: ^native-build--${{ matrix.os }}--release-executable--.*$
                     name_is_regexp: true
@@ -59,7 +59,7 @@ jobs:
             -   name: "Detect changes affecting the native build/tests"
                 id: changed
                 if: steps.last-build.outputs.found_artifact == 'true'
-                uses: dorny/paths-filter@v3.0.4
+                uses: dorny/paths-filter@v4.0.3
                 with:
                     base: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].workflow_run.head_sha }}
                     filters: |
@@ -149,7 +149,7 @@ jobs:
                     if-no-files-found: warn
 
             -   name: "Create test Report"
-                uses: dorny/test-reporter@v1.9.1
+                uses: dorny/test-reporter@v3.2.0
                 if: always() && steps.build-decision.outputs.should-build == 'true'
                 continue-on-error: true
                 with:
@@ -181,7 +181,7 @@ jobs:
             # core/target/<artifact name>/, where nothing below looks.
             -   name: "Reuse last native build (no relevant changes)"
                 if: steps.build-decision.outputs.should-build == 'false'
-                uses: dawidd6/action-download-artifact@v6
+                uses: dawidd6/action-download-artifact@v28
                 with:
                     run_id: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].workflow_run.id }}
                     name: ${{ fromJSON(steps.last-build.outputs.artifacts)[0].name }}

@@ -316,7 +316,7 @@ jobs:
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
-        uses: dorny/test-reporter@v1.9.1
+        uses: dorny/test-reporter@v3.2.0
         if: always()
         continue-on-error: true
         with:
@@ -374,7 +374,7 @@ jobs:
         if: >-
           github.event_name == 'push' &&
           github.event.before != '0000000000000000000000000000000000000000'
-        uses: dorny/paths-filter@v3.0.4
+        uses: dorny/paths-filter@v4.0.3
         with:
           base: ${{ github.event.before }}
           filters: |
@@ -938,7 +938,7 @@ jobs:
       - name: "Download windows artifact from current workflow"
         id: "downloadArtifactThisBuild"
         continue-on-error: true
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v8.0.2
         with:
           pattern: native-build--windows-latest--release-executable--*
           path: ./
@@ -952,7 +952,7 @@ jobs:
 
       - name: "Download windows artifact from previous workflow if no native build was executed"
         if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v28
         with:
           name: ^native-build--windows-latest--release-executable--.*$
           name_is_regexp: true
@@ -1077,7 +1077,7 @@ jobs:
           path: docker/*.log
 
       - name: "Create test Report"
-        uses: dorny/test-reporter@v1.9.1
+        uses: dorny/test-reporter@v3.2.0
         if: always()
         continue-on-error: true
         with:
