@@ -20,7 +20,6 @@
     "check:api": "node scripts/check-openapi-types.mjs",
     "knip": "knip",
     "validate:focus-affordances": "node scripts/validate-focus-affordances.mjs",
-    "validate:migration": "node scripts/validate-migration.mjs",
     "validate:production-assets": "node scripts/validate-production-assets.mjs"
   },
   "dependencies": {

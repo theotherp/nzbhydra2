@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react";
-import {configDefaults, defineConfig} from "vitest/config";
+import {defineConfig} from "vitest/config";
 
 import {devBackendPlugin} from "./vite/devBackend";
 import {FailureArtifactReporter} from "./vite/failureArtifactReporter";
@@ -58,10 +58,6 @@ export default defineConfig({
         // fourteen others took 2.2-4.5s. 15s leaves room for that runner while
         // a genuinely hanging test still fails quickly.
         testTimeout: 15_000,
-        exclude: [
-            ...configDefaults.exclude,
-            "scripts/validate-migration.test.mjs",
-        ],
         // `default` first, unchanged: every agent and every gate chain reads
         // the console output, so it must keep its current shape. The `json`
         // reporter is additive and writes to a file because this suite fails

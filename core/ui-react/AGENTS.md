@@ -4,14 +4,8 @@ These instructions apply to files under `core/ui-react` and supplement `/AGENTS.
 
 ## Required Context
 
-Before implementation, read:
-
-1. `/docs/frontend-migration/README.md`
-2. `/docs/frontend-migration/DECISIONS.md` (at minimum ADR-0002, ADR-0014, ADR-0015)
-3. For packet work: your assigned `/docs/frontend-migration/tasks/FM-*.md` and the registry records it links
-
-Do not infer migration requirements from conversation history. `Files Allowed To Modify` in a task is the write boundary; reads
-are unrestricted.
+Before implementation, read `/docs/frontend-migration/DECISIONS.md` (at minimum ADR-0002, ADR-0014, ADR-0015). It records the
+binding decisions from the AngularJS-to-React migration; `/docs/frontend-migration/CONTEXT.md` defines its vocabulary.
 
 ## Boundaries
 
@@ -19,7 +13,7 @@ are unrestricted.
 - MUI is the only general visual component system. Do not add Bootstrap, Tailwind, another component suite, another router, or
   another server-state library without a new decision entry.
 - Search and configuration domain behavior must remain explicit application code.
-- Do not create a shared component, API wrapper, or storage abstraction without checking and updating the appropriate registry.
+- Before creating a shared component, API wrapper, or storage abstraction, check whether one already exists.
 - Prefer direct MUI usage over trivial wrappers.
 - Do not hardcode root-relative application, API, asset, login, logout, or WebSocket URLs.
 - Preserve stable legacy `data-testid` values when behavior is equivalent.
@@ -73,7 +67,6 @@ screenshotting the running app against the mock rather than by matching CSS text
 
 ## Verification
 
-Run the gates relevant to the change (`npm run test`, `typecheck`, `lint`, `format:check`, `build`, `knip`, `validate:migration`,
-`validate:focus-affordances`; system Playwright when behavior or rendering changed). Do not weaken or suppress checks. Record
-each command and result. Packet work uses the handoff template and is handed off as `review`, not `done`; single-session fixes
-append a `MAINTENANCE.md` entry instead.
+Run the gates relevant to the change (`npm run test`, `typecheck`, `lint`, `format:check`, `build`, `knip`,
+`validate:focus-affordances`; system Playwright when behavior or rendering changed). Do not weaken or suppress checks. Report
+each command and result.

@@ -202,7 +202,6 @@ Do not guess Maven coordinates or versions when they can be verified with
     - If a test fails, analyze the output, fix the code/test, and rerun.
     - Do not finish if tests are failing (unless they were failing before you started).
 6. When fixing a specific GH issue, reference it in `changelog-unreleased.yaml` using "See #xxxx" and in the commit using "Closes #xxxx". See section 7.
-7. Don't do separate commits for ledger updates.
 
 ## 7. Release Notes
 

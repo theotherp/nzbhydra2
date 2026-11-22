@@ -1324,9 +1324,8 @@ describe("ConfigShell fieldset anchor navigation (FM-102)", () => {
         // come from the fieldsets currently mounted, which do not. FM-120
         // forbids exactly that shape and its fix covers the warm swap, where
         // both change in one commit. Fixing the cold case is a rendering
-        // change to a migrated feature, not a quickfix; it is recorded under
-        // *Open candidates* in `docs/frontend-migration/MAINTENANCE.md`
-        // (surfaced 2026-09-01). Asserting it here would only add a red test
+        // change to a migrated feature and is still open (surfaced
+        // 2026-09-01). Asserting it here would only add a red test
         // for a defect this file is not fixing.
 
         await act(async () => {

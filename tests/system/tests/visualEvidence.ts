@@ -33,8 +33,7 @@ function stableRegionName(region: string): string {
 // Deliberately outside `test-results/` (Playwright's `outputDir`, which
 // Playwright clears at the start of every run): durable, per-feature
 // visual evidence must survive being overwritten by a run for a
-// different feature, not just the current one. `validate:migration`
-// guards this containment relationship by reading this constant.
+// different feature, not just the current one.
 export const visualEvidenceRoot = "visual-evidence";
 
 export function visualEvidencePath(featureId: string, region: string): string {

@@ -8,9 +8,8 @@ import type {Reporter, SerializedError, TestModule} from "vitest/node";
  * fixed path (`test-results/vitest-results.json`), so the next run --
  * including a reflexive re-run of a flaky failure -- overwrites it. That
  * defect is why three separate task reports lost a failing test's name to a
- * "the next run was green" re-run before anyone could capture it (see
- * `docs/frontend-migration/MAINTENANCE.md`'s "unit suite fails once in every
- * ten to thirteen runs" entry).
+ * "the next run was green" re-run before anyone could capture it (the unit
+ * suite failed intermittently, about once in every ten to thirteen runs).
  *
  * This reporter is additive: it changes nothing about what a developer sees
  * on the console (the `default` reporter stays first and unchanged), and it

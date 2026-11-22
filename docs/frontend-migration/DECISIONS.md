@@ -9,6 +9,10 @@ New entries: only for hard-to-reverse choices — framework/stack, API or URL co
 Keep an entry under ~20 lines: date, question, decision, binding constraints. Option analysis happens in conversation with the
 repository owner, not in this file. Styling questions inside ADR-0014's rules never need an entry.
 
+The migration's process documents (`README.md`, `STATUS.md`, `GUI-STATUS.md`, `MAINTENANCE.md`, the `FEATURES.yaml`,
+`COMPONENTS.yaml` and `APIS.yaml` registries, task packets and templates) were removed on 2026-11-22. References to them below
+point into git history.
+
 ## ADR-0001 — React placement and UI switch (accepted)
 
 React source lives permanently in `core/ui-react`; Vite production output uses the isolated `static/react/` namespace and never

@@ -419,7 +419,7 @@ Do this:
 - Replace the CSS import with a local stylesheet that declares the same `@font-face` families with woff2 sources only and reuses the package's icon class rules. Keep the v4 shims.
 - Run `npm run build` and `npm run validate:production-assets`. Compare `dist/assets` before and after.
 
-This changes no behaviour and saves no RAM at runtime. It only makes the download smaller. Route it through `fm-quickfix` like other small frontend changes.
+This changes no behaviour and saves no RAM at runtime. It only makes the download smaller.
 
 ---
 
