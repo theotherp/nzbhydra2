@@ -805,7 +805,7 @@ const SEARCHING_ENTRIES = tabEntries("searching", ({fieldset}) => {
             path: "searching.languagesToKeep",
         },
         {
-            help: "Results older than this are ignored. Can be overwritten per search. Apply words with return key.",
+            help: "Results older than this are ignored. Can be overwritten per search.",
             label: "Maximum results age",
             path: "searching.maxAge",
         },
