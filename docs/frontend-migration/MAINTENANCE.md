@@ -2433,6 +2433,12 @@ remains, the first two are visible misbehaviour on the config tabs an admin uses
   `live/searchState.ts:24` rely on `.default([])`, which likewise would not survive a `null`; both back onto Java
   collections that happen to carry initializers today. Surfaced 2026-08-27 by the sweep in the ledger entry above.
 
+- **The "Maximum results age" help text says "Apply words with return key."** It is a number field, so the
+  phrase is wrong there; it looks copied from a chips field's help. Source: `settingsIndex.ts:808` (the settings
+  search index). The rendered help on the Searching tab shows the same text. Found 2026-11-22 while taking the
+  screenshot for the chips warning entry. Single-session text fix; whether the help text comes from the backend
+  or the frontend still needs checking.
+
 ### Needs a `DECISIONS.md` entry first
 
 Nothing here can be routed until a human settles the named question. Ordered by how much other work each unblocks: the first two
@@ -4252,3 +4258,19 @@ their text and relative order are unchanged.
 - **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `validate:migration` pass; `git diff --check` clean. No test, build or
   API check run: no code changed.
 - **Commit:** the commit adding this entry.
+
+### 2026-11-22 — Warn when a chips field is left with text that was never added (owner request)
+
+- **Why not a packet:** owner override. The change adds a user-visible hint and a sentence to C-CONFIG-FIELDS in
+  `COMPONENTS.yaml`, which the gate would normally refuse. The owner picked the quickfix route because the change is
+  limited to `ChipsSetting` and comes with a regression test. That test failed before the fix and passes after it.
+  No `data-testid` was added; the warning is a stock MUI `Tooltip` (`role="tooltip"`).
+- **Paths:** `core/ui-react/src/features/config/components/ChipsSetting.tsx`, `configFields.test.tsx`,
+  `docs/frontend-migration/COMPONENTS.yaml`, `changelog-unreleased.yaml` (in the ledger commit).
+- **Gates:** `core/ui-react` typecheck, lint, build, check:api, validate:migration, validate:focus-affordances pass;
+  `test -- --run` 2386/2386. `format:check` fails on `indexerSettings.ts` and `SearchingConfigTab.tsx`. Neither file
+  is touched here, and the tree was clean at `80400c13a` before this change. `git diff --check` clean.
+  `tests/config-main.spec.ts` passes against a locally built backend (`run_gui_systemtest.py --runtime local`).
+- **Screenshot strip:** Searching tab, "Languages to keep" with uncommitted text, at 1280x800 and 390x844. Captured with
+  a throwaway Playwright script against that backend, not committed, and reviewed inline.
+- **Commit:** `41ded650e`

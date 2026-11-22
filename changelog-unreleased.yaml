@@ -14,3 +14,5 @@
     text: "The first category (Anime by default) was missing from an indexer&apos;s category selection."
 -   type: "fix"
     text: "Caps check no longer reports &quot;incomplete&quot; when an indexer replies &quot;Unknown function&quot; for a search type it doesn&apos;t support (like aninzb.moe)."
+-   type: "fix"
+    text: "Leaving a list field (like indexer groups) with text you never confirmed with Enter now shows a warning that it wasn&apos;t added."
