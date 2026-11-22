@@ -394,6 +394,39 @@ describe("C-CONFIG-FIELDS control kinds", () => {
         });
     });
 
+    it("should warn when the field is left with an entry that was never added", async () => {
+        const harness = renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+            {values: {main: {sniDisabledFor: ["a.example"]}}},
+        );
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+
+        fireEvent.focus(input);
+        fireEvent.change(input, {target: {value: "typed.example"}});
+        fireEvent.blur(input);
+
+        expect(await screen.findByRole("tooltip")).toHaveTextContent(
+            '"typed.example" was not added. Press Enter to add it.',
+        );
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a.example"],
+        });
+        expect(input).toHaveValue("typed.example");
+
+        // Coming back to the field dismisses the warning; Enter then adds it.
+        fireEvent.focus(input);
+        await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+        fireEvent.keyDown(input, {key: "Enter"});
+        expect(harness.form.getValues().main).toEqual({
+            sniDisabledFor: ["a.example", "typed.example"],
+        });
+
+        // Leaving with an empty (or blank) input warns about nothing.
+        fireEvent.change(input, {target: {value: "  "}});
+        fireEvent.blur(input);
+        expect(screen.queryByRole("tooltip")).toBeNull();
+    });
+
     it("should remove a chip whose edit is emptied and refuse an edit to a duplicate", () => {
         const harness = renderSetting(
             <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,

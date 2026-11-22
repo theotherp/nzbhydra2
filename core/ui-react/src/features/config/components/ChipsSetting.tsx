@@ -1,5 +1,5 @@
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
-import {Autocomplete, Chip, TextField} from "@mui/material";
+import {Autocomplete, Chip, TextField, Tooltip} from "@mui/material";
 import {useRef, useState} from "react";
 import {useController} from "react-hook-form";
 
@@ -44,6 +44,11 @@ const NO_SUGGESTIONS: readonly string[] = [];
  * the chip's position (an emptied edit removes the chip), Escape or leaving
  * the field cancels. An edit is gated by `validateChip` like a new entry, and
  * may not duplicate another chip.
+ *
+ * Leaving the field with typed text that was never committed keeps the text
+ * in the input and opens a warning popup saying it was not added (owner
+ * request 2026-11-22: admins typed a value, tabbed away and saved without
+ * it). Focusing the field again dismisses the popup.
  */
 export function ChipsSetting({
     advanced,
@@ -76,6 +81,10 @@ export function ChipsSetting({
     /** The position of the chip being edited, `undefined` while none is. */
     const [editing, setEditing] = useState<number | undefined>(undefined);
     const inputRef = useRef<HTMLInputElement | null>(null);
+    /** The uncommitted text the field was left with, `undefined` while none. */
+    const [uncommitted, setUncommitted] = useState<string | undefined>(
+        undefined,
+    );
 
     /** Never `true`/`false` -- the message, or `undefined` when the entry is fine. */
     const chipRefusal = (entry: string): string | undefined => {
@@ -157,117 +166,138 @@ export function ChipsSetting({
             name={name}
             tooltip={tooltip}
         >
-            <Autocomplete
-                freeSolo
-                inputValue={inputValue}
-                multiple
-                onBlur={() => {
-                    if (editing !== undefined) {
-                        stopEditing();
-                    }
-                    field.onBlur();
-                }}
-                onChange={(_event, value) => commit(value)}
-                onInputChange={(_event, value) => setInputValue(value)}
-                onKeyDown={(event) => {
-                    if (editing === undefined) {
-                        return;
-                    }
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        (
-                            event as typeof event & {
-                                defaultMuiPrevented: boolean;
-                            }
-                        ).defaultMuiPrevented = true;
-                        commitEdit(editing);
-                    } else if (event.key === "Escape") {
-                        (
-                            event as typeof event & {
-                                defaultMuiPrevented: boolean;
-                            }
-                        ).defaultMuiPrevented = true;
-                        stopEditing();
-                    }
-                }}
-                options={suggestions.filter(
-                    (suggestion) => !selected.includes(suggestion),
-                )}
-                renderValue={(value, getTagProps) =>
-                    value.map((option, index) => {
-                        const {key, ...tagProps} = getTagProps({index});
-                        const message = chipRefusal(option);
-                        return (
-                            <Chip
-                                {...tagProps}
-                                // The flag is carried by the icon and by the
-                                // accessible name, never by the colour alone
-                                // (ADR-0029); `title` gives a pointer user the
-                                // same sentence the refusal line shows.
-                                aria-label={
-                                    message === undefined
-                                        ? undefined
-                                        : `${option} — ${message}`
+            <Tooltip
+                arrow
+                describeChild
+                disableFocusListener
+                disableHoverListener
+                disableTouchListener
+                open={uncommitted !== undefined}
+                placement="bottom-start"
+                title={`"${uncommitted ?? ""}" was not added. Press Enter to add it.`}
+            >
+                <Autocomplete
+                    freeSolo
+                    inputValue={inputValue}
+                    multiple
+                    onBlur={() => {
+                        if (editing !== undefined) {
+                            stopEditing();
+                        } else if (inputValue.trim() !== "") {
+                            setUncommitted(inputValue.trim());
+                        }
+                        field.onBlur();
+                    }}
+                    onChange={(_event, value) => commit(value)}
+                    onFocus={() => setUncommitted(undefined)}
+                    onInputChange={(_event, value) => setInputValue(value)}
+                    onKeyDown={(event) => {
+                        if (editing === undefined) {
+                            return;
+                        }
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            (
+                                event as typeof event & {
+                                    defaultMuiPrevented: boolean;
                                 }
-                                color={
-                                    message === undefined ? "default" : "error"
+                            ).defaultMuiPrevented = true;
+                            commitEdit(editing);
+                        } else if (event.key === "Escape") {
+                            (
+                                event as typeof event & {
+                                    defaultMuiPrevented: boolean;
                                 }
-                                data-testid={`${settingInputTestId(name)}-chip-${option}`}
-                                icon={
-                                    message === undefined ? undefined : (
-                                        <ErrorOutlineOutlinedIcon />
-                                    )
-                                }
-                                key={key}
-                                label={option}
-                                onClick={() => startEditing(index)}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter") {
-                                        event.preventDefault();
-                                        event.stopPropagation();
-                                        startEditing(index);
+                            ).defaultMuiPrevented = true;
+                            stopEditing();
+                        }
+                    }}
+                    options={suggestions.filter(
+                        (suggestion) => !selected.includes(suggestion),
+                    )}
+                    renderValue={(value, getTagProps) =>
+                        value.map((option, index) => {
+                            const {key, ...tagProps} = getTagProps({index});
+                            const message = chipRefusal(option);
+                            return (
+                                <Chip
+                                    {...tagProps}
+                                    // The flag is carried by the icon and by the
+                                    // accessible name, never by the colour alone
+                                    // (ADR-0029); `title` gives a pointer user the
+                                    // same sentence the refusal line shows.
+                                    aria-label={
+                                        message === undefined
+                                            ? undefined
+                                            : `${option} — ${message}`
                                     }
-                                }}
-                                title={message ?? "Click to edit"}
-                                variant={
-                                    index === editing ? "outlined" : "filled"
-                                }
-                            />
-                        );
-                    })
-                }
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        inputRef={(element: HTMLInputElement | null) => {
-                            inputRef.current = element;
-                            field.ref(element);
-                        }}
-                        label={label}
-                        name={field.name}
-                        placeholder={placeholder}
-                        slotProps={{
-                            ...params.slotProps,
-                            htmlInput: {
-                                ...params.slotProps.htmlInput,
-                                "data-testid": settingInputTestId(name),
-                            },
-                            input: {
-                                ...params.slotProps.input,
-                                "aria-describedby": settingDescribedBy(name, {
-                                    // Resolves to `false` for every consumer
-                                    // that passes no validator unless an edit
-                                    // duplicates another chip: only a refusal
-                                    // renders the error node this id points at.
-                                    hasError: refused !== undefined,
-                                    hasHelp: help !== undefined,
-                                }),
-                            },
-                        }}
-                    />
-                )}
-                value={selected}
-            />
+                                    color={
+                                        message === undefined
+                                            ? "default"
+                                            : "error"
+                                    }
+                                    data-testid={`${settingInputTestId(name)}-chip-${option}`}
+                                    icon={
+                                        message === undefined ? undefined : (
+                                            <ErrorOutlineOutlinedIcon />
+                                        )
+                                    }
+                                    key={key}
+                                    label={option}
+                                    onClick={() => startEditing(index)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            startEditing(index);
+                                        }
+                                    }}
+                                    title={message ?? "Click to edit"}
+                                    variant={
+                                        index === editing
+                                            ? "outlined"
+                                            : "filled"
+                                    }
+                                />
+                            );
+                        })
+                    }
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            inputRef={(element: HTMLInputElement | null) => {
+                                inputRef.current = element;
+                                field.ref(element);
+                            }}
+                            label={label}
+                            name={field.name}
+                            placeholder={placeholder}
+                            slotProps={{
+                                ...params.slotProps,
+                                htmlInput: {
+                                    ...params.slotProps.htmlInput,
+                                    "data-testid": settingInputTestId(name),
+                                },
+                                input: {
+                                    ...params.slotProps.input,
+                                    "aria-describedby": settingDescribedBy(
+                                        name,
+                                        {
+                                            // Resolves to `false` for every consumer
+                                            // that passes no validator unless an edit
+                                            // duplicates another chip: only a refusal
+                                            // renders the error node this id points at.
+                                            hasError: refused !== undefined,
+                                            hasHelp: help !== undefined,
+                                        },
+                                    ),
+                                },
+                            }}
+                        />
+                    )}
+                    value={selected}
+                />
+            </Tooltip>
         </SettingRow>
     );
 }
