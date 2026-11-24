@@ -1,3 +1,15 @@
+### v9.3.4 (2026-11-24)
+
+**Fix** The first category (Anime by default) was missing from an indexer&apos;s category selection.
+
+**Fix** Caps check no longer reports &quot;incomplete&quot; when an indexer replies &quot;Unknown function&quot; for a search type it doesn&apos;t support (like aninzb.moe).
+
+**Fix** Leaving a list field (like indexer groups) with text you never confirmed with Enter now shows a warning that it wasn&apos;t added.
+
+**Fix** On phones, list fields like indexer groups now show an Enter key, so typed values can be added.
+
+
+
 ### v9.3.3 (2026-11-19)
 
 **Fix** Results from NZBKing and Binsearch are now recognized as duplicates of the same release from other indexers. NZBKing only shows rounded sizes and both only show the age in days, which kept them apart, so a NZBKing result could lead a title group instead of the result from the indexer with the higher priority.

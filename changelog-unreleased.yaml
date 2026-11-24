@@ -10,11 +10,3 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
--   type: "fix"
-    text: "The first category (Anime by default) was missing from an indexer&apos;s category selection."
--   type: "fix"
-    text: "Caps check no longer reports &quot;incomplete&quot; when an indexer replies &quot;Unknown function&quot; for a search type it doesn&apos;t support (like aninzb.moe)."
--   type: "fix"
-    text: "Leaving a list field (like indexer groups) with text you never confirmed with Enter now shows a warning that it wasn&apos;t added."
--   type: "fix"
-    text: "On phones, list fields like indexer groups now show an Enter key, so typed values can be added."
