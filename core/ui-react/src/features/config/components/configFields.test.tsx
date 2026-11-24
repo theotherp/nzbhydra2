@@ -394,6 +394,16 @@ describe("C-CONFIG-FIELDS control kinds", () => {
         });
     });
 
+    it("should ask mobile keyboards for an Enter key instead of Next", () => {
+        renderSetting(
+            <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,
+        );
+
+        expect(
+            screen.getByTestId("config-input-main-sniDisabledFor"),
+        ).toHaveAttribute("enterkeyhint", "enter");
+    });
+
     it("should warn when the field is left with an entry that was never added", async () => {
         const harness = renderSetting(
             <ChipsSetting label="Disable SNI" name="main.sniDisabledFor" />,

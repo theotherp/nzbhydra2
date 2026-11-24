@@ -277,6 +277,12 @@ export function ChipsSetting({
                                 htmlInput: {
                                     ...params.slotProps.htmlInput,
                                     "data-testid": settingInputTestId(name),
+                                    // A chip is committed with Enter. Inside a
+                                    // form, Android keyboards otherwise offer
+                                    // "Next", which moves focus on without
+                                    // sending Enter, so a chip could not be
+                                    // added on a phone at all.
+                                    enterKeyHint: "enter",
                                 },
                                 input: {
                                     ...params.slotProps.input,
