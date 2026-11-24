@@ -56,8 +56,9 @@ public class SearchCancelSystemTest {
         long start = System.nanoTime();
         CompletableFuture<SearchResponse> search = CompletableFuture.supplyAsync(() ->
                 hydraClient.post("/internalapi/search", parameters).as(SearchResponse.class));
-        // Give the other indexers time to answer and the hanging one time to start hanging
-        Thread.sleep(3000);
+        // Give the other indexers time to answer and the hanging one time to start hanging. The mock server's
+        // "failure-sleep" scenario delays every "sleep*" query by up to five seconds, so wait longer than that.
+        Thread.sleep(6500);
         assertThat(search).isNotDone();
 
         HydraResponse abortResponse = hydraClient.post("/internalapi/abortSearch/" + searchRequestId, null, "reason=cancelled");
