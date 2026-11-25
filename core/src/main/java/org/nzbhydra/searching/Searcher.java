@@ -6,6 +6,7 @@ import jakarta.annotation.PreDestroy;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -393,8 +394,11 @@ public class Searcher {
     /**
      * Identifies a search request independently of its paging data and of the object's identity. The category is
      * compared by name on purpose: a config reload creates new Category instances which must still hit the cache.
+     * The indexer selection and download type are part of the key because requests which differ only in them search
+     * different indexers and must not continue each other's searches.
      */
-    private record SearchCacheKey(SearchSource source, SearchType searchType, String categoryName, Integer minsize,
+    private record SearchCacheKey(SearchSource source, SearchType searchType, DownloadType downloadType,
+                                  Set<String> indexers, String categoryName, Integer minsize,
                                   Integer maxsize, Integer minage, Integer maxage, String query,
                                   Map<MediaIdType, String> identifiers, String title, Integer season, String episode,
                                   String author) {
@@ -403,6 +407,8 @@ public class Searcher {
             return new SearchCacheKey(
                 searchRequest.getSource(),
                 searchRequest.getSearchType(),
+                searchRequest.getDownloadType(),
+                searchRequest.getIndexers().map(Set::copyOf).orElse(null),
                 searchRequest.getCategory() == null ? null : searchRequest.getCategory().getName(),
                 searchRequest.getMinsize().orElse(null),
                 searchRequest.getMaxsize().orElse(null),

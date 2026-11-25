@@ -10,3 +10,7 @@
 #
 # misc/build_and_release.py moves these entries into core/src/main/resources/changelog.yaml when
 # a release is built. Never add them to changelog.yaml by hand.
+-   type: "feature"
+    text: "New display option &quot;Mark groups with downloaded results&quot; marks the first result of a group if it or another result in the group was downloaded. See #1128"
+-   type: "fix"
+    text: "API requests for later pages with &quot;indexers=&quot; continued the search of the indexer searched last instead of the requested one. See #1129"

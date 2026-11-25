@@ -794,6 +794,25 @@ public class SearcherUnitTest {
         assertThat(thirdEntry.getSearchRequest()).isSameAs(thirdRequest);
     }
 
+    @Test
+    void shouldNotContinueSearchOfOtherIndexerSelection() throws Exception {
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 5, false, 5, indexer1));
+        SearchRequest firstIndexerRequest = request(SearchSource.API, 0, 2, "shouldNotContinueOtherIndexers");
+        firstIndexerRequest.setIndexers(Set.of("indexer1"));
+        SearchCacheEntry firstIndexerEntry = searcher.getSearchCacheEntry(firstIndexerRequest);
+
+        SearchRequest secondIndexerRequest = request(SearchSource.API, 0, 2, "shouldNotContinueOtherIndexers");
+        secondIndexerRequest.setIndexers(Set.of("indexer2"));
+        SearchCacheEntry secondIndexerEntry = searcher.getSearchCacheEntry(secondIndexerRequest);
+
+        SearchRequest firstIndexerPageRequest = request(SearchSource.API, 2, 2, "shouldNotContinueOtherIndexers");
+        firstIndexerPageRequest.setIndexers(Set.of("indexer1"));
+        SearchCacheEntry firstIndexerPageEntry = searcher.getSearchCacheEntry(firstIndexerPageRequest);
+
+        assertThat(firstIndexerPageEntry).isSameAs(firstIndexerEntry);
+        assertThat(firstIndexerPageEntry).isNotSameAs(secondIndexerEntry);
+    }
+
     // ------------------------------------------------------------------------------------------------
     // Persistence
     // ------------------------------------------------------------------------------------------------
