@@ -11,6 +11,8 @@ import {
     filterResults,
     formatResultDetails,
     formatResultSize,
+    groupDownloadCounts,
+    groupDownloadMark,
     groupResults,
     indexerColorsFromSafeConfig,
     isRecentResult,
@@ -52,6 +54,81 @@ const results = [
         epoch: 1_600_000_000,
     },
 ];
+
+// #1128: "Mark groups with downloaded results".
+describe("group download marks", () => {
+    const titleOptions: GroupingOptions = {
+        groupTorrentAndUsenet: false,
+        groupEpisodes: false,
+        groupTitles: true,
+        episodeRequested: false,
+    };
+    const grouped = [
+        {...results[0], searchResultId: "a", title: "Show", hash: 1},
+        {...results[0], searchResultId: "b", title: "Show", hash: 1},
+        {...results[0], searchResultId: "c", title: "Show", hash: 2},
+        {...results[0], searchResultId: "d", title: "Other", hash: 3},
+    ];
+    const downloadedOf =
+        (...ids: string[]) =>
+        (result: {searchResultId: string}) =>
+            ids.includes(result.searchResultId);
+
+    it("should count members and downloads per title group and per duplicate group", () => {
+        const counts = groupDownloadCounts(
+            grouped,
+            titleOptions,
+            downloadedOf("b"),
+        );
+        const groups = groupResults(grouped, titleOptions);
+        const show = groups.find((group) =>
+            group.duplicateGroups[0].some((r) => r.searchResultId === "a"),
+        );
+        expect(show).toBeDefined();
+        expect(counts.titles.get(show!.key)).toEqual({
+            downloaded: 1,
+            members: 3,
+        });
+        expect(counts.duplicates.get(`${show!.key}|hash:1`)).toEqual({
+            downloaded: 1,
+            members: 2,
+        });
+        expect(counts.duplicates.get(`${show!.key}|hash:2`)).toEqual({
+            downloaded: 0,
+            members: 1,
+        });
+    });
+
+    it("should group like groupResults with title grouping off, so only duplicates share a group", () => {
+        const options = {...titleOptions, groupTitles: false};
+        const counts = groupDownloadCounts(grouped, options, downloadedOf("b"));
+        expect(
+            groupResults(grouped, options).map(
+                (group) => counts.titles.get(group.key)?.members,
+            ),
+        ).toEqual([2, 1, 1]);
+    });
+
+    it("should mark a downloaded head as self and a head with downloaded members as member with their count", () => {
+        expect(groupDownloadMark({downloaded: 2, members: 3}, true)).toEqual({
+            kind: "self",
+        });
+        expect(groupDownloadMark({downloaded: 2, members: 3}, false)).toEqual({
+            count: 2,
+            kind: "member",
+        });
+    });
+
+    it("should not mark a group without downloads or a group of one", () => {
+        expect(
+            groupDownloadMark({downloaded: 0, members: 3}, false),
+        ).toBeUndefined();
+        expect(
+            groupDownloadMark({downloaded: 1, members: 1}, true),
+        ).toBeUndefined();
+        expect(groupDownloadMark(undefined, true)).toBeUndefined();
+    });
+});
 
 describe("loadMoreAmounts", () => {
     it.each([

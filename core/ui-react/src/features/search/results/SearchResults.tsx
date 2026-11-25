@@ -41,10 +41,10 @@ import {
     isGroupEpisodesHelpEligible,
     showGroupEpisodesHelpIfNeeded,
 } from "./groupEpisodesHelp";
-import {RefineSidebar} from "./RefineSidebar";
-import type {ExpandSlots} from "./ResultRow";
 import {IndexerSummary} from "./IndexerSummary";
 import {resultQualityRating, showsQualityColumn} from "./qualityBadge";
+import {RefineSidebar} from "./RefineSidebar";
+import type {ExpandSlots} from "./ResultRow";
 import {ResultsAlerts} from "./ResultsAlerts";
 import {ResultsPager} from "./ResultsPager";
 import {ResultsPagingFooter} from "./ResultsPagingFooter";
@@ -52,6 +52,7 @@ import type {VisibleRowDescriptor} from "./ResultsTable";
 import {ResultsTable} from "./ResultsTable";
 import {ResultsToolbar} from "./ResultsToolbar";
 import type {
+    GroupDownloadCounts,
     HideableResultColumn,
     NumericRange,
     QuickFilter,
@@ -66,10 +67,12 @@ import {
     defaultFilters,
     duplicateGroupKey,
     filterResults,
+    groupDownloadCounts,
+    groupDownloadMark,
     groupResults,
+    indexerColorsFromSafeConfig,
     loadMoreAmounts,
     pageOfGroups,
-    indexerColorsFromSafeConfig,
     preselectedQuickFilters,
     qualityIndicatorFromSafeConfig,
     quickFilterKey,
@@ -265,6 +268,7 @@ export function SearchResults({
         highlightRecent,
         indexerOpen,
         indexerSummaryOpen,
+        markDownloadedGroups,
         setCategoryOpen,
         setColumnShown,
         setCompactRows,
@@ -276,6 +280,7 @@ export function SearchResults({
         setHighlightRecent,
         setIndexerOpen,
         setIndexerSummaryOpen,
+        setMarkDownloadedGroups,
         setShowCovers,
         setShowDuplicateControls,
         setShowIndexerSummary,
@@ -633,6 +638,37 @@ export function SearchResults({
             ),
         [effectiveExpandedDuplicates, expandedTitles, pagedGroups],
     );
+    // #1128: per-group member and downloaded counts for "Mark groups with
+    // downloaded results", over every loaded result -- also those hidden by
+    // "Hide downloaded results" or a refine filter -- with the same
+    // downloaded test as the row's own checkmark. Not computed at all while
+    // the option is off.
+    const downloadCounts = useMemo(
+        () =>
+            markDownloadedGroups
+                ? groupDownloadCounts(
+                      data.searchResults,
+                      {
+                          groupTorrentAndUsenet,
+                          groupEpisodes,
+                          groupTitles,
+                          episodeRequested,
+                      },
+                      (result) =>
+                          downloadedIds.has(result.searchResultId) ||
+                          Boolean(result.downloadedAt),
+                  )
+                : undefined,
+        [
+            data.searchResults,
+            downloadedIds,
+            episodeRequested,
+            groupEpisodes,
+            groupTitles,
+            groupTorrentAndUsenet,
+            markDownloadedGroups,
+        ],
+    );
     // FM-150: the shape of every row the table body is about to render,
     // derived once instead of inside the JSX, because the expand-control width
     // each row reserves is a property of the whole rendered set (see
@@ -644,8 +680,12 @@ export function SearchResults({
                 expandedTitles,
                 effectiveExpandedDuplicates,
                 showDuplicateControls,
+                downloadCounts,
+                downloadedIds,
             ),
         [
+            downloadCounts,
+            downloadedIds,
             effectiveExpandedDuplicates,
             expandedTitles,
             pagedGroups,
@@ -660,9 +700,16 @@ export function SearchResults({
     // Computed here, once, because only the parent sees every rendered row.
     const titleSlot = rowDescriptors.some((row) => row.showTitleExpand);
     const duplicateSlot = rowDescriptors.some((row) => row.showDuplicateExpand);
+    const downloadMarkSlot = rowDescriptors.some(
+        (row) => row.groupDownloadMark !== undefined,
+    );
     const expandSlots = useMemo<ExpandSlots>(
-        () => ({duplicate: duplicateSlot, title: titleSlot}),
-        [duplicateSlot, titleSlot],
+        () => ({
+            downloadMark: downloadMarkSlot,
+            duplicate: duplicateSlot,
+            title: titleSlot,
+        }),
+        [downloadMarkSlot, duplicateSlot, titleSlot],
     );
     // FM-162: the window virtualizer over `rowDescriptors`. `count` is the
     // whole visible row set -- selection, grouping, expansion and sorting all
@@ -1382,6 +1429,7 @@ export function SearchResults({
                     indexerFailureCount={failedIndexerCount(data)}
                     indexerSummaryAllowed={indexerSummaryAllowed}
                     invertVisibleSelection={invertVisibleSelection}
+                    markDownloadedGroups={markDownloadedGroups}
                     moreResultsAvailable={moreResultsAvailable}
                     onLoadMore={onLoadMore}
                     onRevealIndexerSummary={revealIndexerSummary}
@@ -1410,6 +1458,7 @@ export function SearchResults({
                     setGroupTorrentAndUsenet={setGroupTorrentAndUsenet}
                     setHideDownloaded={setHideDownloaded}
                     setHighlightRecent={setHighlightRecent}
+                    setMarkDownloadedGroups={setMarkDownloadedGroups}
                     setSelected={setSelected}
                     setShowCovers={setShowCovers}
                     setShowDuplicateControls={setShowDuplicateControls}
@@ -1651,6 +1700,10 @@ function visibleRowDescriptors(
     // `showDuplicateExpand` false on every row, which is what makes both the
     // control and the width it would reserve disappear together.
     showDuplicateControls: boolean,
+    // #1128: the groups' counts while "Mark groups with downloaded results"
+    // is on, else `undefined` and no row is marked.
+    downloadCounts: GroupDownloadCounts | undefined,
+    downloadedIds: ReadonlySet<string>,
 ): VisibleRowDescriptor[] {
     return groups.flatMap((group, groupIndex) =>
         group.duplicateGroups.flatMap((duplicates, duplicateIndex) => {
@@ -1665,6 +1718,21 @@ function visibleRowDescriptors(
                 .map((result, index) => ({
                     duplicateExpanded,
                     duplicateKey,
+                    // #1128: only a row heading a group is marked -- a title
+                    // group's head for the whole title group, a further
+                    // duplicate group's head for its own duplicates.
+                    groupDownloadMark:
+                        downloadCounts === undefined || index > 0
+                            ? undefined
+                            : groupDownloadMark(
+                                  duplicateIndex === 0
+                                      ? downloadCounts.titles.get(group.key)
+                                      : downloadCounts.duplicates.get(
+                                            duplicateKey,
+                                        ),
+                                  downloadedIds.has(result.searchResultId) ||
+                                      Boolean(result.downloadedAt),
+                              ),
                     isNewGroup:
                         groupIndex > 0 && duplicateIndex === 0 && index === 0,
                     nestingLevel:

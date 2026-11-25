@@ -71,6 +71,10 @@ export function useResultDisplayChoices() {
     const [hideDownloaded, setHideDownloaded] = useState(
         () => choices.hideDownloaded ?? false,
     );
+    // #1128: marks a group's head when a result of the group was downloaded.
+    const [markDownloadedGroups, setMarkDownloadedGroups] = useState(
+        () => choices.markDownloadedGroups ?? false,
+    );
     // FM-176: legacy's "Show duplicate display triggers"
     // (`search-results-controller.js:162,205`), off by default there and here.
     // With it off the duplicate expand control does not render, reserves no
@@ -177,6 +181,7 @@ export function useResultDisplayChoices() {
             hideDownloaded,
             highlightRecent,
             indexerSummaryOpen,
+            markDownloadedGroups,
             refineCategoryOpen: categoryOpen,
             refineIndexerOpen: indexerOpen,
             showCategoryColumn,
@@ -199,6 +204,7 @@ export function useResultDisplayChoices() {
         highlightRecent,
         indexerOpen,
         indexerSummaryOpen,
+        markDownloadedGroups,
         showCategoryColumn,
         showCovers,
         showDetailsColumn,
@@ -221,6 +227,7 @@ export function useResultDisplayChoices() {
         highlightRecent,
         indexerOpen,
         indexerSummaryOpen,
+        markDownloadedGroups,
         setCategoryOpen,
         setColumnShown,
         setCompactRows,
@@ -232,6 +239,7 @@ export function useResultDisplayChoices() {
         setHighlightRecent,
         setIndexerOpen,
         setIndexerSummaryOpen,
+        setMarkDownloadedGroups,
         setShowCovers,
         setShowDuplicateControls,
         setShowIndexerSummary,

@@ -1,4 +1,9 @@
 // FM-111: the results toolbar's two small popovers, moved verbatim out
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SortIcon from "@mui/icons-material/Sort";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import type {MenuListProps} from "@mui/material";
 // of `SearchResults.tsx`. They share this file because they share the
 // density constants and the section-heading treatment below -- the
 // alternatives were a per-feature style module, which ADR-0014 forbids,
@@ -19,11 +24,6 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import type {MenuListProps} from "@mui/material";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import SortIcon from "@mui/icons-material/Sort";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import type {Column, SortingState} from "@tanstack/react-table";
 import type {MouseEvent} from "react";
 import {useMemo, useState} from "react";
@@ -200,6 +200,7 @@ export function DisplayOptionsMenu({
     groupTorrentAndUsenet,
     hideDownloaded,
     highlightRecent,
+    markDownloadedGroups,
     onToggleCategoryColumn,
     onToggleCompactRows,
     onToggleDetailsColumn,
@@ -209,6 +210,7 @@ export function DisplayOptionsMenu({
     onToggleGroupTorrentAndUsenet,
     onToggleHideDownloaded,
     onToggleHighlightRecent,
+    onToggleMarkDownloadedGroups,
     onToggleRefineSurface,
     onToggleShowCovers,
     onToggleShowDuplicateControls,
@@ -252,6 +254,9 @@ export function DisplayOptionsMenu({
     // default here (owner asked for off, as with `showCovers`).
     hideDownloaded: boolean;
     highlightRecent: boolean;
+    // #1128: marks the head of a group holding a downloaded result. Always
+    // offered: duplicate groups form whatever the grouping options say.
+    markDownloadedGroups: boolean;
     onToggleCategoryColumn: () => void;
     onToggleCompactRows: () => void;
     onToggleDetailsColumn: () => void;
@@ -261,6 +266,7 @@ export function DisplayOptionsMenu({
     onToggleGroupTorrentAndUsenet: () => void;
     onToggleHideDownloaded: () => void;
     onToggleHighlightRecent: () => void;
+    onToggleMarkDownloadedGroups: () => void;
     onToggleRefineSurface: () => void;
     onToggleShowCovers: () => void;
     onToggleShowDuplicateControls: () => void;
@@ -381,6 +387,14 @@ export function DisplayOptionsMenu({
             // shows is unaffected either way.
             tooltip:
                 "Counts and hides only results already known as downloaded from an earlier session or search, not one you just downloaded in this search",
+        },
+        {
+            checked: markDownloadedGroups,
+            label: "Mark groups with downloaded results",
+            onToggle: onToggleMarkDownloadedGroups,
+            testId: "display-option-mark-downloaded-groups",
+            tooltip:
+                "Marks the first result of a group: a filled check if it was downloaded itself, an outlined one if another result in the group was",
         },
         ...(zipButtonAllowed
             ? [

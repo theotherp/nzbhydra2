@@ -30,8 +30,8 @@ import {
     RejectedResultsTrigger,
     ResultsSortMenu,
 } from "./ResultsPopovers";
-import {SelectionMenu} from "./SelectionMenu";
 import type {HideableResultColumn, SelectionStatus} from "./resultTable";
+import {SelectionMenu} from "./SelectionMenu";
 
 // FM-042: the mock's own sticky toolbar/header stacking relationship
 // (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
@@ -85,6 +85,7 @@ export function ResultsToolbar({
     hideDownloaded,
     highlightRecent,
     indexerFailureCount,
+    markDownloadedGroups,
     indexerSummaryAllowed,
     invertVisibleSelection,
     moreResultsAvailable,
@@ -113,6 +114,7 @@ export function ResultsToolbar({
     setGroupTorrentAndUsenet,
     setHideDownloaded,
     setHighlightRecent,
+    setMarkDownloadedGroups,
     setSelected,
     setShowCovers,
     setShowDuplicateControls,
@@ -165,6 +167,8 @@ export function ResultsToolbar({
     // text and the Display menu has no summary entry.
     indexerSummaryAllowed: boolean;
     invertVisibleSelection: () => void;
+    // #1128: "Mark groups with downloaded results".
+    markDownloadedGroups: boolean;
     moreResultsAvailable: boolean;
     onLoadMore?: (loadAll: boolean, limit?: number) => Promise<number | void>;
     onSaveSearch?: () => Promise<void>;
@@ -199,6 +203,7 @@ export function ResultsToolbar({
     setGroupTorrentAndUsenet: Dispatch<SetStateAction<boolean>>;
     setHideDownloaded: Dispatch<SetStateAction<boolean>>;
     setHighlightRecent: Dispatch<SetStateAction<boolean>>;
+    setMarkDownloadedGroups: Dispatch<SetStateAction<boolean>>;
     setSelected: Dispatch<SetStateAction<Set<string>>>;
     setShowCovers: Dispatch<SetStateAction<boolean>>;
     setShowDuplicateControls: Dispatch<SetStateAction<boolean>>;
@@ -473,6 +478,7 @@ export function ResultsToolbar({
                                 groupTorrentAndUsenet={groupTorrentAndUsenet}
                                 hideDownloaded={hideDownloaded}
                                 highlightRecent={highlightRecent}
+                                markDownloadedGroups={markDownloadedGroups}
                                 onToggleCategoryColumn={() =>
                                     setColumnShown(
                                         "category",
@@ -504,6 +510,11 @@ export function ResultsToolbar({
                                 }
                                 onToggleHighlightRecent={() =>
                                     setHighlightRecent((current) => !current)
+                                }
+                                onToggleMarkDownloadedGroups={() =>
+                                    setMarkDownloadedGroups(
+                                        (current) => !current,
+                                    )
                                 }
                                 onToggleRefineSurface={toggleRefineSurface}
                                 onToggleShowCovers={() =>

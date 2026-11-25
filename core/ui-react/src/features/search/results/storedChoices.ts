@@ -6,10 +6,7 @@
 import type {SortingState} from "@tanstack/react-table";
 
 import {readItem} from "../../../domain/storage/browserStorage";
-import {
-    readSection,
-    userPreferences,
-} from "../../../services/preferences/userPreferences";
+import {readSection, userPreferences,} from "../../../services/preferences/userPreferences";
 
 // ADR-0057: the choices are the `searchResults` section of the user's
 // preferences. This key is read once, to migrate this browser's payload.
@@ -39,6 +36,8 @@ export type StoredChoices = {
     // `showCovers`.
     hideDownloaded?: boolean;
     highlightRecent?: boolean;
+    // #1128: "Mark groups with downloaded results", off by default.
+    markDownloadedGroups?: boolean;
     // FM-199 (ADR-0054): whether the per-indexer summary above the toolbar is
     // expanded -- legacy's `indexerStatusesExpanded`
     // (`search-results-controller.js:161,980-982` at `3ce28441e^`), which it
@@ -102,6 +101,7 @@ const BOOLEAN_CHOICES = [
     "hideDownloaded",
     "highlightRecent",
     "indexerSummaryOpen",
+    "markDownloadedGroups",
     "refineCategoryOpen",
     "refineIndexerOpen",
     "showCategoryColumn",

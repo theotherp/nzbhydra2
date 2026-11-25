@@ -1,3 +1,5 @@
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
@@ -6,18 +8,8 @@ import UnfoldLessIcon from "@mui/icons-material/UnfoldLess";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type {SxProps, Theme} from "@mui/material";
+import {Box, Checkbox, Chip, IconButton, Popover, Stack, TableCell, TableRow, Tooltip,} from "@mui/material";
 import type {VisibilityState} from "@tanstack/react-table";
-import {
-    Box,
-    Checkbox,
-    Chip,
-    IconButton,
-    Popover,
-    Stack,
-    TableCell,
-    TableRow,
-    Tooltip,
-} from "@mui/material";
 import type {
     FocusEvent as ReactFocusEvent,
     KeyboardEvent as ReactKeyboardEvent,
@@ -29,17 +21,10 @@ import {memo, useState} from "react";
 import {isAbsoluteCoverUrl, type SearchResult} from "../../../api/search";
 import type {ApiTransport} from "../../../api/transport";
 import {hoverWash} from "../../../app/theme";
-import type {
-    Downloader,
-    downloadSettings,
-} from "../../../domain/downloads/actions";
+import type {Downloader, downloadSettings,} from "../../../domain/downloads/actions";
 import {CoverLightbox} from "./CoverLightbox";
 import {DirectDownloadActions} from "./DownloadActions";
-import {
-    buildQualityTooltipSections,
-    qualityBadgeSeverity,
-    resultQualityRating,
-} from "./qualityBadge";
+import {buildQualityTooltipSections, qualityBadgeSeverity, resultQualityRating,} from "./qualityBadge";
 import {ResultDetailLinks} from "./ResultDetailLinks";
 import {formatResultDetails, formatResultSize} from "./resultTable";
 import {SendToBlackHoleButton} from "./SendToBlackHoleButton";
@@ -52,8 +37,13 @@ import {SendToDownloaderButtons} from "./SendToDownloaderButtons";
  * rows without it render an `ExpandSpacer` there. `duplicate` is additionally
  * gated by the "Show duplicate expand controls" display option, so with the
  * option off no duplicate control and no slot for one exists at all.
+ *
+ * #1128: `downloadMark` is the third slot, right of both, for the "Mark groups
+ * with downloaded results" marker; it is reserved the same way, so titles
+ * still start at one x when only some rows carry a marker.
  */
 export type ExpandSlots = {
+    downloadMark: boolean;
     duplicate: boolean;
     title: boolean;
 };
@@ -253,6 +243,8 @@ export const ResultRow = memo(function ResultRow({
     duplicateExpanded,
     duplicateKey,
     expandSlots,
+    groupDownloadedCount,
+    groupDownloadMark,
     indexerColors,
     isNewGroup,
     maySeeDetailsDl,
@@ -310,6 +302,14 @@ export const ResultRow = memo(function ResultRow({
     // duplicate-only row renders [spacer][duplicate] and never puts its
     // duplicate control where a neighbouring row shows its group control.
     expandSlots: ExpandSlots;
+    // #1128: how many other results of the group this row heads were
+    // downloaded, for the `member` marker's tooltip. Primitives rather than
+    // the descriptor's object, so the memoized row keeps its comparison.
+    groupDownloadedCount: number;
+    // #1128: the "Mark groups with downloaded results" marker: `self` when
+    // this group head was downloaded itself, `member` when another result of
+    // its group was, `undefined` for no marker.
+    groupDownloadMark: "member" | "self" | undefined;
     // FM-096: indexer name -> validated `rgb(r,g,b)` colour, built once per
     // config change in the parent (`indexerColorsFromSafeConfig`) and passed
     // down as this stable reference -- looking it up here rather than
@@ -538,6 +538,12 @@ export const ResultRow = memo(function ResultRow({
                                     ) : (
                                         <ExpandSpacer />
                                     ))}
+                                {expandSlots.downloadMark && (
+                                    <GroupDownloadMarker
+                                        count={groupDownloadedCount}
+                                        mark={groupDownloadMark}
+                                    />
+                                )}
                                 {/* FM-177/FM-179: the cover, between the
                                     expand slots and the title text (legacy's
                                     position, `search-result.html:23-24`), as
@@ -1066,6 +1072,47 @@ function ExpandControl({
             >
                 {expanded ? expandedIcon : collapsedIcon}
             </IconButton>
+        </Tooltip>
+    );
+}
+
+/**
+ * #1128: the marker on a group's head row. A filled check when the head was
+ * downloaded itself, an outlined one when another result of its group was.
+ * Without a marker it renders the same glyph hidden, so the slot keeps its
+ * width exactly as `ExpandSpacer` does for the expand controls.
+ */
+function GroupDownloadMarker({
+    count,
+    mark,
+}: {
+    count: number;
+    mark: "member" | "self" | undefined;
+}) {
+    if (mark === undefined) {
+        return (
+            <CheckCircleIcon
+                aria-hidden
+                data-testid="search-result-download-mark-spacer"
+                fontSize="small"
+                sx={{visibility: "hidden"}}
+            />
+        );
+    }
+    const label =
+        mark === "self"
+            ? "Downloaded"
+            : `${count} other ${count === 1 ? "result" : "results"} in this group downloaded`;
+    const Icon = mark === "self" ? CheckCircleIcon : CheckCircleOutlineIcon;
+    return (
+        <Tooltip title={label}>
+            <Icon
+                color="success"
+                data-mark={mark}
+                data-testid="search-result-group-download-mark"
+                fontSize="small"
+                titleAccess={label}
+            />
         </Tooltip>
     );
 }

@@ -100,6 +100,77 @@ export function groupResults(
         );
 }
 
+/** How many loaded results a title or duplicate group has, and how many of
+ * them were downloaded. */
+type GroupMemberCount = {downloaded: number; members: number};
+
+/**
+ * #1128: member and downloaded counts per title group (keyed like
+ * `ResultGroup.key`) and per duplicate group (keyed by `duplicateGroupKey`),
+ * for "Mark groups with downloaded results". Counted over every loaded
+ * result, not only the shown ones, so a group whose downloaded result is
+ * hidden by "Hide downloaded results" or a refine filter is still marked.
+ */
+export type GroupDownloadCounts = {
+    duplicates: ReadonlyMap<string, GroupMemberCount>;
+    titles: ReadonlyMap<string, GroupMemberCount>;
+};
+
+export function groupDownloadCounts(
+    results: SearchResult[],
+    options: GroupingOptions,
+    isDownloaded: (result: SearchResult) => boolean,
+): GroupDownloadCounts {
+    const titles = new Map<string, GroupMemberCount>();
+    const duplicates = new Map<string, GroupMemberCount>();
+    const add = (
+        counts: Map<string, GroupMemberCount>,
+        key: string,
+        downloaded: boolean,
+    ) => {
+        const count = counts.get(key) ?? {downloaded: 0, members: 0};
+        count.members += 1;
+        count.downloaded += downloaded ? 1 : 0;
+        counts.set(key, count);
+    };
+    for (const result of results) {
+        const key = groupingKey(result, options);
+        const downloaded = isDownloaded(result);
+        add(titles, key, downloaded);
+        add(duplicates, duplicateGroupKey(key, result), downloaded);
+    }
+    return {duplicates, titles};
+}
+
+/**
+ * #1128: the marker on a row that heads a group. `self` when the head itself
+ * was downloaded, `member` when it was not but `count` other results of the
+ * group were.
+ */
+export type GroupDownloadMark =
+    | {kind: "self"}
+    | {count: number; kind: "member"};
+
+/**
+ * #1128: the marker for a group head, from its group's counts. A group of one
+ * is no group, so its head gets no marker; its own downloaded checkmark in the
+ * Actions cell already says it all.
+ */
+export function groupDownloadMark(
+    count: GroupMemberCount | undefined,
+    headDownloaded: boolean,
+): GroupDownloadMark | undefined {
+    if (count === undefined || count.members < 2) {
+        return undefined;
+    }
+    if (headDownloaded) {
+        return {kind: "self"};
+    }
+    return count.downloaded > 0
+        ? {count: count.downloaded, kind: "member"}
+        : undefined;
+}
+
 // Highest `indexerscore` (the indexer's configured priority) first; stable, so
 // equal scores keep their order.
 function byIndexerScore(duplicates: SearchResult[]): SearchResult[] {

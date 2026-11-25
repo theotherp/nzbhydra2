@@ -20,8 +20,8 @@ import {
     stubMissingLocalStorage,
     stubNarrowViewport,
 } from "../../../test/browserStubs";
-import {FILTER_COMMIT_DELAY_MS} from "./useDebouncedFilterValue";
 import {SearchResults} from "./SearchResults";
+import {FILTER_COMMIT_DELAY_MS} from "./useDebouncedFilterValue";
 
 const {downloadActionsResults} = vi.hoisted(() => ({
     downloadActionsResults: [] as unknown[],
@@ -3689,6 +3689,7 @@ describe("SearchResults", () => {
             ["Show duplicate expand controls", false],
             ["Show covers", false],
             ["Hide downloaded results (0)", false],
+            ["Mark groups with downloaded results", false],
             ["Show indexer summary", true],
             ["Category", true],
             ["Details", true],
@@ -4022,6 +4023,117 @@ describe("SearchResults", () => {
             expect(
                 within(remaining).getByRole("img", {name: "Downloaded"}),
             ).toBeVisible();
+        });
+    });
+
+    // #1128: "Mark groups with downloaded results" marks a group's head row:
+    // filled when the head itself was downloaded, outlined when another
+    // result of its group was.
+    describe("mark groups with downloaded results", () => {
+        const groupedResults = (headDownloaded: boolean) => ({
+            ...response,
+            numberOfAvailableResults: 3,
+            searchResults: [
+                {
+                    searchResultId: "1",
+                    title: "Same release",
+                    indexer: "One",
+                    category: "All",
+                    epoch: 1_700_000_000,
+                    ...(headDownloaded
+                        ? {downloadedAt: "2026-09-18T00:00:00Z"}
+                        : {}),
+                },
+                {
+                    searchResultId: "2",
+                    title: "Same release",
+                    indexer: "Two",
+                    category: "All",
+                    epoch: 1_600_000_000,
+                    downloadedAt: "2026-09-18T00:00:00Z",
+                },
+                {
+                    searchResultId: "3",
+                    title: "Unrelated release",
+                    indexer: "Three",
+                    category: "All",
+                    epoch: 1_500_000_000,
+                },
+            ],
+        });
+        const marks = () =>
+            screen
+                .queryAllByTestId("search-result-group-download-mark")
+                .map((mark) => [
+                    mark.closest("tr")?.textContent?.includes("Same release")
+                        ? "Same release"
+                        : "other",
+                    mark.getAttribute("data-mark"),
+                    mark.getAttribute("aria-label") ??
+                        mark.querySelector("title")?.textContent,
+                ]);
+
+        it("should mark nothing while the option is off", () => {
+            renderResults(<SearchResults data={groupedResults(false)} />);
+            expect(marks()).toEqual([]);
+        });
+
+        it("should mark the head with an outlined check when another member was downloaded, and persist the choice", () => {
+            renderResults(<SearchResults data={groupedResults(false)} />);
+            fireEvent.click(
+                displayOption("Mark groups with downloaded results"),
+            );
+            closeDisplayOptions();
+            expect(marks()).toEqual([
+                [
+                    "Same release",
+                    "member",
+                    "1 other result in this group downloaded",
+                ],
+            ]);
+            // The unmarked row keeps the slot, so both titles start at one x.
+            expect(
+                screen.getAllByTestId("search-result-download-mark-spacer"),
+            ).toHaveLength(1);
+            expect(storedChoices()).toMatchObject({markDownloadedGroups: true});
+        });
+
+        it("should mark a downloaded head with a filled check", () => {
+            seedChoices(JSON.stringify({markDownloadedGroups: true}));
+            renderResults(<SearchResults data={groupedResults(true)} />);
+            expect(marks()).toEqual([["Same release", "self", "Downloaded"]]);
+        });
+
+        it("should still mark the head when the downloaded member is hidden", () => {
+            seedChoices(
+                JSON.stringify({
+                    hideDownloaded: true,
+                    markDownloadedGroups: true,
+                }),
+            );
+            renderResults(<SearchResults data={groupedResults(false)} />);
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+            expect(marks()).toEqual([
+                [
+                    "Same release",
+                    "member",
+                    "1 other result in this group downloaded",
+                ],
+            ]);
+        });
+
+        it("should not mark a result that heads no group", () => {
+            seedChoices(
+                JSON.stringify({
+                    groupTitles: false,
+                    markDownloadedGroups: true,
+                }),
+            );
+            renderResults(<SearchResults data={groupedResults(true)} />);
+            expect(marks()).toEqual([]);
+            expect(
+                screen.queryByTestId("search-result-download-mark-spacer"),
+            ).not.toBeInTheDocument();
         });
     });
 
@@ -5039,6 +5151,7 @@ describe("SearchResults", () => {
             "hideDownloaded",
             "highlightRecent",
             "indexerSummaryOpen",
+            "markDownloadedGroups",
             "refineCategoryOpen",
             "refineIndexerOpen",
             "showCategoryColumn",

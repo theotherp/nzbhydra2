@@ -1,6 +1,17 @@
 import * as path from "node:path";
 
-import {clearUserPreferences, csrfHeaders, DEFAULT_QUICK_FILTER_BUTTONS, dismissWelcomeDialog, expect, expectStoredUserPreferences, searchForResult, seedUserPreferences, test, testEnvironment,} from "./fixtures";
+import {
+    clearUserPreferences,
+    csrfHeaders,
+    DEFAULT_QUICK_FILTER_BUTTONS,
+    dismissWelcomeDialog,
+    expect,
+    expectStoredUserPreferences,
+    searchForResult,
+    seedUserPreferences,
+    test,
+    testEnvironment,
+} from "./fixtures";
 import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
@@ -492,6 +503,62 @@ test.describe("Search results", () => {
             "hide-downloaded-popover-mobile",
         );
         await closeDisplayOptions(page);
+    });
+
+    // #1128: "Mark groups with downloaded results" puts a filled check on a
+    // downloaded group head and an outlined one on a head whose group holds
+    // another downloaded result; a result heading no group stays unmarked.
+    test("should mark group heads whose group holds a downloaded result", async ({
+        page,
+    }) => {
+        await mockResultsWithDownloadedGroupMembers(page);
+        await page.goto("/");
+        await searchForGroupedResults(page);
+
+        const rows = page.getByTestId("search-result-row");
+        await expect(rows).toHaveCount(3);
+        const marks = page.getByTestId("search-result-group-download-mark");
+        await expect(marks).toHaveCount(0);
+
+        await toggleDisplayOption(page, "Mark groups with downloaded results");
+
+        await expect(marks).toHaveCount(2);
+        const memberMark = rows
+            .filter({hasText: "Member Downloaded"})
+            .getByTestId("search-result-group-download-mark");
+        await expect(memberMark).toHaveAttribute("data-mark", "member");
+        await expect(memberMark).toHaveAccessibleName(
+            "1 other result in this group downloaded",
+        );
+        await expect(
+            rows
+                .filter({hasText: "Head Downloaded"})
+                .getByTestId("search-result-group-download-mark"),
+        ).toHaveAttribute("data-mark", "self");
+        await expect(
+            rows
+                .filter({hasText: "Single Release"})
+                .getByTestId("search-result-group-download-mark"),
+        ).toHaveCount(0);
+        // The unmarked row keeps the marker's slot, so every title starts at
+        // the same x.
+        const titleStarts = await rows
+            .getByTestId("search-result-title")
+            .evaluateAll((cells) =>
+                cells.map((cell) =>
+                    Math.round(
+                        (
+                            cell.querySelector(
+                                ":scope > div > div:last-child",
+                            ) ?? cell
+                        ).getBoundingClientRect().left,
+                    ),
+                ),
+            );
+        expect(new Set(titleStarts).size).toBe(1);
+        await page.getByTestId("search-results-table").screenshot({
+            path: test.info().outputPath("mark-downloaded-groups.png"),
+        });
     });
 
     // FM-094: the legacy "should expand grouped legacy results and select
@@ -7761,6 +7828,59 @@ async function mockResultsWithDownloadedAt(
                 rejectedReasonsMap: {},
                 notPickedIndexersWithReason: {},
                 numberOfAvailableResults: 2,
+                numberOfRejectedResults: 0,
+            },
+        }),
+    );
+}
+
+// #1128: two title groups of two -- one whose head was downloaded, one where
+// only the non-head member was -- and a single result.
+async function mockResultsWithDownloadedGroupMembers(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const result = (
+        searchResultId: string,
+        title: string,
+        epoch: number,
+        downloadedAt: string | null,
+    ) => ({
+        searchResultId,
+        title,
+        indexer: searchResultId,
+        category: "TV",
+        epoch,
+        age: "1d",
+        downloadType: "NZB",
+        downloadedAt,
+    });
+    await page.route("**/internalapi/search", (route) =>
+        route.fulfill({
+            json: {
+                searchResults: [
+                    result("a1", "Member Downloaded", 1_700_000_300, null),
+                    result(
+                        "a2",
+                        "Member Downloaded",
+                        1_700_000_000,
+                        "2026-09-18T00:00:00Z",
+                    ),
+                    result(
+                        "b1",
+                        "Head Downloaded",
+                        1_700_000_200,
+                        "2026-09-18T00:00:00Z",
+                    ),
+                    result("b2", "Head Downloaded", 1_700_000_000, null),
+                    result("c1", "Single Release", 1_700_000_100, null),
+                ],
+                indexerSearchMetaDatas: [
+                    {indexerName: "a1", wasSuccessful: true},
+                ],
+                indexerLimitWarnings: [],
+                rejectedReasonsMap: {},
+                notPickedIndexersWithReason: {},
+                numberOfAvailableResults: 5,
                 numberOfRejectedResults: 0,
             },
         }),

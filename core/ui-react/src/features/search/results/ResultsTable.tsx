@@ -1,4 +1,5 @@
 import HighQualityOutlinedIcon from "@mui/icons-material/HighQualityOutlined";
+import type {SxProps, Theme} from "@mui/material";
 import {
     Box,
     Button,
@@ -11,7 +12,6 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import type {SxProps, Theme} from "@mui/material";
 import type {
     Table as ReactTableInstance,
     VisibilityState,
@@ -31,9 +31,13 @@ import type {
 import type {ExpandSlots} from "./ResultRow";
 import {ResultRow} from "./ResultRow";
 import {STICKY_BACKGROUND} from "./ResultsToolbar";
-import {SelectionMenu} from "./SelectionMenu";
-import type {ColumnTrack, SelectionStatus} from "./resultTable";
+import type {
+    ColumnTrack,
+    GroupDownloadMark,
+    SelectionStatus,
+} from "./resultTable";
 import {isRecentResult, tableColumnTracks} from "./resultTable";
+import {SelectionMenu} from "./SelectionMenu";
 
 // Header cells carry MUI's default 16px vertical `TableCell` padding, which
 // -- together with the tallest control each cell held -- set the pre-FM-045
@@ -999,6 +1003,12 @@ export function ResultsTable({
                                 duplicateExpanded={row.duplicateExpanded}
                                 duplicateKey={row.duplicateKey}
                                 expandSlots={expandSlots}
+                                groupDownloadedCount={
+                                    row.groupDownloadMark?.kind === "member"
+                                        ? row.groupDownloadMark.count
+                                        : 0
+                                }
+                                groupDownloadMark={row.groupDownloadMark?.kind}
                                 indexerColors={indexerColors}
                                 isNewGroup={row.isNewGroup}
                                 key={row.result.searchResultId}
@@ -1054,6 +1064,9 @@ export function ResultsTable({
 export type VisibleRowDescriptor = {
     duplicateExpanded: boolean;
     duplicateKey: string;
+    // #1128: set on a group head while "Mark groups with downloaded results"
+    // is on and its group holds a downloaded result.
+    groupDownloadMark: GroupDownloadMark | undefined;
     isNewGroup: boolean;
     nestingLevel: number;
     result: SearchResult;
