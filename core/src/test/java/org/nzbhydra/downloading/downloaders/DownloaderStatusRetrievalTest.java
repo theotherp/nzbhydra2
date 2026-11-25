@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +102,6 @@ class DownloaderStatusRetrievalTest {
 
     @Test
     void shouldLogTheErrorAgainAfterASuccessfulCall() throws Exception {
-        when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
         when(downloader.getStatus())
             .thenThrow(new RuntimeException("Some error"))
             .thenReturn(new DownloaderStatus())
@@ -114,6 +112,14 @@ class DownloaderStatusRetrievalTest {
         testee.getStatus();
 
         assertThat(loggedLevels()).containsExactly(Level.ERROR, Level.ERROR);
+    }
+
+    @Test
+    void shouldUseTheDownloadersWebUiUrlAsLinkTarget() throws Exception {
+        when(downloader.getStatus()).thenReturn(new DownloaderStatus());
+        when(downloader.getWebUiUrl()).thenReturn("https://sab.example.com");
+
+        assertThat(testee.getStatus().getUrl()).isEqualTo("https://sab.example.com");
     }
 
 }

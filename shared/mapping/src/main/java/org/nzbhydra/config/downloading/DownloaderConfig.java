@@ -44,6 +44,12 @@ public class DownloaderConfig {
     private DownloaderType downloaderType;
     @SensitiveData
     private String url;
+    /**
+     * URL under which the user's browser reaches the downloader's web UI, e.g. when Hydra talks to it via an internal
+     * docker host name. Only used for links in the UI, never for API calls. When empty the URL above is used.
+     */
+    @SensitiveData
+    private String externalUrl;
     @SensitiveData
     @HiddenInUI
     private String username;
@@ -58,6 +64,10 @@ public class DownloaderConfig {
 
     public Optional<String> getUsername() {
         return Optional.ofNullable(Strings.emptyToNull(username));
+    }
+
+    public Optional<String> getExternalUrl() {
+        return Optional.ofNullable(Strings.emptyToNull(externalUrl));
     }
 
     public Optional<String> getPassword() {

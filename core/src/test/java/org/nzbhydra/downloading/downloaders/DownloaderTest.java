@@ -65,6 +65,23 @@ public class DownloaderTest {
     }
 
     @Test
+    void shouldUseExternalUrlAsWebUiUrlWhenSet() {
+        testee.downloaderConfig.setUrl("http://sabnzbd:8080");
+        testee.downloaderConfig.setExternalUrl("https://sab.example.com");
+
+        assertThat(testee.getWebUiUrl()).isEqualTo("https://sab.example.com");
+        assertThat(testee.getUrl()).isEqualTo("http://sabnzbd:8080");
+    }
+
+    @Test
+    void shouldFallBackToUrlAsWebUiUrlWhenExternalUrlIsEmpty() {
+        testee.downloaderConfig.setUrl("http://sabnzbd:8080");
+        testee.downloaderConfig.setExternalUrl("");
+
+        assertThat(testee.getWebUiUrl()).isEqualTo("http://sabnzbd:8080");
+    }
+
+    @Test
     void shouldReturnWhenGivenNoDownloads() throws Exception {
         testee.checkForStatusUpdates(Collections.emptyList(), StatusCheckType.HISTORY);
 

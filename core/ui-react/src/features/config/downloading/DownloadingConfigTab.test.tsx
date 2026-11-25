@@ -178,7 +178,10 @@ function submitDialog(): void {
 describe("Downloading config tab general fieldset", () => {
     it("renders every general field of config-fields-service.js:1837-1979", () => {
         renderDownloading({
-            values: configWith({showDownloaderStatus: true}),
+            values: configWith({
+                downloaders: [NZBGET],
+                showDownloaderStatus: true,
+            }),
         });
 
         for (const path of [
@@ -220,7 +223,7 @@ describe("Downloading config tab general fieldset", () => {
         ).toBeNull();
     });
 
-    it("shows the external URL when the footer is on or a downloader adds by link, and keeps the value while hidden", () => {
+    it("shows the external URL only when a downloader adds by link, and keeps the value while hidden", () => {
         const harness = renderDownloading({
             values: configWith({externalUrl: "http://hydra.example"}),
         });
@@ -237,8 +240,8 @@ describe("Downloading config tab general fieldset", () => {
             values: configWith({showDownloaderStatus: true}),
         });
         expect(
-            screen.getByTestId("config-setting-downloading-externalUrl"),
-        ).toBeVisible();
+            screen.queryByTestId("config-setting-downloading-externalUrl"),
+        ).toBeNull();
 
         cleanup();
         renderDownloading({
@@ -427,6 +430,7 @@ describe("Downloading config tab per-type fields", () => {
         for (const field of [
             "name",
             "url",
+            "externalUrl",
             "defaultCategory",
             "nzbAddingType",
             "addPaused",
@@ -461,6 +465,30 @@ describe("Downloading config tab per-type fields", () => {
             expect(screen.queryByTestId("config-downloader-dialog")).toBeNull(),
         );
         expect(downloadersOf(harness)[0].apiKey).toBe(UNCHANGED_SECRET_MARKER);
+    });
+
+    it("saves the external URL without a connection check", async () => {
+        const fetchMock = checkOk();
+        const harness = renderDownloading({
+            fetchMock,
+            values: configWith({downloaders: [SABNZBD]}),
+        });
+        await openEntry(0);
+
+        fireEvent.change(
+            screen.getByTestId(
+                "config-input-downloading-downloaderDraft-externalUrl",
+            ),
+            {target: {value: "https://sab.example.com"}},
+        );
+        submitDialog();
+        await waitFor(() =>
+            expect(screen.queryByTestId("config-downloader-dialog")).toBeNull(),
+        );
+        expect(downloadersOf(harness)[0].externalUrl).toBe(
+            "https://sab.example.com",
+        );
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 });
 

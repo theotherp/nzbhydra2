@@ -17,28 +17,28 @@ import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
 import {useToasts} from "../../../components/toasts/toasts";
 import {
-    AdvancedDisclosureContext,
-    NO_ADVANCED_DISCLOSURE,
-} from "../components/advancedDisclosure";
-import {
     SecretInput,
     SelectSetting,
     SwitchSetting,
     TextSetting,
 } from "../components";
+import {
+    AdvancedDisclosureContext,
+    NO_ADVANCED_DISCLOSURE,
+} from "../components/advancedDisclosure";
 import {useConnectionFailurePrompt} from "../connectionFailurePrompt";
 import {focusFirstInvalidField} from "../invalidFieldFocus";
 import {
     connectionSettingsChanged,
+    DOWNLOADER_DRAFT_PATH,
     downloaderEntry,
+    type DownloaderField,
     downloaderLegend,
     downloaderText,
+    type DownloaderValues,
     draftFieldPath,
-    DOWNLOADER_DRAFT_PATH,
     NZB_ADDING_TYPE_OPTIONS,
     visibleDownloaderFields,
-    type DownloaderField,
-    type DownloaderValues,
 } from "./downloadingSettings";
 
 const DOWNLOADER_DIALOG_TEST_ID = "config-downloader-dialog";
@@ -227,6 +227,13 @@ export function DownloaderDialog({
                                 label="URL"
                                 name={draftFieldPath("url")}
                                 required
+                            />
+                        ) : null}
+                        {shows("externalUrl") ? (
+                            <TextSetting
+                                help="URL under which your browser reaches the downloader's web UI, used as the link target of the downloader icon in the footer. Set it when the URL above only works for NZBHydra, e.g. an internal docker host name. Leave empty to use the URL above."
+                                label="External URL"
+                                name={draftFieldPath("externalUrl")}
                             />
                         ) : null}
                         {/*

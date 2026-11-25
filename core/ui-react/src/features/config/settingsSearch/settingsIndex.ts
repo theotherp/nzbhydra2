@@ -1,10 +1,4 @@
-import {
-    type ConfigFieldPath,
-    type HelpContent,
-    type SettingProps,
-    settingRowTestId,
-    settingTestId,
-} from "../components/settings";
+import {type ConfigFieldPath, type HelpContent, type SettingProps, settingRowTestId, settingTestId,} from "../components/settings";
 import {CONFIG_TABS, type ConfigTab, configTabHref} from "../configTabs";
 import {
     CSRF_HELP,
@@ -16,10 +10,7 @@ import {
     SSL_VERIFICATION_WIKI,
     SSL_WIKI,
 } from "../main/mainSettings";
-import {
-    APPRISE_API_URL,
-    APPRISE_CLI_URL,
-} from "../notifications/notificationsSettings";
+import {APPRISE_API_URL, APPRISE_CLI_URL,} from "../notifications/notificationsSettings";
 import {CACHED_QUERIES_WIKI} from "../searching/searchingSettings";
 
 /**
@@ -992,7 +983,7 @@ const DOWNLOADING_ENTRIES = tabEntries("downloading", ({fieldset, section}) => {
         {
             advanced: true,
             conditional: true,
-            help: "Used for links when sending links to the downloader and as link target for the downloader icon in the footer (when set).",
+            help: "URL under which downloaders reach NZBHydra. Used for links when sending links to the downloader.",
             label: "External URL",
             path: "downloading.externalUrl",
         },

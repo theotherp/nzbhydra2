@@ -217,6 +217,7 @@ export type DownloaderField =
     | "apiKey"
     | "defaultCategory"
     | "enabled"
+    | "externalUrl"
     | "iconCssClass"
     | "name"
     | "nzbAddingType"
@@ -232,6 +233,7 @@ export function visibleDownloaderFields(
     if (type !== "TORBOX") {
         fields.push("name");
         fields.push("url");
+        fields.push("externalUrl");
     }
     if (type === "SABNZBD" || type === "TORBOX") {
         fields.push("apiKey");
@@ -305,19 +307,14 @@ export function primaryDownloaderOptions(
 }
 
 /**
- * `config-fields-service.js:1882-1886`: the external URL matters as soon as
- * either the footer is shown (it is the icon's link target) or some downloader
- * is fed links rather than NZB data.
+ * NZBHydra's external URL only matters when some downloader is fed links
+ * rather than NZB data. Legacy (`config-fields-service.js:1882-1886`) also
+ * showed it with the footer on because the footer icon linked to it; the icon
+ * now links to the downloader's own external URL instead (#1126).
  */
-export function showsExternalUrl(
-    showDownloaderStatus: unknown,
-    downloaders: DownloaderValues[],
-): boolean {
-    return (
-        showDownloaderStatus === true ||
-        downloaders.some(
-            (downloader) => downloader.nzbAddingType === "SEND_LINK",
-        )
+export function showsExternalUrl(downloaders: DownloaderValues[]): boolean {
+    return downloaders.some(
+        (downloader) => downloader.nzbAddingType === "SEND_LINK",
     );
 }
 

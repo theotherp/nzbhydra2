@@ -2972,6 +2972,7 @@ export interface components {
             /** @enum {string} */
             downloaderType?: "SABNZBD" | "NZBGET" | "TORBOX";
             url?: string;
+            externalUrl?: string;
             username?: string;
             password?: string;
             addPaused?: boolean;

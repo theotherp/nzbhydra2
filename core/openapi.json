@@ -8043,6 +8043,9 @@
                     "url": {
                         "type": "string"
                     },
+                    "externalUrl": {
+                        "type": "string"
+                    },
                     "username": {
                         "type": "string"
                     },

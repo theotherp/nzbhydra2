@@ -453,6 +453,13 @@ public abstract class Downloader {
         return downloaderConfig.getUrl();
     }
 
+    /**
+     * The URL under which the user's browser reaches the downloader: its external URL if set, otherwise its URL.
+     */
+    public String getWebUiUrl() {
+        return downloaderConfig.getExternalUrl().orElse(downloaderConfig.getUrl());
+    }
+
     protected String suffixNzbToTitle(String title) {
         if (!title.toLowerCase().endsWith(".nzb")) {
             title += ".nzb";

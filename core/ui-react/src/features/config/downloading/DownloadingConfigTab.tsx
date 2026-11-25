@@ -3,13 +3,7 @@ import {useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
 import {ApiTransport} from "../../../api/transport";
-import {
-    ConfigFieldset,
-    FileBrowserSetting,
-    SelectSetting,
-    SwitchSetting,
-    TextSetting,
-} from "../components";
+import {ConfigFieldset, FileBrowserSetting, SelectSetting, SwitchSetting, TextSetting,} from "../components";
 import {indexedSetting} from "../settingsSearch/settingsIndex";
 import {DownloadersSection} from "./DownloadersSection";
 import {
@@ -70,7 +64,7 @@ export function DownloadingConfigTab({transport}: {transport: ApiTransport}) {
                     options={NZB_ACCESS_TYPE_OPTIONS}
                     tooltip="NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer's API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option)."
                 />
-                {showsExternalUrl(showDownloaderStatus, downloaders) ? (
+                {showsExternalUrl(downloaders) ? (
                     <TextSetting
                         {...indexedSetting("downloading.externalUrl")}
                         advanced

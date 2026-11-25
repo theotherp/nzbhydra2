@@ -14,3 +14,5 @@
     text: "New display option &quot;Mark groups with downloaded results&quot; marks the first result of a group if it or another result in the group was downloaded. See #1128"
 -   type: "fix"
     text: "API requests for later pages with &quot;indexers=&quot; continued the search of the indexer searched last instead of the requested one. See #1129"
+-   type: "feature"
+    text: "Downloaders have an optional external URL which the downloader icon in the footer links to, e.g. when NZBHydra reaches the downloader via an internal docker host name. See #1126"
