@@ -16,3 +16,5 @@
     text: "API requests for later pages with &quot;indexers=&quot; continued the search of the indexer searched last instead of the requested one. See #1129"
 -   type: "feature"
     text: "Downloaders have an optional external URL which the downloader icon in the footer links to, e.g. when NZBHydra reaches the downloader via an internal docker host name. See #1126"
+-   type: "fix"
+    text: "The notification about expiring indexer VIP access was sent every hour instead of once. To reset it, either remove the expiry date from the indexer(s) once and save and restore it, or delete the notification type in the notification config."

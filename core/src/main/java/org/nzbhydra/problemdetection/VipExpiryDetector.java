@@ -87,7 +87,7 @@ public class VipExpiryDetector implements ProblemDetector {
     @NoArgsConstructor
     private static class VipExpiryData implements Serializable {
 
-        private final List<VipExpiryDataEntry> entries = new ArrayList<>();
+        private List<VipExpiryDataEntry> entries = new ArrayList<>();
 
     }
 
